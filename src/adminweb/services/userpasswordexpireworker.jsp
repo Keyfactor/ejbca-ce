@@ -39,7 +39,7 @@ function checkUseEndUserNotification(){
 
 -->
 </SCRIPT></f:verbatim>
-		<h:outputText value="#{web.text.CERTEXPIRATIONSETTINGS}"/>
+		<h:outputText value="#{web.text.USEREXPIRATIONSETTINGS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
 		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
@@ -53,7 +53,7 @@ function checkUseEndUserNotification(){
 		</h:selectManyListbox>		
 	</h:panelGroup>	
 	<h:panelGroup>
-		<h:outputText value="#{web.text.TIMEBEFOREEXPIRATION}"/>
+		<h:outputText value="#{web.text.TIMEUNTILUSEREXPIRE}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
 			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="6"/>
@@ -63,4 +63,3 @@ function checkUseEndUserNotification(){
 	</h:panelGroup>	
 	
 	<jsp:include page="mailsendingworker.jsp"/>
-	

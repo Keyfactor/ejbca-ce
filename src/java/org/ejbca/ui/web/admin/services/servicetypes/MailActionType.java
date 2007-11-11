@@ -63,7 +63,7 @@ public class MailActionType extends ActionType {
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getClassPath()
 	 */
 	public String getClassPath() {
-		return "org.ejbca.core.model.services.actions.MailAction";
+		return org.ejbca.core.model.services.actions.MailAction.class.getName();
 	}
 
 	/**

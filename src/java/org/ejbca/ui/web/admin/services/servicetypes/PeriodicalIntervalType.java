@@ -27,7 +27,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: PeriodicalIntervalType.java,v 1.2 2006-10-26 11:02:17 herrvendil Exp $
+ * @version $Id: PeriodicalIntervalType.java,v 1.3 2007-11-11 07:57:42 anatom Exp $
  */
 public class PeriodicalIntervalType extends IntervalType {
 	
@@ -47,7 +47,7 @@ public class PeriodicalIntervalType extends IntervalType {
 
 
 	public String getClassPath() {
-		return "org.ejbca.core.model.services.intervals.PeriodicalInterval";
+		return org.ejbca.core.model.services.intervals.PeriodicalInterval.class.getName();
 	}
 
 	public Properties getProperties(ArrayList errorMessages) throws IOException{

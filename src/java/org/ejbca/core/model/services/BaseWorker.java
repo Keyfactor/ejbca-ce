@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.services;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -24,21 +26,46 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseWorker.java,v 1.6 2006-12-13 10:35:09 anatom Exp $
+ * @version $Id: BaseWorker.java,v 1.7 2007-11-11 07:55:49 anatom Exp $
  */
 public abstract class BaseWorker extends BaseServiceComponent implements IWorker {
 
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
-	
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
+	/** Should be a ';' separated string of CAIds. */
+	public static final String PROP_CAIDSTOCHECK     = "worker.caidstocheck";
+	
+	/** The time in 'timeunit' that a user is allowed to have status 'new' since last modification date */
+	public static final String PROP_TIMEBEFOREEXPIRING = "worker.timebeforeexpiring";
+	
+	/** Unit in days, hours or seconds */
+	public static final String PROP_TIMEUNIT           = "worker.timeunit";
+
+	public static final String UNIT_SECONDS = "SECONDS";
+	public static final String UNIT_MINUTES = "MINUTES";
+	public static final String UNIT_HOURS = "HOURS";
+	public static final String UNIT_DAYS = "DAYS";
+	
+	public static final int UNITVAL_SECONDS = 1;
+	public static final int UNITVAL_MINUTES = 60;
+	public static final int UNITVAL_HOURS = 3600;
+	public static final int UNITVAL_DAYS = 86400;
+
+	public static final String[] AVAILABLE_UNITS = {UNIT_SECONDS, UNIT_MINUTES, UNIT_HOURS, UNIT_DAYS};
+	public static final int[] AVAILABLE_UNITSVALUES = {UNITVAL_SECONDS, UNITVAL_MINUTES, UNITVAL_HOURS, UNITVAL_DAYS};
+	
+
     protected Properties properties = null;
     protected String serviceName = null;
     private IAction action = null;
     private IInterval interval = null;
     
     private Admin admin = null;
+
+	private transient Collection cAIdsToCheck = null;
+	private transient long timeBeforeExpire = -1;
 
 	/**
 	 * @see org.ejbca.core.model.services.IWorker#init(org.ejbca.core.model.services.ServiceConfiguration, java.lang.String)
@@ -105,5 +132,63 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		return admin;
 	}
 	
+	protected long getTimeBeforeExpire()
+	throws ServiceExecutionFailedException {
+		if(timeBeforeExpire == -1){
+			String unit = properties.getProperty(PROP_TIMEUNIT);
+			if(unit == null){				
+				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
+				throw new ServiceExecutionFailedException(msg);
+			}
+			int unitval = 0;
+			for(int i=0;i<AVAILABLE_UNITS.length;i++){
+				if(AVAILABLE_UNITS[i].equalsIgnoreCase(unit)){
+					unitval = AVAILABLE_UNITSVALUES[i];
+					break;
+				}
+			}
+			if(unitval == 0){				
+				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
+				throw new ServiceExecutionFailedException(msg);
+			}
+						
+		    String value =  properties.getProperty(PROP_TIMEBEFOREEXPIRING);
+		    int intvalue = 0;
+		    try{
+		      intvalue = Integer.parseInt(value);
+		    }catch(NumberFormatException e){
+				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
+		    	throw new ServiceExecutionFailedException(msg);
+		    }
+			
+			if(intvalue == 0){
+				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
+				throw new ServiceExecutionFailedException(msg);
+			}
+			timeBeforeExpire = intvalue * unitval;			
+		}
+	
+		return timeBeforeExpire * 1000;
+	}
+
+	protected Collection getCAIdsToCheck() throws ServiceExecutionFailedException {
+		if(cAIdsToCheck == null){
+			cAIdsToCheck = new ArrayList();
+			String cas = properties.getProperty(PROP_CAIDSTOCHECK);
+			if (cas != null) {
+				String[] caids = cas.split(";");
+				for(int i=0;i<caids.length;i++ ){
+					try {
+						Integer.valueOf(caids[i]);
+					} catch (Exception e) {
+						String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, PROP_CAIDSTOCHECK);
+						throw new ServiceExecutionFailedException(msg, e);						
+					}
+					cAIdsToCheck.add(caids[i]);
+				}				
+			}
+		}
+		return cAIdsToCheck;
+	}
 
 }

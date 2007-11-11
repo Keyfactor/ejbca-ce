@@ -26,9 +26,11 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
+import org.ejbca.ui.web.admin.services.servicetypes.BaseNotifyingWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
@@ -36,6 +38,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.UserPasswordExpireWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
 /**
@@ -43,7 +46,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: EditServiceManagedBean.java,v 1.5 2007-03-12 09:27:58 anatom Exp $
+ * @version $Id: EditServiceManagedBean.java,v 1.6 2007-11-11 07:56:25 anatom Exp $
  */
 public class EditServiceManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
@@ -157,10 +160,21 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	}	
 	
 	/**
-	 * Help method used to edit data in the certificate expriation worker type.
+	 * Help method used to edit data in the notifying worker type.
 	 */
-	public CertificateExpirationNotifierWorkerType getCertificateExpriationType(){
-		return (CertificateExpirationNotifierWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CertificateExpirationNotifierWorkerType.NAME);
+	public BaseNotifyingWorkerType getNotifyingType(){
+		String name = CertificateExpirationNotifierWorkerType.NAME;
+		try {
+			ServiceConfiguration conf = serviceConfigurationView.getServiceConfiguration(new ArrayList());		
+			String cp = conf.getWorkerClassPath();
+			log.debug("ClassPath: "+cp);
+			if ( (cp != null) && cp.equals(UserPasswordExpireWorker.class.getName()) ) {
+				name = UserPasswordExpireWorkerType.NAME;
+			}			
+		} catch (IOException e) {
+			log.error(e);
+		}
+		return (BaseNotifyingWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
 	}
 	
 	/**

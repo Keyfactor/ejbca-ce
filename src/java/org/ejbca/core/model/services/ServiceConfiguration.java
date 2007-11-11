@@ -18,7 +18,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.services.workers.EmailSendingWorker;
 
 /**
  * Value class used for persist the worker, interval and action configurations
@@ -26,11 +29,15 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ServiceConfiguration.java,v 1.4 2006-11-11 12:57:23 herrvendil Exp $
+ * @version $Id: ServiceConfiguration.java,v 1.5 2007-11-11 07:55:49 anatom Exp $
  */
 public class ServiceConfiguration extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
-	private static final float LATEST_VERSION = 1;
+    private static final Logger log = Logger.getLogger(ServiceConfiguration.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+    
+	private static final float LATEST_VERSION = 2;
 	
 	private static final String INTERVALCLASSPATH = "INTERVALCLASSPATH";
 	private static final String INTERVALPROPERTIES = "INTERVALPROPERTIES";
@@ -196,9 +203,68 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	}
 
 	public void upgrade() {
-       if(getVersion() != LATEST_VERSION){
-    	   
-       }		
+		if (Float.compare(LATEST_VERSION, getVersion()) > 0) {
+            // New version of the class, upgrade
+			String msg = intres.getLocalizedMessage("services.upgrade", new Float(getVersion()));
+            log.info(msg);
+
+            log.debug(LATEST_VERSION);
+			// We changed the names of properties between v1 and v2, so we have to upgrade a few of them
+			if (Float.compare(LATEST_VERSION, Float.valueOf(2)) == 0) {
+	            log.debug("Upgrading to version 2");
+				Properties prop = getWorkerProperties();
+				if (prop != null) {
+					String caids = prop.getProperty("worker.emailexpiration.caidstocheck");
+					String timebeforexpire = prop.getProperty("worker.emailexpiration.timebeforeexpiring");
+					String timeunit = prop.getProperty("worker.emailexpiration.timeunit");
+					String sendtousers = prop.getProperty("worker.emailexpiration.sendtoendusers");
+					String sendtoadmins = prop.getProperty("worker.emailexpiration.sendtoadmins");
+					String usersubject = prop.getProperty("worker.emailexpiration.usersubject");
+					String usermessage = prop.getProperty("worker.emailexpiration.usermessage");
+					String adminsubject = prop.getProperty("worker.emailexpiration.adminsubject");
+					String adminmessage = prop.getProperty("worker.emailexpiration.adminmessage");
+					 
+					if (caids != null) {
+						prop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, caids);
+						prop.remove("worker.emailexpiration.caidstocheck");
+					}
+					if (timebeforexpire != null) {
+						prop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, timebeforexpire);
+						prop.remove("worker.emailexpiration.timebeforeexpiring");
+					}
+					if (timeunit != null) {
+						prop.setProperty(BaseWorker.PROP_TIMEUNIT, timeunit);
+						prop.remove("worker.emailexpiration.timeunit");
+					}
+					if (sendtousers != null) {
+						prop.setProperty(EmailSendingWorker.PROP_SENDTOENDUSERS, sendtousers);
+						prop.remove("worker.emailexpiration.sendtoendusers");
+					}
+					if (sendtoadmins != null) {
+						prop.setProperty(EmailSendingWorker.PROP_SENDTOADMINS, sendtoadmins);
+						prop.remove("worker.emailexpiration.sendtoadmins");
+					}
+					if (usersubject != null) {
+						prop.setProperty(EmailSendingWorker.PROP_USERSUBJECT, usersubject);
+						prop.remove("worker.emailexpiration.usersubject");
+					}
+					if (usermessage != null) {
+						prop.setProperty(EmailSendingWorker.PROP_USERMESSAGE, usermessage);
+						prop.remove("worker.emailexpiration.usermessage");
+					}
+					if (adminsubject != null) {
+						prop.setProperty(EmailSendingWorker.PROP_ADMINSUBJECT, adminsubject);
+						prop.remove("worker.emailexpiration.adminsubject");
+					}
+					if (adminmessage != null) {
+						prop.setProperty(EmailSendingWorker.PROP_ADMINMESSAGE, adminmessage);
+						prop.remove("worker.emailexpiration.adminmessage");
+					}
+					setWorkerProperties(prop);
+				}				
+			}
+			data.put(VERSION, new Float(LATEST_VERSION));
+		}		
 	}
 	
     public Object clone() throws CloneNotSupportedException {

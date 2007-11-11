@@ -17,7 +17,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -26,7 +25,6 @@ import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
 import org.ejbca.util.Base64;
@@ -42,85 +40,14 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.6 2007-07-18 13:58:55 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.7 2007-11-11 07:55:48 anatom Exp $
  */
-public class CertificateExpirationNotifierWorker extends BaseWorker {
+public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
 	private static final Logger log = Logger.getLogger(CertificateExpirationNotifierWorker.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-	/** Should be a ';' separated string of CANames. */
-	public static final String PROP_CAIDSTOCHECK     = "worker.emailexpiration.caidstocheck";
-	
-	/** The time in 'timeunit' remaining of a certificate before sending a notification */
-	public static final String PROP_TIMEBEFOREEXPIRING = "worker.emailexpiration.timebeforeexpiring";
-	
-	/** Unit in days, hours or seconds */
-	public static final String PROP_TIMEUNIT           = "worker.emailexpiration.timeunit";
-	
-	/** Boolean indicating if a notification should be sent to the end user of the certificate */
-	public static final String PROP_SENDTOENDUSERS     = "worker.emailexpiration.sendtoendusers";
-	
-	/** Boolean indicating if a nofification should be sent to the administartors */ 
-	public static final String PROP_SENDTOADMINS       = "worker.emailexpiration.sendtoadmins";
-	
-	/** The subject to use in the end user notification */
-	public static final String PROP_USERSUBJECT        = "worker.emailexpiration.usersubject";
-	
-	/** The message to use in the end user notification. Subsutution varibles are possible in
-	 * the same way as for regular notifications.*/
-	public static final String PROP_USERMESSAGE        = "worker.emailexpiration.usermessage";
-	
-	/** The subject to use in the admin notification */
-	public static final String PROP_ADMINSUBJECT       = "worker.emailexpiration.adminsubject";
-	
-	/** The message to use in the adminr notification. Subsutution varibles are possible in
-	 * the same way as for regular notifications.*/
-	public static final String PROP_ADMINMESSAGE       = "worker.emailexpiration.adminmessage";		
-	
-	
-	public static final String UNIT_SECONDS = "SECONDS";
-	public static final String UNIT_MINUTES = "MINUTES";
-	public static final String UNIT_HOURS = "HOURS";
-	public static final String UNIT_DAYS = "DAYS";
-	
-	public static final int UNITVAL_SECONDS = 1;
-	public static final int UNITVAL_MINUTES = 60;
-	public static final int UNITVAL_HOURS = 3600;
-	public static final int UNITVAL_DAYS = 86400;
-
-	public static final String[] AVAILABLE_UNITS = {UNIT_SECONDS, UNIT_MINUTES, UNIT_HOURS, UNIT_DAYS};
-	public static final int[] AVAILABLE_UNITSVALUES = {UNITVAL_SECONDS, UNITVAL_MINUTES, UNITVAL_HOURS, UNITVAL_DAYS};
-	
-	private transient Collection cAIdsToCheck = null;
-	private transient long timeBeforeExpire = -1;
-	private transient String endUserSubject = null;
-	private transient String adminSubject = null;
-	private transient String endUserMessage = null;
-	private transient String adminMessage = null;
-	
-	private class EmailCertData{
-		
-		private String fingerPrint = null;
-		private MailActionInfo actionInfo = null;
-		
-		public EmailCertData(String fingerPrint, MailActionInfo actionInfo) {
-			super();
-			this.fingerPrint = fingerPrint;
-			this.actionInfo = actionInfo;
-		}
-
-		public String getFingerPrint() {
-			return fingerPrint;
-		}
-
-		public MailActionInfo getActionInfo() {
-			return actionInfo;
-		}
-		
-	}
-	
 	/**
 	 * Worker that makes a query to the Certificate Store about
 	 * expiring certificates.
@@ -180,7 +107,7 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 						if(isSendToEndUsers()){
 							NotificationParamGen paramGen = new NotificationParamGen(userDN,cert);
 							if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
-								String msg = intres.getLocalizedMessage("services.certexpireworker.errornoemail", username);
+								String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
 								log.info(msg);
 							}else{
 								// Populate end user message            	    	        		    
@@ -224,120 +151,25 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 		}
 		log.debug("<CertificateExpirationNotifierWorker.work ended");
 	}
-	
-	private void sendEmails(ArrayList queue) throws ServiceExecutionFailedException{
-		Iterator iter = queue.iterator();
-		while(iter.hasNext()){			
-			Connection con = null;
-			PreparedStatement updateStatus = null;
-			try{
-				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-				EmailCertData next = (EmailCertData) iter.next();								
-				getAction().performAction(next.getActionInfo());
-				updateStatus = con.prepareStatement("UPDATE CertificateData SET status=" + CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION +" WHERE fingerprint='" + next.getFingerPrint() + "'"); 												
-				updateStatus.execute();
-			} catch (Exception fe) {
-				log.error("Error sending emails: ", fe);
-				throw new ServiceExecutionFailedException(fe);
-			} finally {
-				if(updateStatus != null){
-					JDBCUtil.close(updateStatus);
-				}
-				if(con != null){
-				  JDBCUtil.close(con);
-				}
-			}
+	/** Method that must be implemented by all subclasses to EmailSendingWorker, used to update status of 
+	 * a certificate, user, or similar
+	 * @param pk primary key of object to update
+	 * @param status status to update to 
+	 */
+	protected void updateStatus(String pk, int status) {
+		Connection con = null;
+		PreparedStatement updateStatus = null;
+		try{
+			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+			updateStatus = con.prepareStatement("UPDATE CertificateData SET status=? WHERE fingerprint=?");
+			updateStatus.setInt(1, status);
+			updateStatus.setString(2, pk);
+			updateStatus.execute();
+		} catch (Exception e) {
+			log.error("Error updating certificate status: ", e);
+		} finally {
+			JDBCUtil.close(con, updateStatus, null);
 		}
 	}
-	
-	private Collection getCAIdsToCheck(){
-		if(cAIdsToCheck == null){
-			cAIdsToCheck = new ArrayList();
-			String[] canames = properties.getProperty(PROP_CAIDSTOCHECK).split(";");
-			for(int i=0;i<canames.length;i++ ){
-				cAIdsToCheck.add(canames[i]);
-			}
-		}
-		return cAIdsToCheck;
-	}
-	
-	private long getTimeBeforeExpire() throws ServiceExecutionFailedException{
-		if(timeBeforeExpire == -1){
-			String unit = properties.getProperty(PROP_TIMEUNIT);
-			if(unit == null){				
-				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "UNIT");
-				throw new ServiceExecutionFailedException(msg);
-			}
-			int unitval = 0;
-			for(int i=0;i<AVAILABLE_UNITS.length;i++){
-				if(AVAILABLE_UNITS[i].equalsIgnoreCase(unit)){
-					unitval = AVAILABLE_UNITSVALUES[i];
-					break;
-				}
-			}
-			if(unitval == 0){				
-				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "UNIT");
-				throw new ServiceExecutionFailedException(msg);
-			}
-						
-		    String value =  properties.getProperty(PROP_TIMEBEFOREEXPIRING);
-		    int intvalue = 0;
-		    try{
-		      intvalue = Integer.parseInt(value);
-		    }catch(NumberFormatException e){
-				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "VALUE");
-		    	throw new ServiceExecutionFailedException(msg);
-		    }
-			
-			if(intvalue == 0){
-				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "VALUE");
-				throw new ServiceExecutionFailedException(msg);
-			}
-			timeBeforeExpire = intvalue * unitval;			
-		}
-
-		return timeBeforeExpire * 1000;
-	}
-
-	private String getAdminMessage() {
-		if(adminMessage == null){
-			adminMessage =  properties.getProperty(PROP_ADMINMESSAGE,"No Message Configured");
-		}		
-		return adminMessage;
-	}
-
-	private String getAdminSubject() {
-		if(adminSubject == null){
-			adminSubject =  properties.getProperty(PROP_ADMINSUBJECT,"No Subject Configured");
-		}
-		
-		return adminSubject;
-	}
-
-	private String getEndUserMessage() {
-		if(endUserMessage == null){
-			endUserMessage =  properties.getProperty(PROP_USERMESSAGE,"No Message Configured");
-		}
-		
-		return endUserMessage;
-	}
-
-	private String getEndUserSubject() {
-		if(endUserSubject == null){
-			endUserSubject =  properties.getProperty(PROP_USERSUBJECT,"No Subject Configured");
-		}
-		
-		return endUserSubject;
-	}
-
-	private boolean isSendToAdmins() {
-		return properties.getProperty(PROP_SENDTOADMINS,"FALSE").equalsIgnoreCase("TRUE");
-	}
-
-	private boolean isSendToEndUsers() {
-		return properties.getProperty(PROP_SENDTOENDUSERS,"FALSE").equalsIgnoreCase("TRUE");
-	}
-	
-
 
 }

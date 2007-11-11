@@ -16,17 +16,15 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 /**
  * Class managing the view of the Certificate Exiration Notifier Worker
  * 
- * @author Philip Vendil
+ * @author Philip Vendil, Tomas Gustavsson
  *
- * @version $Id: CertificateExpirationNotifierWorkerType.java,v 1.3 2007-11-11 07:57:42 anatom Exp $
+ * @version $Id: UserPasswordExpireWorkerType.java,v 1.1 2007-11-11 07:58:53 anatom Exp $
  */
-public class CertificateExpirationNotifierWorkerType extends BaseNotifyingWorkerType {
+public class UserPasswordExpireWorkerType extends BaseNotifyingWorkerType {
 
-	public static final String NAME = "CERTNOTIFICATIONWORKER";
+	public static final String NAME = "USERPASSWORDEXPIREWORKER";
 	
-	
-	public CertificateExpirationNotifierWorkerType(){
-		super(NAME, "certnotificationworker.jsp", org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker.class.getName());
-		
+	public UserPasswordExpireWorkerType(){
+		super(NAME, "userpasswordexpireworker.jsp", org.ejbca.core.model.services.workers.UserPasswordExpireWorker.class.getName());
 	}
 }
