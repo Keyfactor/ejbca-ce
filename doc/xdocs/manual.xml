@@ -1944,14 +1944,16 @@ To create a new report:
 <section name="Monitoring Services Framework">
 <p>
 New to EJBCA 3.4 is a framework for monitoring services, i.e. procedures 
-that should be run on a timely basis. Currently there exists two types of 
+that should be run on a timely basis. Currently there exists three types of 
 services:
 <ul>
-<li>a CRL updater that automatically updates the CRL.</li>
-<li>a Certificate Expiration Checker that checks if a CA have certificates about to expire and 
+<li>a 'CRL Updater' that automatically updates the CRL.</li>
+<li>a 'Certificate Expiration Checker' that checks if a CA have certificates about to expire and 
 sends an email notification to the end user and/or the administrator.</li>
+<li>a 'User Password Expire Service' that checks if a user have not enrolled for a new certificate within a 
+certain amount of time after been registered, and expires the users possibility to enroll.</li>
 </ul>
-It is also possible to write plug-ins for customized services.
+It is also possible to easily write plug-ins for customized services.
 </p><p>
 A service consists of the components, a worker doing the actual work, an interval 
 determining the time to the next time the service should run and an action (optional) 
@@ -2006,6 +2008,21 @@ substitution variables be used defined in the 'Email Notifications' section.
 </li>
 </ul>
 </p>
+<p><i>User Password Expire Service</i></p>
+<p>
+A worker that checks if a user has not enrolled for a new certificate within a specified amount of time
+after the user was last edited. If the user has not enrolled within this time, the user's status is set to 
+Generated and the user will not be able to enroll. 
+The worker have the same basic setting as the 'Certificate Expiration Check Worker', except for 
+'Time before notification is sent' which is replaced by:
+<ul>
+<li>
+<i>Time until user password expire</i> - The number of Days/Hours/Minutes/Seconds that a user should be able to 
+enroll for a certificate, i.e. the time before the user's password expire.
+</li>
+</ul>
+</p>
+
 </subsubsection>
 <subsubsection name="Intervals">
 <p><i>Periodical Interval</i></p>
