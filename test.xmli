@@ -58,6 +58,7 @@
                     <exclude name="**/TestRunner*" />
                     <include name="org/ejbca/core/ejb/ca/caadmin/Test*" />
                     <include name="**/authorization/TestAuthorization*" />
+                    <include name="**/services/Test*" />
                 </fileset>
             </batchtest>
             <batchtest fork="yes" todir="${test.dir}/reports">
