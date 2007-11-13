@@ -148,7 +148,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.75 2007-11-09 11:41:34 anatom Exp $
+ * @version $Id: X509CA.java,v 1.76 2007-11-13 14:00:03 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -591,8 +591,10 @@ public class X509CA extends CA implements Serializable {
         int newKeyUsage = -1;
         if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
             newKeyUsage = keyusage;
+        	log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: "+newKeyUsage);
         } else {
             newKeyUsage = CertTools.sunKeyUsageToBC(certProfile.getKeyUsage());
+        	log.debug("Using KeyUsage from profile: "+newKeyUsage);
         }
         if ( (certProfile.getUseKeyUsage() == true) && (newKeyUsage >=0) ){
             X509KeyUsage ku = new X509KeyUsage(newKeyUsage);
