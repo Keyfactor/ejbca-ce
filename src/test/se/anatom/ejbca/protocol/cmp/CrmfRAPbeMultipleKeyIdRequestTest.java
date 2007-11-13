@@ -49,12 +49,12 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * This test requires:
- * mode=ra, responseProtection=pbe, authenticationsecret=password, allowraverifypopo=true,namegenerationscheme=DN
+ * mode=ra, allowraverifypopo=true, responseProtection=pbe, authenticationsecret=password,namegenerationscheme=DN
  * Allow CN, O, C in DN and rfc822Name, UPN in altNames in the end entity profile configured in cmp.properties
  * 
  * You need a CMP tcp listener configured on port 5547.
  *
- * endentityprofile=KeyId, certificateprofile=KeyId, caname=ProfileDefault
+ * cmp.ra.endentityprofile=KeyId, cmp.ra.certificateprofile=KeyId, cmp.ra.caname=ProfileDefault
  * 
  * Two CAs: AdminCA1 with DN "CN=AdminCA1,O=EJBCA Sample,C=SE"
  *          AdminCA2 with DN "CN=AdminCA1,O=EJBCA Sample2,C=SE"
@@ -69,7 +69,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * EE Profile with name KeyId2 must have default CA with name AdminCA2 
  * 
  * @author tomas
- * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.2 2007-07-26 09:54:19 anatom Exp $
+ * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.3 2007-11-13 14:00:23 anatom Exp $
  */
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
