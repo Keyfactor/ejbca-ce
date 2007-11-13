@@ -65,6 +65,7 @@ import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
@@ -99,7 +100,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Helper class for CMP Junit tests
  * @author tomas
- * @version $Id: CmpTestCase.java,v 1.4 2007-07-31 13:31:37 jeklund Exp $
+ * @version $Id: CmpTestCase.java,v 1.5 2007-11-13 14:00:45 anatom Exp $
  *
  */
 public class CmpTestCase extends TestCase {
@@ -134,16 +135,28 @@ public class CmpTestCase extends TestCase {
         GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com");
         X509Extensions exts = null;
         if (san != null) {
+        	// SubjectAltName
             ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
             DEROutputStream         dOut = new DEROutputStream(bOut);
             dOut.writeObject(san);
             byte[] value = bOut.toByteArray();
-        	X509Extension ext = new X509Extension(false, new DEROctetString(value));
+        	X509Extension sanext = new X509Extension(false, new DEROctetString(value));
             Vector values = new Vector();
             Vector oids = new Vector();
-            values.add(ext);
+            values.add(sanext);
             oids.add(X509Extensions.SubjectAlternativeName);
-            exts = new X509Extensions(oids, values);
+            // KeyUsage
+            int bcku = 0;
+            bcku = bcku | X509KeyUsage.digitalSignature;
+            X509KeyUsage ku = new X509KeyUsage(bcku);
+            bOut = new ByteArrayOutputStream();
+            dOut = new DEROutputStream(bOut);
+            dOut.writeObject(ku);
+            value = bOut.toByteArray();
+        	X509Extension kuext = new X509Extension(false, new DEROctetString(value));
+            values.add(kuext);
+            oids.add(X509Extensions.KeyUsage);            
+            exts = new X509Extensions(oids, values);            
         }
 		myCertTemplate.setExtensions(exts);
 		
