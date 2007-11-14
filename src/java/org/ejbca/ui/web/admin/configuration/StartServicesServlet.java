@@ -41,7 +41,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.13 2007-03-09 18:00:58 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.14 2007-11-14 15:33:12 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -55,7 +55,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.13 2007-03-09 18:00:58 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.14 2007-11-14 15:33:12 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -116,11 +116,11 @@ public class StartServicesServlet extends HttpServlet {
                 // Set up a simple configuration that logs on the console.
                 BasicConfigurator.configure();            	
             } else {
-            	// TODO: log4j.xml configuration
+            	System.setProperty("log4j.configuration", "file://"+configfile);
             }
         }
 
-        // Reinstall BC-brovider to help re-deploys to work
+        // Reinstall BC-provider to help re-deploys to work
         log.debug("Re-installing BC-provider");
         CertTools.removeBCProvider();
         CertTools.installBCProvider();
