@@ -2038,7 +2038,7 @@
       </opm:class-mapping-descriptor>
    </opm:class-mapping-descriptors>
    <toplink:login xsi:type="toplink:database-login">
-      <toplink:platform-class>oracle.toplink.oraclespecific.Oracle10Platform</toplink:platform-class>
+      <toplink:platform-class>oracle.toplink.oraclespecific.Oracle9Platform</toplink:platform-class>
       <toplink:user-name>@database.username@</toplink:user-name>
       <toplink:password>@database.password@</toplink:password>
       <toplink:driver-class>@database.driver@</toplink:driver-class>
