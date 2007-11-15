@@ -274,6 +274,8 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 - opmnctl shutdown; opmnctl startall
 -----
 
+- Install 'Unlimited Strength Jurisdiction Policy Files' for Java.
+
 
 DEVELOPMENT
 ===========
