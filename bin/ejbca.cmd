@@ -42,6 +42,10 @@ if not "%APPSRV_HOME%" == ""  (
         echo Using Weblogic JNDI provider...
         set J2EE_DIR=%APPSRV_HOME%\server\lib
         set J2EE_CP=%APPSRV_HOME%\server\lib\weblogic.jar
+    ) else if exist %APPSRV_HOME%\j2ee\home\oc4jclient.jar (
+        echo Using Oracle JNDI provider...
+        set J2EE_DIR=%APPSRV_HOME%\j2ee\home
+        set J2EE_CP=%APPSRV_HOME%\j2ee\home\oc4jclient.jar
     ) else (
         echo Using JBoss JNDI provider...
         set J2EE_CP=%APPSRV_HOME%\client\jnp-client.jar;%APPSRV_HOME%\client\jboss-j2ee.jar;%APPSRV_HOME%\client\jbossall-client.jar;%APPSRV_HOME%\client\jboss-client.jar;%APPSRV_HOME%\client\jbosssx-client.jar;%APPSRV_HOME%\client\jboss-common-client.jar

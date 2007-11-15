@@ -209,11 +209,92 @@ Derby:
       https://127.0.0.1:8181/ejbca/
     You can now click "Administration" to get to the admin-GUI.
     
- 
-    
-    
+        
 
-Creating deployment descriptors for Glassfish:
+JBOSS
+=====
+
+JBoss commonly have problems with class loading if several applications are run in one instance of JBoss.
+This will typically manifest itself as ClassCast-, IllegalAccess- or VerifyError Exceptions. 
+The reason is usually that mora than one application is using an external jar file, for example commons-fileupload.jar
+or ldap.jar, possibly using different versions as well.
+
+These links describe how to configure jboss-app.xml, etc and also describe how
+JBoss classloading works.
+
+http://wiki.jboss.org/wiki/Wiki.jsp?page=ClassLoadingConfiguration
+http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
+
+
+ORACLE OC4J
+===========
+
+EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
+
+- Create tables in your Oracle database using the script supplied in doc/howto/create-tables-ejbca3-oracle.sql.
+
+- Configure $OC4J_HOME/j2ee/home/config/application.xml to not create tables: autocreate-tables=”false”
+
+- Configure a connection pool and a datasource in Oracle AS.
+
+- Configure a mail session in $OC4J_HOME/j2ee/home/config/application.xml.
+ <mail-session location="mail/DefaultMail" smtp-host="localhost">
+  <property name="mail.transport.protocol" value="smtp"/>
+  <property name="mail.smtp.from" value="localhost"/>
+</mail-session>
+
+- Configure ejbca: 
+    in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config.
+    in conf/database.properties you must configure the database settings for your chosen database, including username and password.
+    in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
+    in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
+
+- Edit bin/jndi.properties.oracle in EJBCA
+
+- You may have to remove line 186 in build.xml to make everything compile:
+  <jsp-compile uriroot="${adminweb.build}" />
+  
+- Build EJBCA with 'ant'. 
+  (toplink-ejbca-jar.xml will be populated with your configured database settings)
+
+- Log into the admin console of Oracle AS and deploy EJBCA.
+
+
+DEVELOPMENT
+===========
+
+Here are instructions for developers who need to update EJBCA for various application servers.
+
+Developer: Creating deployment descriptors for Weblogic 9:
+----------------------------------------------
+
+XDoclet can only make descriptors for Weblogic 8.x, not 9.x.
+In the generated tmp/bin/dd/META-INF/weblogic-cmp-rdbms-jar.xml, remove the DTD line and replace:
+  <weblogic-rdbms-jar>
+with:
+  <weblogic-rdbms-jar xmlns="http://www.bea.com/ns/weblogic/90"
+                    xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.bea.com/ns/weblogic/90
+                                        http://www.bea.com/ns/weblogic/90/weblogic-rdbms20-persistence.xsd">
+
+After this you remove all sections:
+  <weblogic-query>
+  ...
+  </weblogic-query>
+
+Last you remove the options in the end:
+   <order-database-operations>True</order-database-operations>
+   <enable-batch-operations>True</enable-batch-operations>
+   <create-default-dbms-tables>Disabled</create-default-dbms-tables>
+
+And put in the end instead:
+   <database-type>Oracle</database-type>
+
+Voila. Now you have a new file you can put in src/deploy/weblogic.
+
+
+Developer: Creating deployment descriptors for Glassfish:
 ----------------------------------------------
 Whan a new release of EJBCA should be running on glassfish, the deployment descriptors may have to be updated.
 Uncomment the section in compile.xmli to generate sun ejb deployment descriptors. 
@@ -251,45 +332,21 @@ CLASSPATH=../lib/derbyclient.jar:$CLASSPATH
 
 Copy the generated ejbca-ejb.dbcschema file to src/deploy/sun/schema/<database>
 
-Creating deployment descriptors for Weblogic 9:
-----------------------------------------------
 
-XDoclet can only make descriptors for Weblogic 8.x, not 9.x.
-In the generated tmp/bin/dd/META-INF/weblogic-cmp-rdbms-jar.xml, remove the DTD line and replace:
-  <weblogic-rdbms-jar>
-with:
-  <weblogic-rdbms-jar xmlns="http://www.bea.com/ns/weblogic/90"
-                    xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://www.bea.com/ns/weblogic/90
-                                        http://www.bea.com/ns/weblogic/90/weblogic-rdbms20-persistence.xsd">
+Developer: Creating deployment descriptors for Oracle oc4j 10:
+--------------------------------------------------------------
 
-After this you remove all sections:
-  <weblogic-query>
-  ...
-  </weblogic-query>
-
-Last you remove the options in the end:
-   <order-database-operations>True</order-database-operations>
-   <enable-batch-operations>True</enable-batch-operations>
-   <create-default-dbms-tables>Disabled</create-default-dbms-tables>
-
-And put in the end instead:
-   <database-type>Oracle</database-type>
-
-Voila. Now you have a new file you can put in src/deploy/weblogic.
-
-JBOSS
-=====
-
-JBoss commonly have problems with class loading if several applications are run in one instance of JBoss.
-This will typically manifest itself as ClassCast-, IllegalAccess- or VerifyError Exceptions. 
-The reason is usually that mora than one application is using an external jar file, for example commons-fileupload.jar
-or ldap.jar, possibly using different versions as well.
-
-These links describe how to configure jboss-app.xml, etc and also describe how
-JBoss classloading works.
-
-http://wiki.jboss.org/wiki/Wiki.jsp?page=ClassLoadingConfiguration
-http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
-
+1. Rename the directory src/deploy/oracle so that EJBCA will not build with the provided oc4j deployment descriptors.
+2. Deploy EJBCA without the orion-ejb-jar.xml and toplink-ejb-jar.xml deployment descriptor. Note: Make sure you disable the automatic table generation feature by setting the 
+   autocreate-tables=”false” parameter in the <orion-application> tag in $OC4J_HOME/j2ee/home/config/application.xml.
+3. Copy the auto-generated orion-ejb-jar.xml file located in $OC4J_HOME/j2ee/home/application-deployments/<application>/<ejb-module> to your 
+   development environment.
+4. Modify the orion-ejb-jar.xml file based on your database schema, use the old one (tnhe one you renamed) as template.
+5. Copy the auto-generated toplink-ejb-jar.xml file located in $OC4J_HOME/j2ee/home/application-deployments/<application>/<ejb-module> to your development environment.
+6. Modify the toplink-ejb-jar.xml file based on your database schema, use the old one (the one you renamed) as template.
+   Normal changes: PRIMKEY -> PK
+                   ADMINGROUPDATA_ACCESSRULES_FK -> ADMINGROUPDATA_ACCESSRULES
+                   ADMINGROUPDATA_ADMINENTITIS_FK -> ADMINGROUPDATA_ADMINENTITIS
+                   toplink:version-locking-policy -> remove all these items completely
+                   TL_<tablename> -> <tablename>
+                   the whole <toplink:login> section

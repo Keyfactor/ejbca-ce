@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<orion-ejb-jar xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://xmlns.oracle.com/oracleas/schema/orion-ejb-jar-10_0.xsd" deployment-version="10.1.3.3.0" deployment-time="1163d436512" schema-major-version="10" schema-minor-version="0" >
+	<enterprise-beans>
+		<session-deployment name="CAAdminSession" location="CAAdminSession" local-location="ejbca-ejb_CAAdminSessionLocal" persistence-filename="CAAdminSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/CADataLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
+			<ejb-ref-mapping name="ejb/CreateCRLSessionLocal" />
+		</session-deployment>
+		<session-deployment name="HardTokenSession" location="HardTokenSession" local-location="ejbca-ejb_HardTokenSessionLocal" persistence-filename="HardTokenSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/HardTokenProfileDataLocal" />
+			<ejb-ref-mapping name="ejb/HardTokenIssuerDataLocal" />
+			<ejb-ref-mapping name="ejb/HardTokenDataLocal" />
+			<ejb-ref-mapping name="ejb/HardTokenPropertyDataLocal" />
+			<ejb-ref-mapping name="ejb/HardTokenCertificateMapLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
+			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+		</session-deployment>
+		<session-deployment name="ServiceSession" location="ServiceSession" local-location="ejbca-ejb_ServiceSessionLocal" persistence-filename="ServiceSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/ServiceDataLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/ServiceTimerSessionLocal" />
+		</session-deployment>
+		<session-deployment name="RaAdminSession" location="RaAdminSession" local-location="ejbca-ejb_RaAdminSessionLocal" persistence-filename="RaAdminSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/AdminPreferencesDataLocal" />
+			<ejb-ref-mapping name="ejb/EndEntityProfileDataLocal" />
+			<ejb-ref-mapping name="ejb/GlobalConfigurationDataLocal" />
+		</session-deployment>
+		<session-deployment name="AuthenticationSession" location="AuthenticationSession" local-location="ejbca-ejb_AuthenticationSessionLocal" persistence-filename="AuthenticationSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/UserDataLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/KeyRecoverySessionLocal" />
+		</session-deployment>
+		<session-deployment name="CreateCRLSession" location="CreateCRLSession" local-location="ejbca-ejb_CreateCRLSessionLocal" persistence-filename="CreateCRLSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
+		</session-deployment>
+		<session-deployment name="UserAdminSession" location="UserAdminSession" local-location="ejbca-ejb_UserAdminSessionLocal" persistence-filename="UserAdminSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/KeyRecoverySessionLocal" />
+			<ejb-ref-mapping name="ejb/ApprovalSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/UserDataLocal" />
+			<resource-ref-mapping name="mail/DefaultMail" />
+		</session-deployment>
+		<session-deployment name="HardTokenBatchJobSession" location="HardTokenBatchJobSession" local-location="ejbca-ejb_HardTokenBatchJobSessionLocal" persistence-filename="HardTokenBatchJobSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/UserDataLocal" />
+			<ejb-ref-mapping name="ejb/HardTokenSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+		</session-deployment>
+		<session-deployment name="CertificateStoreSession" location="CertificateStoreSession" local-location="ejbca-ejb_CertificateStoreSessionLocal" persistence-filename="CertificateStoreSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
+			<ejb-ref-mapping name="ejb/CRLDataLocal" />
+			<ejb-ref-mapping name="ejb/CertReqHistoryDataLocal" />
+			<ejb-ref-mapping name="ejb/CertificateProfileDataLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/PublisherSessionLocal" />
+			<ejb-ref-mapping name="ejb/TableProtectSessionLocal" />
+		</session-deployment>
+		<session-deployment name="UserDataSourceSession" location="UserDataSourceSession" local-location="ejbca-ejb_UserDataSourceSessionLocal" persistence-filename="UserDataSourceSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/UserDataSourceDataLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+		</session-deployment>
+		<session-deployment name="CertificateStoreOnlyDataSession" location="CertificateStoreOnlyDataSession" local-location="ejbca-ejb_CertificateStoreOnlyDataSessionLocal" persistence-filename="CertificateStoreOnlyDataSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
+			<ejb-ref-mapping name="ejb/TableProtectSessionLocal" />
+		</session-deployment>
+		<session-deployment name="UpgradeSession" location="UpgradeSession" local-location="ejbca-ejb_UpgradeSessionLocal" persistence-filename="UpgradeSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/LogConfigurationDataLocal" />
+			<ejb-ref-mapping name="ejb/OldLogConfigurationDataLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+		</session-deployment>
+		<session-deployment name="RSASignSession" location="RSASignSession" local-location="ejbca-ejb_RSASignSessionLocal" persistence-filename="RSASignSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/CADataLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthenticationSessionLocal" />
+			<ejb-ref-mapping name="ejb/PublisherSessionLocal" />
+		</session-deployment>
+		<session-deployment name="TableProtectSession" location="TableProtectSession" local-location="ejbca-ejb_TableProtectSessionLocal" persistence-filename="TableProtectSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/TableProtectDataLocal" />
+		</session-deployment>
+		<session-deployment name="KeyRecoverySession" location="KeyRecoverySession" local-location="ejbca-ejb_KeyRecoverySessionLocal" persistence-filename="KeyRecoverySession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/KeyRecoveryDataLocal" />
+			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/ApprovalSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+		</session-deployment>
+		<session-deployment name="PublisherSession" location="PublisherSession" local-location="ejbca-ejb_PublisherSessionLocal" persistence-filename="PublisherSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/PublisherDataLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+		</session-deployment>
+		<session-deployment name="ApprovalSession" location="ApprovalSession" local-location="ejbca-ejb_ApprovalSessionLocal" persistence-filename="ApprovalSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/ApprovalDataLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/HardTokenSessionLocal" />
+			<ejb-ref-mapping name="ejb/KeyRecoverySessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+		</session-deployment>
+		<session-deployment name="LogSession" location="LogSession" local-location="ejbca-ejb_LogSessionLocal" persistence-filename="LogSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/LogEntryDataLocal" />
+			<ejb-ref-mapping name="ejb/LogConfigurationDataLocal" />
+			<ejb-ref-mapping name="ejb/TableProtectSessionLocal" />
+			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+		</session-deployment>
+		<session-deployment name="ServiceTimerSession" location="ServiceTimerSession" local-location="ejbca-ejb_ServiceTimerSessionLocal" persistence-filename="ServiceTimerSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/ServiceSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/CreateCRLSessionLocal" />
+		</session-deployment>
+		<session-deployment name="AuthorizationSession" location="AuthorizationSession" local-location="ejbca-ejb_AuthorizationSessionLocal" persistence-filename="AuthorizationSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
+			<ejb-ref-mapping name="ejb/UserDataSourceSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationTreeUpdateDataLocal" />
+			<ejb-ref-mapping name="ejb/AdminGroupDataLocal" />
+		</session-deployment>
+		<entity-deployment name="PublisherData" location="PublisherData" local-location="ejbca-ejb_PublisherDataLocal" concrete-bean-class="PublisherData_ConcreteSubClass0" data-source="jdbc/OracleDS" local-wrapper="PublisherData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="CertReqHistoryData" location="CertReqHistoryData" local-location="ejbca-ejb_CertReqHistoryDataLocal" concrete-bean-class="CertReqHistoryData_ConcreteSubClass1" data-source="jdbc/OracleDS" local-wrapper="CertReqHistoryData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="OldLogConfigurationData" location="OldLogConfigurationData" local-location="ejbca-ejb_OldLogConfigurationDataLocal" concrete-bean-class="OldLogConfigurationData_ConcreteSubClass2" data-source="jdbc/OracleDS" local-wrapper="OldLogConfigurationData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="TableProtectData" location="TableProtectData" local-location="ejbca-ejb_TableProtectDataLocal" concrete-bean-class="TableProtectData_ConcreteSubClass3" data-source="jdbc/OracleDS" local-wrapper="TableProtectData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="LogEntryData" location="LogEntryData" local-location="ejbca-ejb_LogEntryDataLocal" concrete-bean-class="LogEntryData_ConcreteSubClass4" data-source="jdbc/OracleDS" local-wrapper="LogEntryData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="EndEntityProfileData" location="EndEntityProfileData" local-location="ejbca-ejb_EndEntityProfileDataLocal" concrete-bean-class="EndEntityProfileData_ConcreteSubClass5" data-source="jdbc/OracleDS" local-wrapper="EndEntityProfileData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="HardTokenIssuerData" location="HardTokenIssuerData" local-location="ejbca-ejb_HardTokenIssuerDataLocal" concrete-bean-class="HardTokenIssuerData_ConcreteSubClass6" data-source="jdbc/OracleDS" local-wrapper="HardTokenIssuerData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="LogConfigurationData" location="LogConfigurationData" local-location="ejbca-ejb_LogConfigurationDataLocal" concrete-bean-class="LogConfigurationData_ConcreteSubClass7" data-source="jdbc/OracleDS" local-wrapper="LogConfigurationData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="HardTokenCertificateMap" location="HardTokenCertificateMap" local-location="ejbca-ejb_HardTokenCertificateMapLocal" concrete-bean-class="HardTokenCertificateMap_ConcreteSubClass8" data-source="jdbc/OracleDS" local-wrapper="HardTokenCertificateMap_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="CAData" location="CAData" local-location="ejbca-ejb_CADataLocal" concrete-bean-class="CAData_ConcreteSubClass9" data-source="jdbc/OracleDS" local-wrapper="CAData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="UserDataSourceData" location="UserDataSourceData" local-location="ejbca-ejb_UserDataSourceDataLocal" concrete-bean-class="UserDataSourceData_ConcreteSubClass10" data-source="jdbc/OracleDS" local-wrapper="UserDataSourceData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="HardTokenPropertyData" location="HardTokenPropertyData" local-location="ejbca-ejb_HardTokenPropertyDataLocal" concrete-bean-class="HardTokenPropertyData_ConcreteSubClass11" data-source="jdbc/OracleDS" local-wrapper="HardTokenPropertyData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="AdminGroupData" location="AdminGroupData" local-location="ejbca-ejb_AdminGroupDataLocal" concrete-bean-class="AdminGroupData_ConcreteSubClass12" data-source="jdbc/OracleDS" local-wrapper="AdminGroupData_LocalHomeProxy_634lm59">
+			<ejb-ref-mapping name="ejb/AdminEntityDataLocal" />
+			<ejb-ref-mapping name="ejb/AccessRulesDataLocal" />
+		</entity-deployment>
+		<entity-deployment name="ServiceData" location="ServiceData" local-location="ejbca-ejb_ServiceDataLocal" concrete-bean-class="ServiceData_ConcreteSubClass13" data-source="jdbc/OracleDS" local-wrapper="ServiceData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="CRLData" location="CRLData" local-location="ejbca-ejb_CRLDataLocal" concrete-bean-class="CRLData_ConcreteSubClass14" data-source="jdbc/OracleDS" local-wrapper="CRLData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="KeyRecoveryData" location="KeyRecoveryData" local-location="ejbca-ejb_KeyRecoveryDataLocal" concrete-bean-class="KeyRecoveryData_ConcreteSubClass15" data-source="jdbc/OracleDS" local-wrapper="KeyRecoveryData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="AdminPreferencesData" location="AdminPreferencesData" local-location="ejbca-ejb_AdminPreferencesDataLocal" concrete-bean-class="AdminPreferencesData_ConcreteSubClass16" data-source="jdbc/OracleDS" local-wrapper="AdminPreferencesData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="AdminEntityData" location="AdminEntityData" local-location="ejbca-ejb_AdminEntityDataLocal" concrete-bean-class="AdminEntityData_ConcreteSubClass17" data-source="jdbc/OracleDS" local-wrapper="AdminEntityData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="AccessRulesData" location="AccessRulesData" local-location="ejbca-ejb_AccessRulesDataLocal" concrete-bean-class="AccessRulesData_ConcreteSubClass18" data-source="jdbc/OracleDS" local-wrapper="AccessRulesData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="HardTokenData" location="HardTokenData" local-location="ejbca-ejb_HardTokenDataLocal" concrete-bean-class="HardTokenData_ConcreteSubClass19" data-source="jdbc/OracleDS" local-wrapper="HardTokenData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="UserData" location="UserData" local-location="ejbca-ejb_UserDataLocal" concrete-bean-class="UserData_ConcreteSubClass20" data-source="jdbc/OracleDS" local-wrapper="UserData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="CertificateProfileData" location="CertificateProfileData" local-location="ejbca-ejb_CertificateProfileDataLocal" concrete-bean-class="CertificateProfileData_ConcreteSubClass21" data-source="jdbc/OracleDS" local-wrapper="CertificateProfileData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="GlobalConfigurationData" location="GlobalConfigurationData" local-location="ejbca-ejb_GlobalConfigurationDataLocal" concrete-bean-class="GlobalConfigurationData_ConcreteSubClass22" data-source="jdbc/OracleDS" local-wrapper="GlobalConfigurationData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="ApprovalData" location="ApprovalData" local-location="ejbca-ejb_ApprovalDataLocal" concrete-bean-class="ApprovalData_ConcreteSubClass23" data-source="jdbc/OracleDS" local-wrapper="ApprovalData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="AuthorizationTreeUpdateData" location="AuthorizationTreeUpdateData" local-location="ejbca-ejb_AuthorizationTreeUpdateDataLocal" concrete-bean-class="AuthorizationTreeUpdateData_ConcreteSubClass24" data-source="jdbc/OracleDS" local-wrapper="AuthorizationTreeUpdateData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="CertificateData" location="CertificateData" local-location="ejbca-ejb_CertificateDataLocal" concrete-bean-class="CertificateData_ConcreteSubClass25" data-source="jdbc/OracleDS" local-wrapper="CertificateData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="HardTokenProfileData" location="HardTokenProfileData" local-location="ejbca-ejb_HardTokenProfileDataLocal" concrete-bean-class="HardTokenProfileData_ConcreteSubClass26" data-source="jdbc/OracleDS" local-wrapper="HardTokenProfileData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+	</enterprise-beans>
+	<assembly-descriptor>
+		<default-method-access>
+			<security-role-mapping name="&lt;default-ejb-caller-role&gt;" impliesAll="true" />
+		</default-method-access>
+	</assembly-descriptor>
+</orion-ejb-jar>

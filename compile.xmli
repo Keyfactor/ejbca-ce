@@ -163,6 +163,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <delete dir="${ocsp-client.build}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
+        <delete dir="${mainbin}/META-INF/" />
         <delete file="${mainbin}/jndi.properties" />
         <delete file="${mainsrc}/java/jndi.properties" />
     </target>
@@ -254,6 +255,13 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
                 datasource="${datasource.jndi-name}" 
                 persistence="weblogic"
                 createTables="Disabled" />
+ <!--
+            <oc4j version="9.0.4.0.0" 
+                xmlencoding="UTF-8" 
+                validatexml="false" 
+                mergeDir="${ejbdd.src}/merge"
+                destdir="${src.dd}/META-INF" />
+ -->
  <!--
             <sunone version="7.0" 
                 cmpSchema="ejbca.dbschema"
@@ -407,6 +415,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
               <exclude name="**/*.properties"/>
             </fileset>	      
 	    </copy>
+	    
+	    <!-- 
+	      Copy java files and insert some variables in them 
+	    -->
         <copy todir="${preprocessed}">
             <fileset dir="src">
                 <include name="**/*.java"/>
@@ -439,6 +451,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			</filterchain>
 	    </copy>
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing</echo>
+		
+		<!-- 
+		  Copy application server specific deployment descriptors and insert database settings etc in them 
+		-->
 		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
 		    <fileset dir="${deploy.src}/sun/">
 		        <include name="sun-ejb*.xml"/>
@@ -462,7 +478,23 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			</tokenfilter>
 			</filterchain>
         </copy>
+		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
+		    <fileset dir="${deploy.src}/oracle/">
+		        <include name="*.xml"/>
+		    </fileset> 
+			<filterchain>
+			<tokenfilter>			    
+				<replacestring from="@database.driver@" to="${database.driver}"/>
+				<replacestring from="@database.url@" to="${database.url}"/>
+				<replacestring from="@database.username@" to="${database.username}"/>
+				<replacestring from="@database.password@" to="${database.password}"/>
+			</tokenfilter>
+			</filterchain>
+		</copy>
         
+        <!-- 
+	      Replace more values in java and xml files 
+	    -->
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>				
@@ -499,11 +531,20 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 	    <replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.krss.allowrevokation@" value="${xkms.krss.allowrevokation}"/>
 	    <replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.krss.allowautomaticreissue@" value="${xkms.krss.allowautomaticreissue}"/>
 
-		<!-- Copy the correct jndi settings for the selected application server -->
-		<copy file="${mainbin}/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="false" failonerror="false"/>
-		<copy file="${mainsrc}/java/jndi.properties.${appserver.type}" tofile="${mainsrc}/java/jndi.properties" overwrite="false" failonerror="false"/>
+		<!-- 
+		  Copy the correct jndi settings for the selected application server 
+		-->
+		<copy file="conf/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="false" failonerror="false"/>
+		<copy file="conf/jndi.properties.${appserver.type}" tofile="${mainsrc}/java/jndi.properties" overwrite="false" failonerror="false"/>
+		<copy todir="bin/META-INF" overwrite="true" failonerror="false" flatten="true">
+		    <fileset dir="${deploy.src}/${appserver.type}/client/bin/META-INF">
+		        <include name="*.xml"/>
+		    </fileset> 
+		</copy>
 
-        <!-- Fix encoding of files for internal (log) internationalization) --> 		
+        <!-- 
+          Fix encoding of files for internal (log) internationalization) 
+        --> 		
 		<delete file="${src}/intresources/intresources.fr.properties"/>
     	<native2ascii  encoding="ISO8859-1" 
     		src="${mainsrc}/intresources" 
@@ -526,9 +567,11 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <sequential>
             <!-- Remove old possible files -->
         	<delete dir="${ejbdd.src}/merge/se"/>
+        	<delete dir="${ejbdd.src}/merge/org"/>
             <!-- jboss configuration -->
             <copy todir="${ejbdd.src}/merge" overwrite="@{overwrite}" failonerror="false">
                 <fileset dir="${ejbdd.src}/merge/${database.name}" includes="**/*.xml" />
+                <fileset dir="${ejbdd.src}/merge/appsrv/" includes="**/*.xml" />
             </copy>
         </sequential>
     </macrodef>

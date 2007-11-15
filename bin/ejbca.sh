@@ -61,6 +61,9 @@ if [ -n "$APPSRV_HOME" ]; then
     elif [ -r "$APPSRV_HOME"/lib/appserv-rt.jar ]; then
         echo Using Glassfish JNDI provider...
         J2EE_DIR="${APPSRV_HOME}"/lib
+    elif [ -r "$APPSRV_HOME"/j2ee/home/oc4jclient.jar ]; then
+        echo Using Oracle JNDI provider...
+        J2EE_DIR="${APPSRV_HOME}"/j2ee/home
     else 
         echo "Using JBoss JNDI provider..."
     fi

@@ -175,8 +175,10 @@
         	<!-- glassfish -->
             <include name="lib/javaee.jar"/>
             <include name="lib/appserv-rt.jar"/>
-        	<!-- welogic -->
+        	<!-- weblogic -->
             <include name="server/lib/weblogic.jar"/>
+        	<!-- oracle -->
+            <include name="j2ee/home/oc4jclient.jar"/>
         </fileset>
     </path>
 

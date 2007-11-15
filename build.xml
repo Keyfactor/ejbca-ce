@@ -647,9 +647,11 @@
 		    	<exclude name="tmp/**" />
 		    	<exclude name="dist/**" />
 		    	<exclude name="ocsp-dist/**" />
+		    	<exclude name="bin/META_INF/**" />
 		    	<exclude name="out/**" />
-		    	<exclude name="p12/**" />
+		    	<exclude name="p12*/**" />
 		    	<exclude name="hwtoken/**" />
+		        <exclude name="ocspHardTokenClasses/**" />
 		    	<exclude name="**/*.class" />
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
@@ -657,6 +659,7 @@
 		    	<exclude name="**/ejbca.properties" />
 		    	<exclude name="conf/*.properties" />
 		    	<exclude name="**/*.sh" />
+		    	<exclude name="**/jndi.properties" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />

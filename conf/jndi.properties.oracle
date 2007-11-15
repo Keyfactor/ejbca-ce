@@ -1,0 +1,6 @@
+
+# Oracle properites
+java.naming.factory.initial=com.evermind.server.ApplicationClientInitialContextFactory
+java.naming.provider.url=ormi://localhost:12407/ejbca
+java.naming.security.principal=oc4jadmin
+java.naming.security.credentials=foo123

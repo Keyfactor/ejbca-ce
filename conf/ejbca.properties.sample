@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.26 2007-11-14 15:33:13 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.27 2007-11-15 11:24:11 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -9,7 +9,7 @@
 #
 
 # Which application server is used?
-# Possible values: jboss, glassfish, weblogic
+# Possible values: jboss, glassfish, weblogic, oracle
 # Default jboss
 #appserver.type=jboss
 

@@ -23,8 +23,10 @@
             <include name="client/*.jar"/>
         	<!-- glassfish -->
             <include name="lib/*.jar"/>
-        	<!-- welogic -->
+        	<!-- weblogic -->
             <include name="server/lib/weblogic.jar"/>
+        	<!-- oracle -->
+            <include name="j2ee/home/oc4jclient.jar"/>
         </fileset>
     </path>
 	<!-- Can be used for debugging 
