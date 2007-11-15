@@ -259,6 +259,21 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 
 - Log into the admin console of Oracle AS and deploy EJBCA.
 
+- Configure SSL in OC4J and make sure the SSL information is passed on to Java, not terminated in Apache.
+-----
+- Enable SSL in Apache.
+- Add EJBCA CA-certificate to wallet with owm (oracle wallet manager)
+- Enable SSL in opmn
+  Open opmn.xml in a text editor.
+  In the <ias-component id="HTTP_Server"> entry, change the start mode from "ssl-disabled" to "ssl-enabled". 
+  After modification is made, the entry should look like the following:
+  <data id="start-mode" value="ssl-enabled"/>
+- Update mod_oc4j.conf
+  Add this line
+  Oc4jExtractSSL On
+- opmnctl shutdown; opmnctl startall
+-----
+
 
 DEVELOPMENT
 ===========
