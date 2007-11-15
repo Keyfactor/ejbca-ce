@@ -541,6 +541,11 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		        <include name="*.xml"/>
 		    </fileset> 
 		</copy>
+		<copy todir="${test.dir}/META-INF" overwrite="true" failonerror="false" flatten="true">
+		    <fileset dir="${deploy.src}/${appserver.type}/client/bin/META-INF">
+		        <include name="*.xml"/>
+		    </fileset> 
+		</copy>
 
         <!-- 
           Fix encoding of files for internal (log) internationalization) 
