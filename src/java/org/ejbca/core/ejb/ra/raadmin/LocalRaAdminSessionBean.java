@@ -45,7 +45,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.12 2007-05-14 14:41:33 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.13 2007-11-15 14:52:57 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -825,25 +825,32 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 		} // isFreeEndEntityProfileId
 
     /**
-     * Changes the admin preference in the database. Returns false if admin doesn't exist.
+     * Changes the admin preference in the database. Returns false if admin preference doesn't exist.
      */
     private boolean updateAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference, boolean dolog){
        debug(">updateAdminPreference(fingerprint : " + certificatefingerprint + ")");
        boolean ret = false;
         try {
-            adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
+        	AdminPreferencesDataLocal apdata1 = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
+        	apdata1.setAdminPreference(adminpreference);
+        	// Earlier we used to remove and re-add the adminpreferences data
+        	// I don't know why, but that did not work on Oracle AS, so lets just do what create does, and setAdminPreference.
+        	/*
             adminpreferenceshome.remove(certificatefingerprint);
             try{
                 AdminPreferencesDataLocal apdata2 = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
-                debug("Found admin preferences with id "+apdata2.getId());
+                debug("Found admin preferences with id: "+apdata2.getId());
             }  catch (javax.ejb.FinderException fe) {
+            	debug("Admin preferences has been removed: "+certificatefingerprint);
             }
             adminpreferenceshome.create(certificatefingerprint,adminpreference);
             try{
                 AdminPreferencesDataLocal apdata3 = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
-                debug("Found admin preferences with id "+apdata3.getId());
+                debug("Found admin preferences with id: "+apdata3.getId());
             }  catch (javax.ejb.FinderException fe) {
+            	error("Admin preferences was not created: "+certificatefingerprint);
             }
+            */
             if (dolog) {                
     			String msg = intres.getLocalizedMessage("ra.changedadminpref", certificatefingerprint);            	
                 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);

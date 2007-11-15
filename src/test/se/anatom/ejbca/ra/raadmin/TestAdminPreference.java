@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 /**
  * Tests the admin preference entity bean.
  *
- * @version $Id: TestAdminPreference.java,v 1.5 2007-01-11 09:35:04 anatom Exp $
+ * @version $Id: TestAdminPreference.java,v 1.6 2007-11-15 14:52:54 anatom Exp $
  */
 public class TestAdminPreference extends TestCase {
     private static Logger log = Logger.getLogger(TestAdminPreference.class);
@@ -109,6 +109,8 @@ public class TestAdminPreference extends TestCase {
         pref.setPreferedLanguage(2);
         boolean ret = this.cacheAdmin.changeAdminPreference(administrator, user, pref);
         assertTrue("Adminpref for "+user+" should exist", ret);
+        pref = this.cacheAdmin.getAdminPreference(administrator, user);
+        assertEquals(pref.getPreferedLanguage(), 2);
         String newuser = genRandomUserName();
         ret = this.cacheAdmin.changeAdminPreference(administrator, newuser, pref);
         assertFalse("Adminpref for "+newuser+" should not exist", ret);
