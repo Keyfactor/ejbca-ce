@@ -27,6 +27,8 @@ weblogic-oracle-columntype=@weblogic.dbms-column-type Blob
 Edit conf/web.properties and change/set some values:
 httpserver.pubhttp=7001
 httpserver.privhttps=7002
+
+Edit conf/jaxws.properties and change/set some values:
 ejbcaws.enabled=false
 
 Default http port of Weblogic is 7001, default of EJBCA on JBoss is 8080.
@@ -174,7 +176,8 @@ Derby:
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
-    in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
+    in conf/web.properties you should set desired values and also http/s ports.
+    in conf/jaxws.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
 
     (in conf/web.properties you can also set 'web.jsfimpl=sunri', but this is normally sensed automatically)
@@ -246,7 +249,8 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config.
     in conf/database.properties you must configure the database settings for your chosen database, including username and password.
-    in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
+    in conf/web.properties you should set desired values and also http/s ports.
+    in conf/jaxws.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
 
 - Edit bin/jndi.properties.oracle in EJBCA
