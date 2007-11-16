@@ -99,7 +99,7 @@ import org.ejbca.util.CertTools;
  * @ejb.finder
  *   description="findByApprovalIdNonExpired"
  *   signature="Collection findByApprovalIdNonExpired(int approvalid)"
- *   query="SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalid=?1 and (a.status=-1 or a.status=0 or a.status=-3)"
+ *   query="SELECT OBJECT(a) from ApprovalDataBean a WHERE (a.status>-3) and a.approvalid=?1"
  *
  * @ejb.finder
  *   description="findAll"
@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.8 2007-06-25 14:45:32 herrvendil Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.9 2007-11-16 08:10:36 anatom Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 

@@ -491,6 +491,7 @@ public class TestApprovalSession extends TestCase {
 		pub.addApprovalRequest(admin1, nonExecutableRequest);
 		
 		ApprovalDataVO result = pub.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
+		assertNotNull(result);
 		assertTrue(result.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
 		
 

@@ -1508,7 +1508,7 @@
                      </opm:argument>
                   </opm:arguments>
                   <toplink:call xsi:type="toplink:ejbql-call">
-                     <toplink:ejbql>SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalid=?1 and (a.status=-1 or a.status=0 or a.status=-3)</toplink:ejbql>
+                     <toplink:ejbql>SELECT OBJECT(a) from ApprovalDataBean a WHERE  (a.status>-3) and a.approvalid=?1</toplink:ejbql>
                   </toplink:call>
                   <toplink:reference-class>org.ejbca.core.ejb.approval.ApprovalDataBean</toplink:reference-class>
                   <toplink:cache-usage>conform</toplink:cache-usage>
