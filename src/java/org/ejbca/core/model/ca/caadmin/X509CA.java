@@ -148,7 +148,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.77 2007-11-18 09:31:20 anatom Exp $
+ * @version $Id: X509CA.java,v 1.78 2007-11-18 09:38:19 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -813,6 +813,8 @@ public class X509CA extends CA implements Serializable {
                      CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
                      certgen.addExtension(X509Extensions.FreshestCRL.getId(), false, ext);
                  }            	 
+             } else {
+            	 log.debug("UseFreshestCRL is true, but no URI string defined!");
              }
          }
          
