@@ -100,7 +100,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Helper class for CMP Junit tests
  * @author tomas
- * @version $Id: CmpTestCase.java,v 1.5 2007-11-13 14:00:45 anatom Exp $
+ * @version $Id: CmpTestCase.java,v 1.6 2007-11-18 11:09:07 anatom Exp $
  *
  */
 public class CmpTestCase extends TestCase {
@@ -147,7 +147,7 @@ public class CmpTestCase extends TestCase {
             oids.add(X509Extensions.SubjectAlternativeName);
             // KeyUsage
             int bcku = 0;
-            bcku = bcku | X509KeyUsage.digitalSignature;
+            bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
             X509KeyUsage ku = new X509KeyUsage(bcku);
             bOut = new ByteArrayOutputStream();
             dOut = new DEROutputStream(bOut);

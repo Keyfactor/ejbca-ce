@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -31,12 +32,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Vector;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERInputStream;
+import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
@@ -157,7 +164,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.41 2007-09-19 12:42:21 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.42 2007-11-18 11:09:08 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -632,7 +639,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                      CertificateDataBean.digitalSignature | CertificateDataBean.nonRepudiation; gives
      *                      digitalSignature and nonRepudiation. ex. int keyusage = CertificateDataBean.keyCertSign
      *                      | CertificateDataBean.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default
-     *                      keyUsage should be used.
+     *                      keyUsage should be used, or should be taken from extensions in the request.
      * @param responseClass The implementation class that will be used as the response message.
      * @return The newly created response or null.
      * @throws ObjectNotFoundException       if the user does not exist.
@@ -707,7 +714,24 @@ public class RSASignSessionBean extends BaseSessionBean {
                     if (status.equals(ResponseStatus.SUCCESS)) {
                     	Date notBefore = req.getRequestValidityNotBefore(); // Optionally requested validity
                     	Date notAfter = req.getRequestValidityNotAfter(); // Optionally requested validity
-                    	cert = createCertificate(admin, data, ca, reqpk, keyUsage, notBefore, notAfter);
+                    	int ku = keyUsage;
+                    	if (ku < 0) {
+                    		debug("KeyUsage < 0, see if we can override KeyUsage");
+                        	X509Extensions exts = req.getRequestExtensions(); // Optionally requested key usage
+                        	if (exts != null) {
+                            	X509Extension ext = exts.getExtension(X509Extensions.KeyUsage);
+                            	if (ext != null) {
+                                    ASN1OctetString os = ext.getValue();
+                                    ByteArrayInputStream bIs = new ByteArrayInputStream(os.getOctets());
+                                    ASN1InputStream dIs = new ASN1InputStream(bIs);
+                                    DERObject dob = dIs.readObject();
+                                	DERBitString bs = DERBitString.getInstance(dob);
+                                	ku = bs.intValue();                        		                            		
+                            		debug("We have a key usage request extension: "+ku);
+                            	}
+                        	}
+                    	}
+                    	cert = createCertificate(admin, data, ca, reqpk, ku, notBefore, notAfter);
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message

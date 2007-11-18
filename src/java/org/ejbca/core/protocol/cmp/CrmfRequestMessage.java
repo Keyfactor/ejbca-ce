@@ -69,7 +69,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.16 2007-10-04 13:23:54 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.17 2007-11-18 11:09:07 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -301,7 +301,18 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		log.debug("Request validity notAfter is: "+(ret == null ? "null" : ret.toString()));
 		return ret;
 	}
-	
+
+	public X509Extensions getRequestExtensions() {
+		CertTemplate templ = req.getCertReq().getCertTemplate();
+		X509Extensions exts = templ.getExtensions();
+		if (exts != null) {
+			log.debug("Request contains extensions");			
+		} else {
+			log.debug("Request does not contain extensions");						
+		}
+		return exts;
+	}
+
 	public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		boolean ret = false;
 		ProofOfPossession pop = req.getPop();

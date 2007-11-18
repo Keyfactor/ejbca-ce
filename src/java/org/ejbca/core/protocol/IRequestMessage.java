@@ -24,12 +24,14 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
+import org.bouncycastle.asn1.x509.X509Extensions;
+
 
 /**
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.8 2007-03-28 12:23:34 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.9 2007-11-18 11:09:08 anatom Exp $
  */
 public interface IRequestMessage extends Serializable {
     /**
@@ -92,6 +94,14 @@ public interface IRequestMessage extends Serializable {
      * @return A date in the future for notAfter validity in the certificate, or null if no desired validity is in the certificate.
      */
 	public Date getRequestValidityNotAfter();
+
+	/** 
+	 * Gets any requested extensions, if the request message type is able to contain request extensions
+	 * and if there are any. Requested extensions are (currently) in the form of X509Extensions.
+	 * 
+	 * @return X509Extensions
+	 */
+	public X509Extensions getRequestExtensions();
 
     /**
      * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.

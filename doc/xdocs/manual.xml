@@ -996,14 +996,14 @@ cmp.ra.caname=AdminCA1
 
 <subsection name="Certificate validity">
 <p>Normally the validity period of issued certificates are controlled by the certificate profile. 
-If you enable 'Allow validity override' in the certificate profile, and the CMP initialization- or certificattion request contains a 
+If you enable 'Allow validity override' in the certificate profile, and the CMP initialization- or certification request contains a 
 validity time in the CRMF request template, this validity period will be used.
 </p>
 </subsection>
 
 <subsection name="Certificate Key Usage">
 <p>Normally the key usage extension of issued certificates are controlled by the certificate profile. 
-If you enable 'Allow Key Usage Override' in the certificate profile, and the CMP initialization- or certificattion request contains a 
+If you enable 'Allow Key Usage Override' in the certificate profile, and the CMP initialization- or certification request contains a 
 key usage in the CRMF request template, this key usage will be used.
 </p>
 </subsection>

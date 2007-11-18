@@ -14,6 +14,7 @@
 package se.anatom.ejbca.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
@@ -49,27 +50,36 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * This test requires:
- * mode=ra, allowraverifypopo=true, responseProtection=pbe, authenticationsecret=password,namegenerationscheme=DN
- * Allow CN, O, C in DN and rfc822Name, UPN in altNames in the end entity profile configured in cmp.properties
- * 
- * You need a CMP tcp listener configured on port 5547.
- *
+ * cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseProtection=pbe
+ * cmp.ra.authenticationsecret=password, cmp.ra.namegenerationscheme=DN
  * cmp.ra.endentityprofile=KeyId, cmp.ra.certificateprofile=KeyId, cmp.ra.caname=ProfileDefault
  * 
- * Two CAs: AdminCA1 with DN "CN=AdminCA1,O=EJBCA Sample,C=SE"
- *          AdminCA2 with DN "CN=AdminCA1,O=EJBCA Sample2,C=SE"
+ * You need a CMP tcp listener configured on port 5547.
+ * 
+ * Two CAs: CmpCA1 with DN "CN=CmpCA1,O=EJBCA Sample,C=SE"
+ *          CmpCA2 with DN "CN=CmpCA2,O=EJBCA Sample,C=SE"
  *          
- * There must be two end entity profiles and two certificate profiles with names KeyId1 and KeyId2.
+ * There must be three end entity profiles and two certificate profiles with names KeyId1 and KeyId2.
  * 
  * Cert Profile with name KeyId1 must have key usage "digital signature", non-overridable
  * Cert Profile with name KeyId2 must have key usage "non repudiation", non-overridable
- * EE Profile with name KeyId1 must have a fixed, non-modifiable C=SE, an O, a CN and be using certProfile KeyId1
- * EE Profile with name KeyId1 must have default CA with name AdminCA1
- * EE Profile with name KeyId2 must have a fixed, non-modifiable C=NO, an O, a CN  and be using certProfile KeyId2
- * EE Profile with name KeyId2 must have default CA with name AdminCA2 
+ * Cert Profile with name KeyId3 must have key usage "key encipherment", overridable
  * 
- * @author tomas
- * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.3 2007-11-13 14:00:23 anatom Exp $
+ * EE Profile with name KeyId1 must have a fixed, non-modifiable C=SE, an O, a CN and be using certProfile KeyId1
+ * EE Profile with name KeyId1 must have a modifyable rfc822Name and UPN field allowed in subjectAltNames 
+ * EE Profile with name KeyId1 must have default CA with name CmpCA1
+ * 
+ * EE Profile with name KeyId2 must have a fixed, non-modifiable C=NO, an O, a CN  and be using certProfile KeyId2
+ * EE Profile with name KeyId2 must have modifyable rfc822Name and UPN field allowed in subjectAltNames 
+ * EE Profile with name KeyId2 must have default CA with name CmpCA2
+ * 
+ * EE Profile with name KeyId3 must have a fixed, non-modifiable C=NO, an O, a CN  and be using certProfile KeyId3
+ * EE Profile with name KeyId3 must have modifyable rfc822Name and UPN field allowed in subjectAltNames 
+ * EE Profile with name KeyId3 must have default CA with name CmpCA2 
+ * (use entity profile KeyId2 as template for KeyId3)
+ * 
+ * @author Tomas Gustavsson
+ * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.4 2007-11-18 11:09:07 anatom Exp $
  */
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
@@ -100,12 +110,12 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
         // Try to get caIds
-        CAInfo adminca1 = casession.getCAInfo(admin, "AdminCA1");
+        CAInfo adminca1 = casession.getCAInfo(admin, "CmpCA1");
         caid1 = adminca1.getCAId();
-        CAInfo adminca2 = casession.getCAInfo(admin, "AdminCA2");
+        CAInfo adminca2 = casession.getCAInfo(admin, "CmpCA2");
         caid2 = adminca2.getCAId();
         if ( (caid1 == 0) || (caid2 == 0) ) {
-        	assertTrue("No active CA! Must have AdminCA1 and AdminCA2 to run tests!", false);
+        	assertTrue("No active CA! Must have CmpCA1 and CmpCA2 to run tests!", false);
         }        	
         CAInfo cainfo = casession.getCAInfo(admin, caid1);
         Collection certs = cainfo.getCertificateChain();
@@ -118,7 +128,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
                 cacert1 = CertTools.getCertfromByteArray(cert.getEncoded());            	
             }
         } else {
-            log.error("NO CACERT for AdminCA1: " + caid1);
+            log.error("NO CACERT for CmpCA1: " + caid1);
         }
         cainfo = casession.getCAInfo(admin, caid2);
         certs = cainfo.getCertificateChain();
@@ -131,7 +141,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
                 cacert2 = CertTools.getCertfromByteArray(cert.getEncoded());            	
             }
         } else {
-            log.error("NO CACERT for AdminCA2: " + caid2);
+            log.error("NO CACERT for CmpCA2: " + caid2);
         }
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);
         usersession = userhome.create();
@@ -180,6 +190,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		assertTrue(resp.length > 0);
 		checkCmpFailMessage(resp, "End entity profile with name 'foobarfoobar' not found.", 23, reqId, 2); // We'll get back a FailInfo.BAD_REQUEST
 	}
+
 
 	public void test02CrmfHttpOkUserKeyId1() throws Exception {
 
@@ -450,6 +461,65 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		checkCmpRevokeConfirmMessage(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, resp, true);
 		int reason = checkRevokeStatus(issuerDN2, cert.getSerialNumber());
 		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);		
+	}
+
+	public void test06CrmfTcpOkUserKeyId3() throws Exception {
+
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
+		
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId3");
+
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+		assertNotNull(req);
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DEROutputStream out = new DEROutputStream(bao);
+		out.writeObject(req);
+		byte[] ba = bao.toByteArray();
+		// Send request and receive response
+		byte[] resp = sendCmpTcp(ba, 5);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
+		X509Certificate cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+		FileOutputStream fos = new FileOutputStream("/home/tomas/foo.crt");
+		fos.write(cert.getEncoded());
+		fos.close();
+		String altNames = CertTools.getSubjectAlternativeName(cert);
+		assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
+		assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
+		
+		// Check key usage that it is digitalSignature, keyEncipherment and nonRepudiation for KeyId3
+		// Because keyUsage for keyId3 should be taken from the request (see genCertReq)
+		boolean[] ku = cert.getKeyUsage();
+		assertTrue(ku[0]);
+		assertTrue(ku[1]);
+		assertTrue(ku[2]);
+		assertFalse(ku[3]);
+		assertFalse(ku[4]);
+		assertFalse(ku[5]);
+		assertFalse(ku[6]);
+		assertFalse(ku[7]);
+		assertFalse(ku[8]);
+		// Check DN that must be SE for KeyId1 and NO for KeyId2
+		assertEquals("NO", CertTools.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+		
+		// Send a confirm message to the CA
+		String hash = "foo123";
+        PKIMessage confirm = genCertConfirm(userDN2, cacert2, nonce, transid, hash, reqId);
+		assertNotNull(confirm);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+		bao = new ByteArrayOutputStream();
+		out = new DEROutputStream(bao);
+		out.writeObject(req1);
+		ba = bao.toByteArray();
+		// Send request and receive response
+		resp = sendCmpTcp(ba, 5);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
+		checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
 	}
 
 	
