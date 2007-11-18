@@ -148,7 +148,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.76 2007-11-13 14:00:03 anatom Exp $
+ * @version $Id: X509CA.java,v 1.77 2007-11-18 09:31:20 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -796,22 +796,24 @@ public class X509CA extends CA implements Serializable {
                  freshestcrldistpoint = getCADefinedFreshestCRL();
              }
              // Multiple FCDPs are separated with the ';' sign 
-            StringTokenizer tokenizer = new StringTokenizer(freshestcrldistpoint, ";", false);
-            ArrayList distpoints = new ArrayList();
-            while (tokenizer.hasMoreTokens()) {
-                String uri = tokenizer.nextToken();
-                GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
-                log.debug("Added freshest CRL distpoint: "+uri);
-                ASN1EncodableVector vec = new ASN1EncodableVector();
-                vec.add(gn);
-                GeneralNames gns = new GeneralNames(new DERSequence(vec));
-                DistributionPointName dpn = new DistributionPointName(0, gns);
-                distpoints.add(new DistributionPoint(dpn, null, null));
-            }
-            if (distpoints.size() > 0) {
-                CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
-                certgen.addExtension(X509Extensions.FreshestCRL.getId(), false, ext);
-            }
+             if (freshestcrldistpoint != null) {
+                 StringTokenizer tokenizer = new StringTokenizer(freshestcrldistpoint, ";", false);
+                 ArrayList distpoints = new ArrayList();
+                 while (tokenizer.hasMoreTokens()) {
+                     String uri = tokenizer.nextToken();
+                     GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
+                     log.debug("Added freshest CRL distpoint: "+uri);
+                     ASN1EncodableVector vec = new ASN1EncodableVector();
+                     vec.add(gn);
+                     GeneralNames gns = new GeneralNames(new DERSequence(vec));
+                     DistributionPointName dpn = new DistributionPointName(0, gns);
+                     distpoints.add(new DistributionPoint(dpn, null, null));
+                 }
+                 if (distpoints.size() > 0) {
+                     CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
+                     certgen.addExtension(X509Extensions.FreshestCRL.getId(), false, ext);
+                 }            	 
+             }
          }
          
          // Authority Information Access (OCSP url)
