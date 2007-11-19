@@ -156,6 +156,7 @@ Derby:
   ij> quit;
 
 - Start the application server: asadmin start-domain
+  The default user/password for the web console is admin/adminadmin.
 
 - Do yourself a favor and configure this in the JVM settings of Glassfish v1 (default in v2):
     -XX:MaxPermSize=192m
@@ -250,8 +251,9 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config.
     in conf/database.properties you must configure the database settings for your chosen database, including username and password.
     in conf/web.properties you should set desired values and also http/s ports.
-    in conf/jaxws.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
+    in conf/jaxws.properties you should set 'ejbcaws.enabled=false'
+      if you need the WS-API you can enable it and select 'search local classes first' for 'ejbcaws' under 'Configure classloading' when deploying the ejbca application.
 
 - Edit bin/jndi.properties.oracle in EJBCA
 
