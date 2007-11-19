@@ -27,7 +27,11 @@
 	   <property name="web.jsfimpl" value="myfaces"/>
 	   <echo>Weblogic uses Apache Myfaces JSF implementation</echo>
     </target>
-	<target name="set.jsfimpl" depends="jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl">
+    <target name="oc4jjsfimpl" depends="oc4jtargetcheck" if="oc4j.enabled">
+	   <property name="web.jsfimpl" value="myfaces"/>
+	   <echo>OC4J uses Apache Myfaces JSF implementation</echo>
+    </target>
+	<target name="set.jsfimpl" depends="jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl,oc4jjsfimpl">
 	</target>
     <!-- =================================================================== -->
     <!-- Create the time stamp and build directory -->

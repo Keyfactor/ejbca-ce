@@ -84,13 +84,12 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Using nojsf means that the admin-GUI will be limited with some functions not working. 
 # It can however be useful if there are problems with your application server and JSF/MyFaces.
 # Use nojsf for JBoss < 4.0.3
-# Use myfaces for JBoss 4.0.3-4.0.5 and Weblogic
+# Use myfaces for JBoss 4.0.3-4.0.5, Weblogic and OC4J
 # Use sunri for Glassfish and JBoss 4.2.x
 #
-# DO NOT SET THIS UNLESS YOU KNOW WHAT YOU ARE DOING. 
-# It is normally automatically detected, which should work fine
+# DO NOT SET THIS UNLESS YOU KNOW WHAT YOU ARE DOING (it will probably not work anyway). 
+# It is normally automatically detected, which should work fine. 
+# Autodetection is handled in build.xml and compile.xml.
 #
 # Default: automatically detected
 #web.jsfimpl=myfaces
-
-
