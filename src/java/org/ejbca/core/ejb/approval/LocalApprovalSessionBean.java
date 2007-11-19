@@ -348,7 +348,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	log.debug(">addApprovalRequest");
     	int approvalId = approvalRequest.generateApprovalId();
     	
-    	
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
         if(data != null){						
 			getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" already exists");
@@ -746,6 +745,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	ApprovalDataLocal retval = null;
     	try {
 			Collection result = approvalHome.findByApprovalIdNonExpired(approvalId);
+			log.debug("Found number of approvalIdNonExpired: "+result.size());
 			Iterator iter = result.iterator();
 			while(iter.hasNext()){
 				ApprovalDataLocal next = (ApprovalDataLocal) iter.next();
