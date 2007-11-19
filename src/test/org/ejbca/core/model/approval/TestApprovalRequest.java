@@ -56,6 +56,15 @@ public class TestApprovalRequest extends TestCase {
 		
 	}
 
+	public void testGenerateApprovalId() throws Exception {
+		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
+		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert),null,1,2, false);
+		
+    	int id1 = ar.generateApprovalId();
+    	int id2 = ar.generateApprovalId();
+    	assertEquals(id1, id2);
+	}
+
 	protected void setUp() throws Exception {		
 		super.setUp();
 		CertTools.installBCProvider();
