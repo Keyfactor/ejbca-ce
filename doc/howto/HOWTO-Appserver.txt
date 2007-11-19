@@ -149,7 +149,7 @@ Derby:
 - Create a database and a database user with privileges.
   > export DERBY_INSTALL=/home/sun/glassfish/javadb
   > cd /home/sun/glassfish/bin
-  > ../javadb/frameworks/NetworkServer/bin/ij.ksh
+  > ../javadb/frameworks/NetworkServer/bin/ij.ksh (This command seems to be deprecated in v2 so use this command instead: export DERBY_HOME=/home/sun/glassfish/javadb/; ../javadb/bin/ij)
 
   ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
   ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
