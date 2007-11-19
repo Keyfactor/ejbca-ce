@@ -235,6 +235,8 @@ ORACLE OC4J
 
 EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 
+- Install 'Unlimited Strength Jurisdiction Policy Files' for Java.
+
 - Create tables in your Oracle database using the script supplied in doc/howto/create-tables-ejbca3-oracle.sql.
 
 - Configure $OC4J_HOME/j2ee/home/config/application.xml to not create tables: autocreate-tables=”false”
@@ -251,9 +253,13 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config.
     in conf/database.properties you must configure the database settings for your chosen database, including username and password.
     in conf/web.properties you should set desired values and also http/s ports.
-    in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for Oracle.
-    in conf/jaxws.properties you should set 'ejbcaws.enabled=false'
-      if you need the WS-API you can enable it and select 'search local classes first' for 'ejbcaws' under 'Configure classloading' when deploying the ejbca application.
+
+- To be able to use the WS-API you must select 'search local classes first' for 'ejbcaws' under 'Configure classloading' (step 3) when deploying the ejbca application.
+  Otherwise you have to set 'xkms.enabled=false' in conf/xkms.properties, 
+  and 'ejbcaws.enabled=false' in conf/jaxws.properties, 
+  and also edit src/deploy/ear/META-INF/orion-application.xml
+
+- Note: there is an orion-application.xml under src/deploy/ear/META-INF that you can edit if you really know what you are doing with OC4J.
 
 - Edit bin/jndi.properties.oracle in EJBCA
 
@@ -264,6 +270,10 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
   (toplink-ejbca-jar.xml will be populated with your configured database settings)
 
 - Log into the admin console of Oracle AS and deploy EJBCA.
+  'Automatically create a new deployment plan' = checked in step 1.
+  'Application Name' = ejbca in step 2.
+  'Configure Class Loading' -> 'Search Local Classes First' = true for 'ejbcaws' and 'xkms' in step 3.
+  
 
 - Configure SSL in OC4J and make sure the SSL information is passed on to Java, not terminated in Apache.
 -----
@@ -279,8 +289,6 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
   Oc4jExtractSSL On
 - opmnctl shutdown; opmnctl startall
 -----
-
-- Install 'Unlimited Strength Jurisdiction Policy Files' for Java.
 
 
 DEVELOPMENT
