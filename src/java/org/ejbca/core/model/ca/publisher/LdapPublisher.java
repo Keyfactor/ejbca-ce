@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.29 2007-10-31 09:40:04 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.30 2007-11-19 11:56:15 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -204,12 +204,13 @@ public class LdapPublisher extends BasePublisher {
             	attribute = getUserCertAttribute();
                 LDAPAttribute certAttr = new LDAPAttribute(getUserCertAttribute(), incert.getEncoded());
                 if (oldEntry != null) {
+                	String oldDn = oldEntry.getDN();
                     if (getAddMultipleCertificates()) {
                         modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
-                        log.debug("Appended new certificate in user entry; " + username+": "+dn);
+                        log.debug("Appended new certificate in user entry; " + username+": "+oldDn);
                     } else {
                         modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
-                        log.debug("Replaced certificate in user entry; " + username+": "+dn);
+                        log.debug("Replaced certificate in user entry; " + username+": "+oldDn);
                     }
                 } else {
                     attributeSet.add(certAttr);
