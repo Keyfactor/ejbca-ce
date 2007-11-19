@@ -16,6 +16,7 @@ package org.ejbca.ui.web;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -51,7 +52,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.9 2007-09-12 08:46:20 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.10 2007-11-19 12:22:14 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -295,7 +296,12 @@ public class RequestHelper {
         }
 
         PrintStream ps = new PrintStream(out);
-        BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(responseTemplate)));
+        log.debug("Response template is: "+responseTemplate);
+        InputStream is = sc.getResourceAsStream(responseTemplate);
+        if (is == null) {
+        	throw new IOException("Template '"+responseTemplate+"' can not be found or read.");
+        }
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
         while (true) {
             String line = br.readLine();
