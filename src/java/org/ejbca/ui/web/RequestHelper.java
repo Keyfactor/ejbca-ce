@@ -52,7 +52,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.10 2007-11-19 12:22:14 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.11 2007-11-19 12:56:01 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -245,7 +245,17 @@ public class RequestHelper {
         }
         StringWriter sw = new StringWriter();
         {
-            BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(responseTemplate)));
+            InputStream is = sc.getResourceAsStream(responseTemplate);
+            if (is == null) {
+            	// Some app servers (oracle) require a / first...
+            	log.debug("Trying to read responseTemplate with / first");
+                is = sc.getResourceAsStream("/"+responseTemplate);
+            }
+            if (is == null) {
+            	throw new IOException("Template '(/)"+responseTemplate+"' can not be found or read.");
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String baseURL = request.getRequestURL().toString().substring(0, request.getRequestURL().toString().lastIndexOf(
             		request.getRequestURI().toString()) ) + request.getContextPath() + "/";
             // If we would like to parse the jsp stuff instead so we could use "include" etc, we could use the below code
@@ -299,7 +309,12 @@ public class RequestHelper {
         log.debug("Response template is: "+responseTemplate);
         InputStream is = sc.getResourceAsStream(responseTemplate);
         if (is == null) {
-        	throw new IOException("Template '"+responseTemplate+"' can not be found or read.");
+        	// Some app servers (oracle) require a / first...
+        	log.debug("Trying to read responseTemplate with / first");
+            is = sc.getResourceAsStream("/"+responseTemplate);
+        }
+        if (is == null) {
+        	throw new IOException("Template '(/)"+responseTemplate+"' can not be found or read.");
         }
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
