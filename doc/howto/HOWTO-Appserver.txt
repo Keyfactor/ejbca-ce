@@ -249,6 +249,12 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
   <property name="mail.smtp.from" value="localhost"/>
 </mail-session>
 
+- Configure transaction timeout in OC4J to a bit longer (in order to be able to generate 4096 bit keys for example).
+  In $OC4J_HOME/j2ee/home/config/transaction-manager.xml, change:
+  transaction-timeout="30"
+  to
+  transaction-timeout="300"
+  
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config.
     in conf/database.properties you must configure the database settings for your chosen database, including username and password.
