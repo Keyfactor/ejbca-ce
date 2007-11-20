@@ -28,8 +28,6 @@ import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.jws.WebService;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.ws.WebServiceContext;
@@ -37,6 +35,7 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -124,7 +123,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.19 2007-09-14 08:38:26 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.20 2007-11-20 08:26:54 anatom Exp $
  */
 
 @WebService
@@ -1787,13 +1786,23 @@ public class EjbcaWS implements IEjbcaWS {
 
         return returnval;
 	}
+
+	//
+	// Methods for fetching ejb session bean interfaces
+	//
 	
+    /**
+     * return the environment entries locator
+     * @return return the environment entries locator
+     */
+    protected ServiceLocator getLocator() {
+        return ServiceLocator.getInstance();
+    }
+
 	private ICAAdminSessionLocal caadminsession = null;
 	private ICAAdminSessionLocal getCAAdminSession() throws ClassCastException, CreateException, NamingException{ 		
 	    if(caadminsession == null){	  
-	    	Context context = new InitialContext();	    	
-	    	caadminsession = ((ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-	    	"CAAdminSessionLocal"), ICAAdminSessionLocalHome.class)).create();   
+	    	caadminsession = ((ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME)).create();
 	    }
 	    return caadminsession;
 	}
@@ -1801,9 +1810,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private IRaAdminSessionLocal raadminsession = null;
 	private IRaAdminSessionLocal getRAAdminSession() throws ClassCastException, CreateException, NamingException{
 		if(raadminsession == null){
-		  Context context = new InitialContext();
-	      raadminsession = ((IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-	      "RaAdminSessionLocal"), IRaAdminSessionLocalHome.class)).create();    	           	           	        
+			raadminsession = ((IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME)).create();
 		}
 		return raadminsession;
 	}
@@ -1811,9 +1818,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private ICertificateStoreSessionLocal certificatestoresession = null;
 	private ICertificateStoreSessionLocal getCertStoreSession() throws ClassCastException, CreateException, NamingException{
 		if(certificatestoresession == null){
-			Context context = new InitialContext();
-			certificatestoresession = ((ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-			"CertificateStoreSessionLocal"), ICertificateStoreSessionLocalHome.class)).create();    	           	           	        
+			certificatestoresession = ((ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME)).create();
 		}
 		return certificatestoresession;
 	}
@@ -1821,9 +1826,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private ISignSessionLocal signsession = null;
 	private ISignSessionLocal getSignSession() throws ClassCastException, CreateException, NamingException{
 		if(signsession == null){
-			Context context = new InitialContext();
-			signsession = ((ISignSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-			"SignSessionLocal"), ISignSessionLocalHome.class)).create();    	           	           	        
+			signsession = ((ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
 		}
 		return signsession;
 	}
@@ -1832,9 +1835,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private IUserAdminSessionLocal getUserAdminSession() {
 		try{
 			if(usersession == null){
-				Context context = new InitialContext();
-				usersession = ((IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"UserAdminSessionLocal"), IUserAdminSessionLocalHome.class)).create();   
+				usersession = ((IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME)).create();
 			}
 		}catch(Exception e)	{
 			log.error("Error instancing User Admin Session Bean",e);
@@ -1847,9 +1848,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private IHardTokenSessionLocal getHardTokenSession() {
 		try{
 			if(hardtokensession == null){
-				Context context = new InitialContext();
-				hardtokensession = ((IHardTokenSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"HardTokenSessionLocal"), IHardTokenSessionLocalHome.class)).create();   
+				hardtokensession = ((IHardTokenSessionLocalHome) getLocator().getLocalHome(IHardTokenSessionLocalHome.COMP_NAME)).create();
 			}
 		}catch(Exception e)	{
 			log.error("Error instancing Hard Token Session Bean",e);
@@ -1862,9 +1861,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private IAuthorizationSessionLocal getAuthorizationSession() {
 		try{
 			if(authsession == null){
-				Context context = new InitialContext();
-				authsession = ((IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"AuthorizationSessionLocal"), IAuthorizationSessionLocalHome.class)).create();   
+				authsession = ((IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME)).create();
 			}
 		}catch(Exception e)	{
 			log.error("Error instancing Authorization Session Bean",e);
@@ -1877,9 +1874,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private IApprovalSessionLocal getApprovalSession() {
 		try{
 			if(approvalsession == null){
-				Context context = new InitialContext();
-				approvalsession = ((IApprovalSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"ApprovalSessionLocal"), IApprovalSessionLocalHome.class)).create();   
+				approvalsession = ((IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME)).create();
 			}
 		}catch(Exception e)	{
 			log.error("Error instancing Approval Session Bean",e);
@@ -1893,9 +1888,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private IUserDataSourceSessionLocal getUserDataSourceSession() {
 		try{
 			if(userdatasourcesession == null){
-				Context context = new InitialContext();
-				userdatasourcesession = ((IUserDataSourceSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"UserDataSourceSessionLocal"), IUserDataSourceSessionLocalHome.class)).create();   
+				userdatasourcesession = ((IUserDataSourceSessionLocalHome) getLocator().getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME)).create();
 			}
 		}catch(Exception e)	{
 			log.error("Error instancing User Data Source Session Bean",e);
@@ -1909,9 +1902,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private ILogSessionLocal getLogSession() {
 		try{
 			if(logsession == null){
-				Context context = new InitialContext();
-				logsession = ((ILogSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"LogSessionLocal"), ILogSessionLocalHome.class)).create();   
+				logsession = ((ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME)).create();
 			}
 		}catch(Exception e)	{
 			log.error("Error instancing Log Session Bean",e);
@@ -1924,9 +1915,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private IPublisherSessionLocal getPublisherSession() {
 		try{
 			if(publishersession == null){
-				Context context = new InitialContext();
-				publishersession = ((IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"PublisherSessionLocal"), IPublisherSessionLocalHome.class)).create();   
+				publishersession = ((IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME)).create();
 			}
 		}catch(Exception e)	{
 			log.error("Error instancing Publisher Session Bean",e);
