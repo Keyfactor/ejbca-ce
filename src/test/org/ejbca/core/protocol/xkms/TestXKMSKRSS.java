@@ -85,12 +85,12 @@ import org.w3._2002._03.xkms_.RevokeResultType;
 import org.w3._2002._03.xkms_.UseKeyWithType;
 
 /**
- * 
+ * To Run this test, there must be a CA with DN "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * 
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSKRSS.java,v 1.4 2007-07-31 13:31:34 jeklund Exp $
+ * @version $Id: TestXKMSKRSS.java,v 1.5 2007-11-20 08:45:52 anatom Exp $
  */
 
 public class TestXKMSKRSS extends TestCase {

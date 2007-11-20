@@ -65,12 +65,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * 
+ * To Run this test, there must be a CA with DN "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * 
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSSig.java,v 1.3 2007-01-05 05:33:27 herrvendil Exp $
+ * @version $Id: TestXKMSSig.java,v 1.4 2007-11-20 08:45:52 anatom Exp $
  */
 
 public class TestXKMSSig extends TestCase {
@@ -93,6 +93,7 @@ public class TestXKMSSig extends TestCase {
 	//private static Unmarshaller unmarshaller = null;
 	private static DocumentBuilderFactory dbf = null;
 
+	private static int caid;
 	
 	static{    	
 		try {
@@ -131,6 +132,7 @@ public class TestXKMSSig extends TestCase {
             cacheAdmin = cacheHome.create();
         }      
 
+    	caid = CertTools.stringToBCDNString("CN=AdminCA1,O=EJBCA Sample,C=SE").hashCode();
         
         
         Random ran = new Random();
@@ -150,7 +152,6 @@ public class TestXKMSSig extends TestCase {
         Object o = null;
         username = baseUsername + "1";
         try {
-        	int caid = CertTools.stringToBCDNString("CN=AdminCA1,O=EJBCA Sample,C=SE").hashCode();
         	
         	cacheAdmin.addUser(administrator, username, "foo123", "CN=superadmin", null,null, false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER,

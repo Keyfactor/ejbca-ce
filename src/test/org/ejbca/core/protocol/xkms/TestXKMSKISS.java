@@ -70,12 +70,12 @@ import org.w3._2002._03.xkms_.ValidateRequestType;
 import org.w3._2002._03.xkms_.ValidateResultType;
 
 /**
- * 
+ * To Run this test, there must be a CA with DN "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * 
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSKISS.java,v 1.4 2007-02-02 09:37:47 anatom Exp $
+ * @version $Id: TestXKMSKISS.java,v 1.5 2007-11-20 08:45:52 anatom Exp $
  */
 
 public class TestXKMSKISS extends TestCase {
