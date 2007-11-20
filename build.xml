@@ -682,6 +682,7 @@
 		    	<exclude name="conf/*.properties" />
 		    	<exclude name="**/*.sh" />
 		    	<exclude name="**/jndi.properties" />
+		    	<exclude name="**/hs_err*" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
