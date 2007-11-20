@@ -22,9 +22,6 @@ import javax.xml.namespace.QName;
 import junit.framework.TestCase;
 
 import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataParser;
-import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.approval.IApprovalSessionHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
