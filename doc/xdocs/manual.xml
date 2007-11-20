@@ -1172,7 +1172,7 @@ The functionality currently available through the Web Service Interface are:
 </ul>
 <p>
 There is also a cli tool that can be used for remote scripting. See following section for more information.
-Note: All these call isn't available through the CLI.
+Note: All these calls are not available through the CLI.
 </p>
 <subsection name="Configuring Web Services CLI">
 <p>
@@ -1205,7 +1205,7 @@ ejbcawsracli.cmd pkcs12req testuser2 foo123 2048 NONE tmp
 ejbcawsracli.cmd revokeuser testuser2 false
 </p>
 </subsection>
-<subsection name="Using the Web Service API for Intergration">
+<subsection name="Using the Web Service API for Integration">
 <p>
 You can use the Web Service interface to integrate EJBCA from other applications.
 </p><p>
