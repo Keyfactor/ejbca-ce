@@ -32,8 +32,6 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
@@ -60,6 +58,7 @@ import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -110,7 +109,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author Philip Vendil 2006 dec 18
  *
- * @version $Id: XKMSProvider.java,v 1.4 2007-02-02 09:36:12 anatom Exp $
+ * @version $Id: XKMSProvider.java,v 1.5 2007-11-20 08:44:48 anatom Exp $
  */
 
 @ServiceMode(value=Service.Mode.PAYLOAD)
@@ -408,12 +407,22 @@ public class XKMSProvider implements Provider<Source> {
 		return retval;
     }           
 	
+	//
+	// Methods for fetching ejb session bean interfaces
+	//
+	
+    /**
+     * return the environment entries locator
+     * @return return the environment entries locator
+     */
+    protected ServiceLocator getLocator() {
+        return ServiceLocator.getInstance();
+    }
+    
 	private ICertificateStoreSessionLocal certificatestoresession = null;
 	protected ICertificateStoreSessionLocal getCertStoreSession() throws ClassCastException, CreateException, NamingException{
 		if(certificatestoresession == null){
-			Context context = new InitialContext();
-			certificatestoresession = ((ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-			"CertificateStoreSessionLocal"), ICertificateStoreSessionLocalHome.class)).create();    	           	           	        
+			certificatestoresession = ((ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME)).create();
 		}
 		return certificatestoresession;
 	}
@@ -421,9 +430,7 @@ public class XKMSProvider implements Provider<Source> {
 	private ICAAdminSessionLocal caadminsession = null;
 	protected ICAAdminSessionLocal getCAAdminSession() throws ClassCastException, CreateException, NamingException{ 		
 	    if(caadminsession == null){	  
-	    	Context context = new InitialContext();	    	
-	    	caadminsession = ((ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-	    	"CAAdminSessionLocal"), ICAAdminSessionLocalHome.class)).create();   
+	    	caadminsession = ((ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME)).create();
 	    }
 	    return caadminsession;
 	}
@@ -431,9 +438,7 @@ public class XKMSProvider implements Provider<Source> {
 	private ISignSessionLocal signsession = null;
 	protected ISignSessionLocal getSignSession() throws ClassCastException, CreateException, NamingException{
 		if(signsession == null){
-			Context context = new InitialContext();
-			signsession = ((ISignSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-			"SignSessionLocal"), ISignSessionLocalHome.class)).create();    	           	           	        
+			signsession = ((ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
 		}
 		return signsession;
 	}
