@@ -11,6 +11,7 @@
 	<web-module id="webdist" path="webdist.war" />
 	<web-module id="adminweb" path="adminweb.war" />
 	<web-module id="ejbcaws" path="ejbcaws.war" />
+	<web-module id="xkms" path="xkms.war" />
 	<persistence path="persistence" />
 	<imported-shared-libraries>
 	    <!--
