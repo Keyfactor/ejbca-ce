@@ -595,8 +595,8 @@ If you want to force CRL generation for a CA, use 'bin/ejbca.sh ca createcrl <i>
 Example crontab entry:
 </p>
 <source>
-PATH=$PATH:/usr/java/jdk1.4.2_01/bin
-@daily cd /home/ejbca;/home/ejbca/ca.sh createcrl;
+PATH=$PATH:/usr/java/jdk1.6.0_01/bin
+@daily cd /home/ejbca;/home/ejbca/bin/ejbca.sh ca createcrl;
 </source>
 <p>
 where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java' can be found.
@@ -607,10 +607,10 @@ Sample crontab to be installed with 'crontab -e':
 <source>
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-CLASSPATH=$CLASSPATH:/root/ejbca:/root/ejbca/admin.jar
+CLASSPATH=$CLASSPATH:/root/ejbca
 APPSRV_HOME=/usr/local/jboss
 # m h dom mon dow command
-00 0    * * *   cd /root/ejbca;./ca.sh createcrl
+00 0    * * *   cd /root/ejbca;./bin/ejbca.sh ca createcrl
 </source>
 </subsection>
 </section>
