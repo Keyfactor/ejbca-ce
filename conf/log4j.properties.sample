@@ -1,17 +1,21 @@
-log4j.rootLogger=debug, stdout, R
+log4j.rootLogger=debug, R
 
+# Standard out appender, not used by default
 log4j.appender.stdout=org.apache.log4j.ConsoleAppender
 log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-
 # Pattern to output the caller's file name and line number.
 log4j.appender.stdout.layout.ConversionPattern=%5p [%t] (%F:%L) - %m%n
 
+# Our regular appender, rolls around 10 logfiles with maximum size of 1024 KB
 log4j.appender.R=org.apache.log4j.RollingFileAppender
 log4j.appender.R.File=/home/appsrv/log/ejbca.log
-
-log4j.appender.R.MaxFileSize=100KB
-# Keep one backup file
-log4j.appender.R.MaxBackupIndex=1
-
+# Keep 10 backup files of max size 1024 KB
+log4j.appender.R.MaxBackupIndex=10
+log4j.appender.R.MaxFileSize=1024KB
+# Pattern to output the date, level and caller's thread.
 log4j.appender.R.layout=org.apache.log4j.PatternLayout
 log4j.appender.R.layout.ConversionPattern=%d %p [%t] %c - %m%n
+
+# Limit some logging
+log4j.logger.org.apache.commons=INFO
+log4j.logger.org.apache.myfaces=INFO
