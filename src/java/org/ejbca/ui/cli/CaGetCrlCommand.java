@@ -19,12 +19,13 @@ import javax.naming.Context;
 
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.util.CertTools;
 
 
 /**
  * Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.2 2007-11-21 10:30:38 anatom Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
     /**
@@ -44,18 +45,29 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 			if (args.length < 3) {
-				throw new IllegalAdminCommandException("Retrieves CRL in DER format.\nUsage: CA getcrl <caname> <outfile>");
+				throw new IllegalAdminCommandException("Retrieves CRL in DER format.\nUsage: CA getcrl <caname> <outfile> (-pem)");
 			}
 			try {
 				String outfile = args[2];
                 String caname = args[1];
+                boolean pem = false;
+                if (args.length > 3) {
+                    if (("-pem").equals(args[3])) {
+                        pem = true;
+                    }
+                }
+                
                 String issuerdn = getIssuerDN(caname);
 				Context context = getInitialContext();
 				ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"),ICertificateStoreSessionHome.class);
 				ICertificateStoreSessionRemote store = storehome.create();
 				byte[] crl = store.getLastCRL(administrator, issuerdn);
 				FileOutputStream fos = new FileOutputStream(outfile);
-				fos.write(crl);
+                if (pem) {		
+                    fos.write(CertTools.getPEMFromCrl(crl));
+                } else {					
+                	fos.write(crl);
+                }
 				fos.close();
 				getOutputStream().println("Wrote latest CRL to " + outfile + ".");
 			} catch (Exception e) {

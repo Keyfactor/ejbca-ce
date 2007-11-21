@@ -13,9 +13,9 @@
  
 package org.ejbca.ui.cli;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.io.FileOutputStream;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 
 import org.ejbca.util.CertTools;
 
@@ -23,7 +23,7 @@ import org.ejbca.util.CertTools;
 /**
  * Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CaGetRootCertCommand.java,v 1.2 2007-11-21 10:30:38 anatom Exp $
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
     /**

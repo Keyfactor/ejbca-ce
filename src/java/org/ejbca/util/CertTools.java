@@ -98,7 +98,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.47 2007-10-04 13:23:54 anatom Exp $
+ * @version $Id: CertTools.java,v 1.48 2007-11-21 10:30:38 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -813,9 +813,8 @@ public class CertTools {
     /**
      * Returns a certificate in PEM-format.
      *
-     * @param cert the certificate to convert to PEM
+     * @param certs Collection of X509Certificate to convert to PEM
      * @return byte array containing PEM certificate
-     * @exception IOException if the stream cannot be read.
      * @exception CertificateException if the stream does not contain a correct certificate.
      */
     public static byte[] getPEMFromCerts(Collection certs)
@@ -837,6 +836,27 @@ public class CertTools {
         opstr.close();
         byte[] ret = ostr.toByteArray();
         return ret;
+    }
+
+    /**
+     * Returns a CRL in PEM-format.
+     *
+     * @param crlbytes the der encoded crl bytes to convert to PEM
+     * @return byte array containing PEM CRL
+     * @exception IOException if the stream cannot be read.
+     */
+    public static byte[] getPEMFromCrl(byte[] crlbytes) {
+    	String beginKey = "-----BEGIN X509 CRL-----";
+    	String endKey = "-----END X509 CRL-----";
+    	ByteArrayOutputStream ostr = new ByteArrayOutputStream();
+    	PrintStream opstr = new PrintStream(ostr);
+    	byte[] crlb64 = Base64.encode(crlbytes);
+    	opstr.println(beginKey);
+    	opstr.println(new String(crlb64));
+    	opstr.println(endKey);
+    	opstr.close();
+    	byte[] ret = ostr.toByteArray();
+    	return ret;
     }
 
     /**
