@@ -13,7 +13,10 @@
  
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
@@ -41,7 +46,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.14 2007-11-14 15:33:12 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.15 2007-11-21 09:19:49 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -50,12 +55,12 @@ import org.ejbca.util.CertTools;
  *
  * @web.servlet-mapping url-pattern = "/configuration/startservices"
  * 
- * @web.env-entry description="Determines if log4j should be initilized explicitly, needed for glassfish"
+ * @web.env-entry description="Determines if log4j should be initialized explicitly, needed for glassfish, oracle"
  *   name="LOG4JCONFIG"
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.14 2007-11-14 15:33:12 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.15 2007-11-21 09:19:49 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -98,16 +103,37 @@ public class StartServicesServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-		String iMsg = intres.getLocalizedMessage("startservice.startup");
-        log.info(iMsg);
+        
+        ejbcaInit();
 
-        log.debug(">init calling ServiceSession.load");
-        try {
-			getServiceHome().create().load();
-		} catch (Exception e) {
-			log.error("Error init ServiceSession: ", e);
-		}
-		
+    } // init
+
+    public void doPost(HttpServletRequest req, HttpServletResponse res)
+        throws IOException, ServletException {
+        log.debug(">doPost()");
+        doGet(req, res);
+        log.debug("<doPost()");
+    } //doPost
+
+    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
+        log.debug(">doGet()");
+        String param = req.getParameter("ejbcaInit");
+        if (StringUtils.equals(param, "true")) {
+        	ejbcaInit();
+        } else {        
+        	res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Servlet doesn't support requests is only loaded on startup.");
+        }
+        log.debug("<doGet()");
+    } // doGet
+
+    private void ejbcaInit() {
+    	
+        //
+        // Run all "safe" initializations first, 
+        // i.e. those that does not depend on other running beans, components etc
+        //
+        
+        // Start with logging, so we are sure to know what is happening later on
         log.debug(">init initializing log4j");
         String configfile = ServiceLocator.getInstance().getString("java:comp/env/LOG4JCONFIG");
         if (!StringUtils.equals(configfile, "false")) {
@@ -117,11 +143,30 @@ public class StartServicesServlet extends HttpServlet {
                 BasicConfigurator.configure();            	
             } else {
             	System.setProperty("log4j.configuration", "file://"+configfile);
+            	File f = new File(configfile);
+            	URL url;
+				try {
+					url = f.toURL();
+	            	if (StringUtils.contains(configfile, ".properties")) {
+	                	PropertyConfigurator.configure(url);     
+	                	log.debug("Configured log4j with PropertyConfigurator: "+url);
+	            	} else if (StringUtils.contains(configfile, ".xml")) {
+	            		DOMConfigurator.configure(url);
+	                	log.debug("Configured log4j with DOMConfigurator: "+url);
+	            	}
+				} catch (MalformedURLException e) {
+					log.error("Can not configure log4j: ", e);
+					e.printStackTrace();
+				}
             }
         }
 
+        // Log a startup message
+		String iMsg = intres.getLocalizedMessage("startservice.startup");
+        log.info(iMsg);
+
         // Reinstall BC-provider to help re-deploys to work
-        log.debug("Re-installing BC-provider");
+        log.debug(">init re-installing BC-provider");
         CertTools.removeBCProvider();
         CertTools.installBCProvider();
 
@@ -130,8 +175,19 @@ public class StartServicesServlet extends HttpServlet {
         SecureRandom rand = new SecureRandom();
         rand.nextInt();
         
+        //
+        // Start services that requires calling other beans or components
+        //
+        
+        log.debug(">init calling ServiceSession.load");
+        try {
+			getServiceHome().create().load();
+		} catch (Exception e) {
+			log.error("Error init ServiceSession: ", e);
+		}
+		
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
-        log.debug("init loading CAs into cache");
+        log.debug(">init loading CAs into cache");
         try {
         	ICAAdminSessionLocalHome casessionhome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
         	ICAAdminSessionLocal casession;
@@ -147,20 +203,6 @@ public class StartServicesServlet extends HttpServlet {
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
-
-    } // init
-
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException, ServletException {
-        log.debug(">doPost()");
-        doGet(req, res);
-        log.debug("<doPost()");
-    } //doPost
-
-    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-        log.debug(">doGet()");
-        res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Servlet doesn't support requests is only loaded on startup.");
-        log.debug("<doGet()");
-    } // doGet
-
+    }
+    
 }
