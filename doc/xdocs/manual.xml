@@ -560,6 +560,7 @@ Now this service will run with the interval you have configured and generate CRL
 </p>
 </subsection>
 <subsection name="JBoss service">
+<p><strong>DEPRECATED!</strong></p>
 <p>
 Another way to have CRLs generated automatically is to build and deploy the JBOSS CRL Service.
  This is done by setting the option 'createcrl.service.enabled' to true in ejbca.properties.
