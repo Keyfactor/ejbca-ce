@@ -236,14 +236,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.9 2006-09-18 14:19:32 anatom Exp $
+@version $Id: DEVELOP,v 1.10 2007-11-21 14:01:49 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.9 2006-09-18 14:19:32 anatom Exp $
+ * @version $Id: DEVELOP,v 1.10 2007-11-21 14:01:49 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
@@ -261,28 +261,18 @@ All java files should include the following header as the first lines in the fil
  *************************************************************************/
  
  
-CA KeyStore architecture/creating a custom CA Keystore
-======================================================
+Creating new Webservice calls
+=============================
 
-The CA Keystore, where the CAs private key is stored and used is
-defined by the interface se.anatom.ejbca.ca.sign.ISigningDevice.
+To add a new call to EjbcaWS:
 
-By creating a new custom class and simply editing the property
-'signingDeviceFactory' to point at the custom factory class that creates an
-instance of the custom SigningDevice class in a thread-safe way.
-It is recommended, but not required, that the Signing device implements a
-Singleton.
+1. Add an abstract method to IEjbcaWS.java
+2. Implement the method in EJbcaWS.java
+3. run 'ant ws.gen.server'
+4. Deploy EJBCA
+5. run 'ant ws.gen.client'
 
-The SigningDeviceFactory class MUST contain the method:
-
-   /** Creates (if needed) the signing device and returns the object.
-    * @prop Arguments needed fo?r the eventual creation of the object
-    * @return An instance of the Signing device.
-    */
-    public synchronized ISigningDevice makeInstance(Properties prop) throws
-    Exception {
-        return PKCS12SigningDevice.instance(prop);
-    }
+Done. 
 
 Clear or hashed passwords
 =========================
