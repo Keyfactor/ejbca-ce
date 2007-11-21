@@ -239,6 +239,8 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 
 - Create tables in your Oracle database using the script supplied in doc/howto/create-tables-ejbca3-oracle.sql.
 
+- Set environment variable APPSRV_HOME=$OC4J_HOME
+
 - Configure $OC4J_HOME/j2ee/home/config/application.xml to not create tables: autocreate-tables=”false”
 
 - Configure a connection pool and a datasource in Oracle AS.
