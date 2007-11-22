@@ -29,7 +29,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Adds a user to the database.
  *
- * @version $Id: EditUserCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: EditUserCommand.java,v 1.3 2007-11-22 12:01:10 anatom Exp $
  */
 public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -170,7 +170,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		
         getPrintStream().print("Existing tokens      : " + "USERGENERATED" + ", " +
         		"P12" + ", "+ "JKS" + ", "  + "PEM" + "\n");
-        getPrintStream().print("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL");
+        getPrintStream().print("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL\n");
 	}
 
 
