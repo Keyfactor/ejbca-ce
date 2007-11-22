@@ -19,7 +19,6 @@ import java.awt.print.PrinterJob;
 import java.io.IOException;
 import java.io.StringReader;
 
-import javax.ejb.EJBException;
 import javax.print.DocFlavor;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
@@ -36,7 +35,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2006 sep 20
  *
- * @version $Id: PrinterManager.java,v 1.4 2007-02-26 12:01:37 anatom Exp $
+ * @version $Id: PrinterManager.java,v 1.5 2007-11-22 15:07:42 anatom Exp $
  */
 public class PrinterManager {
 	
@@ -131,10 +130,10 @@ public class PrinterManager {
                 job.setCopies(copies);
 				job.print();	   	  	   	  	   	  	   	 
 			}else{
-				throw new EJBException("Error, couldn't find the right printer");		  	   	
+				throw new PrinterException("Error, couldn't find the right printer");		  	   	
 			}	
 		}catch(IOException e){
-			log.debug(e);
+			log.error(e);
 			throw new PrinterException("Error occured when processing the SVG data :" + e.getMessage());		
 		}
 	}
