@@ -184,9 +184,10 @@
 	    </copy>    	
 	    <copy todir="dist/ejbcawscli/">
             <fileset dir="${src}/jaxws/cli">
-                <include name="*.*" />
+                <include name="*" />
             </fileset>
         </copy> 
+        <chmod dir="dist/ejbcawscli/" includes="*.sh" perm="a+x"/>		
     	              
         <jar destfile="dist/ejbcawscli/ejbcawscli.jar" basedir="tmp/ejbcawscli.jar">
           <manifest>
