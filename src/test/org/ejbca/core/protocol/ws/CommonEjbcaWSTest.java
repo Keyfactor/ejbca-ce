@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.cert.CertStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import junit.framework.TestCase;
 
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.approval.IApprovalSessionHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
@@ -48,7 +50,9 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
@@ -61,6 +65,7 @@ import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
+import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
@@ -76,6 +81,7 @@ import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
+import org.ejbca.util.dn.DnComponents;
 
 public class CommonEjbcaWSTest extends TestCase {
 	
@@ -96,6 +102,8 @@ public class CommonEjbcaWSTest extends TestCase {
     protected IApprovalSessionRemote approvalSession;
     protected static IApprovalSessionHome approvalSessionHome;
     
+    protected final static String wsTestAdminUsername = "wstest";
+	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
     protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
     
     protected String getAdminCAName() {
@@ -257,20 +265,19 @@ public class CommonEjbcaWSTest extends TestCase {
 		return approvalSession;
 	}
 	
-	public void test00SetupAccessRights() throws Exception{
-		Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+	protected void test00SetupAccessRights() throws Exception{
 		boolean userAdded = false;
 		
-		if(!getUserAdminSession().existsUser(intAdmin, "wstest")){
+		if(!getUserAdminSession().existsUser(intAdmin, wsTestAdminUsername)){
 			UserDataVO user1 = new UserDataVO();
-			user1.setUsername("wstest");
+			user1.setUsername(wsTestAdminUsername);
 			user1.setPassword("foo123");			
 			user1.setDN("CN=wstest");			
 			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
 			user1.setCAId(cainfo.getCAId());
 			user1.setEmail(null);
 			user1.setSubjectAltName(null);
-			user1.setStatus(10);
+			user1.setStatus(UserDataConstants.STATUS_NEW);
 			user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
 			user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
 			user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
@@ -284,30 +291,30 @@ public class CommonEjbcaWSTest extends TestCase {
 			Iterator iter = admingroup.getAdminEntities().iterator();
 			while(iter.hasNext()){
 				AdminEntity adminEntity = (AdminEntity) iter.next();
-				if(adminEntity.getMatchValue().equals("wstest")){
+				if(adminEntity.getMatchValue().equals(wsTestAdminUsername)){
 					adminExists = true;
 				}
 			}
 			
 			if(!adminExists){
 				ArrayList list = new ArrayList();
-				list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,"wstest",cainfo.getCAId()));
+				list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,wsTestAdminUsername,cainfo.getCAId()));
 				getAuthSession().addAdminEntities(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId(), list);
 				getAuthSession().forceRuleUpdate(intAdmin);
 			}
 			
 		}
 		
-		if(!getUserAdminSession().existsUser(intAdmin, "wsnonadmintest")){
+		if(!getUserAdminSession().existsUser(intAdmin, wsTestNonAdminUsername)){
 			UserDataVO user1 = new UserDataVO();
-			user1.setUsername("wsnonadmintest");
+			user1.setUsername(wsTestNonAdminUsername);
 			user1.setPassword("foo123");			
 			user1.setDN("CN=wsnonadmintest");			
 			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
 			user1.setCAId(cainfo.getCAId());
 			user1.setEmail(null);
 			user1.setSubjectAltName(null);
-			user1.setStatus(10);
+			user1.setStatus(UserDataConstants.STATUS_NEW);
 			user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
 			user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
 			user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
@@ -322,9 +329,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			batch.setMainStoreDir("p12");
 			batch.createAllNew();
 		}
-		
-		
-		
+
 	}
 	
 
@@ -341,7 +346,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setCaName(getAdminCAName());
 		user1.setEmail(null);
 		user1.setSubjectAltName(null);
-		user1.setStatus(10);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
 		user1.setTokenType("USERGENERATED");
 		user1.setEndEntityProfileName("EMPTY");
 		user1.setCertificateProfileName("ENDUSER");
@@ -459,7 +464,6 @@ public class CommonEjbcaWSTest extends TestCase {
 	}
 	
 
-	
 	protected void test03GeneratePkcs10(boolean performSetup) throws Exception{
 		if(performSetup){
 			setUpAdmin();
@@ -517,7 +521,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertTrue(exceptionThrown); // Should fail
 		
 		// Change token to P12        		   
-        userdatas.get(0).setStatus(10);
+        userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
         userdatas.get(0).setPassword("foo456");
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
@@ -537,8 +541,39 @@ public class CommonEjbcaWSTest extends TestCase {
         Enumeration en = ks.aliases();
         String alias = (String) en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertTrue(cert.getSubjectDN().toString().equals("CN=WSTESTUSER1,O=Test"));
-        System.out.println("test03GeneratePkcs12() Certificate " +cert.getSubjectDN().toString() + " equals CN=WSTESTUSER1,O=Test");
+        assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSER1,O=Test");
+        PrivateKey privK1 = (PrivateKey)ks.getKey(alias, "foo456".toCharArray());
+        System.out.println("test04GeneratePkcs12() Certificate " +cert.getSubjectDN().toString() + " equals CN=WSTESTUSER1,O=Test");
+        
+        // Generate a new one and make sure it is a new one and that key recovery does not kick in by misstake
+		// Set status to new
+		usermatch = new UserMatch();
+        usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
+        usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
+        usermatch.setMatchvalue("WSTESTUSER1");       		
+	 	userdatas = ejbcaraws.findUser(usermatch);
+		assertTrue(userdatas != null);
+		assertTrue(userdatas.size() == 1);        
+        userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
+        userdatas.get(0).setPassword("foo456");
+        userdatas.get(0).setClearPwd(true);
+        ejbcaraws.editUser(userdatas.get(0));
+		// A new PK12 request now should return the same key and certificate
+        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(),"PKCS12","foo456");
+        assertNotNull(ks2);
+        en = ks2.aliases();
+        alias = (String) en.nextElement();
+        X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
+        assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSER1,O=Test");
+        PrivateKey privK2 = (PrivateKey)ks2.getKey(alias, "foo456".toCharArray());
+        
+        // Compare certificates, must not be the same
+        assertFalse(cert.getSerialNumber().toString(16).equals(cert2.getSerialNumber().toString(16)));
+        // Compare keys, must not be the same
+        String key1 = new String(Hex.encode(privK1.getEncoded()));
+        String key2 = new String(Hex.encode(privK2.getEncoded()));
+        assertFalse(key1.equals(key2));
 
 	}
 
@@ -556,7 +591,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
         userdatas.get(0).setTokenType("P12");       		   
-        userdatas.get(0).setStatus(10);
+        userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
         userdatas.get(0).setPassword("foo123");
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));        
@@ -622,7 +657,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
 		userdatas.get(0).setTokenType("P12");
-		userdatas.get(0).setStatus(10);
+		userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
 		userdatas.get(0).setPassword("foo456");
 		userdatas.get(0).setClearPwd(true);
 		ejbcaraws.editUser(userdatas.get(0));
@@ -686,7 +721,7 @@ public class CommonEjbcaWSTest extends TestCase {
         usermatch.setMatchvalue("WSTESTUSER1");			
 		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);    
 		userdatas.get(0).setTokenType("P12");       		   
-		userdatas.get(0).setStatus(10);
+		userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
 		userdatas.get(0).setPassword("foo123");
 		userdatas.get(0).setClearPwd(true);
 		ejbcaraws.editUser(userdatas.get(0));        
@@ -703,7 +738,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		String alias = (String) en.nextElement();
 		X509Certificate cert1 = (X509Certificate) ks.getCertificate(alias);
 		
-		userdatas.get(0).setStatus(10);
+		userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
 		userdatas.get(0).setPassword("foo123");
 		userdatas.get(0).setClearPwd(true);
 		ejbcaraws.editUser(userdatas.get(0));  
@@ -750,7 +785,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		usermatch.setMatchvalue("WSTESTUSER1");				
 		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);    
 		userdatas.get(0).setTokenType("P12");       		   
-		userdatas.get(0).setStatus(10);
+		userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
 		userdatas.get(0).setPassword("foo123");
 		userdatas.get(0).setClearPwd(true);
 		ejbcaraws.editUser(userdatas.get(0));        
@@ -800,7 +835,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setCaName(getAdminCAName());
 		user1.setEmail(null);
 		user1.setSubjectAltName(null);
-		user1.setStatus(10);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
 		user1.setTokenType("USERGENERATED");
 		user1.setEndEntityProfileName("EMPTY");
 		user1.setCertificateProfileName("ENDUSER");
@@ -868,7 +903,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		tokenUser1.setCaName(getAdminCAName());
 		tokenUser1.setEmail(null);
 		tokenUser1.setSubjectAltName(null);
-		tokenUser1.setStatus(10);
+		tokenUser1.setStatus(UserDataConstants.STATUS_NEW);
 		tokenUser1.setTokenType("USERGENERATED");
 		tokenUser1.setEndEntityProfileName("EMPTY");
 		tokenUser1.setCertificateProfileName("ENDUSER"); 
@@ -1176,6 +1211,7 @@ public class CommonEjbcaWSTest extends TestCase {
 	    }
 	} // testRevocationApprovals
 	
+
 	protected void test19GeneratePkcs10Request(boolean performSetup) throws Exception{
 		if(performSetup){
 			setUpAdmin();
@@ -1190,7 +1226,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
         userdatas.get(0).setTokenType("USERGENERATED");  		   
-        userdatas.get(0).setStatus(10);
+        userdatas.get(0).setStatus(UserDataConstants.STATUS_NEW);
         userdatas.get(0).setPassword("foo123");
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
@@ -1219,6 +1255,112 @@ public class CommonEjbcaWSTest extends TestCase {
 		        
 	}
 	
+	protected void test20KeyRecover(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		GlobalConfiguration gc = getRAAdmin().loadGlobalConfiguration(intAdmin);
+		boolean krenabled = gc.getEnableKeyRecovery();
+		if (krenabled == true) {
+			gc.setEnableKeyRecovery(false);
+			getRAAdmin().saveGlobalConfiguration(intAdmin, gc);
+		}
+
+		boolean trows = false;
+		try{
+			// This should throw an exception that key recovery is not enabled
+			ejbcaraws.keyRecoverNewest("WSTESTUSER1");
+		}catch(EjbcaException_Exception e){
+			trows = true;
+			//e.printStackTrace();
+			assertEquals(e.getMessage(),"Keyrecovery have to be enabled in the system configuration in order to use this command.");
+		}
+		assertTrue(trows);
+
+		// Set key recovery enabled
+		gc.setEnableKeyRecovery(true);
+		getRAAdmin().saveGlobalConfiguration(intAdmin, gc);
+
+		trows = false;
+		try{
+			// This should throw an exception that the user does not exist
+			ejbcaraws.keyRecoverNewest("sdfjhdiuwerw43768754###");
+		}catch(NotFoundException_Exception e){
+			trows = true;
+			//e.printStackTrace();
+			assertEquals(e.getMessage(),"Error: User sdfjhdiuwerw43768754### doesn't exist.");
+		}
+		assertTrue(trows);
+
+		// Add a new End entity profile, KEYRECOVERY
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COMMONNAME);
+    	profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
+        profile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);
+        profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
+        profile.setReUseKeyRevoceredCertificate(true);
+    	getRAAdmin().addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
+
+		// Add a new user, set token to P12, status to new and end entity profile to key recovery
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setKeyRecoverable(true);
+		user1.setUsername("WSTESTUSERKEYREC1");
+		user1.setPassword("foo456");
+		user1.setClearPwd(true);
+		user1.setSubjectDN("CN=WSTESTUSERKEYREC1");
+		user1.setCaName(getAdminCAName());
+		user1.setEmail(null);
+		user1.setSubjectAltName(null);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("P12");
+		user1.setEndEntityProfileName("KEYRECOVERY");
+		user1.setCertificateProfileName("ENDUSER");
+        ejbcaraws.editUser(user1);
+
+        KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(),"PKCS12","foo456");
+        assertNotNull(ks);
+        Enumeration en = ks.aliases();
+        String alias = (String) en.nextElement();
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+        assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC1");
+        PrivateKey privK = (PrivateKey)ks.getKey(alias, "foo456".toCharArray());
+        
+		// This should work now
+		ejbcaraws.keyRecoverNewest("WSTESTUSERKEYREC1");
+		
+		// Set status to new
+		UserMatch usermatch = new UserMatch();
+        usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
+        usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
+        usermatch.setMatchvalue("WSTESTUSERKEYREC1");       		
+	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+		assertTrue(userdatas != null);
+		assertTrue(userdatas.size() == 1);        
+        userdatas.get(0).setStatus(UserDataConstants.STATUS_KEYRECOVERY);
+        ejbcaraws.editUser(userdatas.get(0));
+		// A new PK12 request now should return the same key and certificate
+        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(),"PKCS12","foo456");
+        assertNotNull(ks2);
+        en = ks2.aliases();
+        alias = (String) en.nextElement();
+        X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
+        assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC1");
+        PrivateKey privK2 = (PrivateKey)ks2.getKey(alias, "foo456".toCharArray());
+        
+        // Compare certificates
+        assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
+        // Compare keys
+        String key1 = new String(Hex.encode(privK.getEncoded()));
+        String key2 = new String(Hex.encode(privK2.getEncoded()));
+        assertEquals(key1, key2);
+
+	} // test20KeyRecover
+
+	//
+	// Private methods
+	//
 	/**
 	 * Create a user a generate cert. 
 	 */
@@ -1258,7 +1400,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		tokenUser1.setCaName(caName);
 		tokenUser1.setEmail(null);
 		tokenUser1.setSubjectAltName(null);
-		tokenUser1.setStatus(10);
+		tokenUser1.setStatus(UserDataConstants.STATUS_NEW);
 		tokenUser1.setTokenType("USERGENERATED");
 		tokenUser1.setEndEntityProfileName("EMPTY");
 		tokenUser1.setCertificateProfileName("ENDUSER"); 

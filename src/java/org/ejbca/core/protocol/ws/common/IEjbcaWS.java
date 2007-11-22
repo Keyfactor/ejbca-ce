@@ -57,7 +57,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.9 2007-08-22 12:07:41 herrvendil Exp $
+ * $Id: IEjbcaWS.java,v 1.10 2007-11-22 17:17:20 anatom Exp $
  */
 public interface IEjbcaWS {
 	
@@ -275,6 +275,27 @@ public interface IEjbcaWS {
 			NotFoundException, EjbcaException, ApprovalException,
 			WaitingForApprovalException, AlreadyRevokedException;
 
+	/**
+	 * Method used to mark the users latest certificate for key recovery
+	 * 
+	 * Authorization requirements: the client certificate must have the following privileges set
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /ra_functionality/keyrecovery
+	 * - /endentityprofilesrules/<end entity profile of the user>/keyrecovery
+	 * - /ca/<ca of users certificate>
+	 * 
+	 * @param username unique username i EJBCA
+	 * @throws AuthorizationDeniedException if client isn't authorized.
+	 * @throws NotFoundException if user doesn't exist
+	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
+	 * @throws ApprovalException if there already exists an approval request for this task
+	 * @throws EjbcaException if there is a configuration or other error
+	 */
+	public abstract void keyRecoverNewest(String username) throws AuthorizationDeniedException,
+			NotFoundException, EjbcaException, ApprovalException,
+			WaitingForApprovalException;
+	
 	/**
 	 * Method used to revoke all certificates mapped to one hardtoken.
 	 *

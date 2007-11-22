@@ -20,8 +20,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -41,14 +39,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
-import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
@@ -60,11 +54,11 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -95,7 +89,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.20 2007-09-12 08:46:20 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.21 2007-11-22 17:17:19 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -114,8 +108,6 @@ public class CertReqServlet extends HttpServlet {
 
     private IUserAdminSessionHome useradminhome = null;
     private IRaAdminSessionHome raadminhome = null;
-    private IKeyRecoverySessionHome keyrecoveryhome = null;
-	private IAuthenticationSessionHome authhome = null;
 
     private ISignSessionLocal signsession = null;
     private ICAAdminSessionLocal casession = null;
@@ -162,10 +154,6 @@ public class CertReqServlet extends HttpServlet {
                              ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
             raadminhome   = (IRaAdminSessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class );            
-            keyrecoveryhome = (IKeyRecoverySessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class );
-            
-            authhome = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("AuthenticationSession"), IAuthenticationSessionHome.class);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -237,13 +225,16 @@ public class CertReqServlet extends HttpServlet {
             }
 
             boolean savekeys = data.getKeyRecoverable() && usekeyrecovery &&  (data.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
-            boolean loadkeys = (data.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) &&
-                usekeyrecovery;
+            boolean loadkeys = (data.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+
+            int endEntityProfileId = data.getEndEntityProfileId();
+            EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(administrator, endEntityProfileId);
+            boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 
             // get users Token Type.
             tokentype = data.getTokenType();
             if(tokentype == SecConst.TOKEN_SOFT_P12){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, data.getEndEntityProfileId());
+              KeyStore ks = GenerateToken.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
               if (StringUtils.equals(openvpn, "on")) {            	  
                   sendOpenVPNToken(ks, username, password, response);
               } else {
@@ -251,16 +242,16 @@ public class CertReqServlet extends HttpServlet {
               }
             }
             if(tokentype == SecConst.TOKEN_SOFT_JKS){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, data.getEndEntityProfileId());
+              KeyStore ks = GenerateToken.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
               sendJKSToken(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_PEM){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, data.getEndEntityProfileId());
+              KeyStore ks = GenerateToken.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
               sendPEMTokens(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
 
-              // first check if it is a netcsape request,
+              // first check if it is a netscape request,
               if (request.getParameter("keygen") != null) {
                   byte[] reqBytes=request.getParameter("keygen").getBytes();
                   if (reqBytes != null) {
@@ -614,92 +605,6 @@ public class CertReqServlet extends HttpServlet {
         buffer.close();
     }
 
-
-    private KeyStore generateToken(Admin administrator, String username, String password, int caid, String keylength, String keyalg, boolean createJKS, 
-    		                       boolean loadkeys, boolean savekeys, int endEntityProfileId)
-       throws Exception{
-    	
-    	
-         KeyRecoveryData keyData = null;
-         KeyPair rsaKeys = null;
-         boolean reusecertificate = false;
-         if(loadkeys){
-        	 
-           IRaAdminSessionRemote raadminsession = raadminhome.create();
-           EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(administrator, endEntityProfileId);
-           reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
-        	 
-           // used saved keys.
-           IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           keyData = keyrecoverysession.keyRecovery(administrator, username, endEntityProfileId);
-           rsaKeys = keyData.getKeyPair();
-           
-           if(reusecertificate){
-        	   keyrecoverysession.unmarkUser(administrator,username);
-           }
-         }
-         else{
-           // generate new keys.
-           rsaKeys = KeyTools.genKeys(keylength, keyalg);
-         }
-         
-         ISignSessionLocal signsession = getSignSession();
-         X509Certificate cert = null;
-         if(reusecertificate){
-        	 cert = (X509Certificate) keyData.getCertificate();
-             ICAAdminSessionLocal caadminsession = getCASession();
-             boolean finishUser = caadminsession.getCAInfo(administrator,caid).getFinishUser();
-             if(finishUser){
-           	  IAuthenticationSessionRemote authsession = authhome.create();
-           	  authsession.finishUser(administrator, username, password);
-             }
-        	 
-         }else{        	 
-             cert = (X509Certificate)signsession.createCertificate(administrator, username, password, rsaKeys.getPublic());	 
-         }
-
-        // Make a certificate chain from the certificate and the CA-certificate
-        Certificate[] cachain = (Certificate[]) signsession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
-
-        // Verify CA-certificate
-        if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
-            try {
-                cachain[cachain.length - 1].verify(cachain[cachain.length - 1].getPublicKey());
-            } catch (GeneralSecurityException se) {
-                throw new Exception("RootCA certificate does not verify");
-            }
-        } else {
-            throw new Exception("RootCA certificate not self-signed");
-        }
-
-        // Verify that the user-certificate is signed by our CA
-        try {
-            cert.verify(cachain[0].getPublicKey());
-        } catch (GeneralSecurityException se) {
-            throw new Exception("Generated certificate does not verify using CA-certificate.");
-        }
-
-        if (savekeys) {
-            // Save generated keys to database.
-            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-            keyrecoverysession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
-        }
-
-        // Use CN if as alias in the keystore, if CN is not present use username
-        String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-        if (alias == null) alias = username;
-
-        // Store keys and certificates in keystore.
-        KeyStore ks = null;
-
-        if (createJKS) {
-            ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
-        } else {
-            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
-        }
-
-        return ks;
-    }
 }
 
 

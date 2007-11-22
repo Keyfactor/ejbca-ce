@@ -1170,6 +1170,9 @@ The functionality currently available through the Web Service Interface are:
 <li>customLog  : Logs a CUSTOM_LOG event to the logging system</li>
 <li>deleteUserDataFromSource : Method used to remove user data from a user data source</li>
 <li>getCertificate : Returns a certificate given its issuer and serial number</li>
+<li>keyRecoverNewest : Marks the users latest certificate for key recovery. Note, to key recover the user the status 
+must also be set to KEYRECOVERY (70), and the user must have been generated for key recovery from the start.
+If all prerequisites are fulfilled, the next pkcs12Req call (for example) will return the recovered key and certificate.</li> 
 </ul>
 <p>
 There is also a cli tool that can be used for remote scripting. See following section for more information.

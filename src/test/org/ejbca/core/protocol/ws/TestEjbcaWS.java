@@ -4,107 +4,32 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
 
 /** To run you must have the file tmp/bin/junit/jndi.properties
  * 
- * @version $Id: TestEjbcaWS.java,v 1.11 2007-08-22 12:07:39 herrvendil Exp $
+ * @version $Id: TestEjbcaWS.java,v 1.12 2007-11-22 17:17:21 anatom Exp $
  */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
 	
-	private final static String wsTestAdminUsername = "wstest";
-	private final static String wsTestNonAdminUsername = "wsnonadmintest";
-	private final static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 	
 	public void test00SetupAccessRights() throws Exception{
-		//Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		boolean userAdded = false;
-		
-		if(!getUserAdminSession().existsUser(intAdmin, wsTestAdminUsername)){
-			UserDataVO user1 = new UserDataVO();
-			user1.setUsername(wsTestAdminUsername);
-			user1.setPassword("foo123");			
-			user1.setDN("CN=wstest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
-			user1.setCAId(cainfo.getCAId());
-			user1.setEmail(null);
-			user1.setSubjectAltName(null);
-			user1.setStatus(10);
-			user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
-			user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-			user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-			user1.setType(65);
-			
-			getUserAdminSession().addUser(intAdmin, user1, true);
-			userAdded = true;
-
-			boolean adminExists = false;
-			AdminGroup admingroup = getAuthSession().getAdminGroup(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId());
-			Iterator iter = admingroup.getAdminEntities().iterator();
-			while(iter.hasNext()){
-				AdminEntity adminEntity = (AdminEntity) iter.next();
-				if(adminEntity.getMatchValue().equals(wsTestAdminUsername)){
-					adminExists = true;
-				}
-			}
-			
-			if(!adminExists){
-				ArrayList list = new ArrayList();
-				list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,wsTestAdminUsername,cainfo.getCAId()));
-				getAuthSession().addAdminEntities(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId(), list);
-				getAuthSession().forceRuleUpdate(intAdmin);
-			}
-			
-		}
-		
-		if(!getUserAdminSession().existsUser(intAdmin, wsTestNonAdminUsername)){
-			UserDataVO user1 = new UserDataVO();
-			user1.setUsername(wsTestNonAdminUsername);
-			user1.setPassword("foo123");			
-			user1.setDN("CN=wsnonadmintest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
-			user1.setCAId(cainfo.getCAId());
-			user1.setEmail(null);
-			user1.setSubjectAltName(null);
-			user1.setStatus(10);
-			user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
-			user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-			user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-			user1.setType(1);
-			
-			getUserAdminSession().addUser(intAdmin, user1, true);
-			userAdded = true;	
-		}
-		
-		if(userAdded){
-			BatchMakeP12 batch = new BatchMakeP12();
-			batch.setMainStoreDir("p12");
-			batch.createAllNew();
-		}
-		
-		
-		
+		super.test00SetupAccessRights();
 	}
+	
 	
 	public void test01EditUser() throws Exception{
 		test01EditUser(true);
 	}
 
-	
 	public void test02findUser() throws Exception{
 		test02findUser(true);
-	}		
-	
-	
-	
+	}			
+
 	public void test03GeneratePkcs10() throws Exception{
 		test03GeneratePkcs10(true);
 	}
@@ -112,7 +37,6 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     public void test03_2GeneratePkcs10Request() throws Exception {
     	test19GeneratePkcs10Request(true);  
     }
-	
 
 	public void test04GeneratePkcs12() throws Exception{
 		test04GeneratePkcs12(true);
@@ -182,7 +106,10 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     public void test19RevocationApprovals() throws Exception {
     	test18RevocationApprovals(true);  
     }
-    
+
+    public void test20KeyRecoverNewest() throws Exception {
+    	test20KeyRecover(true);  
+    }
 
     
     public void test99cleanUp() throws Exception {
@@ -214,6 +141,25 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
         if (new File("p12/" + wsTestNonAdminUsername + ".jks").exists()) {
         	new File("p12/" + wsTestNonAdminUsername + ".jks").delete();
         }
+        
+		// Remove test user
+        try {
+        	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        try {
+        	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        // Remove Key recovery end entity profile
+        try {
+        	getRAAdmin().removeEndEntityProfile(intAdmin, "KEYRECOVERY");
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+
     }
     
 }
