@@ -50,7 +50,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.8 2007-11-23 16:31:06 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.9 2007-11-23 17:46:33 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -266,7 +266,10 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
         	if (data == null) {
         		throw new FinderException("User '"+username+"' can not be found.");
         	}
-        	usersession.setUserStatus(admin, username, UserDataConstants.STATUS_GENERATED);
+        	// This admin can be the public web user, which may not be allowed to change status,
+        	// this is a bit ugly, but what can a man do...
+        	Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
+        	usersession.setUserStatus(statusadmin, username, UserDataConstants.STATUS_GENERATED);
         	String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
             logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,msg);
             debug("<finishUser("+username+", hiddenpwd)");
