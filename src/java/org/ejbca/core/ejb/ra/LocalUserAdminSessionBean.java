@@ -80,6 +80,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.NotificationParamGen;
@@ -97,7 +98,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.45 2007-09-05 08:04:05 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.46 2007-11-23 16:31:03 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -511,9 +512,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                     throw new EJBException(nsae);
                 }
             }
-            if ((type & SecConst.USER_SENDNOTIFICATION) != 0) {
-                sendNotification(admin, profile, userdata.getUsername(), newpassword, dn, userdata.getEmail(), userdata.getCAId());
-            }
+            
+            // Send notifications, if they should be sent
+            sendNotification(admin, userdata, UserDataConstants.STATUS_NEW);
+            
             if ((type & SecConst.USER_PRINT) != 0) {
             	print(admin,profile,userdata);
             }
@@ -702,11 +704,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             }
 
             boolean statuschanged = userdata.getStatus() != oldstatus;
-            // Send notification fi it should be sent. Should only be sent if new status is NEW, KEYRECOVERY or INITIALIZED, you don't send a notification to a user that has no use of the password
-            if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
-
-                sendNotification(admin, profile, userdata.getUsername(), newpassword, dn, userdata.getEmail(), userdata.getCAId());
-            }
+            // Send notification if it should be sent. 
+            sendNotification(admin, userdata, userdata.getStatus());
+            
             // Only print stuff on a printer on the same conditions as for notifications, we also only print if the status changes, not for every time we press save
             if ((type & SecConst.USER_PRINT) != 0 && statuschanged && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
             	print(admin,profile,userdata);
@@ -780,6 +780,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest",null),
 		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeUser"),
 		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeCert"),
+		new ApprovalOveradableClassName("org.ejbca.core.ejb.ca.auth.LocalAuthenticationSessionBean","finishUser"),
 		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","unrevokeCert"),
 		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 		new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
@@ -837,6 +838,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             data1.setTimeModified((new java.util.Date()).getTime());
             String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, new Integer(status));            	
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY, msg);
+
+            // Send notifications when transitioning user through work-flow, if they should be sent
+            UserDataVO userdata = data1.toUserDataVO();
+            sendNotification(admin, userdata, status);
+
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, msg);
@@ -1872,39 +1878,61 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     	}
     }
     
-    private void sendNotification(Admin admin, EndEntityProfile profile, String username, String password, String dn, String email, int caid) {
-        debug(">sendNotification: user="+username+", email="+email);
-        try {
-            if (email == null) {
-        		String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", username);
-                throw new Exception(msg);
-            }
+    private void sendNotification(Admin admin, UserDataVO data, int newstatus) {
+    	if (data == null) {
+        	log.debug("No UserData, no notification sent.");
+    		return;
+    	}
+        debug(">sendNotification: user="+data.getUsername()+", email="+data.getEmail());
 
-            String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
-            Session mailSession = getLocator().getMailSession(mailJndi);
-            NotificationParamGen paramGen = new NotificationParamGen(username,password,dn);
-            HashMap params = paramGen.getParams();
-
-            Message msg = new TemplateMimeMessage(params, mailSession);
-            msg.setFrom(new InternetAddress(profile.getNotificationSender()));
-            msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(email, false));
-            msg.setSubject(profile.getNotificationSubject());
-            msg.setContent(profile.getNotificationMessage(), "text/plain");
-            msg.setHeader("X-Mailer", "JavaMailer");
-            msg.setSentDate(new Date());
-            Transport.send(msg);
-
-            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_NOTIFICATION, intres.getLocalizedMessage("ra.sentnotification", username, email));
-        } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("ra.errorsendnotification", username, email);
-        	error(msg, e);
-            try{
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
-            }catch(Exception f){
-                throw new EJBException(f);
-            }
+        // Make check if we should send notifications at all
+        if ( !((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) ) {
+        	log.debug("Type does not contain SecConst.USER_SENDNOTIFICATION, no notification sent.");
+        	return;
         }
-        debug("<sendNotification: user="+username+", email="+email);
+        // Should only be sent if new status is NEW, KEYRECOVERY or INITIALIZED, you don't send a notification to a user that has no use of the password
+        if ( !(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_KEYRECOVERY || newstatus == UserDataConstants.STATUS_INITIALIZED) ) {
+        	log.debug("Status is "+newstatus+", no notification sent.");
+        	return;
+        }
+        int profileId = data.getEndEntityProfileId();
+        EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
+        Collection l = profile.getUserNotifications();
+        Iterator i = l.iterator();
+        while (i.hasNext()) {
+        	UserNotification not = (UserNotification)i.next(); 
+            try {
+                if (data.getEmail() == null) {
+            		String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", data.getUsername());
+                    throw new Exception(msg);
+                }
+
+                String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
+                Session mailSession = getLocator().getMailSession(mailJndi);
+                NotificationParamGen paramGen = new NotificationParamGen(data.getUsername(),data.getPassword(),data.getDN());
+                HashMap params = paramGen.getParams();
+
+                Message msg = new TemplateMimeMessage(params, mailSession);
+                msg.setFrom(new InternetAddress(not.getNotificationSender()));
+                msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(data.getEmail(), false));
+                msg.setSubject(not.getNotificationSubject());
+                msg.setContent(not.getNotificationMessage(), "text/plain");
+                msg.setHeader("X-Mailer", "JavaMailer");
+                msg.setSentDate(new Date());
+                Transport.send(msg);
+
+                logsession.log(admin, data.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_INFO_NOTIFICATION, intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), data.getEmail()));
+            } catch (Exception e) {
+            	String msg = intres.getLocalizedMessage("ra.errorsendnotification", data.getUsername(), data.getEmail());
+            	error(msg, e);
+                try{
+                    logsession.log(admin, data.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
+                }catch(Exception f){
+                    throw new EJBException(f);
+                }
+            }        	
+        }
+        debug("<sendNotification: user="+data.getUsername()+", email="+data.getEmail());
     } // sendNotification
 
     /**

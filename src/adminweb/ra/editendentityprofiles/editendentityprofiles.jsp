@@ -1,8 +1,8 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst
-               ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
-                org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,
+               ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
+                org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.ra.UserDataConstants,
                 org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.util.dn.DnComponents,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
@@ -486,10 +486,19 @@
                profiledata.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, availablehardtokenissuers);
                profiledata.setRequired(EndEntityProfile.AVAILTOKENISSUER, 0, true);    
              }
-
-             profiledata.setNotificationSender(request.getParameter(TEXTFIELD_NOTIFICATIONSENDER));
-             profiledata.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT));
-             profiledata.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE));
+             
+             String sender = request.getParameter(TEXTFIELD_NOTIFICATIONSENDER);
+             if ( (sender != null) && (sender.length() > 0) ) {
+                 UserNotification not = new UserNotification();
+                 not.setNotificationSender(sender);
+                 not.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT));
+                 not.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE));
+                 // Add the statuschanges we used to send notifications about
+            	 not.setNotificationEvents(UserNotification.EVENTS_EDITUSER);
+            	 // The old recipients where always the user
+            	 not.setNotificationRecipient(UserNotification.RCPT_USER);
+                 profiledata.addUserNotification(not);
+             }
              
              value = request.getParameter(CHECKBOX_USE_PRINTING);
              if(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)){

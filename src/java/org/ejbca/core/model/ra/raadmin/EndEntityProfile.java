@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DNFieldExtractor;
@@ -51,7 +53,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.25 2007-08-19 15:36:53 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.26 2007-11-23 16:31:05 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -59,7 +61,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 7;
+    public static final float LATEST_VERSION = 8;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -555,39 +557,37 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	return PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);    	
     }
     
-    public String getNotificationSender(){
-    	if(data.get(NOTIFICATIONSENDER) == null)
-    		return "";
-    	
-    	return (String) data.get(NOTIFICATIONSENDER);
+    // User notifications - begin
+    public List getUserNotifications() {
+    	List l = (List)data.get(USERNOTIFICATIONS);
+    	if (l == null) {
+    		l = new ArrayList();
+    	}
+    	return l;
     }
-    
-    public void setNotificationSender(String sender){
-    	data.put(NOTIFICATIONSENDER, sender);
+
+    public void addUserNotification(UserNotification notification) {
+    	if (data.get(USERNOTIFICATIONS) == null) {
+    		setUserNotifications(new ArrayList(0));
+    	}
+    	((List) data.get(USERNOTIFICATIONS)).add(notification);
     }
-    
-    public String getNotificationSubject(){
-    	if(data.get(NOTIFICATIONSUBJECT) == null)
-    		return "";
-    	
-    	return (String) data.get(NOTIFICATIONSUBJECT);
+
+    public void setUserNotifications(List notifications) {
+    	if (notifications == null) {
+    		data.put(USERNOTIFICATIONS, new ArrayList(0));
+    	} else {
+    		data.put(USERNOTIFICATIONS, notifications);
+    	}
     }
-    
-    public void setNotificationSubject(String subject){
-    	data.put(NOTIFICATIONSUBJECT, subject);
+
+    public void removeUserNotification(UserNotification notification) {
+    	if (data.get(USERNOTIFICATIONS) != null) {
+    		((List) data.get(USERNOTIFICATIONS)).remove(notification);
+    	}
     }
-        
-    public String getNotificationMessage(){
-    	if(data.get(NOTIFICATIONMESSAGE) == null)
-    		return "";
-    	    	
-    	return (String) data.get(NOTIFICATIONMESSAGE);
-    }
-    
-    public void setNotificationMessage(String message){
-    	data.put(NOTIFICATIONMESSAGE, message);
-    }
-    
+    // User notifications - end
+
     /**
      * @return indicationg if the keyreccovered certificate should be reused or not.
      */
@@ -1153,7 +1153,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     /** Implemtation of UpgradableDataHashMap function upgrade. */
-
     public void upgrade() {
         log.debug(">upgrade");
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
@@ -1180,9 +1179,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setRequired(DEFAULTCA,0,true);
             }
             if(getVersion() < 3){
-                setNotificationSubject("");
-                setNotificationSender("");
-                setNotificationMessage("");
+            	// These fields have been removed in version 8, no need for this upgrade
+                //setNotificationSubject("");
+                //setNotificationSender("");
+                //setNotificationMessage("");
             }
             
             if(getVersion() < 4){
@@ -1234,6 +1234,27 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setRequired(ENDTIME, 0, false);
                 setUse(ENDTIME, 0, false);
                 setModifyable(ENDTIME, 0, true);            	
+            }
+            // Notifications is now a more general mechanism in version 8
+            if (getVersion() < 8) {
+            	log.debug("Upgrading User Notifications");
+            	if (data.get(UserNotification.NOTIFICATIONSENDER) != null) {
+            		UserNotification not = new UserNotification();
+            		not.setNotificationSender((String)data.get(UserNotification.NOTIFICATIONSENDER));
+            		if (data.get(UserNotification.NOTIFICATIONSUBJECT) != null) {
+                		not.setNotificationSubject((String)data.get(UserNotification.NOTIFICATIONSUBJECT));            			
+            		}
+            		if (data.get(UserNotification.NOTIFICATIONMESSAGE) != null) {
+                		not.setNotificationMessage((String)data.get(UserNotification.NOTIFICATIONMESSAGE));            			
+            		}
+            		// Add the statuschanges we used to send notifications about
+            		String events = UserNotification.EVENTS_EDITUSER;
+            		not.setNotificationEvents(events);
+            		// The old recipients where always the user
+            		not.setNotificationRecipient(UserNotification.RCPT_USER);
+            		
+            		addUserNotification(not);
+            	}
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }
@@ -1628,9 +1649,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
     private static final String SUBJECTDIRATTRFIELDORDER  = "SUBJECTDIRATTRFIELDORDER";
     
-    private static final String NOTIFICATIONSENDER     = "NOTIFICATIONSENDER";
-    private static final String NOTIFICATIONSUBJECT    = "NOTIFICATIONSSUBJECT";
-    private static final String NOTIFICATIONMESSAGE   = "NOTIFICATIONSMESSAGE";
+    private static final String USERNOTIFICATIONS         = "USERNOTIFICATIONS";
 
     private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
     private static final String REVERSEFFIELDCHECKS = "REVERSEFFIELDCHECKS"; 

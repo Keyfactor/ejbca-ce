@@ -61,7 +61,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.12 2006-11-10 09:29:34 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.13 2007-11-23 16:31:04 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -424,7 +424,7 @@ public abstract class UserDataBean extends BaseEntityBean {
 
 
     /**
-     * Non-searchable information about a user. for future use.
+     * Non-searchable information about a user. 
      * @ejb.interface-method
      */
     public ExtendedInformation getExtendedInformation() {
@@ -432,7 +432,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     }
 
     /**
-     * Non-searchable information about a user. for future use.
+     * Non-searchable information about a user. 
      * @ejb.interface-method
      */
     public void setExtendedInformation(ExtendedInformation extendedinformation) {
@@ -453,7 +453,30 @@ public abstract class UserDataBean extends BaseEntityBean {
     		
     	}
     }
-    
+
+    /**
+     * Non-searchable information about a user. 
+     * @ejb.interface-method
+     */
+    public UserDataVO toUserDataVO() {
+        UserDataVO data = new UserDataVO();
+        data.setCAId(getCaId());
+        data.setCertificateProfileId(getCertificateProfileId());
+        data.setDN(getSubjectDN());
+        data.setEmail(getSubjectEmail());
+        data.setEndEntityProfileId(getEndEntityProfileId());
+        data.setExtendedinformation(getExtendedInformation());
+        data.setHardTokenIssuerId(getHardTokenIssuerId());
+        data.setPassword(getClearPassword());
+        data.setStatus(getStatus());
+        data.setSubjectAltName(getSubjectAltName());
+        data.setTimeCreated(new Date(getTimeCreated()));
+        data.setTimeModified(new Date(getTimeModified()));
+        data.setTokenType(getTokenType());
+        data.setType(getType());
+        return data;
+    }
+
     //
     // Fields required by Container
     //

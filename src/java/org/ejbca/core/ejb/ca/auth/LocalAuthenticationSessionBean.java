@@ -17,6 +17,7 @@ import java.util.Date;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
+import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
@@ -24,12 +25,17 @@ import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.UserDataLocal;
 import org.ejbca.core.ejb.ra.UserDataLocalHome;
 import org.ejbca.core.ejb.ra.UserDataPK;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
@@ -44,7 +50,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.7 2007-01-16 11:42:22 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.8 2007-11-23 16:31:06 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -71,6 +77,15 @@ import org.ejbca.core.model.ra.UserDataVO;
  *   local-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal"
  *   remote-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote"
  *
+ * @ejb.ejb-external-ref
+ *   description="The User Admin session bean"
+ *   view-type="local"
+ *   ref-name="ejb/UserAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
+ *   link="UserAdminSession"
+ *   
  * @ejb.ejb-external-ref
  *   description="The User entity bean"
  *   view-type="local"
@@ -109,9 +124,13 @@ import org.ejbca.core.model.ra.UserDataVO;
  *
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
+
     /** home interface to user entity bean */
     private UserDataLocalHome userHome = null;
-
+    
+    /** interface to user admin session bean */
+    private IUserAdminSessionLocal usersession = null;
+    
     /** The remote interface of the log session bean */
     private ILogSessionLocal logsession;
     
@@ -134,10 +153,11 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     public void ejbCreate() throws CreateException {
         debug(">ejbCreate()");
         
-        // Look up the UserDataLocal entity bean home interface
         userHome = (UserDataLocalHome)getLocator().getLocalHome(UserDataLocalHome.COMP_NAME);
         ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
         logsession = logsessionhome.create();
+        IUserAdminSessionLocalHome usersessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+        usersession = usersessionhome.create();
         
         debug("<ejbCreate()");
     }
@@ -237,31 +257,35 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * @throws ObjectNotFoundException if the user does not exist.
      * @ejb.interface-method
      */
-    public void finishUser(Admin admin, String username, String password)
-        throws ObjectNotFoundException {
+    public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
         debug(">finishUser(" + username + ", hiddenpwd)");
 
         try {
-            // Find the user with username username
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data = userHome.findByPrimaryKey(pk);
-            data.setStatus(UserDataConstants.STATUS_GENERATED);
-            data.setTimeModified((new Date()).getTime()); 
-            // Reset key recoveryflag if keyrecovery is used.
-            if(this.getKeyRecoverySession(admin) != null){     
-              getKeyRecoverySession(admin).unmarkUser(admin,username);
-            }            
+            // Change status of the user with username username
+        	UserDataVO data = usersession.findUser(admin, username);
+        	if (data == null) {
+        		throw new FinderException("User '"+username+"' can not be found.");
+        	}
+        	usersession.setUserStatus(admin, username, UserDataConstants.STATUS_GENERATED);
         	String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
-            logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,msg);
+            logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,msg);
             debug("<finishUser("+username+", hiddenpwd)");
-        } catch (ObjectNotFoundException oe) {
+        } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
             logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
-            throw oe;
-        } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("error.unknown");            	
-            error(msg, e);
-            throw new EJBException(e.toString());
-        }
+            throw new ObjectNotFoundException(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
+			// Should never happen
+            error("AuthorizationDeniedException: ", e);
+            throw new EJBException(e);
+		} catch (ApprovalException e) {
+			// Should never happen
+            error("ApprovalException: ", e);
+            throw new EJBException(e);
+		} catch (WaitingForApprovalException e) {
+			// Should never happen
+            error("ApprovalException: ", e);
+            throw new EJBException(e);
+		}
     } //finishUser
 }

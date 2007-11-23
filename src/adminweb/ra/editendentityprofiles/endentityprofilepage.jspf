@@ -1013,6 +1013,14 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            %>> 
       </td>
     </tr>
+      <% Collection col = profiledata.getUserNotifications();
+         if (col.size() == 0) {
+             col.add(new UserNotification());
+         }
+         Iterator uiter = col.iterator();
+         while (uiter.hasNext()) {         
+             UserNotification not = (UserNotification)uiter.next();
+       %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
@@ -1023,7 +1031,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="70%"> 
         <% used = profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0); %>
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="40" maxlength="1024" 
-           value="<%= profiledata.getNotificationSender() %>"            
+           value="<%= not.getNotificationSender() %>"            
            <% if(!used)
                  out.write(" disabled ");
            %>>                  
@@ -1038,7 +1046,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="70%">         
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT%>" size="40" maxlength="1024" 
-           value="<%= profiledata.getNotificationSubject() %>" 
+           value="<%= not.getNotificationSubject() %>" 
            <% if(!used)
                  out.write(" disabled ");
            %>>                  
@@ -1052,9 +1060,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("NOTIFICATIONMESSAGE") %> <br>&nbsp;
       </td>
       <td width="70%">       
-        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols=40 rows=8 <% if(!used) out.write(" disabled ");%>><%= profiledata.getNotificationMessage()%></textarea>  
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols=40 rows=4 <% if(!used) out.write(" disabled ");%>><%= not.getNotificationMessage()%></textarea>  
       </td>
     </tr>
+    <% } // while (iter.hasNext()) %>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;
