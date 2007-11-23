@@ -34,7 +34,7 @@ import org.ejbca.core.model.services.BaseAction;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: MailAction.java,v 1.5 2006-12-13 10:35:10 anatom Exp $
+ * @version $Id: MailAction.java,v 1.6 2007-11-23 13:03:51 anatom Exp $
  */
 public class MailAction extends BaseAction {
 	
@@ -84,12 +84,12 @@ public class MailAction extends BaseAction {
               Transport.send(msg);
 
               String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
-              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_APPROVAL, new java.util.Date(), null, null, LogEntry.EVENT_INFO_NOTIFICATION, logmsg);
+              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_NOTIFICATION, logmsg);
         } catch (Exception e) {
 			String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
             log.error(msg, e);
             try{
-            	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
+            	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
             }catch(Exception f){
                 throw new EJBException(f);
             }
