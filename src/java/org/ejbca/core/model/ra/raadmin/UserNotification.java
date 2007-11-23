@@ -12,7 +12,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * such as different notification actions (apart from email) etc.
  * 
  * @author tomas
- * @version $Id: UserNotification.java,v 1.1 2007-11-23 16:31:05 anatom Exp $
+ * @version $Id: UserNotification.java,v 1.2 2007-11-23 17:21:39 anatom Exp $
  */
 public class UserNotification extends HashMap implements Serializable, Cloneable {
 
@@ -33,7 +33,9 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
      */
     private static final long serialVersionUID = -100L;
 
+    /** Recipient of notification is the user */
     public static final String   RCPT_USER     = "USER";
+    /** recipient of notification is the admin of the user */
     public static final String   RCPT_ADMIN    = "ADMIN";
 
     public static final String EVENTS_EDITUSER = String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)+";"+String.valueOf(UserDataConstants.STATUS_INITIALIZED);
