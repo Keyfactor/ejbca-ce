@@ -735,15 +735,17 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
               * Remove policy.
               */
              if(certificateprofiledata.getCertificatePolicies() != null) {
+                 boolean removed = false;
                  for(int i = 0; i < certificateprofiledata.getCertificatePolicies().size(); i++) {
                      value = request.getParameter(BUTTON_DELETE_POLICY + i);
                      if(value != null) {
+                         removed = true;
                          String policyId = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID + i);
                          if (policyId != null) {
                            policyId = policyId.trim();
                          }
                          String userNotice = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE + i);
-                         if (userNotice != null) {
+                         if ( (userNotice != null) && (userNotice.trim().length() > 0) ) {
                            userNotice = userNotice.trim();
                            CertificatePolicy policy =
                              new CertificatePolicy(policyId,    // policyID
@@ -752,7 +754,7 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                            certificateprofiledata.removeCertificatePolicy(policy);
                          }
                          String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL + i);
-                         if (cpsUri != null) {
+                         if ( (cpsUri != null) && (cpsUri.trim().length() > 0) ) {
                            cpsUri = cpsUri.trim();
                            CertificatePolicy policy =
                              new CertificatePolicy(policyId,    // policyID
@@ -760,11 +762,20 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                                                    cpsUri);     // cps uri
                            certificateprofiledata.removeCertificatePolicy(policy);
                          }
+                         if ( ((userNotice == null) || (userNotice.trim().length() == 0)) && 
+                              ((cpsUri == null) || (cpsUri.trim().length() == 0)) && 
+                              (policyId != null) ) {
+                             CertificatePolicy policy =
+                               new CertificatePolicy(policyId, null, null);
+                             certificateprofiledata.removeCertificatePolicy(policy);                           
+                         }
                                                
                          cabean.setTempCertificateProfile(certificateprofiledata);
                      }
                  }         
-                 includefile = "certificateprofilepage.jspf";
+                 if (removed) {
+                   includefile = "certificateprofilepage.jspf";
+                 }
              }
            
            if(request.getParameter(BUTTON_CANCEL) != null){
