@@ -1287,12 +1287,21 @@ Example checking the revocation status of a certificate:
 	// Certificate doesn't exist
   }	  
 </source>
+</subsection>
+
+<subsection name="Sample code">
 <p>
 See the file src/java/org/ejbca/core/protocol/ws/common/IEjbcaWS
-for more detailed instructions of the API. And src/test/java/org/ejbca/core/protocol/ws/TestEjbcaWS
-for more examples on using the API.
+for more detailed instructions of the API. 
+
+Sample code can be taken from:
+<ul>
+<li>The JUnit tests for the WS-API: src/test/java/org/ejbca/core/protocol/ws/TestEjbcaWS</li>
+<li>The WS-API CLI: src/java/org/ejbca/core/protocol/ws/client/*.java</li>
+</ul>
 </p>
 </subsection>
+
 <subsection name="Accessrules required when using the Web Service API">
 <p>
 All the calls requires HTTPS client authentication. The keystore used
