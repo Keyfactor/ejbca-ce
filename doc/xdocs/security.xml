@@ -47,15 +47,28 @@ which require client certificate to access the administration GUI at 8443.
 
 <section name="Java truststore">
 <p>
-Acceptable CA certificates for clients are stored (by java) in $JAVA_HOME/jre/lib/security/cacerts.
-The EJBCA Root certificate is added here as part of the installation process. There are however 
-many others present as shipped by Java, which means that anyone with a certificate issued 
-by one of those CAs can access port 8443 on you JBoss server. They can not access the admin-GUI however,
-since EJBCA checks authorization. If you want to limit the accessibility to only certificates issued
-by EJBCA you should replace the original cacerts file with one containing only the EJBCA root certificate.
+Acceptable CA certificates for clients are stored (by java) in $JAVA_HOME/jre/lib/security/cacerts. 
+There are however many others present as shipped by Java, which means that anyone with a certificate issued 
+by one of those CAs normally can access port 8443 on you JBoss server. They can not access the admin-GUI however,
+since EJBCA checks authorization. 
+
+When EJBCA deploys, it generates a custom truststore that is used by JBoss. 
+So the certificates available in $JAVA_HOME/jre/lib/security/cacerts are NOT trusted.
+
+If using another application server than JBoss, check the trust keystore contents of you application server so 
+you don't trust too many issuers. 
 </p>
 <p>
-You can create a new keystore with the command:
+You can create a new Java trust store with the command:
+</p>
+<source>
+ant javatruststore
+</source>
+<p>
+The trust store will be stored as p12/truststore.jks
+</p>
+<p>
+Manual steps to creating a java trust store:
 </p>
 <source>
 keytool -import -alias AdminCA1 -trustcacerts -file root.der -keystore /home/jboss/java/cacerts
@@ -133,6 +146,13 @@ there is an article in the JBoss Wiki about encrypting them:
 <br/>
 <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=EncryptingDataSourcePasswords">
 http://wiki.jboss.org/wiki/Wiki.jsp?page=EncryptingDataSourcePasswords</a>
+</p>
+</section>
+
+<section name="SSL connections in MySQL">
+<p>
+<a href="http://dev.mysql.com/doc/refman/5.0/en/secure-using-ssl.html">
+http://dev.mysql.com/doc/refman/5.0/en/secure-using-ssl.html</a>
 </p>
 </section>
 
