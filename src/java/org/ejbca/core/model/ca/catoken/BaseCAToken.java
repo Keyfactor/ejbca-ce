@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.21 2007-08-12 16:54:03 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.22 2007-11-26 13:54:02 anatom Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -178,12 +178,16 @@ public abstract class BaseCAToken implements ICAToken {
     protected static String getAutoActivatePin(Properties properties) {
     	String ret = null;
     	String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
-    	try {
-			ret = StringTools.pbeDecryptStringWithSha256Aes192(pin);
-			log.debug("Using encrypted autoactivation pin");
-		} catch (Exception e) {
-			log.debug("Using cleartext autoactivation pin");
-		}
+    	if (pin != null) {
+    		try {
+    			ret = StringTools.pbeDecryptStringWithSha256Aes192(pin);
+    			log.debug("Using encrypted autoactivation pin");
+    		} catch (Exception e) {
+    			log.debug("Using cleartext autoactivation pin");
+    		}
+    	} else {
+			log.debug("Not using autoactivation pin");    		
+    	}
 		if (ret == null) {
 			ret = pin;
 		}
