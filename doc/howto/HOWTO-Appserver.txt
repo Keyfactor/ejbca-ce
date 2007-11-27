@@ -44,7 +44,7 @@ If you had issued an 'ant' command before, it is now important to do 'ant clean'
 
 Build ejbca.ear (ejbca/dist/ejbca.ear) with 'ant'.
 
-3. Edit 'jndi.properties' in the directory 'ejbca/bin'and modify the principal and credentials 
+3. Edit 'jndi.properties.weblogic' in the directory 'ejbca/conf'and modify the principal and credentials 
    according to you weblogic domain's setting (same as the user name/password to login weblogic console).
    The default in the EJBCA installation is system/weblogic. Every time you issue a 'ant clean' command, you must re-do this step.
 
@@ -270,7 +270,7 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 
 - Note: there is an orion-application.xml under src/deploy/ear/META-INF that you can edit if you really know what you are doing with OC4J.
 
-- Edit bin/jndi.properties.oracle in EJBCA
+- Edit conf/jndi.properties.oracle in EJBCA
 
 - You may have to remove line 186 in build.xml to make everything compile:
   <jsp-compile uriroot="${adminweb.build}" />
