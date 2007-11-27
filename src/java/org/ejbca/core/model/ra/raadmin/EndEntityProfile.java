@@ -33,7 +33,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DNFieldExtractor;
@@ -53,7 +52,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.26 2007-11-23 16:31:05 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.27 2007-11-27 16:05:04 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 

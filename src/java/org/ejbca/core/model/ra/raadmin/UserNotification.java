@@ -12,7 +12,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * such as different notification actions (apart from email) etc.
  * 
  * @author tomas
- * @version $Id: UserNotification.java,v 1.2 2007-11-23 17:21:39 anatom Exp $
+ * @version $Id: UserNotification.java,v 1.3 2007-11-27 16:05:04 anatom Exp $
  */
 public class UserNotification extends HashMap implements Serializable, Cloneable {
 
@@ -53,6 +53,14 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     	data = new HashMap();
     }
     
+    public UserNotification(String sender, String rcpt, String subject, String message, String events) {
+    	data = new HashMap();
+    	setNotificationSender(sender);
+    	setNotificationSubject(subject);
+    	setNotificationMessage(message);
+    	setNotificationRecipient(rcpt);
+    	setNotificationEvents(events);
+    }
     public String getNotificationSender(){
     	if(data.get(NOTIFICATIONSENDER) == null)
     		return "";
@@ -97,7 +105,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     	data.put(NOTIFICATIONRECIPIENT, rcpt);
     }
 
-    /** list of UserDataConstant.STATUS_XX separated by ;. See contants EVENTS_XX for helper events.
+    /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
      * example 'String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)'
      * @return String with integer values separated by ;
      * @see UserNotification.EVENTS_EDITUSER
@@ -108,13 +116,35 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     	return (String) data.get(NOTIFICATIONEVENTS);
     }
 
-    /** list of UserDataConstant.STATUS_XX separated by ;. See contants EVENTS_XX for helper events.
+    /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
      * example 'String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)'
      * @param String with integer values separated by ;
      * @see UserNotification.EVENTS_EDITUSER
      */
     public void setNotificationEvents(String events){
     	data.put(NOTIFICATIONEVENTS, events);
+    }
+
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        StringBuffer strBuffer = new StringBuffer("CertificatePolicy(");
+
+        strBuffer.append("sender=");
+        strBuffer.append(this.getNotificationSender());
+        strBuffer.append(", rcpt=");
+        strBuffer.append(this.getNotificationRecipient());
+        strBuffer.append(", subject=");
+        strBuffer.append(this.getNotificationSubject());
+        strBuffer.append(", message=");
+        strBuffer.append(this.getNotificationMessage());
+        strBuffer.append(", events=");
+        strBuffer.append(this.getNotificationEvents());
+        strBuffer.append(")");
+
+        return strBuffer.toString();
     }
 
 }

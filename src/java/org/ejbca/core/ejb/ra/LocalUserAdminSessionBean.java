@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.47 2007-11-23 17:21:38 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.48 2007-11-27 16:05:03 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1907,10 +1907,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             try {
             	if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
             		rcptemail = useremail;
+            	} else if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_ADMIN)) {
+            		throw new Exception("Notification recipient '"+not.getNotificationRecipient()+"' is not implemented yet.");
             	} else {
-            		throw new Exception(not.getNotificationRecipient()+" is not implemented yet.");
+            		rcptemail = not.getNotificationRecipient();            		
             	}
-                if (rcptemail == null) {
+                if (StringUtils.isEmpty(rcptemail)) {
             		String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", data.getUsername());
                     throw new Exception(msg);
                 }

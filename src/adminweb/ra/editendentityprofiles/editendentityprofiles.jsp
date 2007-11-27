@@ -39,6 +39,9 @@
   static final String BUTTON_UPLOADTEMPLATE    = "buttonuploadtemplate";
   static final String BUTTON_UPLOADFILE        = "buttonuploadfile";
  
+  static final String BUTTON_ADD_NOTIFICATION    = "buttonaddnotification";
+  static final String BUTTON_DELETE_NOTIFICATION = "buttondeleltenotification";
+ 
   static final String TEXTFIELD_USERNAME             = "textfieldusername";
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
   static final String TEXTFIELD_SUBJECTDN            = "textfieldsubjectdn";
@@ -46,7 +49,9 @@
   static final String TEXTFIELD_SUBJECTDIRATTR       = "textfieldsubjectdirattr";
   static final String TEXTFIELD_EMAIL                = "textfieldemail";
   static final String TEXTFIELD_NOTIFICATIONSENDER   = "textfieldnotificationsender";
+  static final String TEXTFIELD_NOTIFICATIONRCPT     = "textfieldnotificationrcpt";
   static final String TEXTFIELD_NOTIFICATIONSUBJECT  = "textfieldnotificationsubject";
+  static final String TEXTFIELD_NOTIFICATIONEVENTS   = "textfieldnotificationevents";
   static final String TEXTFIELD_STARTTIME            = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME              = "textfieldendtime";
 
@@ -310,20 +315,12 @@
           includefile="endentityprofilespage.jspf"; 
       }
     }
+    
     if( action.equals(ACTION_EDIT_PROFILE)){
          // Display edit access rules page.
        profile = request.getParameter(HIDDEN_PROFILENAME);
        if(profile != null){
          if(!profile.trim().equals("")){
-           if(request.getParameter(BUTTON_SAVE) != null || 
-              request.getParameter(BUTTON_DELETESUBJECTDN) != null ||
-              request.getParameter(BUTTON_ADDSUBJECTDN) != null ||
-              request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null ||
-              request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null ||
-              request.getParameter(BUTTON_DELETESUBJECTDIRATTR) != null ||
-              request.getParameter(BUTTON_ADDSUBJECTDIRATTR) != null ||
-              request.getParameter(BUTTON_UPLOADTEMPLATE) != null){
-               
              profiledata = ejbcarabean.getTemporaryEndEntityProfile();
              if(profiledata == null){
                profiledata = ejbcarabean.getEndEntityProfile(profile);
@@ -493,10 +490,13 @@
                  not.setNotificationSender(sender);
                  not.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT));
                  not.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE));
-                 // Add the statuschanges we used to send notifications about
-            	 not.setNotificationEvents(UserNotification.EVENTS_EDITUSER);
-            	 // The old recipients where always the user
-            	 not.setNotificationRecipient(UserNotification.RCPT_USER);
+                 String rcpt = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT);
+                 if ( (rcpt == null) || (rcpt.length() == 0) ) {
+                     // Default value if nothing is entered is users email address
+                     rcpt = UserNotification.RCPT_USER;
+                 }
+                 not.setNotificationRecipient(rcpt);
+                 not.setNotificationEvents(request.getParameter(TEXTFIELD_NOTIFICATIONEVENTS));
                  profiledata.addUserNotification(not);
              }
              
@@ -641,6 +641,37 @@
                ejbcarabean.setTemporaryEndEntityProfile(null);
                includefile="endentityprofilespage.jspf";  
              }
+             /*
+              * Add user notice.
+              */
+             if(request.getParameter(BUTTON_ADD_NOTIFICATION) != null) {
+                 ejbcarabean.setTemporaryEndEntityProfile(profiledata);
+                 includefile = "endentityprofilepage.jspf";
+             }
+             /*
+              * Remove user notice.
+              */
+             if (profiledata.getUserNotifications() != null) {
+                 boolean removed = false;
+                 for(int i = 0; i < profiledata.getUserNotifications().size(); i++) {
+                     value = request.getParameter(BUTTON_DELETE_NOTIFICATION + i);
+                     if(value != null) {
+                         String s = request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + i);
+                         String r = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + i);
+                         String sub = request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + i);
+                         String msg = request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + i);
+                         String ev = request.getParameter(TEXTFIELD_NOTIFICATIONEVENTS + i);
+                         UserNotification not = new UserNotification(s, r, sub, msg, ev);
+                         profiledata.removeUserNotification(not);
+                         ejbcarabean.setTemporaryEndEntityProfile(profiledata);
+                         removed = true;
+                     }
+                 }         
+                 if (removed) {
+                   includefile = "endentityprofilepage.jspf";
+                 }
+             }
+             
 			 if(request.getParameter(BUTTON_UPLOADTEMPLATE) != null){
 				   includefile="uploadtemplate.jspf";
 		      }
@@ -650,7 +681,6 @@
              ejbcarabean.setTemporaryEndEntityProfile(null);
              includefile="endentityprofilespage.jspf";
            }
-         }
       }
     }
 	if( action.equals(ACTION_UPLOADTEMP)){
