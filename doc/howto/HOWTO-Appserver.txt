@@ -287,6 +287,8 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 - Configure SSL in OC4J and make sure the SSL information is passed on to Java, not terminated in Apache.
 -----
 - Enable SSL in Apache.
+  These options must be enable:
+  SSLOptions +StdEnvVars +ExportCertData
 - Add EJBCA CA-certificate to wallet with owm (oracle wallet manager)
 - Enable SSL in opmn
   Open opmn.xml in a text editor.
