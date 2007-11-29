@@ -1,8 +1,15 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
@@ -12,7 +19,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * such as different notification actions (apart from email) etc.
  * 
  * @author tomas
- * @version $Id: UserNotification.java,v 1.3 2007-11-27 16:05:04 anatom Exp $
+ * @version $Id: UserNotification.java,v 1.4 2007-11-29 22:23:41 anatom Exp $
  */
 public class UserNotification extends HashMap implements Serializable, Cloneable {
 
@@ -61,6 +68,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     	setNotificationRecipient(rcpt);
     	setNotificationEvents(events);
     }
+
     public String getNotificationSender(){
     	if(data.get(NOTIFICATIONSENDER) == null)
     		return "";
@@ -116,6 +124,22 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     	return (String) data.get(NOTIFICATIONEVENTS);
     }
 
+    /** Returns a collection view of getNotificationEvents.
+     * 
+     * @return A Collection with String values (String.valueOf(UserDataConstants.STATUS_NEW etc), or an empty Collection, never null.
+     */
+    public Collection getNotificationEventsCollection(){
+    	String events = getNotificationEvents();
+    	ArrayList ret = new ArrayList();
+    	if (StringUtils.isNotEmpty(events)) {
+    		StringTokenizer tokenizer = new StringTokenizer(events, ";", false);
+            while (tokenizer.hasMoreTokens()) {
+            	ret.add(tokenizer.nextToken());
+            }
+    	}
+    	return ret;
+    }
+
     /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
      * example 'String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)'
      * @param String with integer values separated by ;
@@ -130,7 +154,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        StringBuffer strBuffer = new StringBuffer("CertificatePolicy(");
+        StringBuffer strBuffer = new StringBuffer("UserNotification(");
 
         strBuffer.append("sender=");
         strBuffer.append(this.getNotificationSender());
@@ -147,4 +171,30 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
         return strBuffer.toString();
     }
 
+    /**
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    public boolean equals(Object obj) {
+        boolean ret = false;
+        if((obj == null) || !(obj instanceof UserNotification)) {
+            return ret;
+        }
+        UserNotification o = (UserNotification)obj;
+        if ( StringUtils.equals(this.getNotificationSender(), o.getNotificationSender()) &&
+        	 StringUtils.equals(this.getNotificationRecipient(), o.getNotificationRecipient()) &&
+        	 StringUtils.equals(this.getNotificationSubject(), o.getNotificationSubject()) &&
+        	 StringUtils.equals(this.getNotificationMessage(), o.getNotificationMessage()) &&
+        	 StringUtils.equals(this.getNotificationEvents(), o.getNotificationEvents()) ) {
+        	ret = true;
+        }
+        return ret;
+    }
+
+    /**
+     * @see java.lang.Object#hashCode()
+     */
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+    
 }

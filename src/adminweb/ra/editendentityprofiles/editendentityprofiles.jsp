@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst
                ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.ra.UserDataConstants,
-                org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.util.dn.DnComponents,
+                org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
                 java.text.DateFormat"%>
@@ -51,10 +51,10 @@
   static final String TEXTFIELD_NOTIFICATIONSENDER   = "textfieldnotificationsender";
   static final String TEXTFIELD_NOTIFICATIONRCPT     = "textfieldnotificationrcpt";
   static final String TEXTFIELD_NOTIFICATIONSUBJECT  = "textfieldnotificationsubject";
-  static final String TEXTFIELD_NOTIFICATIONEVENTS   = "textfieldnotificationevents";
+  static final String SELECT_NOTIFICATIONEVENTS      = "selectnotificationevents";
   static final String TEXTFIELD_STARTTIME            = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME              = "textfieldendtime";
-
+ 
   static final String TEXTAREA_NOTIFICATIONMESSAGE  = "textareanotificationmessage";
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
@@ -496,7 +496,16 @@
                      rcpt = UserNotification.RCPT_USER;
                  }
                  not.setNotificationRecipient(rcpt);
-                 not.setNotificationEvents(request.getParameter(TEXTFIELD_NOTIFICATIONEVENTS));
+                 String[] val1 = request.getParameterValues(SELECT_NOTIFICATIONEVENTS);
+                 String events = null;
+     			 for(int i = 0; i < val1.length; i++) {
+     			    if (events == null) {
+     			       events = val1[i];
+     			    } else {
+                       events = events + ";"+val1[i];
+                    }
+                 }
+                 not.setNotificationEvents(events);
                  profiledata.addUserNotification(not);
              }
              
@@ -660,8 +669,16 @@
                          String r = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + i);
                          String sub = request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + i);
                          String msg = request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + i);
-                         String ev = request.getParameter(TEXTFIELD_NOTIFICATIONEVENTS + i);
-                         UserNotification not = new UserNotification(s, r, sub, msg, ev);
+                         String[] val = request.getParameterValues(SELECT_NOTIFICATIONEVENTS + i);
+                         String events = null;
+     			         for(int j = 0; j < val.length; j++) {
+     			            if (events == null) {
+     			               events = val[j];
+     			            } else {
+                               events = events + ";"+val[j];
+                            }
+                         }
+                         UserNotification not = new UserNotification(s, r, sub, msg, events);
                          profiledata.removeUserNotification(not);
                          ejbcarabean.setTemporaryEndEntityProfile(profiledata);
                          removed = true;

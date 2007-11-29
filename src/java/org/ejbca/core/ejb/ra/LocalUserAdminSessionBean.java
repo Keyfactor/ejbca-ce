@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.48 2007-11-27 16:05:03 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.49 2007-11-29 22:23:39 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1888,60 +1888,61 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         debug(">sendNotification: user="+data.getUsername()+", email="+useremail);
 
         // Make check if we should send notifications at all
-        if ( !((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) ) {
-        	log.debug("Type does not contain SecConst.USER_SENDNOTIFICATION, no notification sent.");
-        	return;
-        }
-        // Should only be sent if new status is NEW, KEYRECOVERY or INITIALIZED, you don't send a notification to a user that has no use of the password
-        if ( !(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_KEYRECOVERY || newstatus == UserDataConstants.STATUS_INITIALIZED) ) {
-        	log.debug("Status is "+newstatus+", no notification sent.");
-        	return;
-        }
-        int profileId = data.getEndEntityProfileId();
-        EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
-        Collection l = profile.getUserNotifications();
-        Iterator i = l.iterator();
-    	String rcptemail = useremail; // Default value
-        while (i.hasNext()) {
-        	UserNotification not = (UserNotification)i.next(); 
-            try {
-            	if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
-            		rcptemail = useremail;
-            	} else if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_ADMIN)) {
-            		throw new Exception("Notification recipient '"+not.getNotificationRecipient()+"' is not implemented yet.");
-            	} else {
-            		rcptemail = not.getNotificationRecipient();            		
+        if ( ((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) ) {
+            int profileId = data.getEndEntityProfileId();
+            EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
+            Collection l = profile.getUserNotifications();
+            Iterator i = l.iterator();
+        	String rcptemail = useremail; // Default value
+            while (i.hasNext()) {
+            	UserNotification not = (UserNotification)i.next(); 
+            	Collection events = not.getNotificationEventsCollection();
+            	if (events.contains(String.valueOf(newstatus))) {
+                	log.debug("Status is "+newstatus+", notification sent for notificationevents: "+not.getNotificationEvents());
+                    try {
+                    	if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
+                    		rcptemail = useremail;
+                    	} else if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_ADMIN)) {
+                    		throw new Exception("Notification recipient '"+not.getNotificationRecipient()+"' is not implemented yet.");
+                    	} else {
+                    		rcptemail = not.getNotificationRecipient();            		
+                    	}
+                        if (StringUtils.isEmpty(rcptemail)) {
+                    		String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", data.getUsername());
+                            throw new Exception(msg);
+                        }
+
+                        String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
+                        Session mailSession = getLocator().getMailSession(mailJndi);
+                        NotificationParamGen paramGen = new NotificationParamGen(data.getUsername(),data.getPassword(),data.getDN());
+                        HashMap params = paramGen.getParams();
+
+                        Message msg = new TemplateMimeMessage(params, mailSession);
+                        msg.setFrom(new InternetAddress(not.getNotificationSender()));
+                        msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(rcptemail, false));
+                        msg.setSubject(not.getNotificationSubject());
+                        msg.setContent(not.getNotificationMessage(), "text/plain");
+                        msg.setHeader("X-Mailer", "JavaMailer");
+                        msg.setSentDate(new Date());
+                        Transport.send(msg);
+
+                        String logmsg = intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), rcptemail);
+                        logsession.log(admin, data.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_INFO_NOTIFICATION, logmsg);
+                    } catch (Exception e) {
+                    	String msg = intres.getLocalizedMessage("ra.errorsendnotification", data.getUsername(), rcptemail);
+                    	error(msg, e);
+                        try{
+                            logsession.log(admin, data.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
+                        }catch(Exception f){
+                            throw new EJBException(f);
+                        }
+                    }        		
+            	} else { // if (events.contains(String.valueOf(newstatus)))
+                	log.debug("Status is "+newstatus+", no notification sent for notificationevents: "+not.getNotificationEvents());
             	}
-                if (StringUtils.isEmpty(rcptemail)) {
-            		String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", data.getUsername());
-                    throw new Exception(msg);
-                }
-
-                String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
-                Session mailSession = getLocator().getMailSession(mailJndi);
-                NotificationParamGen paramGen = new NotificationParamGen(data.getUsername(),data.getPassword(),data.getDN());
-                HashMap params = paramGen.getParams();
-
-                Message msg = new TemplateMimeMessage(params, mailSession);
-                msg.setFrom(new InternetAddress(not.getNotificationSender()));
-                msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(rcptemail, false));
-                msg.setSubject(not.getNotificationSubject());
-                msg.setContent(not.getNotificationMessage(), "text/plain");
-                msg.setHeader("X-Mailer", "JavaMailer");
-                msg.setSentDate(new Date());
-                Transport.send(msg);
-
-                String logmsg = intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), rcptemail);
-                logsession.log(admin, data.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_INFO_NOTIFICATION, logmsg);
-            } catch (Exception e) {
-            	String msg = intres.getLocalizedMessage("ra.errorsendnotification", data.getUsername(), rcptemail);
-            	error(msg, e);
-                try{
-                    logsession.log(admin, data.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),data.getUsername(), null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
-                }catch(Exception f){
-                    throw new EJBException(f);
-                }
-            }        	
+            }
+        } else { // if ( ((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) )
+        	log.debug("Type does not contain SecConst.USER_SENDNOTIFICATION, no notification sent.");
         }
         debug("<sendNotification: user="+data.getUsername()+", email="+useremail);
     } // sendNotification

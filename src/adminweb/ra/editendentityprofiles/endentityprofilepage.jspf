@@ -184,11 +184,15 @@ function usenotificationchange(){
   if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){
      document.editprofile.<%=BUTTON_ADD_NOTIFICATION%>.disabled = false;
      document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.disabled = false;
+     document.editprofile.<%=TEXTFIELD_NOTIFICATIONRCPT%>.disabled = false;
+     document.editprofile.<%=SELECT_NOTIFICATIONEVENTS%>.disabled = false;
      document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.disabled = false;
      document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.disabled = false;
   }else{
      document.editprofile.<%=BUTTON_ADD_NOTIFICATION%>.disabled = true;
      document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.disabled = true;
+     document.editprofile.<%=TEXTFIELD_NOTIFICATIONRCPT%>.disabled = true;
+     document.editprofile.<%=SELECT_NOTIFICATIONEVENTS%>.disabled = true;
      document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.disabled = true;
      document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.disabled = true;                  
   }
@@ -1059,6 +1063,33 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("NOTIFICATIONEVENTS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <select name="<%=SELECT_NOTIFICATIONEVENTS + j%>" size="7" multiple >
+            <% int[] statuses = ViewEndEntityHelper.statusids;
+               String[] statustexts = ViewEndEntityHelper.statustexts;
+               Collection evcol = not.getNotificationEventsCollection();
+            %>
+               <% for(int ev2=0;ev2< statuses.length;ev2++){%>
+               <option 
+               <%    // Default values
+                     if ( evcol.contains(String.valueOf(statuses[ev2])) ) {
+                        out.write(" selected "); 
+                     }
+               %>
+                     value='<%= statuses[ev2]%>'><% out.write(statustexts[ev2]);
+               }%>
+           </option>
+        </select>
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
         <%= ejbcawebbean.getText("NOTIFICATIONSUBJECT") %>
       </td>
       <td width="70%">         
@@ -1079,8 +1110,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="70%">       
         <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols=40 rows=4 <% if(!used) out.write(" disabled ");%>><%= not.getNotificationMessage()%></textarea>  
       </td>
-      
-        <input type="hidden" name="<%=TEXTFIELD_NOTIFICATIONEVENTS + j%>" size="40" maxlength="1024" value="<%=UserNotification.EVENTS_EDITUSER%>"> 
       
     </tr>
     <% } // while (iter.hasNext()) %>
@@ -1108,6 +1137,30 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT%>" size="40" maxlength="255" value="USER" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%>/><br/>
       </td>
     </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("NOTIFICATIONEVENTS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <select name="<%=SELECT_NOTIFICATIONEVENTS %>" size="7" multiple >
+            <% int[] statuses = ViewEndEntityHelper.statusids;
+               String[] statustexts = ViewEndEntityHelper.statustexts;
+              %>
+               <% for(int ev1=0;ev1< statuses.length;ev1++){%>
+                <option
+               <%    // Default values
+                     if ( (statuses[ev1] == UserDataConstants.STATUS_NEW) || (statuses[ev1] == UserDataConstants.STATUS_KEYRECOVERY) || (statuses[ev1] == UserDataConstants.STATUS_INITIALIZED) )
+                        out.write(" selected "); 
+                %>
+                   value='<%= statuses[ev1]%>'><% out.write(statustexts[ev1]);
+                 }%>
+           </option>
+        </select>
+      </td>
+    </tr>
     <tr  id="Row<%=row%2%>">       
       <td width="5%" valign="top">
          &nbsp;
@@ -1129,9 +1182,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="70%">
         <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols=40 rows=4  <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%></textarea>
       </td>
-      
-        <input type="hidden" name="<%=TEXTFIELD_NOTIFICATIONEVENTS%>" size="40" maxlength="1024" value="<%=UserNotification.EVENTS_EDITUSER%>"> 
-      
+            
     </tr>
     
     <tr  id="Row<%=row++%2%>"> 
