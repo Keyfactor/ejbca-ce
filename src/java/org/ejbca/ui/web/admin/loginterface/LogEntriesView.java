@@ -27,17 +27,18 @@ import org.ejbca.ui.web.admin.rainterface.SortBy;
 /**
  * A class representing a set of log entry view representations.
  * @author  TomSelleck
- * @version $Id: LogEntriesView.java,v 1.3 2006-12-20 08:33:31 anatom Exp $
+ * @version $Id: LogEntriesView.java,v 1.4 2007-12-04 18:43:35 jeklund Exp $
  */
 public class LogEntriesView implements java.io.Serializable {
  
     /** Creates a new instance of LogEntriesView  */
-    public LogEntriesView(SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames, HashMap caidtonamemap) {
+    public LogEntriesView(SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames, String[] localmodulenames, HashMap caidtonamemap) {
       logentryviews = new ArrayList();
       sortby = new SortBy(SortBy.TIME, SortBy.DECENDING);
       this.dnproxy = dnproxy;
       this.localinfoeventnames=localinfoeventnames;
       this.localerroreventnames=localerroreventnames;
+      this.localsystemeventnames=localsystemeventnames;
       this.localmodulenames=localmodulenames;
       this.caidtonamemap=caidtonamemap;
     }
@@ -95,7 +96,7 @@ public class LogEntriesView implements java.io.Serializable {
         i=logentries.iterator();
         while(i.hasNext()){
           LogEntry nextentry = (LogEntry) i.next();  
-          logentryview = new LogEntryView(nextentry, dnproxy, localinfoeventnames, localerroreventnames, localmodulenames, caidtonamemap); 
+          logentryview = new LogEntryView(nextentry, dnproxy, localinfoeventnames, localerroreventnames, localsystemeventnames, localmodulenames, caidtonamemap); 
           logentryview.setSortBy(this.sortby);
           logentryviews.add(logentryview);
         }
@@ -115,6 +116,7 @@ public class LogEntriesView implements java.io.Serializable {
     private SubjectDNProxy dnproxy;
     private String[] localinfoeventnames;
     private String[] localerroreventnames;
+    private String[] localsystemeventnames;
     private String[] localmodulenames;
     private HashMap  caidtonamemap;
 }

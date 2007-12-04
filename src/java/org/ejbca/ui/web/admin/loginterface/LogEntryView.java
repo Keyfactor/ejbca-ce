@@ -28,7 +28,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * A class used as a help class for displaying LogEntries.
  *
  * @author  TomSelleck
- * @version $Id: LogEntryView.java,v 1.4 2007-12-04 14:22:17 jeklund Exp $
+ * @version $Id: LogEntryView.java,v 1.5 2007-12-04 18:43:36 jeklund Exp $
  */
 public class LogEntryView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -60,13 +60,14 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
       this.dnproxy = dnproxy;
     }
     
-    public LogEntryView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames, HashMap  caidtonamemap) throws RemoteException{
+    public LogEntryView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames,
+    		String[] localsystemeventnames, String[] localmodulenames, HashMap  caidtonamemap) throws RemoteException{
       logentrydata = new String[NUMBEROF_FIELDS];
       for(int i=0; i<  NUMBEROF_FIELDS ; i++){
         logentrydata[i] = "";    
       }         
       this.dnproxy = dnproxy; 
-      setValues(logentry,localinfoeventnames,localerroreventnames, localmodulenames, caidtonamemap);
+      setValues(logentry,localinfoeventnames,localerroreventnames, localsystemeventnames, localmodulenames, caidtonamemap);
     }
     
    
@@ -87,7 +88,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     }
        
     /* Sets the values according to the values in the LogEntry object.*/ 
-    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames,String[] localmodulenames, HashMap caidtonamemap) throws RemoteException{
+    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames,String[] localmodulenames, HashMap caidtonamemap) throws RemoteException{
         
        logentrydata[TIME] = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(logentry.getTime());
        this.time = logentry.getTime();
@@ -138,10 +139,13 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           }  
        }
        
-       if(logentry.getEvent() < LogConstants.EVENT_ERROR_BOUNDRARY)
-         logentrydata[EVENT] = localinfoeventnames[logentry.getEvent()];
-       else
-         logentrydata[EVENT] = localerroreventnames[logentry.getEvent() - LogConstants.EVENT_ERROR_BOUNDRARY];         
+       if (logentry.getEvent() < LogConstants.EVENT_ERROR_BOUNDRARY) {
+           logentrydata[EVENT] = localinfoeventnames[logentry.getEvent()];
+       } else if (logentry.getEvent() < LogConstants.EVENT_SYSTEM_BOUNDRARY) {
+           logentrydata[EVENT] = localerroreventnames[logentry.getEvent() - LogConstants.EVENT_ERROR_BOUNDRARY];         
+       } else {
+           logentrydata[EVENT] = localsystemeventnames[logentry.getEvent() - LogConstants.EVENT_SYSTEM_BOUNDRARY];         
+       }
        
        logentrydata[COMMENT] = logentry.getComment();  
        logentrydata[VERIFY] = logentry.getVerifyResult();

@@ -63,7 +63,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.16 2007-12-04 14:22:23 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.17 2007-12-04 18:43:35 jeklund Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -77,7 +77,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.16 2007-12-04 14:22:23 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.17 2007-12-04 18:43:35 jeklund Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -234,12 +234,12 @@ public class StartServicesServlet extends HttpServlet {
 			}
         }
 
-        getLogSession().log(new Admin(Admin.TYPE_INTERNALUSER), -1, LogConstants.MODULE_SERVICES, new Date(), "none", null,
+        Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+        getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
         		LogConstants.EVENT_INFO_STARTING, "Starting..");
 
         log.debug(">init ProtectedLogVerificationService is configured");
         try {
-        	Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
         	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
         	if (logProperties != null) {
         		if (logProperties.getProperty("verificationservice.active", "false").equalsIgnoreCase("true")) {
@@ -276,7 +276,6 @@ public class StartServicesServlet extends HttpServlet {
 
         log.debug(">init ProtectedLogExportService is configured");
         try {
-        	Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
         	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
         	if (logProperties != null) {
         		if (logProperties.getProperty("exportservice.active", "false").equalsIgnoreCase("true")) {

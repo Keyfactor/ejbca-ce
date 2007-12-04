@@ -116,7 +116,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		// This could be called from several LogSession beans, but we only keep one instance..
 		if (!isDestructorInvoked) {
 			isDestructorInvoked = true;
-			log(internalAdmin, -1, 0, new Date(), null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Terminating log session for this node.",null);
+			log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Terminating log session for this node.",null);
 		}
 	}
 	
@@ -170,7 +170,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		// Is first LogEvent? Write Initiating Log Event
 		if (isFirstLogEvent) {
 			isFirstLogEvent = false;
-			logInternal(internalAdmin, -1, 0, new Date(time.getTime()-1), null, null, LogConstants.EVENT_SYSTEM_INITILIZED_LOGGING, "Initiating log for this node.",null);
+			logInternal(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(time.getTime()-1), null, null, LogConstants.EVENT_SYSTEM_INITILIZED_LOGGING, "Initiating log for this node.",null);
 			//protectedLogActions.takeActions(IProtectedLogAction.CAUSE_TESTING);
 		}
 		logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
