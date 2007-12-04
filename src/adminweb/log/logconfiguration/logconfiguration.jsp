@@ -110,6 +110,7 @@
 
 
     if( request.getParameter(BUTTON_SAVE) != null){
+/* Obsolete. This is configured in log.properties
         // Save log configuration.
         String value = request.getParameter(CHECKBOX_USELOGTODB);   
         if(value == null)
@@ -119,7 +120,6 @@
             logconfiguration.setUseLogDB(true); 
           else
             logconfiguration.setUseLogDB(false); 
-
         value = request.getParameter(CHECKBOX_USEEXTERNALLOG);   
         if(value == null)
           logconfiguration.setUseExternalLogDevices(false); 
@@ -128,10 +128,11 @@
             logconfiguration.setUseExternalLogDevices(true); 
           else
             logconfiguration.setUseExternalLogDevices(false); 
+*/
   
          boolean dolog = true;
          for(int i=0; i <  inforows.length; i++){
-            value = request.getParameter(CHECKBOX_INFOLOGROW + i);
+            String value = request.getParameter(CHECKBOX_INFOLOGROW + i);
             if(value == null)
               dolog = false;
             else
@@ -145,7 +146,7 @@
           }
 
           for(int i=0; i <  errorrows.length; i++){
-            value = request.getParameter(CHECKBOX_ERRORLOGROW + i);
+            String value = request.getParameter(CHECKBOX_ERRORLOGROW + i);
             if(value == null)
               dolog = false;
             else
@@ -215,6 +216,10 @@
    </table>
    <table width="100%" border="0" cellspacing="3" cellpadding="3"> 
     <tr > 
+      <td width="100%" valign="top" halign="left"> 
+        This configuration do not apply to the Protected Log Device, where all events always are logged.
+      </td>
+<!--
       <td width="40%" valign="top"> 
         <h3><%= ejbcawebbean.getText("USELOGDB") %></h3> 
       
@@ -232,6 +237,7 @@
                                                                                           <% if(logconfiguration.useExternalLogDevices())
                                                                                                 out.write(" CHECKED "); %>>
       </td>
+-->
     </tr>
     <tr> 
       <td width="40%" valign="top" id="InfoRow1"> 

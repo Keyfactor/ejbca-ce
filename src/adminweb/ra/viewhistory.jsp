@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,org.ejbca.ui.web.admin.loginterface.LogEntriesView,
-             org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.Admin" %>
+             org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.Admin, java.util.Iterator, java.util.Collection" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="org.ejbca.ui.web.admin.loginterface.LogInterfaceBean" />
@@ -14,6 +14,7 @@
   static final String ACTION_CHANGEENTRIESPERPAGE        = "changeentriesperpage";
  
   static final String BUTTON_RELOAD            = "buttonreload";
+  static final String BUTTON_SHOW              = "buttonshow";
 
   static final String BUTTON_NEXT              = "buttonnext";
   static final String BUTTON_PREVIOUS          = "buttonprevious";
@@ -38,7 +39,7 @@
   static final String SORTBY_COMMENT_DEC      = "sortbycommentdecending";
 
   static final String SELECT_ENTRIESPERPAGE     = "selectentriesperpage";
-
+  static final String SELECT_VIEWLOGDEVICE      = "selectviewlogdevice";
 
   static final String HIDDEN_SORTBY             = "hiddensortby";
   static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
@@ -75,11 +76,16 @@
   int record   = 0;
   int size = ejbcawebbean.getLogEntriesPerPage();
 
+  String logDevice = request.getParameter(SELECT_VIEWLOGDEVICE);
+
   RequestHelper.setDefaultCharacterEncoding(request);
 
   if(request.getParameter(USER_PARAMETER) != null){
     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-    logdata = logbean.filterByUsername(username, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
+    if (logDevice == null) {
+    	logDevice = (String) logbean.getAvailableLogDevices().iterator().next();
+    }
+    logdata = logbean.filterByUsername(logDevice, username, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
 
 
     if(globalconfiguration.getEnableEndEntityProfileLimitations() && !rabean.isAuthorizedToViewUserHistory(username))
@@ -277,8 +283,20 @@ function viewcert(row){
                                              + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %> </div> </H4>  
     <%   } %>
   <p>
+	<%= ejbcawebbean.getText("FROM") %>
+	<select name="<%=SELECT_VIEWLOGDEVICE %>" >
+	<%	Collection availableLogDevices = logbean.getAvailableLogDevices();
+		Iterator iter = availableLogDevices.iterator();
+		while(iter.hasNext()){
+			String deviceName = (String) iter.next();
+			String deviceSelected = (deviceName.equalsIgnoreCase(logDevice) ? "selected" : ""); %>
+			<option value='<%=deviceName %>' <%=deviceSelected %> ><%=deviceName %></option>
+	<%	}	%>
+	</select>  
+    <input type="submit" name="<%=BUTTON_SHOW %>" value="<%= ejbcawebbean.getText("SHOW") %>">
     <input type="button" name="<%=BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>" onclick='window.location.reload(true)'>
   </p>
+    
   <br>
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 

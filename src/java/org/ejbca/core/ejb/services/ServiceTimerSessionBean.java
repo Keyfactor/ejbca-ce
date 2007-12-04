@@ -13,12 +13,14 @@
 
 package org.ejbca.core.ejb.services;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -30,11 +32,17 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.log.ProtectedLogDevice;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.services.actions.NoAction;
+import org.ejbca.core.model.services.intervals.PeriodicalInterval;
+import org.ejbca.core.model.services.workers.ProtectedLogExportWorker;
+import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
 
 
 /**
@@ -130,10 +138,19 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
  *   link="CreateCRLSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="ProtectedLogSessionBean"
+ *   view-type="local"
+ *   ref-name="ejb/ProtectedLogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.IProtectedLogSessionLocal"
+ *   link="ProtectedLogSession"
  *   
  *  @jonas.bean ejb-name="ServiceTimerSession"
  *  
- *  @version $Id: ServiceTimerSessionBean.java,v 1.16 2007-07-19 12:50:19 anatom Exp $
+ *  @version $Id: ServiceTimerSessionBean.java,v 1.17 2007-12-04 14:22:33 jeklund Exp $
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
 
@@ -206,16 +223,16 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 					try{
 						if(serviceData.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){				
 							worker.work();			  							
-							getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
+							getLogSession().log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
 						}
 					}catch (ServiceExecutionFailedException e) {
-						getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
+						getLogSession().log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
 					}
 				} else {
-					getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
+					getLogSession().log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
 				} 
 			}else{
-				getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", timerInfo));
+				getLogSession().log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", timerInfo));
 			}
 		}
 		debug("<ejbTimeout");		

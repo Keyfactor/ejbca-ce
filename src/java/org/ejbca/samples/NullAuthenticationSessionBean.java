@@ -27,6 +27,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -78,7 +79,7 @@ import org.ejbca.util.CertTools;
  *   generate="none"
  *
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.4 2007-01-01 11:08:21 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.5 2007-12-04 14:21:46 jeklund Exp $
  * 
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
@@ -130,7 +131,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 	email = (String)emails.get(0);
                 }
                 try{
-                  logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");
+                  logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");
                 }catch(RemoteException re){
                   throw new EJBException(re);
                 }
@@ -145,7 +146,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 return ret;
             }
             try{
-              logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");
+              logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");
             }catch(RemoteException re){
               throw new EJBException(re);
             }

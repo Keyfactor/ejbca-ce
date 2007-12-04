@@ -9,4 +9,7 @@ create index certificatedata_idx3 on CertificateData (status,issuerDN);
 create index userdata_idx1 on UserData (caid,endEntityprofileId);
 create index historydata_idx1 on CertReqHistoryData (username);
 create index protect_idx1 on TableProtectData (dbKey,dbType);
+create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
+create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(10));
+create index protectedlogexportdata_idx2 on ProtectedLogExportData (exportStartTime);
 

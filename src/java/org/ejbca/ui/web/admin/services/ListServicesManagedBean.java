@@ -36,7 +36,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ListServicesManagedBean.java,v 1.4 2007-01-16 11:46:14 anatom Exp $
+ * @version $Id: ListServicesManagedBean.java,v 1.5 2007-12-04 14:21:47 jeklund Exp $
  */
 public class ListServicesManagedBean extends BaseManagedBean {
 	
@@ -62,16 +62,20 @@ public class ListServicesManagedBean extends BaseManagedBean {
 
 	public List getAvailableServices() {
 		List availableServices = new ArrayList();
-	    Collection availableServicesIds = EjbcaJSFHelper.getBean().getServiceSession().getAuthorizedServiceIds(getAdmin());
+	    Collection availableServicesIds = EjbcaJSFHelper.getBean().getServiceSession().getAuthorizedVisibleServiceIds(getAdmin());
 	    Iterator iter = availableServicesIds.iterator();
 	    while(iter.hasNext()){
 	    	Integer id = (Integer) iter.next();
 	    	ServiceConfiguration serviceConfig =  EjbcaJSFHelper.getBean().getServiceSession().getServiceConfiguration(getAdmin(), id.intValue());
-	    	String serviceName = EjbcaJSFHelper.getBean().getServiceSession().getServiceName(getAdmin(), id.intValue()); 
+	    	String serviceName = EjbcaJSFHelper.getBean().getServiceSession().getServiceName(getAdmin(), id.intValue());
+	    	String hidden = "";
+	    	if (serviceConfig.isHidden()) {
+	    		hidden = "<Hidden, Debug mode>";
+	    	}
 	    	if(serviceConfig.isActive()){
-	    		availableServices.add(new SortableSelectItem(serviceName, serviceName+ " (" + EjbcaJSFHelper.getBean().getText().get("ACTIVE") + ")"));
+	    		availableServices.add(new SortableSelectItem(serviceName, serviceName+ " (" + EjbcaJSFHelper.getBean().getText().get("ACTIVE") + ")" + hidden));
 	    	}else{
-	    		availableServices.add(new SortableSelectItem(serviceName, serviceName + " (" + EjbcaJSFHelper.getBean().getText().get("INACTIVE") + ")"));
+	    		availableServices.add(new SortableSelectItem(serviceName, serviceName + " (" + EjbcaJSFHelper.getBean().getText().get("INACTIVE") + ")" + hidden));
 	    	}
 	    }
 	    

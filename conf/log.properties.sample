@@ -1,0 +1,19 @@
+# This is a sample file to override properties after deployment of EJBCA
+# 
+# You should copy and rename this file to log.properties and customize at will.
+#
+
+# List of available loggers, name=Factory Class;propertyfile
+
+#  Dummy log device that does nothing
+logDevice1=org.ejbca.core.model.log.DummyLogDeviceFactory;
+#  Log4J is the standard logger for logging to console or file
+logDevice2=org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties
+#  Internal EJBCA logging device that writes to the database. See logdevices/log4j.properties.sample for more information.
+logDevice3=org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties
+#  Improved internal EJBCA logging device that writes to the database. See logdevices/oldog.properties.sample for more information.
+logDevice4=org.ejbca.core.model.log.ProtectedLogDeviceFactory;logdevices/protectedlog.properties
+
+# The loggers to actually use. The devices will be displayed in reversed order in the Admin GUI.
+#  Default is "logDevice2;logDevice3" for now.
+#usedLogDevices=logDevice2;logDevice3;logDevice4

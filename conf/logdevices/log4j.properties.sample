@@ -1,0 +1,4 @@
+# Properties specific for the Log4j Log Device
+
+# The name of the device. As shown in the Admin GUI.
+#deviceName=Log4JLogDevice

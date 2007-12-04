@@ -17,7 +17,7 @@ import javax.ejb.CreateException;
 
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.log.LogConfiguration;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 
 
 
@@ -31,7 +31,7 @@ import org.ejbca.core.model.log.LogEntry;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.9 2006-11-10 09:29:11 anatom Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.10 2007-12-04 14:21:41 jeklund Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
@@ -110,14 +110,14 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
         LogConfiguration logconfiguration = getLogConfiguration();
 
         // Fill in new information from LogEntry constants.
-        for (int i = 0; i < LogEntry.EVENTNAMES_INFO.length; i++) {
+        for (int i = 0; i < LogConstants.EVENTNAMES_INFO.length; i++) {
             if (logconfiguration.getLogEvent(i) == null) {
                 logconfiguration.setLogEvent(i, true);
             }
         }
 
-        for (int i = 0; i < LogEntry.EVENTNAMES_ERROR.length; i++) {
-            int index = i + LogEntry.EVENT_ERROR_BOUNDRARY;
+        for (int i = 0; i < LogConstants.EVENTNAMES_ERROR.length; i++) {
+            int index = i + LogConstants.EVENT_ERROR_BOUNDRARY;
 
             if (logconfiguration.getLogEvent(index) == null) {
                 logconfiguration.setLogEvent(index, true);

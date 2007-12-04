@@ -33,6 +33,7 @@ import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.Base64;
@@ -41,7 +42,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestProtect.java,v 1.2 2006-08-06 12:38:09 anatom Exp $
+ * @version $Id: TestProtect.java,v 1.3 2007-12-04 14:22:38 jeklund Exp $
  */
 public class TestProtect extends TestCase {
     private static Logger log = Logger.getLogger(TestProtect.class);
@@ -92,11 +93,11 @@ public class TestProtect extends TestCase {
     private void createLogEntrys() {
     	entrys = new ArrayList();
         Random rand = new Random();
-        LogEntry le1 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogEntry.MODULE_CA, new Date(2), "foo", "123456", LogEntry.EVENT_ERROR_ADDEDENDENTITY, "foo comment 1");
-        LogEntry le2 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogEntry.MODULE_CA, new Date(3), "foo", "123456", LogEntry.EVENT_ERROR_ADDEDENDENTITY, "foo comment 2");
-        LogEntry le3 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogEntry.MODULE_CA, new Date(4), "foo", "123456", LogEntry.EVENT_ERROR_ADDEDENDENTITY, "foo comment 3");
-        LogEntry le4 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogEntry.MODULE_CA, new Date(5), "foo", "123456", LogEntry.EVENT_ERROR_ADDEDENDENTITY, "foo comment 4");
-        LogEntry le5 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogEntry.MODULE_CA, new Date(6), "foo", "123456", LogEntry.EVENT_ERROR_ADDEDENDENTITY, "foo comment 5");
+        LogEntry le1 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogConstants.MODULE_CA, new Date(2), "foo", "123456", LogConstants.EVENT_ERROR_ADDEDENDENTITY, "foo comment 1");
+        LogEntry le2 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogConstants.MODULE_CA, new Date(3), "foo", "123456", LogConstants.EVENT_ERROR_ADDEDENDENTITY, "foo comment 2");
+        LogEntry le3 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogConstants.MODULE_CA, new Date(4), "foo", "123456", LogConstants.EVENT_ERROR_ADDEDENDENTITY, "foo comment 3");
+        LogEntry le4 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogConstants.MODULE_CA, new Date(5), "foo", "123456", LogConstants.EVENT_ERROR_ADDEDENDENTITY, "foo comment 4");
+        LogEntry le5 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogConstants.MODULE_CA, new Date(6), "foo", "123456", LogConstants.EVENT_ERROR_ADDEDENDENTITY, "foo comment 5");
         entrys.add(le1);
         entrys.add(le2);
         entrys.add(le3);
@@ -148,7 +149,7 @@ public class TestProtect extends TestCase {
         le1 = new LogEntry(le.getId(), le.getAdminType(), le.getAdminData(), le.getCAId(), le.getModule(), le.getTime(), le.getUsername(), le.getCertificateSNR(), le.getEvent(), le.getComment());
         entrys.set(2, le1);
         le = (LogEntry)entrys.get(3);
-        le1 = new LogEntry(le.getId(), le.getAdminType(), le.getAdminData(), le.getCAId(), le.getModule(), le.getTime(), le.getUsername(), le.getCertificateSNR(), LogEntry.EVENT_INFO_CAEDITED, le.getComment());
+        le1 = new LogEntry(le.getId(), le.getAdminType(), le.getAdminData(), le.getCAId(), le.getModule(), le.getTime(), le.getUsername(), le.getCertificateSNR(), LogConstants.EVENT_INFO_CAEDITED, le.getComment());
         entrys.set(3, le1);
         iter = entrys.iterator();
         while (iter.hasNext()) {
@@ -163,7 +164,7 @@ public class TestProtect extends TestCase {
         le1 = new LogEntry(le.getId(), le.getAdminType(), le.getAdminData(), le.getCAId(), le.getModule(), le.getTime(), le.getUsername(), le.getCertificateSNR(), le.getEvent(), le.getComment());
         entrys.set(3, le1);
         le = (LogEntry)entrys.get(4);
-        le1 = new LogEntry(le.getId(), le.getAdminType(), le.getAdminData(), le.getCAId(), le.getModule(), new Date(), le.getUsername(), le.getCertificateSNR(), LogEntry.EVENT_INFO_CAEDITED, le.getComment());
+        le1 = new LogEntry(le.getId(), le.getAdminType(), le.getAdminData(), le.getCAId(), le.getModule(), new Date(), le.getUsername(), le.getCertificateSNR(), LogConstants.EVENT_INFO_CAEDITED, le.getComment());
         entrys.set(4, le1);
         iter = entrys.iterator();
         while (iter.hasNext()) {

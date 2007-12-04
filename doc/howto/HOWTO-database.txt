@@ -107,6 +107,10 @@ Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ej
 4. DONE! Start JBoss. Run tests with 'ant test:run'.
    Use your favorite database graphic editor to look at the beautiful database tables.
 
+Hardening
+---------
+When using logging you probably do not want an attacker to be able to remove log posts, therefore you should limit the
+table rights on ProtectedLogData, ProtectedLogTokenData and LogEntryData.
 
 MySQL specifics
 ---------------
@@ -128,7 +132,7 @@ http://mysqld.active-venture.com/Name_case_sensitivity.html
 http://dev.mysql.com/doc/refman/4.1/en/name-case-sensitivity.html
 
 To use UTF-8 encoding in the database, which may be nessecary to get your national characters to work, you may have to 
-use the following option to hte mysql connect string:
+use the following option to the mysql connect string:
 jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
 
 There are also lots of settings that you can do in my.cnf:
@@ -140,6 +144,14 @@ try to add stuff if it doesn't work.
 
 The SQL command to show tables in MySQL is:
 show tables;
+
+To limit the table rights to ProtectedLogData, ProtectedLogTokenData and LogEntryData:
+Configure and run $EJBCA_HOME/doc/howto/mysql-privileges.sh to generate an .sql file with the new database privileges.
+After the .sql file is generated you have to run:
+#mysql -u ejbca -p ejbca < <path to the generated .sql file>
+#mysql -u root -p
+mysql> flush privileges;
+Restart jboss
 
 
 PostgreSQL specifics
@@ -322,6 +334,11 @@ create index userdata_idx1 on UserData (caid,endEntityprofileId);
 
 Indexes on CertReqHistoryData:
 create index historydata_idx1 on CertReqHistoryData (username);
+
+Indexes on ProtectedLogData;
+create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
+create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(10));
+create index protectedlogexportdata_idx2 on ProtectedLogExportData (exportStartTime);
 
 On external OCSP responders you should create the following two indexes:
 create index protect_idx1 on TableProtectData (dbKey,dbType);

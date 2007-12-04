@@ -34,7 +34,7 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
@@ -87,7 +87,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   business="org.ejbca.core.ejb.services.ServiceDataLocal"
  *   link="ServiceData"
  *
- *
  * @ejb.ejb-external-ref description="The Authorization Session Bean"
  *   view-type="local"
  *   ref-name="ejb/AuthorizationSessionLocal"
@@ -96,7 +95,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
  *   link="AuthorizationSession"
  *   
- *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
  *   ref-name="ejb/LogSessionLocal"
@@ -104,6 +102,15 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="ProtectedLogSessionBean"
+ *   view-type="local"
+ *   ref-name="ejb/ProtectedLogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.IProtectedLogSessionLocal"
+ *   link="ProtectedLogSession"
  *   
  * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
  *   view-type="local"
@@ -304,14 +311,14 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         		}
         	}
         	if (success){
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceadded", name));
+        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceadded", name));
         	}else{
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroraddingservice", name));
+        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroraddingservice", name));
         	}
         	if (!success)
         		throw new ServiceExistsException();
         }else{
-        	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoadd", name));
+        	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoadd", name));
         }
         debug("<addService()");
     } // addService
@@ -336,12 +343,12 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	}
         	
         	if (success){
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceedited", name));
+        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceedited", name));
         	}else{
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroreditingservice", name));
+        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroreditingservice", name));
         	}
         }else{
-        	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+        	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
         }      
         
         debug("<changeService()");
@@ -363,13 +370,13 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	if(isAuthorizedToEditService(admin,servicedata)){                   		
         		try {
         			addService(admin, newname, servicedata);
-        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicecloned", newname,oldname));
+        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicecloned", newname,oldname));
         		} catch (ServiceExistsException f) {
-        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorcloningservice", newname, oldname));
+        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorcloningservice", newname, oldname));
         			throw f;
         		}        		
         	}else{
-        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
+        		getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
         	}            
         } catch (FinderException e) {
             error("Error cloning service: ", e);
@@ -400,13 +407,13 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         		  getServiceTimerSession().cancelTimer(htp.getId());
         	  }
               htp.remove();
-              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
+              getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
               retval = true;
         	}else{
-        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+        		getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", name));
         	}
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorremovingservice", name), e);
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorremovingservice", name), e);
         }
         debug("<removeService)");
         
@@ -432,16 +439,16 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
                   htp.setName(newname);
                   success = true;
             	}else{
-            		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
+            		getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
             	}
             } catch (FinderException g) {
             }
         }
 
         if (success){
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicerenamed", oldname, newname));
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicerenamed", oldname, newname));
         }else{
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname));
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname));
         }
         if (!success)
             throw new ServiceExistsException();
@@ -449,25 +456,32 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     } // renameService
 
     /**
-     * Retrives a Collection of id:s (Integer) to authorized services.
+     * Retrives a Collection of id:s (Integer) to visible authorized services.
      * Currently is the only check if the superadmin can see them all
      *
      * @return Collection of id:s (Integer)
      * @ejb.interface-method view-type="both"
      */
-    public Collection getAuthorizedServiceIds(Admin admin) {
-        Collection returnval = new ArrayList();
-
-        // If superadmin return all service
-        	try{
-              getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
-              returnval = getServiceIdToNameMap(admin).keySet();
-        	}catch (AuthorizationDeniedException e1) {
-              	log.debug("AuthorizationDeniedException: ", e1);
-            }
- 
-        return returnval;
-    } // getAuthorizedServiceIds
+    public Collection getAuthorizedVisibleServiceIds(Admin admin) {
+        Collection allServiceIds = new ArrayList();
+        Collection allVisibleServiceIds = new ArrayList();
+        // If superadmin return all visible services
+        try {
+        	getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+        	allServiceIds = getServiceIdToNameMap(admin).keySet();
+        	Iterator i = allServiceIds.iterator();
+        	while (i.hasNext()) {
+        		int id = ((Integer) i.next()).intValue();
+        		// Remove hidden services here..
+        		if (!getServiceConfiguration(admin, id).isHidden()) {
+        			allVisibleServiceIds.add(new Integer(id));
+        		}
+        	}
+        } catch (AuthorizationDeniedException e) {
+        	log.debug("AuthorizationDeniedException: ", e);
+        }
+        return allVisibleServiceIds;
+    } // getAuthorizedVisibleServiceIds
 
     /**
      * Method creating a hashmap mapping service id (Integer) to service name (String).
@@ -597,7 +611,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     				}
     			}
     		}else{
-    			getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+    			getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
     		}
     	} catch (FinderException e) {
     		log.error("Can not find service: "+name);
@@ -610,20 +624,24 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * Method to check if an admin is authorized to edit a service
      * The following checks are performed.
      * 
-     * 1. If the admin is an super administrator
+     * 1. Deny If the service is hidden and the admin is internal EJBCA
+     * 2. Allow If the admin is an super administrator
+     * 3. Deny all other
      * 
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToEditService(Admin admin, ServiceConfiguration serviceConfiguraion) {
     	try {
-    		if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
+    		if (serviceConfiguraion.isHidden() && admin.getAdminType() != Admin.TYPE_INTERNALUSER) {
+    			return false;
+    		} else if (serviceConfiguraion.isHidden() && admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
+    			return true;
+    		} if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
     			return true;
     		}
     	} catch (AuthorizationDeniedException e) {}
-    	
 		return false;
 	}
-
 
     private Integer findFreeServiceId() {
         Random ran = (new Random((new Date()).getTime()));

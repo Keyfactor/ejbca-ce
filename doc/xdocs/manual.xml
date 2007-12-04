@@ -4201,9 +4201,85 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
 
 }
 </source>
-
 </subsection>
 </section>
+
+<section name="Logging">
+<p>
+The are three different logging devices available for official events
+(creation of certificate etc) from EJBCA 3.6. These devices should not be
+confused with the info/debug output that is sent to Log4J directly. You can
+find more information on how to configure Log4J in
+$EJBCA_HOME/doc/howto/log4j.txt.
+</p>
+<p>
+What log devices to use, can be configured in $EJBCA_HOME/conf/log.properties.
+</p>
+<p>
+It is recommended to only allow new log-posts to the database-tables. More
+information on this can be found in $EJBCA_HOME/doc/howto/HOWTO-database.txt.
+</p>
+<subsection name="Log4JLogDevice">
+<p>
+Appends the information from the offical event to the console or file. This is
+the same target where all the other info/debug output is sent to. There are no
+protection from alteration and events sent to this device cannot be fetched
+back to EJBCA for display in the Admin GUI.
+</p>
+</subsection>
+<subsection name="OldLogDevice">
+<p>
+OldLogDevice stores log-events in the database. By using the addon
+HMAC-protection, alterations in a log event can be detected. Viewed events can
+be exported from the Admin GUI.
+</p>
+</subsection>
+<subsection name="ProtectedLogDevice">
+<p>
+The ProtectedLogDevice stores log-events in the database and has the ability
+to detect changed or missing log-events. In an environment where at least one
+node (EJBCA-instance) is constantly running, the log cannot even be rolled back
+to a an earlier state without detection.
+</p>
+<p>
+Features:
+</p>
+<ul>
+<li>No event can be removed or changed without detection (as long as one node
+is still runnning)</li>
+<li>Can perform regular signed export of log for backup (mitigates damage of
+offline rollback)</li>
+<li>Can send emails, run a script and/or kill the JVM if alterations are
+detected</li>
+<li>Can use a CA-token (hard or soft) or a soft JKS keystore (stored encrypted
+with CA-key in database)</li>
+<li>Can set a signature intensity to allow slower HSMs to use the feature</li>
+<li>Nodes can be added or removed dynamically</li>
+</ul>
+<p>
+Drawbacks:
+</p>
+<ul>
+<li>Very database intensive.</li>
+<li>Cannot yet export viewed part of log from Admin GUI</li>
+</ul>
+<p>
+It is good practise to
+</p>
+<ul>
+<li>use secure communication with the database.</li>
+<li>use asymmetric log-signing key and a HSM.</li>
+</ul>
+<p>
+The log can be verified manually using "ejbca.sh/cmd log" CLI.
+</p>
+<p>
+See conf/logdevices/propectedlog.properties.sample for more
+information on how to configure and use the device.
+</p>
+</subsection>
+</section>
+
 <section name="Reference manual">
 <p>
 All configuration options, JNDI names etc is configured through the use of a conf/ejbca.properties file. 

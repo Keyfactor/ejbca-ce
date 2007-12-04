@@ -21,7 +21,7 @@ import java.util.HashMap;
  * Class containing the log configuration data. Tells which events should be logged and if internal
  * log database and/or external logging device should be used.
  *
- * @version $Id: LogConfiguration.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: LogConfiguration.java,v 1.3 2007-12-04 14:21:48 jeklund Exp $
  */
 public class LogConfiguration implements Serializable {
     
@@ -44,12 +44,12 @@ public class LogConfiguration implements Serializable {
         this.configurationdata = new HashMap();
 
         // Fill log configuration data with values from LogEntry constants. Default is true for all events.
-        for (int i = 0; i < LogEntry.EVENTNAMES_INFO.length; i++) {
+        for (int i = 0; i < LogConstants.EVENTNAMES_INFO.length; i++) {
             configurationdata.put(new Integer(i), Boolean.TRUE);
         }
 
-        for (int i = 0; i < LogEntry.EVENTNAMES_ERROR.length; i++) {
-            configurationdata.put(new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY), Boolean.TRUE);
+        for (int i = 0; i < LogConstants.EVENTNAMES_ERROR.length; i++) {
+            configurationdata.put(new Integer(i + LogConstants.EVENT_ERROR_BOUNDRARY), Boolean.TRUE);
         }
     }
     /** Used for upgrading from EJBCA 3.1.x to 3.2.x.
@@ -130,10 +130,10 @@ public class LogConfiguration implements Serializable {
 
     // Private functions
     public String getStringRepresentationOfEventId(int event) {
-        if (event >= LogEntry.EVENT_ERROR_BOUNDRARY) {
-            return LogEntry.EVENTNAMES_ERROR[event];
+        if (event >= LogConstants.EVENT_ERROR_BOUNDRARY) {
+            return LogConstants.EVENTNAMES_ERROR[event];
         }
-        return LogEntry.EVENTNAMES_INFO[event];
+        return LogConstants.EVENTNAMES_INFO[event];
     }
 
     // Private fields

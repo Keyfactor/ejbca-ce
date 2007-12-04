@@ -86,6 +86,7 @@ import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ApprovedActionAdmin;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -124,7 +125,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.21 2007-11-22 17:17:21 anatom Exp $
+ * $Id: EjbcaWS.java,v 1.22 2007-12-04 14:22:11 jeklund Exp $
  */
 
 @WebService
@@ -1325,12 +1326,12 @@ public class EjbcaWS implements IEjbcaWS {
 		Admin admin = getAdmin();
 		
 		try{
-			int event = LogEntry.EVENT_ERROR_CUSTOMLOG;
+			int event = LogConstants.EVENT_ERROR_CUSTOMLOG;
 			switch (level) {
 			case IEjbcaWS.CUSTOMLOG_LEVEL_ERROR:
 				break;
 			case IEjbcaWS.CUSTOMLOG_LEVEL_INFO:
-				event = LogEntry.EVENT_INFO_CUSTOMLOG;
+				event = LogConstants.EVENT_INFO_CUSTOMLOG;
 				break;
 			default:
 				throw new EjbcaException("Illegal level "+ level + " sent to custonLog call.");			
@@ -1351,7 +1352,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 
 			String comment = type + " : " + msg;
-			getLogSession().log(admin, caId, LogEntry.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);
+			getLogSession().log(admin, caId, LogConstants.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);
 		} catch (CertificateException e) {
 			log.error("EJBCA WebService error, customLog : ",e);
 		    throw new EjbcaException(e.getMessage());

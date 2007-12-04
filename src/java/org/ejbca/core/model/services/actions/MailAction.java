@@ -24,7 +24,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
 import org.ejbca.core.model.services.BaseAction;
@@ -34,7 +34,7 @@ import org.ejbca.core.model.services.BaseAction;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: MailAction.java,v 1.6 2007-11-23 13:03:51 anatom Exp $
+ * @version $Id: MailAction.java,v 1.7 2007-12-04 14:22:32 jeklund Exp $
  */
 public class MailAction extends BaseAction {
 	
@@ -83,13 +83,17 @@ public class MailAction extends BaseAction {
               msg.setSentDate(new Date());
               Transport.send(msg);
 
-              String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
-              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_NOTIFICATION, logmsg);
+              if (mailActionInfo.isLoggingEnabled()) {
+                  String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
+                  getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
+              }
         } catch (Exception e) {
 			String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
             log.error(msg, e);
             try{
-            	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
+                if (mailActionInfo.isLoggingEnabled()) {
+                	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
+                }
             }catch(Exception f){
                 throw new EJBException(f);
             }

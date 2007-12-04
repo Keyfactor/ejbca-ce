@@ -18,9 +18,14 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Properties;
 
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -35,10 +40,22 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.log.ILogSessionLocal;
+import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.services.IServiceSessionLocal;
+import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.log.ProtectedLogDevice;
+import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.services.actions.NoAction;
+import org.ejbca.core.model.services.intervals.PeriodicalInterval;
+import org.ejbca.core.model.services.workers.ProtectedLogExportWorker;
+import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
 import org.ejbca.util.CertTools;
 
 /**
@@ -46,7 +63,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.15 2007-11-21 09:19:49 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.16 2007-12-04 14:22:23 jeklund Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -60,13 +77,16 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.15 2007-11-21 09:19:49 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.16 2007-12-04 14:22:23 jeklund Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
 	private static final Logger log = Logger.getLogger(StartServicesServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
+    
+    private IServiceSessionLocal serviceSession = null;
+    private ILogSessionLocal logSession = null;
     
     /**
      * Method used to remove all active timers
@@ -100,6 +120,28 @@ public class StartServicesServlet extends HttpServlet {
           return servicehome;
     }
       
+    private synchronized IServiceSessionLocal getServiceSession() throws IOException {
+        try{
+            if(serviceSession == null){
+            	serviceSession = ((IServiceSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IServiceSessionLocalHome.COMP_NAME)).create();
+            }
+          } catch(Exception e){
+              throw new EJBException(e);
+          }
+          return serviceSession;
+    }
+    
+	public ILogSessionLocal getLogSession(){
+		if(logSession == null){
+			try {
+				logSession = ((ILogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ILogSessionLocalHome.COMP_NAME)).create();
+			} catch (CreateException e) {
+				throw new EJBException(e);
+			}
+		}
+		return logSession;
+	}
+
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -160,7 +202,7 @@ public class StartServicesServlet extends HttpServlet {
 				}
             }
         }
-
+        
         // Log a startup message
 		String iMsg = intres.getLocalizedMessage("startservice.startup");
         log.info(iMsg);
@@ -179,6 +221,96 @@ public class StartServicesServlet extends HttpServlet {
         // Start services that requires calling other beans or components
         //
         
+        // We really need BC to be installed. This is an attempt to fix a bug where the ServiceSessionBean
+        // crashes from not finding the BC-provider.
+        int waitTime = 0;
+        while (Security.getProvider("BC") == null && waitTime++ < 5) {
+        	log.info("Waiting for BC provider to be installed..");
+        	try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				log("Waiting for BC provider failed.", e);
+				break;
+			}
+        }
+
+        getLogSession().log(new Admin(Admin.TYPE_INTERNALUSER), -1, LogConstants.MODULE_SERVICES, new Date(), "none", null,
+        		LogConstants.EVENT_INFO_STARTING, "Starting..");
+
+        log.debug(">init ProtectedLogVerificationService is configured");
+        try {
+        	Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+        	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
+        	if (logProperties != null) {
+        		if (logProperties.getProperty("verificationservice.active", "false").equalsIgnoreCase("true")) {
+        			// Add or update service from configuration
+        			ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+        			serviceConfiguration.setWorkerClassPath(ProtectedLogVerificationWorker.class.getName());
+        			serviceConfiguration.setActionClassPath(NoAction.class.getName());
+        			Properties intervalProperties = new Properties();
+        			intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
+        			intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, logProperties.getProperty(ProtectedLogVerificationWorker.CONF_VERIFICATION_INTERVAL,
+        					ProtectedLogVerificationWorker.DEFAULT_VERIFICATION_INTERVAL));
+        			serviceConfiguration.setIntervalProperties(intervalProperties);
+        			serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
+        			serviceConfiguration.setActive(true);
+        			serviceConfiguration.setHidden(true);
+        			serviceConfiguration.setWorkerProperties(logProperties);
+        			if (getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
+        				getServiceSession().changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        			} else {
+        				getServiceSession().addService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        			}
+        		} else {
+        			// Remove if existing
+        			if (getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
+        				getServiceSession().removeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
+        			}
+        		}
+        	}
+		} catch (ServiceExistsException e) {
+			throw new EJBException(e);
+		} catch (IOException e) {
+			log.error("Error init ServiceSession: ", e);
+		}
+
+        log.debug(">init ProtectedLogExportService is configured");
+        try {
+        	Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+        	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
+        	if (logProperties != null) {
+        		if (logProperties.getProperty("exportservice.active", "false").equalsIgnoreCase("true")) {
+        			// Add or update service from configuration
+        			ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+        			serviceConfiguration.setWorkerClassPath(ProtectedLogExportWorker.class.getName());
+        			serviceConfiguration.setActionClassPath(NoAction.class.getName());
+        			Properties intervalProperties = new Properties();
+        			intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
+        			intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, logProperties.getProperty(ProtectedLogExportWorker.CONF_EXPORT_INTERVAL,
+        					ProtectedLogExportWorker.DEFAULT_EXPORT_INTERVAL));
+        			serviceConfiguration.setIntervalProperties(intervalProperties);
+        			serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
+        			serviceConfiguration.setActive(true);
+        			serviceConfiguration.setHidden(true);
+        			serviceConfiguration.setWorkerProperties(logProperties);
+        			if (getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
+        				getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        			} else {
+        				getServiceSession().addService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        			}
+        		} else {
+        			// Remove if existing
+        			if (getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
+        				getServiceSession().removeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
+        			}
+        		}
+        	}
+		} catch (ServiceExistsException e) {
+			throw new EJBException(e);
+		} catch (IOException e) {
+			log.error("Error init ServiceSession: ", e);
+		}
+
         log.debug(">init calling ServiceSession.load");
         try {
 			getServiceHome().create().load();

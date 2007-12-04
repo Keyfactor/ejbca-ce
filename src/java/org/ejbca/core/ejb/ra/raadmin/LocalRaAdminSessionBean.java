@@ -34,7 +34,7 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -45,7 +45,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.13 2007-11-15 14:52:57 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.14 2007-12-04 14:22:04 jeklund Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -236,17 +236,17 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     		try {
     			AdminPreferencesDataLocal apdata= adminpreferenceshome.create(certificatefingerprint, adminpreference);
     			String msg = intres.getLocalizedMessage("ra.adminprefadded", apdata.getId());            	
-    			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
+    			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
     			ret = true;        		
     		} catch (Exception e) {
     			ret = false;
     			String msg = intres.getLocalizedMessage("ra.adminprefexists");            	
-    			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
+    			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
     		}
     	} else {
     		ret = false;
     		String msg = intres.getLocalizedMessage("ra.adminprefexists");            	
-    		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);            	        		
+    		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);            	        		
     	}
     	debug("<addAdminPreference()");
     	return ret;
@@ -331,10 +331,10 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
           AdminPreferencesDataLocal apdata = adminpreferenceshome.findByPrimaryKey(DEFAULTUSERPREFERENCE);
           apdata.setAdminPreference(defaultadminpreference);
           String msg = intres.getLocalizedMessage("ra.defaultadminprefsaved");            	
-          getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
+          getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
        } catch (Exception e) {
            String msg = intres.getLocalizedMessage("ra.errorsavedefaultadminpref");            	
-           getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,msg);
+           getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,msg);
            throw new EJBException(e);
        }
         debug("<saveDefaultAdminPreference()");
@@ -366,30 +366,30 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 	 public void addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException{
 		if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
 			String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);            	
-			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
 			throw new EndEntityProfileExistsException();
 		}
 		if (isFreeEndEntityProfileId(profileid) == false) {
 			String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);            	
-			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
 			throw new EndEntityProfileExistsException();
 		}
 		try {
 			profiledatahome.findByProfileName(profilename);
 			String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);            	
-			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
 			throw new EndEntityProfileExistsException();
 		} catch (FinderException e) {
 			try {
 				profiledatahome.create(new Integer(profileid), profilename, profile);
 				String msg = intres.getLocalizedMessage("ra.addedprofile", profilename);            	
-				getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
-						LogEntry.EVENT_INFO_ENDENTITYPROFILE,msg);
+				getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
+						LogConstants.EVENT_INFO_ENDENTITYPROFILE,msg);
 			} catch (Exception f) {
 				String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);            	
 				error(msg, e);
-				logsession.log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
-						LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+				logsession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
+						LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
 			}
 		 }
 	 } // addEndEntityProfile
@@ -403,7 +403,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
        if(newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
     	   String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+    	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
     	   throw new EndEntityProfileExistsException();
        }
        try{
@@ -412,16 +412,16 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
            try{
              profiledatahome.findByProfileName(newprofilename);
       	   String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);            	
-             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
              throw new EndEntityProfileExistsException();
            }catch(FinderException e){
               profiledatahome.create(new Integer(findFreeEndEntityProfileId()),newprofilename,profile);
   			String msg = intres.getLocalizedMessage("ra.clonedprofile", newprofilename, originalprofilename);            	
-              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,msg);
+              getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE,msg);
            }
          }catch(Exception e){
       	   String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);            	
-      	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+      	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
          }
 
     } // cloneEndEntityProfile
@@ -436,10 +436,10 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);
             pdl.remove();
 			String msg = intres.getLocalizedMessage("ra.removedprofile", profilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,msg);
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE,msg);
         }catch(Exception e){
 			String msg = intres.getLocalizedMessage("ra.errorremoveprofile", profilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
         }
     } // removeEndEntityProfile
 
@@ -450,23 +450,23 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     public void renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException{
         if(newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)){
         	String msg = intres.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
             throw new EndEntityProfileExistsException();
         }
        try{
            profiledatahome.findByProfileName(newprofilename);
     	   String msg = intres.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);            	
-           getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+           getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
            throw new EndEntityProfileExistsException();
        }catch(FinderException e){
            try{
                EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(oldprofilename);
                pdl.setProfileName(newprofilename);
                String msg = intres.getLocalizedMessage("ra.renamedprofile", oldprofilename, newprofilename);            	
-               getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,msg );
+               getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE,msg );
            }catch(FinderException f){
         	   String msg = intres.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);            	
-        	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg );
+        	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg );
            }
        }
     } // renameProfile
@@ -480,10 +480,10 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(profilename);
             pdl.setProfile(profile);
 			String msg = intres.getLocalizedMessage("ra.changedprofile", profilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,msg);
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE,msg);
         }catch(FinderException e){
 			String msg = intres.getLocalizedMessage("ra.errorchangeprofile", profilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE,msg);
         }
     }// changeEndEntityProfile
 
@@ -767,16 +767,16 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     		GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
     		gcdata.setGlobalConfiguration(globalconfiguration);
 			String msg = intres.getLocalizedMessage("ra.savedconf", gcdata.getConfigurationId());            	
-    		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION,msg);
+    		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_EDITSYSTEMCONFIGURATION,msg);
     	}catch (javax.ejb.FinderException fe) {
     		// Global configuration doesn't yet exists.
     		try{
     			GlobalConfigurationDataLocal data1 = globalconfigurationhome.create(pk,globalconfiguration);
     			String msg = intres.getLocalizedMessage("ra.createdconf", data1.getConfigurationId());            	
-    			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_EDITSYSTEMCONFIGURATION, msg);
+    			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_EDITSYSTEMCONFIGURATION, msg);
     		} catch(CreateException e){
     			String msg = intres.getLocalizedMessage("ra.errorcreateconf");            	
-    			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_EDITSYSTEMCONFIGURATION,msg);
+    			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_EDITSYSTEMCONFIGURATION,msg);
     		}
     	}
     	this.globalconfiguration=globalconfiguration;
@@ -853,14 +853,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             */
             if (dolog) {                
     			String msg = intres.getLocalizedMessage("ra.changedadminpref", certificatefingerprint);            	
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
+                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
             }
             ret = true;
         } catch (javax.ejb.FinderException fe) {
              ret=false;
              if (dolog) {
             	 String msg = intres.getLocalizedMessage("ra.adminprefnotfound", certificatefingerprint);            	
-                 getLogSession().log(admin,admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,msg);
+                 getLogSession().log(admin,admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,msg);
              }
         } catch(Exception e){
           throw new EJBException(e);

@@ -20,14 +20,14 @@ import org.ejbca.core.model.services.ActionInfo;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: MailActionInfo.java,v 1.2 2007-11-23 13:03:24 anatom Exp $
+ * @version $Id: MailActionInfo.java,v 1.3 2007-12-04 14:22:32 jeklund Exp $
  */
 public class MailActionInfo implements ActionInfo {
 	
 	private String reciever = null;
 	private String subject = null;
 	private String message = null;
-	
+	private boolean isLoggingEnabled = true;
 	
 	/**
 	 * Constructor used to create a MailActionInfo
@@ -64,6 +64,18 @@ public class MailActionInfo implements ActionInfo {
      */
 	public String getSubject() {
 		return subject;
+	}
+
+	/**
+	 * Default logging is enabled.
+	 * @param flag is set to false to disable logging
+	 */
+	public void setLoggingEnabled(boolean flag) {
+		isLoggingEnabled = flag;
+	}
+	
+	public boolean isLoggingEnabled() {
+		return isLoggingEnabled;
 	}
 	
 	

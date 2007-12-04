@@ -15,20 +15,22 @@ package org.ejbca.core.model.log;
 
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Properties;
+
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
 
 /**
  * Interface used by EJBCA external log devices such as Log4j.
- * @version $Id: ILogDevice.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: ILogDevice.java,v 1.2 2007-12-04 14:21:54 jeklund Exp $
  */
 public interface ILogDevice extends Serializable {
-
-    /**
-     * Function used by EJBCA to log information.
-     *
-     * @see #log(Admin, int, int, Date, String, X509Certificate, int, String, Exception)
-     */
-    public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment);
 
     /**
      * Log information.
@@ -38,10 +40,60 @@ public interface ILogDevice extends Serializable {
      * @param time the time the event occured.
      * @param username the name of the user involved or null if no user is involved.
      * @param certificate the certificate involved in the event or null if no certificate is involved.
-     * @param event id of the event, should be one of the org.ejbca.core.model.log.LogEntry.EVENT_ constants.
+     * @param event id of the event, should be one of the org.ejbca.core.model.log.LogConstants.EVENT_ constants.
      * @param comment comment of the event.
      * @param exception the exception that has occurred (can be null)
      */
     public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception);
+    
+    /**
+     * Method to export log records according to a customized query on the log db data. The parameter query should be a legal Query object.
+     *
+     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
+     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
+     * @param logexporter is the obbject that converts the result set into the desired log format 
+     * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT, returns null if there is nothing to export
+     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+     * @throws ExtendedCAServiceNotActiveException 
+     * @throws IllegalExtendedCAServiceRequestException 
+     * @throws ExtendedCAServiceRequestException 
+     * @throws CADoesntExistsException 
+     * @see org.ejbca.util.query.Query
+     */
+    public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException,
+    	CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
+    	
+    /**
+     * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
+     *
+     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
+     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
+     * @return a collection of LogEntry. Maximum size of Collection is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+     * @see org.ejbca.util.query.Query
+     */
+    public Collection query(Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException;
+
+    /**
+     * This is called for the log device, right before the LogSessionBean is removed. Since there can exist several LogSessionBeans, this
+     * should be able to handle multiple calls.  
+     */
+	public void destructor();
+
+	/**
+	 * @return true if this device uses the internal log configuration framework
+	 */
+	public boolean getAllowConfigurableEvents();
+
+	/**
+	 * @return the properties used by this LogDevice.
+	 */
+	public Properties getProperties();
+	
+	/**
+	 * @return the name the device
+	 */
+	public String getDeviceName();
+    
 }

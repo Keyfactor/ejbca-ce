@@ -40,7 +40,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: ServiceConfigurationView.java,v 1.3 2006-10-26 11:02:18 herrvendil Exp $
+ * @version $Id: ServiceConfigurationView.java,v 1.4 2007-12-04 14:21:47 jeklund Exp $
  */
 public class ServiceConfigurationView implements Serializable{
 	private static final Logger log = Logger.getLogger(ServiceConfigurationView.class);
@@ -56,6 +56,7 @@ public class ServiceConfigurationView implements Serializable{
     private ServiceTypeManager typeManager;
 	
 	private boolean active = false;
+	private boolean hidden = false;
 	private String description = "";
 	
 	private ServiceConfiguration serviceConfiguration;
@@ -91,6 +92,7 @@ public class ServiceConfigurationView implements Serializable{
 		
 		setDescription(serviceConfiguration.getDescription());
 		setActive(serviceConfiguration.isActive());
+		setHidden(serviceConfiguration.isHidden());
 		
 		
 	}
@@ -102,6 +104,7 @@ public class ServiceConfigurationView implements Serializable{
 	public ServiceConfiguration getServiceConfiguration(ArrayList errorMessages) throws IOException{
 		ServiceConfiguration retval = new ServiceConfiguration();
 		retval.setActive(isActive());
+		retval.setHidden(isHidden());
 		retval.setDescription(getDescription());
 		retval.setActionClassPath(getActionType().getClassPath());
 		retval.setActionProperties(getActionType().getProperties(errorMessages)); 
@@ -145,6 +148,17 @@ public class ServiceConfigurationView implements Serializable{
 		this.active = active;
 	}
 
+	public boolean isHidden() {
+		return hidden;
+	}
+
+	/**
+	 * @param active the active to set
+	 */
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
+	}
+	
 	/**
 	 * @return the description
 	 */

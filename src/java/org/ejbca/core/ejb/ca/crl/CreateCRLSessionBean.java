@@ -43,7 +43,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.CertTools;
 
 
@@ -51,7 +51,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.16 2007-09-19 12:42:22 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.17 2007-12-04 14:22:19 jeklund Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -227,7 +227,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("createcrl.errorcreate", new Integer(caid));            	
             log.error(msg, e);
-            logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg, e);
+            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
             throw new EJBException(e);
         }
         debug("<run()");
@@ -281,7 +281,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
     			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
     			    	   log.error(msg);
-    			    	   logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg);
+    			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
     			       } else {
     			           try {
     			        	   if (log.isDebugEnabled()) {
@@ -337,14 +337,14 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			           } catch (CATokenOfflineException e) {
         			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
         			    	   log.error(msg);
-        			    	   logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg);
+        			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
     			           }
     			       }
     			   }                       
                 } catch(Exception e) {
                 	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
                 	error(msg, e);
-                	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,msg,e);
+                	logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
                 	if (e instanceof EJBException) {
                 		throw (EJBException)e;
                 	}
@@ -354,7 +354,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	} catch (Exception e) {
         	String msg = intres.getLocalizedMessage("createcrl.erroravailcas");            	    			    	   
         	error(msg, e);
-    		logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,msg,e);
+    		logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
             if (e instanceof EJBException) {
                 throw (EJBException)e;
             }

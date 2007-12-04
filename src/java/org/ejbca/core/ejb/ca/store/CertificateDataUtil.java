@@ -36,7 +36,7 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -45,7 +45,7 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.11 2007-09-19 12:42:21 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.12 2007-12-04 14:22:57 jeklund Exp $
  *
  */
 public class CertificateDataUtil {
@@ -94,7 +94,7 @@ public class CertificateDataUtil {
             Certificate ret = null;
             if (coll != null) {
                 if (coll.size() > 1)
-                    adapter.log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE, "Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
+                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, "Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
                             + serno.toString(16) + ".");
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
@@ -195,8 +195,8 @@ public class CertificateDataUtil {
             if (coll != null) {
                 if (coll.size() > 1) {
                 	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
-                    adapter.log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(),
-                                null, null, LogEntry.EVENT_ERROR_DATABASE, msg);
+                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(),
+                                null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
                 }
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {

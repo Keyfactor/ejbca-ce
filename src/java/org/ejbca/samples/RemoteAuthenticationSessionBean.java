@@ -34,7 +34,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
 
@@ -64,7 +64,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * @ejb.interface
  *   generate="none"
  *   
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.3 2007-12-04 14:21:46 jeklund Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";
@@ -123,7 +123,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         // Only end users can be authenticated on remote database (so far...)
         ret.setType(SecConst.USER_ENDUSER);
         try{
-          logsession.log(admin, ret.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");
+          logsession.log(admin, ret.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");
         }catch(RemoteException re){
            throw new EJBException(re);
         }

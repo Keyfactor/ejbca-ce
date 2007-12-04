@@ -34,7 +34,7 @@ import java.util.Date;
  *  time is the time the event occured.
  *  username the name of the user involved or null if no user is involved.
  *  certificate the certificate involved in the event or null if no certificate is involved.
- *  event is id of the event, should be one of the org.ejbca.core.model.log.LogEntry.EVENT_ constants.
+ *  event is id of the event, should be one of the org.ejbca.core.model.log.LogConstants.EVENT_ constants.
  *  comment an optional comment of the event.
  * </pre>
  *
@@ -72,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.8 2007-10-16 13:57:12 jeklund Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.9 2007-12-04 14:21:41 jeklund Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 

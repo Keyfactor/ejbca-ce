@@ -16,6 +16,7 @@ package org.ejbca.core.model.log;
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
@@ -23,12 +24,18 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
 
 
 /**
  * Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.3 2007-01-15 14:32:32 anatom Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.4 2007-12-04 14:22:00 jeklund Exp $
  */
 public class Log4jLogDevice implements ILogDevice, Serializable {
 
@@ -43,6 +50,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
      */
     private static Log4jLogDevice instance;
 
+	private String deviceName = null;
 
     /**
      * Initializes all internal data
@@ -50,8 +58,8 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
      * @param prop Arguments needed for the eventual creation of the object
      */
 
-    protected Log4jLogDevice(Properties prop) throws Exception {
-        // Do nothing
+    protected Log4jLogDevice(Properties properties) throws Exception {
+		deviceName = properties.getProperty("deviceName", "Log4JLogDevice");
     }
 
     /**
@@ -66,11 +74,24 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         }
         return instance;
     }
+    
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public String getDeviceName() {
+		return deviceName;
+	}
+    
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public Properties getProperties() {
+		return null;
+	}
 
-    public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment) {
-        log(admininfo, caid, module, time, username, certificate, event, comment, null);
-    }
-
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
     public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
 
     	String user = intres.getLocalizedMessage("log.nouserinvolved");
@@ -100,15 +121,18 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
 
         Priority priority = Level.INFO;
         String eventText = "";
-        if (event >= LogEntry.EVENT_ERROR_BOUNDRARY) {
+        if (event >= LogConstants.EVENT_SYSTEM_BOUNDRARY) {
+            event -= LogConstants.EVENT_SYSTEM_BOUNDRARY;
+            eventText = LogConstants.EVENTNAMES_SYSTEM[event];
+        } else if (event >= LogConstants.EVENT_ERROR_BOUNDRARY) {
             priority = Level.ERROR;
-            event -= LogEntry.EVENT_ERROR_BOUNDRARY;
-            eventText = LogEntry.EVENTNAMES_ERROR[event];
+            event -= LogConstants.EVENT_ERROR_BOUNDRARY;
+            eventText = LogConstants.EVENTNAMES_ERROR[event];
         }else{
-        	eventText = LogEntry.EVENTNAMES_INFO[event];	
+        	eventText = LogConstants.EVENTNAMES_INFO[event];	
         }
 
-        String logline = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(time) + ", CAId : " + caid + ", " + LogEntry.MODULETEXTS[module] + ", " + eventText + ", Administrator : " +
+        String logline = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(time) + ", CAId : " + caid + ", " + LogConstants.MODULETEXTS[module] + ", " + eventText + ", Administrator : " +
                 admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment;
         log.log(priority, logline, null);
 
@@ -116,4 +140,34 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
             log.error("Exception : ", exception);
         }
     }
+
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+		// Does not make sense to implement.. just return null
+		return null;
+	}
+
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public Collection query(Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException {
+		// Does not make sense to implement.. just return null
+		return null;
+	}
+
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public void destructor() {
+		// No action needed
+	}
+
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public boolean getAllowConfigurableEvents() {
+		return true;
+	}
 }

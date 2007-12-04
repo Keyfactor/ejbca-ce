@@ -59,7 +59,15 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateDataLocal"
- *
+ *   
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *   
+ *  @jboss.method-attributes
+ *   pattern = "update*"
+ *   read-only = "true"
+
  */
 public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
 {

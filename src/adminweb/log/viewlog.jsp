@@ -81,6 +81,7 @@
   static final String SORTBY_COMMENT_ACC      = "sortbycommentaccending";
   static final String SORTBY_COMMENT_DEC      = "sortbycommentdecending";
 
+  static final String SELECT_VIEWLOGDEVICE      = "selectviewlogdevice";
   static final String SELECT_VIEWLASTENTRIES    = "selectviewlastentries";
   static final String SELECT_ENTRIESPERPAGE     = "selectentriesperpage";
   static final String SELECT_MATCHWITH_ROW1     = "selectmatchwithrow1"; 
@@ -228,7 +229,7 @@
 	   CsvLogExporter exporter = new CsvLogExporter();
 	   exporter.setSigningCA(signcsvca);
 	   try {
-		   byte[] export = logbean.exportLastQuery(exporter);
+		   byte[] export = logbean.exportLastQuery(request.getParameter(SELECT_VIEWLOGDEVICE), exporter);
 		   if (export != null) {
 			   String name = "logexport.csv";
 			   String ct = "text/csv";
@@ -249,7 +250,7 @@
 
 
    if(  request.getParameter(BUTTON_RELOAD)!=null &&  oldaction.equals(OLD_ACTION_VIEWLAST) ){
-       logentries = logbean.filterByTime(VIEWLASTTIMES[Integer.parseInt(oldactionvalue)],record,size);
+       logentries = logbean.filterByTime(request.getParameter(SELECT_VIEWLOGDEVICE), VIEWLASTTIMES[Integer.parseInt(oldactionvalue)],record,size);
      }else{
        if( request.getParameter(BUTTON_RELOAD)!=null && oldaction.equals(OLD_ACTION_ADVANCEDLIST) ){
 
@@ -320,7 +321,7 @@
 
 
               if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
-                logentries  = logbean.filterByQuery(query,record,size);  
+                logentries  = logbean.filterByQuery(request.getParameter(SELECT_VIEWLOGDEVICE), query,record,size);  
               }else{
                  illegalquery = true;
               } 
@@ -331,7 +332,7 @@
          String timeindex = request.getParameter(SELECT_VIEWLASTENTRIES); 
          if(!timeindex.equals("")){
            record=0;
-           logentries  = logbean.filterByTime(VIEWLASTTIMES[Integer.parseInt(timeindex)],record,size);
+           logentries  = logbean.filterByTime(request.getParameter(SELECT_VIEWLOGDEVICE), VIEWLASTTIMES[Integer.parseInt(timeindex)],record,size);
            oldaction=OLD_ACTION_VIEWLAST;
            oldactionvalue=timeindex;
          }else{
@@ -473,7 +474,7 @@
               }
 
               if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
-                logentries  = logbean.filterByQuery(query,record,size);  
+                logentries  = logbean.filterByQuery(request.getParameter(SELECT_VIEWLOGDEVICE), query,record,size);  
               }else{
                  illegalquery = true;
               }

@@ -167,4 +167,28 @@
         </junitreport>
     </target>
 
+    <target name="test:logstress" depends="test:compile,j2ee:assert-run" description="run JUnit log stress test">
+        <delete dir="${test.dir}/log/reports" />
+        <mkdir dir="${test.dir}/log/reports/html" />
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath>
+                <path refid="test.compile.classpath" />
+                <path location="${test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
+            <batchtest fork="yes" todir="${test.dir}/log/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/log/LoggingStressTest*" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <junitreport todir="${test.dir}/log/reports">
+            <fileset dir="${test.dir}/log/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.dir}/log/reports/html" />
+        </junitreport>
+    </target>
+
 </project>

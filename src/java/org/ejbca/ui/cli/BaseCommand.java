@@ -41,6 +41,8 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.log.IProtectedLogSessionHome;
+import org.ejbca.core.ejb.log.IProtectedLogSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
@@ -53,7 +55,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.3 2007-01-03 14:49:35 anatom Exp $
+ * @version $Id: BaseCommand.java,v 1.4 2007-12-04 14:21:44 jeklund Exp $
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */
@@ -75,8 +77,10 @@ public abstract class BaseCommand {
     private ICertificateStoreSessionRemote certstoresession = null;
     /** Handle to PublisherSessionRemote, not static... */
     private IPublisherSessionRemote publishersession = null;
-    
-    protected Admin administrator = null;
+    /** Handle to ProtectedLogSessionRemote, not static... */
+	private IProtectedLogSessionRemote protectedlogsession = null;
+
+	protected Admin administrator = null;
     
     /** Where print output of commands */
     private PrintStream outStream = System.out;
@@ -136,6 +140,18 @@ public abstract class BaseCommand {
           caadminsession = home.create();          
         } 
         return caadminsession;
+     } // getCAAdminSessionRemote
+
+    /** Gets CA admin session
+     *@return ICAAdminSessionRemote
+     */
+    protected IProtectedLogSessionRemote getProtectedLogSession() throws Exception{
+        if(protectedlogsession == null){
+          Context ctx = getInitialContext();
+          IProtectedLogSessionHome home = (IProtectedLogSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("ProtectedLogSession"), IProtectedLogSessionHome.class );            
+          protectedlogsession = home.create();          
+        } 
+        return protectedlogsession;
      } // getCAAdminSessionRemote
 
     /** Gets certificate store session

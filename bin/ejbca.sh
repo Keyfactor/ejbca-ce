@@ -38,8 +38,10 @@ elif [ "$1" = "asn1dump" ] ; then
 	class_name=org.ejbca.ui.cli.Asn1Dump
 elif [ "$1" = "encryptpwd" ] ; then
 	class_name=org.ejbca.ui.cli.EncryptPwd
+elif [ "$1" = "log" ] ; then
+	class_name=org.ejbca.ui.cli.log
 else
-	echo "Usage: $0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump|encryptpwd] options"
+	echo "Usage: $0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump|encryptpwd|log] options"
 	echo "For options information, specify a command directive"
 	exit 1
 fi

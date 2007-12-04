@@ -27,8 +27,10 @@ import org.ejbca.core.ejb.log.ILogSessionHome;
 import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.CsvLogExporter;
+import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.LogMatch;
@@ -37,12 +39,12 @@ import org.ejbca.util.query.Query;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.6 2006-12-20 08:35:06 anatom Exp $
+ * @version $Id: TestLog.java,v 1.7 2007-12-04 14:23:04 jeklund Exp $
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);
 
-    private ILogSessionRemote cacheAdmin;
+    private ILogSessionRemote cacheLogSession;
 
     private static ILogSessionHome cacheHome;
 
@@ -61,7 +63,7 @@ public class TestLog extends TestCase {
 
         log.debug(">setUp()");
 
-        if (cacheAdmin == null) {
+        if (cacheLogSession == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
                 Object obj1 = jndiContext.lookup("LogSession");
@@ -69,7 +71,7 @@ public class TestLog extends TestCase {
 
             }
 
-            cacheAdmin = cacheHome.create();
+            cacheLogSession = cacheHome.create();
         }
 
 
@@ -98,14 +100,14 @@ public class TestLog extends TestCase {
         log.debug(">test01AddLogConfiguration()");
 
         LogConfiguration logconf = new LogConfiguration();
-        logconf.setLogEvent(LogEntry.EVENT_INFO_DATABASE, false);
-        logconf.setLogEvent(LogEntry.EVENT_ERROR_DATABASE, true);
+        logconf.setLogEvent(LogConstants.EVENT_INFO_DATABASE, false);
+        logconf.setLogEvent(LogConstants.EVENT_ERROR_DATABASE, true);
 
-        cacheAdmin.saveLogConfiguration(admin, "CN=TEST".hashCode(), logconf);
+        cacheLogSession.saveLogConfiguration(admin, "CN=TEST".hashCode(), logconf);
 
-        LogConfiguration logconf2 = cacheAdmin.loadLogConfiguration("CN=TEST".hashCode());
-        assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogEntry.EVENT_INFO_DATABASE).booleanValue());
-        assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogEntry.EVENT_ERROR_DATABASE).booleanValue());
+        LogConfiguration logconf2 = cacheLogSession.loadLogConfiguration("CN=TEST".hashCode());
+        assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogConstants.EVENT_INFO_DATABASE).booleanValue());
+        assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogConstants.EVENT_ERROR_DATABASE).booleanValue());
 
         log.debug("<test01AddLogConfiguration()");
     }
@@ -119,22 +121,31 @@ public class TestLog extends TestCase {
     public void test02AddAndCheckLogEvents() throws Exception {
         log.debug(">test02AddAndCheckLogEvents()");
 
-        cacheAdmin.log(admin, "CN=TEST".hashCode(), LogEntry.MODULE_LOG, new Date(), null, null, LogEntry.EVENT_ERROR_UNKNOWN, "Test");
+        cacheLogSession.log(admin, "CN=TEST".hashCode(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
 
 
-        Query query = new Query(Query.TYPE_LOGQUERY);
-        query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
-        Collection result = cacheAdmin.query(query, "", "caid=" + Integer.toString("CN=TEST".hashCode()));
-        Iterator iter = result.iterator();
-        boolean found = false;
-        while (iter.hasNext()) {
-            LogEntry entry = (LogEntry) iter.next();
-            if ( (entry.getComment() != null) && (entry.getComment().equals("Test")) ) {
-                found = true;
-            }
+        Collection logDeviceNames = cacheLogSession.getAvailableLogDevices();
+        Iterator iterator = logDeviceNames.iterator();
+        Collection result = null;
+        while (iterator.hasNext()) {
+        	String logDeviceName = (String) iterator.next();
+        	if (logDeviceName.equalsIgnoreCase("Log4JLogDevice")) {
+        		continue;
+        	}
+        	Query query = new Query(Query.TYPE_LOGQUERY);
+        	query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
+        	result = cacheLogSession.query(logDeviceName, query, "", "caid=" + Integer.toString("CN=TEST".hashCode()));
+        	Iterator iter = result.iterator();
+        	boolean found = false;
+        	while (iter.hasNext()) {
+        		LogEntry entry = (LogEntry) iter.next();
+        		if ( (entry.getComment() != null) && (entry.getComment().equals("Test")) ) {
+        			found = true;
+        		}
+        	}
+        	assertTrue("Couldn't retrieve correct log data from database.", found);
         }
-        assertTrue("Couldn't retrieve correct log data from database.", found);
-        
+
  	   ILogExporter exporter = new CsvLogExporter();
  	   exporter.setEntries(result);
 	   byte[] export = exporter.export();
@@ -146,6 +157,4 @@ public class TestLog extends TestCase {
 
         log.debug("<test02AddAndCheckLogEvents()");
     }
-
-
 }

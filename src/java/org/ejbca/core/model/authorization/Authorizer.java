@@ -27,7 +27,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.CertTools;
 
 /**
@@ -35,7 +35,7 @@ import org.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.2 2007-08-19 12:12:15 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.3 2007-12-04 14:23:02 jeklund Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable {
     
@@ -75,9 +75,9 @@ public class Authorizer extends Object implements java.io.Serializable {
         if(!authorizationproxy.isAuthorized(admininformation, resource)  && !authorizationproxy.isAuthorized(admininformation, "/super_administrator")){
         	try {
         		if(!admininformation.isSpecialUser()) {
-        			logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
+        			logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
         		} else {
-        			logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
+        			logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
         		}
         	} catch (Throwable e) {
         		log.info("Missed to log 'Admin not authorized to resource', admin="+admin.toString()+", resource="+resource, e);
@@ -86,9 +86,9 @@ public class Authorizer extends Object implements java.io.Serializable {
         }
         try {
             if(!admininformation.isSpecialUser()) {
-                logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
+                logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
             } else {
-                logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
+                logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
             }        	
         } catch (Throwable e) {
         	log.info("Missed to log 'Admin authorized to resource', admin="+admin.toString()+", resource="+resource, e);
@@ -134,9 +134,9 @@ public class Authorizer extends Object implements java.io.Serializable {
         if(!authorizationproxy.isGroupAuthorized(admininformation, pk, resource)){
         	try {
         		if(!admininformation.isSpecialUser()) {
-        			logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+        			logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
         		} else {
-        			logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+        			logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
         		}
         	} catch (Throwable e) {
         		log.info("Missed to log 'Admin group not authorized to resource', admin="+admin.toString()+", resource="+resource, e);
@@ -145,9 +145,9 @@ public class Authorizer extends Object implements java.io.Serializable {
         }
         try {
         	if(!admininformation.isSpecialUser()) {
-        		logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
+        		logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
         	} else {
-        		logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+        		logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
         	}
         } catch (Throwable e) {
         	log.info("Missed to log 'Admin group authorized to resource', admin="+admin.toString()+", resource="+resource, e);

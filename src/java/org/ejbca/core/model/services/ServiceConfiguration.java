@@ -29,7 +29,7 @@ import org.ejbca.core.model.services.workers.EmailSendingWorker;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ServiceConfiguration.java,v 1.5 2007-11-11 07:55:49 anatom Exp $
+ * @version $Id: ServiceConfiguration.java,v 1.6 2007-12-04 14:22:50 jeklund Exp $
  */
 public class ServiceConfiguration extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -37,7 +37,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-	private static final float LATEST_VERSION = 2;
+	private static final float LATEST_VERSION = 3;
 	
 	private static final String INTERVALCLASSPATH = "INTERVALCLASSPATH";
 	private static final String INTERVALPROPERTIES = "INTERVALPROPERTIES";
@@ -48,12 +48,14 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	private static final String DESCRIPTION = "DESCRIPTION";
 	private static final String ACTIVE = "ACTIVE";
 	private static final String NEXTRUNTIMESTAMP = "NEXTRUNTIMESTAMP";
+	private static final String HIDDEN = "HIDDEN";
 	
 	/**
 	 * Constructor used to create a new service configuration.
 	 */
 	public ServiceConfiguration(){
 		setActive(false);
+		setHidden(false);
 		setDescription("");
 		setActionClassPath("");
 		setActionProperties(new Properties());
@@ -105,6 +107,14 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	 */
 	public void setActive(boolean active) {
 		data.put(ACTIVE, new Boolean(active));
+	}
+	
+	public boolean isHidden() {
+		return ((Boolean) data.get(HIDDEN)).booleanValue();
+	}
+	
+	public void setHidden(boolean b) {
+		data.put(HIDDEN, new Boolean(b));
 	}
 	
 	/**
@@ -210,7 +220,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 
             log.debug(LATEST_VERSION);
 			// We changed the names of properties between v1 and v2, so we have to upgrade a few of them
-			if (Float.compare(LATEST_VERSION, Float.valueOf(2)) == 0) {
+			if (Float.compare(LATEST_VERSION, Float.valueOf(2)) >= 0) {
 	            log.debug("Upgrading to version 2");
 				Properties prop = getWorkerProperties();
 				if (prop != null) {
@@ -261,7 +271,13 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 						prop.remove("worker.emailexpiration.adminmessage");
 					}
 					setWorkerProperties(prop);
-				}				
+				}
+				
+				if (Float.compare(LATEST_VERSION, Float.valueOf(3)) >= 0) {
+		            log.debug("Upgrading to version 3");
+		            // The hidden field was added
+		            setHidden(false);
+				}
 			}
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}		
@@ -280,7 +296,8 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
         clone.loadData(clonedata);
         return clone;
       }
-	
+
+
 	
 
 }

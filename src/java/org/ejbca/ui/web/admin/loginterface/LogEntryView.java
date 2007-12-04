@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.rmi.RemoteException;
 
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.rainterface.SortBy;
 import org.ejbca.util.dn.DNFieldExtractor;
@@ -27,7 +28,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * A class used as a help class for displaying LogEntries.
  *
  * @author  TomSelleck
- * @version $Id: LogEntryView.java,v 1.3 2006-12-02 11:17:58 anatom Exp $
+ * @version $Id: LogEntryView.java,v 1.4 2007-12-04 14:22:17 jeklund Exp $
  */
 public class LogEntryView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -137,10 +138,10 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           }  
        }
        
-       if(logentry.getEvent() < LogEntry.EVENT_ERROR_BOUNDRARY)
+       if(logentry.getEvent() < LogConstants.EVENT_ERROR_BOUNDRARY)
          logentrydata[EVENT] = localinfoeventnames[logentry.getEvent()];
        else
-         logentrydata[EVENT] = localerroreventnames[logentry.getEvent() - LogEntry.EVENT_ERROR_BOUNDRARY];         
+         logentrydata[EVENT] = localerroreventnames[logentry.getEvent() - LogConstants.EVENT_ERROR_BOUNDRARY];         
        
        logentrydata[COMMENT] = logentry.getComment();  
        logentrydata[VERIFY] = logentry.getVerifyResult();

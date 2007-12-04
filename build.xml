@@ -241,7 +241,9 @@
             <fileset dir="${build}">            	
         	    <exclude name="org/ejbca/core/protocol/ws/**"/>
             </fileset>
-            <fileset dir="${src}/log"/>
+            <fileset dir="${ejbca.home}">
+				<include name="conf/**"/>
+			</fileset>	
             <fileset dir="${src}/upgrade"/>
         	<fileset dir="${src}/java">
         	    <include name="dncomponents.properties"/>
@@ -680,6 +682,7 @@
 		    	<exclude name="**/.cvsignore" />
 		    	<exclude name="**/ejbca.properties" />
 		    	<exclude name="conf/*.properties" />
+		    	<exclude name="conf/logdevices/*.properties" />
 		    	<exclude name="**/*.sh" />
 		    	<exclude name="**/jndi.properties" />
 		    	<exclude name="**/hs_err*" />

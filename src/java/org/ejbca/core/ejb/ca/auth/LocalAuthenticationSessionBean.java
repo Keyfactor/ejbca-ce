@@ -39,7 +39,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
@@ -50,7 +50,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.9 2007-11-23 17:46:33 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.10 2007-12-04 14:23:12 jeklund Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -128,6 +128,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     /** home interface to user entity bean */
     private UserDataLocalHome userHome = null;
     
+    /** home interface to user admin session bean */
+    private IUserAdminSessionLocalHome usersessionhome = null;
+    	
     /** interface to user admin session bean */
     private IUserAdminSessionLocal usersession = null;
     
@@ -154,12 +157,34 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
         
         userHome = (UserDataLocalHome)getLocator().getLocalHome(UserDataLocalHome.COMP_NAME);
-        ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-        logsession = logsessionhome.create();
-        IUserAdminSessionLocalHome usersessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-        usersession = usersessionhome.create();
         
         debug("<ejbCreate()");
+    }
+    
+    private ILogSessionLocal getLogSession() {
+    	if (logsession == null) {
+            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
+            try {
+   				logsession = logsessionhome.create();
+			} catch (CreateException e) {
+				throw new EJBException(e);
+			}
+    		
+    	}
+    	return logsession;
+    }
+    
+    private IUserAdminSessionLocal getUserSession() {
+    	if (usersession == null) {
+    		IUserAdminSessionLocalHome usersessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+            try {
+   				usersession = usersessionhome.create();
+			} catch (CreateException e) {
+				throw new EJBException(e);
+			}
+    		
+    	}
+    	return usersession;
     }
     
     /**
@@ -215,12 +240,12 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 if (data.comparePassword(password) == false)
                 {
                 	String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
-                	logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
+                	getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
                 	throw new AuthLoginException(msg);
                 }
 
             	String msg = intres.getLocalizedMessage("authentication.authok", username);            	
-                logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,msg);
+                getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
                 UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
                 		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
                 		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
@@ -229,11 +254,11 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 return ret;
             }
         	String msg = intres.getLocalizedMessage("authentication.wrongstatus", new Integer(status), username);            	
-            logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
+        	getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
         } catch (ObjectNotFoundException oe) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
-            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
+        	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
@@ -262,20 +287,20 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
         try {
             // Change status of the user with username username
-        	UserDataVO data = usersession.findUser(admin, username);
+        	UserDataVO data = getUserSession().findUser(admin, username);
         	if (data == null) {
         		throw new FinderException("User '"+username+"' can not be found.");
         	}
         	// This admin can be the public web user, which may not be allowed to change status,
         	// this is a bit ugly, but what can a man do...
         	Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
-        	usersession.setUserStatus(statusadmin, username, UserDataConstants.STATUS_GENERATED);
+        	getUserSession().setUserStatus(statusadmin, username, UserDataConstants.STATUS_GENERATED);
         	String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
-            logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,msg);
+        	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
-            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
+        	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw new ObjectNotFoundException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			// Should never happen

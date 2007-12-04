@@ -48,7 +48,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
@@ -59,7 +59,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.13 2007-06-20 11:22:12 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.14 2007-12-04 14:22:23 jeklund Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -176,7 +176,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		userdn = CertTools.getSubjectDN(certificates[0]);
     		log.debug("Verifying authorization of '"+userdn);    		
     		adminsession.checkIfCertificateBelongToAdmin(administrator, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());        
-    		logsession.log(administrator, certificates[0], LogEntry.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
+    		logsession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
     	}
 
     	try {

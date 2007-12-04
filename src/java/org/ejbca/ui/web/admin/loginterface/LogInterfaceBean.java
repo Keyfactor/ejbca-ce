@@ -35,7 +35,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.HTMLTools;
@@ -49,7 +48,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.8 2007-01-17 17:26:40 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.9 2007-12-04 14:22:16 jeklund Exp $
  */
 public class LogInterfaceBean implements java.io.Serializable {
 
@@ -100,8 +99,8 @@ public class LogInterfaceBean implements java.io.Serializable {
      * @param size the number of elements to return.
      */
 
-    public LogEntryView[] filterByQuery(Query query, int index, int size) throws Exception {
-      Collection logentries = logsession.query(query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+    public LogEntryView[] filterByQuery(String deviceName, Query query, int index, int size) throws Exception {
+      Collection logentries = logsession.query(deviceName, query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       logentriesview.setEntries(logentries);
       lastquery = query;
 
@@ -116,13 +115,13 @@ public class LogInterfaceBean implements java.io.Serializable {
      * @param index point's where in result to begin returning data.
      * @param size the number of elements to return.
      */
-    public LogEntriesView filterByUsername(String username, HashMap caidtonamemap) throws Exception {
+    public LogEntriesView filterByUsername(String deviceName, String username, HashMap caidtonamemap) throws Exception {
       LogEntriesView returnval = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localmodulenamesunsorted,  caidtonamemap);  
       String user = StringTools.strip(username);  
       Query query = new Query(Query.TYPE_LOGQUERY);
       query.add(LogMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, user);
         
-      Collection logentries = logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       returnval.setEntries(logentries);
       lastquery = query;
 
@@ -137,13 +136,13 @@ public class LogInterfaceBean implements java.io.Serializable {
      * @param index point's where in result to begin returning data.
      * @param size the number of elements to return.
      */
-    public LogEntryView[] filterByTime(int time, int index, int size) throws Exception {
+    public LogEntryView[] filterByTime(String deviceName, int time, int index, int size) throws Exception {
       Query query = new Query(Query.TYPE_LOGQUERY);
       Date starttime = new Date( (new Date()).getTime() - (time * 60000));
       
       query.add(starttime, new Date());
         
-      Collection logentries = logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       logentriesview.setEntries(logentries);
       lastquery = query;
 
@@ -257,7 +256,7 @@ public class LogInterfaceBean implements java.io.Serializable {
       Iterator iter = authorizedmodules.iterator();
       int i = 0;
       while(iter.hasNext()){
-          returnval[i] = ejbcawebbean.getText(LogEntry.MODULETEXTS[((Integer) iter.next()).intValue()]);
+          returnval[i] = ejbcawebbean.getText(LogConstants.MODULETEXTS[((Integer) iter.next()).intValue()]);
           i++;
       }
       
@@ -275,22 +274,26 @@ public class LogInterfaceBean implements java.io.Serializable {
      * @throws CADoesntExistsException 
      * @see org.ejbca.core.model.log.ILogExporter
      */
-    public byte[] exportLastQuery(ILogExporter exporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {    	
-    	byte[] ret = logsession.export(admin, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter);
+    public byte[] exportLastQuery(String deviceName, ILogExporter exporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {    	
+    	byte[] ret = logsession.export(deviceName, admin, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter);
     	return ret;
+    }
+    
+    public Collection getAvailableLogDevices() {
+    	return logsession.getAvailableLogDevices();
     }
 
     // Private methods.
     private void initializeEventNameTables(EjbcaWebBean ejbcawebbean){
-      int alleventsize = LogEntry.EVENTNAMES_INFO.length +  LogEntry.EVENTNAMES_ERROR.length; 
+      int alleventsize = LogConstants.EVENTNAMES_INFO.length +  LogConstants.EVENTNAMES_ERROR.length; 
       alllocaleventnames = new String[alleventsize];
-      localinfoeventnames = new String[LogEntry.EVENTNAMES_INFO.length];
-      localinfoeventnamesunsorted = new String[LogEntry.EVENTNAMES_INFO.length];
+      localinfoeventnames = new String[LogConstants.EVENTNAMES_INFO.length];
+      localinfoeventnamesunsorted = new String[LogConstants.EVENTNAMES_INFO.length];
       localeventnamehashtoid = new HashMap();
       localtranslatedeventnamestoid = new HashMap();
       for(int i = 0; i < localinfoeventnames.length; i++){
     	  // If the translation contains html characters (&eacute; etc) we must turn it into regular chars, just like the browser does
-    	  String s = ejbcawebbean.getText(LogEntry.EVENTNAMES_INFO[i]);
+    	  String s = ejbcawebbean.getText(LogConstants.EVENTNAMES_INFO[i]);
     	  localinfoeventnames[i] = s;
     	  localinfoeventnamesunsorted[i] = s;
     	  String translateds = HTMLTools.htmlunescape(s);
@@ -303,29 +306,29 @@ public class LogInterfaceBean implements java.io.Serializable {
       }
       Arrays.sort(localinfoeventnames);          
       
-      localerroreventnamesunsorted = new String[LogEntry.EVENTNAMES_ERROR.length];      
-      localerroreventnames = new String[LogEntry.EVENTNAMES_ERROR.length];
+      localerroreventnamesunsorted = new String[LogConstants.EVENTNAMES_ERROR.length];      
+      localerroreventnames = new String[LogConstants.EVENTNAMES_ERROR.length];
       for(int i = 0; i < localerroreventnames.length; i++){
     	  // If the translation contains html characters (&eacute; etc) we must turn it into regular chars, just like the browser does
-    	  String s = ejbcawebbean.getText(LogEntry.EVENTNAMES_ERROR[i]);
+    	  String s = ejbcawebbean.getText(LogConstants.EVENTNAMES_ERROR[i]);
     	  localerroreventnames[i] = s;
     	  localerroreventnamesunsorted[i] = s;        
     	  String translateds = HTMLTools.htmlunescape(s);
-    	  alllocaleventnames[LogEntry.EVENTNAMES_INFO.length + i] = translateds;
+    	  alllocaleventnames[LogConstants.EVENTNAMES_INFO.length + i] = translateds;
     	  // We must make this independent of language encoding, utf, html escaped etc
     	  Integer hashcode = new Integer(s.hashCode());
     	  String hash = hashcode.toString();
-    	  localeventnamehashtoid.put(hash, new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));
-    	  localtranslatedeventnamestoid.put(translateds, new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));
+    	  localeventnamehashtoid.put(hash, new Integer(i + LogConstants.EVENT_ERROR_BOUNDRARY));
+    	  localtranslatedeventnamestoid.put(translateds, new Integer(i + LogConstants.EVENT_ERROR_BOUNDRARY));
       }
       Arrays.sort(localerroreventnames);     
       Arrays.sort(alllocaleventnames);
       
-      localmodulenames = new String[LogEntry.MODULETEXTS.length]; 
-      localmodulenamesunsorted = new String[LogEntry.MODULETEXTS.length];       
+      localmodulenames = new String[LogConstants.MODULETEXTS.length]; 
+      localmodulenamesunsorted = new String[LogConstants.MODULETEXTS.length];       
       localmodulenamestoid = new HashMap(9);     
       for(int i = 0; i < localmodulenames.length; i++){
-        localmodulenames[i] = ejbcawebbean.getText(LogEntry.MODULETEXTS[i]);   
+        localmodulenames[i] = ejbcawebbean.getText(LogConstants.MODULETEXTS[i]);   
         localmodulenamesunsorted[i] = localmodulenames[i];  
         localmodulenamestoid.put(localmodulenames[i], new Integer(i));
       }

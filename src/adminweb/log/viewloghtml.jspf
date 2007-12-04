@@ -139,6 +139,17 @@ function viewcert(row){
                                    %>><%=ejbcawebbean.getText(VIEWLASTTIMESTEXTS[i]) %></option>
       <% } %>
      </select>  
+		<%= ejbcawebbean.getText("FROM").toLowerCase() %>
+      <select name="<%=SELECT_VIEWLOGDEVICE %>" >
+      <%	Collection availableLogDevices = logbean.getAvailableLogDevices();
+            Iterator iter = availableLogDevices.iterator();
+            while(iter.hasNext()){
+            	String deviceName = (String) iter.next();
+            	String deviceSelected = (deviceName.equalsIgnoreCase(request.getParameter(SELECT_VIEWLOGDEVICE)) ? "selected" : ""); %>
+				<option value='<%=deviceName %>' <%=deviceSelected %> ><%=deviceName %></option>
+      <%	}	%>
+     </select>  
+
     <input type="submit" name="<%=BUTTON_VIEWLAST %>" value="<%= ejbcawebbean.getText("VIEW") %>">
   </p>
      <% }
@@ -354,7 +365,13 @@ function viewcert(row){
                     <% } %>
     </td>
     <td width="18%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
-    <td width="7%"><%= logentries[i].getValue(LogEntryView.VERIFY) %></td>
+    <td width="7%">
+    <%	if (logentries[i].getValue(LogEntryView.VERIFY).equalsIgnoreCase("VERIFY_SUCCESS")) { %>
+	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("true.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
+	<%	} else {	%>
+	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("false.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
+	<%	} %>
+    </td>
   </tr>
  <%      }
        }%>

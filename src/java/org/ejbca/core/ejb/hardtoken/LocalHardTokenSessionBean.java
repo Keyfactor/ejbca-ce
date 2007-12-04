@@ -72,7 +72,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
@@ -396,10 +396,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	    
 	    if(success) {
             String msg = intres.getLocalizedMessage("hardtoken.addedprofile", name);            	
-	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+	        getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
 	    } else {
             String msg = intres.getLocalizedMessage("hardtoken.erroraddprofile", name);            	
-	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+	        getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
 	    }
 	    
 	    if(!success)
@@ -425,10 +425,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
 	   if(success) {
            String msg = intres.getLocalizedMessage("hardtoken.editedprofile", name);            	
-           getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+           getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
 	   } else {
            String msg = intres.getLocalizedMessage("hardtoken.erroreditprofile", name);            	
-           getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+           getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
 	   }
 
 	   debug("<changeHardTokenProfile()");
@@ -452,10 +452,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          try{
         	 addHardTokenProfile(admin, newname, profiledata);
         	 String msg = intres.getLocalizedMessage("hardtoken.clonedprofile", newname, oldname);            	
-        	 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+        	 getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
          }catch(HardTokenProfileExistsException f){
              String msg = intres.getLocalizedMessage("hardtoken.errorcloneprofile", newname, oldname);            	
-             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
              throw f;
          }
 
@@ -479,10 +479,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		HardTokenProfileDataLocal htp = hardtokenprofilehome.findByName(name);
 		htp.remove();
         String msg = intres.getLocalizedMessage("hardtoken.removedprofile", name);            	
-		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,msg);
+		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA,msg);
 	  }catch(Exception e){
           String msg = intres.getLocalizedMessage("hardtoken.errorremoveprofile", name);            	
-          getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA,msg,e);
+          getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA,msg,e);
 	  }
 	  debug("<removeHardTokenProfile()");
 	} // removeHardTokenProfile
@@ -510,10 +510,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
 	   if(success) {
 		   String msg = intres.getLocalizedMessage("hardtoken.renamedprofile", oldname, newname);            	
-		   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENPROFILEDATA,msg);
+		   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA,msg);
 	   } else {
 		   String msg = intres.getLocalizedMessage("hardtoken.errorrenameprofile", oldname, newname);            	
-		   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+		   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
 	   }
 
        if(!success)
@@ -689,10 +689,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
        if(returnval) {
     	   String msg = intres.getLocalizedMessage("hardtoken.addedissuer", alias);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,msg);
+    	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENISSUERDATA,msg);
        } else {
     	   String msg = intres.getLocalizedMessage("hardtoken.erroraddissuer", alias);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
+    	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
        }
 
        debug("<addHardTokenIssuer()");
@@ -719,10 +719,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
        if(returnvalue) {
     	   String msg = intres.getLocalizedMessage("hardtoken.editedissuer", alias);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,msg);
+    	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENISSUERDATA,msg);
        } else {
     	   String msg = intres.getLocalizedMessage("hardtoken.erroreditissuer", alias);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
+    	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
        }
 
        debug("<changeHardTokenIssuer()");
@@ -748,10 +748,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          returnval = addHardTokenIssuer(admin, newalias, admingroupid, issuerdata);
          if(returnval) {
         	 String msg = intres.getLocalizedMessage("hardtoken.clonedissuer", newalias, oldalias);            	
-        	 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,msg);
+        	 getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENISSUERDATA,msg);
          } else {
         	 String msg = intres.getLocalizedMessage("hardtoken.errorcloneissuer", newalias, oldalias);            	
-        	 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
+        	 getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
          }
        }catch(Exception e){
           throw new EJBException(e);
@@ -774,10 +774,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	  HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);
     	  htih.remove();
     	  String msg = intres.getLocalizedMessage("hardtoken.removedissuer", alias);            	
-    	  getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,msg);
+    	  getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENISSUERDATA,msg);
       }catch(Exception e){
     	  String msg = intres.getLocalizedMessage("hardtoken.errorremoveissuer", alias);            	
-    	  getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,msg,e);
+    	  getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg,e);
       }
       debug("<removeHardTokenIssuer()");
     } // removeHardTokenIssuer
@@ -807,10 +807,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
        if(returnvalue) {
     	   String msg = intres.getLocalizedMessage("hardtoken.renameissuer", oldalias, newalias);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENISSUERDATA,msg );
+    	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENISSUERDATA,msg );
        } else {
     	   String msg = intres.getLocalizedMessage("hardtoken.errorrenameissuer", oldalias, newalias);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
+    	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
        }
 
        debug("<renameHardTokenIssuer()");
@@ -1106,16 +1106,16 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     				hardtokenpropertyhome.create(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF,copyof);
     			}
     			String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);            	
-    			getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENDATA,msg);
+    			getLogSession().log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogConstants.EVENT_INFO_HARDTOKENDATA,msg);
     		}
     		catch (Exception e) {
     			String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);            	
-    			getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,msg);
+    			getLogSession().log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,msg);
     			throw new HardTokenExistsException("Tokensn : " + tokensn);
     		}
     	} else {
     		String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);            	
-    		getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,msg);
+    		getLogSession().log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,msg);
     		throw new HardTokenExistsException("Tokensn : " + tokensn);    		
     	}
         debug("<addHardToken()");
@@ -1143,11 +1143,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
             htd.setModifyTime(new java.util.Date());
             caid = htd.getSignificantIssuerDN().hashCode();
         	String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);            	
-            getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENDATA,msg);
+            getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKENDATA,msg);
         }
         catch (Exception e) {
         	String msg = intres.getLocalizedMessage("hardtoken.errorchangetoken", tokensn);            	
-        	getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,msg);
+        	getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,msg);
         	throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
         }
         debug("<changeHardToken()");
@@ -1188,10 +1188,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            }
         }catch(FinderException fe){}
     	String msg = intres.getLocalizedMessage("hardtoken.removedtoken", tokensn);            	
-        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENDATA,msg);
+        getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENDATA,msg);
       }catch(Exception e){
     	  String msg = intres.getLocalizedMessage("hardtoken.errorremovetoken", tokensn);            	
-    	  getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,msg);
+    	  getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,msg);
     	  throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
       }
       debug("<removeHardToken()");
@@ -1264,10 +1264,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          if(htd != null){
            returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getSignificantIssuerDN(),getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(),includePUK,htd.getData()), copyof, copies);
            String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);            	
-           getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,msg);
+           getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKENVIEWED,msg);
            if(includePUK){
                msg = intres.getLocalizedMessage("hardtoken.viewedpuk", tokensn);            	
-               getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_PUKVIEWED,msg);        	   
+               getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogConstants.EVENT_INFO_PUKVIEWED,msg);        	   
            }
          }
        }catch(FinderException e){}
@@ -1319,10 +1319,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
            returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getSignificantIssuerDN(),getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(), includePUK, htd.getData()),copyof, copies));
            String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());            	
-           getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,msg);
+           getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKENVIEWED,msg);
            if(includePUK){
                msg = intres.getLocalizedMessage("hardtoken.viewedpuk", htd.getTokenSN());            	
-               getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_PUKVIEWED,msg);        	   
+               getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogConstants.EVENT_INFO_PUKVIEWED,msg);        	   
            }
          }
        }catch(FinderException e){}
@@ -1398,14 +1398,14 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         	try {
         		hardtokencertificatemaphome.create(fp,tokensn);
         		String msg = intres.getLocalizedMessage("hardtoken.addedtokencertmapping", certificatesn, tokensn);
-        		getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP,msg);
+        		getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP,msg);
         	} catch (Exception e) {
         		String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
-        		getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);
+        		getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);
         	}
         } else {
     		String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
-    		getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);        	
+    		getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);        	
         }
         debug("<addHardTokenCertificateMapping()");
     } // addHardTokenCertificateMapping
@@ -1429,11 +1429,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         HardTokenCertificateMapLocal htcm =hardtokencertificatemaphome.findByPrimaryKey(CertTools.getFingerprintAsString(certificate));
         htcm.remove();
         String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
-        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
+        getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
       }catch(Exception e){
     	  try{
     		  String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingcert", certificatesn);
-    		  getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);
+    		  getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);
     	  }catch(Exception re){
             throw new EJBException(e);
          }
@@ -1462,11 +1462,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
       	}
         String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingtoken", tokensn);
-        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
+        getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
         }catch(Exception e){
         	try{
         		String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingtoken", tokensn);
-        		getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);
+        		getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);
         	}catch(Exception re){
               throw new EJBException(e);
            }
@@ -1552,7 +1552,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	  int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
       try{
   		String msg = intres.getLocalizedMessage("hardtoken.generatedtoken", tokensn);
-        getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENGENERATED, msg);
+        getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogConstants.EVENT_INFO_HARDTOKENGENERATED, msg);
       }catch(Exception e){
         throw new EJBException(e);
       }
@@ -1572,7 +1572,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
       try{
     	  String msg = intres.getLocalizedMessage("hardtoken.errorgeneratetoken", tokensn);
-    	  getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENGENERATED, msg);
+    	  getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_HARDTOKENGENERATED, msg);
       }catch(Exception e){
         throw new EJBException(e);
       }

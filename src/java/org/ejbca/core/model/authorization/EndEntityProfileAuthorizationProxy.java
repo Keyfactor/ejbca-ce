@@ -25,14 +25,14 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.log.ILogSessionHome;
 import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.LogConstants;
 
 /**
  * A class used to improve performance by proxying a users end entity profile authorization minimizing the need of traversing
  * trough the authorization tree and rmi lookups. It's use should only be within short time to avoid desyncronisation.
  *
  * @author  TomSelleck
- * @version $Id: EndEntityProfileAuthorizationProxy.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: EndEntityProfileAuthorizationProxy.java,v 1.2 2007-12-04 14:23:03 jeklund Exp $
  */
 public class EndEntityProfileAuthorizationProxy implements Serializable {
 
@@ -106,10 +106,10 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
         
         if(returnval != null && log){
             if(returnval.booleanValue()){
-                getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,
+                getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,
                         "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
             }else{
-                getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
+                getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
                         "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
             }
         }
