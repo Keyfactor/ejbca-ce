@@ -27,6 +27,13 @@ Installation
 ------------
 Follow the installation instructions in the User's Guide, either built above, or from http://www.ejbca.org/.
 
+PDF
+---
+A good set of commands to generate a nice PDF version of the User's Guide is:
+ ant doc
+ apt-get install htmldoc
+ htmldoc --footer "  /"  --toclevels 4 -t pdf14 tmp/htdocs/manual.html -f manual.pdf
+  
 Release notes and upgrade
 -------------------------
 In this directory you will find RELEASE_NOTES with some notes relating to this specific release and
