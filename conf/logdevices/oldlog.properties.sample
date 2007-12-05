@@ -2,6 +2,3 @@
 
 # Enable or disable protection of logs, see HOWTO-logsigning.txt
 #logSigning=false
-
-# The name of the device. As shown in the Admin GUI.
-#deviceName=OldLogDevice

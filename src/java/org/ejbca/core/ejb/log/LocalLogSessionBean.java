@@ -41,8 +41,12 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.ILogExporter;
+import org.ejbca.core.model.log.Log4jLogDevice;
+import org.ejbca.core.model.log.Log4jLogDeviceFactory;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.log.OldLogDevice;
+import org.ejbca.core.model.log.OldLogDeviceFactory;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -152,7 +156,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.20 2007-12-04 14:21:40 jeklund Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.21 2007-12-05 18:11:44 jeklund Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -185,9 +189,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
             }
             // Set some defaults if no properties were found
             if (logDevicesString == null) {
-            	logDevicesString = "defaultDevice1;defaultDevice2";
-            	logProperties.setProperty("defaultDevice1","org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties");
-            	logProperties.setProperty("defaultDevice2","org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties");
+            	logDevicesString = Log4jLogDevice.DEFAULT_DEVICE_NAME+";"+OldLogDevice.DEFAULT_DEVICE_NAME;
+            	logProperties.setProperty(Log4jLogDevice.DEFAULT_DEVICE_NAME, Log4jLogDeviceFactory.class.getName() + ";");
+            	logProperties.setProperty(OldLogDevice.DEFAULT_DEVICE_NAME, OldLogDeviceFactory.class.getName() + ";");
             }
             if (logDevicesString != null) {
                 String[] logDevices = logDevicesString.split(";");
@@ -199,6 +203,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
 	            	String[] logDeviceComponents = logDeviceString.split(";");
 	            	// Load properties
 	            	Properties properties = new Properties();
+	            	properties.setProperty("deviceName", logDevices[i]);
 	                if (logDeviceComponents.length > 1 && !(logDeviceComponents[1] == null || logDeviceComponents[1].trim().equals(""))) {
 	                	InputStream is = null;
 	                	try {

@@ -22,7 +22,7 @@
 <cmp-field>
   <field-name>b64SignatureCertificate</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>deleted</field-name>
@@ -30,5 +30,5 @@
 <cmp-field>
   <field-name>b64Signature</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>

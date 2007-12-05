@@ -32,7 +32,7 @@ public class ProtectedLogVerifier {
 
 	private ProtectedLogActions protectedLogActions = null;
 	
-	protected ProtectedLogVerifier(Properties properties) {
+	private ProtectedLogVerifier(Properties properties) {
 		this.properties = properties;
 		freezeThreshold = Long.parseLong(properties.getProperty(CONF_FREEZE_THRESHOLD, DEFAULT_FREEZE_THRESHOLD)) * 60 * 1000;
 		protectedLogActions = new ProtectedLogActions(properties);
@@ -91,27 +91,30 @@ public class ProtectedLogVerifier {
 	
 	synchronized private void run() {
 		long startTimeOfExecution = new Date().getTime();
-		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
-		// Verify that the log hasn't been emptied since last run
-		// Verify that the log hasn't been rolled back since last run
-		protectedLogEventIdentifier = verifyLastEvent();
-		if (protectedLogEventIdentifier != null) {
-			log.error("verifyLastEvent failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
-		}
-		// Verify entire log
-		// Verify that log hasn't been frozen for any node
-		// Verify that each protect operation had a valid certificate and is not about to expire without a valid replacement
-		try {
-			protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);	//verifyEntireLog();
+		try  {
+			ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
+			// Verify that the log hasn't been emptied since last run
+			// Verify that the log hasn't been rolled back since last run
+			protectedLogEventIdentifier = verifyLastEvent();
 			if (protectedLogEventIdentifier != null) {
-				log.error("verifyEntireLog failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
+				log.error("verifyLastEvent failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
 			}
-		} catch (Exception e) {
-			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
-			log.error("Internal logging error.", e);
+			// Verify entire log
+			// Verify that log hasn't been frozen for any node
+			// Verify that each protect operation had a valid certificate and is not about to expire without a valid replacement
+			try {
+				protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);	//verifyEntireLog();
+				if (protectedLogEventIdentifier != null) {
+					log.error("verifyEntireLog failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
+				}
+			} catch (Exception e) {
+				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
+				log.error("Internal logging error.", e);
+			}
+		} finally {
+			timeOfLastExecution = startTimeOfExecution;
+			isRunning = false;
 		}
-		timeOfLastExecution = startTimeOfExecution;
-		isRunning = false;
 	}
 	
 	public long getTimeOfLastExecution() {

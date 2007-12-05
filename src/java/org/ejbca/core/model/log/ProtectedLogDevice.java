@@ -47,6 +47,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	public final static String CONFIG_PROTECTION_INTENSITY		= "protectionIntensity";
 	public final static String CONFIG_ALLOW_EVENTSCONFIG		= "allowConfigurableEvents";
 	
+	public final static String DEFAULT_NODEIP								= "127.0.0.1";
+	public final static String DEFAULT_DEVICE_NAME						= "ProtectedLogDevice";
+	
 	private static final Logger log = Logger.getLogger(ProtectedLogDevice.class);
 
 	private static final SecureRandom seeder = new SecureRandom();
@@ -67,7 +70,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private byte[] lastProtectedLogRowHash = null;
 	private long lastTime = 0;
 	private long protectionIntensity = 0;
-	private String nodeIP = "127.0.0.1";
+	private String nodeIP = DEFAULT_NODEIP;
 	private ProtectedLogToken protectedLogToken = null;
 	private String protectionHashAlgorithm = null;
 	private boolean isFirstLogEvent = true;
@@ -77,7 +80,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	
 	protected ProtectedLogDevice(Properties prop) throws Exception {
 		properties = prop;
-		deviceName = properties.getProperty("deviceName", "ProtectedLogDevice");
+		deviceName = properties.getProperty("deviceName", DEFAULT_DEVICE_NAME);
 		nodeGUID = seeder.nextInt();
 		counter = 0;
 		protectionIntensity = Long.parseLong(properties.getProperty(CONFIG_PROTECTION_INTENSITY, "0")) * 1000; 
@@ -173,7 +176,13 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			logInternal(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(time.getTime()-1), null, null, LogConstants.EVENT_SYSTEM_INITILIZED_LOGGING, "Initiating log for this node.",null);
 			//protectedLogActions.takeActions(IProtectedLogAction.CAUSE_TESTING);
 		}
-		logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
+		if (!isDestructorInvoked || event == LogConstants.EVENT_SYSTEM_STOPPED_LOGGING) {
+			logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
+		} else {
+			// An event at the last minute.. let it through and then write another stopevent
+			logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
+			logInternal(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Retrying to terminate the log session for this node.",null);
+		}
 	}
 
 	/**

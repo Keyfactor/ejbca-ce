@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.URI;
 import java.security.Key;
 import java.security.KeyStore;
@@ -181,6 +182,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	private ISignSessionLocal signSession = null;
 	private IServiceSessionLocal serviceSession = null;
 	
+	private boolean isAboutToGoDown = false;
 	
     public void ejbCreate() {
     }
@@ -1249,8 +1251,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			int nextProtectedLogEventRowNodeGUID = nextProtectedLogEventRow.getEventIdentifier().getNodeGUID();
 			processedNodeGUIDs.add(nextProtectedLogEventRowNodeGUID);
-			//log.info("Processing node " + nextProtectedLogEventRowNodeGUID);
-
 			// Verify that log hasn't been frozen for any node
 			ProtectedLogEventIdentifier newestNodeProtectedLogEventIdentifier = findNewestProtectedLogEventRow(nextProtectedLogEventRowNodeGUID);
 			ProtectedLogEventRow newestNodeProtectedLogEventRow = getProtectedLogEventRow(newestNodeProtectedLogEventIdentifier);
@@ -1315,9 +1315,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						isLastEvent = true;
 					}
 				}
-				//lastExportProtectedLogIdentifier.contains(nextProtectedLogEventRow.getEventIdentifier());
 				byte[] linkedInEventsHash = null;
+				ProtectedLogEventRow[] linkedInEventRows = null;
 				if (!isLastEvent && linkedInEventIdentifiers != null && linkedInEventIdentifiers.length != 0) {
+					linkedInEventRows = new ProtectedLogEventRow[linkedInEventIdentifiers.length];
 					// If one of the linked in identifiers points to a ProtectedLogEventRow where eventTime is the same as
 					// the latest Export and that export is "deleted" and has a valid signature, we can't verify it's linked in hash..
 					// If not every log-row is signed in a multi-node environment, this would lead to unverified log-rows.
@@ -1331,18 +1332,17 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					if (!isLinkingInLast) {
 						// Verify the hash of all the linked in events.
 						for (int i=0; i<linkedInEventIdentifiers.length; i++) {
-							ProtectedLogEventRow fetchedProtectedLogEventRow =getProtectedLogEventRow(linkedInEventIdentifiers[i]);
-							if (fetchedProtectedLogEventRow == null) {
+							linkedInEventRows[i] =getProtectedLogEventRow(linkedInEventIdentifiers[i]);
+							if (linkedInEventRows[i] == null) {
 								protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 								return linkedInEventIdentifiers[i];
 							} else {
-								messageDigest.update(fetchedProtectedLogEventRow.calculateHash());
+								messageDigest.update(linkedInEventRows[i].calculateHash());
 							}
 						}
 						linkedInEventsHash = messageDigest.digest();
 						if ((linkedInEventsHash != null || nextProtectedLogEventRow.getLinkedInEventsHash() != null) &&
 								!Arrays.equals(linkedInEventsHash, nextProtectedLogEventRow.getLinkedInEventsHash())) {
-							log.info("Linked in events hash has changed. (" + nextProtectedLogEventRow.getEventIdentifier().getNodeGUID() + "," + nextProtectedLogEventRow.getEventIdentifier().getCounter()+")");
 							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW); 
 							return nextProtectedLogEventRow.getEventIdentifier();
 						}
@@ -1353,7 +1353,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					// For each linked in, if any of them is newer then the one found in newestProtectedLogEventIdentifiers for each node → verify event signature and replace
 					for (int l=0; l<linkedInEventIdentifiers.length; l++) {
 						ProtectedLogEventIdentifier k = linkedInEventIdentifiers[l];
-						ProtectedLogEventRow currentProtectedLogEventRow = getProtectedLogEventRow(k);
+						ProtectedLogEventRow currentProtectedLogEventRow = linkedInEventRows[l]; //getProtectedLogEventRow(k);
 						if (currentProtectedLogEventRow == null) {
 							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 							return currentProtectedLogEventRow.getEventIdentifier();
@@ -1411,7 +1411,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				return new ProtectedLogEventIdentifier(everyExistingNodeGUID[i], 0);
 			}
 		}
-
 		// If something is wrong the failed verified ProtectedLogEventRowIdentifier is returned.
 		return null;
 	}
@@ -1534,10 +1533,17 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			messageDigest.update(currentProtectedLogEventRow.calculateHash());
 			byte[] linkedInEventsHash = messageDigest.digest();
+			String nodeIP = ProtectedLogDevice.DEFAULT_NODEIP;
+	        try {
+	        	nodeIP = InetAddress.getLocalHost().getHostAddress();
+	        }
+	        catch (java.net.UnknownHostException uhe) {
+	        }
+			nodeIP = properties.getProperty(ProtectedLogDevice.CONFIG_NODEIP, nodeIP);
 			ProtectedLogEventRow newProtectedLogEventRow = new ProtectedLogEventRow(Admin.TYPE_INTERNALUSER, null, 0, LogConstants.MODULE_LOG,
 					(new Date().getTime()+10000), null, null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING, "Node-chain was accepted by CLI.",
 					new ProtectedLogEventIdentifier(currentProtectedLogEventIdentifier.getNodeGUID(), currentProtectedLogEventIdentifier.getCounter()+1),
-					"127.0.0.1", linkedInEventIdentifiers, linkedInEventsHash, newestProtectedLogEventRow.getCurrentHashAlgorithm(),
+					nodeIP, linkedInEventIdentifiers, linkedInEventsHash, newestProtectedLogEventRow.getCurrentHashAlgorithm(),
 					newestProtectedLogEventRow.getProtectionKeyIdentifier(), newestProtectedLogEventRow.getProtectionKeyAlgorithm(), null);
 			// Sign new event
 			newProtectedLogEventRow.setProtection(getProtectedLogToken(properties).protect(newProtectedLogEventRow.getAsByteArray(false)));
@@ -1738,6 +1744,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			MessageDigest messageDigest = MessageDigest.getInstance(currentHashAlgorithm, "BC");
 			ProtectedLogEventRow newesetExportedProtectedLogEventRow = null;
 			long lastLoopTime = exportStartTime;
+			CAInfo caInfo = null;
 			do {
 				protectedLogEventRows = findNextProtectedLogEventRows(lastLoopTime, exportEndTime, fetchSize);
 				rowCount += protectedLogEventRows.length;
@@ -1778,19 +1785,21 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				X509Certificate certificate = getToken(newesetExportedProtectedLogEventRow.getProtectionKeyIdentifier()).getTokenCertificate();
 				// if not CA-cert get the issuers cert
 				int caId = certificate.getSubjectDN().getName().hashCode();
-				//int caId = CertTools.getSubjectDN(certificate).hashCode();
-				CAInfo caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
-				if (caInfo == null) {
-					caId = certificate.getIssuerDN().getName().hashCode();
-					//int caId = CertTools.getIssuerDN(certificate).hashCode();
-					caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
+				int issuingCAId = certificate.getIssuerDN().getName().hashCode();
+				if (caInfo == null || (caInfo.getCAId() != caId && caInfo.getCAId() != issuingCAId)) {
+					// Cache CAInfo locally
+					caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);	
 					if (caInfo == null) {
-						log.error("No valid CA certificate to use for log-export.");
-						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INVALID_TOKEN);
-						protectedLogExportHandler.abort();
-						return false;
-					} else {
-						certificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+						caId = issuingCAId;
+						caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
+						if (caInfo == null) {
+							log.error("No valid CA certificate to use for log-export.");
+							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INVALID_TOKEN);
+							protectedLogExportHandler.abort();
+							return false;
+						} else {
+							certificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+						}
 					}
 				}
 				ProtectedLogExportRow newProtectedLogExportRow = new ProtectedLogExportRow(timeOfExport, exportEndTime, exportStartTime, exportedHash,

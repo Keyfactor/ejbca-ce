@@ -43,6 +43,8 @@ import org.ejbca.util.query.Query;
  */
 public class OldLogDevice implements ILogDevice, Serializable {
 	
+	public final static String DEFAULT_DEVICE_NAME = "OldLogDevice";
+	
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
@@ -89,7 +91,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 */
 	protected OldLogDevice(Properties prop) throws Exception {
 		properties = prop;
-		deviceName = properties.getProperty("deviceName", "OldLogDevice");
+		deviceName = properties.getProperty("deviceName", DEFAULT_DEVICE_NAME);
         logconfigurationhome = (LogConfigurationDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogConfigurationDataLocalHome.COMP_NAME);
         logentryhome = (LogEntryDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogEntryDataLocalHome.COMP_NAME);
         signsessionhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);

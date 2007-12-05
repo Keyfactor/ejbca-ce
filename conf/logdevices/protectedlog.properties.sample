@@ -10,9 +10,6 @@
 #     "bin\ejbca.cmd log accept path-to-this-file"
 #
 
-# The name of the device. As shown in the Admin GUI.
-#deviceName=ProtectedLogDevice
-
 # protectionToken is the key used to protect log-rows in the database, the
 # issuing CA of this token is used for log export
 #  Caution 1: Soft tokens requires Unlimited JCE to be installed.

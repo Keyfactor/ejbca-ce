@@ -18,6 +18,8 @@ import org.ejbca.util.query.Query;
  */
 public class DummyLogDevice implements ILogDevice, Serializable {
 
+	public final static String DEFAULT_DEVICE_NAME = "DummyLogDevice";
+
 	private static DummyLogDevice instance;
 	private Properties properties;
 	
@@ -25,7 +27,7 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 
 	protected DummyLogDevice(Properties properties) throws Exception {
 		this.properties = properties;
-		deviceName = properties.getProperty("deviceName", "DummyLogDevice");
+		deviceName = properties.getProperty("deviceName", DEFAULT_DEVICE_NAME);
 	}
 
 	/**
