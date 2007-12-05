@@ -63,7 +63,7 @@ Needed to build and run are:
 <ul>
 <li>JDK 1.5.x or 1.6.x (support for 1.4.x was dropped in EJBCA 3.5).</li>
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
-<li>JBOSS >=4.0.4 (latest tested verison is JBoss 4.2.0)</li>
+<li>JBOSS >=4.0.4 (latest tested verison is JBoss 4.2.2)</li>
 <li>Ant >= 1.6.5 to build (http://jakarta.apache.org/ant/)</li>
 </ul>
 </p><p>
@@ -1648,7 +1648,7 @@ for dynamic substitution in the next section. Use ${NL} for newline in the mail 
 The Notification Recipient can have a few different values:
 <ul>
 <li>USER: send notification to the email registered for the end entity.</li>
-<li>&lt;email address&gt;: send notification to the specified email address.</li>
+<li>foo@bar.com: send notification to the specified email address.</li>
 </ul> 
 </p>
 <p>
@@ -3694,14 +3694,14 @@ publisher "GPCP" and then "Edit" the same. Choose
 </ul>
 <source>
 	crl.application /fullpathname/exportscript.sh
-	crl.failOnStandardError &lt;true &#166; false&gt;
-	crl.failOnErrorCode &lt;true &#166; false&gt;
+	crl.failOnStandardError &lt;true | false&gt;
+	crl.failOnErrorCode &lt;true | false&gt;
 	cert.application /fullpathname/exportscript.sh
-	cert.failOnStandardError &lt;true &#166; false&gt;
-	cert.failOnErrorCode &lt;true &#166; false&gt;
+	cert.failOnStandardError &lt;true | false&gt;
+	cert.failOnErrorCode &lt;true | false&gt;
 	revoke.application /fullpathname/exportscript.sh
-	revoke.failOnStandardError &lt;true &#166; false&gt;
-	revoke.failOnErrorCode &lt;true &#166; false&gt;
+	revoke.failOnStandardError &lt;true | false&gt;
+	revoke.failOnErrorCode &lt;true | false&gt;
 </source>
 <p>
 and click "Save and Test Connection" to save the entered information and validate
@@ -3719,8 +3719,8 @@ Administration GUI, select a CA, click "Edit" and then "Republish CA Certificate
 <p>
 More advanced scripts or applications have the ability to use the additional argument
 <ul>
-<li>&lt;cert.application&gt; fulltempfilepathname x509type</li>
-<li>&lt;revoke.application&gt; fulltempfilepathname x509reason</li>
+<li>cert.application fulltempfilepathname x509type</li>
+<li>revoke.application fulltempfilepathname x509reason</li>
 </ul>
 </p>
 </subsubsection>
