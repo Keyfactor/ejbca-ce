@@ -27,6 +27,7 @@ public class ProtectedLogExporter {
 
 	private Properties properties = null;
 	private boolean isRunning = false;
+	private boolean isCanceled = false;
 
 	private ProtectedLogActions protectedLogActions = null;
 	private boolean deleteAfterExport = false;
@@ -34,7 +35,7 @@ public class ProtectedLogExporter {
 	
 	private String currentHashAlgorithm = null; 
 
-	protected ProtectedLogExporter(Properties properties) {
+	private ProtectedLogExporter(Properties properties) {
 		this.properties = properties;
 		CertTools.installBCProvider();
 		currentHashAlgorithm = properties.getProperty(CONF_HASH_ALGO, "SHA-256");
@@ -85,8 +86,20 @@ public class ProtectedLogExporter {
 		return (isRunning = true);
 	}
 	
+	/**
+	 * Inform the service next time it ask, that it is requested to stop.
+	 */
+	public void cancelExport() {
+		isCanceled = true;
+	}
+	
+	public boolean isCanceled() {
+		return isCanceled;
+	}
+	
 	// Exports chunk of log
 	synchronized private void run() {
+		log.debug(">run");
 		IProtectedLogExportHandler protectedLogExportHandler = null;
 		try {
 			Class implClass = Class.forName(properties.getProperty("exportservice.exporthandler", ProtectedLogDummyExportHandler.class.getName()).trim());
@@ -94,7 +107,10 @@ public class ProtectedLogExporter {
 			getProtectedLogSession().exportLog(protectedLogExportHandler, properties, protectedLogActions, currentHashAlgorithm, deleteAfterExport, atLeastThisOld);
 		} catch (Exception e) {
 			log.error(e);
+		} finally {
+			isRunning = false;
+			isCanceled = false;
 		}
-		isRunning = false;
+		log.debug("<run");
 	}
 }

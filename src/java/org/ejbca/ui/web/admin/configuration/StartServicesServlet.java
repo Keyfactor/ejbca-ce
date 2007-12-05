@@ -50,6 +50,8 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.ProtectedLogDevice;
+import org.ejbca.core.model.log.ProtectedLogExporter;
+import org.ejbca.core.model.log.ProtectedLogVerifier;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.actions.NoAction;
@@ -63,7 +65,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.17 2007-12-04 18:43:35 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.18 2007-12-05 23:20:52 jeklund Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -77,7 +79,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.17 2007-12-04 18:43:35 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.18 2007-12-05 23:20:52 jeklund Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -89,7 +91,7 @@ public class StartServicesServlet extends HttpServlet {
     private ILogSessionLocal logSession = null;
     
     /**
-     * Method used to remove all active timers
+     * Method used to remove all active timers and stop system services.
 	 * @see javax.servlet.GenericServlet#destroy()
 	 */
 	public void destroy() {
@@ -102,6 +104,33 @@ public class StartServicesServlet extends HttpServlet {
 		} catch (Exception e) {
 			log.error(e);
 		}
+        log.debug(">destroy waiting for system services to finish");
+        ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
+        if (protectedLogVerifier != null) {
+        	protectedLogVerifier.cancelVerification();
+        	long startedWaiting = System.currentTimeMillis();
+    		log.info("Waiting up to 30 seconds for verification service to finish..");
+        	while (protectedLogVerifier.isRunning() && startedWaiting + 30*1000 > System.currentTimeMillis()) {
+        		try {
+					Thread.sleep(1*1000);
+				} catch (InterruptedException e) {
+					throw new EJBException(e);
+				}
+        	}
+        }
+        ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
+        if (protectedLogExporter != null) {
+        	protectedLogExporter.cancelExport();
+        	long startedWaiting = System.currentTimeMillis();
+    		log.info("Waiting up to 30 seconds for export service to finish..");
+        	while (protectedLogExporter.isRunning() && startedWaiting + 30*1000 > System.currentTimeMillis()) {
+        		try {
+					Thread.sleep(1*1000);
+				} catch (InterruptedException e) {
+					throw new EJBException(e);
+				}
+        	}
+        }
 		super.destroy();
 	}
 

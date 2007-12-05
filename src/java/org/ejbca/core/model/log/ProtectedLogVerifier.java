@@ -28,7 +28,9 @@ public class ProtectedLogVerifier {
 	private long lastKnownEventTime = 0;
 	private Properties properties = null;
 	private boolean isRunning = false;
+	private boolean isCanceled = false;
 	long freezeThreshold = 0;
+	long lastSuccessfulVerification = 0;
 
 	private ProtectedLogActions protectedLogActions = null;
 	
@@ -89,7 +91,26 @@ public class ProtectedLogVerifier {
 		return isRunning;
 	}
 	
+	/**
+	 * Inform the service next time it ask, that it is requested to stop.
+	 */
+	public void cancelVerification() {
+		isCanceled = true;
+	}
+	
+	public boolean isCanceled() {
+		return isCanceled;
+	}
+
+	/**
+	 * @return the time in milliseconds of when the last successful verification began.
+	 */
+	public long getLastSuccessfulVerificationTime() {
+		return lastSuccessfulVerification;
+	}
+
 	synchronized private void run() {
+		log.debug(">run");
 		long startTimeOfExecution = new Date().getTime();
 		try  {
 			ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
@@ -98,23 +119,28 @@ public class ProtectedLogVerifier {
 			protectedLogEventIdentifier = verifyLastEvent();
 			if (protectedLogEventIdentifier != null) {
 				log.error("verifyLastEvent failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
-			}
-			// Verify entire log
-			// Verify that log hasn't been frozen for any node
-			// Verify that each protect operation had a valid certificate and is not about to expire without a valid replacement
-			try {
-				protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);	//verifyEntireLog();
-				if (protectedLogEventIdentifier != null) {
-					log.error("verifyEntireLog failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
+			} else {
+				// Verify entire log
+				// Verify that log hasn't been frozen for any node
+				// Verify that each protect operation had a valid certificate and is not about to expire without a valid replacement
+				try {
+					protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);	//verifyEntireLog();
+					if (protectedLogEventIdentifier != null) {
+						log.error("verifyEntireLog failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
+					} else {
+						lastSuccessfulVerification = startTimeOfExecution;
+					}
+				} catch (Exception e) {
+					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
+					log.error("Internal logging error.", e);
 				}
-			} catch (Exception e) {
-				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
-				log.error("Internal logging error.", e);
 			}
 		} finally {
 			timeOfLastExecution = startTimeOfExecution;
 			isRunning = false;
+			isCanceled = false;
 		}
+		log.debug("<run");
 	}
 	
 	public long getTimeOfLastExecution() {
@@ -126,6 +152,7 @@ public class ProtectedLogVerifier {
 	 * Verify that the log hasn't been rolled back since last run
 	 */
 	private ProtectedLogEventIdentifier verifyLastEvent() {
+		log.debug(">verifyLastEvent");
 		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties); 
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow();
 		// Is log empy?
@@ -153,6 +180,7 @@ public class ProtectedLogVerifier {
 	 * Retrieves and verifies the requested ProtectedLogEvent or null if not found.
 	 */
 	private ProtectedLogEventRow getValidLogEventRow(ProtectedLogEventIdentifier protectedLogEventIdentifier) {
+		log.debug(">getValidLogEventRow");
 		ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(protectedLogEventIdentifier);
 		if (protectedLogEventRow == null) {
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
@@ -161,19 +189,19 @@ public class ProtectedLogVerifier {
 		ProtectedLogToken protectedLogToken = getProtectedLogSession().getToken(protectedLogEventRow.getProtectionKeyIdentifier());
 		if (protectedLogToken == null ) {
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
-		} else
+		} else {
 			try {
 				if ( !protectedLogToken.verify(protectedLogEventRow.getAsByteArray(false), protectedLogEventRow.getProtection())) {
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 				} else {
+					log.debug("<getValidLogEventRow");
 					return protectedLogEventRow;
 				}
 			} catch (Exception e) {
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
 				log.error("Internal logging error.", e);
 			} 
+		}
 		return null;
 	}
 }
-
-	
