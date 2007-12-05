@@ -232,7 +232,7 @@
 
 #macro (footer)
       <p class="copyright">
-        Copyright &copy; 2005&nbsp;EJBCA team. All rights reserved.
+        Copyright &copy; 2002-2008&nbsp;EJBCA team. All rights reserved.
         <script type="text/javascript" language="JavaScript"><!--
                 document.write(" - "+"Last Published: " + document.lastModified);
               //  -->
