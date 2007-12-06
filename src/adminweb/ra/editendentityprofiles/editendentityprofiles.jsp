@@ -40,6 +40,7 @@
   static final String BUTTON_UPLOADFILE        = "buttonuploadfile";
  
   static final String BUTTON_ADD_NOTIFICATION    = "buttonaddnotification";
+  static final String BUTTON_DELETEALL_NOTIFICATION = "buttondeleteallnotification";
   static final String BUTTON_DELETE_NOTIFICATION = "buttondeleltenotification";
  
   static final String TEXTFIELD_USERNAME             = "textfieldusername";
@@ -654,6 +655,15 @@
               * Add user notice.
               */
              if(request.getParameter(BUTTON_ADD_NOTIFICATION) != null) {
+                 ejbcarabean.setTemporaryEndEntityProfile(profiledata);
+                 includefile = "endentityprofilepage.jspf";
+             }
+             /*
+              * Remove all user notices.
+              */
+             if(request.getParameter(BUTTON_DELETEALL_NOTIFICATION) != null) {
+                 ArrayList emptynot = new ArrayList();
+                 profiledata.setUserNotifications(emptynot);
                  ejbcarabean.setTemporaryEndEntityProfile(profiledata);
                  includefile = "endentityprofilepage.jspf";
              }
