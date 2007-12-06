@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  * to read the MySQL database directly (it shouldn't do that)
  * 
  * @author  Original author is MUNTEANU Olimpiu Andrei of Linagora
- * @version $Id: ReportsDataSource.java,v 1.2 2007-06-20 11:54:02 anatom Exp $
+ * @version $Id: ReportsDataSource.java,v 1.3 2007-12-06 12:33:33 anatom Exp $
  */
 public class ReportsDataSource implements JRDataSource {
 
@@ -209,7 +209,7 @@ public class ReportsDataSource implements JRDataSource {
 
 	/*
 	 * this function is called by jasperreports every time
-	 * it neads information about a single parameter in the current line
+	 * it needs information about a single parameter in the current line
 	 * of the report it is about to generate
 	 * 
 	 * usually, for each line of the report, jasperreports calls this function
@@ -250,7 +250,7 @@ public class ReportsDataSource implements JRDataSource {
 		}		
 		else if (jrf.getName().equals("revocationDate"))
 		{
-			return revocationDate.getTime();
+			return ((revocationDate == null) ? 0L : revocationDate.getTime());
 		}
 		return null;
 	}
