@@ -31,7 +31,7 @@
 <cmp-field>
   <field-name>eventComment</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>VARCHAR2(4096)</sql-type>
+  <sql-type>VARCHAR2(4000)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>nodeGUID</field-name>
@@ -59,5 +59,5 @@
 <cmp-field>
   <field-name>b64Protection</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>CLOB</sql-type>
+  <sql-type>VARCHAR2(4000)</sql-type>
 </cmp-field>

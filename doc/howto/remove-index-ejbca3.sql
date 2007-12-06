@@ -9,4 +9,6 @@ drop index certificatedata_idx3 on CertificateData;
 drop index userdata_idx1 on UserData;
 drop index historydata_idx1 on CertReqHistoryData;
 drop index protect_idx1 on TableProtectData;
-
+drop index protectedlogdata_idx1 on ProtectedLogData;
+drop index protectedlogdata_idx2 on ProtectedLogData;
+drop index protectedlogexportdata_idx1 on ProtectedLogExportData;
