@@ -1,6 +1,12 @@
 EJBCA is released under the LGPL license (see LICENSE-LGPL or
 http://www.opensource.org/licenses/lgpl-license.html).
 
+EJBCA is released under version 2.1 of the LGPL. EJBCA is committed to stay with
+version 2.1 of the license for the foreseeable future.
+The text "either version 2.1 of the License, or any later version" in the license header
+is there to make EJBCA compatible with later versions of the license, i.e. it is possible 
+to mix in code from EJBCA in other projects using a later version of the license.    
+
 A clarification about the relationsship between the LGPL and Java can be found on:
 http://www.gnu.org/licenses/lgpl-java.html
 In short, LGPL works exactly the same way in Java or in C. I.e. using a library (jar) 
