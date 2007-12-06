@@ -1649,6 +1649,8 @@ The Notification Recipient can have a few different values:
 <ul>
 <li>USER: send notification to the email registered for the end entity.</li>
 <li>foo@bar.com: send notification to the specified email address. Multiple email addresses can be entered comma separated.</li>
+<li>CUSTOM: plug-in mechanism to retrieve addresses your own way. See interface org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient 
+for implementation details. Enter a string like "CUSTOM:org.ejbca.MyCustomPluginClass" to use.</li>
 </ul> 
 </p>
 <p>

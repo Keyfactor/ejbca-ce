@@ -1,15 +1,25 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.model.ra.raadmin;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
@@ -19,7 +29,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * such as different notification actions (apart from email) etc.
  * 
  * @author tomas
- * @version $Id: UserNotification.java,v 1.5 2007-12-06 16:39:09 anatom Exp $
+ * @version $Id: UserNotification.java,v 1.6 2007-12-06 17:19:09 anatom Exp $
  */
 public class UserNotification extends HashMap implements Serializable, Cloneable {
 
@@ -43,7 +53,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     /** Recipient of notification is the user */
     public static final String   RCPT_USER     = "USER";
     /** recipient of notification is the admin of the user */
-    public static final String   RCPT_PLUGIN    = "PLUGIN";
+    public static final String   RCPT_CUSTOM    = "CUSTOM";
 
     public static final String EVENTS_EDITUSER = String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)+";"+String.valueOf(UserDataConstants.STATUS_INITIALIZED);
     public static final String EVENTS_USERENROL = String.valueOf(UserDataConstants.STATUS_GENERATED);

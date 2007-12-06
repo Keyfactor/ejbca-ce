@@ -79,8 +79,10 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
+import org.ejbca.core.model.services.IWorker;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.NotificationParamGen;
@@ -98,7 +100,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.53 2007-12-06 16:39:08 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.54 2007-12-06 17:19:08 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1898,13 +1900,35 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             	UserNotification not = (UserNotification)i.next(); 
             	Collection events = not.getNotificationEventsCollection();
             	if (events.contains(String.valueOf(newstatus))) {
-                	log.debug("Status is "+newstatus+", notification sent for notificationevents: "+not.getNotificationEvents());
+                	debug("Status is "+newstatus+", notification sent for notificationevents: "+not.getNotificationEvents());
                     try {
                     	if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
                     		rcptemail = useremail;
-                    	} else if (StringUtils.contains(not.getNotificationRecipient(), UserNotification.RCPT_PLUGIN)) {
-                    		throw new Exception("Notification recipient '"+not.getNotificationRecipient()+"' is not implemented yet.");
+                    	} else if (StringUtils.contains(not.getNotificationRecipient(), UserNotification.RCPT_CUSTOM)) {
+                    		rcptemail = "custom"; // Just if this fail it will say that sending to user with email "custom" failed.
+                    		// Plug-in mechanism for retrieving custom notification email recipient addresses
+                    		if (not.getNotificationRecipient().length() < 6) {
+                        		String msg = intres.getLocalizedMessage("ra.errorcustomrcptshort", not.getNotificationRecipient());
+                    			error(msg);
+                    		} else {
+                        		String cp = not.getNotificationRecipient().substring(7);
+                        		if (StringUtils.isNotEmpty(cp)) {
+                        			ICustomNotificationRecipient plugin = (ICustomNotificationRecipient) this.getClass().getClassLoader().loadClass(cp).newInstance();
+                        			String e = plugin.getRecipientEmails(data);
+                        			if (StringUtils.isEmpty(e)) {
+                                		String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", not.getNotificationRecipient());
+                            			error(msg);
+                        			} else {
+                        				debug("Custom notification recipient plugin returned email: "+ e);
+                        				rcptemail = e;
+                        			}
+                        		} else {
+                            		String msg = intres.getLocalizedMessage("ra.errorcustomnoclasspath", not.getNotificationRecipient());
+                        			error(msg);
+                        		}
+                    		}
                     	} else {
+                    		// Just a plain email address specified in the recipient field
                     		rcptemail = not.getNotificationRecipient();            		
                     	}
                         if (StringUtils.isEmpty(rcptemail)) {

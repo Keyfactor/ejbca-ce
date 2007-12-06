@@ -61,7 +61,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.13 2007-11-23 16:31:04 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.14 2007-12-06 17:19:08 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -460,6 +460,7 @@ public abstract class UserDataBean extends BaseEntityBean {
      */
     public UserDataVO toUserDataVO() {
         UserDataVO data = new UserDataVO();
+        data.setUsername(getUsername());
         data.setCAId(getCaId());
         data.setCertificateProfileId(getCertificateProfileId());
         data.setDN(getSubjectDN());
