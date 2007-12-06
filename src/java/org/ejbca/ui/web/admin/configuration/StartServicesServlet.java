@@ -65,7 +65,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.18 2007-12-05 23:20:52 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.19 2007-12-06 01:19:19 jeklund Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -79,7 +79,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.18 2007-12-05 23:20:52 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.19 2007-12-06 01:19:19 jeklund Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -130,6 +130,10 @@ public class StartServicesServlet extends HttpServlet {
 					throw new EJBException(e);
 				}
         	}
+        }
+        ProtectedLogDevice protectedLogDevice = (ProtectedLogDevice) ProtectedLogDevice.instance();
+        if (protectedLogDevice != null) {
+        	protectedLogDevice.setSystemShutdownNotice();
         }
 		super.destroy();
 	}

@@ -62,8 +62,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * A handle to the unique Singleton instance.
 	 */
 	private static ILogDevice instance;
-	private static boolean isDestructorInvoked = false;
-
+	private boolean isDestructorInvoked = false;
+	private boolean systemShutdownNotice = false;
 	private Properties properties;
 	private int nodeGUID;
 	private long counter;
@@ -113,13 +113,34 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	}
 
 	/**
+	 * @return the existing device or null if none exist.
+	 */
+	public static synchronized ILogDevice instance() {
+		return instance;
+	}
+	
+	/**
+	 * Should only be called by the StartServicesServlet.
+	 */
+	public void setSystemShutdownNotice() {
+		log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Terminating log session for this node.",null);
+		systemShutdownNotice = true;
+	}
+	
+	/**
+	 * @return true if the application server is about to go down.
+	 */
+	public boolean getSystemShutdownNotice() {
+		return systemShutdownNotice;
+	}
+	
+	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
 	synchronized public void destructor() {
 		// This could be called from several LogSession beans, but we only keep one instance..
 		if (!isDestructorInvoked) {
 			isDestructorInvoked = true;
-			log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Terminating log session for this node.",null);
 		}
 	}
 	
@@ -176,12 +197,10 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			logInternal(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(time.getTime()-1), null, null, LogConstants.EVENT_SYSTEM_INITILIZED_LOGGING, "Initiating log for this node.",null);
 			//protectedLogActions.takeActions(IProtectedLogAction.CAUSE_TESTING);
 		}
-		if (!isDestructorInvoked || event == LogConstants.EVENT_SYSTEM_STOPPED_LOGGING) {
+		if (!systemShutdownNotice || event == LogConstants.EVENT_SYSTEM_STOPPED_LOGGING) {
 			logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
 		} else {
-			// An event at the last minute.. let it through and then write another stopevent
-			logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
-			logInternal(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Retrying to terminate the log session for this node.",null);
+			logInternalOnShutDown(admininfo, caid, module, time, username, certificate, event, comment, exception);
 		}
 	}
 
@@ -306,7 +325,39 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			throw new EJBException(e);
 		}
 	}
-	
+
+	/**
+	 * At this point we can no longer rely on beans to exist. We do our best to log as much as possible, unprotected.
+	 * The admin has to manually "accept" these log-events on another node or when the server is back up using the CLI.
+	 */
+	private void logInternalOnShutDown(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+		ProtectedLogToken protectedLogToken = new ProtectedLogToken();
+		String certificateSerialNumber = null;
+		String certificateIssuerDN = null; 
+		if (certificate != null) {
+			certificateSerialNumber = certificate.getSerialNumber().toString(16);
+			certificateIssuerDN = certificate.getIssuerDN().toString(); 
+		}
+		ProtectedLogEventIdentifier[] linkedInEventIdentifiers = new ProtectedLogEventIdentifier[1];
+		linkedInEventIdentifiers[0] = new ProtectedLogEventIdentifier(nodeGUID, counter-1);
+		ProtectedLogEventRow protectedLogEventRow = new ProtectedLogEventRow(
+				admininfo.getAdminType(), admininfo.getAdminData(), caid, module, time.getTime(), username, certificateSerialNumber, 
+				certificateIssuerDN, event, comment, new ProtectedLogEventIdentifier(nodeGUID, counter), nodeIP, linkedInEventIdentifiers,
+				lastProtectedLogRowHash, protectionHashAlgorithm, protectedLogToken.getIdentifier(),
+				protectedLogToken.getProtectionAlgorithm(), null);
+		try {
+			getProtectedLogSession().addProtectedLogEventRow(protectedLogEventRow);
+		} catch (Exception e) {
+			log.error("Had to drop the following log-event (shutdown in progress): "+admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
+					+certificate+" "+event+" "+comment+" "+exception, e);
+			return;
+		}
+		log.error("Had to log the following log-event as unprotected (shutdown in progress): "+admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
+				+certificate+" "+event+" "+comment+" "+exception+"\nUse the accept-CLI to make these posts trusted..");
+		lastProtectedLogRowHash = protectedLogEventRow.calculateHash();
+		counter++;
+	}
+
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */

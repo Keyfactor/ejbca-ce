@@ -1415,6 +1415,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						}
 					}
 				}
+				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
+					log.info("Verification canceled.");
+					return null;
+				}
 				nextProtectedLogEventRow = null;
 				if (!isLastEvent && linkedInEventIdentifiers != null && linkedInEventIdentifiers.length != 0) {
 					// For each linked in, if any of them is newer then the one found in newestProtectedLogEventIdentifiers for each node → verify event signature and replace
