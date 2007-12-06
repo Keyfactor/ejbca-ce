@@ -98,6 +98,7 @@
                     <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
                     <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
                 	<include name="**/webdist/WebdistHttpTest*" />
+                	<include name="**/protocol/CertRequestHttpTest*" />
                 </fileset>
             </batchtest>
         </junit>
