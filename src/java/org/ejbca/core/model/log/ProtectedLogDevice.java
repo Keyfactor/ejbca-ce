@@ -349,7 +349,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			getProtectedLogSession().addProtectedLogEventRow(protectedLogEventRow);
 		} catch (Exception e) {
 			log.error("Had to drop the following log-event (shutdown in progress): "+admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
-					+certificate+" "+event+" "+comment+" "+exception, e);
+					+certificate+" "+event+" "+comment+" "+exception+"\nCaused by: "+e.getMessage());
 			return;
 		}
 		log.error("Had to log the following log-event as unprotected (shutdown in progress): "+admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "

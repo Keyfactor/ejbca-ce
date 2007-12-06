@@ -28,6 +28,7 @@ public class ProtectedLogExporter {
 	private Properties properties = null;
 	private boolean isRunning = false;
 	private boolean isCanceled = false;
+	private boolean isCanceledPermanently = false;
 
 	private ProtectedLogActions protectedLogActions = null;
 	private boolean deleteAfterExport = false;
@@ -70,7 +71,7 @@ public class ProtectedLogExporter {
 	}
 
 	public void runIfNotBusy() {
-		if (getBusy()) {
+		if (!isCanceledPermanently && getBusy()) {
 			run();
 		}
 	}
@@ -93,8 +94,15 @@ public class ProtectedLogExporter {
 		isCanceled = true;
 	}
 	
+	/**
+	 * Inform the service next time it ask, that it is requested to stop and don't start it again.
+	 */
+	public void cancelExportsPermanently() {
+		isCanceledPermanently = true;
+	}
+	
 	public boolean isCanceled() {
-		return isCanceled;
+		return isCanceled || isCanceledPermanently;
 	}
 	
 	// Exports chunk of log

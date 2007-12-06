@@ -1302,19 +1302,19 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			ProtectedLogEventRow nextProtectedLogEventRow = null;
 			Iterator iterator = newestProtectedLogEventRows.iterator();
 			while (iterator.hasNext()) {
+				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
+					log.info("Verification canceled.");
+					return null;
+				}
 				ProtectedLogEventRow i = (ProtectedLogEventRow) iterator.next();
 				if ( !processedNodeGUIDs.contains(i.getEventIdentifier().getNodeGUID())
 						&&  (nextProtectedLogEventRow == null || nextProtectedLogEventRow.getEventTime() < i.getEventTime()) ) {
 					nextProtectedLogEventRow = i;
 				}
-				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-					log.info("Verification canceled.");
-					return null;
-				}
 			}
 			int nextProtectedLogEventRowNodeGUID = nextProtectedLogEventRow.getEventIdentifier().getNodeGUID();
 			processedNodeGUIDs.add(nextProtectedLogEventRowNodeGUID);
-			// Verify that log hasn't been frozen for any node
+			// Verify that log hasn't been frozen for any node ( = ends with an stopevent or is newer than a certain time )
 			ProtectedLogEventIdentifier newestNodeProtectedLogEventIdentifier = findNewestProtectedLogEventRow(nextProtectedLogEventRowNodeGUID);
 			ProtectedLogEventRow newestNodeProtectedLogEventRow = getProtectedLogEventRow(newestNodeProtectedLogEventIdentifier);
 			if (newestNodeProtectedLogEventRow == null) {
@@ -1331,15 +1331,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 
 			// while not reached stoptime
 			boolean isTopSignatureVerified = false;
-			boolean thoroughMode = false;
 			while (nextProtectedLogEventRow != null && nextProtectedLogEventRow.getEventTime() >= stopTime && nextProtectedLogEventRow.getEventTime() > lastDeletingExportTime) {
 				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
 					log.info("Verification canceled.");
 					return null;
 				}
 				ProtectedLogEventIdentifier nextProtectedLogEventIdentifier = nextProtectedLogEventRow.getEventIdentifier();
-				// Verify current signature (if first or in thorough mode)
-				if (thoroughMode || !isTopSignatureVerified) {
+				// Verify current signature if it is the newest one of this chain ( = if all hashes are correct up till this point the chain is ok, there is no need to every signature )
+				if (!isTopSignatureVerified) {
 					ProtectedLogToken currentToken = getToken(nextProtectedLogEventRow.getProtectionKeyIdentifier());
 					if (currentToken == null) {
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
@@ -1358,8 +1357,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				// Get linked in events
 				ProtectedLogEventIdentifier[] linkedInEventIdentifiers = nextProtectedLogEventRow.getLinkedInEventIdentifiers();
 				if (linkedInEventIdentifiers == null || linkedInEventIdentifiers.length == 0) {
-					// This is ok if this a startevent..
-					//|| !( nextProtectedLogEventIdentifier.equals(findOldestSignedProtectedLogEventRow()) || nextProtectedLogEventIdentifier.equals(findOldestProtectedLogEventRow()) )
+					// It is valid for the first event of a chain, not to link in previous chains (e.g. the first event ever has no one to link to..)
 					if (nextProtectedLogEventIdentifier.getCounter() != 0) {
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
 						return nextProtectedLogEventRow.getEventIdentifier();
@@ -1399,6 +1397,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					if (!isLinkingInLast) {
 						// Verify the hash of all the linked in events.
 						for (int i=0; i<linkedInEventIdentifiers.length; i++) {
+							if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
+								log.info("Verification canceled.");
+								return null;
+							}
 							linkedInEventRows[i] =getProtectedLogEventRow(linkedInEventIdentifiers[i]);
 							if (linkedInEventRows[i] == null) {
 								protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
@@ -1415,14 +1417,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						}
 					}
 				}
-				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-					log.info("Verification canceled.");
-					return null;
-				}
 				nextProtectedLogEventRow = null;
 				if (!isLastEvent && linkedInEventIdentifiers != null && linkedInEventIdentifiers.length != 0) {
 					// For each linked in, if any of them is newer then the one found in newestProtectedLogEventIdentifiers for each node → verify event signature and replace
 					for (int l=0; l<linkedInEventIdentifiers.length; l++) {
+						if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
+							log.info("Verification canceled.");
+							return null;
+						}
 						ProtectedLogEventIdentifier k = linkedInEventIdentifiers[l];
 						ProtectedLogEventRow currentProtectedLogEventRow = linkedInEventRows[l]; //getProtectedLogEventRow(k);
 						if (currentProtectedLogEventRow == null) {
@@ -1433,6 +1435,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						boolean knownNodeGUID = false;
 						Iterator iterator2 = newestProtectedLogEventRows.iterator();
 						while (iterator2.hasNext()) {
+							if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
+								log.info("Verification canceled.");
+								return null;
+							}
 							ProtectedLogEventRow j = (ProtectedLogEventRow) iterator2.next();
 							if (j.getEventIdentifier().getNodeGUID() == currentProtectedLogEventRow.getEventIdentifier().getNodeGUID()
 									&& j.getEventTime() < currentProtectedLogEventRow.getEventTime()) {
@@ -1477,6 +1483,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		//Verify that no nodes exists that hasn't been processed
 		Integer[] everyExistingNodeGUID = getAllNodeGUIDs();
 		for (int i=0; i<everyExistingNodeGUID.length; i++) {
+			if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
+				log.info("Verification canceled.");
+				return null;
+			}
 			if (!processedNodeGUIDs.contains(everyExistingNodeGUID[i])) {
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN);
 				return new ProtectedLogEventIdentifier(everyExistingNodeGUID[i], 0);

@@ -65,7 +65,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.19 2007-12-06 01:19:19 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.20 2007-12-06 09:57:16 jeklund Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -79,7 +79,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.19 2007-12-06 01:19:19 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.20 2007-12-06 09:57:16 jeklund Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -107,7 +107,7 @@ public class StartServicesServlet extends HttpServlet {
         log.debug(">destroy waiting for system services to finish");
         ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
         if (protectedLogVerifier != null) {
-        	protectedLogVerifier.cancelVerification();
+        	protectedLogVerifier.cancelVerificationsPermanently();
         	long startedWaiting = System.currentTimeMillis();
     		log.info("Waiting up to 30 seconds for verification service to finish..");
         	while (protectedLogVerifier.isRunning() && startedWaiting + 30*1000 > System.currentTimeMillis()) {
@@ -120,7 +120,7 @@ public class StartServicesServlet extends HttpServlet {
         }
         ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
         if (protectedLogExporter != null) {
-        	protectedLogExporter.cancelExport();
+        	protectedLogExporter.cancelExportsPermanently();
         	long startedWaiting = System.currentTimeMillis();
     		log.info("Waiting up to 30 seconds for export service to finish..");
         	while (protectedLogExporter.isRunning() && startedWaiting + 30*1000 > System.currentTimeMillis()) {

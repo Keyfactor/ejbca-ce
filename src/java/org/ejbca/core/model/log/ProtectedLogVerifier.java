@@ -29,6 +29,7 @@ public class ProtectedLogVerifier {
 	private Properties properties = null;
 	private boolean isRunning = false;
 	private boolean isCanceled = false;
+	private boolean isCanceledPermanently = false;
 	long freezeThreshold = 0;
 	long lastSuccessfulVerification = 0;
 
@@ -75,7 +76,7 @@ public class ProtectedLogVerifier {
 	 * Runs all the verifications if it isn't busy from another caller.
 	 */
 	public void runIfNotBusy() {
-		if (getBusy()) {
+		if (!isCanceledPermanently && getBusy()) {
 			run();
 		}
 	}
@@ -98,8 +99,15 @@ public class ProtectedLogVerifier {
 		isCanceled = true;
 	}
 	
+	/**
+	 * Inform the service next time it ask, that it is requested to stop and don't start it again.
+	 */
+	public void cancelVerificationsPermanently() {
+		isCanceledPermanently = true;
+	}
+	
 	public boolean isCanceled() {
-		return isCanceled;
+		return isCanceled || isCanceledPermanently;
 	}
 
 	/**
