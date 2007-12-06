@@ -383,10 +383,10 @@ Developer: Creating deployment descriptors for Oracle oc4j 10:
    autocreate-tables=”false” parameter in the <orion-application> tag in $OC4J_HOME/j2ee/home/config/application.xml.
 3. Copy the auto-generated orion-ejb-jar.xml file located in $OC4J_HOME/j2ee/home/application-deployments/<application>/<ejb-module> to your 
    development environment.
-4. Modify the orion-ejb-jar.xml file based on your database schema, use the old one (tnhe one you renamed) as template.
+4. Modify the orion-ejb-jar.xml file based on your database schema, use the old one (the one you renamed) as template.
 5. Copy the auto-generated toplink-ejb-jar.xml file located in $OC4J_HOME/j2ee/home/application-deployments/<application>/<ejb-module> to your development environment.
 6. Modify the toplink-ejb-jar.xml file based on your database schema, use the old one (the one you renamed) as template.
-   Normal changes: PRIMKEY -> PK
+   Normal changes: PRIMKEY -> PK	
                    ADMINGROUPDATA_ACCESSRULES_FK -> ADMINGROUPDATA_ACCESSRULES
                    ADMINGROUPDATA_ADMINENTITIS_FK -> ADMINGROUPDATA_ADMINENTITIS
                    toplink:version-locking-policy -> remove all these items completely
