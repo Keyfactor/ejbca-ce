@@ -40,7 +40,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.7 2007-11-11 07:55:48 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.8 2007-12-06 14:08:10 anatom Exp $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -102,10 +102,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 					
 					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
 					if(userData != null){
-						String userDN = userData.getDN();
-
 						if(isSendToEndUsers()){
-							NotificationParamGen paramGen = new NotificationParamGen(userDN,cert);
+							NotificationParamGen paramGen = new NotificationParamGen(userData,cert);
 							if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
 								String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
 								log.info(msg);
@@ -116,16 +114,14 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 								userEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
 							}					  
 						}
-					}
-					if(isSendToAdmins()){
-						// Populate admin message        		    
-						NotificationParamGen paramGen = new NotificationParamGen(cert.getSubjectDN().toString(),cert);
-						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
-						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
-						adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
-					}	
-					
-
+						if(isSendToAdmins()){
+							// Populate admin message        		    
+							NotificationParamGen paramGen = new NotificationParamGen(userData,cert);
+							String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
+							MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
+							adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
+						}	
+					}					
 				}
 
 

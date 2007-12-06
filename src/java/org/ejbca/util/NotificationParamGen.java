@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
@@ -27,7 +28,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  * All parameters isn't always set, it depends on the input data.
  * 
- * The follwing parameters can be set
+ * The following parameters can be set
  * ${NL}                           = New Line in message
  * ${DATE} or ${current.DATE}      = The current date
  * 
@@ -38,7 +39,9 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * ${SN} or ${user.SN}             = The serial number (in DN) of the user.
  * ${O} or ${user.O}               = The user's organization
  * ${OU} or ${user.OU}             = The user's organization unit
- * ${C} or ${user.C}               = The user's country            
+ * ${C} or ${user.C}               = The user's country
+ * ${user.TIMECREATED}             = The time the user was created
+ * ${user.TIMEMODIFIED}            = The time the user was modified          
  *   
  * Variables used with approvals
  * 
@@ -47,7 +50,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * ${approvalRequest.ABS.ID}          = The id of the approval request with out any '-' sign, used for presentation purposes.
  * ${approvalRequest.TYPE}            = The type of approval request
  * ${approvalRequest.APROVEURL}       = A URL to the review approval page with the current request.
- * ${approvalReqiest.APPROVALSLEFT}   = The number of approvals remaining.
+ * ${approvalRequest.APPROVALSLEFT}   = The number of approvals remaining.
  * ${approvalRequest.APPROVALCOMMENT} = The comment made by the approving/rejecting administrator
  * 
  * ${requestAdmin.USERNAME}         = The requesting administrator's username
@@ -74,7 +77,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.6 2007-09-03 11:24:48 herrvendil Exp $
+ * @version $Id: NotificationParamGen.java,v 1.7 2007-12-06 14:08:11 anatom Exp $
  */
 
 public class NotificationParamGen {
@@ -85,26 +88,26 @@ public class NotificationParamGen {
   private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
   
   /**
-   * Constuctor that mainly should be used when notifining about expiring certificates.
+   * Constructor that mainly should be used when notifying about expiring certificates.
    */
-  public NotificationParamGen(String userdn, X509Certificate expiringCert){
-	  populate(null, null, userdn,null,null,null,null,null,null, null,null,null,null,expiringCert);
+  public NotificationParamGen(UserDataVO user, X509Certificate expiringCert){
+	  populate(user,null,null,null,null,null,null, null,null,null,null,expiringCert);
   }
 	
   /**
-   * Constuctor that mainly should be used when generating user data notifications 
+   * Constructor that mainly should be used when generating user data notifications 
    */
-  public NotificationParamGen(String userUsername, String userPassword, String userDN){
-	  populate(userUsername, userPassword, userDN,null,null,null,null,null,null, null,null,null,null,null);
+  public NotificationParamGen(UserDataVO user){
+	  populate(user,null,null,null,null,null,null, null,null,null,null,null);
   }
 
   /**
-   * Constuctor that mainly should be used when generating approval notifications 
+   * Constructor that mainly should be used when generating approval notifications 
    */
   public NotificationParamGen(Date approvalRequestDate, Integer approvalRequestID, String approvalRequestType,
 		  Integer numberOfApprovalLeft, String approvalRequestURL, String approveComment, String requestAdminUsername, String requestAdminDN,
           String approvalAdminUsername, String approvalAdminDN){
-	  populate(null, null, null, approvalRequestDate, approvalRequestID, approvalRequestType,
+	  populate(null, approvalRequestDate, approvalRequestID, approvalRequestType,
 			  numberOfApprovalLeft, approvalRequestURL, approveComment, requestAdminUsername, requestAdminDN,
                approvalAdminUsername, approvalAdminDN,null);
   }
@@ -117,23 +120,23 @@ public class NotificationParamGen {
 	  return params;
   }
   
-  private void populate(String userUsername, String userPassword, String userDN, 
+  private void populate(UserDataVO user, 
 		                Date approvalRequestDate, Integer approvalRequestID, String approvalRequestType,
 		                Integer numberOfApprovalLeft, String approvalRequestURL, String approveComment,
 		                String requestAdminUsername, String requestAdminDN,
 		                String approvalAdminUsername, String approvalAdminDN,
 		                X509Certificate expiringCert){
-      params.put("NL", System.getProperty("line.separator"));
+	  paramPut("NL", System.getProperty("line.separator"));
       String date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
-      params.put("DATE", date);
+      paramPut("DATE", date);
 
-      paramPut("USERNAME", userUsername);
-      paramPut("user.USERNAME", userUsername);
+      paramPut("USERNAME", user.getUsername());
+      paramPut("user.USERNAME", user.getUsername());
 
-      paramPut("PASSWORD", userPassword);
-      paramPut("user.PASSWORD", userPassword);
+      paramPut("PASSWORD", user.getPassword());
+      paramPut("user.PASSWORD", user.getPassword());
 
-	  DNFieldExtractor dnfields = new DNFieldExtractor(userDN, DNFieldExtractor.TYPE_SUBJECTDN);
+	  DNFieldExtractor dnfields = new DNFieldExtractor(user.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
 	  paramPut("CN", dnfields.getField(DNFieldExtractor.CN, 0));
 	  paramPut("user.CN", dnfields.getField(DNFieldExtractor.CN, 0));
 	  paramPut("SN", dnfields.getField(DNFieldExtractor.SN, 0));
@@ -143,22 +146,31 @@ public class NotificationParamGen {
 	  paramPut("OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("user.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("C", dnfields.getField(DNFieldExtractor.C, 0));
-	  paramPut("user.C", dnfields.getField(DNFieldExtractor.C, 0));
+	  if (user.getTimeCreated() != null) {
+		  String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeCreated());
+		  paramPut("user.TIMECREATED", time);		  
+	  }
+	  if (user.getTimeModified() != null) {
+		  String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeModified());
+		  paramPut("user.TIMEMODIFIED", time);		  
+	  }
 	  
 	  
 	  if(approvalRequestDate != null){
 		  String requestDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(approvalRequestDate);
-		  params.put("approvalRequest.DATE", requestDate);	      
+		  paramPut("approvalRequest.DATE", requestDate);	      
 	  }else{
-		  params.put("approvalRequest.DATE", "");	
+		  paramPut("approvalRequest.DATE", "");	
 	  }
 	  		  
 	  paramPut("approvalRequest.ID", approvalRequestID);
 	  if(approvalRequestID != null){
 	    paramPut("approvalRequest.ABS.ID", new Integer(Math.abs(approvalRequestID.intValue())));
 	  }
-	  paramPut("approvalRequest.TYPE", approvalRequestType);	      	 	  		  
+	  paramPut("approvalRequest.TYPE", approvalRequestType);
+	  // Wrong spelled parameter kept for backwards compatibility
 	  paramPut("approvalReqiest.APPROVALSLEFT", numberOfApprovalLeft);	      	  	  	  		  
+	  paramPut("approvalRequest.APPROVALSLEFT", numberOfApprovalLeft);	      	  	  	  		  
 	  paramPut("approvalRequest.APROVEURL", approvalRequestURL);	      
 	  paramPut("approvalRequest.APPROVALCOMMENT", approveComment);	      
 	  paramPut("requestAdmin.USERNAME", requestAdminUsername);	  

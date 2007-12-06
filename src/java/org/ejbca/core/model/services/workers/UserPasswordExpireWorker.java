@@ -42,7 +42,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Tomas Gustavsson based on code by Philip Vendil
  *
- * @version: $Id: UserPasswordExpireWorker.java,v 1.1 2007-11-11 07:55:48 anatom Exp $
+ * @version: $Id: UserPasswordExpireWorker.java,v 1.2 2007-12-06 14:08:10 anatom Exp $
  */
 public class UserPasswordExpireWorker extends EmailSendingWorker {
 
@@ -118,9 +118,8 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 				getUserAdminSession().changeUser(getAdmin(), userData, false);
 				// Create notification emails, if they are configured to be sent
 				if(userData != null){
-					String userDN = userData.getDN();
 					if(isSendToEndUsers()){
-						NotificationParamGen paramGen = new NotificationParamGen(username,null,userDN);
+						NotificationParamGen paramGen = new NotificationParamGen(userData);
 						if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
 							String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
 							log.info(msg);
@@ -133,7 +132,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 					}
 					if(isSendToAdmins()){
 						// Populate admin message        		    
-						NotificationParamGen paramGen = new NotificationParamGen(username,null,userDN);
+						NotificationParamGen paramGen = new NotificationParamGen(userData);
 						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
 						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
 						adminEmailQueue.add(new EmailCertData(username,mailActionInfo));

@@ -70,7 +70,6 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -99,7 +98,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.50 2007-12-04 14:22:55 jeklund Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.51 2007-12-06 14:08:07 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1914,7 +1913,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
                         String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
                         Session mailSession = getLocator().getMailSession(mailJndi);
-                        NotificationParamGen paramGen = new NotificationParamGen(data.getUsername(),data.getPassword(),data.getDN());
+                        NotificationParamGen paramGen = new NotificationParamGen(data);
                         HashMap params = paramGen.getParams();
 
                         Message msg = new TemplateMimeMessage(params, mailSession);
