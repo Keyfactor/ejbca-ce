@@ -98,7 +98,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.52 2007-12-06 14:48:23 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.53 2007-12-06 16:39:08 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -705,7 +705,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
             boolean statuschanged = userdata.getStatus() != oldstatus;
             // Send notification if it should be sent. 
-            sendNotification(admin, userdata, userdata.getStatus());
+            UserDataVO udata = data1.toUserDataVO();
+            sendNotification(admin, udata, userdata.getStatus());
             
             // Only print stuff on a printer on the same conditions as for notifications, we also only print if the status changes, not for every time we press save
             if ((type & SecConst.USER_PRINT) != 0 && statuschanged && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
@@ -1901,7 +1902,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     try {
                     	if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
                     		rcptemail = useremail;
-                    	} else if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_ADMIN)) {
+                    	} else if (StringUtils.contains(not.getNotificationRecipient(), UserNotification.RCPT_PLUGIN)) {
                     		throw new Exception("Notification recipient '"+not.getNotificationRecipient()+"' is not implemented yet.");
                     	} else {
                     		rcptemail = not.getNotificationRecipient();            		

@@ -77,7 +77,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.7 2007-12-06 14:08:11 anatom Exp $
+ * @version $Id: NotificationParamGen.java,v 1.8 2007-12-06 16:39:10 anatom Exp $
  */
 
 public class NotificationParamGen {
@@ -146,15 +146,16 @@ public class NotificationParamGen {
 	  paramPut("OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("user.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("C", dnfields.getField(DNFieldExtractor.C, 0));
+	  String time = "(time not available)";
 	  if (user.getTimeCreated() != null) {
-		  String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeCreated());
-		  paramPut("user.TIMECREATED", time);		  
+		  time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeCreated());
 	  }
+	  paramPut("user.TIMECREATED", time);		  
+	  time = "(time not available)";
 	  if (user.getTimeModified() != null) {
-		  String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeModified());
-		  paramPut("user.TIMEMODIFIED", time);		  
+		  time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeModified());
 	  }
-	  
+	  paramPut("user.TIMEMODIFIED", time);	  
 	  
 	  if(approvalRequestDate != null){
 		  String requestDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(approvalRequestDate);
