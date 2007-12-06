@@ -100,7 +100,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.54 2007-12-06 17:19:08 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.55 2007-12-06 17:36:42 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -690,8 +690,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
               getKeyRecoverySession().unmarkUser(admin,userdata.getUsername());	
             }
             data1.setStatus(userdata.getStatus());
-            data1.setTimeModified((new java.util.Date()).getTime());
-
             if(newpassword != null){
                 if(clearpwd) {
                     try {
@@ -704,12 +702,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     data1.setPassword(newpassword);
                 }
             }
-
-            boolean statuschanged = userdata.getStatus() != oldstatus;
-            // Send notification if it should be sent. 
+            // We want to create this object before re-setting the time modified, because we may want to 
+            // Use the old time modified in any notifications
             UserDataVO udata = data1.toUserDataVO();
+            data1.setTimeModified((new java.util.Date()).getTime());
+
+            // Send notification if it should be sent. 
             sendNotification(admin, udata, userdata.getStatus());
             
+            boolean statuschanged = userdata.getStatus() != oldstatus;
             // Only print stuff on a printer on the same conditions as for notifications, we also only print if the status changes, not for every time we press save
             if ((type & SecConst.USER_PRINT) != 0 && statuschanged && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
             	print(admin,profile,userdata);
