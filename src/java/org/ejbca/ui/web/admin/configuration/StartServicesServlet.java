@@ -65,7 +65,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.20 2007-12-06 09:57:16 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.21 2007-12-06 10:58:17 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -79,7 +79,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.20 2007-12-06 09:57:16 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.21 2007-12-06 10:58:17 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -269,7 +269,7 @@ public class StartServicesServlet extends HttpServlet {
 
         Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
         getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
-        		LogConstants.EVENT_INFO_STARTING, "Starting..");
+        		LogConstants.EVENT_INFO_STARTING, iMsg);
 
         log.debug(">init ProtectedLogVerificationService is configured");
         try {
