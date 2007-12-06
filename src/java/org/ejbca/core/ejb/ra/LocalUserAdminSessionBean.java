@@ -98,7 +98,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.51 2007-12-06 14:08:07 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.52 2007-12-06 14:48:23 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1920,7 +1920,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         msg.setFrom(new InternetAddress(not.getNotificationSender()));
                         msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(rcptemail, false));
                         msg.setSubject(not.getNotificationSubject());
-                        msg.setContent(not.getNotificationMessage(), "text/plain");
+                        msg.setContent(not.getNotificationMessage(), "text/plain;charset=ISO-8859-1");
                         msg.setHeader("X-Mailer", "JavaMailer");
                         msg.setSentDate(new Date());
                         Transport.send(msg);
