@@ -72,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.9 2007-12-04 14:21:41 jeklund Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.10 2007-12-07 15:09:02 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
@@ -214,7 +214,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         setUsername(StringTools.strip(username));
         setCertificateSNR(certificatesnr);
         setEvent(event);
-        if (comment.length() > COMMENT_MAXLEN) {
+        if ( (comment != null) && (comment.length() > COMMENT_MAXLEN) ) {
         	log.warn("Too large comment for LogEntry was truncated. The full comment was: " + comment);
         	comment = comment.substring(0, COMMENT_MAXLEN-3) + "...";
         }
