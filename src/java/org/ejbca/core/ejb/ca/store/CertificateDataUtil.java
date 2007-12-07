@@ -45,7 +45,7 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.12 2007-12-04 14:22:57 jeklund Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.13 2007-12-07 15:07:25 anatom Exp $
  *
  */
 public class CertificateDataUtil {
@@ -81,7 +81,7 @@ public class CertificateDataUtil {
 
     public static Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno, CertificateDataLocalHome certHome, Adapter adapter) {
         if (adapter.getLogger().isDebugEnabled()) {
-        	adapter.debug(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
+        	adapter.debug(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -102,7 +102,7 @@ public class CertificateDataUtil {
                 }
             }
             if (adapter.getLogger().isDebugEnabled()) {
-            	adapter.debug("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
+            	adapter.debug("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
             }
             return ret;
         } catch (Exception fe) {

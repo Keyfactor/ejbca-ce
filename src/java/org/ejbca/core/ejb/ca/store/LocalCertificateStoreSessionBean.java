@@ -64,7 +64,6 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
@@ -172,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.33 2007-12-04 14:22:57 jeklund Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.34 2007-12-07 15:07:25 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -959,7 +958,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
-        debug(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno);
+        debug(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
         X509Certificate certificate = null;
         try {
             certificate = (X509Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
@@ -969,7 +968,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
             throw new EJBException(e);
         }
-        debug("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno);
+        debug("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
     } // setRevokeStatus
 
     /**
@@ -985,7 +984,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	if (certificate == null) {
     		return;
     	}
-        debug(">setRevokeStatus(X509Certificate),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber());
+        debug(">setRevokeStatus(X509Certificate),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber().toString(16));
 
         if (certificate != null) {        	
             CertificateDataPK revpk = new CertificateDataPK();
@@ -1059,7 +1058,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         }
         
-        debug("<setRevokeStatus(),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber());
+        debug("<setRevokeStatus(),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber().toString(16));
     } // setRevokeStatus
 
     /**
