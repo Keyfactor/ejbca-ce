@@ -42,9 +42,6 @@ public class LdapSearchPublisher extends LdapPublisher {
      */
     protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
         LDAPEntry oldEntry = null; // return value
-        int searchScope;
-        String searchbasedn;
-        boolean attributeOnly;
 
         // PARTE 1: Search for an existing entry in the LDAP directory
 		//  If it exists, s�lo se a�adir� al DN la parte del certificado (PARTE 2)
@@ -85,16 +82,16 @@ public class LdapSearchPublisher extends LdapPublisher {
 				searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "C"));
 			}
 			log.debug("Resulting search filter '" + searchFilter+"'.");
-			searchScope = LDAPConnection.SCOPE_SUB;
 			log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
-			searchbasedn = getSearchBaseDN();
+			String searchbasedn = getSearchBaseDN();
+			int searchScope = LDAPConnection.SCOPE_SUB;
 	        String attrs[] = { LDAPConnection.NO_ATTRS };
-			attributeOnly = true;
+			boolean attributeTypesOnly = true;
 			LDAPSearchResults searchResults = lc.search(searchbasedn, // container to search
 					searchScope, // search scope
 					searchFilter, // search filter
 					attrs, // "1.1" returns entry name only
-					attributeOnly); // no attributes are returned
+					attributeTypesOnly); // no attribute values are returned
 			// try to read the old object
 			if (log.isDebugEnabled()) {
 				log.debug("serachResults contains entries: "+searchResults.hasMore());
