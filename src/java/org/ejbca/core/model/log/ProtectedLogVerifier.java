@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 
 /**
  * Thread-safe singleton that invokes fowards a request from the verification service.  
@@ -21,6 +22,7 @@ public class ProtectedLogVerifier {
 	private IProtectedLogSessionLocal protectedLogSession = null;
 
 	private static final Logger log = Logger.getLogger(ProtectedLogVerifier.class);
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	private static ProtectedLogVerifier instance = null;
 	
@@ -126,7 +128,8 @@ public class ProtectedLogVerifier {
 			// Verify that the log hasn't been rolled back since last run
 			protectedLogEventIdentifier = verifyLastEvent();
 			if (protectedLogEventIdentifier != null) {
-				log.error("verifyLastEvent failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
+		    	log.error(intres.getLocalizedMessage("protectedlog.verifier.failed", protectedLogEventIdentifier.getNodeGUID(),
+		    			protectedLogEventIdentifier.getCounter()));
 			} else {
 				// Verify entire log
 				// Verify that log hasn't been frozen for any node
@@ -134,13 +137,15 @@ public class ProtectedLogVerifier {
 				try {
 					protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);	//verifyEntireLog();
 					if (protectedLogEventIdentifier != null) {
-						log.error("verifyEntireLog failed at NodeGUID " + protectedLogEventIdentifier.getNodeGUID() + " and counter " + protectedLogEventIdentifier.getCounter());
+				    	log.error(intres.getLocalizedMessage("protectedlog.verifier.failed", protectedLogEventIdentifier.getNodeGUID(),
+				    			protectedLogEventIdentifier.getCounter()));
 					} else {
 						lastSuccessfulVerification = startTimeOfExecution;
 					}
 				} catch (Exception e) {
+			    	log.error(intres.getLocalizedMessage("protectedlog.error.internallogerror", protectedLogEventIdentifier.getNodeGUID(),
+			    			protectedLogEventIdentifier.getCounter()));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
-					log.error("Internal logging error.", e);
 				}
 			}
 		} finally {
@@ -165,6 +170,8 @@ public class ProtectedLogVerifier {
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow();
 		// Is log empy?
 		if (protectedLogEventIdentifier == null) {
+	    	log.error(intres.getLocalizedMessage("protectedlog.error.emptyorunprotected", protectedLogEventIdentifier.getNodeGUID(),
+	    			protectedLogEventIdentifier.getCounter()));
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_EMPTY_LOG);
 			return protectedLogEventIdentifier;
 		} else {
@@ -174,6 +181,7 @@ public class ProtectedLogVerifier {
 				// Compare time with last known event-time
 				long currentEventTime = protectedLogEventRow.getEventTime();
 				if (lastKnownEventTime > currentEventTime) {
+			    	log.error(intres.getLocalizedMessage("protectedlog.error.rolledback"));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_ROLLED_BACK);
 					return protectedLogEventIdentifier;
 				}
@@ -191,23 +199,25 @@ public class ProtectedLogVerifier {
 		log.debug(">getValidLogEventRow");
 		ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(protectedLogEventIdentifier);
 		if (protectedLogEventRow == null) {
-			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+			// We take no action here. We want to return null to show the caller that the event was not found.
 			return null;
 		}
 		ProtectedLogToken protectedLogToken = getProtectedLogSession().getToken(protectedLogEventRow.getProtectionKeyIdentifier());
 		if (protectedLogToken == null ) {
+	    	log.error(intres.getLocalizedMessage("protectedlog.error.tokenmissing"));
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
 		} else {
 			try {
 				if ( !protectedLogToken.verify(protectedLogEventRow.getAsByteArray(false), protectedLogEventRow.getProtection())) {
+			    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing"));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 				} else {
 					log.debug("<getValidLogEventRow");
 					return protectedLogEventRow;
 				}
 			} catch (Exception e) {
+		    	log.error(intres.getLocalizedMessage("protectedlog.error.internallogerror"), e);
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
-				log.error("Internal logging error.", e);
 			} 
 		}
 		return null;

@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -51,6 +52,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	public final static String DEFAULT_DEVICE_NAME						= "ProtectedLogDevice";
 	
 	private static final Logger log = Logger.getLogger(ProtectedLogDevice.class);
+    private static final InternalResources intres = InternalResources.getInstance();
 
 	private static final SecureRandom seeder = new SecureRandom();
 
@@ -80,7 +82,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	
 	protected ProtectedLogDevice(Properties prop) throws Exception {
 		properties = prop;
-		deviceName = properties.getProperty("deviceName", DEFAULT_DEVICE_NAME);
+		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
 		nodeGUID = seeder.nextInt();
 		counter = 0;
 		protectionIntensity = Long.parseLong(properties.getProperty(CONFIG_PROTECTION_INTENSITY, "0")) * 1000; 
@@ -94,8 +96,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		nodeIP = properties.getProperty(CONFIG_NODEIP, nodeIP);
 		protectedLogActions = new ProtectedLogActions(properties);
 		if (protectionIntensity != 0 && properties.getProperty(ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, "false").equalsIgnoreCase("true")) {
-			log.warn("Using " + ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT + "=true and "+CONFIG_PROTECTION_INTENSITY+" is not 0. "+
-					"This is not safe in an environment where more than one node is running at the same time.");
+	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, CONFIG_PROTECTION_INTENSITY));
 		}
 	}
 
@@ -226,6 +227,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 					linkedInEventIdentifiersCollection.add(protectedLogEventIdentifier);
 				} else {
 					// Database log is empty!
+			    	log.error(intres.getLocalizedMessage("protectedlog.error.emptyorunprotected"));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_EMPTY_LOG);
 				}
 			} else {
@@ -246,19 +248,23 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 					ProtectedLogEventIdentifier protectedLogEventIdentifier = (ProtectedLogEventIdentifier) i.next();
 					ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(protectedLogEventIdentifier);
 					if (protectedLogEventRow == null ) {
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", protectedLogEventIdentifier.getNodeGUID(),
+				    			protectedLogEventIdentifier.getCounter()));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
-						log.error("Could not link in " + protectedLogEventIdentifier.getNodeGUID() + " " + protectedLogEventIdentifier.getCounter());
 						protectedLogEventIdentifiersToRemove.add(protectedLogEventIdentifier);
 						continue;
 					}
 					ProtectedLogToken protectedLogToken = getProtectedLogSession().getToken(protectedLogEventRow.getProtectionKeyIdentifier());
 					if (protectedLogToken == null ) {
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.tokenmissing", protectedLogEventRow.getProtectionKeyIdentifier()));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
 						// Add for removal if the event fails verification
 						protectedLogEventIdentifiersToRemove.add(protectedLogEventIdentifier);
 						continue;
 					}
 					if ( !protectedLogToken.verify(protectedLogEventRow.getAsByteArray(false), protectedLogEventRow.getProtection())) {
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", protectedLogEventIdentifier.getNodeGUID(),
+				    			protectedLogEventIdentifier.getCounter()));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 						// Add for removal if the event fails verification
 						protectedLogEventIdentifiersToRemove.add(protectedLogEventIdentifier);
@@ -276,9 +282,10 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
 				ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);
 				if (protectedLogEventRow == null) {
+			    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, counter-1));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 				} else if (!Arrays.equals(protectedLogEventRow.calculateHash(), lastProtectedLogRowHash)) {
-					log.info(" ("+nodeGUID+"," + (counter-1)+") hash has changed in database, compared to hash kept in memory " + lastProtectedLogRowHash[0] + "... ");
+			    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", nodeGUID, counter-1));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 				}
 			}
@@ -320,7 +327,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			lastProtectedLogRowHash = protectedLogEventRow.calculateHash();
 			counter++;
 		} catch (Exception e) {
-			log.error("Internal logging error.", e);
+        	log.error(intres.getLocalizedMessage("protectedlog.error.internallogerror"), e);
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
 			throw new EJBException(e);
 		}
@@ -348,12 +355,12 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		try {
 			getProtectedLogSession().addProtectedLogEventRow(protectedLogEventRow);
 		} catch (Exception e) {
-			log.error("Had to drop the following log-event (shutdown in progress): "+admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
-					+certificate+" "+event+" "+comment+" "+exception+"\nCaused by: "+e.getMessage());
+        	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
+					+certificate+" "+event+" "+comment+" "+exception, e.getMessage()));
 			return;
 		}
-		log.error("Had to log the following log-event as unprotected (shutdown in progress): "+admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
-				+certificate+" "+event+" "+comment+" "+exception+"\nUse the accept-CLI to make these posts trusted..");
+    	log.error(intres.getLocalizedMessage("protectedlog.error.logunprotected",admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
+				+certificate+" "+event+" "+comment+" "+exception));
 		lastProtectedLogRowHash = protectedLogEventRow.calculateHash();
 		counter++;
 	}

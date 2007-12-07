@@ -27,7 +27,7 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 
 	protected DummyLogDevice(Properties properties) throws Exception {
 		this.properties = properties;
-		deviceName = properties.getProperty("deviceName", DEFAULT_DEVICE_NAME);
+		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
 	}
 
 	/**

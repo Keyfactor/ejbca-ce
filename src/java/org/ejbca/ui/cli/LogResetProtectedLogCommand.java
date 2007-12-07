@@ -10,6 +10,8 @@ import java.security.SecureRandom;
 import java.util.Properties;
 
 public class LogResetProtectedLogCommand extends BaseLogAdminCommand  {
+	
+	public static final String COMMAND_NAME = "resetprotected";
 
 	private static final SecureRandom seeder = new SecureRandom();
 

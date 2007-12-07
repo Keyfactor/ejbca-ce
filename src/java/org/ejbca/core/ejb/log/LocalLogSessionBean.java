@@ -156,7 +156,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.21 2007-12-05 18:11:44 jeklund Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.22 2007-12-07 13:58:45 jeklund Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -203,7 +203,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
 	            	String[] logDeviceComponents = logDeviceString.split(";");
 	            	// Load properties
 	            	Properties properties = new Properties();
-	            	properties.setProperty("deviceName", logDevices[i]);
+	            	properties.setProperty(ILogDevice.PROPERTY_DEVICENAME, logDevices[i]);
 	                if (logDeviceComponents.length > 1 && !(logDeviceComponents[1] == null || logDeviceComponents[1].trim().equals(""))) {
 	                	InputStream is = null;
 	                	try {

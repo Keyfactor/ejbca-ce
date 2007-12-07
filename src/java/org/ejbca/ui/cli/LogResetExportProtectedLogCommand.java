@@ -1,22 +1,21 @@
 package org.ejbca.ui.cli;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
-import java.util.Properties;
 
-public class LogResetExportProtectedLogCommand extends BaseLogAdminCommand  {
+public class LogResetExportProtectedLogCommand extends BaseLogAdminCommand {
 
 	private static final SecureRandom seeder = new SecureRandom();
+	
+	public static final String COMMAND_NAME = "resetexports";
 	
 	public LogResetExportProtectedLogCommand(String[] args) {
         super(args);
 	}
-
+	
 	public void execute() throws IllegalAdminCommandException,	ErrorAdminCommandException {
 		// 4 chars should be enough to make the user think at least once..
         String randomString = ""+(seeder.nextInt(9000)+1000);

@@ -28,10 +28,12 @@ import org.ejbca.util.query.Query;
 
 /**
  * Interface used by EJBCA external log devices such as Log4j.
- * @version $Id: ILogDevice.java,v 1.2 2007-12-04 14:21:54 jeklund Exp $
+ * @version $Id: ILogDevice.java,v 1.3 2007-12-07 13:58:52 jeklund Exp $
  */
 public interface ILogDevice extends Serializable {
 
+	public final String PROPERTY_DEVICENAME = "deviceName";
+	
     /**
      * Log information.
      * @param admininfo contains information about the administrator performing the event.

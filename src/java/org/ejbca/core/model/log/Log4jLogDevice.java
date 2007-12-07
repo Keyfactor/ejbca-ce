@@ -35,7 +35,7 @@ import org.ejbca.util.query.Query;
 /**
  * Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.5 2007-12-05 18:11:45 jeklund Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.6 2007-12-07 13:58:52 jeklund Exp $
  */
 public class Log4jLogDevice implements ILogDevice, Serializable {
 
@@ -61,7 +61,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
      */
 
     protected Log4jLogDevice(Properties properties) throws Exception {
-		deviceName = properties.getProperty("deviceName", DEFAULT_DEVICE_NAME);
+		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
     }
 
     /**

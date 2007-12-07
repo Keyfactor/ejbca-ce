@@ -11,6 +11,8 @@ import java.util.Properties;
 
 public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
 	
+	public static final String COMMAND_NAME = "accept";
+
 	private static final SecureRandom seeder = new SecureRandom();
 
 	public LogAcceptProtectedLogCommand(String[] args) {

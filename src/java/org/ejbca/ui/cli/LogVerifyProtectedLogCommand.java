@@ -7,6 +7,8 @@ import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
 
 public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 
+	public static final String COMMAND_NAME = "verifyprotected";
+
 	public LogVerifyProtectedLogCommand(String[] args) {
         super(args);
 	}

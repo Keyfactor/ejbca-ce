@@ -65,7 +65,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.21 2007-12-06 10:58:17 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.22 2007-12-07 13:58:52 jeklund Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -79,10 +79,12 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.21 2007-12-06 10:58:17 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.22 2007-12-07 13:58:52 jeklund Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
+	private static final int MAX_SERVICE_WAIT = 30;
+	
 	private static final Logger log = Logger.getLogger(StartServicesServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -109,8 +111,8 @@ public class StartServicesServlet extends HttpServlet {
         if (protectedLogVerifier != null) {
         	protectedLogVerifier.cancelVerificationsPermanently();
         	long startedWaiting = System.currentTimeMillis();
-    		log.info("Waiting up to 30 seconds for verification service to finish..");
-        	while (protectedLogVerifier.isRunning() && startedWaiting + 30*1000 > System.currentTimeMillis()) {
+        	log.info(intres.getLocalizedMessage("startservice.waitservicever", MAX_SERVICE_WAIT));
+        	while (protectedLogVerifier.isRunning() && startedWaiting + MAX_SERVICE_WAIT*1000 > System.currentTimeMillis()) {
         		try {
 					Thread.sleep(1*1000);
 				} catch (InterruptedException e) {
@@ -122,8 +124,8 @@ public class StartServicesServlet extends HttpServlet {
         if (protectedLogExporter != null) {
         	protectedLogExporter.cancelExportsPermanently();
         	long startedWaiting = System.currentTimeMillis();
-    		log.info("Waiting up to 30 seconds for export service to finish..");
-        	while (protectedLogExporter.isRunning() && startedWaiting + 30*1000 > System.currentTimeMillis()) {
+        	log.info(intres.getLocalizedMessage("startservice.waitserviceexp", MAX_SERVICE_WAIT));
+        	while (protectedLogExporter.isRunning() && startedWaiting + MAX_SERVICE_WAIT*1000 > System.currentTimeMillis()) {
         		try {
 					Thread.sleep(1*1000);
 				} catch (InterruptedException e) {

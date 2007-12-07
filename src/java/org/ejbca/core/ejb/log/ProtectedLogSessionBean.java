@@ -45,6 +45,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceSessionLocal;
 import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -63,6 +64,7 @@ import org.ejbca.core.model.log.ProtectedLogExportRow;
 import org.ejbca.core.model.log.ProtectedLogExporter;
 import org.ejbca.core.model.log.ProtectedLogToken;
 import org.ejbca.core.model.log.ProtectedLogVerifier;
+import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.ProtectedLogExportWorker;
 import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
@@ -170,6 +172,8 @@ import org.ejbca.util.JDBCUtil;
 public class ProtectedLogSessionBean extends BaseSessionBean {
 
 	private static final Logger log = Logger.getLogger(ProtectedLogSessionBean.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
 	private static Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -326,7 +330,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				}
 			}
 		} catch (ObjectNotFoundException e) {
-			log.error("getToken() could not locate the requested log protection token. This is normal when you use a new token.");
+        	log.error(intres.getLocalizedMessage("protectedlog.error.tokennotfound", tokenIdentifier));
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -1029,12 +1033,12 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		ProtectedLogExportRow unProtectedLogExportRow = getLastExport();
 		if (unProtectedLogExportRow != null) {
 			if (!unProtectedLogExportRow.equals(protectedLogExportRow)) {
-				log.info("Abstained from exporting log since another node is doing this..");
+	        	log.info(intres.getLocalizedMessage("protectedlog.abstainexport"));
 				return null;
 			}
 			if (!verifySignature(protectedLogExportRow.getAsByteArray(false), protectedLogExportRow.getSignature(),
 					protectedLogExportRow.getSignatureCertificate(), protectedLogExportRow.getTimeOfExport())) {
-				log.error("Last export is invalid!");
+	        	log.error(intres.getLocalizedMessage("protectedlog.error.invalidlastexport"));
 				return null;
 			}
 		}
@@ -1048,18 +1052,20 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		if (exportEndTime > now - atLeastThisOld) {
 			exportEndTime = now - atLeastThisOld;
 		}
-		// Make sure all events before exportEndTime (the newest) are protected
+		// Make sure all events before exportEndTime (the newest) are protected. If not, the
+		// exportEndTime has to be adjusted until they are.
 		Integer[] nodeGUIDs = getNodeGUIDs(exportStartTime, exportEndTime);
 		for (int i=0; i<nodeGUIDs.length; i++) {
-			//log.info("Found " + nodeGUIDs[i] + "..");
+			//log.debug("Found " + nodeGUIDs[i] + "..");
 			ProtectedLogEventIdentifier newestProtectedLogEventIdentifier = findNewestProtectedLogEventRow(nodeGUIDs[i]);
 			if (newestProtectedLogEventIdentifier == null) {
-				log.error("No latest event for nodeGUID "+nodeGUIDs[i]);
+	        	log.error(intres.getLocalizedMessage("protectedlog.error.unprotectednode", nodeGUIDs[i]));
 				return null;
 			}
 			ProtectedLogEventRow newestProtectedLogEventRow = getProtectedLogEventRow(newestProtectedLogEventIdentifier);
 			if (newestProtectedLogEventRow == null) {
-				log.error("Could no fetch latest event for nodeGUID "+nodeGUIDs[i]);
+	        	log.error(intres.getLocalizedMessage("protectedlog.error.couldnotfetch",
+	        			newestProtectedLogEventIdentifier.getNodeGUID(), newestProtectedLogEventIdentifier.getCounter()));
 				return null;
 			}
 			// If the latest signed event for a node isn't an stop-event we need to take the eventTime into account
@@ -1067,26 +1073,31 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			if (newestProtectedLogEventRow.getEventId() != LogConstants.EVENT_SYSTEM_STOPPED_LOGGING && currentTime < exportEndTime) {
 				exportEndTime = currentTime;
 			}
-			// Since this is now the newest event, we are going to use it's token or issuing CA-token. We want to know if it's has one.
+			// Since this is now the newest event, we are going to use it's token or issuing CA-token. We want to know if it's has one..
 			ProtectedLogToken plt = getToken(newestProtectedLogEventRow.getProtectionKeyIdentifier());
 			if (plt == null) {
-				log.error("No token in use for nodeGUID " + newestProtectedLogEventRow.getEventIdentifier().getNodeGUID() + " counter " + newestProtectedLogEventRow.getEventIdentifier().getNodeGUID()+".");
+	        	log.error(intres.getLocalizedMessage("protectedlog.error.notoken",
+	        			newestProtectedLogEventIdentifier.getNodeGUID(), newestProtectedLogEventIdentifier.getCounter()));
 				return null;
 			}
-			// And that it is alright
+			// ...and that the token is working as supposed to.
 			byte[] dummy = "testing if token is working".getBytes();
 			if (plt.getType() == ProtectedLogToken.TYPE_CA && plt.protect(dummy) == null) {
-				throw new EJBException("Token not available.");
+	        	String iMsg = intres.getLocalizedMessage("protectedlog.error.tokennotworking",
+	        			newestProtectedLogEventRow.getProtectionKeyIdentifier());
+	        	log.error(iMsg);
+				throw new EJBException(iMsg);
 			}
 			if (plt.getType() != ProtectedLogToken.TYPE_CA) {
 				// If it is a soft token we need to verify that is issuing CA is online.
 				X509Certificate cert = plt.getTokenCertificate();
 				int caId = cert.getIssuerDN().getName().hashCode();
-				//int caId = CertTools.getIssuerDN(cert).hashCode();
 				try {
 					getSignSession().signData(dummy, caId, SecConst.CAKEYPURPOSE_CERTSIGN);
 				} catch (Exception e) {
-					throw new EJBException("Token not available.");
+		        	String iMsg = intres.getLocalizedMessage("protectedlog.error.canotworking", caId);
+		        	log.error(iMsg);
+					throw new EJBException(iMsg);
 				}
 			}
 		}
@@ -1152,9 +1163,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				LogEntry data = new LogEntry(0, rs.getInt(2), rs.getString(3), rs.getInt(4), rs.getInt(5), new Date(rs.getLong(6)), rs.getString(7), 
 						rs.getString(8), rs.getInt(9), rs.getString(10));
 				// Verify each result
-				String verified = "VERIFY_FAILED";
+				String verified = TableVerifyResult.VERIFY_FAILED_MSG;
 				if (verifyProtectedLogEventRow(new ProtectedLogEventRow(protectedLogData.findByPrimaryKey(rs.getString(1))))) {
-					verified = "VERIFY_SUCCESS";
+					verified = TableVerifyResult.VERIFY_SUCCESS_MSG;
 				}
 				data.setVerifyResult(verified);
 				returnval.add(data);
@@ -1265,7 +1276,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						lastExportProtectedLogIdentifier.add(new ProtectedLogEventIdentifier(protectedLogDataLocal.getNodeGUID(), protectedLogDataLocal.getCounter()));
 					}
 					if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-						log.info("Verification canceled.");
+			        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 						return null;
 					}
 				}
@@ -1277,7 +1288,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		// Find newest protected LogEventRow.
 		ProtectedLogEventIdentifier newestProtectedLogEventIdentifier = findNewestProtectedLogEventRow();
 		if (newestProtectedLogEventIdentifier == null) {
-			log.error("Log is empty or unprotected.");
+        	log.error(intres.getLocalizedMessage("protectedlog.error.emptyorunprotected"));
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_EMPTY_LOG);
 			return null;
 		}
@@ -1303,7 +1314,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			Iterator iterator = newestProtectedLogEventRows.iterator();
 			while (iterator.hasNext()) {
 				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-					log.info("Verification canceled.");
+		        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 					return null;
 				}
 				ProtectedLogEventRow i = (ProtectedLogEventRow) iterator.next();
@@ -1318,13 +1329,15 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			ProtectedLogEventIdentifier newestNodeProtectedLogEventIdentifier = findNewestProtectedLogEventRow(nextProtectedLogEventRowNodeGUID);
 			ProtectedLogEventRow newestNodeProtectedLogEventRow = getProtectedLogEventRow(newestNodeProtectedLogEventIdentifier);
 			if (newestNodeProtectedLogEventRow == null) {
-				log.error("Could not retrieve ProtectedLogEvent nodeGUID="+newestNodeProtectedLogEventIdentifier.getNodeGUID()+
-						" counter="+newestNodeProtectedLogEventIdentifier.getCounter());
+	        	log.error(intres.getLocalizedMessage("protectedlog.error.couldnotfetch",
+	        			newestNodeProtectedLogEventIdentifier.getNodeGUID(), newestNodeProtectedLogEventIdentifier.getCounter()));
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 				return newestNodeProtectedLogEventIdentifier;
 			}
 			if (newestNodeProtectedLogEventRow.getEventId() != LogConstants.EVENT_SYSTEM_STOPPED_LOGGING 
 					&& newestNodeProtectedLogEventRow.getEventTime() < new Date().getTime() - freezeThreshold ) {
+	        	log.error(intres.getLocalizedMessage("protectedlog.error.frozen",
+	        			newestNodeProtectedLogEventIdentifier.getNodeGUID()));
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_FROZEN);
 				return newestNodeProtectedLogEventIdentifier;
 			}
@@ -1333,7 +1346,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			boolean isTopSignatureVerified = false;
 			while (nextProtectedLogEventRow != null && nextProtectedLogEventRow.getEventTime() >= stopTime && nextProtectedLogEventRow.getEventTime() > lastDeletingExportTime) {
 				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-					log.info("Verification canceled.");
+		        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 					return null;
 				}
 				ProtectedLogEventIdentifier nextProtectedLogEventIdentifier = nextProtectedLogEventRow.getEventIdentifier();
@@ -1398,7 +1411,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						// Verify the hash of all the linked in events.
 						for (int i=0; i<linkedInEventIdentifiers.length; i++) {
 							if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-								log.info("Verification canceled.");
+					        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 								return null;
 							}
 							linkedInEventRows[i] =getProtectedLogEventRow(linkedInEventIdentifiers[i]);
@@ -1422,7 +1435,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					// For each linked in, if any of them is newer then the one found in newestProtectedLogEventIdentifiers for each node → verify event signature and replace
 					for (int l=0; l<linkedInEventIdentifiers.length; l++) {
 						if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-							log.info("Verification canceled.");
+				        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 							return null;
 						}
 						ProtectedLogEventIdentifier k = linkedInEventIdentifiers[l];
@@ -1436,7 +1449,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						Iterator iterator2 = newestProtectedLogEventRows.iterator();
 						while (iterator2.hasNext()) {
 							if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-								log.info("Verification canceled.");
+					        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 								return null;
 							}
 							ProtectedLogEventRow j = (ProtectedLogEventRow) iterator2.next();
@@ -1484,7 +1497,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		Integer[] everyExistingNodeGUID = getAllNodeGUIDs();
 		for (int i=0; i<everyExistingNodeGUID.length; i++) {
 			if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-				log.info("Verification canceled.");
+	        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 				return null;
 			}
 			if (!processedNodeGUIDs.contains(everyExistingNodeGUID[i])) {
@@ -1517,7 +1530,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				CAInfo caInfo = getCAAdminSession().getCAInfo(internalAdmin, protectionTokenReference);
 				if (caInfo == null) {
 					// Revert to the "none" token.
-					log.error("Requested CA was not found. Reverting to \"none\".");
+		        	log.error(intres.getLocalizedMessage("protectedlog.error.reverttonone"));
 					protectedLogToken = new ProtectedLogToken();
 				}
 				protectedLogTokenCertificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
@@ -1545,13 +1558,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				protectedLogTokenCertificate = (X509Certificate) keyStore.getCertificate(protectionTokenKeyStoreAlias);
 				// Validate certificate here
 				if (!verifyCertificate(protectedLogTokenCertificate, new Date().getTime())) {
-					log.error("Invalid token certificate.");
+		        	log.error(intres.getLocalizedMessage("protectedlog.error.invalidtokencert"));
 					return null;
 				}
 				if (protectionKey instanceof PrivateKey) {
 					protectedLogToken = new ProtectedLogToken((PrivateKey) protectionKey, protectedLogTokenCertificate);
 				} else {
-					// TODO: Verify custom extension of cert so we know the certoficate belongs to this symmetric key
+					// TODO: When implementing support for symmetric protection token:
+					//  Verify custom extension of cert so we know the certificate belongs to this symmetric key
 					protectedLogToken = new ProtectedLogToken((SecretKey) protectionKey, protectedLogTokenCertificate);
 				}
 			}
@@ -1634,7 +1648,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			newProtectedLogEventRow.setProtection(getProtectedLogToken(properties).protect(newProtectedLogEventRow.getAsByteArray(false)));
 			// Persist event
 			addProtectedLogEventRow(newProtectedLogEventRow);
-			log.info("Accepted node-chain "+currentProtectedLogEventIdentifier.getNodeGUID()+".");
+        	log.info(intres.getLocalizedMessage("protectedlog.acceptedchain", currentProtectedLogEventIdentifier.getNodeGUID()));
 		}
 		log.debug("<signAllUnsignedChains");
 		return true;
@@ -1665,9 +1679,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		protectedLogVerifier.cancelVerification();
 		protectedLogExporter.cancelExport();
 		long waitedTime = 0;
-		log.debug("Waiting for services to stop..");
+		int timeOut = 60;
+    	log.info(intres.getLocalizedMessage("protectedlog.waitingforservice", timeOut));
 		try {
-			while ( (protectedLogVerifier.isRunning() || protectedLogExporter.isRunning()) && waitedTime < 60*1000) {	// 60 seconds timeout
+			while ( (protectedLogVerifier.isRunning() || protectedLogExporter.isRunning()) && waitedTime < timeOut*1000) {
 				Thread.sleep(1000);
 				waitedTime += 1000;
 			}
@@ -1707,7 +1722,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				ProtectedLogExportRow protectedLogExportRow = getLastSignedExport();
 				// Process all LogEventRows in the timespan chronologically, oldest first
 				// By sorting for newest first caching would be easier, but that would result in exported files with newest event first
-				int fetchSize = 20;
+				int fetchSize = 1000;
 				ProtectedLogEventRow[] protectedLogEventRows = new ProtectedLogEventRow[0];
 				MessageDigest messageDigest = MessageDigest.getInstance(currentHashAlgorithm, "BC");
 				ProtectedLogEventRow newesetExportedProtectedLogEventRow = null;
@@ -1721,7 +1736,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 								protectedLogEventRows[i].getModule(), protectedLogEventRows[i].getEventTime(), protectedLogEventRows[i].getUsername(),
 								protectedLogEventRows[i].getCertificateSerialNumber(), protectedLogEventRows[i].getCertificateIssuerDN(), protectedLogEventRows[i].getEventId(),
 								protectedLogEventRows[i].getEventComment())) {
-							log.error("Error in export handler during update.");
+					    	log.error(intres.getLocalizedMessage("protectedlog.error.handlerupdate"));
 							return false;
 						}
 						newesetExportedProtectedLogEventRow = protectedLogEventRows[i];
@@ -1750,7 +1765,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						//int caId = CertTools.getIssuerDN(certificate).hashCode();
 						caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 						if (caInfo == null) {
-							log.error("No valid CA certificate to use for log-export.");
+					    	log.error(intres.getLocalizedMessage("protectedlog.error.noexportca"));
 							protectedLogExportHandler.abort();
 							return false;
 						} else {
@@ -1761,20 +1776,20 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 							lastExportedHash, currentHashAlgorithm, certificate, deleteAfterExport, null);
 					byte[] signature = getSignSession().signData(newProtectedLogExportRow.getAsByteArray(false), caId, SecConst.CAKEYPURPOSE_CERTSIGN);
 					newProtectedLogExportRow.setSignature(signature);
-					// Send to interface
+					// Send to export interface
 					if (!protectedLogExportHandler.done(currentHashAlgorithm, exportedHash, lastExportedHash)) {
 						// Something went wrong here
-						log.error("Error in export handler during finalization.");
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.handlerdone"));
 						return false;
 					}
 					// Write to database
 					reservedProtectedLogExportRow = newProtectedLogExportRow;
 					success = true;
 				} else {
-					log.info("No events to export..?");
+			    	log.debug(intres.getLocalizedMessage("protectedlog.nonewevents"));
 				}
 			} catch (CATokenOfflineException e) {
-				log.error("Cannot export since CA token is offline.");
+		    	log.error(intres.getLocalizedMessage("protectedlog.error.catokenoffline"));
 				return false;
 			} catch (Exception e) {
 				log.error("", e);
@@ -1817,7 +1832,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		if (reservedProtectedLogExportRow == null) {
 			return false;
 		}
-		log.info("Starting export proceedure.");
+    	log.info(intres.getLocalizedMessage("protectedlog.startingexport"));
 		long exportEndTime = reservedProtectedLogExportRow.getExportEndTime();
 		long exportStartTime = reservedProtectedLogExportRow.getExportStartTime();
 		ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
@@ -1837,16 +1852,17 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			do {
 				protectedLogEventRows = findNextProtectedLogEventRows(lastLoopTime, exportEndTime, fetchSize);
 				rowCount += protectedLogEventRows.length;
-				log.info("exportLog is processing another "+protectedLogEventRows.length+" rows. ("+rowCount+" rows in total so far.)");
+		    	log.info(intres.getLocalizedMessage("protectedlog.progress", protectedLogEventRows.length, rowCount));
 				for (int i=0; i<protectedLogEventRows.length; i++) {
 					if (protectedLogExporter != null && protectedLogExporter.isCanceled()) {
-						log.info("Export was canceled.");
+				    	log.info(intres.getLocalizedMessage("protectedlog.canceledexp"));
 						protectedLogExportHandler.abort();
 						return false;
 					}
 					// Verify current by verifying every step to the next protected log event row with valid protection (cache all steps if signature was valid)
 					if (!verifyProtectedLogEventRow(protectedLogEventRows[i])) {
-						log.error("Export failed. Could not verify node-chain.");
+						ProtectedLogEventIdentifier plei = protectedLogEventRows[i].getEventIdentifier();
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.exportverify", plei.getNodeGUID(), plei.getCounter()));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 						return false;
 					}
@@ -1856,7 +1872,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 							protectedLogEventRows[i].getModule(), protectedLogEventRows[i].getEventTime(), protectedLogEventRows[i].getUsername(),
 							protectedLogEventRows[i].getCertificateSerialNumber(), protectedLogEventRows[i].getCertificateIssuerDN(), protectedLogEventRows[i].getEventId(),
 							protectedLogEventRows[i].getEventComment())) {
-						log.error("Error in export handler during update.");
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.handlerupdate"));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
 						return false;
 					}
@@ -1887,7 +1903,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						caId = issuingCAId;
 						caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 						if (caInfo == null) {
-							log.error("No valid CA certificate to use for log-export.");
+					    	log.error(intres.getLocalizedMessage("protectedlog.error.noexportcacert"));
 							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INVALID_TOKEN);
 							protectedLogExportHandler.abort();
 							return false;
@@ -1903,7 +1919,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				// Send to interface
 				if (!protectedLogExportHandler.done(currentHashAlgorithm, exportedHash, lastExportedHash)) {
 					// Something went wrong here
-					log.error("Error in export handler during finalization.");
+			    	log.error(intres.getLocalizedMessage("protectedlog.error.handlerdone"));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
 					return false;
 				}
@@ -1911,10 +1927,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				reservedProtectedLogExportRow = newProtectedLogExportRow;
 				success = true;
 			} else {
-				log.info("No events to export..?");
+		    	log.debug(intres.getLocalizedMessage("protectedlog.nonewevents"));
 			}
 		} catch (CATokenOfflineException e) {
-			log.error("Cannot export since CA token is offline.");
+	    	log.error(intres.getLocalizedMessage("protectedlog.error.catokenoffline"));
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
 			return false;
 		} catch (Exception e) {
