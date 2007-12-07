@@ -82,7 +82,6 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
-import org.ejbca.core.model.services.IWorker;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.NotificationParamGen;
@@ -100,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.55 2007-12-06 17:36:42 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.56 2007-12-07 15:07:57 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1915,13 +1914,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         		String cp = not.getNotificationRecipient().substring(7);
                         		if (StringUtils.isNotEmpty(cp)) {
                         			ICustomNotificationRecipient plugin = (ICustomNotificationRecipient) this.getClass().getClassLoader().loadClass(cp).newInstance();
-                        			String e = plugin.getRecipientEmails(data);
-                        			if (StringUtils.isEmpty(e)) {
+                        			rcptemail = plugin.getRecipientEmails(data);
+                        			if (StringUtils.isEmpty(rcptemail)) {
                                 		String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", not.getNotificationRecipient());
                             			error(msg);
                         			} else {
-                        				debug("Custom notification recipient plugin returned email: "+ e);
-                        				rcptemail = e;
+                        				debug("Custom notification recipient plugin returned email: "+ rcptemail);
                         			}
                         		} else {
                             		String msg = intres.getLocalizedMessage("ra.errorcustomnoclasspath", not.getNotificationRecipient());
