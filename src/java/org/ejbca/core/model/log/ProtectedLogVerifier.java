@@ -78,13 +78,13 @@ public class ProtectedLogVerifier {
 	 * Runs all the verifications if it isn't busy from another caller.
 	 */
 	public void runIfNotBusy() {
-		if (!isCanceledPermanently && getBusy()) {
+		if (getBusy()) {
 			run();
 		}
 	}
 	
 	synchronized boolean getBusy() {
-		if (isRunning) {
+		if (isCanceledPermanently || isRunning) {
 			return false;
 		}
 		return (isRunning = true);
