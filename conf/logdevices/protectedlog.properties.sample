@@ -2,7 +2,8 @@
 #
 # Enable log protection by
 #  1. Make sure this device is enabled in conf/log.properties
-#  2. Configure the protection token you want to use in this file
+#  2. Configure the protection token you want to use in this file (CAName or
+#     URI)
 #  3. Run "ant clean" and "ant deploy" to deploy EJBCA with this new
 #     configuration.
 #  4. Start EJBCA
@@ -11,7 +12,8 @@
 #
 
 # protectionToken is the key used to protect log-rows in the database, the
-# issuing CA of this token is used for log export
+# issuing CA of this token is used for log export. The "none"-token means that
+# log-events are simply written to the database without protection.
 #  Caution 1: Soft tokens requires Unlimited JCE to be installed.
 #  Caution 2: Hard tokens (CAs) require auto-activation.
 #  Caution 3: Reversed DNs are not supported.

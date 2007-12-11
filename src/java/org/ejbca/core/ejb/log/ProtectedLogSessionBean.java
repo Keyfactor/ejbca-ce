@@ -498,8 +498,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		log.debug(">getProtectedLogEventRow");
 		ProtectedLogEventRow protectedLogEventRow = null;
 		try {
-			ProtectedLogDataLocal protectedLogDataLocal = getProtectedLogData().findByNodeGUIDandCounter(identifier.getNodeGUID(), identifier.getCounter());
-			protectedLogEventRow = new ProtectedLogEventRow(protectedLogDataLocal);
+			if (identifier != null) {
+				ProtectedLogDataLocal protectedLogDataLocal = getProtectedLogData().findByNodeGUIDandCounter(identifier.getNodeGUID(), identifier.getCounter());
+				protectedLogEventRow = new ProtectedLogEventRow(protectedLogDataLocal);
+			}
 		} catch (FinderException e) {
 		}
 		log.debug("<getProtectedLogEventRow");
@@ -1610,6 +1612,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		}
 		// Get latest real signed event
 		ProtectedLogEventRow newestProtectedLogEventRow = getProtectedLogEventRow(findNewestProtectedLogEventRow());
+		if (newestProtectedLogEventRow == null) {
+			return false;	// Is a token in use?
+		}
 		List unsignedNodeGUIDs = Arrays.asList(nodeGUIDs);
 		Iterator i = unsignedNodeGUIDs.iterator();
 		while (i.hasNext()) {
