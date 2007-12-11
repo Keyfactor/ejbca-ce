@@ -1613,7 +1613,8 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		// Get latest real signed event
 		ProtectedLogEventRow newestProtectedLogEventRow = getProtectedLogEventRow(findNewestProtectedLogEventRow());
 		if (newestProtectedLogEventRow == null) {
-			return false;	// Is a token in use?
+			log.info("Could not find any signed log-events. Is there any? Is a token in use?");
+			return false;
 		}
 		List unsignedNodeGUIDs = Arrays.asList(nodeGUIDs);
 		Iterator i = unsignedNodeGUIDs.iterator();
@@ -1632,7 +1633,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			try {
 				messageDigest = MessageDigest.getInstance(newestProtectedLogEventRow.getCurrentHashAlgorithm(), "BC");
 			} catch (Exception e) {
-				log.error("", e);
+				log.error("Digest failed.", e);
 				return false;
 			}
 			messageDigest.update(currentProtectedLogEventRow.calculateHash());
