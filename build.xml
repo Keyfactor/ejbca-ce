@@ -226,8 +226,15 @@
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ejbca-ejb.jar" depends="compile">
-    <!-- create empty directory for HW tokens if not existing -->
+        <!-- create empty directory for HW tokens if not existing -->
         <mkdir dir="${hwtoken.class.dir}"/>
+    	<!-- Temp space where we will unpack jars to include in this jar file -->
+        <mkdir dir="${tmp}/caTokenClasses"/>
+    	<unjar dest="${tmp}/caTokenClasses">
+    		<fileset dir="${hwtoken.class.dir}">
+    			<include name="*.jar"/>
+    		</fileset>
+    	</unjar>
         <jar jarfile="${dist.dir}/ejbca-ejb.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
@@ -249,7 +256,9 @@
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
         	</fileset>	
-            <fileset dir="${hwtoken.class.dir}"/>
+            <fileset dir="${tmp}/caTokenClasses">
+        		<exclude name="**/META-INF/**"/>
+        	</fileset>	
         </jar>
     </target>
 	
