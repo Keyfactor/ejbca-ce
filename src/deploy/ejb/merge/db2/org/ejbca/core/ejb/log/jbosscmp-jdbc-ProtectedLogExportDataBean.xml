@@ -30,5 +30,5 @@
 <cmp-field>
   <field-name>b64Signature</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>CLOB(100K)</sql-type>
+  <sql-type>VARCHAR(4000)</sql-type>
 </cmp-field>
