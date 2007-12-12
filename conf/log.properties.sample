@@ -16,7 +16,7 @@
 DummyLogDevice=org.ejbca.core.model.log.DummyLogDeviceFactory;
 # Log4J is the standard logger for logging to console or file
 Log4jLogDevice=org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties
-# Internal EJBCA logging device that writes to the database. See logdevices/log4j.properties.sample for more information.
+# Internal EJBCA logging device that writes to the database. See logdevices/oldlog.properties.sample for more information.
 OldLogDevice=org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties
 # Improved internal EJBCA logging device that writes to the database. See logdevices/protectedlog.properties.sample for more information.
 ProtectedLogDevice=org.ejbca.core.model.log.ProtectedLogDeviceFactory;logdevices/protectedlog.properties
