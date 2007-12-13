@@ -64,7 +64,7 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.8 2006-12-20 08:33:31 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.9 2007-12-13 12:27:45 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(ScepServlet.class);
@@ -171,6 +171,8 @@ public class ScepServlet extends HttpServlet {
              */
             String operation = request.getParameter("operation");
             String message = request.getParameter("message");
+        	// Some clients don't url encode the + sign in the request
+        	message = message.replace(' ', '+');
 
             service(operation, message, request.getRemoteAddr(), response);
             
