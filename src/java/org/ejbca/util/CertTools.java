@@ -98,7 +98,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.48 2007-11-21 10:30:38 anatom Exp $
+ * @version $Id: CertTools.java,v 1.49 2007-12-13 13:23:39 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -683,23 +683,23 @@ public class CertTools {
      */
     private static void checkImplicitParams() {
         if (StringUtils.contains(IMPLICITLYCA_Q, "ecdsa.implicitlyca.q")) {
-        	log.error("IMPLICITLYCA_Q not set!");
+        	log.info("IMPLICITLYCA_Q not set, using default.");
         	IMPLICITLYCA_Q = "883423532389192164791648750360308885314476597252960362792450860609699839";
         }
         if (StringUtils.contains(IMPLICITLYCA_A, "ecdsa.implicitlyca.a")) {
-        	log.error("IMPLICITLYCA_A not set!");
+        	log.info("IMPLICITLYCA_A not set, using default.");
         	IMPLICITLYCA_A = "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc";
         }
         if (StringUtils.contains(IMPLICITLYCA_B, "ecdsa.implicitlyca.b")) {
-        	log.error("IMPLICITLYCA_B not set!");
+        	log.info("IMPLICITLYCA_B not set, using default.");
         	IMPLICITLYCA_B = "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a";
         }
         if (StringUtils.contains(IMPLICITLYCA_G, "ecdsa.implicitlyca.g")) {
-        	log.error("IMPLICITLYCA_G not set!");
+        	log.info("IMPLICITLYCA_G not set, using default.");
         	IMPLICITLYCA_G = "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf";
         }
         if (StringUtils.contains(IMPLICITLYCA_N, "ecdsa.implicitlyca.n")) {
-        	log.error("IMPLICITLYCA_N not set!");
+        	log.info("IMPLICITLYCA_N not set, using default.");
         	IMPLICITLYCA_N = "883423532389192164791648750360308884807550341691627752275345424702807307";
         }
     }
