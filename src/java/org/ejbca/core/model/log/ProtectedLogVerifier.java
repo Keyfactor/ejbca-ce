@@ -170,8 +170,7 @@ public class ProtectedLogVerifier {
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow();
 		// Is log empy?
 		if (protectedLogEventIdentifier == null) {
-	    	log.error(intres.getLocalizedMessage("protectedlog.error.emptyorunprotected", protectedLogEventIdentifier.getNodeGUID(),
-	    			protectedLogEventIdentifier.getCounter()));
+	    	log.error(intres.getLocalizedMessage("protectedlog.error.emptyorunprotected"));
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_EMPTY_LOG);
 			return protectedLogEventIdentifier;
 		} else {

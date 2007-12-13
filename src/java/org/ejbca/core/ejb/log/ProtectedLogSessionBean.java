@@ -1534,9 +1534,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					// Revert to the "none" token.
 		        	log.error(intres.getLocalizedMessage("protectedlog.error.reverttonone"));
 					protectedLogToken = new ProtectedLogToken();
+				} else {
+					protectedLogTokenCertificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+					protectedLogToken = new ProtectedLogToken(caInfo.getCAId(), protectedLogTokenCertificate);
 				}
-				protectedLogTokenCertificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-				protectedLogToken = new ProtectedLogToken(caInfo.getCAId(), protectedLogTokenCertificate);
 			} else if (ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE.equalsIgnoreCase(protectionTokenReferenceType)) {
 				// This is the default key used during startup. It can't sign or verify anything.
 				protectedLogToken = new ProtectedLogToken();
