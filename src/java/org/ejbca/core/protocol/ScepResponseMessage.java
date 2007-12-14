@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.10 2007-10-04 08:08:16 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.11 2007-12-14 13:25:04 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage {
     /**
@@ -298,7 +298,8 @@ public class ScepResponseMessage implements IResponseMessage {
                 msg = new CMSProcessableByteArray(ed.getEncoded());
             } else {
                 // Create an empty message here
-                msg = new CMSProcessableByteArray("PrimeKey".getBytes());
+                //msg = new CMSProcessableByteArray("PrimeKey".getBytes());
+                msg = new CMSProcessableByteArray(new byte[0]);
             }
 
             // Create the outermost signed data
