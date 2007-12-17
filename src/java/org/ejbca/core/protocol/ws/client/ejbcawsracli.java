@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Implements the EJBCA RA WS command line interface
  *
- * @version $Id: ejbcawsracli.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: ejbcawsracli.java,v 1.2 2007-12-17 08:51:19 anatom Exp $
  */
 public class ejbcawsracli  {
     /**
@@ -34,7 +34,7 @@ public class ejbcawsracli  {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | revokecert | revoketoken | revokeuser | checkrevokationstatus");
+                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | revokecert | revoketoken | revokeuser | checkrevokationstatus | generatenewuser");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
