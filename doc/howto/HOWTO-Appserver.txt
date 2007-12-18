@@ -243,7 +243,7 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 
 - Configure $OC4J_HOME/j2ee/home/config/application.xml to not create tables: autocreate-tables=”false”
 
-- Configure a connection pool and a datasource in Oracle AS.
+- Configure a connection pool (EjbcaPool) and a datasource in Oracle AS (EjbcaDS, jdbc/EjbcaDS).
 
 - Configure a mail session in $OC4J_HOME/j2ee/home/config/application.xml.
  <mail-session location="mail/DefaultMail" smtp-host="localhost">
@@ -260,6 +260,7 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config.
     in conf/database.properties you must configure the database settings for your chosen database, including username and password.
+      use 'datasource.jndi-name-prefix=jdbc/'
     in conf/web.properties you should set desired values and also http/s ports.
     in conf/mail.properties set 'mail.jndi-name=mail/DefaultMail'
 
@@ -285,6 +286,24 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
   
 
 - Configure SSL in OC4J and make sure the SSL information is passed on to Java, not terminated in Apache.
+
+If you have SSL directly in OC4J:
+-----
+Copy file $OC4J_HOME/j2ee/home/config/default-web-site.xml to $OC4J_HOME/j2ee/home/config/secure-web-site.xml 
+and edit to reflect these changes:
+ <?xml version="1.0"?>
+    <web-site xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://xmlns.oracle.com/oracleas/schema/web-site-10_0.xsd"  
+        port="8889" display-name="OC4J 10g (10.1.3) Secure Web Site" schema-major-version="10" schema-minor-version="0" secure="true">
+        <default-web-app application="default" name="defaultWebApp" />
+        <access-log path="../log/secure-web-access.log" />
+        <ssl-config keystore="<path-to-ejbca/p12/tomcat.jks>" keystore-password="serverpwd" needs-client-auth="true" />
+    </web-site>
+    
+Add the following to $OC4J_HOME/j2ee/home/config/server.xml
+<web-site path="./secure-web-site.xml" />
+-----
+
+If you have an Apache front-end:
 -----
 - Enable SSL in Apache.
   These options must be enable:
