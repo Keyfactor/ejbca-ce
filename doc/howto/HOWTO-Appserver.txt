@@ -301,6 +301,9 @@ and edit to reflect these changes:
     
 Add the following to $OC4J_HOME/j2ee/home/config/server.xml
 <web-site path="./secure-web-site.xml" />
+
+Also figure out a way to bind ejbca to the secure site, or it may dissapear fomr time to time...
+If you know how this works, please let us know... 
 -----
 
 If you have an Apache front-end:
