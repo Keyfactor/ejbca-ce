@@ -28,6 +28,7 @@ import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.CsvLogExporter;
 import org.ejbca.core.model.log.ILogExporter;
+import org.ejbca.core.model.log.Log4jLogDevice;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -38,7 +39,7 @@ import org.ejbca.util.query.Query;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.8 2007-12-04 18:43:38 jeklund Exp $
+ * @version $Id: TestLog.java,v 1.9 2007-12-19 08:47:44 jeklund Exp $
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);
@@ -128,7 +129,7 @@ public class TestLog extends TestCase {
         Collection result = null;
         while (iterator.hasNext()) {
         	String logDeviceName = (String) iterator.next();
-        	if (logDeviceName.equalsIgnoreCase("Log4JLogDevice")) {
+        	if (logDeviceName.equalsIgnoreCase(Log4jLogDevice.DEFAULT_DEVICE_NAME)) {
         		continue;
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
