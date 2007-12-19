@@ -98,12 +98,13 @@ do
 	CP="$i":"$CP"
 done
 
-CP=$CP:$EJBCA_HOME/bin
+CP=$EJBCA_HOME/bin:$CP
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
   CP=`cygpath --path --windows "$CP"`
 fi
 
+#exec "$JAVACMD" -Dlog4j.debug=1 -cp $CP $class_name "$@"
 exec "$JAVACMD" -cp $CP $class_name "$@"
 

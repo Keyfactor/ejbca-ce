@@ -80,7 +80,7 @@ rem for %%i in (%J2EE_DIR%\*.jar) do set J2EE_CP=%%i;!J2EE_CP!
 rem for %%i in (%EJBCA_HOME%\lib\*.jar) do set CP=%%i;!CP!
 rem for %%i in (%EJBCA_HOME%\dist\*.jar) do set CP=%%i;!CP!
 
-set CLASSPATH=%J2EE_CP%;%EJBCA_CP%;%CP%;%EJBCA_HOME%\bin
+set CLASSPATH=%EJBCA_HOME%\bin;%J2EE_CP%;%EJBCA_CP%;%CP%
 rem echo %CLASSPATH%
 
 rem Fixup arguments, we have to do this since windows normally only 
