@@ -243,8 +243,6 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
 
 - Configure $OC4J_HOME/j2ee/home/config/application.xml to not create tables: autocreate-tables=”false”
 
-- Configure a connection pool (EjbcaPool) and a datasource in Oracle AS (EjbcaDS, jdbc/EjbcaDS).
-
 - Configure a mail session in $OC4J_HOME/j2ee/home/config/application.xml.
  <mail-session location="mail/DefaultMail" smtp-host="localhost">
   <property name="mail.transport.protocol" value="smtp"/>
@@ -257,6 +255,8 @@ EJBCA has been tested on Oc4j 10g (10.1.3.3.0).
   to
   transaction-timeout="300"
   
+- Configure a connection pool (EjbcaPool) and a datasource in Oracle AS (EjbcaDS, jdbc/EjbcaDS).
+
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config.
     in conf/database.properties you must configure the database settings for your chosen database, including username and password.
