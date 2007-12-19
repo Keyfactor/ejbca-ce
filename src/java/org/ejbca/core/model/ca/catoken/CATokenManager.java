@@ -25,7 +25,7 @@ import org.ejbca.core.model.InternalResources;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: CATokenManager.java,v 1.2 2007-10-10 09:09:44 anatom Exp $
+ * @version $Id: CATokenManager.java,v 1.3 2007-12-19 15:04:48 anatom Exp $
  * 
  */
 public class CATokenManager {
@@ -112,21 +112,23 @@ public class CATokenManager {
 	 * @return true if registration went successful, false if the classpath could not be found or the classpath was already registered.
 	 */
 	public synchronized boolean addAvailableCAToken(String classpath, String name, boolean translateable, boolean use) {
-	    boolean retval = false;	
-	    if (!availablehardcatokens.containsKey(classpath)) {
-	        log.debug("CATokenManager registering " + classpath);                
-	        if (loadClass(classpath)) {
-	            // Add to the available tokens
-	            availablehardcatokens.put(classpath, new AvailableCAToken(classpath, name, translateable, use));         
-	            retval = true;
-	            log.debug("Registered " + classpath + " successfully.");                       
-	        } else {
-                // Normally not an error, since these classes are provided by HSM vendor
+		log.debug(">addAvailableCAToken: "+classpath);
+		boolean retval = false;	
+		if (!availablehardcatokens.containsKey(classpath)) {
+			log.debug("CATokenManager registering " + classpath);                
+			if (loadClass(classpath)) {
+				// Add to the available tokens
+				availablehardcatokens.put(classpath, new AvailableCAToken(classpath, name, translateable, use));         
+				retval = true;
+				log.debug("Registered " + classpath + " successfully.");                       
+			} else {
+				// Normally not an error, since these classes are provided by HSM vendor
 				String msg = intres.getLocalizedMessage("catoken.inforegisterclasspath", classpath);
-	            log.info(msg);
-	        }
-	    }
-	    return retval;
+				log.info(msg);
+			}
+		}			
+		log.debug("<addAvailableCAToken: "+classpath);
+		return retval;
 	}
     /**
      * Method loading a class in order to test if it can be instasiated.
@@ -147,7 +149,11 @@ public class CATokenManager {
         } catch (IllegalAccessException e) {
             log.error("IllegalAccessException: "+classpath, e);
             return false;
-        }    
+        } catch (NoClassDefFoundError e) {
+            // This happens more rarely and should be flagged as an error
+            log.error("NoClassDefFoundError: "+classpath, e);
+            return false;        	
+        }
         return true;
     }
 	

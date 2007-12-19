@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.6 2007-10-10 12:00:02 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.7 2007-12-19 15:04:48 anatom Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
@@ -449,8 +449,8 @@ public class CATokenContainerImpl extends CATokenContainer {
 				Object obj = implClass.newInstance();
 				this.catoken = (ICAToken) obj;
 				this.catoken.init(getProperties(), data, getSignatureAlgorithm());				
-			}catch(Exception e){
-				throw new EJBException(e);
+			}catch(Throwable e){
+				log.error("Error contructing CA Token: ", e);
 			}
 		}
 
