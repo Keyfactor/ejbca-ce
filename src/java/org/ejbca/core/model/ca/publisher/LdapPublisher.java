@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.30 2007-11-19 11:56:15 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.31 2007-12-20 08:53:50 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -63,6 +63,13 @@ public class LdapPublisher extends BasePublisher {
 	
 	public static final int TYPE_LDAPPUBLISHER = 2;
 		
+	/** The normal ldap publisher will modify attributes in LDAP.
+	 * If you don't want attributes modified, use the LdapSearchPublisher to 
+	 * store certificates in already existing entries. Can be overridden in constructor
+	 * of subclasses.
+	 */
+	protected boolean ADD_MODIFICATION_ATTRIBUTES = true;
+	
 	public static final String DEFAULT_USEROBJECTCLASS     = "top;person;organizationalPerson;inetOrgPerson";
 	public static final String DEFAULT_CAOBJECTCLASS       = "top;applicationProcess;certificationAuthority";
 	public static final String DEFAULT_CACERTATTRIBUTE     = "cACertificate;binary";
@@ -184,7 +191,7 @@ public class LdapPublisher extends BasePublisher {
 
             if (oldEntry != null) {
                 // TODO: Are we the correct type objectclass?
-                modSet = getModificationSet(oldEntry, certdn, true, true);
+                modSet = getModificationSet(oldEntry, certdn, ADD_MODIFICATION_ATTRIBUTES, true);
             } else {
                 objectclass = getUserObjectClass(); // just used for logging
                 attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, true, true, password, extendedinformation);
@@ -1086,6 +1093,7 @@ public class LdapPublisher extends BasePublisher {
         String oldDn = oldEntry.getDN();
         
         if (extra) {
+        	log.debug("Adding extra attributes to modificationSet");
         	String cn = CertTools.getPartFromDN(dn, "CN");
         	String oldcn = CertTools.getPartFromDN(oldDn, "CN");
         	if ( (cn != null) && (oldcn == null) ) {

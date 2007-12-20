@@ -21,7 +21,7 @@ public class LdapSearchPublisher extends LdapPublisher {
     private static final InternalResources intres = InternalResources.getInstance();
 	
 	public static final int TYPE_LDAPSEARCHPUBLISHER = 4;
-		
+
 	// Default Values
 	protected static final String SEARCHBASEDN = "searchbasedn";
 	protected static final String SEARCHFILTER = "searchfilter";
@@ -32,6 +32,11 @@ public class LdapSearchPublisher extends LdapPublisher {
 		
 		setSearchBaseDN("");
 		setSearchFilter("");
+		
+		// The search publisher should not modify attributes in LDAP, we suggest that this
+		//is done by the application that actually puts the entries there.
+		//LdapSearchPublisher will only store the certificate.
+		ADD_MODIFICATION_ATTRIBUTES = false;
 	}
 	
 	// Public Methods
