@@ -1,4 +1,17 @@
 
+Remember this, shortlist
+========================
+For all non-trivial commits to EJBCA (mostly doc changes count as trivial):
+- A Jira issue must exist for what you are doing
+- Commits should have "ECA-xxx", where xxx is the jira issue number in the cvs comment.
+  This allows Jira to track cvs commits for the issue.
+- Only one issue per commit. Work on one feature at a time.
+- JUnit tests must be there for all new features.
+  Add also for bugfixes if possible.
+- Avoid code duplication, parameterize and re-factor code instead.
+
+- Think quality!
+
 Using the Issue Tracker
 =======================
 All checkins to CVS must be followed by an issue in the issue tracker at
@@ -236,14 +249,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.10 2007-11-21 14:01:49 anatom Exp $
+@version $Id: DEVELOP,v 1.11 2007-12-20 14:22:44 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.10 2007-11-21 14:01:49 anatom Exp $
+ * @version $Id: DEVELOP,v 1.11 2007-12-20 14:22:44 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
