@@ -171,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.35 2007-12-21 09:03:10 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.36 2007-12-21 10:40:09 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1220,15 +1220,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
         debug(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
+        int crlnumber = 0;
         try {
-            int crlnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
+            crlnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
             CRLInfo crlinfo = null;
             try {
                 CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, crlnumber);
                 crlinfo = new CRLInfo(data.getIssuerDN(), crlnumber, data.getThisUpdate(), data.getNextUpdate());
             } catch (FinderException e) {
-            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
-                log.error(msg, e);
+            	if (deltaCRL && (crlnumber == 0)) {
+            		log.debug("No delta CRL exists for CA with dn '"+issuerdn+"'");
+            	} else {
+                	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
+                    log.error(msg, e);            		
+            	}
                 crlinfo = null;
             }
             debug("<getLastCRLInfo()");
