@@ -60,7 +60,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.11 2007-10-31 12:51:17 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.12 2007-12-21 13:36:39 primelars Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -485,7 +485,12 @@ public class KeyTools {
     	if ( (slot != null) && (slot.length() > 0) ) {
         	pw.println("slot = "+slot);    		
     	}
-    	pw.flush();
+        pw.println("attributes(generate,*,*) = {");
+        pw.println("  CKA_UNWRAP = true");
+        pw.println("  CKA_DECRYPT = true");
+        pw.println("  CKA_SIGN = true");
+        pw.println("}");
+        pw.flush();
     	pw.close();
     	if (log.isDebugEnabled()) {
     		log.debug(baos.toString());
