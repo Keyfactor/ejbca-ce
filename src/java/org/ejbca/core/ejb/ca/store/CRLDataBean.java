@@ -39,7 +39,7 @@ import org.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.5 2007-09-19 12:42:21 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.6 2007-12-21 09:03:10 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -91,6 +91,17 @@ public abstract class CRLDataBean extends BaseEntityBean {
      */
     public abstract void setCrlNumber(int crlNumber);
 
+    /** -1 for a normal CRL and 1 for a deltaCRL
+     * @ejb.persistence column-name="deltaCRLIndicator"
+     * @ejb.interface-method
+     */
+    public abstract int getDeltaCRLIndicator();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setDeltaCRLIndicator(int deltaCRLIndicator);
+    
     /**
      * @ejb.persistence column-name="issuerDN"
      * @ejb.interface-method
@@ -250,19 +261,23 @@ public abstract class CRLDataBean extends BaseEntityBean {
      *
      * @ejb.create-method
      */
-    public CRLDataPK ejbCreate(byte[] incrl, int number, String issuerDN, Date thisUpdate, Date nextUpdate, String cafingerprint) throws CreateException {
+    public CRLDataPK ejbCreate(byte[] incrl, int number, String issuerDN, Date thisUpdate, Date nextUpdate, String cafingerprint, int deltaCRLIndicator) throws CreateException {
     	String b64Crl = new String(Base64.encode(incrl));
     	setBase64Crl(b64Crl);
-    	setFingerprint(CertTools.getFingerprintAsString(incrl));
+    	String fp = CertTools.getFingerprintAsString(incrl);
+    	setFingerprint(fp);
 
     	// Make sure names are always looking the same
     	setIssuerDN(CertTools.stringToBCDNString(issuerDN));
-    	log.debug("Creating crldata, issuer=" + getIssuerDN());
+    	if (log.isDebugEnabled()) {
+    		log.debug("Creating crldata, fp="+fp+", issuer=" + getIssuerDN()+", crlNumber="+number+", deltaCRLIndicator="+deltaCRLIndicator);
+    	}
 
     	setCaFingerprint(cafingerprint);
     	setCrlNumber(number);
     	setThisUpdate(thisUpdate);
     	setNextUpdate(nextUpdate);
+    	setDeltaCRLIndicator(deltaCRLIndicator);
 
     	CRLDataPK pk = new CRLDataPK(getFingerprint());
 
@@ -275,7 +290,7 @@ public abstract class CRLDataBean extends BaseEntityBean {
      * @param incrl DOCUMENT ME!
      * @param number DOCUMENT ME!
      */
-    public void ejbPostCreate(byte[] incrl, int number, String issuerDN, Date thisUpdate, Date nextUpdate, String cafingerprint) {
+    public void ejbPostCreate(byte[] incrl, int number, String issuerDN, Date thisUpdate, Date nextUpdate, String cafingerprint, int deltaCRLIndicator) {
         // Do nothing. Required.
     }
 }

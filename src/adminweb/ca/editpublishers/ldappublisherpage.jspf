@@ -160,7 +160,7 @@
     </tr>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
-        <div align="right"> 
+        <div align="right">         
           <%= ejbcawebbean.getText("REMOVEREVOKEDCERTIFICATES") %>
         </div>
       </td>
@@ -251,9 +251,20 @@
                value='<%= ldappublisher.getCRLAttribute()%>'>
       </td>
     </tr>
-   <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
-        <div align="right"> 
+        <div align="right">
+          <%= ejbcawebbean.getText("DELTACRLATTRIBUTE") %>:
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPDELTACRLATTRIBUTE%>" size="30" maxlength="255" 
+               value='<%= ldappublisher.getDeltaCRLAttribute()%>'>
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right">          
       <%= ejbcawebbean.getText("ARLATTRIBUTE") %>
         </div>
       </td>

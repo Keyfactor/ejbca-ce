@@ -61,7 +61,7 @@ import org.w3._2002._03.xkms_.ValidityIntervalType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.4 2007-01-07 19:44:14 herrvendil Exp $
+ * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.5 2007-12-21 09:02:50 anatom Exp $
  */
 
 public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseGenerator{
@@ -301,7 +301,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CRL)){
    			byte[] crl = null;
    			try {
-   				crl = getCertStoreSession().getLastCRL(pubAdmin, CertTools.getIssuerDN(cert));
+   				crl = getCertStoreSession().getLastCRL(pubAdmin, CertTools.getIssuerDN(cert), false);
    			} catch (Exception e) {
    				log.error(intres.getLocalizedMessage("xkms.errorfetchinglastcrl"),e);
    				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;

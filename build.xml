@@ -553,12 +553,14 @@
         <!-- <input message="Type of system:" validargs="unix,windows" addproperty="ejbca.OS" />
         <input message="Hostname for adminweb (default 127.0.0.1):" addproperty="ejbca.URL" defaultvalue="127.0.0.1" /> -->
         <input message="Type of database:" validargs="mysql,oracle,mssql2000,postgres,sapdb,sybase,hsqldb" addproperty="ejbca.DB" /> 
+        <input message="Are you upgrading all the way from EJBCA 3.3.x?:" validargs="yes,no" addproperty="ejbca.upgradefrom33" /> 
         <input message="Are you upgrading all the way from EJBCA 3.1.x?:" validargs="yes,no" addproperty="ejbca.upgradefrom31" /> 
         <!-- validargs="hsql,oracle,mssql2000,mysql,postgres,sapdb,sybase" -->
         <!-- <input message="Data source (default java:/EjbcaDS):" addproperty="ejbca.DS" defaultvalue="java:/EjbcaDS" /> -->
         <java classname="org.ejbca.ui.cli.Upgrade" fork="true">
             <!-- <sysproperty key="ejbcaDS" value="${ejbca.DS}" /> -->
             <sysproperty key="ejbcaDB" value="${ejbca.DB}" />
+            <sysproperty key="ejbcaUpgradeFrom33" value="${ejbca.upgradefrom33}" />
             <sysproperty key="ejbcaUpgradeFrom31" value="${ejbca.upgradefrom31}" />
             <classpath>
                 <pathelement location="./bin" />

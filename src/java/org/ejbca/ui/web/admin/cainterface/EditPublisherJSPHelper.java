@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.8 2007-10-25 09:15:34 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.9 2007-12-21 09:02:34 anatom Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 
@@ -98,6 +98,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String TEXTFIELD_LDAPUSERCERTATTRIBUTE = "textfieldldapusercertattribute";
     public static final String TEXTFIELD_LDAPCACERTATTRIBUTE   = "textfieldldapcacertattribute";
     public static final String TEXTFIELD_LDAPCRLATTRIBUTE      = "textfieldldapcrlattribute";
+    public static final String TEXTFIELD_LDAPDELTACRLATTRIBUTE = "textfieldldapdeltacrlattribute";
     public static final String TEXTFIELD_LDAPARLATTRIBUTE      = "textfieldldaparlattribute";
     public static final String TEXTFIELD_LDAPSEARCHBASEDN      = "textfieldldapsearchbasedn";
     public static final String TEXTFIELD_LDAPSEARCHFILTER      = "textfieldldapsearchfilter";
@@ -315,6 +316,11 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 if(value != null){
                                     value = value.trim();
                                     ldappublisher.setCRLAttribute(value);
+                                }
+                                value = request.getParameter(TEXTFIELD_LDAPDELTACRLATTRIBUTE);
+                                if(value != null){
+                                	value = value.trim();
+                                	ldappublisher.setDeltaCRLAttribute(value);
                                 }
                                 value = request.getParameter(TEXTFIELD_LDAPARLATTRIBUTE);
                                 if(value != null){

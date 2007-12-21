@@ -558,6 +558,7 @@ public class ProtocolOcspHttpTest extends TestCase {
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
+                    0, // DeltaCRLPeriod
                     new ArrayList(),
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical

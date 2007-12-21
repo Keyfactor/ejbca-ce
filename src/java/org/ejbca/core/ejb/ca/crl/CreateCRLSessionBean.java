@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.crl;
 
 import java.security.cert.X509CRL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -51,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.17 2007-12-04 14:22:19 jeklund Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.18 2007-12-21 09:03:10 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -144,6 +145,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession;
 
+    private static final long DEFAULTCRLOVERLAPTIME = 0;
 
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -179,8 +181,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                 throw new CADoesntExistsException("CA not found: "+issuerdn);
             }
             int crlperiod = cainfo.getCRLPeriod();
-            // Find all revoked certificates
-            Collection revcerts = store.listRevokedCertInfo(admin, issuerdn);
+            // Find all revoked certificates for a complete CRL
+            Collection revcerts = store.listRevokedCertInfo(admin, issuerdn, -1);
             debug("Found "+revcerts.size()+" revoked certificates.");
 
             // Go through them and create a CRL, at the same time archive expired certificates
@@ -209,7 +211,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                 }
             }
             ISignSessionLocal sign = signHome.create();
-            byte[] crlBytes = sign.createCRL(admin, caid, revcerts);
+            // a full CRL
+            byte[] crlBytes = sign.createCRL(admin, caid, revcerts, -1);
             // This is logged in the database by SignSession 
         	String msg = intres.getLocalizedMessage("createcrl.createdcrl", cainfo.getName(), cainfo.getSubjectDN());            	
             log.info(msg);
@@ -231,9 +234,60 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
         debug("<run()");
-    }
+    } // run
 
+    /**
+     * Generates a new Delta CRL by looking in the database for revoked certificates since the last complete CRL issued and generating a
+     * CRL with the difference.
+     *
+     * @param admin administrator performing the task
+     * @param issuerdn of the ca
+     *
+     * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
+     * @ejb.interface-method
+     */
+    public byte[] runDeltaCRL(Admin admin, String issuerdn)  {
+    	int caid = issuerdn.hashCode();
+    	try {
+    		ICAAdminSessionLocal caadmin = caadminHome.create();
+    		ICertificateStoreSessionLocal store = storeHome.create();
 
+    		CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+    		if (cainfo == null) {
+    			throw new CADoesntExistsException("CA not found: "+issuerdn);
+    		}
+    		int crlperiod = cainfo.getDeltaCRLPeriod();
+    		CRLInfo basecrlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(), false);
+    		// Find all revoked certificates
+    		Collection revcertinfos = store.listRevokedCertInfo(admin, issuerdn, basecrlinfo.getCreateDate().getTime());
+    		debug("Found "+revcertinfos.size()+" revoked certificates.");
+
+    		// Go through them and create a CRL, at the same time archive expired certificates
+    		Date now = new Date();
+    		// crlperiod is hours = crlperiod*60*60*1000 milliseconds
+    		now.setTime(now.getTime() - (crlperiod * 60 * 60 * 1000));
+    		ArrayList certs = new ArrayList();
+    		Iterator iter = revcertinfos.iterator();
+    		while (iter.hasNext()) {
+    			RevokedCertInfo ci = (RevokedCertInfo)iter.next();
+    			if (ci.getRevocationDate() == null)
+    				ci.setRevocationDate(new Date());
+    			certs.add(ci);
+    		}
+    		ISignSessionLocal sign = signHome.create();
+    		// create a delta CRL
+    		byte[] crlBytes = sign.createCRL(admin, caid, certs, basecrlinfo.getLastCRLNumber());
+    		X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
+    		debug("Created delta CRL with expire date: "+crl.getNextUpdate());
+
+    		return crlBytes;
+    	} catch (Exception e) {
+    		logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,e.getMessage());
+    		throw new EJBException(e);
+    	}
+    } // runDeltaCRL
+        
+        
     /**
      * Method that checks if there are any CRLs needed to be updated and then creates their
      * CRLs. No overlap is used. This method can be called by a scheduler or a service.
@@ -245,7 +299,20 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method 
      */
     public int createCRLs(Admin admin)  {
-        return createCRLs(admin, 0);
+        return createCRLs(admin, DEFAULTCRLOVERLAPTIME);
+    }
+    /**
+     * Method that checks if there are any delta CRLs needed to be updated and then creates their
+     * delta CRLs. No overlap is used. This method can be called by a scheduler or a service.
+     *
+     * @param admin administrator performing the task
+     *
+     * @return the number of delta crls created.
+     * @throws EJBException if communication or system error happens
+     * @ejb.interface-method 
+     */
+    public int createDeltaCRLs(Admin admin)  {
+    	return this.createDeltaCRLs(admin, DEFAULTCRLOVERLAPTIME);
     }
     
     /**
@@ -287,7 +354,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			        	   if (log.isDebugEnabled()) {
     			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' needs CRL generation.");
     			        	   }
-    			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
+    			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(),false);
     			               if (log.isDebugEnabled()) {
         			               if (crlinfo == null) {
         			            	   log.debug("Crlinfo was null");
@@ -363,6 +430,80 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 
     	return createdcrls;
     }
+
+    
+    /**
+     * Method that checks if there are any delta CRLs needed to be updated and then creates them.
+     * This method can be called by a scheduler or a service.
+     *
+     * @param admin administrator performing the task
+     * @param crloverlaptime A new delta CRL is created if the current one expires within the crloverlaptime given in milliseconds
+     *
+     * @return the number of delta crls created.
+     * @throws EJBException 
+     * @ejb.interface-method 
+     */
+    public int createDeltaCRLs(Admin admin, long crloverlaptime)  {
+    	int createddeltacrls = 0;
+    	try {
+    		Date currenttime = new Date();
+    		ICAAdminSessionLocal caadmin = caadminHome.create();
+    		ICertificateStoreSessionLocal store = storeHome.create();
+
+    		Iterator iter = caadmin.getAvailableCAs(admin).iterator();
+    		while (iter.hasNext()) {
+    			int caid = ((Integer) iter.next()).intValue();
+    			log.debug("createDeltaCRLs for caid: "+caid);
+    			try{
+    				CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+    				if (cainfo instanceof X509CAInfo) {
+    					if(cainfo.getDeltaCRLPeriod() > 0) {
+    						if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
+    							String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
+    							log.error(msg);
+    							logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
+    						} else {
+    							if (log.isDebugEnabled()) {
+    								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
+    							}
+    							CRLInfo deltacrlinfo = store.getLastCRLInfo(admin, cainfo.getSubjectDN(), true);
+    							if (log.isDebugEnabled()) {
+    								if (deltacrlinfo == null) {
+    									log.debug("DeltaCrlinfo was null");
+    								} else {
+    									log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+deltacrlinfo.getLastCRLNumber()+", expireDate="+deltacrlinfo.getExpireDate());
+    								}    			            	   
+    							}
+    							if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
+    								this.runDeltaCRL(admin, cainfo.getSubjectDN());
+    								createddeltacrls++;
+    							}
+    						}
+    					}
+    				}
+    			}catch(Exception e) {
+                	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
+                	error(msg, e);
+                	logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
+                	if (e instanceof EJBException) {
+                		throw (EJBException)e;
+                	}
+                	throw new EJBException(e);
+    			}
+    		}
+    	} catch (Exception e) {
+        	String msg = intres.getLocalizedMessage("createcrl.erroravailcas");            	    			    	   
+        	error(msg, e);
+    		logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
+            if (e instanceof EJBException) {
+                throw (EJBException)e;
+            }
+    		throw new EJBException(e);
+    	}
+
+    	return createddeltacrls;
+    }
+
 
 }
 

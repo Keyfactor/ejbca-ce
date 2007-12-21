@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 
 import javax.naming.Context;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.util.CertTools;
@@ -25,7 +26,7 @@ import org.ejbca.util.CertTools;
 /**
  * Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.2 2007-11-21 10:30:38 anatom Exp $
+ * @version $Id: CaGetCrlCommand.java,v 1.3 2007-12-21 09:02:33 anatom Exp $
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
     /**
@@ -45,14 +46,19 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 			if (args.length < 3) {
-				throw new IllegalAdminCommandException("Retrieves CRL in DER format.\nUsage: CA getcrl <caname> <outfile> (-pem)");
+				throw new IllegalAdminCommandException("Retrieves CRL in DER format.\nUsage: CA getcrl [-delta] <caname> <outfile> (-pem)");
 			}
 			try {
-				String outfile = args[2];
                 String caname = args[1];
+                int deltaSelector = 0;
+                if (StringUtils.equals(args[1], "-delta")) {
+                	deltaSelector = 1;
+                }
+				String outfile = args[2 + deltaSelector];
+
                 boolean pem = false;
                 if (args.length > 3) {
-                    if (("-pem").equals(args[3])) {
+                    if (("-pem").equals(args[3 + deltaSelector])) {
                         pem = true;
                     }
                 }
@@ -61,7 +67,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 				Context context = getInitialContext();
 				ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"),ICertificateStoreSessionHome.class);
 				ICertificateStoreSessionRemote store = storehome.create();
-				byte[] crl = store.getLastCRL(administrator, issuerdn);
+				byte[] crl = store.getLastCRL(administrator, issuerdn, (deltaSelector > 0));
 				FileOutputStream fos = new FileOutputStream(outfile);
                 if (pem) {		
                     fos.write(CertTools.getPEMFromCrl(crl));
@@ -69,7 +75,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
                 	fos.write(crl);
                 }
 				fos.close();
-				getOutputStream().println("Wrote latest CRL to " + outfile + ".");
+				getOutputStream().println("Wrote latest " + (deltaSelector == 0 ? "" : "delta ") + "CRL to " + outfile + ".");
 			} catch (Exception e) {
 				throw new ErrorAdminCommandException(e);
 			}

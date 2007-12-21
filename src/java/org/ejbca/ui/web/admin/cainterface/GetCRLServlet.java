@@ -43,7 +43,7 @@ import org.ejbca.util.CertTools;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.4 2006-12-13 10:35:30 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.5 2007-12-21 09:02:34 anatom Exp $
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"
@@ -61,6 +61,7 @@ public class GetCRLServlet extends HttpServlet {
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";
+    private static final String COMMAND_DELTACRL = "deltacrl";
     private static final String ISSUER_PROPERTY = "issuer";
 
     private ICertificateStoreSessionLocalHome storehome = null;
@@ -127,7 +128,7 @@ public class GetCRLServlet extends HttpServlet {
             try {
                 Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
                 ICertificateStoreSessionLocal store = getStoreHome().create();
-                byte[] crl = store.getLastCRL(admin, issuerdn);
+                byte[] crl = store.getLastCRL(admin, issuerdn, false);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
@@ -146,6 +147,29 @@ public class GetCRLServlet extends HttpServlet {
                 return;
             }
         }
+        if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerdn != null) {
+        	try {
+        		Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+        		ICertificateStoreSessionLocal store = getStoreHome().create();
+        		byte[] crl = store.getLastCRL(admin, issuerdn, true);
+        		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+        		String dn = CertTools.getIssuerDN(x509crl);
+        		String filename = "delta_" + CertTools.getPartFromDN(dn,"CN")+".crl";
+        		// We must remove cache headers for IE
+        		ServletUtils.removeCacheHeaders(res);
+        		res.setHeader("Content-disposition", "attachment; filename=" +  filename);
+        		res.setContentType("application/pkix-crl");
+        		res.setContentLength(crl.length);
+        		res.getOutputStream().write(crl);
+        		log.info("Sent latest delta CRL to client at " + remoteAddr);
+        	} catch (Exception e) {
+        		log.error("Error sending latest delta CRL to " + remoteAddr, e);
+        		res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest delta CRL.");
+        		return;
+        	}
+        }
+
+
 
     } // doGet
 

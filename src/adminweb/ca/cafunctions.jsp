@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate,org.ejbca.core.model.ra.raadmin.GlobalConfiguration,
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ca.store.CRLInfo, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.SecConst,
-    org.ejbca.core.model.ca.catoken.ICAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo"%>
+    org.ejbca.core.model.ca.catoken.ICAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.authorization.AvailableAccessRules"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -14,6 +14,7 @@
   final static String HIDDEN_CASUBJECTDN    = "hiddensubjectdn";
 
   final static String BUTTON_CREATECRL      = "buttoncreatecrl";
+  final static String BUTTON_CREATEDELTACRL = "buttoncreatedeltacrl";
 %>
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/basic_functions"); 
@@ -45,10 +46,17 @@
        if( request.getParameter(BUTTON_CREATECRL+i) != null ){      
          // Check if user id authorized to create new crl.
          ejbcawebbean.isAuthorized(CREATECRL_LINK);
-         ejbcawebbean.isAuthorized(org.ejbca.core.model.authorization.AvailableAccessRules.CAPREFIX + casubjectdn.hashCode());
+         ejbcawebbean.isAuthorized(AvailableAccessRules.CAPREFIX + casubjectdn.hashCode());
          // Create new crl
          cabean.createCRL(casubjectdn);
       }         
+      if( request.getParameter(BUTTON_CREATEDELTACRL+i) != null ){      
+           // Check if user id authorized to create new delta crl.
+           ejbcawebbean.isAuthorized(CREATECRL_LINK);
+           ejbcawebbean.isAuthorized(AvailableAccessRules.CAPREFIX + casubjectdn.hashCode());
+           // Create new delta crl
+           cabean.createDeltaCRL(casubjectdn);
+      }
     }
   }
 
@@ -167,8 +175,10 @@ function getPasswordAndSubmit(formname) {
              row++;
           }%>
         </table> 
-        <br> 
-        <% CRLInfo crlinfo = cabean.getLastCRLInfo(subjectdn);
+        <br>
+        
+        <!-- Full CRLs --> 
+        <% CRLInfo crlinfo = cabean.getLastCRLInfo(subjectdn, false);
            if(crlinfo == null){ 
              out.write(ejbcawebbean.getText("NOCRLHAVEBEENGENERATED"));
            }else{
@@ -183,8 +193,29 @@ function getPasswordAndSubmit(formname) {
            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + crlinfo.getLastCRLNumber()); %>  
 <i><a href="<%=DOWNLOADCRL_LINK%>?cmd=crl&issuer=<%= subjectdn %>" ><%=ejbcawebbean.getText("GETCRL") %></a></i>
 <br>
+<%        } %>
+
+<% // Delta CRLs 
+ 	       CRLInfo deltacrlinfo = cabean.getLastCRLInfo(subjectdn, true);
+	       if(deltacrlinfo == null){ 
+	         out.write(ejbcawebbean.getText("NODELTACRLHAVEBEENGENERATED"));
+	         %> <br> <%
+	       }else{
+	       	 boolean expired = deltacrlinfo.getExpireDate().compareTo(new Date()) < 0; %>
+	<%=ejbcawebbean.getText("LATESTDELTACRL") + ": "  
+	  + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.printDateTime(deltacrlinfo.getCreateDate()) + ","%>
+	        <% if(expired){
+	              out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.printDateTime(deltacrlinfo.getExpireDate()) + "</font>");
+	           }else{
+	              out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.printDateTime(deltacrlinfo.getExpireDate()));
+	           } 
+           out.write(", " + ejbcawebbean.getText("NUMBER") + " " + deltacrlinfo.getLastCRLNumber()); %>  
+<i><a href="<%=DOWNLOADCRL_LINK%>?cmd=deltacrl&issuer=<%= subjectdn %>" ><%=ejbcawebbean.getText("GETDELTACRL") %></a></i>
+<br>
+<br>
+<%        } %>
+
 <% // Display createcrl if admin is authorized
-      }
       if(createcrlrights){ %>
 <br> 
 <form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
@@ -193,10 +224,20 @@ function getPasswordAndSubmit(formname) {
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
        <% if ( (cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_ACTIVE) ) { %>
 <input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
-</form>
        <% }else{
            out.write(ejbcawebbean.getText("CAISNTACTIVE"));
-          } %> 
+          } 
+       if(cainfo.getCAInfo().getDeltaCRLPeriod() > 0) { %>
+<br>
+<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=subjectdn%>'> 
+<%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
+       <% if ( (cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_ACTIVE) ) { %>
+<input type='submit' name='<%=BUTTON_CREATEDELTACRL + number %>' value='<%=ejbcawebbean.getText("CREATEDELTACRL") %>'>
+       <% } else {
+            out.write(ejbcawebbean.getText("CAISNTACTIVE"));
+          }
+       } %>
+</form>
 <br>          
 <%    } %>
 <br>

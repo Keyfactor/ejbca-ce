@@ -68,7 +68,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.9 2007-04-02 08:26:35 jeklund Exp $
+ * @version $Id: CertDistServlet.java,v 1.10 2007-12-21 09:02:34 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -194,7 +194,7 @@ public class CertDistServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
                 ICertificateStoreSessionLocal store = getStoreSession();
-                byte[] crl = store.getLastCRL(administrator, issuerdn);
+                byte[] crl = store.getLastCRL(administrator, issuerdn, false);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
                 // We must remove cache headers for IE

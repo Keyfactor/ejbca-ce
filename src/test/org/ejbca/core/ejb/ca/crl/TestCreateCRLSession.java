@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package se.anatom.ejbca.ca.crl;
+package org.ejbca.core.ejb.ca.crl;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
@@ -53,7 +53,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.9 2007-02-23 15:59:02 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.1 2007-12-21 09:02:15 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -149,17 +149,17 @@ public class TestCreateCRLSession extends TestCase {
     public void test02LastCRL() throws Exception {
         log.debug(">test02LastCRL()");
         // Get number of last CRL
-        int number = storeremote.getLastCRLNumber(admin, cadn);
+        int number = storeremote.getLastCRLNumber(admin, cadn, false);
         log.debug("Last CRLNumber = " + number);
-        byte[] crl = storeremote.getLastCRL(admin, cadn);
+        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         // Create a new CRL again to see that the number increases
         remote.run(admin, cadn);
-        int number1 = storeremote.getLastCRLNumber(admin, cadn);
+        int number1 = storeremote.getLastCRLNumber(admin, cadn, false);
         assertEquals(number+1, number1);
-        byte[] crl1 = storeremote.getLastCRL(admin, cadn);
+        byte[] crl1 = storeremote.getLastCRL(admin, cadn, false);
         X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
         BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
         assertEquals(num.intValue()+1, num1.intValue());
@@ -175,9 +175,9 @@ public class TestCreateCRLSession extends TestCase {
         log.debug(">test03CheckNumberofRevokedCerts()");
 
         // Get number of last CRL
-        Collection revfp = storeremote.listRevokedCertificates(admin, cadn);
+        Collection revfp = storeremote.listRevokedCertInfo(admin, cadn, -1);
         log.debug("Number of revoked certificates=" + revfp.size());
-        byte[] crl = storeremote.getLastCRL(admin, cadn);
+        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -224,7 +224,7 @@ public class TestCreateCRLSession extends TestCase {
         // Create a new CRL again...
         remote.run(admin, cadn);
         // Check that our newloy signed certificate is not present in a new CRL
-        byte[] crl = storeremote.getLastCRL(admin, cadn);
+        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set revset = x509crl.getRevokedCertificates();
@@ -240,7 +240,7 @@ public class TestCreateCRLSession extends TestCase {
         // Create a new CRL again...
         remote.run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
-        crl = storeremote.getLastCRL(admin, cadn);
+        crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -261,7 +261,7 @@ public class TestCreateCRLSession extends TestCase {
         // Create a new CRL again...
         remote.run(admin, cadn);
         // Check that our newly signed certificate IS NOT present in the new CRL.
-        crl = storeremote.getLastCRL(admin, cadn);
+        crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -281,7 +281,7 @@ public class TestCreateCRLSession extends TestCase {
         // Create a new CRL again...
         remote.run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
-        crl = storeremote.getLastCRL(admin, cadn);
+        crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -300,8 +300,8 @@ public class TestCreateCRLSession extends TestCase {
         // Create a new CRL again...
         remote.run(admin, cadn);
         // Check that our newly signed certificate is present in the new CRL, because the revocation reason
-        // was not CERTIFICATE_HOLD, we can olny unrevoke certificates that are on hold.
-        crl = storeremote.getLastCRL(admin, cadn);
+        // was not CERTIFICATE_HOLD, we can only un-revoke certificates that are on hold.
+        crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();

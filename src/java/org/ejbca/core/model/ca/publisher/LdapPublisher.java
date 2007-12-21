@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -49,7 +50,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.31 2007-12-20 08:53:50 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.32 2007-12-21 09:02:52 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -75,6 +76,7 @@ public class LdapPublisher extends BasePublisher {
 	public static final String DEFAULT_CACERTATTRIBUTE     = "cACertificate;binary";
 	public static final String DEFAULT_USERCERTATTRIBUTE   = "userCertificate;binary";
 	public static final String DEFAULT_CRLATTRIBUTE        = "certificateRevocationList;binary";
+	public static final String DEFAULT_DELTACRLATTRIBUTE   = "deltaRevocationList;binary";
 	public static final String DEFAULT_ARLATTRIBUTE        = "authorityRevocationList;binary";
 	public static final String DEFAULT_PORT                = "389";
 	public static final String DEFAULT_SSLPORT             = "636";
@@ -95,6 +97,7 @@ public class LdapPublisher extends BasePublisher {
     protected static final String USERCERTATTRIBUTE        = "usercertattribute";
     protected static final String CACERTATTRIBUTE          = "cacertattribute";
     protected static final String CRLATTRIBUTE             = "crlattribute";
+    protected static final String DELTACRLATTRIBUTE        = "deltacrlattribute";
     protected static final String ARLATTRIBUTE             = "arlattribute";
     protected static final String USEFIELDINLDAPDN         = "usefieldsinldapdn";
     protected static final String ADDMULTIPLECERTIFICATES  = "addmultiplecertificates";
@@ -119,6 +122,7 @@ public class LdapPublisher extends BasePublisher {
         setUserCertAttribute(DEFAULT_USERCERTATTRIBUTE);
         setCACertAttribute(DEFAULT_CACERTATTRIBUTE);
         setCRLAttribute(DEFAULT_CRLATTRIBUTE);
+        setDeltaCRLAttribute(DEFAULT_DELTACRLATTRIBUTE);
         setARLAttribute(DEFAULT_ARLATTRIBUTE);     
         setUseFieldInLdapDN(new ArrayList());
         // By default use only one certificate for each user
@@ -422,15 +426,26 @@ public class LdapPublisher extends BasePublisher {
         }
 
         try {
-            LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), crl.getEncoded());
-            LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), crl.getEncoded());
-            if (oldEntry != null) {
-                modSet.add(new LDAPModification(LDAPModification.REPLACE, crlAttr));
-                modSet.add(new LDAPModification(LDAPModification.REPLACE, arlAttr));
-            } else {
-                attributeSet.add(crlAttr);
-                attributeSet.add(arlAttr);
-            }
+        	if(crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null) {
+        		// It's a delta CRL.
+        		LDAPAttribute attr = new LDAPAttribute(getDeltaCRLAttribute(), crl.getEncoded());
+        		if (oldEntry != null) {
+        			modSet.add(LDAPModification.REPLACE, attr);
+        		} else {
+        			attributeSet.add(attr);
+        		}
+        	} else {
+        		// It's a CRL
+        		LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), crl.getEncoded());
+        		LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), crl.getEncoded());
+        		if (oldEntry != null) {
+        			modSet.add(new LDAPModification(LDAPModification.REPLACE, crlAttr));
+        			modSet.add(new LDAPModification(LDAPModification.REPLACE, arlAttr));
+        		} else {
+        			attributeSet.add(crlAttr);
+        			attributeSet.add(arlAttr);
+        		}
+        	}
         } catch (CRLException e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "CRL");
             log.error(msg, e);
@@ -855,6 +870,24 @@ public class LdapPublisher extends BasePublisher {
      */        
     public void setCRLAttribute(String crlattribute){
     	data.put(CRLATTRIBUTE, crlattribute);	
+    }
+
+    /**  Returns the delta CRL attribute in the ldap instance
+     */
+    public String getDeltaCRLAttribute(){
+    	if(data.get(DELTACRLATTRIBUTE) == null) {
+    		this.setDeltaCRLAttribute(DEFAULT_DELTACRLATTRIBUTE);
+    		return DEFAULT_DELTACRLATTRIBUTE;
+    	} else {
+    		return (String) data.get(DELTACRLATTRIBUTE);
+    	}
+    }
+
+    /**
+     *  Sets the delta CRL attribute in the ldap instance
+     */
+    public void setDeltaCRLAttribute(String deltacrlattribute){
+    	data.put(DELTACRLATTRIBUTE, deltacrlattribute);   
     }
 
     /**
@@ -1289,7 +1322,11 @@ public class LdapPublisher extends BasePublisher {
             if(data.get(CREATEINTERMEDIATENODES) == null) {
             	setCreateIntermediateNodes(false); // v6
             }
-            
+
+            if(data.get(DELTACRLATTRIBUTE) == null) {
+            	setDeltaCRLAttribute(DEFAULT_DELTACRLATTRIBUTE); // v7
+            }
+
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.debug("<upgrade");

@@ -71,7 +71,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.6 2007-10-24 10:47:49 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.7 2007-12-21 09:02:34 anatom Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -237,16 +237,26 @@ public class CAInterfaceBean implements java.io.Serializable {
       ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
       home.create().run(administrator, issuerdn);
     }
+    public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
+    	InitialContext jndicontext = new InitialContext();
+    	ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
+    	home.create().runDeltaCRL(administrator, issuerdn);
+    }
 
     public int getLastCRLNumber(String  issuerdn) {
-      return certificatesession.getLastCRLNumber(administrator, issuerdn);      
+      return certificatesession.getLastCRLNumber(administrator, issuerdn, false);      
     }
     
-    public CRLInfo getLastCRLInfo(String issuerdn) {
-      return certificatesession.getLastCRLInfo(administrator,  issuerdn);          
+    /**
+     * @param issuerdn
+     * @param deltaCRL false for complete CRL info, true for delta CRLInfo
+     * @return
+     */
+    public CRLInfo getLastCRLInfo(String issuerdn, boolean deltaCRL) {
+      return certificatesession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
     }
 
-    /* Returns certificateprofiles as a CertificateProfiles object */
+    /* Returns certificate profiles as a CertificateProfiles object */
     public CertificateProfileDataHandler getCertificateProfileDataHandler(){
       return certificateprofiles;
     }

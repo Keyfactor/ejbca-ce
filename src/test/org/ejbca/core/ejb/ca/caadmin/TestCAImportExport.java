@@ -183,6 +183,7 @@ public class TestCAImportExport extends TestCase  {
                 24, // CRLPeriod
                 0, // CRLIssuePeriod
                 10, // CRLOverlapTime
+                0, //DeltaCRLOverlapTime                
                 new ArrayList(),
                 true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical

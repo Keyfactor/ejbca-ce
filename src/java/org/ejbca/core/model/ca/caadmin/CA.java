@@ -72,7 +72,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.22 2007-10-10 13:01:33 anatom Exp $
+ * @version $Id: CA.java,v 1.23 2007-12-21 09:02:51 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -98,6 +98,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	protected static final String REVOKATIONDATE                 = "revokationdate";
     protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";
     protected static final String CRLPERIOD                      = "crlperiod";
+    protected static final String DELTACRLPERIOD                 = "deltacrlperiod";
     protected static final String CRLISSUEINTERVAL               = "crlIssueInterval";
     protected static final String CRLOVERLAPTIME                 = "crlOverlapTime";
     protected static final String CRLPUBLISHERS                  = "crlpublishers";
@@ -212,6 +213,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public int  getCRLPeriod(){return ((Integer)data.get(CRLPERIOD)).intValue();}
     public void setCRLPeriod(int crlperiod) {data.put(CRLPERIOD, new Integer(crlperiod));}
     
+    public int  getDeltaCRLPeriod() {
+    	if(data.containsKey(DELTACRLPERIOD)) {
+    		return ((Integer)data.get(DELTACRLPERIOD)).intValue();
+    	} else {
+    		return 0;
+    	}
+    }
+    public void setDeltaCRLPeriod(int deltacrlperiod) {data.put(DELTACRLPERIOD, new Integer(deltacrlperiod));}
+    	
     public int  getCRLIssueInterval(){return ((Integer)data.get(CRLISSUEINTERVAL)).intValue();}
     public void setCRLIssueInterval(int crlIssueInterval) {data.put(CRLISSUEINTERVAL, new Integer(crlIssueInterval));}
     
@@ -409,6 +419,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	data.put(VALIDITY, new Integer(cainfo.getValidity()));                 
     	data.put(DESCRIPTION, cainfo.getDescription());      
     	data.put(CRLPERIOD, new Integer(cainfo.getCRLPeriod()));
+    	data.put(DELTACRLPERIOD, new Integer(cainfo.getDeltaCRLPeriod()));
     	data.put(CRLISSUEINTERVAL, new Integer(cainfo.getCRLIssueInterval()));
     	data.put(CRLOVERLAPTIME, new Integer(cainfo.getCRLOverlapTime()));
     	data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
@@ -462,6 +473,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public abstract CRL generateCRL(Collection certs, int crlnumber) throws Exception;
     
+    public abstract CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber, CertificateProfile certprof) throws Exception;
+
     public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;            
 
     /** Creates a PKCS#10 certificate request, that can be sent to an external Root CA

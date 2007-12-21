@@ -34,7 +34,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.25 2007-11-22 17:13:17 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.26 2007-12-21 09:02:51 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -42,7 +42,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 23.0;
+    public static final float LATEST_VERSION = (float) 24.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -125,6 +125,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEDEFAULTCRLDISTRIBUTIONPOINT = "usedefaultcrldistributionpoint";
     protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
     protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
+    protected static final String USECRLDISTRIBUTIONPOINTONCRL   = "usecrldistributionpointoncrl";
     protected static final String CRLISSUER                      = "crlissuer";
     protected static final String USEFRESHESTCRL                 = "usefreshestcrl";
     protected static final String USECADEFINEDFRESHESTCRL        = "usecadefinedfreshestcrl";
@@ -213,6 +214,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setUseDefaultCRLDistributionPoint(false);
       setCRLDistributionPointCritical(false);
       setCRLDistributionPointURI("");
+      setUseCRLDistributionPointOnCRL(false);
       setUseFreshestCRL(false);
       setUseCADefinedFreshestCRL(false);
       setFreshestCRLURI("");
@@ -373,6 +375,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
     
+    public boolean getUseCRLDistributionPointOnCRL(){
+    	Object obj = data.get(USECRLDISTRIBUTIONPOINTONCRL);
+    	if(obj == null) {
+    		return false;
+    	} else {
+    		return ((Boolean) obj).booleanValue();
+    	}
+    }
+
+    public void setUseCRLDistributionPointOnCRL(boolean usecrldistributionpointoncrl) {
+    	data.put(USECRLDISTRIBUTIONPOINTONCRL, Boolean.valueOf(usecrldistributionpointoncrl));
+    }
+
     public void setUseFreshestCRL(boolean usefreshestcrl) {
         data.put(USEFRESHESTCRL, Boolean.valueOf(usefreshestcrl));
     }
@@ -1025,6 +1040,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     	addCertificatePolicy(newpolicy);                    	
                     }
             	}
+            	
+                if(data.get(USECRLDISTRIBUTIONPOINTONCRL) == null){
+                    setUseCRLDistributionPointOnCRL(false); // v24
+                }
+
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }

@@ -82,6 +82,7 @@ CREATE TABLE CRLData (
     cAFingerprint varchar(250) binary NULL DEFAULT NULL,
     thisUpdate bigint(20) NOT NULL DEFAULT '0',
     nextUpdate bigint(20) NOT NULL DEFAULT '0',
+    deltaCRLIndicator int(11) NOT NULL DEFAULT '-1',
     base64Crl longtext NULL DEFAULT NULL,
     PRIMARY KEY (fingerprint)
 );

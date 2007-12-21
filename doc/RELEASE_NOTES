@@ -1,3 +1,16 @@
+EJBCA 3.6.0
+-----------
+This is a major release with many new interesting features and framework improvements.
+Read the changelog for details.
+Notable changes in no specific order:
+TODO 
+
+For upgrade instructions, please se UPGRADE. 
+There are database upgrades in this release so please pay attention!
+
+Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
+EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgrade instructions.
+
 EJBCA 3.5.2
 -----------
 This is a minor release, fixing some bugs and introducing some minor improvements.

@@ -1,9 +1,9 @@
-$Id: UPGRADE,v 1.42 2007-10-31 12:10:00 anatom Exp $
+$Id: UPGRADE,v 1.43 2007-12-21 09:01:57 anatom Exp $
 
 UPGRADE
 =======
 
-This document describes proceedures needed to upgrade from one 
+This document describes procedures needed to upgrade from one 
 version of EJBCA to a new version.
 Upgrades within a major version, from 3.4.1 to 3.4.2 for example, are 
 usually plug-in upgrades and can be made simply by deploying the new 
@@ -18,6 +18,54 @@ If you use the patch file to upgrade use a command like:
 After this you must do:
 - ant clean
 - ant deploy
+
+From EJBCA 3.5.x to EJBCA 3.6.x
+-------------------------------
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+
+Upgrade from EJBCA 3.5.x to EJBCA 3.6.x requires one small database change.
+
+If you are upgrading a cluster, you should run the upgrade process with only one node running,
+and then simply update the software on the other nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Merge changes from *.properties.sample into your *.properties files.
+
+3. Copy the directory 'p12' from the earlier installation. 
+
+4. Shut down JBoss and do 'ant bootstrap' with the new version.
+
+5. Start up JBoss. You could see some errors during startup due to that the database is not upgraded yet.
+
+6. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the necessary database updates. 
+   If you are upgrading from EJBCA 3.4 or 3.5, answer 'no' to the second and third question.
+   Note: On some application server you may have to upgrade the database manually, see below.
+
+7. Go into the admin-GUI and verify you settings.
+
+8. Restart JBoss again to flush all caches.
+
+
+If you don't want to do step 6 above (doing step 6 is the recommended way though) and instead want to do the upgrade 
+of the database manually, you can simply issue the following sql command:
+MySQL: 
+  alter table CRLData add deltaCRLIndicator int(11) NOT NULL DEFAULT -1;
+PostgreSQL: 
+  alter table CRLData add deltaCRLIndicator INT;
+  update CRLData set deltaCRLIndicator = -1;
+  alter table CRLData alter column deltaCRLIndicator set not null;
+  alter table CRLData alter column deltaCRLIndicator set default -1;
+Oracle: 
+  alter table CRLData add deltaCRLIndicator NUMBER(10) default -1;
+
+You should be able to upgrade from EJBCA 3.1.x directly to 3.6.x, by following the same instructions
+as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
+Also see instructions below for additional issues when upgrading all the way from a much older version.
+
+If an upgrade option for your database is not included, take a look in src/upgrade/35_36 where upgrade 
+sql scripts are located. We will happily include upgrade scripts for other databases as well. 
 
 From EJBCA 3.5.x to EJBCA 3.5.x
 -------------------------------
@@ -120,7 +168,7 @@ Note: If you intend to use the XKMS service or the CMS service (log signing), th
 after upgrading and press the button "Republish CA Certificates" for all CAs. 
 Otherwise you will not be able to revoke the certificates issued to these services, or view the certificates in the GUI.
 
-You should be ablo to upgrade from EJBCA 3.1.x directly to 3.4.x, by following the same instructions
+You should be able to upgrade from EJBCA 3.1.x directly to 3.4.x, by following the same instructions
 as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
 
 From EJBCA 3.3.x to EJBCA 3.3.x

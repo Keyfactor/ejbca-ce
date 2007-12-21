@@ -358,6 +358,12 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRLPERIOD")%>");
       illegalfields++;
     }
+     if(!checkfieldfordecimalnumbers("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINDELTACRLPERIOD") %>"))
+      illegalfields++;
+    if((document.ca.<%= TEXTFIELD_DELTACRLPERIOD %>.value == "")){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("DELTACRLPERIOD")%>");
+      illegalfields++;
+    }
     <%  } 
       }  %> 
      return illegalfields == 0;  
@@ -720,6 +726,21 @@ function checkallfields(){
            <% } %> 
       </td>
     </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("DELTACRLPERIOD") %> (<%= ejbcawebbean.getText("HOURS") %>)<br/>
+        <%= ejbcawebbean.getText("NODELTACRLTIP") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getDeltaCRLPeriod());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
+            <% if(editca) out.write(" value='" + x509cainfo.getDeltaCRLPeriod()+ "'");%>>
+           <% } %> 
+      </td>
+    </tr>       
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 

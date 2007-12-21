@@ -78,6 +78,10 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CRLATTRIBUTE", true)%>");
       illegalfields++;
     }
+    if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPDELTACRLATTRIBUTE%>.value == ""){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("DELTACRLATTRIBUTE", true)%>");
+      illegalfields++;
+    }
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPARLATTRIBUTE%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("ARLATTRIBUTE", true)%>");
       illegalfields++;

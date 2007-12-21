@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.13 2007-11-07 13:25:52 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.14 2007-12-21 09:02:51 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -52,7 +52,8 @@ public class X509CAInfo extends CAInfo{
      */
     public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
-                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List policies, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
+                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List policies, int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
+                    Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder) {
@@ -88,6 +89,7 @@ public class X509CAInfo extends CAInfo{
         this.crlperiod = crlperiod;
         this.crlIssueInterval = crlIssueInterval;
         this.crlOverlapTime = crlOverlapTime;
+        this.deltacrlperiod = deltacrlperiod;
         this.crlpublishers = crlpublishers;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
@@ -112,7 +114,8 @@ public class X509CAInfo extends CAInfo{
      * Constructor that should be used when updating CA data.
      */
     public X509CAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
-                      int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
+                      int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
+                      Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl,
                       boolean finishuser, Collection extendedcaserviceinfos, 
@@ -124,6 +127,7 @@ public class X509CAInfo extends CAInfo{
         this.crlperiod = crlperiod;
         this.crlIssueInterval = crlIssueInterval;
         this.crlOverlapTime = crlOverlapTime;
+        this.deltacrlperiod = deltacrlperiod;
         this.crlpublishers = crlpublishers;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;

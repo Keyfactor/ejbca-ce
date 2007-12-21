@@ -13,10 +13,12 @@
  
 package org.ejbca.ui.cli;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Issues a new CRL from the CA.
  *
- * @version $Id: CaCreateCrlCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CaCreateCrlCommand.java,v 1.2 2007-12-21 09:02:33 anatom Exp $
  */
 public class CaCreateCrlCommand extends BaseCaAdminCommand {
     /**
@@ -35,24 +37,30 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        if (args.length < 1) {
-	       throw new IllegalAdminCommandException("Usage: CA createcrl <caname>" +
-	       		                                                               "If no caname is given then will CRLs for all neccessary CAs be created.");
+        if ( (args.length < 1) || ((args.length > 1) && StringUtils.equals(args[1], "-?")) ) {
+	       throw new IllegalAdminCommandException("Usage: CA createcrl <caname> <-delta>\n" 
+	    		   + "If no caname is given then will CRLs for all neccessary CAs be created.");
 	    }	
         
         if (args.length == 1) {
         	try{
-        	  createCRL((String) null);
+        	  createCRL((String) null, false);
         	} catch (Exception e) {
         		throw new ErrorAdminCommandException(e);
         	}        	
         }	
         
-        if(args.length == 2){
-          try {            
-            String caname = args[1];	    
-            // createCRL prints info about crl generation            
-            createCRL(getIssuerDN(caname));
+        if(args.length > 1){
+            try {            
+              String caname = args[1];
+              boolean deltaCRL = false;
+              if (args.length > 2) {
+              	if (StringUtils.equals(args[2], "-delta")) {
+              		deltaCRL = true;
+              	}
+              }
+              // createCRL prints info about crl generation            
+              createCRL(getIssuerDN(caname), deltaCRL);
           } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
           }

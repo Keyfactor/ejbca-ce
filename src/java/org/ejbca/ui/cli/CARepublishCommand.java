@@ -31,7 +31,7 @@ import org.ejbca.util.CertTools;
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.6 2007-09-19 13:44:58 jbagnert Exp $
+ * @version $Id: CARepublishCommand.java,v 1.7 2007-12-21 09:02:33 anatom Exp $
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**
@@ -76,8 +76,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             Iterator caiter = cachain.iterator();
             if (caiter.hasNext()) {
                 X509Certificate cacert = (X509Certificate)caiter.next();
-                int crlNumber = getCertificateStoreSession().getLastCRLNumber(administrator, cainfo.getSubjectDN());
-                byte[] crlbytes = getCertificateStoreSession().getLastCRL(administrator, cainfo.getSubjectDN());
+                int crlNumber = getCertificateStoreSession().getLastCRLNumber(administrator, cainfo.getSubjectDN(), false);
+                byte[] crlbytes = getCertificateStoreSession().getLastCRL(administrator, cainfo.getSubjectDN(), false);
                 Collection capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
                 if(capublishers != null) {

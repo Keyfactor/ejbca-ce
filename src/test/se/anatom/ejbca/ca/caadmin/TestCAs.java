@@ -48,7 +48,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.26 2007-11-07 13:25:47 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.27 2007-12-21 09:02:16 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -154,6 +154,7 @@ public class TestCAs extends TestCase {
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
+                    10, // Delta CRL period
                     new ArrayList(),
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
@@ -290,6 +291,7 @@ public class TestCAs extends TestCase {
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
+                    0, // Delta CRL period
                     new ArrayList(),
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
@@ -392,6 +394,7 @@ public class TestCAs extends TestCase {
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
+                    0, // Delta CRL period
                     new ArrayList(),
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
@@ -491,6 +494,7 @@ public class TestCAs extends TestCase {
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
+                    0, // Delta CRL period
                     new ArrayList(),
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
@@ -580,6 +584,7 @@ public class TestCAs extends TestCase {
             		24, // CRLPeriod
             		0, // CRLIssueInterval
             		10, // CRLOverlapTime
+            		0, // Delta CRL period
             		new ArrayList(),
             		true, // Authority Key Identifier
             		false, // Authority Key Identifier Critical
@@ -672,6 +677,7 @@ public class TestCAs extends TestCase {
             		24, // CRLPeriod
             		0, // CRLIssueInterval
             		10, // CRLOverlapTime
+            		0, // Delta CRL period
             		new ArrayList(),
             		true, // Authority Key Identifier
             		false, // Authority Key Identifier Critical

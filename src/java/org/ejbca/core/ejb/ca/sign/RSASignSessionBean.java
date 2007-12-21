@@ -171,7 +171,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.43 2007-12-04 14:22:51 jeklund Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.44 2007-12-21 09:03:10 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1005,9 +1005,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             //Create the response message with all nonces and checks etc
             ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT), catoken.getProvider());
             
-            // Get the CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
+            // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
-            byte[] crl = certificateStore.getLastCRL(admin, ca.getSubjectDN());
+            byte[] crl = certificateStore.getLastCRL(admin, ca.getSubjectDN(), false);
             if (crl != null) {
                 ret.setCrl(CertTools.getCRLfromByteArray(crl));
                 ret.setStatus(ResponseStatus.SUCCESS);
@@ -1129,11 +1129,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param admin Information about the administrator or admin preforming the event.
      * @param caid Id of the CA which CRL should be created.
      * @param certs collection of RevokedCertInfo object.
+     * @param basecrlnumber the CRL number of the Case CRL to generate a deltaCRL, -1 to generate a full CRL
      * @return The newly created CRL in DER encoded byte form or null, use CerlTools.getCRLfromByteArray to convert to X509CRL.
      * @throws CATokenOfflineException 
      * @ejb.interface-method view-type="both"
      */
-    public byte[] createCRL(Admin admin, int caid, Collection certs) throws CATokenOfflineException {
+    public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
         debug(">createCRL()");
         byte[] crlBytes;
         CADataLocal cadata = null;
@@ -1175,17 +1176,28 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
             ICertificateStoreSessionLocal certificateStore = storeHome.create();
-            // Get number of last CRL and increase by 1
-            int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
+            // Get highest number of last CRL (full or delta) and increase by 1, both full CRLs and deltaCRLs share the same 
+            // series of CRL Number
+            int fullnumber = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN(), false);
+            int deltanumber = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN(), true);
+            int number = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
             X509CRL crl = null;
-            crl = (X509CRL) ca.generateCRL(certs, number);
+            int id = ca.getCertificateProfileId();
+            CertificateProfile certprof = certificateStore.getCertificateProfile(admin, id);
+            boolean deltaCRL = (basecrlnumber > -1);
+            if (deltaCRL) {
+            	crl = (X509CRL) ca.generateDeltaCRL(certs, number, basecrlnumber, certprof);	
+            } else {
+            	crl = (X509CRL) ca.generateCRL(certs, number);
+            }
+            
             String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(number), cadata.getName(), cadata.getSubjectDN());
             getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
 
             // Store CRL in the database
             String fingerprint = CertTools.getFingerprintAsString(cacert);
             log.debug("Storing CRL in certificate store.");
-            certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate());
+            certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
             // Store crl in ca CRL publishers.
             log.debug("Storing CRL in publishers");
             IPublisherSessionLocal pub = publishHome.create();

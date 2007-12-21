@@ -148,7 +148,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.78 2007-11-18 09:38:19 anatom Exp $
+ * @version $Id: X509CA.java,v 1.79 2007-12-21 09:02:51 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -158,7 +158,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = 13;
+    public static final float LATEST_VERSION = 14;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -215,7 +215,7 @@ public class X509CA extends CA implements Serializable {
     	}
         CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName() ,getCertificateProfileId(),  
         		  getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
-        		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
+        		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder());
@@ -996,13 +996,44 @@ public class X509CA extends CA implements Serializable {
     
     public CRL generateCRL(Collection certs, int crlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+    	return generateCRL(certs, getCRLPeriod(), crlnumber, false, 0, null);
+    }
+
+    public CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber, CertificateProfile certprof)
+        throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+    	return generateCRL(certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, certprof);
+    }
+
+    
+    /** Generate a CRL or a deltaCRL
+     * 
+     * @param certs list of revoked certificates
+     * @param crlnumber CRLNumber for this CRL
+     * @param isDeltaCRL true if we should generate a DeltaCRL
+     * @param basecrlnumber caseCRLNumber for a delta CRL, use 0 for full CRLs
+     * @param certProfile certificate profile for CRL Distribution point in the CRL, or null
+     * @return CRL
+     * @throws CATokenOfflineException
+     * @throws IllegalKeyStoreException
+     * @throws IOException
+     * @throws SignatureException
+     * @throws NoSuchProviderException
+     * @throws InvalidKeyException
+     * @throws CRLException
+     * @throws NoSuchAlgorithmException
+     */
+    private CRL generateCRL(Collection certs, int crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber, CertificateProfile certProfile) 
+    throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg= getCAToken().getCATokenInfo().getSignatureAlgorithm();
 
+        if (log.isDebugEnabled()) {
+            log.debug("generateCRL("+certs.size()+", "+crlPeriod+", "+crlnumber+", "+isDeltaCRL+", "+basecrlnumber+", certProfile");        	
+        }
         Date thisUpdate = new Date();
         Date nextUpdate = new Date();
 
         // crlperiod is hours = crlperiod*60*60*1000 milliseconds
-        nextUpdate.setTime(nextUpdate.getTime() + (getCRLPeriod() * (long)(60 * 60 * 1000)));
+        nextUpdate.setTime(nextUpdate.getTime() + (crlPeriod * (long)(60 * 60 * 1000)));
         X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
         crlgen.setThisUpdate(thisUpdate);
         crlgen.setNextUpdate(nextUpdate);
@@ -1044,7 +1075,42 @@ public class X509CA extends CA implements Serializable {
             CRLNumber crlnum = new CRLNumber(BigInteger.valueOf(crlnumber));
             crlgen.addExtension(X509Extensions.CRLNumber.getId(),  this.getCRLNumberCritical(), crlnum);
         }
-        
+
+        if (isDeltaCRL) {
+        	// DeltaCRLIndicator extension
+        	CRLNumber basecrlnum = new CRLNumber(BigInteger.valueOf(basecrlnumber));
+        	crlgen.addExtension(X509Extensions.DeltaCRLIndicator.getId(), true, basecrlnum);        	
+        }
+    	// CRL Distribution point URI
+    	if(certProfile != null) {
+    		if(certProfile.getUseCRLDistributionPointOnCRL() == true) {
+    			if (certProfile.getUseCRLDistributionPoint() == true) {
+    				String crldistpoint = certProfile.getCRLDistributionPointURI();
+    				if(certProfile.getUseDefaultCRLDistributionPoint() == true){
+    					crldistpoint = getDefaultCRLDistPoint();
+    				}
+    				// Multiple CDPs are spearated with the ';' sign  
+    				StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
+    				ArrayList distpoints = new ArrayList();
+    				while (tokenizer.hasMoreTokens()) {
+    					String uri = tokenizer.nextToken();
+    					GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
+    					log.debug("Added CRL distpoint: "+uri);
+    					ASN1EncodableVector vec = new ASN1EncodableVector();
+    					vec.add(gn);
+    					GeneralNames gns = new GeneralNames(new DERSequence(vec));
+    					DistributionPointName dpn = new DistributionPointName(0, gns);
+    					distpoints.add(new DistributionPoint(dpn, null, null));
+    				}
+    				if (distpoints.size() > 0) {
+    					CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
+    					crlgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
+    							certProfile.getCRLDistributionPointCritical(), ext);
+    				}
+    			}
+    		}
+    	}
+
         X509CRL crl;
         crl = crlgen.generate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN),getCAToken().getProvider());
         // Verify before sending back
@@ -1052,13 +1118,14 @@ public class X509CA extends CA implements Serializable {
 
         return crl;        
     }    
-    
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+
+
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. 
+    /** Implementation of UpgradableDataHashMap function upgrade. 
      */
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
@@ -1105,6 +1172,9 @@ public class X509CA extends CA implements Serializable {
                 	setUseLdapDNOrder(true);            		
             	}
             }            
+            if (data.get(DELTACRLPERIOD) == null) {
+            	setDeltaCRLPeriod(0); // v14
+            }
             
             data.put(VERSION, new Float(LATEST_VERSION));
         }  

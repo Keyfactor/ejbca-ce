@@ -171,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.34 2007-12-07 15:07:25 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.35 2007-12-21 09:03:10 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -348,16 +348,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param incrl  The DER coded CRL to be stored.
      * @param cafp   Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
+     * @param issuerDN the issuer of the CRL
+     * @param thisUpdate when this CRL was created
+     * @param nextUpdate when this CRL expires
+     * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
      * @return true if storage was successful.
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate) {
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
         debug(">storeCRL(" + cafp + ", " + number + ")");
         try {
             //X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-            CRLDataLocal data1 = crlHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp);
-            //data1.setCaFingerprint(cafp);
+            CRLDataLocal data1 = crlHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
         	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), null);            	
             getLogSession().log(admin, issuerDN.toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
         } catch (Exception e) {
@@ -407,101 +410,74 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } // listAllCertificates
 
     /**
-     * Lists fingerprint (primary key) of ALL revoked certificates (status = CertificateDataBean.CERT_REVOKED) in the database from a certain issuer. 
-     * NOTE: Caution should be taken with this method as execution may be very heavy indeed if many certificates exist in the database (imagine what happens if there are millinos of certificates in the DB!). 
-     * Should only be used for testing purposes.
-     * @param admin Administrator performing the operation
-     * @param issuerdn the dn of the certificates issuer.
-     * @return Collection of fingerprints, i.e. Strings, reverse ordered by expireDate where last expireDate is first in array.
-     *
-     * @ejb.interface-method
-     */
-    public Collection listRevokedCertificates(Admin admin, String issuerdn) {
-        debug(">listRevokedCertificates()");
-
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        String dn = CertTools.stringToBCDNString(issuerdn);
-        dn = StringTools.strip(dn);
-        try {
-            // TODO:
-            // This should only list a few thousand certificates at a time, in case there
-            // are really many revoked certificates after some time...
-        	// This code will handle about 100.000 revoked certificates easily on a normal machine
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select fingerprint from CertificateData where status=? and issuerDN=? ORDER BY expireDate DESC");
-            ps.setInt(1, CertificateDataBean.CERT_REVOKED);
-            ps.setString(2, dn);
-            result = ps.executeQuery();
-            ArrayList vect = new ArrayList();
-            while (result.next()) {
-                vect.add(result.getString(1));
-            }
-            debug("<listRevokedCertificates()");
-            return vect;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
-    } // listRevokedCertificates
-
-    /**
      * Lists RevokedCertInfo of ALL revoked certificates (status = CertificateDataBean.CERT_REVOKED) in the database from a certain issuer. 
      * NOTE: Caution should be taken with this method as execution may be very heavy indeed if many certificates exist in the database (imagine what happens if there are millinos of certificates in the DB!). 
      * Should only be used for testing purposes.
      * @param admin Administrator performing the operation
      * @param issuerdn the dn of the certificates issuer.
-     * @return Collection of RevokedCertInfo, i.e. Strings, reverse ordered by expireDate where last expireDate is first in array.
+     * @param lastbasecrldate a date (Date.getTime()) of last base CRL or -1 for a complete CRL
+     * @return Collection of RevokedCertInfo, reverse ordered by expireDate where last expireDate is first in array.
      *
      * @ejb.interface-method
      */
-    public Collection listRevokedCertInfo(Admin admin, String issuerdn) {
-        debug(">listRevokedCertificates()");
+    public Collection listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
+    	debug(">listRevokedCertInfo()");
 
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        String dn = CertTools.stringToBCDNString(issuerdn);
-        dn = StringTools.strip(dn);
-        try {
-            // TODO:
-            // This should only list a few thousand certificates at a time, in case there
-            // are really many revoked certificates after some time...
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select fingerprint, issuerDN, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where status=? and issuerDN=?");
-            ps.setInt(1, CertificateDataBean.CERT_REVOKED);
-            ps.setString(2, dn);
-            result = ps.executeQuery();
-        	ArrayList vect = new ArrayList();
-            while (result.next()) {
-            	String fp = result.getString(1);
-            	String issuerDN = result.getString(2);
-            	BigInteger serNo = new BigInteger(result.getString(3));
-            	long exptime = result.getLong(4);
-            	Date expDate = null;
-            	if (exptime > 0) {
-            		expDate = new Date(exptime);
-            	}
-            	long revtime = result.getLong(5);
-            	Date revDate = null;
-            	if (revtime > 0) {
-            		revDate = new Date(revtime);            	
-            	}
-            	int revReason = result.getInt(6);
-            	RevokedCertInfo certinfo = new RevokedCertInfo(fp, serNo, revDate, revReason, expDate);
-            	// Add to the result
-            	vect.add(certinfo);
-            }
-            debug("<listRevokedCertificates()");
-            return vect;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
-    } // listRevokedCertificates
+    	Connection con = null;
+    	PreparedStatement ps = null;
+    	ResultSet result = null;
+    	String dn = CertTools.stringToBCDNString(issuerdn);
+    	dn = StringTools.strip(dn);
+    	try {
+    		// TODO:
+    		// This should only list a few thousand certificates at a time, in case there
+    		// are really many revoked certificates after some time...
+    		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+    		String sql = "select fingerprint, issuerDN, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and status=?";
+    		// For delta CRLs we must select both revoked certificates, and certificates that are active because they have been un-revoked
+    		String deltaCRLSql = "select fingerprint, issuerDN, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and revocationDate>? and (status=? or (status=? and revocationReason=?))";
+    		if (lastbasecrldate > 0) {
+    			sql = deltaCRLSql;
+    		}
+    		ps = con.prepareStatement(sql);
+    		ps.setString(1, dn);
+    		if (lastbasecrldate > 0) {
+    			ps.setLong(2, lastbasecrldate);
+    			ps.setInt(3, CertificateDataBean.CERT_REVOKED);
+    			ps.setInt(4, CertificateDataBean.CERT_ACTIVE);
+    			ps.setInt(5, RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL);
+    		} else {
+    			ps.setInt(2, CertificateDataBean.CERT_REVOKED);            	
+    		}
+    		result = ps.executeQuery();
+    		ArrayList vect = new ArrayList();
+    		while (result.next()) {
+    			String fp = result.getString(1);
+    			String issuerDN = result.getString(2);
+    			BigInteger serNo = new BigInteger(result.getString(3));
+    			long exptime = result.getLong(4);
+    			Date expDate = null;
+    			if (exptime > 0) {
+    				expDate = new Date(exptime);
+    			}
+    			long revtime = result.getLong(5);
+    			Date revDate = null;
+    			if (revtime > 0) {
+    				revDate = new Date(revtime);            	
+    			}
+    			int revReason = result.getInt(6);
+    			RevokedCertInfo certinfo = new RevokedCertInfo(fp, serNo, revDate, revReason, expDate);
+    			// Add to the result
+    			vect.add(certinfo);
+    		}
+    		debug("<listRevokedCertInfo()");
+    		return vect;
+    	} catch (Exception e) {
+    		throw new EJBException(e);
+    	} finally {
+    		JDBCUtil.close(con, ps, result);
+    	}
+    } // listRevokedCertInfo
 
     /**
      * Lists certificates for a given subject signed by the given issuer.
@@ -1201,14 +1177,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin Administrator performing the operation
      * @param issuerdn the CRL issuers DN (CAs subject DN)
+     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
      * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
      * @ejb.interface-method
      */
-    public byte[] getLastCRL(Admin admin, String issuerdn) {
-        debug(">getLastCRL(" + issuerdn + ")");
+    public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
+        debug(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
 
         try {
-            int maxnumber = getLastCRLNumber(admin, issuerdn);
+            int maxnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
             X509CRL crl = null;
             try {
                 CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
@@ -1233,23 +1210,24 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } //getLastCRL
 
     /**
-     * Retrieves the information about the lastest CRL issued by this CA.
+     * Retrieves the information about the lastest CRL issued by this CA. Retreives less information than getLastCRL, i.e. not the actual CRL data.
      *
      * @param admin Administrator performing the operation
      * @param issuerdn the CRL issuers DN (CAs subject DN)
+     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
      * @return CRLInfo of last CRL by CA.
      * @ejb.interface-method
      */
-    public CRLInfo getLastCRLInfo(Admin admin, String issuerdn) {
-        debug(">getLastCRLInfo(" + issuerdn + ")");
+    public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
+        debug(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
         try {
-            int maxnumber = getLastCRLNumber(admin, issuerdn);
+            int crlnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
             CRLInfo crlinfo = null;
             try {
-                CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
-                crlinfo = new CRLInfo(data.getIssuerDN(), maxnumber, data.getThisUpdate(), data.getNextUpdate());
+                CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, crlnumber);
+                crlinfo = new CRLInfo(data.getIssuerDN(), crlnumber, data.getThisUpdate(), data.getNextUpdate());
             } catch (FinderException e) {
-            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(maxnumber));            	
+            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
                 log.error(msg, e);
                 crlinfo = null;
             }
@@ -1260,25 +1238,34 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
             throw new EJBException(e);
         }
-    } //getLastCRL
+    } //getLastCRLInfo
 
     /**
      * Retrieves the highest CRLNumber issued by the CA.
      *
      * @param admin    Administrator performing the operation
      * @param issuerdn the subjectDN of a CA certificate
+     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
      * @ejb.interface-method
      */
-    public int getLastCRLNumber(Admin admin, String issuerdn) {
-        debug(">getLastCRLNumber(" + issuerdn + ")");
+    public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
+        debug(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
 
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
         try {
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select MAX(CRLNumber) from CRLData where issuerDN=?");
+            String sql = "select MAX(CRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator=?";
+            String deltaCRLSql = "select MAX(CRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator>?";
+            int deltaCRLIndicator = -1;
+            if (deltaCRL) {
+            	sql = deltaCRLSql;
+            	deltaCRLIndicator = 0;
+            }
+            ps = con.prepareStatement(sql);
             ps.setString(1, issuerdn);
+            ps.setInt(2, deltaCRLIndicator);            	
             result = ps.executeQuery();
 
             int maxnumber = 0;

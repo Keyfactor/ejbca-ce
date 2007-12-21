@@ -40,7 +40,7 @@ import org.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.4 2007-01-03 14:49:35 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.5 2007-12-21 09:02:33 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -117,7 +117,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         debug("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     } // makeCertRequest
 
-    protected void createCRL(String issuerdn) {
+    protected void createCRL(String issuerdn, boolean deltaCRL) {
         debug(">createCRL()");
 
         try {
@@ -125,16 +125,26 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
             ICreateCRLSessionHome home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
                         "CreateCRLSession"), ICreateCRLSessionHome.class);
             if(issuerdn != null){
-              home.create().run(administrator, issuerdn);
-
-              ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-                        "CertificateStoreSession"), ICertificateStoreSessionHome.class);
-              ICertificateStoreSessionRemote storeremote = storehome.create();
-              int number = storeremote.getLastCRLNumber(administrator, issuerdn);
-              getOutputStream().println("CRL with number " + number + " generated.");
+            	if (!deltaCRL) {
+                    home.create().run(administrator, issuerdn);
+                    ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+                              "CertificateStoreSession"), ICertificateStoreSessionHome.class);
+                    ICertificateStoreSessionRemote storeremote = storehome.create();
+                    int number = storeremote.getLastCRLNumber(administrator, issuerdn, false);
+                    getOutputStream().println("CRL with number " + number + " generated.");            		
+            	} else {
+                    home.create().runDeltaCRL(administrator, issuerdn);
+                    ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+                              "CertificateStoreSession"), ICertificateStoreSessionHome.class);
+                    ICertificateStoreSessionRemote storeremote = storehome.create();
+                    int number = storeremote.getLastCRLNumber(administrator, issuerdn, true);
+                    getOutputStream().println("Delta CRL with number " + number + " generated.");
+            	}
             }else{
             	int createdcrls = home.create().createCRLs(administrator);
             	getOutputStream().println("  " + createdcrls + " CRLs have been created.");	
+            	int createddeltacrls = home.create().createDeltaCRLs(administrator);
+            	getOutputStream().println("  " + createddeltacrls + " delta CRLs have been created.");	
             }
         } catch (Exception e) {
             error("Error while getting certficate chain from CA.", e);

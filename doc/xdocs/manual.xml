@@ -613,6 +613,13 @@ APPSRV_HOME=/usr/local/jboss
 00 0    * * *   cd /root/ejbca;./bin/ejbca.sh ca createcrl
 </source>
 </subsection>
+
+<subsection name="Delta CRLs">
+<p>EJBCA can issue deltaCRLs as well. 
+In the CA configuration, set 'Delta CRL Period' to the number of hours your delta CRLs should be valid if delta CRLs should be issued.
+Command line interface and CRL Update service will generate delta CRLs if 'Delta CRL Period' is larger than 0.</p>
+</subsection>
+
 </section>
 
 <section name="Scep">

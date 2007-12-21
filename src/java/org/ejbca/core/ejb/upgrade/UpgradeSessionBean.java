@@ -46,7 +46,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.12 2007-01-12 09:43:27 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.13 2007-12-21 09:03:11 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -202,14 +202,33 @@ public class UpgradeSessionBean extends BaseSessionBean {
             debug("Database type="+dbtype);
         }
 
-        boolean upgradefrom31 = false;
+        boolean upgradefrom33 = false;
         if (args.length > 1) {
         	String u = args[1];
+        	if (StringUtils.equalsIgnoreCase(u, "yes")) {
+        		upgradefrom33 = true;
+        	}
+        }
+
+        boolean upgradefrom31 = false;
+        if (args.length > 2) {
+        	String u = args[2];
         	if (StringUtils.equalsIgnoreCase(u, "yes")) {
         		upgradefrom31 = true;
         	}
         }
 
+        // Upgrade small database change between ejbca 3.5.x and 3.6.x
+        if (!migradeDatabase36(dbtype)) {
+        	// Ignore errors and continue, perhaps we have already done this manually
+        	// return false;
+        }
+        
+        // If we are not upgrading from EJBCA 3.3.x we can stop here
+        if (!upgradefrom33) {
+        	return true;
+        }
+        
         // Upgrade small database change between ejbca 3.3.x and 3.4.x
         if (!migradeDatabase33(dbtype)) {
         	// Ignore errors and continue, perhaps we have already done this manually
@@ -291,6 +310,17 @@ public class UpgradeSessionBean extends BaseSessionBean {
 	public boolean migradeDatabase31(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.1.x to ejbca 3.2.x");
 		boolean ret = migradeDatabase("/31_32/31_32-upgrade-"+dbtype+".sql");
+        error("(this is not an error) Finished migrating database.");
+        return ret;
+	}
+    /** 
+     * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
+     */
+	public boolean migradeDatabase36(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.5.x to ejbca 3.6.x");
+		boolean ret = migradeDatabase("/35_36/35_36-upgrade-"+dbtype+".sql");
         error("(this is not an error) Finished migrating database.");
         return ret;
 	}
