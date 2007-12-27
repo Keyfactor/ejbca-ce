@@ -3,6 +3,9 @@
   <column-name>cRLNumber</column-name>
 </cmp-field>
 <cmp-field>
+  <field-name>deltaCRLIndicator</field-name>
+</cmp-field>
+<cmp-field>
   <field-name>issuerDN</field-name>
 </cmp-field>
 <cmp-field>
