@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.27 2007-11-15 11:24:11 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.28 2007-12-27 16:32:29 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -150,7 +150,7 @@ ca.cmskeystorepass=foo123
 # The directory of the HW token classes. If this is an empty directory no HW token will be used.
 # If the directory is not existing an empty directory will be created.
 # Default: ./hwtoken
-#hwtoken_classes=../primeCard/caTokenClasses-1.5
+#hwtoken_classes=../primeCard/caTokenClasses-1.5-3.5
 
 # Define this property when Luna HW token should be used.
 # You must have the Luna jars available in the build classpath (lib) when enabling this option.
