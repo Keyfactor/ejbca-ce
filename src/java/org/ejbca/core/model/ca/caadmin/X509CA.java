@@ -150,7 +150,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.80 2007-12-27 16:42:28 nponte Exp $
+ * @version $Id: X509CA.java,v 1.81 2007-12-27 18:25:43 nponte Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -820,41 +820,46 @@ public class X509CA extends CA implements Serializable {
              }
          }
          
+         /*
+          * Authority Information Access
+          */
          ASN1EncodableVector accessList = new ASN1EncodableVector();
+         GeneralName accessLocation;
+         String url;
 
-         // Authority Information Access (CA Issuers)
+         // caIssuers
          if(certProfile.getUseCaIssuers()) {
              List caIssuers = certProfile.getCaIssuers();
-             GeneralName accessLocation;
-             String caUrl;
 
              for(Iterator it = caIssuers.iterator(); it.hasNext(); ) {
-                 caUrl = (String) it.next();
-                 accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(caUrl));
-                 accessList.add(new AccessDescription(AccessDescription.id_ad_caIssuers,
+                 url = (String) it.next();
+                 if(StringUtils.isNotEmpty(url)) {
+                     accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
+                     accessList.add(new AccessDescription(AccessDescription.id_ad_caIssuers,
+                                                          accessLocation));
+                 }
+             }
+         }
+
+         // ocsp url
+         if (certProfile.getUseOCSPServiceLocator() == true) {
+             url = certProfile.getOCSPServiceLocatorURI();
+             if(certProfile.getUseDefaultOCSPServiceLocator()){
+                 url = getDefaultOCSPServiceLocator();
+             }
+             if (StringUtils.isNotEmpty(url)) {
+                 accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
+                 accessList.add(new AccessDescription(AccessDescription.id_ad_ocsp,
                                                       accessLocation));
              }
          }
+
          if(accessList.size() > 0) {
              certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
                                   false,
                                   new AuthorityInformationAccess(new DERSequence(accessList)));
          }
 
-         // Authority Information Access (OCSP url)
-         if (certProfile.getUseOCSPServiceLocator() == true) {
-             String ocspUrl = certProfile.getOCSPServiceLocatorURI();
-             if(certProfile.getUseDefaultOCSPServiceLocator()){
-            	 ocspUrl = getDefaultOCSPServiceLocator();
-             }
-             if (StringUtils.isNotEmpty(ocspUrl)) {
-                 // OCSP access location is a URL (GeneralName no 6)
-                 GeneralName ocspLocation = new GeneralName(6, new DERIA5String(ocspUrl));
-                 certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
-                     false, new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspLocation));                 
-             }
-         }
-         
          // OCSP nocheck extension (rfc 2560)
          if(certProfile.getUseOcspNoCheck()) {
         	 certgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
