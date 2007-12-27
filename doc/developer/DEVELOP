@@ -253,14 +253,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.12 2007-12-21 13:46:56 anatom Exp $
+@version $Id: DEVELOP,v 1.13 2007-12-27 16:21:46 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.12 2007-12-21 13:46:56 anatom Exp $
+ * @version $Id: DEVELOP,v 1.13 2007-12-27 16:21:46 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
@@ -288,6 +288,7 @@ To add a new call to EjbcaWS:
 3. run 'ant ws.gen.server'
 4. Deploy EJBCA
 5. run 'ant ws.gen.client'
+6. Create JUnit tests.
 
 Done. 
 
