@@ -34,7 +34,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.26 2007-12-21 09:02:51 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.27 2007-12-27 16:42:31 nponte Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -149,6 +149,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";
 	protected static final String USEDEFAULTOCSPSERVICELOCATOR   = "usedefaultocspservicelocator";	
 	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";
+    protected static final String USECAISSUERS                = "usecaissuersuri";
+    protected static final String CAISSUERS                      = "caissuers";
 	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
 	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
 	protected static final String USECNPOSTFIX                   = "usecnpostfix";
@@ -243,7 +245,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setAvailableCAs(availablecas);
       
       setPublisherList(new ArrayList());
-      
+
+      setUseCaIssuers(false);
+      setCaIssuers(new ArrayList());
+
       setUseOcspNoCheck(false);
 	  setUseOCSPServiceLocator(false);	  
 	  setUseDefaultOCSPServiceLocator(false);
@@ -775,6 +780,49 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setPathLengthConstraint(int pathlength) {
 		data.put(PATHLENGTHCONSTRAINT, new Integer(pathlength));			
 	}   
+
+    /**
+     * @param use
+     */
+    public void setUseCaIssuers(boolean use) {
+        data.put(USECAISSUERS, Boolean.valueOf(use));
+    }
+
+    /**
+     * @return
+     */
+    public boolean getUseCaIssuers() {
+        if(data.get(USECAISSUERS) == null) {
+            return false; 
+        } else {
+            return ((Boolean) data.get(USECAISSUERS)).booleanValue();
+        }
+    }
+
+    public void setCaIssuers(List caIssuers) {
+        data.put(CAISSUERS, caIssuers);
+    }
+
+    public void addCaIssuer(String caIssuer) {
+        if (data.get(CAISSUERS) == null) {
+            List caIssuers = new ArrayList();
+
+            caIssuers.add(caIssuers);
+            this.setCaIssuers(caIssuers);
+        } else {
+            ((List) data.get(CAISSUERS)).add(caIssuer);
+        }
+    }
+
+    public List getCaIssuers() {
+        return (List) data.get(CAISSUERS);
+    }
+
+    public void removeCaIssuer(String caIssuer) {
+        if (data.get(CAISSUERS) != null) {
+            ((List) data.get(CAISSUERS)).remove(caIssuer);
+        }
+    }
 
     public boolean getUseOcspNoCheck() {
         if(data.get(USEOCSPNOCHECK) == null) {

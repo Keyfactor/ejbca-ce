@@ -25,6 +25,8 @@
 
   static final String BUTTON_ADD_POLICY                    = "buttonaddpolicy";
   static final String BUTTON_DELETE_POLICY                 = "buttondeletepolicy";
+  static final String BUTTON_ADD_CAISSUERURI               = "buttonaddcaissueruri";
+  static final String BUTTON_DELETE_CAISSUERURI            = "buttondeletecaissueruri";
 
   static final String SELECT_CERTIFICATEPROFILES           = "selectcertificateprofile";
   static final String TEXTFIELD_CERTIFICATEPROFILESNAME    = "textfieldcertificateprofilename";
@@ -42,7 +44,8 @@
   static final String TEXTFIELD_CERTIFICATEPOLICYID    = "textfieldcertificatepolicyid";
   static final String TEXTFIELD_POLICYNOTICE_CPSURL    = "textfielpolicynoticedcpsurl";
   static final String TEXTAREA_POLICYNOTICE_UNOTICE    = "textareapolicynoticeunotice";
-  
+
+  static final String TEXTFIELD_CAISSUERURI            = "textfieldcaissueruri";
   static final String TEXTFIELD_OCSPSERVICELOCATOR     = "textfieldocspservicelocatoruri";
   static final String TEXTFIELD_CNPOSTFIX              = "textfieldcnpostfix";
   static final String TEXTFIELD_PATHLENGTHCONSTRAINT   = "textfieldpathlengthconstraint";
@@ -76,6 +79,7 @@
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
+  static final String CHECKBOX_USECAISSUERS			              = "checkusecaissuers";
   static final String CHECKBOX_USEOCSPNOCHECK                     = "checkuseocspnocheck";
   static final String CHECKBOX_USEOCSPSERVICELOCATOR              = "checkuseocspservicelocator";
   static final String CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR      = "checkusedefaultocspservicelocator";
@@ -521,6 +525,21 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
               }
               certificateprofiledata.setPublisherList(availablepublishers);
 
+              use = false;
+              value = request.getParameter(CHECKBOX_USECAISSUERS);
+              if(value != null){
+           		  use = value.equals(CHECKBOX_VALUE);
+                  certificateprofiledata.setUseCaIssuers(use);
+               
+                  value = request.getParameter(TEXTFIELD_CAISSUERURI);
+               	  if((value != null) && (value.trim().length() > 0)) {
+                 	  certificateprofiledata.addCaIssuer(value);
+               	  } 
+           	  } else {
+            	  certificateprofiledata.setUseCaIssuers(false);
+               	  certificateprofiledata.setCaIssuers(null);
+           	  }
+
               value = request.getParameter(CHECKBOX_USEOCSPNOCHECK);
               if(value != null){
                   use = value.equals(CHECKBOX_VALUE);
@@ -777,6 +796,30 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                    includefile = "certificateprofilepage.jspf";
                  }
              }
+             
+             /*
+              * Add caIssuer URI.
+              */
+             if(request.getParameter(BUTTON_ADD_CAISSUERURI) != null) {
+    	           cabean.setTempCertificateProfile(certificateprofiledata);
+                 includefile = "certificateprofilepage.jspf";
+             }
+
+             /*
+              * Remove caIssuer URI.
+              */
+             if(certificateprofiledata.getCaIssuers() != null) {
+               for(int i = 0; i < certificateprofiledata.getCaIssuers().size(); i++) {
+                   value = request.getParameter(BUTTON_DELETE_CAISSUERURI + i);
+                   if(value != null) {
+                       certificateprofiledata.removeCaIssuer(request.getParameter(TEXTFIELD_CAISSUERURI + i).trim());
+                                                 
+                       cabean.setTempCertificateProfile(certificateprofiledata);
+                   }
+               }         
+               includefile = "certificateprofilepage.jspf";
+             }
+
            
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.

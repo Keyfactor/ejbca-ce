@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERObjectIdentifier;
@@ -65,6 +66,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -148,7 +150,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.79 2007-12-21 09:02:51 anatom Exp $
+ * @version $Id: X509CA.java,v 1.80 2007-12-27 16:42:28 nponte Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -818,6 +820,27 @@ public class X509CA extends CA implements Serializable {
              }
          }
          
+         ASN1EncodableVector accessList = new ASN1EncodableVector();
+
+         // Authority Information Access (CA Issuers)
+         if(certProfile.getUseCaIssuers()) {
+             List caIssuers = certProfile.getCaIssuers();
+             GeneralName accessLocation;
+             String caUrl;
+
+             for(Iterator it = caIssuers.iterator(); it.hasNext(); ) {
+                 caUrl = (String) it.next();
+                 accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(caUrl));
+                 accessList.add(new AccessDescription(AccessDescription.id_ad_caIssuers,
+                                                      accessLocation));
+             }
+         }
+         if(accessList.size() > 0) {
+             certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
+                                  false,
+                                  new AuthorityInformationAccess(new DERSequence(accessList)));
+         }
+
          // Authority Information Access (OCSP url)
          if (certProfile.getUseOCSPServiceLocator() == true) {
              String ocspUrl = certProfile.getOCSPServiceLocatorURI();

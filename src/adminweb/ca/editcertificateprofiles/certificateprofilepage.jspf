@@ -316,6 +316,18 @@ function checkuseextendedkeyusagefield(){
   }
 }
 
+function checkusecaissuersfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USECAISSUERS %>.checked){
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
+    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = false;
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
+    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = true;
+  }
+}
 
 function checkallfields(){
     var illegalfields = 0;
@@ -669,6 +681,58 @@ function checkallfields(){
                        out.write(" value=\"" + globalconfiguration.getStandardOCSPServiceLocatorURI()+ "\"");%>>
       </td>
     </tr>
+
+    <%-- Use of caIssuers extension --%>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USECAISSUERS") %> <br>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USECAISSUERS %>" onClick="checkusecaissuersfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseCaIssuers())
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <%-- List of already defined caIssuers URIs. --%>
+    <% List caissuers = certificateprofiledata.getCaIssuers();
+
+       if((caissuers != null) && (caissuers.size() > 0)) {
+           String uri;
+           int i = 0;
+           for(Iterator it = caissuers.iterator(); it.hasNext(); i++) {
+               uri = (String) it.next();
+           %>
+    <tr id="Row<%=row++%2%>">
+      <td width="50%" align="right">
+        <table border="0">
+          <tr>
+            <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_DELETE_CAISSUERURI + i %>" value="<%= ejbcawebbean.getText("DELETE") %>"/></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CAISSUERURI") %></td>
+          </tr>
+        </table>
+      </td>
+      <td width="50%">
+        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<%= uri %>" size="60" maxlength="255"/><br/>
+      </td>
+    </tr>
+        <% }
+       }
+    %>
+    <%-- Editable caIssuers URI input form section --%>
+    <tr id="Row<%=row++%2%>">
+      <td width="50%" align="right">
+        <table border="0">
+          <tr>
+            <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_CAISSUERURI %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseCaIssuers() ? "" : "disabled"%>/></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CAISSUERURI") %></td>
+          </tr>
+        </table>
+      <td width="50%">
+        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCaIssuers() ? "" : "disabled"%>/><br/>
+      </td>
+    </tr>
+
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %><br/><%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %>
