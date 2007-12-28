@@ -34,7 +34,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.27 2007-12-27 16:42:31 nponte Exp $
+ * @version $Id: CertificateProfile.java,v 1.28 2007-12-28 10:30:29 nponte Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -1091,6 +1091,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	
                 if(data.get(USECRLDISTRIBUTIONPOINTONCRL) == null){
                     setUseCRLDistributionPointOnCRL(false); // v24
+                }
+                if(data.get(USECAISSUERS) == null) {
+                    setUseCaIssuers(false);
+                    setCaIssuers(new ArrayList());
                 }
 
             }
