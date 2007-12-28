@@ -50,7 +50,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.32 2007-12-21 09:02:52 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.33 2007-12-28 10:29:41 nponte Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -72,7 +72,7 @@ public class LdapPublisher extends BasePublisher {
 	protected boolean ADD_MODIFICATION_ATTRIBUTES = true;
 	
 	public static final String DEFAULT_USEROBJECTCLASS     = "top;person;organizationalPerson;inetOrgPerson";
-	public static final String DEFAULT_CAOBJECTCLASS       = "top;applicationProcess;certificationAuthority";
+	public static final String DEFAULT_CAOBJECTCLASS       = "top;applicationProcess;certificationAuthority-V2";
 	public static final String DEFAULT_CACERTATTRIBUTE     = "cACertificate;binary";
 	public static final String DEFAULT_USERCERTATTRIBUTE   = "userCertificate;binary";
 	public static final String DEFAULT_CRLATTRIBUTE        = "certificateRevocationList;binary";
