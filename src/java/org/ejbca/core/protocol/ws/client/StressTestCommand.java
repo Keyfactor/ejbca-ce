@@ -39,8 +39,8 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.CertTools;
 
 /**
- * @author lars
- * @version $Id: StressTestCommand.java,v 1.3 2007-12-29 10:30:03 anatom Exp $
+ * @author Lars Silvén, PrimeKey Solutions AB
+ * @version $Id: StressTestCommand.java,v 1.4 2007-12-29 10:30:53 anatom Exp $
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
