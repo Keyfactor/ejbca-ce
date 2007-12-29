@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.xml.namespace.QName;
 
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 
 
@@ -22,7 +23,7 @@ import org.ejbca.util.CertTools;
  * Checks the property file and creates a webservice connection.
  *  
  * @author Philip Vendil
- * $Id: EJBCAWSRABaseCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * $Id: EJBCAWSRABaseCommand.java,v 1.3 2007-12-29 07:59:34 primelars Exp $
  */
 
 public abstract class EJBCAWSRABaseCommand {
@@ -64,11 +65,26 @@ public abstract class EJBCAWSRABaseCommand {
 	/**
 	 * Method creating a connection to the webservice
 	 * using the information stored in the property files.
+     * If a connection allready is establiched this connection will be used
 	 * @throws ServiceException 
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	protected org.ejbca.core.protocol.ws.client.gen.EjbcaWS getEjbcaRAWS() throws  FileNotFoundException, IOException{       
+    protected EjbcaWS getEjbcaRAWS() throws  FileNotFoundException, IOException{
+        return getEjbcaRAWS(false);
+    }
+    /**
+     * Method creating a connection to the webservice
+     * using the information stored in the property files.
+     * A new connection will be created for each call.
+     * @throws ServiceException 
+     * @throws IOException 
+     * @throws FileNotFoundException 
+     */
+    protected EjbcaWS getEjbcaRAWSFNewReference() throws  FileNotFoundException, IOException{
+        return getEjbcaRAWS(true);
+    }
+    private EjbcaWS getEjbcaRAWS(boolean bForceNewReference) throws  FileNotFoundException, IOException{       
 		if(ejbcaraws == null){
 			CertTools.installBCProvider();
 						
@@ -77,17 +93,16 @@ public abstract class EJBCAWSRABaseCommand {
 			
 			System.setProperty("javax.net.ssl.keyStore",getKeyStorePath());
 			System.setProperty("javax.net.ssl.keyStorePassword",getKeyStorePassword());      
-		
-
+        }
+        if(ejbcaraws==null || bForceNewReference){
 			QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
 			EjbcaWSService service = new EjbcaWSService(new URL(getWebServiceURL()),qname);
-			ejbcaraws = service.getEjbcaWSPort();
-	        
-
+            if ( bForceNewReference )
+                return service.getEjbcaWSPort();
+            else
+                ejbcaraws = service.getEjbcaWSPort();
 		}
-                
         return ejbcaraws;
-        
 	}
 
 	private String getKeyStorePassword() throws FileNotFoundException, IOException {

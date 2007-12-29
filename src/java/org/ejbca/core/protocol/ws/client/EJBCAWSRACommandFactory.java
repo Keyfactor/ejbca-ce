@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Factory for EJBCA WS RA Admin Commands.
  *
- * @version $Id: EJBCAWSRACommandFactory.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: EJBCAWSRACommandFactory.java,v 1.3 2007-12-29 07:59:34 primelars Exp $
  */
 public class EJBCAWSRACommandFactory {
     /**
@@ -59,6 +59,8 @@ public class EJBCAWSRACommandFactory {
             return new CheckRevokeStatusCommand(args);        
         }else if (args[0].equals("generatenewuser")) {
             return new GenerateNewUserCommand(args);        
+        } else if (args[0].equals("stress")) {
+            return new StressTestCommand(args);
         }
         
         else {
