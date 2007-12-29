@@ -40,7 +40,7 @@ import org.ejbca.util.CertTools;
 
 /**
  * @author Lars Silvén, PrimeKey Solutions AB
- * @version $Id: StressTestCommand.java,v 1.4 2007-12-29 10:30:53 anatom Exp $
+ * @version $Id: StressTestCommand.java,v 1.5 2007-12-29 15:24:33 primelars Exp $
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -155,7 +155,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         getPrintStream().println();
         getPrintStream().println("Here is an example of how the test could be started:");
         getPrintStream().println("./ejbcawsracli.sh stress AdminCA1 20 5000");
-        getPrintStream().println("20 threads is started. When the thread is started it waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA AdminCA1");
+        getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA AdminCA1.");
     }
 
     /* (non-Javadoc)
