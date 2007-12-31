@@ -40,7 +40,7 @@ import org.ejbca.util.CertTools;
 
 /**
  * @author Lars Silvén, PrimeKey Solutions AB
- * @version $Id: StressTestCommand.java,v 1.6 2007-12-30 21:57:14 primelars Exp $
+ * @version $Id: StressTestCommand.java,v 1.7 2007-12-31 23:32:30 primelars Exp $
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -269,9 +269,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
     }
     private class Statistic implements Runnable {
         private final int nr;
-        private int registerTime = 0;
-        private int signTime = 0;
-        private int waitTime = 0;
+        private long registerTime = 0;
+        private long signTime = 0;
+        private long waitTime = 0;
         private int nrOfSignings = 0;
         private long startTime;
         Statistic(int _nr) {
@@ -288,8 +288,8 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             nrOfSignings++;
         }
         private void printStatistics() {
-            final int time = (int)(new Date().getTime()-this.startTime);
-            final int allThreadsTime = this.nr*time;
+            final long time = (int)(new Date().getTime()-this.startTime);
+            final long allThreadsTime = this.nr*time;
             final float signingsPerSecond = (float)nrOfSignings*1000/time;
             final float relativeWork = (float)(allThreadsTime-this.waitTime-this.signTime-registerTime) / allThreadsTime;
             final float relativeWait = (float)this.waitTime / allThreadsTime;
