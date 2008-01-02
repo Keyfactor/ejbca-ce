@@ -36,9 +36,21 @@
 # The keystore password
 #protectionTokenKeyStorePassword=foo123
 
-# Intesity: how often each node should sign a log-row in seconds.
+# Protection intensity: how often each node should sign a log-row in seconds.
 #  Default is "0" (sign every line).
 #protectionIntensity=0
+
+# Link-in intensity: how often to search for new log-rows from other nodes in
+#  seconds. The last found from each node will be linked in.
+#   -1 disabled, 0 always search
+#  Default is "1"
+#linkinIntensity=1
+
+# Verification intensity of own log-events: how often to search for the last
+#  written log-row in seconds.
+#   -1 disabled, 0 always search
+#  Default is "1"
+#verifyownIntensity=1
 
 # The hash algorithm used to chain unprotected log rows.
 #  Default is "SHA-256"

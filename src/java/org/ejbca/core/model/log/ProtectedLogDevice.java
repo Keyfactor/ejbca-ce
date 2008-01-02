@@ -47,6 +47,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	public final static String CONFIG_NODEIP									= "nodeIP";
 	public final static String CONFIG_PROTECTION_INTENSITY		= "protectionIntensity";
 	public final static String CONFIG_ALLOW_EVENTSCONFIG		= "allowConfigurableEvents";
+	public final static String CONFIG_LINKIN_INTENSITY					= "linkinIntensity";
+	public final static String CONFIG_VERIFYOWN_INTENSITY			= "verifyownIntensity";
 	
 	public final static String DEFAULT_NODEIP								= "127.0.0.1";
 	public final static String DEFAULT_DEVICE_NAME						= "ProtectedLogDevice";
@@ -79,6 +81,10 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private ProtectedLogActions protectedLogActions = null;
 	private boolean allowConfigurableEvents = false;
 	private String deviceName = null;
+	private long lastTimeOfSearchForLogEvents = 0;
+	private long lastTimeOfSearchForOwnLogEvent = 0;
+	private long intensityOfSearchForLogEvents;
+	private long intensityOfSearchForOwnLogEvent;
 	
 	protected ProtectedLogDevice(Properties prop) throws Exception {
 		properties = prop;
@@ -98,6 +104,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		if (protectionIntensity != 0 && properties.getProperty(ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, "false").equalsIgnoreCase("true")) {
 	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, CONFIG_PROTECTION_INTENSITY));
 		}
+		intensityOfSearchForLogEvents = Long.parseLong(properties.getProperty(CONFIG_LINKIN_INTENSITY, "1")) * 1000; 
+		intensityOfSearchForOwnLogEvent = Long.parseLong(properties.getProperty(CONFIG_VERIFYOWN_INTENSITY, "1")) * 1000; 
+		
 	}
 
 	/**
@@ -231,13 +240,17 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_EMPTY_LOG);
 				}
 			} else {
-				// FInd all new events from other nodes in database to link in
-				ProtectedLogEventIdentifier[] protectedLogEventIdentifiers = null;
-				protectedLogEventIdentifiers = getProtectedLogSession().findNewestProtectedLogEventsForAllOtherNodes(nodeGUID, lastTime - 60); // Have some marginal for processing time
-				if (protectedLogEventIdentifiers != null) {
-					for (int i=0; i<protectedLogEventIdentifiers.length; i++) {
-						linkedInEventIdentifiersCollection.add(protectedLogEventIdentifiers[i]);
+				// FInd all new events from other nodes in database to link in, if the right amount of time has passed since last time
+				long now = System.currentTimeMillis();
+				if (intensityOfSearchForLogEvents != -1000 && lastTimeOfSearchForLogEvents + intensityOfSearchForLogEvents < now) {
+					ProtectedLogEventIdentifier[] protectedLogEventIdentifiers = null;
+					protectedLogEventIdentifiers = getProtectedLogSession().findNewestProtectedLogEventsForAllOtherNodes(nodeGUID, lastTime - 60); // Have some marginal for processing time
+					if (protectedLogEventIdentifiers != null) {
+						for (int i=0; i<protectedLogEventIdentifiers.length; i++) {
+							linkedInEventIdentifiersCollection.add(protectedLogEventIdentifiers[i]);
+						}
 					}
+					lastTimeOfSearchForLogEvents = now;
 				}
 			}
 			// Verify all events about to be linked in (except this nodes last event that is verified seperately
@@ -277,16 +290,21 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				linkedInEventIdentifiersCollection.remove(iterator.next());
 			}
 			// Add previous ProtectedLogEventRow this node has produced, if any
+			// Start by verifying that the last event in the database is correct, but only do this if sufficient time has passed since this was last verified
 			if (counter != 0) {
-				ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = new ProtectedLogEventIdentifier(nodeGUID, counter-1);
-				linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
-				ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);
-				if (protectedLogEventRow == null) {
-			    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, counter-1));
-					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
-				} else if (!Arrays.equals(protectedLogEventRow.calculateHash(), lastProtectedLogRowHash)) {
-			    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", nodeGUID, counter-1));
-					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
+				long now = System.currentTimeMillis();
+				if (intensityOfSearchForOwnLogEvent != -1000 && lastTimeOfSearchForOwnLogEvent + intensityOfSearchForOwnLogEvent < now) {
+					ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = new ProtectedLogEventIdentifier(nodeGUID, counter-1);
+					linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
+					ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);
+					if (protectedLogEventRow == null) {
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, counter-1));
+						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+					} else if (!Arrays.equals(protectedLogEventRow.calculateHash(), lastProtectedLogRowHash)) {
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", nodeGUID, counter-1));
+						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
+					}
+					lastTimeOfSearchForOwnLogEvent = now;
 				}
 			}
 			linkedInEventIdentifiers = (ProtectedLogEventIdentifier[]) linkedInEventIdentifiersCollection.toArray(new ProtectedLogEventIdentifier[0]);
