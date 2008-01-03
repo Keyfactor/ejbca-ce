@@ -24,7 +24,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.12 2007-08-14 12:11:27 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.13 2008-01-03 12:06:26 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -42,7 +42,7 @@ public class PKCS11CAToken extends BaseCAToken {
         try {
         	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
         } catch (Throwable t) {
-            throw new InstantiationException("SUN pkcs11 wrapper class \"SunPKCS11\" not found.");
+            throw new InstantiationException("SUN pkcs11 wrapper class \"SunPKCS11\" not found");
         }
     }
 
