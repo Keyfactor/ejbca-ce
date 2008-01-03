@@ -112,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.65 2008-01-03 12:52:38 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.66 2008-01-03 16:15:29 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -743,7 +743,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
-     *  Method returning id's of all CA's avaible to the system. i.e. not have status
+     *  Method returning id's of all CA's available to the system. i.e. not having status
      * "external" or "waiting for certificate response"
      *
      * @return a Collection (Integer) of available CA id's

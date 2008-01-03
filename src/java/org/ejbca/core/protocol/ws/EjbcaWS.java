@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -87,7 +88,6 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ApprovedActionAdmin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -125,7 +125,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.22 2007-12-04 14:22:11 jeklund Exp $
+ * $Id: EjbcaWS.java,v 1.23 2008-01-03 16:15:30 anatom Exp $
  */
 
 @WebService
@@ -356,11 +356,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 
 		return retval;
-	}
-
-	public Certificate pkcs10Req(String username, String password,
-			String pkcs10, String hardTokenSN) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
-		 return new Certificate(processPkcs10Req(username, password, pkcs10, hardTokenSN, CertificateHelper.RESPONSETYPE_CERTIFICATE));
 	}
 
 	/**
@@ -1440,6 +1435,31 @@ public class EjbcaWS implements IEjbcaWS {
 		return retval;
 	}
 	
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCAs()
+	 */
+	public List<String> getAvailableCAs() throws EjbcaException, AuthorizationDeniedException {
+		ArrayList<String> ret = new ArrayList<String>();
+		Admin admin = getAdmin(true);
+		try {
+			Collection caids = getCAAdminSession().getAvailableCAs(admin);
+			HashMap map = getCAAdminSession().getCAIdToNameMap(admin);		
+			for (Iterator<Integer> i = caids.iterator(); i.hasNext(); ) {
+				String name = (String)map.get(i.next());
+				if (name != null) {
+					ret.add(name);
+				}
+			}
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, getCertificate : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, getCertificate : ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+		return ret;
+	}
+
 	private Admin getAdmin() throws AuthorizationDeniedException, EjbcaException{		  
 		  return getAdmin(false);
 	}

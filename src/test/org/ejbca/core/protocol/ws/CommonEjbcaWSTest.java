@@ -473,11 +473,11 @@ public class CommonEjbcaWSTest extends TestCase {
 		PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
 		
-		Certificate certenv =  ejbcaraws.pkcs10Req("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null);
+		CertificateResponse certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
 		assertNotNull(certenv);
 		
-		X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getCertificateData()); 
+		X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 
 		
 		assertNotNull(cert);
 		
@@ -1298,6 +1298,7 @@ public class CommonEjbcaWSTest extends TestCase {
     	profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
         profile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);
         profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
+        profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0,true);
         profile.setReUseKeyRevoceredCertificate(true);
     	getRAAdmin().addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
 
@@ -1357,6 +1358,17 @@ public class CommonEjbcaWSTest extends TestCase {
         assertEquals(key1, key2);
 
 	} // test20KeyRecover
+
+	protected void test21GetAvailableCAs(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+
+		List<String> cas = ejbcaraws.getAvailableCAs();
+		assertNotNull(cas);
+		assertTrue(cas.size() > 0);
+		assertTrue(cas.contains(getAdminCAName()));		
+	} // test21GetAvailableCAs
 
 	//
 	// Private methods

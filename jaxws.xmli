@@ -52,7 +52,8 @@
 	<target depends="ws.init" name="ws.gen.server">
        <apt fork="true"  destdir="tmp/jaxws/gen-classes/server" 
             sourcedestdir="src/jaxws/gen-java/server" sourcepath="src/java"
-            debug="true">
+            debug="true"
+            deprecation="true">
 		 <classpath>
 		  <path refid="jaxws.classpath" /> 
 		  <pathelement location="src" /> 
@@ -211,7 +212,7 @@
     </target>
 	
     <target name="test:runws" depends="test:compilews,j2ee:assert-run" description="run JAXWS JUnit testcases">
-    	<echo>Important: In order to run the tests you have performed a regular ant install at some point and not changed the default administrator group.
+    	<echo>Important: In order to run the tests you have performed a regular ant install, with AdminCA1, at some point and not changed the default administrator group.
     	</echo>
         <delete dir="${test.dir}/ws/reports" />
         <mkdir dir="${test.dir}/ws/reports/html" />

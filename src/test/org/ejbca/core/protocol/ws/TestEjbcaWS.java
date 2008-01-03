@@ -12,7 +12,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** To run you must have the file tmp/bin/junit/jndi.properties
  * 
- * @version $Id: TestEjbcaWS.java,v 1.12 2007-11-22 17:17:21 anatom Exp $
+ * @version $Id: TestEjbcaWS.java,v 1.13 2008-01-03 16:15:29 anatom Exp $
  */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
 	
@@ -111,6 +111,10 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     	test20KeyRecover(true);  
     }
 
+    public void test21GetAvailableCAs() throws Exception {
+    	test21GetAvailableCAs(true);  
+    }
+
     
     public void test99cleanUp() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
@@ -123,7 +127,7 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
 			while(iter.hasNext()){
 				AdminEntity adminEntity = (AdminEntity) iter.next();
 				if(adminEntity.getMatchValue().equals(wsTestAdminUsername)){
-					ArrayList list = new ArrayList();
+					ArrayList<AdminEntity> list = new ArrayList<AdminEntity>();
 					list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,wsTestAdminUsername,cainfo.getCAId()));
 					getAuthSession().removeAdminEntities(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId(), list);
 					getAuthSession().forceRuleUpdate(intAdmin);

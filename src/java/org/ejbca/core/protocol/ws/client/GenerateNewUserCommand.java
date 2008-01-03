@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.Certificate;
+import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
@@ -39,7 +39,7 @@ import org.ejbca.util.CertTools;
 /**
  * Adds a user to the database.
  *
- * @version $Id: GenerateNewUserCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: GenerateNewUserCommand.java,v 1.3 2008-01-03 16:15:30 anatom Exp $
  */
 public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -150,7 +150,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             	getPrintStream().println("User '"+userdata.getUsername()+"' has been added/edited.");
             	getPrintStream().println();       
             	
-             	Certificate result = getEjbcaRAWS().pkcs10Req(username,password,pkcs10,hardtokensn);
+             	CertificateResponse result = getEjbcaRAWS().pkcs10Request(username,password,pkcs10,hardtokensn,CertificateHelper.RESPONSETYPE_CERTIFICATE);
             	
             	if(result==null){
             		getPrintStream().println("No certificate could be generated for user, check server logs for error.");
@@ -168,12 +168,12 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             		
             		if(encoding.equals("DER")){
             			FileOutputStream fos = new FileOutputStream(filepath);
-            			fos.write(CertificateHelper.getCertificate(result.getCertificateData()).getEncoded());
+            			fos.write(CertificateHelper.getCertificate(result.getData()).getEncoded());
             			fos.close();
             		}else{
             			FileOutputStream fos = new FileOutputStream(filepath);
             			ArrayList<java.security.cert.Certificate> list = new ArrayList<java.security.cert.Certificate>();
-            			list.add(CertificateHelper.getCertificate(result.getCertificateData()));
+            			list.add(CertificateHelper.getCertificate(result.getData()));
             			fos.write(CertTools.getPEMFromCerts(list));
             			fos.close();            				            				
             		}

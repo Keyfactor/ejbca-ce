@@ -57,7 +57,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.10 2007-11-22 17:17:20 anatom Exp $
+ * $Id: IEjbcaWS.java,v 1.11 2008-01-03 16:15:30 anatom Exp $
  */
 public interface IEjbcaWS {
 	
@@ -131,36 +131,6 @@ public interface IEjbcaWS {
 			boolean onlyValid) throws AuthorizationDeniedException,
 			NotFoundException, EjbcaException;
 
-	/**
-	 * Method to use to generate a certificate for a user. The method must be preceded by
-	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users.
-	 * 
-	 * Observe, the user must first have added/set the status to new with edituser command
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/view_end_entity
-	 * - /endentityprofilesrules/<end entity profile of the user>/view_end_entity
-	 * - /ca_functionality/create_certificate
-	 * - /ca/<ca of user>
-	 * 
-	 * @param username the unique username
-	 * @param password the password sent with editUser call
-	 * @param pkcs10 the PKCS10 (only the public key is used.)
-	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-	 * possible to map it by give the hardTokenSN here, this will simplyfy revokation of a tokens
-	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
-	 * @return the generated certificate.
-	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws NotFoundException if user cannot be found
-	 * @deprecated 
-	 */
-
-	public abstract Certificate pkcs10Req(String username, String password,
-			String pkcs10, String hardTokenSN)
-			throws AuthorizationDeniedException, NotFoundException,
-			EjbcaException;
 	
 	/**
 	 * Method to use to generate a certificate for a user. The method must be preceded by
@@ -573,4 +543,24 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException if error occured server side
 	 */
 	public abstract Certificate getCertificate(String certSNinHex, String issuerDN)   throws AuthorizationDeniedException, EjbcaException;
+	
+	/**
+	 * Method used to fetch a list of the names of available CAs, i.e. not having status "external" or "waiting for certificate response".
+	 * 
+	 * Authorization requirements:
+	 * - Administrator flag set
+	 * - /administrator
+	 * 
+	 * If not turned of in jaxws.properties then only a valid certificate required
+	 * 
+	 * 
+	 * @param userDataSourceNames a List of User Data Source Names
+	 * @param searchString to identify the userdata.
+	 * @return a List of UserDataSourceVOWS of the data in the specified UserDataSources, if no user data is found will an empty list be returned. 
+	 * @throws UserDataSourceException if an error occured connecting to one of 
+	 * UserDataSources.
+	 */
+	public abstract List<String> getAvailableCAs()
+			throws EjbcaException, AuthorizationDeniedException;
+
 }
