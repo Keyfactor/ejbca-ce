@@ -292,10 +292,10 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			// Add previous ProtectedLogEventRow this node has produced, if any
 			// Start by verifying that the last event in the database is correct, but only do this if sufficient time has passed since this was last verified
 			if (counter != 0) {
+				ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = new ProtectedLogEventIdentifier(nodeGUID, counter-1);
+				linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
 				long now = System.currentTimeMillis();
 				if (intensityOfSearchForOwnLogEvent != -1000 && lastTimeOfSearchForOwnLogEvent + intensityOfSearchForOwnLogEvent < now) {
-					ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = new ProtectedLogEventIdentifier(nodeGUID, counter-1);
-					linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
 					ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);
 					if (protectedLogEventRow == null) {
 				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, counter-1));
