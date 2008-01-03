@@ -171,7 +171,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.44 2007-12-21 09:03:10 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.45 2008-01-03 12:52:39 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1285,6 +1285,8 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     } // authUser
 
+    /** Finishes user, i.e. set staatus to generated, if it should do so.
+     * The authentication session is responsible for determining if this should be done or not */ 
     private void finishUser(Admin admin, String username, String password) {
         // Finnish user and set new status
         try {

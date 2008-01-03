@@ -20,6 +20,7 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
@@ -40,6 +41,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
@@ -50,7 +52,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.10 2007-12-04 14:23:12 jeklund Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.11 2008-01-03 12:52:40 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -275,6 +277,8 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * Set the status of a user to finished, called when a user has been successfully processed. If
      * possible sets users status to UserData.STATUS_GENERATED, which means that the user cannot
      * be authenticated anymore. NOTE: May not have any effect of user database is remote.
+     * User data may contain a counter with nr of requests before used should be set to generated. In this case
+     * this counter will be decreased, and if it reaches 0 status will be generated. 
      *
      * @param username unique username within the instance
      * @param password password for the user
@@ -294,9 +298,14 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
         	// This admin can be the public web user, which may not be allowed to change status,
         	// this is a bit ugly, but what can a man do...
         	Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
-        	getUserSession().setUserStatus(statusadmin, username, UserDataConstants.STATUS_GENERATED);
-        	String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
-        	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);
+        	
+        	// See if we are allowed fo make more requests than this one
+    		int counter = getUserSession().decRequestCounter(statusadmin, username);
+    		if (counter <= 0) {
+    			getUserSession().setUserStatus(statusadmin, username, UserDataConstants.STATUS_GENERATED);
+    			String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
+    			getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);        		
+    		} 
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	

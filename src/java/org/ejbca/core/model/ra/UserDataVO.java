@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.10 2007-10-31 14:00:36 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.11 2008-01-03 12:52:41 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -107,7 +107,7 @@ public class UserDataVO implements Serializable {
     }
     
     /**
-     * Creates new UserDataVO. This constructor shouldonly be used from UserDataSource 
+     * Creates new UserDataVO. This constructor should only be used from UserDataSource 
      * implementations. Status and dates aren't used in these cases.
      * 
      * @param user 

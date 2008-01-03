@@ -20,6 +20,9 @@ package org.ejbca.core.model;
 
 
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.ejb.FinderException;
 import javax.naming.InitialContext;
@@ -31,9 +34,12 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 
 
@@ -42,7 +48,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.9 2007-07-16 13:23:19 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.10 2008-01-03 12:52:41 anatom Exp $
  */
 public class ApplyBean implements java.io.Serializable {
     /**
@@ -79,6 +85,9 @@ public class ApplyBean implements java.io.Serializable {
             obj1 = jndicontext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
             certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
                     ICertificateStoreSessionHome.class);
+            obj1 = jndicontext.lookup(IRaAdminSessionHome.JNDI_NAME);
+            rasessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
+            		IRaAdminSessionHome.class);
             initialized = true;
         }
     }
@@ -189,10 +198,93 @@ public class ApplyBean implements java.io.Serializable {
         return returnval;
     }
 
+    /**
+     * Method that returns the avialable certificate profiles for the end entity profile 
+     * a user is registered with. Returns null if user couldn't be found in database.
+     *
+     * @param username user whose certificate profiles are requested.
+     *
+     * @return array of available certificate profile names
+     */
+    public String[] availableCertificateProfiles(String username) throws Exception {
+        String[] returnval = null;        
+        IUserAdminSessionRemote useradminsession = useradminhome.create();
+
+        if(!username.equals(this.username) || this.useradmindata == null){        
+          try {
+            this.useradmindata = useradminsession.findUser(administrator, username);
+          } catch (FinderException fe) {
+          }
+        }  
+
+        if (useradmindata != null) {
+            IRaAdminSessionRemote rasession = rasessionhome.create();
+            ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();
+            EndEntityProfile eprof = rasession.getEndEntityProfile(administrator, useradmindata.getEndEntityProfileId());
+            Collection c = eprof.getAvailableCertificateProfileIds();
+            if (!c.isEmpty()) {
+            	ArrayList names = new ArrayList();
+                for (Iterator i = c.iterator(); i.hasNext(); ) {
+                	int id = Integer.valueOf((String)i.next());
+                    String name = certstoresession.getCertificateProfileName(administrator, id);
+                	names.add(name);
+                }
+                returnval = (String[])names.toArray(new String[0]);            	
+            }
+        }
+        this.username = username;
+
+        if (log.isDebugEnabled()) {
+        	String retdebug = "";
+        	if (returnval != null) {
+        		for (int i=0;i<returnval.length;i++) {
+        			if (StringUtils.isNotEmpty(retdebug)) {
+        				retdebug += ",";
+        			}
+            		retdebug += returnval[i];        			
+        		}
+        	}
+        	log.debug("<availableCertificateProfiles(" + username + ") --> " + retdebug);
+        }
+        return returnval;
+    }
+
+    /**
+     * Method that returns the certificate profile registered for the end entity. 
+     * Returns null if user couldn't be found in database.
+     *
+     * @param username user whose certificate profile is requested.
+     *
+     * @return certificate profile name
+     */
+    public String getUserCertificateProfile(String username) throws Exception {
+        String returnval = null;        
+        IUserAdminSessionRemote useradminsession = useradminhome.create();
+
+        if(!username.equals(this.username) || this.useradmindata == null){        
+          try {
+            this.useradmindata = useradminsession.findUser(administrator, username);
+          } catch (FinderException fe) {
+          }
+        }  
+
+        if (useradmindata != null) {
+            ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();
+            returnval = certstoresession.getCertificateProfileName(administrator, useradmindata.getCertificateProfileId());
+        }
+        this.username = username;
+
+        if (log.isDebugEnabled()) {
+        	log.debug("<getUserCertificateProfile(" + username + ") --> " + returnval);
+        }
+        return returnval;
+    }
+    
     // Private methods
     // Private fields
     private IUserAdminSessionHome useradminhome;
     private ICertificateStoreSessionHome certificatesessionhome;
+    private IRaAdminSessionHome rasessionhome;
     private boolean initialized;
     private Admin administrator;
     private String username = "";
@@ -262,4 +354,24 @@ public class ApplyBean implements java.io.Serializable {
 	public int[] getDefaultBitLengths() throws Exception {
 		return SecConst.DEFAULT_KEY_LENGTHS;
 	}
+	
+    /**
+     * Returns the certificate profiles available to the default user.
+     * @see #setDefaultUsername(String) 
+     * @see #availableCertificateProfiles(String)
+     * @return the certificate profile names available to the default user.
+     * @throws Exception if an error occurs
+     */
+	public String[] getAvailableCertificateProfiles() throws Exception {
+		return availableCertificateProfiles(defaultUsername);
+	}
+	/** Returns the certificate profile the user is registered with
+	 * 
+	 * @return certificate profile name
+	 * @throws Exception id an error occurs
+	 */
+	public String getUserCertificateProfile() throws Exception {
+		return getUserCertificateProfile(defaultUsername);
+	}
+
 }

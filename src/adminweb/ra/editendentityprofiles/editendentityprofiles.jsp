@@ -105,7 +105,8 @@
   static final String CHECKBOX_USE_SENDNOTIFICATION  = "checkboxusesendnotification";
   static final String CHECKBOX_USE_HARDTOKENISSUERS  = "checkboxusehardtokenissuers";
   static final String CHECKBOX_USE_PRINTING          = "checkboxuseprinting";
-
+  static final String CHECKBOX_USE_ALLOWEDRQUESTS    = "checkboxuseallowedrequests";
+  
   
   static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
   static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecertprofiles";
@@ -123,6 +124,7 @@
   static final String SELECT_PRINTINGPRINTERNAME            = "selectprinteringprintername";
   static final String SELECT_PRINTINGCOPIES                 = "selectprinteringcopies";
 
+  static final String SELECT_ALLOWEDREQUESTS                = "selectallowedrequests";
 
   static final String SELECT_ADDSUBJECTDN                   = "selectaddsubjectdn";
   static final String BUTTON_DELETESUBJECTDN                = "buttondeletesubjectdn";
@@ -586,7 +588,18 @@
 					profiledata.setValue(EndEntityProfile.ENDTIME, 0, "");
 					profiledata.setUse(EndEntityProfile.ENDTIME, 0, false);
 				}
-          
+
+				value = request.getParameter(CHECKBOX_USE_ALLOWEDRQUESTS);
+				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
+					value = request.getParameter(SELECT_ALLOWEDREQUESTS);
+					if( value != null ) {
+						profiledata.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, value);
+					}
+					profiledata.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+				} else {
+					profiledata.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
+				}
+
              if(request.getParameter(BUTTON_DELETESUBJECTDN) != null){  
                numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
                int pointer = 0;

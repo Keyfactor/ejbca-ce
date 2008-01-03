@@ -24,6 +24,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Enumeration;
 
 import javax.ejb.EJBException;
@@ -43,6 +44,8 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
@@ -89,7 +92,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.21 2007-11-22 17:17:19 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.22 2008-01-03 12:52:38 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -107,10 +110,10 @@ public class CertReqServlet extends HttpServlet {
     private byte[] NL = "\n".getBytes();
 
     private IUserAdminSessionHome useradminhome = null;
+    private ICertificateStoreSessionHome storehome = null;
     private IRaAdminSessionHome raadminhome = null;
 
     private ISignSessionLocal signsession = null;
-    private ICAAdminSessionLocal casession = null;
 
     private synchronized ISignSessionLocal getSignSession(){
     	if(signsession == null){	
@@ -123,17 +126,7 @@ public class CertReqServlet extends HttpServlet {
     	}
     	return signsession;
     }
-    private synchronized ICAAdminSessionLocal getCASession(){
-    	if(casession == null){	
-    		try {
-    			ICAAdminSessionLocalHome cahome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-    			casession = cahome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return casession;
-    }
+    
     /**
      * Servlet init
      *
@@ -151,9 +144,11 @@ public class CertReqServlet extends HttpServlet {
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
             useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
+                             ctx.lookup(IUserAdminSessionHome.JNDI_NAME), IUserAdminSessionHome.class );
             raadminhome   = (IRaAdminSessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class );            
+                             ctx.lookup(IRaAdminSessionHome.JNDI_NAME), IRaAdminSessionHome.class );            
+            storehome   = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
+                    ctx.lookup(ICertificateStoreSessionHome.JNDI_NAME), ICertificateStoreSessionHome.class );            
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -180,6 +175,7 @@ public class CertReqServlet extends HttpServlet {
             String keylengthstring = request.getParameter("keylength");
             String keyalgstring = request.getParameter("keyalg");
             String openvpn = request.getParameter("openvpn");
+            String certprofile = request.getParameter("certprofile");
 			String keylength = "1024";
 			String keyalg = CATokenConstants.KEYALGORITHM_RSA;
 			
@@ -205,6 +201,7 @@ public class CertReqServlet extends HttpServlet {
             Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
 
             IUserAdminSessionRemote adminsession = useradminhome.create();
+            ICertificateStoreSessionRemote storesession = storehome.create();
             IRaAdminSessionRemote raadminsession = raadminhome.create();            
             ISignSessionLocal signsession = getSignSession();
             RequestHelper helper = new RequestHelper(administrator, debug);
@@ -230,6 +227,26 @@ public class CertReqServlet extends HttpServlet {
             int endEntityProfileId = data.getEndEntityProfileId();
             EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(administrator, endEntityProfileId);
             boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
+            // Set a new certificate profile, if we have requested one specific
+            if (StringUtils.isNotEmpty(certprofile)) {
+            	boolean clearpwd = StringUtils.isNotEmpty(data.getPassword());
+            	int id = storesession.getCertificateProfileId(administrator, certprofile);
+            	if (id > 0) {
+            		// Check if it is in allowed profiles in the entity profile
+            		Collection c = endEntityProfile.getAvailableCertificateProfileIds();
+            		if (c.contains(String.valueOf(id))) {
+                    	data.setCertificateProfileId(id);
+                    	// This admin can be the public web user, which may not be allowed to change status,
+                    	// this is a bit ugly, but what can a man do...
+                    	Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
+                    	adminsession.changeUser(tempadmin, data, clearpwd);            		            			
+            		} else {
+                		log.error("Requested certificate profile is not allowed in end entity profile, using default: "+certprofile);
+            		}
+            	} else {
+            		log.error("Requested certificate profile name does not exist, using default: "+certprofile);
+            	}
+            }
 
             // get users Token Type.
             tokentype = data.getTokenType();

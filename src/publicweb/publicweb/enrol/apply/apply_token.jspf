@@ -1,4 +1,4 @@
-<h1 class="title">@EJBCA@ Mozilla Certificate Enrollment</h1>
+<h1 class="title">@EJBCA@ Token Certificate Enrollment</h1>
 <hr />
 
 <p>Welcome to certificate enrollment.</p>
@@ -33,17 +33,28 @@
 
 <form action="../certreq" enctype="x-www-form-encoded" method="post">
   <fieldset>
-	<legend>Key length</legend>
+	<legend>Options</legend>
+	<i><c:out value="Leave values as default if unsure."/></i>
+	<br/>
 	<input name="user" type="hidden" value="${username}">
 	<input name="password" type="hidden" value="${password}">
-	<label for="keylength">Key length</label>
+	<label for="keylength">Key length:</label>
         <select name="keylength" id="keylength" size="1">
 			<c:forEach var="keylength" items="${availablekeylengths}">
 				<option value="${keylength}">${keylength} bits</option>
 			</c:forEach>
         </select>
     <br />
-	<label for="openvpn">OpenVPN</label>
+    <label for="certprofile">Certificate profile:</label>
+        <select name="certprofile" id="certprofile" size="1">
+			<c:forEach var="profile" items="${availableCertProfiles}">
+				<option value="${profile}" 
+				<c:if test="${userCertProfile==profile}">selected</c:if>>${profile}
+				</option>
+			</c:forEach>
+        </select>
+    <br />
+	<label for="openvpn">OpenVPN installer:</label>
 	<input type="checkbox" name="openvpn" id="openvpn" accesskey="o" />
 	<br />
 	<label for="ok"></label>

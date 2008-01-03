@@ -311,7 +311,7 @@
 
 <form name="CertReqForm" action="../certreq" enctype="x-www-form-encoded" method="POST">
   <fieldset>
-    <legend>Cryptographic Service Provider</legend>
+    <legend>Options</legend>
 
 	<input name="user" type="hidden" value="${username}" />
 	<input name="password" type="hidden" value="${password}" />
@@ -330,6 +330,16 @@
       <option value="1024" selected="selected">1024</option>
       <option value="2048">2048</option>
     </select>
+    <br />
+    
+    <label for="certprofile">Certificate profile:</label>
+        <select name="certprofile" id="certprofile" size="1">
+			<c:forEach var="profile" items="${availableCertProfiles}">
+				<option value="${profile}" 
+				<c:if test="${userCertProfile==profile}">selected</c:if>>${profile}
+				</option>
+			</c:forEach>
+        </select>
     <br />
 
     <label for="enchancedeid">Add to eID card:</label>

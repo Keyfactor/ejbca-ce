@@ -19,6 +19,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 
 /**
@@ -26,7 +27,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.14 2007-10-31 14:00:36 anatom Exp $
+ * @version $Id: ExtendedInformation.java,v 1.15 2008-01-03 12:52:41 anatom Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
@@ -60,6 +61,21 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     protected static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
     /** Custom data can be used by various custom work-flows and other non-standard things to store information needed  */
     protected static final String CUSTOMDATA = "customdata_";
+    
+    /** Identifier for Custom data holding a base64 encoded PKCS10 request
+     * extInfo.setCustomData("PKCS10", new String(Base64.encode(pkcs10.getEncoded())));
+     */
+    public static final String CUSTOM_PKCS10 = "PKCS10";
+    /** Identifier for Custom data holding a end time when the users certificate should be valid
+     * extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
+     */
+    public static final String CUSTOM_STARTTIME = EndEntityProfile.STARTTIME;
+    /** Identifier for Custom data holding a end time when the users certificate should be valid
+     * extInfo.setCustomData(EndEntityProfile.ENDTIME, "");
+     */
+    public static final String CUSTOM_ENDTIME = EndEntityProfile.ENDTIME;
+    /** The (optional) counter is the counter how many request have been received, will decrease for every request until 0. */
+    public static final String CUSTOM_REQUESTCOUNTER = "REQUESTCOUNTER";
     
     
     // Public constants

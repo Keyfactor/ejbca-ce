@@ -40,6 +40,8 @@
 	<c:if test="${username != null && password != null && browser != null}">
 		<c:set var="tokentype" value="${applybean.tokenType}" />
 		<c:set var="availablekeylengths" value="${applybean.availableBitLengths}" />
+		<c:set var="availableCertProfiles" value="${applybean.availableCertificateProfiles}" />
+		<c:set var="userCertProfile" value="${applybean.userCertificateProfile}" />
 		<c:set var="caid" value="${applybean.CAId}" />
 		<jsp:useBean id="caid" type="java.lang.Integer" />
 		<% finder.setCurrentCA(caid); %>

@@ -29,7 +29,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests the end entity profile entity bean.
  *
- * @version $Id: TestEndEntityProfile.java,v 1.1 2007-06-28 12:01:59 jeklund Exp $
+ * @version $Id: TestEndEntityProfile.java,v 1.2 2008-01-03 12:52:37 anatom Exp $
  */
 public class TestEndEntityProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestEndEntityProfile.class);
@@ -56,7 +56,7 @@ public class TestEndEntityProfile extends TestCase {
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("RaAdminSession");
+                Object obj1 = jndiContext.lookup(IRaAdminSessionHome.JNDI_NAME);
                 cacheHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
 
             }

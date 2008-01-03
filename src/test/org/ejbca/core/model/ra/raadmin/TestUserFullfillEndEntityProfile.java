@@ -32,7 +32,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests the end entity profile entity bean profile checks only
  *
- * @version $Id $
+ * @version $Id: TestUserFullfillEndEntityProfile.java,v 1.2 2008-01-03 12:52:37 anatom Exp $
  */
 public class TestUserFullfillEndEntityProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestUserFullfillEndEntityProfile.class);
@@ -952,6 +952,37 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
 		if ( magicDateTime != magicDateTime2 ) {
 	        assertTrue("Error: Java does not parse dates correctly. "+magicDateTime+" "+magicDateTime2+" "+value1+" "+value2, false);
 		}
+		
+        // Test allow multiple requests
+        profile = new EndEntityProfile();
+        ei = new ExtendedInformation();
+        // Use empty, should fail
+        profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
+        profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
+        try { 
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
+        			false, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
+        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	assertTrue("Error: Allowedrequests not checked correctly, should be allowed.", false);
+        } 
+        ei.setCustomData(EndEntityProfile.ALLOWEDREQUESTS, "2");
+        try { 
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
+        			false, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
+        	assertTrue("Error: Allowed requests was not checked correctly, should not be allowed.", false);
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+        } 
+        profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+        try { 
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
+        			false, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
+        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	assertTrue("Error: Allowedrequests not checked correctly, should be allowed.", false);
+        } 
+
         log.debug("<test01fulfillEndEntityProfiles()");
     } // test01fulfillEndEntityProfiles
 } // TestUserFullfillEndEntityProfile

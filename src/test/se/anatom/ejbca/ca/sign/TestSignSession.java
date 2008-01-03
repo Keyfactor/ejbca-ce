@@ -48,13 +48,16 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -68,7 +71,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.34 2007-08-21 08:45:10 jeklund Exp $
+ * @version $Id: TestSignSession.java,v 1.35 2008-01-03 12:52:39 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -1227,7 +1230,87 @@ public class TestSignSession extends TestCase {
 
         log.debug("<test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
     }
-    
+
+    /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test20MultiRequests() throws Exception {
+        log.debug(">test20MultiRequests()");
+
+        // Change already existing user 
+        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        usersession.changeUser(admin, user, false);
+        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+
+        // create first cert
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create cert", cert);
+        //log.debug("Cert=" + cert.toString());
+        // Normal DN order
+        assertEquals(cert.getSubjectX500Principal().getName(), "C=SE,O=AnaTom,CN=foo");
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        // It should only work once, not twice times
+        boolean authstatus = false;
+        try {
+            cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());        	
+        } catch (AuthStatusException e) {
+        	authstatus = true;        	
+        }
+        assertTrue("Should have failed to create cert", authstatus);
+
+        // Change already existing user to add extended information with counter
+        ExtendedInformation ei = new ExtendedInformation();
+        int allowedrequests = 2;
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
+        user.setExtendedinformation(ei);
+        usersession.changeUser(admin, user, false);
+        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+
+        // create first cert
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create cert", cert);
+        //log.debug("Cert=" + cert.toString());
+        // Normal DN order
+        assertEquals(cert.getSubjectX500Principal().getName(), "C=SE,O=AnaTom,CN=foo");
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        String serno = cert.getSerialNumber().toString(16);
+
+        // It should work to get two certificates
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create cert", cert);
+        //log.debug("Cert=" + cert.toString());
+        // Normal DN order
+        assertEquals(cert.getSubjectX500Principal().getName(), "C=SE,O=AnaTom,CN=foo");
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        String serno1 = cert.getSerialNumber().toString(16);
+        assertFalse(serno1.equals(serno));
+
+        // It should only work twice, not three times
+        authstatus = false;
+        try {
+            cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());        	
+        } catch (AuthStatusException e) {
+        	authstatus = true;        	
+        }
+        assertTrue("Should have failed to create cert", authstatus);
+
+        log.debug("<test20MultiRequests()");
+    }
+
     /**
      * creates new user
      *

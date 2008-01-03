@@ -44,6 +44,7 @@
   static final String SELECT_HARDTOKENISSUER      = "selecthardtokenissuer";
   static final String SELECT_CHANGE_STATUS        = "selectchangestatus"; 
   static final String SELECT_CA                   = "selectca";
+  static final String SELECT_ALLOWEDREQUESTS      = "selectallowedrequests"; 
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_SUBJECTDN                  = "checkboxsubjectdn";
@@ -301,6 +302,13 @@
                  }
                }
                newuser.setSubjectDirAttributes(subjectdirattr);
+
+               value = request.getParameter(SELECT_ALLOWEDREQUESTS);
+               if(value !=null){
+              	 ExtendedInformation ei = newuser.getExtendedInformation();
+               	 ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
+               	 newuser.setExtendedInformation(ei);
+               }
 
                value = request.getParameter(CHECKBOX_ADMINISTRATOR);
                if(value !=null){
@@ -1313,6 +1321,38 @@ function checkUseInBatch(){
 	 <td></td>
        </tr>
        <% } %>
+       
+       <!--  Max number of allowed requests for a password -->
+       <% if(profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)){ %>
+       <% 
+           String defaultnrofrequests = profile.getValue(EndEntityProfile.ALLOWEDREQUESTS,0);
+           if (defaultnrofrequests == null) {
+        	   defaultnrofrequests = "1";
+           }
+           ExtendedInformation ei = userdata.getExtendedInformation();
+           String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+           if (counter == null) {
+        	   counter = defaultnrofrequests;
+           }
+         %>
+       
+       <tr id="Row<%=(row++)%2%>">
+  	   <td align="right"><%= ejbcawebbean.getText("ALLOWEDREQUESTS") %></td>
+	   <td>
+            <select name="<%=SELECT_ALLOWEDREQUESTS %>" size="1" >
+	            <% for(int j=0;j< 6;j++){
+	            %>
+	            <option
+	            <%     if(counter.equals(Integer.toString(j)))
+	                       out.write(" selected "); 
+	            %>
+	            value='<%=j%>'><%=j%></option>
+	            <% }%>
+            </select>
+         </td>
+       </tr>
+       <%} %>
+       
       <% if(profile.getUse(EndEntityProfile.ADMINISTRATOR,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 

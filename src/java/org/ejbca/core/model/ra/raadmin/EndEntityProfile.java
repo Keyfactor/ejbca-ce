@@ -52,7 +52,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.27 2007-11-27 16:05:04 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.28 2008-01-03 12:52:41 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -60,7 +60,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 8;
+    public static final float LATEST_VERSION = 9;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -71,7 +71,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -8356152324295231461L;
+    private static final long serialVersionUID = -8356152324295231462L;
     
     // Public constants
     /** Constant values for end entity profile. */
@@ -143,6 +143,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	// Load all DN, altName and directoryAttributes from DnComponents.
     	dataConstants.putAll(DnComponents.getProfilenameIdMap());
     	
+    	dataConstants.put("ALLOWEDREQUESTS", new Integer(97));
     	dataConstants.put("STARTTIME", new Integer(98));
     	dataConstants.put("ENDTIME", new Integer(99));
     }
@@ -161,6 +162,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final String ADMINISTRATOR      = "ADMINISTRATOR";
     public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
     public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
+    /** A list of available certificate profile names can be retrieved with getAvailableCertificateProfileNames() */
     public static final String AVAILCERTPROFILES  = "AVAILCERTPROFILES";
     public static final String DEFKEYSTORE        = "DEFKEYSTORE";
     public static final String AVAILKEYSTORE      = "AVAILKEYSTORE";
@@ -171,6 +173,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final String AVAILCAS           = "AVAILCAS";
     public static final String STARTTIME          = "STARTTIME";
     public static final String ENDTIME            = "ENDTIME";
+    /** A maximum value of the (optional) counter specifying how many certificate requests can be processed
+     * before user is finalized (status set to GENERATED). Counter is only used when finishUser is
+     * enabled in the CA (by default it is)
+     */
+    public static final String ALLOWEDREQUESTS    = "ALLOWEDREQUESTS";
 
     public static final String SPLITCHAR       = ";";
 
@@ -237,6 +244,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setRequired(AVAILCAS,0,true);
         setRequired(STARTTIME,0,false);
         setRequired(ENDTIME,0,false);
+        setRequired(ALLOWEDREQUESTS,0,false);
         setValue(DEFAULTCERTPROFILE,0,"1");
         setValue(AVAILCERTPROFILES,0,"1");
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
@@ -246,6 +254,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setUse(AVAILTOKENISSUER, 0, false);
         setUse(STARTTIME,0,false);
         setUse(ENDTIME,0,false);
+        setUse(ALLOWEDREQUESTS,0,false);
       }else{
          // initialize profile data
          ArrayList numberoffields = new ArrayList(dataConstants.size());
@@ -272,6 +281,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(DEFAULTCA);         
          addField(STARTTIME);         
          addField(ENDTIME);         
+         addField(ALLOWEDREQUESTS);         
          
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
@@ -284,6 +294,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setRequired(AVAILCAS,0,true);
          setRequired(STARTTIME,0,false);
          setRequired(ENDTIME,0,false);
+         setRequired(ALLOWEDREQUESTS,0,false);
          
          setValue(DEFAULTCERTPROFILE,0,"1");
          setValue(AVAILCERTPROFILES,0,"1;2;3");
@@ -294,6 +305,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setUse(AVAILTOKENISSUER, 0, false);
          setUse(STARTTIME,0,false);
          setUse(ENDTIME,0,false);
+         setUse(ALLOWEDREQUESTS,0,false);
       }
     }
 
@@ -534,11 +546,31 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         return returnval;
       }
 
+    /** Gets a Collection of available CA Ids (as Strings). 
+     * Use String.valueOf(caidstring) to get the int value of the CA id.
+     * 
+     * @return a Collection of String, where the string is an integer.
+     */
     public Collection getAvailableCAs(){
         ArrayList availablecaids = new ArrayList();
         availablecaids.addAll(Arrays.asList(getValue(AVAILCAS,0).split(SPLITCHAR)));
         return availablecaids;
     }
+    
+    /** Gets a Collection of available certificate profile ids
+     * Use String.valueOf(caidstring) to get the int value
+     * 
+     * @return a Collection of String, where the string is an integer.
+     */
+    public Collection getAvailableCertificateProfileIds() {
+        ArrayList profiles = new ArrayList();
+        String list = getValue(AVAILCERTPROFILES,0);
+        if (list != null) {
+            profiles.addAll(Arrays.asList(list.split(SPLITCHAR)));        	
+        }
+        return profiles;    	
+    }
+
     public int getDefaultCA(){
     	int ret = -1;
     	String str = getValue(DEFAULTCA,0);
@@ -994,6 +1026,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(startTimeDate) + " "+
 				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(endTimeDate));
 	  }
+	  
+      String allowedRequests = null;
+      if ( ei != null ) {
+    	  allowedRequests = ei.getCustomData(EndEntityProfile.ALLOWEDREQUESTS);
+      }
+      if ( (allowedRequests != null) && !getUse(ALLOWEDREQUESTS, 0) ) {
+    	  throw new UserDoesntFullfillEndEntityProfile("Allowed requests used, but not permitted by profile.");
+      }
+
     } // doesUserFullfillEndEntityProfile
     
     /**
@@ -1255,6 +1296,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             		addUserNotification(not);
             	}
             }
+            // Support for allowed requests in profile version 9
+            if (getVersion() < 9) {
+                ArrayList numberoffields = (ArrayList) data.get(NUMBERARRAY);                
+                for(int i =numberoffields.size(); i < dataConstants.size(); i++){
+                	numberoffields.add(new Integer(0));
+                }               
+                data.put(NUMBERARRAY,numberoffields);
+                addField(ALLOWEDREQUESTS);
+                setValue(ALLOWEDREQUESTS, 0, "");
+                setRequired(ALLOWEDREQUESTS, 0, false);
+                setUse(ALLOWEDREQUESTS, 0, false);
+                setModifyable(ALLOWEDREQUESTS, 0, true);            	
+            }
+
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.debug("<upgrade");

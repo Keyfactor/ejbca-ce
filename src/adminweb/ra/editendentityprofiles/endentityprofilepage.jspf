@@ -926,6 +926,38 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
     <% } %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("ALLOWEDREQUESTS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <% used = profiledata.getUse(EndEntityProfile.ALLOWEDREQUESTS,0); 
+           String nrofrequests = profiledata.getValue(EndEntityProfile.ALLOWEDREQUESTS,0);
+           if (nrofrequests == null) {
+               nrofrequests = "1";
+           } 
+         %>
+         <%= ejbcawebbean.getText("USE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_USE_ALLOWEDRQUESTS %>" value="<%=CHECKBOX_VALUE %>"
+           <% if(used)
+                 out.write("CHECKED");
+           %>><br/>
+           <%= ejbcawebbean.getText("DEFAULT") %> 
+            <select name="<%=SELECT_ALLOWEDREQUESTS %>" size="1" >
+	            <% for(int j=1;j< 6;j++){
+	            %>
+	            <option
+	            <%     if(nrofrequests.equals(Integer.toString(j)))
+	                       out.write(" selected "); 
+	            %>
+	            value='<%=j%>'><%=j%></option>
+	            <% }%>
+            </select>
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>">       
       <td width="5%" valign="top">
          &nbsp;

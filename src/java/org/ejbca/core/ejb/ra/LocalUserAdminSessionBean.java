@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.56 2007-12-07 15:07:57 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.57 2008-01-03 12:52:40 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -575,6 +575,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws ApprovalException if an approval already is waiting for specified action 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      * @throws EJBException if a communication or other error occurs.
+     * 
+     * @deprecated use {@link #changeUser(Admin, UserDataVO, boolean)} instead
+     * 
      * @ejb.interface-method
      */
     public void changeUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
@@ -665,9 +668,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 	            String msg = intres.getLocalizedMessage("ra.approvaledit");            	
 				throw new WaitingForApprovalException(msg);
 			}
-
         }   
-        
         
         try {
             UserDataPK pk = new UserDataPK(userdata.getUsername());
@@ -683,11 +684,19 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             data1.setCertificateProfileId(userdata.getCertificateProfileId());
             data1.setTokenType(userdata.getTokenType());
             data1.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
-            data1.setExtendedInformation(userdata.getExtendedinformation());
+            ExtendedInformation ei = userdata.getExtendedinformation();
+            data1.setExtendedInformation(ei);
             oldstatus = data1.getStatus();
             if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && !(userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INPROCESS)){
               getKeyRecoverySession().unmarkUser(admin,userdata.getUsername());	
             }
+    		if ( (userdata.getStatus() == UserDataConstants.STATUS_NEW) && (oldstatus != UserDataConstants.STATUS_NEW) ) {
+                // If status is set to new, we should re-set the allowed request counter to the default values
+    			resetRequestCounter(admin, data1, false);
+    		} else {
+    			// If status is not new, we will only remove the counter if the profile does not use it
+    			resetRequestCounter(admin, data1, true);    			
+    		}
             data1.setStatus(userdata.getStatus());
             if(newpassword != null){
                 if(clearpwd) {
@@ -791,11 +800,75 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 	};
     
     /**
+     * Decreases (the optional) request counter by 1, until it reaches 0. Returns the new value. If the value is already 0, -1 is returned, but the 
+     * -1 is not stored in the database.
+     *
+     * @param username the unique username.
+     * @param status   the new status, from 'UserData'.
+     * @ejb.interface-method
+     */
+    public int decRequestCounter(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+        debug(">decRequestCounter(" + username + ")");
+        // Default return value is as if the optional value does not exist for the user, i.e. the default values is 0
+        // because the default number of allowed requests are 1
+        int counter = 0;
+        // Check if administrator is authorized to edit user.
+        int caid = LogConstants.INTERNALCAID;
+        try {
+            UserDataPK pk = new UserDataPK(username);
+            UserDataLocal data1 = home.findByPrimaryKey(pk);
+            caid = data1.getCaId();
+            if (!authorizedToCA(admin, caid)) {
+                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                throw new AuthorizationDeniedException(msg);
+            }
+            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+                if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
+                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            }
+            
+            // Do the work of decreasing the counter
+        	ExtendedInformation ei = data1.getExtendedInformation();
+        	String counterstr = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        	if (StringUtils.isNotEmpty(counterstr)) {
+        		try {
+        			counter = Integer.valueOf(counterstr);
+        			// decrease the counter, if we get to 0 we must set status to generated
+        			counter--;
+        			if (counter >= 0) {
+        				ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(counter));
+                		data1.setExtendedInformation(ei);
+                		data1.setTimeModified((new java.util.Date()).getTime());
+                		String msg = intres.getLocalizedMessage("ra.decreasedentityrequestcounter", username, counter);            	
+                		logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+        			} else {
+        				log.debug("Counter value was already 0, not decreased in db.");
+        			}
+        		} catch (NumberFormatException e) {
+        			String msg = intres.getLocalizedMessage("ra.errorrequestcounterinvalid", username, counterstr, e.getMessage());            	        		
+        			log.error(msg, e);
+        		}        		
+        	} else {
+        		log.debug("No (optional) request counter exists for end entity: "+username);
+        	}
+        } catch (FinderException e) {
+            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            throw e;
+        }
+        debug("<decRequestCounter(" + username + "): "+counter);
+        return counter;
+    } // decRequestCounter
+
+    /**
      * Changes status of a user.
      *
      * @param username the unique username.
      * @param status   the new status, from 'UserData'.
-     * @param approvalflag approvalflag that indicates if approvals should be used or not
      * @throws ApprovalException if an approval already is waiting for specified action 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      * @ejb.interface-method
@@ -836,7 +909,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS || status == UserDataConstants.STATUS_INITIALIZED)){
                 getKeyRecoverySession().unmarkUser(admin,username);	
             }
-            
+    		if ( (status == UserDataConstants.STATUS_NEW) && (data1.getStatus() != UserDataConstants.STATUS_NEW) ) {
+                // If status is set to new, when it is not already new, we should re-set the allowed request counter to the default values
+    			resetRequestCounter(admin, data1, false);
+    		}
             data1.setStatus(status);
             data1.setTimeModified((new java.util.Date()).getTime());
             String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, new Integer(status));            	
@@ -854,43 +930,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         debug("<setUserStatus(" + username + ", " + status + ")");
     } // setUserStatus
-
-    /**
-     * Get the current status of a user. 
-     * @param admin is the requesting admin
-     * @param username is the user to get the status for
-     * @return one of the UserDataConstants.STATUS_
-     */
-    public int getUserStatus(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
-        debug(">getUserStatus(" + username + ")");
-        // Check if administrator is authorized to edit user.
-        int caid = LogConstants.INTERNALCAID;
-        int status;
-        try {
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCaId();
-            if (!authorizedToCA(admin, caid)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
-                throw new AuthorizationDeniedException(msg);
-            }
-            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-                if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
-                    throw new AuthorizationDeniedException(msg);
-                }
-            }
-             status = data1.getStatus();
-        } catch (FinderException e) {
-            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
-            throw e;
-        }
-        debug("<getUserStatus(" + username + ", " + status + ")");
-        return status;
-    } // getUserStatus
 
     /**
      * Sets a new password for a user.
@@ -1988,5 +2027,75 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         return returnval;
     }
+
+    //
+    // Private helper methods
+    //
+    /** re-sets the optional request counter of a user to the default value specified by the end entity profile.
+     * If the profile does not specify that request counter should be used, the counter is removed.
+     * @param admin administrator
+     * @param data1 UserDataLocal, the new user
+     */
+    private void resetRequestCounter(Admin admin, UserDataLocal data1, boolean onlyRemoveNoUpdate) {
+    	debug("Re-settings request counter, checking if request counter is used.");
+    	int epid = data1.getEndEntityProfileId();
+    	EndEntityProfile prof = raadminsession.getEndEntityProfile(admin, epid);
+    	String value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
+    	if (!prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+    		value = null;
+    	}
+    	ExtendedInformation ei = data1.getExtendedInformation();
+    	String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+    	debug("Old counter is: "+counter+", new counter will be: "+value);
+    	// If this end entity profile does not use ALLOWEDREQUESTS, this value will be set to null
+    	// We only re-set this value if the COUNTER was used in the first place, if never used, we will not fiddle with it
+    	if (counter != null) {
+    		if ( (!onlyRemoveNoUpdate) || (onlyRemoveNoUpdate && (value==null)) ) {
+        		ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
+        		data1.setExtendedInformation(ei);    			
+        		debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
+    		}
+    	} else {
+    		debug("Request counter not used, not re-setting it.");
+    	}
+    }
+
+    /**
+     * Get the current status of a user. 
+     * @param admin is the requesting admin
+     * @param username is the user to get the status for
+     * @return one of the UserDataConstants.STATUS_
+     */
+    private int getUserStatus(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+        debug(">getUserStatus(" + username + ")");
+        // Check if administrator is authorized to edit user.
+        int caid = LogConstants.INTERNALCAID;
+        int status;
+        try {
+            UserDataPK pk = new UserDataPK(username);
+            UserDataLocal data1 = home.findByPrimaryKey(pk);
+            caid = data1.getCaId();
+            if (!authorizedToCA(admin, caid)) {
+                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                throw new AuthorizationDeniedException(msg);
+            }
+            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+                if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
+                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            }
+             status = data1.getStatus();
+        } catch (FinderException e) {
+            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            throw e;
+        }
+        debug("<getUserStatus(" + username + ", " + status + ")");
+        return status;
+    } // getUserStatus
+
 
 } // LocalUserAdminSessionBean

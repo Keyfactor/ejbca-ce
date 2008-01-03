@@ -112,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.64 2007-12-21 09:03:10 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.65 2008-01-03 12:52:38 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1053,7 +1053,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     					if(requestmessage instanceof PKCS10RequestMessage){
     					  ExtendedInformation extInfo = new ExtendedInformation();
     					  PKCS10CertificationRequest pkcs10 = ((PKCS10RequestMessage) requestmessage).getCertificationRequest();
-    					  extInfo.setCustomData("PKCS10", new String(Base64.encode(pkcs10.getEncoded()))); 
+    					  extInfo.setCustomData(ExtendedInformation.CUSTOM_PKCS10, new String(Base64.encode(pkcs10.getEncoded()))); 
     					  cadata.setExtendedinformation(extInfo);
     					}
     					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, cainfo.getCertificateProfileId());

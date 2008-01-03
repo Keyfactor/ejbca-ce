@@ -26,23 +26,30 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.util.dn.DnComponents;
 
 
 
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.8 2006-08-12 09:49:53 herrvendil Exp $
+ * @version $Id: TestUserData.java,v 1.9 2008-01-03 12:52:40 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
     private static Logger log = Logger.getLogger(TestUserData.class);
     private static Context ctx;
     private static IUserAdminSessionRemote usersession;
+    private static IRaAdminSessionRemote rasession;
     private static String username;
     private static String username1;
     private static String pwd;
@@ -65,9 +72,13 @@ public class TestUserData extends TestCase {
 
         caid = "CN=TEST".hashCode();
 
-        Object obj = ctx.lookup("UserAdminSession");
+        Object obj = ctx.lookup(IUserAdminSessionHome.JNDI_NAME);
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         usersession = userhome.create();
+        obj = ctx.lookup(IRaAdminSessionHome.JNDI_NAME);
+        IRaAdminSessionHome rahome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
+        rasession = rahome.create();
+
         admin = new Admin(Admin.TYPE_INTERNALUSER);
 
         log.debug("<setUp()");
@@ -114,11 +125,6 @@ public class TestUserData extends TestCase {
     } // genRandomPwd
 
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
-     */
     public void test01CreateNewUser() throws Exception {
         log.debug(">test01CreateNewUser()");
         username = genRandomUserName();
@@ -128,11 +134,6 @@ public class TestUserData extends TestCase {
         log.debug("<test01CreateNewUser()");
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
-     */
     public void test02LookupAndChangeUser() throws Exception {
         log.debug(">test02LookupAndChangeUser()");
 
@@ -158,11 +159,6 @@ public class TestUserData extends TestCase {
         log.debug("<test02LookupAndChangeUser()");
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
-     */
     public void test03LookupChangedUser() throws Exception {
         log.debug(">test03LookupChangedUser()");
 
@@ -188,11 +184,6 @@ public class TestUserData extends TestCase {
         log.debug("<test03LookupChangedUser()");
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
-     */
     public void test03LookupChangedUser2() throws Exception {
         log.debug(">test03LookupChangedUser2()");
 
@@ -218,11 +209,6 @@ public class TestUserData extends TestCase {
         log.debug("<test03LookupChangedUser2()");
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
-     */
     public void test04CreateNewUser() throws Exception {
         log.debug(">test04CreateNewUser()");
         username1 = genRandomUserName();
@@ -232,15 +218,10 @@ public class TestUserData extends TestCase {
         log.debug("<test04CreateNewUser()");
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
-     */
     public void test05ListNewUser() throws Exception {
         log.debug(">test05ListNewUser()");
 
-        Object obj1 = ctx.lookup("UserAdminSession");
+        Object obj1 = ctx.lookup(IUserAdminSessionHome.JNDI_NAME);
         IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote admin = adminhome.create();
         Collection coll = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
@@ -257,17 +238,167 @@ public class TestUserData extends TestCase {
         log.debug("<test05ListNewUser()");
     }
 
+    public void test06RequestCounter() throws Exception {
+        log.debug(">test06RequestCounter()");
+
+        // Change already existing user to add extended information with counter
+        UserDataVO user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        user.setStatus(UserDataConstants.STATUS_GENERATED);
+        usersession.changeUser(admin, user, false);
+        
+        // Default value should be 1, so it should return 0
+        int counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+        // Default value should be 1, so it should return 0
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+
+        // Now add extended information with allowed requests 2
+        ExtendedInformation ei = new ExtendedInformation();
+        int allowedrequests = 2;
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
+        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, ei);
+        usersession.changeUser(admin, user, false);
+        // decrease the value, since we use the empty end entity profile, the counter will not be used
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+        
+        
+        // Test that it works correctly with end entity profiles using the counter
+        int pid = 0;
+        try {
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.ORGANIZATION);
+            profile.addField(DnComponents.COUNTRY);
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setValue(EndEntityProfile.AVAILCAS,0,""+caid);
+            profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
+            rasession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
+            pid = rasession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+        } catch (EndEntityProfileExistsException pee) {
+        	assertTrue("Can not create end entity profile", false);
+        }
+        // Now add extended information with allowed requests 2
+        ei = new ExtendedInformation();
+        allowedrequests = 2;
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
+        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, ei);
+        usersession.changeUser(admin, user, false);
+        // decrease the value
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+        // decrease the value again, default value when the counter is not used is 0        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+
+        // Now allow the counter
+        EndEntityProfile ep = rasession.getEndEntityProfile(admin, pid);
+        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
+        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        usersession.changeUser(admin, user, false);
+        // decrease the value        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(1, counter);
+        // decrease the value again        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+        // decrease the value again
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(-1, counter);        
+        // decrease the value again
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(-1, counter);  
+        
+        // Now disallow the counter, it will be deleted form the user
+        ep = rasession.getEndEntityProfile(admin, pid);
+        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
+        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        usersession.changeUser(admin, user, false);
+        // decrease the value        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+
+        // allow the counter 
+        ep = rasession.getEndEntityProfile(admin, pid);
+        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
+        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        usersession.changeUser(admin, user, false);
+        // decrease the value        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(1, counter);
+        // decrease the value again        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);
+        // decrease the value again
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(-1, counter);  
+
+        // test setuserstatus it will re-set the counter
+        ep = rasession.getEndEntityProfile(admin, pid);
+        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
+        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        // decrease the value        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(2, counter);
+        // decrease the value again        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(1, counter);
+        // decrease the value again
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(0, counter);        
+        // decrease the value again
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(-1, counter);
+        
+        // test setuserstatus again it will not re-set the counter if it is already new
+        ep = rasession.getEndEntityProfile(admin, pid);
+        ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+        ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
+        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        // decrease the value        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(-1, counter);
+
+        // Also changeUser will re-set status
+        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        user.setStatus(UserDataConstants.STATUS_NEW);
+        usersession.changeUser(admin, user, false);
+        // decrease the value        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(2, counter);
+
+        // But not a second time
+        usersession.changeUser(admin, user, false);
+        // decrease the value        
+        counter = usersession.decRequestCounter(admin, username);
+        assertEquals(1, counter);
+        
+        log.debug("<test06RequestCounter()");
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @throws Exception DOCUMENT ME!
      */
-    public void test06RemoveUser() throws Exception {
-        log.debug(">test06RemoveUser()");
+    public void test99CleanUp() throws Exception {
+        log.debug(">test99CleanUp()");
 
-        usersession.deleteUser(admin,username);
-        usersession.deleteUser(admin,username1);
+        try {        	
+            usersession.deleteUser(admin,username);
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+            usersession.deleteUser(admin,username1);
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+            rasession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+        } catch (Exception e) { /* ignore */ }
         log.debug("Removed it!");
-        log.debug("<test06RemoveUser()");
+        log.debug("<test99CleanUp()");
     }
 }
