@@ -65,7 +65,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.22 2007-12-07 13:58:52 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.23 2008-01-03 17:32:46 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -79,7 +79,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.22 2007-12-07 13:58:52 jeklund Exp $
+ * @version $Id: StartServicesServlet.java,v 1.23 2008-01-03 17:32:46 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -359,13 +359,7 @@ public class StartServicesServlet extends HttpServlet {
         	ICAAdminSessionLocal casession;
         	casession = casessionhome.create();
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	Collection caids = casession.getAvailableCAs(admin);
-        	Iterator iter = caids.iterator();
-        	while (iter.hasNext()) {
-        		int caid = ((Integer)iter.next()).intValue();
-        		CAInfo ca = casession.getCAInfo(admin, caid);
-        		log.debug("Found CA: "+ca.getName()+", with expire time: "+ca.getExpireTime());
-        	}
+        	casession.initializeAndUpgradeCAs(admin);
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }

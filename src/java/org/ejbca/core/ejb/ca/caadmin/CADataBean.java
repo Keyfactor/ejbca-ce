@@ -47,7 +47,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.18 2008-01-03 12:42:53 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.19 2008-01-03 17:32:50 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -206,13 +206,36 @@ public abstract class CADataBean extends BaseEntityBean {
         return new Date(getUpdateTime());
     }
 
+    /** 
+     * Method that upgrades a CA, if needed.
+     * @return CA
+     * @throws java.io.UnsupportedEncodingException
+     * @throws IllegalKeyStoreException 
+     * @ejb.interface-method
+     */
+    public void upgradeCA() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
+    	readAndUpgradeCAInternal();
+    }
     
     /** 
      * Method that retrieves the CA from the database.
+     * @return CA
+     * @throws java.io.UnsupportedEncodingException
      * @throws IllegalKeyStoreException 
      * @ejb.interface-method
      */
     public CA getCA() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
+    	return readAndUpgradeCAInternal();
+    }
+    
+    /** We have an internal method for this read operation with a side-effect. 
+     * This is because getCA() is a read-only method, so the possible side-effect of upgrade will not happen,
+     * and therefore this internal method can be called from another non-read-only method, upgradeCA().
+     * @return CA
+     * @throws java.io.UnsupportedEncodingException
+     * @throws IllegalKeyStoreException
+     */
+    private CA readAndUpgradeCAInternal() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
         CA ca = null;
         // First check if we already have a cached instance of the CA
         ca = CACacheManager.instance().getCA(getCaId().intValue(), this);

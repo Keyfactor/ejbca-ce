@@ -112,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.66 2008-01-03 16:15:29 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.67 2008-01-03 17:32:50 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -247,6 +247,37 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
 
+    /**
+     * A method designed to be called at startuptime to speed up the (next) first request to a CA.
+     * This method will initialize the CA-cache with all CAs, if thay are not already in the cache.
+     * Can have a side-effect of upgrading a CA, therefore the Required transaction setting.
+     * 
+     * @param admin administrator calling the method
+     * 
+     * @ejb.transaction type="Required"
+     * @ejb.interface-method
+     */
+    public void initializeAndUpgradeCAs(Admin admin) {
+    	try {
+    		Collection result = cadatahome.findAll();
+    		Iterator iter = result.iterator();
+    		while(iter.hasNext()){
+    			CADataLocal cadata = (CADataLocal) iter.next();
+    			String caname = cadata.getName();
+    			try {
+    				cadata.upgradeCA();
+    				log.debug("Found CA: "+caname+", with expire time: "+cadata.getExpireTime());
+    			} catch (UnsupportedEncodingException e) {
+    				log.error("UnsupportedEncodingException trying to load CA with name: "+caname, e);
+    			} catch (IllegalKeyStoreException e) {
+    				log.error("IllegalKeyStoreException trying to load CA with name: "+caname, e);
+    			}
+    		}
+    	} catch (FinderException e) {
+    		log.error("FinderException trying to load CAs: ", e);
+    	}
+    }
+    
     /**
      * Method used to create a new CA.
      *
