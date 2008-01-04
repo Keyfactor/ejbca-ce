@@ -1567,6 +1567,10 @@
                <opm:field name="CRLNUMBER" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>deltaCRLIndicator</opm:attribute-name>
+               <opm:field name="DELTACRLINDICATOR" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
                <opm:attribute-name>issuerDN</opm:attribute-name>
                <opm:field name="ISSUERDN" xsi:type="opm:column"/>
             </opm:attribute-mapping>
