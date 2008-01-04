@@ -1,5 +1,5 @@
 --
--- These definitions should work for EJBCA 3.4.x, Derby 10.1 or 10.2.
+-- These definitions should work for EJBCA 3.6.x, Derby 10.1 or 10.2.
 --
 
 DROP TABLE AccessRulesData;
@@ -218,7 +218,7 @@ CREATE TABLE LogEntryData (
 
 DROP TABLE ProtectedLogData;
 CREATE TABLE ProtectedLogData (
-	pk varchar(256),
+	pk varchar(256) NOT NULL,
 	adminType integer NOT NULL,
 	adminData varchar(256),
     caId integer NOT NULL,
@@ -243,26 +243,26 @@ CREATE TABLE ProtectedLogData (
 
 DROP TABLE ProtectedLogExportData;
 CREATE TABLE ProtectedLogExportData (
-	pk varchar(256),
+	pk varchar(256) NOT NULL,
     timeOfExport bigint NOT NULL,
     exportEndTime bigint NOT NULL,
     exportStartTime bigint NOT NULL,
-    b64LogDataHash varchar(250) binary NULL DEFAULT NULL,
+    b64LogDataHash varchar(256),
     b64PreviosExportHash varchar(256),
     currentHashAlgorithm varchar(256),
     b64SignatureCertificate long varchar,
-    deleted tinyint(20) NOT NULL DEFAULT '0',
+    deleted integer NOT NULL DEFAULT 0,
     b64Signature long varchar,
 	PRIMARY KEY (pk)
 );
 
 DROP TABLE ProtectedLogTokenData;
 CREATE TABLE ProtectedLogTokenData (
-	pk varchar(250) binary NOT NULL DEFAULT '',
+	pk varchar(256) NOT NULL,
     tokenIdentifier integer NOT NULL,
     tokenType integer NOT NULL,
     b64TokenCertificate long varchar,
-    tokenReference text NULL DEFAULT NULL,
+    tokenReference long varchar,
     PRIMARY KEY (pk)
 );
 
