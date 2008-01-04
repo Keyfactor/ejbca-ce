@@ -202,7 +202,8 @@ Derby:
        password is 'changeit'
     Restart server
     (you would probably want to install your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
-     default Glassfish cert, to do this you must edit both the http-listener and the IIOP-listeners)
+     default Glassfish cert, to do this you must edit both the http-listener and the IIOP-listeners.
+     You can also generate a new $APPSRV_HOME/domains/domain1/config/keystore.jks with key alias s1as.)
     
  - Access protected EJBCA pages
     Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:
