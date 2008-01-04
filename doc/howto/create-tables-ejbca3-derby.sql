@@ -70,7 +70,7 @@ CREATE TABLE CAData (
     status integer NOT NULL,
     expireTime bigint NOT NULL,
     updateTime bigint NOT NULL,
-    data long varchar,
+    data clob,
     PRIMARY KEY (cAId)
 );
 
