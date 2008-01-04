@@ -98,7 +98,7 @@ public class ProtectedLogVerifier {
 	 * Inform the service next time it ask, that it is requested to stop.
 	 */
 	public void cancelVerification() {
-		isCanceled = true;
+		isCanceled = isRunning;
 	}
 	
 	/**

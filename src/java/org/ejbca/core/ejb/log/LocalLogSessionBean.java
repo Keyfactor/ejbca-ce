@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.log;
 
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.OldLogDevice;
 import org.ejbca.core.model.log.OldLogDeviceFactory;
+import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -156,7 +158,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.23 2007-12-11 11:56:15 jeklund Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.24 2008-01-04 08:55:20 jeklund Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -268,6 +270,61 @@ public class LocalLogSessionBean extends BaseSessionBean {
     	return ret;
     }
     
+    private Collection testDeviceBackup = new ArrayList();
+    private Properties testDeviceProperties = null;
+
+    /**
+     * Replace existing devices with new ones. Used for testing.
+     * @ejb.interface-method view-type="both"
+     */
+    public void setTestDevice(Class implClass, Properties properties) {
+    	try {
+    		Object fact = implClass.newInstance();
+    		Class[] paramTypes = new Class[] {Properties.class};
+    		Method method = implClass.getMethod("makeInstance", paramTypes);
+    		Object[] params = new Object[1];
+    		params[0] = properties;
+            ILogDevice dev = (ILogDevice) method.invoke(fact, params);
+        	Iterator i = logdevices.iterator();
+        	ILogDevice dev2 = null;
+        	while (i.hasNext()) {
+        		dev2 = (ILogDevice) i.next();
+        		if (dev2.getDeviceName().equals(dev.getDeviceName())) {
+        			break;
+        		}
+        	}
+        	if (testDeviceBackup.size() == 0) {
+            	testDeviceBackup.addAll(logdevices);
+    			testDeviceProperties = dev2.getProperties();
+        	}
+            dev.resetDevice(properties);
+        	logdevices.clear();
+    		logdevices.add(dev);
+    	} catch (Exception e) {
+			log.error(e);
+		}
+    }
+    
+    /**
+     * Replace test device with original ones. Used for testing.
+     * @ejb.interface-method view-type="both"
+     */
+    public void restoreTestDevice() {
+        ILogDevice dev = (ILogDevice) logdevices.iterator().next();
+    	Iterator i = testDeviceBackup.iterator();
+    	while (i.hasNext()) {
+    		ILogDevice dev2 = (ILogDevice) i.next();
+    		if (dev2.getDeviceName().equals(dev.getDeviceName())) {
+    			dev.resetDevice(testDeviceProperties);
+    		}
+    	}
+    	if (testDeviceBackup.size() != 0) {
+        	logdevices.clear();
+        	logdevices.addAll(testDeviceBackup);
+        	testDeviceBackup.clear();
+    	}
+    }
+
     /**
      * Session beans main function. Takes care of the logging functionality.
      *

@@ -26,6 +26,13 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 	private String deviceName = null;
 
 	protected DummyLogDevice(Properties properties) throws Exception {
+		resetDevice(properties);
+	}
+	
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public void resetDevice(Properties properties) {
 		this.properties = properties;
 		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
 	}

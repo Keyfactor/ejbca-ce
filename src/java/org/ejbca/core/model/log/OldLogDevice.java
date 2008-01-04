@@ -66,7 +66,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 * A handle to the unique Singleton instance.
 	 */
 	private static ILogDevice instance;
-	private static Properties properties;
+	private Properties properties;
 
     /** Columns in the database used in select */
     private final String LOGENTRYDATA_TABLE = "LogEntryData";
@@ -89,8 +89,15 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 *
 	 * @param prop Arguments needed for the eventual creation of the object
 	 */
-	protected OldLogDevice(Properties prop) throws Exception {
-		properties = prop;
+	protected OldLogDevice(Properties properties) throws Exception {
+		resetDevice(properties);
+	}
+
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public void resetDevice(Properties properties) {
+		this.properties = properties;
 		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
         logconfigurationhome = (LogConfigurationDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogConfigurationDataLocalHome.COMP_NAME);
         logentryhome = (LogEntryDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogEntryDataLocalHome.COMP_NAME);

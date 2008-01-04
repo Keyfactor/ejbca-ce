@@ -1,5 +1,6 @@
 package org.ejbca.core.model.log;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -11,7 +12,9 @@ import org.ejbca.core.model.services.actions.MailActionInfo;
 /**
  * Send an email based on configuration.
  */
-public class ProtectedLogMailAction implements IProtectedLogAction {
+public class ProtectedLogMailAction implements IProtectedLogAction, Serializable {
+
+	private static final long serialVersionUID = -7056505975194222539L;
 
 	/** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();

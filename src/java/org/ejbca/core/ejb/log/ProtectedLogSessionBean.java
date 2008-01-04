@@ -58,6 +58,7 @@ import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.log.ProtectedLogActions;
 import org.ejbca.core.model.log.ProtectedLogCMSExportHandler;
 import org.ejbca.core.model.log.ProtectedLogDevice;
+import org.ejbca.core.model.log.ProtectedLogDummyExportHandler;
 import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
 import org.ejbca.core.model.log.ProtectedLogEventRow;
 import org.ejbca.core.model.log.ProtectedLogExportRow;
@@ -900,6 +901,30 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	}
 
 	/**
+	 * Testing function. Removes all log-events belonging to a nodeGUID.
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="RequiresNew"
+	 */
+	public void removeNodeChain(int nodeGUID) {
+		log.debug(">removeNodeChain");
+		Connection con = null;
+		PreparedStatement ps = null;
+		try {
+			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+			String sql="DELETE FROM ProtectedLogData WHERE nodeGUID = ?";
+			ps = con.prepareStatement(sql);
+			ps.setInt(1, nodeGUID);
+			ps.executeUpdate();
+		} catch (Exception e) {
+			log.error("", e);
+			throw new EJBException(e);
+		} finally {
+			JDBCUtil.close(con, ps, null);
+		}
+		log.debug("<removeNodeChain");
+	}
+
+	/**
 	 * Roll back the export table to the last one with the delete-flag set. This will remove all the export if none has the delet-flag set.
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Supports"
@@ -1246,7 +1271,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * verification continues node by node, until the oldest event is reached or the time where an verified exporting
 	 * delete was last made.
 	 *  
-	 * @param freezeThreshold longest allowed time to newest ProtectedLogEvent of any node.
+	 * @param freezeThreshold longest allowed time to newest ProtectedLogEvent of any node (milliseconds)
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Supports"
 	 */
@@ -1586,6 +1611,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 
 	/**
 	 * Insert a new signed stop event for each unsigned node-chain in a "near future" and let the real node chain in these events..
+	 * @param signAll is true if chains that are previously signed should be signed too.
 	 * 
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
@@ -1669,40 +1695,20 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public boolean resetEntireLog(boolean export, Properties exportHandlerProperties) {
 		log.debug(">resetEntireLog");
-		// Disable services first.
-		ServiceConfiguration serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
-		if (serviceConfiguration != null) {
-			serviceConfiguration.setActive(false);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+		// Start by disabling services
+		if (!stopServices()) {
+			return false;
 		}
-		serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
-		if (serviceConfiguration != null) {
-			serviceConfiguration.setActive(false);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
-		}
-		// Wait for already running instances of the services to stop. Time-out after x minutes.
-		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
-		ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
-		protectedLogVerifier.cancelVerification();
-		protectedLogExporter.cancelExport();
-		long waitedTime = 0;
-		int timeOut = 60;
-    	log.info(intres.getLocalizedMessage("protectedlog.waitingforservice", timeOut));
-		try {
-			while ( (protectedLogVerifier.isRunning() || protectedLogExporter.isRunning()) && waitedTime < timeOut*1000) {
-				Thread.sleep(1000);
-				waitedTime += 1000;
-			}
-		} catch (InterruptedException e) {
-			log.error("", e);
-		}
-		if ((protectedLogVerifier.isRunning() || protectedLogExporter.isRunning())) {
-			return false;	// FAILURE
+		if (exportHandlerProperties == null) {
+			exportHandlerProperties = new Properties();
 		}
 		try {
 			IProtectedLogExportHandler protectedLogExportHandler = null;
 			try {
-				Class implClass = Class.forName(exportHandlerProperties.getProperty("exportservice.exporthandler", ProtectedLogCMSExportHandler.class.getName()).trim());
+				if (!export) {
+					exportHandlerProperties.setProperty(ProtectedLogExporter.CONF_EXPORT_HANDLER, ProtectedLogDummyExportHandler.class.getName());
+				}
+				Class implClass = Class.forName(exportHandlerProperties.getProperty(ProtectedLogExporter.CONF_EXPORT_HANDLER, ProtectedLogCMSExportHandler.class.getName()).trim());
 				protectedLogExportHandler =(IProtectedLogExportHandler) implClass.newInstance();
 			} catch (Exception e1) {
 				log.error("", e1);
@@ -1712,9 +1718,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Nuke export table
 			if (!removeAllExports(true)) {
 				return false;
-			}
-			if (!export) {
-				return true;
 			}
 			// Do an export but don't validate anything and do not perform any actions
 			// TODO: This is ripped from export.. Try to merge some functionality into new method.
@@ -1814,16 +1817,68 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			return success;
 		} finally {
 			// Enable services again
-			serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
-			if (serviceConfiguration != null) {
-				serviceConfiguration.setActive(true);
-				getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+			startServices();
+		}
+	}
+	
+	/**
+	 * Temporary halts the verification and export services
+	 * @return true if successful
+	 * @ejb.interface-method view-type="both"
+	 */
+	public boolean stopServices() {
+		// Disable services first.
+		ServiceConfiguration serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
+		if (serviceConfiguration != null) {
+			serviceConfiguration.setActive(false);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+		}
+		serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
+		if (serviceConfiguration != null) {
+			serviceConfiguration.setActive(false);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+		}
+		// Wait for already running instances of the services to stop. Time-out after x minutes.
+		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
+		ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
+		if (protectedLogVerifier != null) {
+			protectedLogVerifier.cancelVerification();
+		}
+		if (protectedLogExporter != null) {
+			protectedLogExporter.cancelExport();
+		}
+		long waitedTime = 0;
+		int timeOut = 60;
+    	log.info(intres.getLocalizedMessage("protectedlog.waitingforservice", timeOut));
+		try {
+			while ( ((protectedLogVerifier != null && protectedLogVerifier.isRunning()) || (protectedLogExporter != null && protectedLogExporter.isRunning())) && waitedTime < timeOut*1000) {
+				Thread.sleep(1000);
+				waitedTime += 1000;
 			}
-			serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
-			if (serviceConfiguration != null) {
-				serviceConfiguration.setActive(true);
-				getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
-			}
+		} catch (InterruptedException e) {
+			log.error("", e);
+		}
+		if ((protectedLogVerifier != null && protectedLogVerifier.isRunning()) || (protectedLogExporter != null && protectedLogExporter.isRunning())) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Restarts the verification and export services
+	 * @ejb.interface-method view-type="both"
+	 */
+	public void startServices() {
+		// Enable services again
+		ServiceConfiguration serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
+		if (serviceConfiguration != null) {
+			serviceConfiguration.setActive(true);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+		}
+		serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
+		if (serviceConfiguration != null) {
+			serviceConfiguration.setActive(true);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
 		}
 	}
 

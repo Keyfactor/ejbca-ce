@@ -66,28 +66,47 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * A handle to the unique Singleton instance.
 	 */
 	private static ILogDevice instance;
-	private boolean isDestructorInvoked = false;
-	private boolean systemShutdownNotice = false;
+	private boolean isDestructorInvoked;
+	private boolean systemShutdownNotice;
 	private Properties properties;
 	private int nodeGUID;
 	private long counter;
-	private byte[] lastProtectedLogRowHash = null;
-	private long lastTime = 0;
-	private long protectionIntensity = 0;
+	private byte[] lastProtectedLogRowHash;
+	private long lastTime;
+	private long protectionIntensity;
 	private String nodeIP = DEFAULT_NODEIP;
-	private ProtectedLogToken protectedLogToken = null;
-	private String protectionHashAlgorithm = null;
-	private boolean isFirstLogEvent = true;
-	private ProtectedLogActions protectedLogActions = null;
-	private boolean allowConfigurableEvents = false;
-	private String deviceName = null;
-	private long lastTimeOfSearchForLogEvents = 0;
-	private long lastTimeOfSearchForOwnLogEvent = 0;
+	private ProtectedLogToken protectedLogToken;
+	private String protectionHashAlgorithm;
+	private boolean isFirstLogEvent;
+	private ProtectedLogActions protectedLogActions;
+	private boolean allowConfigurableEvents;
+	private String deviceName;
+	private long lastTimeOfSearchForLogEvents;
+	private long lastTimeOfSearchForOwnLogEvent;
 	private long intensityOfSearchForLogEvents;
 	private long intensityOfSearchForOwnLogEvent;
 	
-	protected ProtectedLogDevice(Properties prop) throws Exception {
-		properties = prop;
+	protected ProtectedLogDevice(Properties properties) throws Exception {
+		resetDevice(properties);
+	}
+	
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	public void resetDevice(Properties properties) {
+		// Init of local variables
+		isDestructorInvoked = false;
+		systemShutdownNotice = false;
+		lastProtectedLogRowHash = null;
+		lastTime = 0;
+		protectionIntensity = 0;
+		protectedLogToken = null;
+		isFirstLogEvent = true;
+		allowConfigurableEvents = false;
+		lastTimeOfSearchForLogEvents = 0;
+		lastTimeOfSearchForOwnLogEvent = 0;
+		// Init depending on properties
+		this.properties = properties;
 		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
 		nodeGUID = seeder.nextInt();
 		counter = 0;
@@ -104,9 +123,14 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		if (protectionIntensity != 0 && properties.getProperty(ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, "false").equalsIgnoreCase("true")) {
 	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, CONFIG_PROTECTION_INTENSITY));
 		}
-		intensityOfSearchForLogEvents = Long.parseLong(properties.getProperty(CONFIG_LINKIN_INTENSITY, "1")) * 1000; 
-		intensityOfSearchForOwnLogEvent = Long.parseLong(properties.getProperty(CONFIG_VERIFYOWN_INTENSITY, "1")) * 1000; 
-		
+		if (properties.getProperty(CONFIG_TOKENREFTYPE, CONFIG_TOKENREFTYPE_NONE).equalsIgnoreCase(CONFIG_TOKENREFTYPE_NONE)) {
+			// Disable link-in searches since no real token is used anyway..
+			intensityOfSearchForLogEvents = -1000;
+			intensityOfSearchForOwnLogEvent = -1000;
+		} else  {
+			intensityOfSearchForLogEvents = Long.parseLong(properties.getProperty(CONFIG_LINKIN_INTENSITY, "1")) * 1000; 
+			intensityOfSearchForOwnLogEvent = Long.parseLong(properties.getProperty(CONFIG_VERIFYOWN_INTENSITY, "1")) * 1000; 
+		}
 	}
 
 	/**
@@ -244,7 +268,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				long now = System.currentTimeMillis();
 				if (intensityOfSearchForLogEvents != -1000 && lastTimeOfSearchForLogEvents + intensityOfSearchForLogEvents < now) {
 					ProtectedLogEventIdentifier[] protectedLogEventIdentifiers = null;
-					protectedLogEventIdentifiers = getProtectedLogSession().findNewestProtectedLogEventsForAllOtherNodes(nodeGUID, lastTime - 60); // Have some marginal for processing time
+					protectedLogEventIdentifiers = getProtectedLogSession().findNewestProtectedLogEventsForAllOtherNodes(nodeGUID, lastTimeOfSearchForLogEvents - 50); // Have some marginal for processing time
 					if (protectedLogEventIdentifiers != null) {
 						for (int i=0; i<protectedLogEventIdentifiers.length; i++) {
 							linkedInEventIdentifiersCollection.add(protectedLogEventIdentifiers[i]);

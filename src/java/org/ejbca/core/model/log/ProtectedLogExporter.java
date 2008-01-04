@@ -18,6 +18,7 @@ public class ProtectedLogExporter {
 	public static final String CONF_HASH_ALGO						= "exportservice.hashAlgorithm";
 	public static final String CONF_DELETE_AFTER_EXPORT	= "exportservice.deleteafterexport";
 	public static final String CONF_EXPORT_OLDER_THAN		= "exportservice.exportolderthan";
+	public static final String CONF_EXPORT_HANDLER			= "exportservice.exporthandler";
 
 	private static final Logger log = Logger.getLogger(ProtectedLogExporter.class);
 
@@ -91,7 +92,7 @@ public class ProtectedLogExporter {
 	 * Inform the service next time it ask, that it is requested to stop.
 	 */
 	public void cancelExport() {
-		isCanceled = true;
+		isCanceled = isRunning;
 	}
 	
 	/**
@@ -110,7 +111,7 @@ public class ProtectedLogExporter {
 		log.debug(">run");
 		IProtectedLogExportHandler protectedLogExportHandler = null;
 		try {
-			Class implClass = Class.forName(properties.getProperty("exportservice.exporthandler", ProtectedLogDummyExportHandler.class.getName()).trim());
+			Class implClass = Class.forName(properties.getProperty(CONF_EXPORT_HANDLER, ProtectedLogDummyExportHandler.class.getName()).trim());
 			protectedLogExportHandler =(IProtectedLogExportHandler) implClass.newInstance();
 			getProtectedLogSession().exportLog(protectedLogExportHandler, properties, protectedLogActions, currentHashAlgorithm, deleteAfterExport, atLeastThisOld);
 		} catch (Exception e) {

@@ -10,6 +10,10 @@ import java.util.Properties;
  */
 public class ProtectedLogActions implements Serializable {
 
+	private static final long serialVersionUID = -7056505975194222535L;
+	
+	public final static String CONF_USE_TESTACTION = "useTestAction";
+	
 	private ArrayList actions = new ArrayList();	// <IProtectedLogAction>
 
 	public ProtectedLogActions(Properties properties) {
@@ -26,6 +30,9 @@ public class ProtectedLogActions implements Serializable {
 			}
 			if (properties.getProperty("useShutDownAction", "false").equalsIgnoreCase("true")) {
 				actions.add(new ProtectedLogShutDownAction(properties));
+			}
+			if (properties.getProperty(CONF_USE_TESTACTION, "false").equalsIgnoreCase("true")) {
+				actions.add(new ProtectedLogTestAction(properties));
 			}
 		}
 	}

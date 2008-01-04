@@ -25,8 +25,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
  */
 public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler, Serializable {
 
-	private static final String CONF_EXPORTPATH	= "cmsexport.fullpath";
-	private static final String CONF_CANAME			= "cmsexport.caname";
+	public static final String CONF_EXPORTPATH	= "cmsexport.fullpath";
+	public static final String CONF_CANAME			= "cmsexport.caname";
 	
 	private static final Logger log = Logger.getLogger(ProtectedLogCMSExportHandler.class);
 

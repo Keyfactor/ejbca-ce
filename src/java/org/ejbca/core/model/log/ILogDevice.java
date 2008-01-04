@@ -28,7 +28,7 @@ import org.ejbca.util.query.Query;
 
 /**
  * Interface used by EJBCA external log devices such as Log4j.
- * @version $Id: ILogDevice.java,v 1.3 2007-12-07 13:58:52 jeklund Exp $
+ * @version $Id: ILogDevice.java,v 1.4 2008-01-04 08:55:19 jeklund Exp $
  */
 public interface ILogDevice extends Serializable {
 
@@ -97,5 +97,10 @@ public interface ILogDevice extends Serializable {
 	 * @return the name the device
 	 */
 	public String getDeviceName();
-    
+
+	/**
+	 * Resets the status of the device. Used externally for testing.
+	 */
+	public void resetDevice(Properties properties);
+
 }

@@ -1,5 +1,6 @@
 package org.ejbca.core.model.log;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -8,7 +9,9 @@ import org.ejbca.core.model.InternalResources;
 /**
  * Runs an executable with the error code as argument. 
  */
-public class ProtectedLogScriptAction implements IProtectedLogAction {
+public class ProtectedLogScriptAction implements IProtectedLogAction, Serializable {
+
+	private static final long serialVersionUID = -7056505975194222538L;
 
 	/** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
