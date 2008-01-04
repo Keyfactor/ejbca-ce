@@ -40,6 +40,9 @@
   <field-name>counter</field-name>
 </cmp-field>
 <cmp-field>
+  <field-name>nodeIP</field-name>
+</cmp-field>
+<cmp-field>
   <field-name>b64LinkedInEventIdentifiers</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
   <sql-type>LONG VARCHAR</sql-type>
