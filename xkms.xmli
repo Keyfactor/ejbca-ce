@@ -188,8 +188,8 @@
             <classpath refid="xkms.test.classpath" />
         	<include name="org/ejbca/core/protocol/xkms/Test*" />
         </javac>
-        <!-- jndi.properties needs to be in the classpath -->
-        <copy file="${src.java}/jndi.properties" todir="${test.dir}" />
+        <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+        <copy file="${src.java}/jndi.properties" todir="${test.dir}" failonerror="false"/>
     </target>
 	
     <target name="test:xkms" depends="test:compile:xkms,j2ee:assert-run" description="run JAXWS JUnit testcases">
