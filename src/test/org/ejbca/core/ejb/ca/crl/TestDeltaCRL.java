@@ -51,7 +51,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests Delta CRLs.
  *
- * @version $Id: TestDeltaCRL.java,v 1.1 2007-12-21 09:02:15 anatom Exp $
+ * @version $Id: TestDeltaCRL.java,v 1.2 2008-01-04 13:26:18 anatom Exp $
  */
 public class TestDeltaCRL extends TestCase {
 
@@ -200,14 +200,17 @@ public class TestDeltaCRL extends TestCase {
         // Do some revoke
         X509Certificate cert = createUserAndCert();
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);        
+        // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
+        Thread.sleep(1000);
         // Create a new CRL again...
         remote.runDeltaCRL(admin, cadn);
-        // Check that our newly signed certificate is not present in a new CRL
+        // Check that our newly signed certificate is present in a new CRL
         crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
-        assertEquals(revsize+1, revset.size());
+        assertNotNull("revset can not be null", revset);
+        assertEquals(revsize+1, revset.size());        	
         
         log.debug("<test03CheckNumberofRevokedCerts()");
     }
@@ -238,6 +241,8 @@ public class TestDeltaCRL extends TestCase {
         } // If no revoked certificates exist at all, this test passed...
 
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
+        Thread.sleep(1000);
         // Create a new delta CRL again...
         remote.runDeltaCRL(admin, cadn);
         // Check that our newly signed certificate IS present in a new Delta CRL
@@ -245,7 +250,7 @@ public class TestDeltaCRL extends TestCase {
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
-        assertNotNull(revset);
+        assertNotNull("revset can not be null", revset);
         Iterator iter = revset.iterator();
         boolean found = false;
         while (iter.hasNext()) {
@@ -291,7 +296,7 @@ public class TestDeltaCRL extends TestCase {
         assertNotNull(revset);
         iter = revset.iterator();
         found = false;
-		System.out.println(x509crl.getThisUpdate());
+		//System.out.println(x509crl.getThisUpdate());
         while (iter.hasNext()) {
             X509CRLEntry ce = (X509CRLEntry)iter.next(); 
     		//System.out.println(ce);
@@ -318,7 +323,7 @@ public class TestDeltaCRL extends TestCase {
 		//System.out.println(x509crl.getThisUpdate().getTime());
         while (iter.hasNext()) {
             X509CRLEntry ce = (X509CRLEntry)iter.next(); 
-    		System.out.println(ce);
+    		//System.out.println(ce);
         	if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
         		found = true;
         		// TODO: verify the reason code
