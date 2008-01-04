@@ -14,10 +14,10 @@
     New Windows <a href="howto.html#Microsoft smart card logon">Smart card logon guide</a> available.
     </note>
     <note>
-    EJBCA 3.5.2 is now available for <a
+    EJBCA 3.5.3 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     <br/>
-    SHA1 checksum: 93736988355203811241f0c501d12bb7ed9dcbc8
+    SHA1 checksum: b58485d51f33ce470eb545c5b10dfed6e8e342fd
     <br/><br/>
     External RA API 3.5.2 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.

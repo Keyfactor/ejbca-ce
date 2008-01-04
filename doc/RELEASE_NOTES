@@ -11,6 +11,19 @@ There are database upgrades in this release so please pay attention!
 Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
 EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgrade instructions.
 
+EJBCA 3.5.3
+-----------
+This is a minor release, fixing a few bugs and introducing a new tool.
+
+Notable changes are:
+- Support for AEP KeyPer HSM using the EJBCA tools.
+- Fix for broken pkcs11HSM.sh.
+- A new tool for stress testing over the WS-API.
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.5.2
 -----------
 This is a minor release, fixing some bugs and introducing some minor improvements.

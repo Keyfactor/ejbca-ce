@@ -1,3 +1,13 @@
+3.5.3, 2008-01-04
+---
+New Feature
+    * [ECA-676] - A stress test is needed to test EJBCA certificate signing performanse when access though https
+    
+Bug
+    * [ECA-666] - NullPointerException in LogEntryDataBean
+    * [ECA-667] - pkcs11HSM.sh does not run
+    * [ECA-675] - Generated keys on some P11 HSMs (AEP Keyper) can not be used for decryption.
+
 3.5.2, 2007-11-09
 ---
 New Feature
