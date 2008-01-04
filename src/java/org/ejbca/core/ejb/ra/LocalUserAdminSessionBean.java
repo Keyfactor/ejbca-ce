@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.57 2008-01-03 12:52:40 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.58 2008-01-04 13:27:23 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -690,8 +690,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && !(userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INPROCESS)){
               getKeyRecoverySession().unmarkUser(admin,userdata.getUsername());	
             }
-    		if ( (userdata.getStatus() == UserDataConstants.STATUS_NEW) && (oldstatus != UserDataConstants.STATUS_NEW) ) {
+            String requestCounter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+    		if ( StringUtils.equals(requestCounter, "0") && (userdata.getStatus() == UserDataConstants.STATUS_NEW) && (oldstatus != UserDataConstants.STATUS_NEW) ) {
                 // If status is set to new, we should re-set the allowed request counter to the default values
+    			// But we only do this if no value is specified already, i.e. 0 or null
     			resetRequestCounter(admin, data1, false);
     		} else {
     			// If status is not new, we will only remove the counter if the profile does not use it
@@ -837,6 +839,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         	if (StringUtils.isNotEmpty(counterstr)) {
         		try {
         			counter = Integer.valueOf(counterstr);
+        			log.debug("Found a counter with value "+counter);
         			// decrease the counter, if we get to 0 we must set status to generated
         			counter--;
         			if (counter >= 0) {
@@ -2037,12 +2040,19 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param data1 UserDataLocal, the new user
      */
     private void resetRequestCounter(Admin admin, UserDataLocal data1, boolean onlyRemoveNoUpdate) {
-    	debug("Re-settings request counter, checking if request counter is used.");
+    	if (log.isDebugEnabled()) {
+        	debug(">resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
+    	}
     	int epid = data1.getEndEntityProfileId();
     	EndEntityProfile prof = raadminsession.getEndEntityProfile(admin, epid);
-    	String value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
-    	if (!prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
-    		value = null;
+    	String value = null;
+    	if (prof != null) {
+        	value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);    		
+        	if (!prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+        		value = null;
+        	}
+    	} else {
+    		log.debug("Can not fetch entity profile with id "+epid);
     	}
     	ExtendedInformation ei = data1.getExtendedInformation();
     	String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
@@ -2054,10 +2064,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         		ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
         		data1.setExtendedInformation(ei);    			
         		debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
+    		} else {
+    			debug("No re-setting counter because we should only remove");
     		}
     	} else {
     		debug("Request counter not used, not re-setting it.");
     	}
+    	if (log.isDebugEnabled()) {
+        	debug("<resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
+    	}
+
     }
 
     /**

@@ -59,6 +59,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.Base64;
@@ -71,7 +72,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.35 2008-01-03 12:52:39 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.36 2008-01-04 13:27:23 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -1239,11 +1240,26 @@ public class TestSignSession extends TestCase {
     public void test20MultiRequests() throws Exception {
         log.debug(">test20MultiRequests()");
 
+        // Test that it works correctly with end entity profiles using the counter
+        int pid = 0;
+        try {
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.ORGANIZATION);
+            profile.addField(DnComponents.COUNTRY);
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setValue(EndEntityProfile.AVAILCAS,0,""+rsacaid);
+            profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+            profile.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
+            rasession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
+            pid = rasession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+        } catch (EndEntityProfileExistsException pee) {
+        	assertTrue("Can not create end entity profile", false);
+        }
+        
         // Change already existing user 
-        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
         usersession.changeUser(admin, user, false);
         usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-
         // create first cert
         X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
@@ -1269,8 +1285,8 @@ public class TestSignSession extends TestCase {
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
         user.setExtendedinformation(ei);
+        user.setStatus(UserDataConstants.STATUS_NEW);
         usersession.changeUser(admin, user, false);
-        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
 
         // create first cert
         cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
@@ -1316,9 +1332,13 @@ public class TestSignSession extends TestCase {
      *
      * @throws Exception if en error occurs...
      */
-    public void test99DeleteUsers() throws Exception {
-        log.debug(">test99DeleteUsers()");
+    public void test99CleanUp() throws Exception {
+        log.debug(">test99CleanUp()");
 
+        // Delete test end entity profile
+        try {        	
+            rasession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+        } catch (Exception e) { /* ignore */ }
         // delete users that we know...
         usersession.deleteUser(admin, "foo");
         log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
@@ -1327,7 +1347,7 @@ public class TestSignSession extends TestCase {
         usersession.deleteUser(admin, "fooecdsaimpca");
         log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
 
-        log.debug("<test99DeleteUsers()");
+        log.debug("<test99CleanUp()");
     }
     
     /**

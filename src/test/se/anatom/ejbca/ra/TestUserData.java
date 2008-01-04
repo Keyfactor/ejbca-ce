@@ -42,7 +42,7 @@ import org.ejbca.util.dn.DnComponents;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.9 2008-01-03 12:52:40 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.10 2008-01-04 13:27:23 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -364,19 +364,101 @@ public class TestUserData extends TestCase {
         counter = usersession.decRequestCounter(admin, username);
         assertEquals(-1, counter);
 
-        // Also changeUser will re-set status
+        // Also changeUser to new from something else will re-set status, if ei value is 0
         usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");        
+        user.setExtendedinformation(ei);
         user.setStatus(UserDataConstants.STATUS_NEW);
         usersession.changeUser(admin, user, false);
         // decrease the value        
         counter = usersession.decRequestCounter(admin, username);
         assertEquals(2, counter);
-
-        // But not a second time
-        usersession.changeUser(admin, user, false);
-        // decrease the value        
-        counter = usersession.decRequestCounter(admin, username);
-        assertEquals(1, counter);
+        
+        // Test set and re-set logic
+        
+        // The profile has 3 as default value, if I change user with status to generated and value 2 it should be set as that
+        UserDataVO user1 = usersession.findUser(admin, user.getUsername());
+        ei = new ExtendedInformation();
+        allowedrequests = 2;
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        user1.setExtendedinformation(ei);
+        user1.setStatus(UserDataConstants.STATUS_GENERATED);
+        usersession.changeUser(admin, user1, false);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        String value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("2", value);
+        // If I change user with status to new and value 1 it should be set as that
+        ei = new ExtendedInformation();
+        allowedrequests = 1;
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        user1.setExtendedinformation(ei);
+        user1.setStatus(UserDataConstants.STATUS_NEW);
+        usersession.changeUser(admin, user1, false);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("1", value);
+        // If I set status to new again, with noting changed, nothing should change
+        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("1", value);
+        // The same when I change the user
+        user1.setStatus(UserDataConstants.STATUS_NEW);
+        usersession.changeUser(admin, user1, false);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("1", value);
+        // If I change the status to generated, nothing should happen
+        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("1", value);
+        // If I change the status to new from generated the default value should be used
+        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("3", value);
+        // It should be possible to simply set the value to 0
+        ei = new ExtendedInformation();
+        allowedrequests = 0;
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        user1.setExtendedinformation(ei);
+        user1.setStatus(UserDataConstants.STATUS_GENERATED);
+        usersession.changeUser(admin, user1, false);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("0", value);
+        // Changing again to new, with 0 passed in will set the default value
+        user1.setStatus(UserDataConstants.STATUS_NEW);
+        usersession.changeUser(admin, user1, false);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("3", value);
+        // Set back to 0
+        user1.setStatus(UserDataConstants.STATUS_GENERATED);
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");
+        user1.setExtendedinformation(ei);
+        usersession.changeUser(admin, user1, false);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertEquals("0", value);
+        // Setting with null value will always remove the request counter
+        user1.setExtendedinformation(null);
+        user1.setStatus(UserDataConstants.STATUS_NEW);
+        usersession.changeUser(admin, user1, false);
+        user1 = usersession.findUser(admin, user.getUsername());
+        ei = user1.getExtendedinformation();
+        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        assertNull(value);
         
         log.debug("<test06RequestCounter()");
     }
