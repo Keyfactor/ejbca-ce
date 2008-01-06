@@ -173,6 +173,12 @@ Derby:
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
     in conf/web.properties you should set desired values and also http/s ports.
+    
+    (The below configuration of ejbcaws and xkms only have to be done in Glassfish v1.
+     On Glassfish v2 it deploys nicely, even though the functionality does not work completely.
+     See https://jira.primekey.se/browse/ECA-607 for details.
+     Tips how to solve these probles are welcome.)
+     
     in conf/jaxws.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
 
