@@ -44,7 +44,7 @@ public class WebdistHttpTest extends TestCase {
         // We hit the pages and see that they return a 200 value, so we know they at least compile correctly
         String httpReqPath = "http://127.0.0.1:8080/ejbca";
         String resourceName = "publicweb/webdist/certdist";
-        String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+TomasLaptop%2cC%3dSE&level=0";
+        String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0";
 
         // We want to get a 404 response without exceptions
         HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
