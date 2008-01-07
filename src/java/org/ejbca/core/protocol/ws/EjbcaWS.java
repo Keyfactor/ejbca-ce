@@ -139,7 +139,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.24 2008-01-07 13:13:40 anatom Exp $
+ * $Id: EjbcaWS.java,v 1.25 2008-01-07 14:31:31 anatom Exp $
  */
 
 @WebService
@@ -1692,9 +1692,13 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	private UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws EjbcaException, ClassCastException, CreateException, NamingException{
 		   
-		int caid = getCAAdminSession().getCAInfo(admin,userdata.getCaName()).getCAId();
-		if(caid == 0){
+		CAInfo cainfo = getCAAdminSession().getCAInfo(admin,userdata.getCaName());
+		if (cainfo == null) {
 			throw new EjbcaException("Error CA " + userdata.getCaName() + " doesn't exists.");
+		}
+		int caid = cainfo.getCAId();
+		if (caid == 0) {
+			throw new EjbcaException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
 		int endentityprofileid = getRAAdminSession().getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
