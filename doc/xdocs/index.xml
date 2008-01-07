@@ -6,13 +6,13 @@
   </properties>
 
 <body>
+  <section name="FOSDEM 2008">
+  <note>
+  EJBCA will be present with a stand at FOSDEM 2008, join us there!
+  <a href="http://www.fosdem.org"><img src="http://www.fosdem.org/promo/fosdem" alt="FOSDEM, the Free and Open Source Software Developers' European Meeting" /></a>
+  </note>
+  </section>
   <section name="Latest News">
-    <note>
-    Presentations from the first EJBCA conference in Paris, 31st of January 2007, are available
-    <a href="http://download.primekey.se/ejbca/conference20070131/">here</a>.
-    <br/><br/>
-    New Windows <a href="howto.html#Microsoft smart card logon">Smart card logon guide</a> available.
-    </note>
     <note>
     EJBCA 3.5.3 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
@@ -23,6 +23,12 @@
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
     <br/>
     SHA1 checksum: ec3b67d1ed8e9870e9e691fd5de4fd6a5fba4e7f
+    </note>
+    <note>
+    Presentations from the first EJBCA conference in Paris, 31st of January 2007, are available
+    <a href="http://download.primekey.se/ejbca/conference20070131/">here</a>.
+    <br/><br/>
+    New Windows <a href="howto.html#Microsoft smart card logon">Smart card logon guide</a> available.
     </note>
   </section>
 
