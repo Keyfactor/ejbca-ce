@@ -112,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.67 2008-01-03 17:32:50 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.68 2008-01-07 13:06:01 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -266,7 +266,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			String caname = cadata.getName();
     			try {
     				cadata.upgradeCA();
-    				log.debug("Found CA: "+caname+", with expire time: "+cadata.getExpireTime());
+    				log.info("Initialized CA: "+caname+", with expire time: "+new Date(cadata.getExpireTime()));
     			} catch (UnsupportedEncodingException e) {
     				log.error("UnsupportedEncodingException trying to load CA with name: "+caname, e);
     			} catch (IllegalKeyStoreException e) {
