@@ -49,7 +49,7 @@
         <classpath refid="jaxws.classpath"/>
     </taskdef>
 	
-	<target depends="ws.init" name="ws.gen.server">
+	<target name="ws.gen.server" depends="ws.init" description="Generate JAX-WS server stubs when developing new WS-API calls.">
        <apt fork="true"  destdir="tmp/jaxws/gen-classes/server" 
             sourcedestdir="src/jaxws/gen-java/server" sourcepath="src/java"
             debug="true"
@@ -114,7 +114,7 @@
     </target>
 	
 	
-    <target name="ws.gen.client" depends="ws.init">
+    <target name="ws.gen.client" depends="ws.init" description="Generate JAX-WS client stubs when developing new WS-API calls.">
     	<echo>Note: The Application server must be on and deployed in order to generate client src.</echo>
         <wsimport 
                 keep="true"
