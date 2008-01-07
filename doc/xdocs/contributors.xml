@@ -73,7 +73,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Yuji, yistoneriver(at)users.sourceforge.net, patch for deadlock problem.</li>
 <li>Nuno Ponte, nuno.ponte(at)multicert.com, portugese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediade nodes in LDAP, caIssuers AIA extension, and much more.</li>
 <li>Nicolas Coudene, nicolas.coudene(at)linagora.com, completing the DB2 support, updates to french translation.</li>
-<li>Sébastien Levesque, sebastien.levesque(at)linagora.com, WS-API calls for listing CAs and profiles.</li>
+<li>Sébastien Levesque, slevesque(at)linagora.com, WS-API calls for listing CAs and profiles.</li>
 </ul>
     </section>
   </body>
