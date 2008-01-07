@@ -22,9 +22,8 @@ import javax.ejb.EJBException;
  * 
  * @author Philip Vendil 2007 jun 19
  *
- * @version $Id: WSConfig.java,v 1.2 2007-07-05 05:55:08 herrvendil Exp $
+ * @version $Id: WSConfig.java,v 1.3 2008-01-07 13:17:32 anatom Exp $
  */
-
 public class WSConfig {
 	
     // Configuration variables
