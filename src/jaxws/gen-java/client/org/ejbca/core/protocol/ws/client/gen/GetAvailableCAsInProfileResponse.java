@@ -10,12 +10,12 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getAvailableCAsResponse complex type.
+ * <p>Java class for getAvailableCAsInProfileResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="getAvailableCAsResponse">
+ * &lt;complexType name="getAvailableCAsInProfileResponse">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -29,10 +29,10 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "getAvailableCAsResponse", propOrder = {
+@XmlType(name = "getAvailableCAsInProfileResponse", propOrder = {
     "_return"
 })
-public class GetAvailableCAsResponse {
+public class GetAvailableCAsInProfileResponse {
 
     @XmlElement(name = "return", required = true)
     protected List<NameAndId> _return;

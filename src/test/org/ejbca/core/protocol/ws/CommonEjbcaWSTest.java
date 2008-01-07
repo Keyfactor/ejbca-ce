@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws; 
 
 import java.io.File;
@@ -65,6 +77,7 @@ import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
+import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
@@ -1363,13 +1376,73 @@ public class CommonEjbcaWSTest extends TestCase {
 		if(performSetup){
 			setUpAdmin();
 		}
-
-		List<String> cas = ejbcaraws.getAvailableCAs();
+		ICAAdminSessionRemote casession = getCAAdminSession();
+		Collection ids = casession.getAvailableCAs(intAdmin);
+		List<NameAndId> cas = ejbcaraws.getAvailableCAs();
 		assertNotNull(cas);
-		assertTrue(cas.size() > 0);
-		assertTrue(cas.contains(getAdminCAName()));		
+		assertEquals(cas.size(), ids.size());
+		boolean found = false;
+		for (NameAndId n : cas) {
+			if (n.getName().equals(getAdminCAName())) {
+				found = true;
+			}
+		}
+		assertTrue(found);
 	} // test21GetAvailableCAs
 
+	protected void test22GetAuthorizedEndEntityProfiles(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		Collection<Integer> ids = getRAAdmin().getAuthorizedEndEntityProfileIds(intAdmin);
+		List<NameAndId> profs = ejbcaraws.getAuthorizedEndEntityProfiles();
+		assertNotNull(profs);
+		assertEquals(profs.size(), ids.size());
+		boolean foundkeyrec = false;
+		for (NameAndId n : profs) {
+			if (n.getName().equals("KEYRECOVERY")) foundkeyrec= true;
+			boolean found = false;
+			for (Integer i : ids) {
+				// All ids must be in profs
+				if (n.getId() ==  i) {
+					found = true;
+				}
+			}
+			assertTrue(found);
+		}
+		assertTrue(foundkeyrec);
+	} // test22GetAuthorizedEndEntityProfiles
+
+	protected void test23GetAvailableCertificateProfiles(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		int id = getRAAdmin().getEndEntityProfileId(intAdmin, "KEYRECOVERY");
+		List<NameAndId> profs = ejbcaraws.getAvailableCertificateProfiles(id);
+		assertNotNull(profs);
+		assertEquals(profs.size(), 1);
+		NameAndId n = profs.get(0);
+		// This profile only has the empty profile available
+		assertEquals(1, n.getId());
+		assertEquals("EMPTY", n.getName());
+	} // test23GetAvailableCertificateProfiles
+
+	protected void test24GetAvailableCAsInProfile(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		int id = getRAAdmin().getEndEntityProfileId(intAdmin, "KEYRECOVERY");
+		List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(id);
+		assertNotNull(cas);
+		// This profile only has ALLCAS available
+		assertTrue(cas.size() > 0);
+		boolean found = false;
+		for (NameAndId n : cas) {
+			if (getAdminCAName().equals(n.getName())) found = true;
+		}
+		assertTrue(found);
+	} // test24GetAvailableCAsInProfile
+	
 	//
 	// Private methods
 	//

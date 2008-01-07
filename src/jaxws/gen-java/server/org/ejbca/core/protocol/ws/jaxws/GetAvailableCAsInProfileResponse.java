@@ -8,10 +8,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 
-@XmlRootElement(name = "getAvailableCAsResponse", namespace = "http://ws.protocol.core.ejbca.org/")
+@XmlRootElement(name = "getAvailableCAsInProfileResponse", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "getAvailableCAsResponse", namespace = "http://ws.protocol.core.ejbca.org/")
-public class GetAvailableCAsResponse {
+@XmlType(name = "getAvailableCAsInProfileResponse", namespace = "http://ws.protocol.core.ejbca.org/")
+public class GetAvailableCAsInProfileResponse {
 
     @XmlElement(name = "return", namespace = "")
     private NameAndId[] _return;

@@ -1,9 +1,23 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.common;
 
 import java.rmi.RemoteException;
 import java.util.List;
 
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
@@ -20,10 +34,11 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
+import org.ejbca.core.protocol.ws.objects.KeyStore;
+import org.ejbca.core.protocol.ws.objects.NameAndId;
+import org.ejbca.core.protocol.ws.objects.RevokeStatus;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
-import org.ejbca.core.protocol.ws.objects.KeyStore;
-import org.ejbca.core.protocol.ws.objects.RevokeStatus;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
@@ -57,7 +72,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.11 2008-01-03 16:15:30 anatom Exp $
+ * $Id: IEjbcaWS.java,v 1.12 2008-01-07 13:13:41 anatom Exp $
  */
 public interface IEjbcaWS {
 	
@@ -545,7 +560,7 @@ public interface IEjbcaWS {
 	public abstract Certificate getCertificate(String certSNinHex, String issuerDN)   throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
-	 * Method used to fetch a list of the names of available CAs, i.e. not having status "external" or "waiting for certificate response".
+	 * Method used to fetch a list of the ids and names of available CAs, i.e. not having status "external" or "waiting for certificate response".
 	 * 
 	 * Authorization requirements:
 	 * - Administrator flag set
@@ -554,13 +569,62 @@ public interface IEjbcaWS {
 	 * If not turned of in jaxws.properties then only a valid certificate required
 	 * 
 	 * 
-	 * @param userDataSourceNames a List of User Data Source Names
-	 * @param searchString to identify the userdata.
-	 * @return a List of UserDataSourceVOWS of the data in the specified UserDataSources, if no user data is found will an empty list be returned. 
-	 * @throws UserDataSourceException if an error occured connecting to one of 
-	 * UserDataSources.
+	 * @return array of NameAndId of available CAs, if no CAs are found will an empty array be returned of size 0, never null. 
+	 * @throws EjbcaException if an error occured
+	 * @see ICAAdminSessionLocal#getAvailableCAs()
+	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 */
-	public abstract List<String> getAvailableCAs()
+	public abstract NameAndId[] getAvailableCAs()
 			throws EjbcaException, AuthorizationDeniedException;
+
+	/**
+	 * Method that fetches a list of end entity profiles that the administrator is authorized to use.
+	 * 
+	 * Authorization requirements:
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /endentityprofilesrules/<end entity profile>
+	 * 
+	 * @return array of NameAndId of available end entity profiles, if no profiles are found will an empty array be returned of size 0, never null. 
+	 * @throws EjbcaException if an error occured
+	 * @see IRaAdminSessionLocal#getAuthorizedEndEntityProfileIds()
+	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+	 */
+	public abstract NameAndId[] getAuthorizedEndEntityProfiles()
+			throws EjbcaException, AuthorizationDeniedException;
+
+	/**
+	 * Method that fetches a list of available certificate profiles in an end entity profile.
+	 * 
+	 * Authorization requirements:
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /endentityprofilesrules/<end entity profile>
+	 * 
+	 * @param entityProfileId id of an end entity profile where we want to find which certificate profiles are available
+	 * @return array of NameAndId of available certificate profiles, if no profiles are found will an empty array be returned of size 0, never null. 
+	 * @throws EjbcaException if an error occured
+	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+	 */
+	public abstract NameAndId[] getAvailableCertificateProfiles(int entityProfileId) 
+			throws AuthorizationDeniedException, EjbcaException;
+
+	/**
+	 * Method used to fetch a list of the ids and names of available CAs in an end entity profile.
+	 * 
+	 * Authorization requirements:
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /endentityprofilesrules/<end entity profile>
+	 * 
+	 * If not turned of in jaxws.properties then only a valid certificate required
+	 * 
+	 * @param entityProfileId id of an end entity profile where we want to find which CAs are available
+	 * @return array of NameAndId of available CAs in the specified end entity profile, if no CAs are found will an empty array be returned of size 0, never null. 
+	 * @throws EjbcaException if an error occured
+	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+	 */
+	public abstract NameAndId[] getAvailableCAsInProfile(int entityProfileId) 
+			throws AuthorizationDeniedException, EjbcaException;
 
 }

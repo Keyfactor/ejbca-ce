@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
 import java.math.BigInteger;
@@ -18,6 +30,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
@@ -107,6 +120,7 @@ import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
+import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.PINDataWS;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
@@ -125,7 +139,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.23 2008-01-03 16:15:30 anatom Exp $
+ * $Id: EjbcaWS.java,v 1.24 2008-01-07 13:13:40 anatom Exp $
  */
 
 @WebService
@@ -1438,16 +1452,16 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCAs()
 	 */
-	public List<String> getAvailableCAs() throws EjbcaException, AuthorizationDeniedException {
-		ArrayList<String> ret = new ArrayList<String>();
+	public NameAndId[] getAvailableCAs() throws EjbcaException, AuthorizationDeniedException {
+		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
 		Admin admin = getAdmin(true);
 		try {
-			Collection caids = getCAAdminSession().getAvailableCAs(admin);
-			HashMap map = getCAAdminSession().getCAIdToNameMap(admin);		
-			for (Iterator<Integer> i = caids.iterator(); i.hasNext(); ) {
-				String name = (String)map.get(i.next());
+			Collection<Integer> caids = getCAAdminSession().getAvailableCAs(admin);
+			HashMap map = getCAAdminSession().getCAIdToNameMap(admin);
+			for (Integer id : caids ) {
+				String name = (String)map.get(id);
 				if (name != null) {
-					ret.add(name);
+					ret.put(name, id);
 				}
 			}
 		} catch (CreateException e) {
@@ -1457,9 +1471,96 @@ public class EjbcaWS implements IEjbcaWS {
 			log.error("EJBCA WebService error, getCertificate : ",e);
 			throw new EjbcaException(e.getMessage());
 		}
-		return ret;
+		return convertTreeMapToArray(ret);
 	}
 
+    /**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAuthorizedEndEntityProfiles()
+	 */
+	public NameAndId[] getAuthorizedEndEntityProfiles()
+			throws AuthorizationDeniedException, EjbcaException {
+		Admin admin = getAdmin();
+		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
+		try {
+			Collection<Integer> ids = getRAAdminSession().getAuthorizedEndEntityProfileIds(admin);
+			HashMap<Integer,String> idtonamemap = getRAAdminSession().getEndEntityProfileIdToNameMap(admin);			
+			for (Integer id : ids) {
+				ret.put(idtonamemap.get(id), id);
+			}
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, getAuthorizedEndEntityProfiles : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, getAuthorizedEndEntityProfiles : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, getAuthorizedEndEntityProfiles : ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+		
+		return convertTreeMapToArray(ret);
+	}
+
+    /**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCertificateProfiles()
+	 */
+	public NameAndId[] getAvailableCertificateProfiles(int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+		Admin admin = getAdmin();
+		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
+		try {
+			EndEntityProfile profile = getRAAdminSession().getEndEntityProfile(admin, entityProfileId);
+			String[] availablecertprofilesId = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0).split(EndEntityProfile.SPLITCHAR);
+			for (String id : availablecertprofilesId) {
+				int i = Integer.parseInt(id);
+				ret.put(getCertStoreSession().getCertificateProfileName(admin,i), i);
+			}
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, getCertificateProfiles : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, getCertificateProfiles : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, getCertificateProfiles : ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+		return  convertTreeMapToArray(ret);
+	}
+
+    /**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCAsInProfile()
+	 */
+	public NameAndId[] getAvailableCAsInProfile(int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+		Admin admin = getAdmin();
+		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
+		try {
+			EndEntityProfile profile = getRAAdminSession().getEndEntityProfile(admin, entityProfileId);
+			Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
+			HashMap<Integer,String> map = getCAAdminSession().getCAIdToNameMap(admin);
+			for (String id : cas ) {
+				Integer i = Integer.valueOf(id);
+				String name = (String)map.get(i);
+				if (name != null) {
+					ret.put(name, i);
+				}
+			}
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, getCas : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, getCas : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, getCas : ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+	return convertTreeMapToArray(ret);
+}
+
+	//
+	// Private helpers
+	//
+	
 	private Admin getAdmin() throws AuthorizationDeniedException, EjbcaException{		  
 		  return getAdmin(false);
 	}
@@ -1871,6 +1972,27 @@ public class EjbcaWS implements IEjbcaWS {
         return returnval;
 	}
 
+    /**
+	 * Web services does not support Collection type so convert it to array.
+	 * 
+	 * @param mytree TreeMap of name and id pairs to convert to an array
+	 * @return array of NameAndId objects
+	 */
+    private NameAndId[] convertTreeMapToArray(TreeMap<String, Integer> mytree) {
+    	NameAndId[] ret = null;
+
+		if ((mytree == null) || (mytree.size() == 0) ) {
+			ret = new NameAndId[0];
+		} else {
+			ret = new NameAndId[mytree.size()];
+			int i = 0;
+			for (String name : mytree.keySet()) {
+				ret[i++] = new NameAndId(name, mytree.get(name));
+			}
+		}
+		return ret;
+	}
+
 	//
 	// Methods for fetching ejb session bean interfaces
 	//
@@ -2010,11 +2132,5 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		return publishersession;
 	}
-
-
-
-
-
-
 
 }
