@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -117,7 +118,7 @@ public class TestProtectedLog extends TestCase {
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Test if log-freeze is detected
 		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties);
-		protectedLogSession.verifyEntireLog(protectedLogActions, 0);
+		protectedLogSession.verifyEntireLog(protectedLogActions, -1);
 		assertTrue(ERROR_FROZENLOG, IProtectedLogAction.CAUSE_FROZEN.equals(ProtectedLogTestAction.getLastActionCause()));
 		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
@@ -214,23 +215,31 @@ public class TestProtectedLog extends TestCase {
 		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
 		// Activate CMS service
 		X509CAInfo x509cainfo = (X509CAInfo) caAdminSession.getCAInfo(internalAdmin, DEFAULT_CA_NAME);
-		CmsCAServiceInfo cmscainfo = null; 
-		Iterator iter = x509cainfo.getExtendedCAServiceInfos().iterator();       
-		while(iter.hasNext()){
-			ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
-			if(serviceinfo instanceof CmsCAServiceInfo){
-				cmscainfo = (CmsCAServiceInfo) serviceinfo;
-				if (cmscainfo.getStatus() == CmsCAServiceInfo.STATUS_INACTIVE) {
-					wasCMSDisabled = true;
-					ArrayList extendedcaserviceinfos = new ArrayList();
-					extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE, false));    
-					extendedcaserviceinfos.add(new XKMSCAServiceInfo(XKMSCAServiceInfo.STATUS_ACTIVE, false)); 
-					extendedcaserviceinfos.add(new CmsCAServiceInfo(CmsCAServiceInfo.STATUS_ACTIVE, "CN=CMSCertificate, " + x509cainfo.getSubjectDN(), "",
-							((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeySpec(), ((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeyAlgorithm()));
-					x509cainfo.setExtendedCAServiceInfos(extendedcaserviceinfos);
-					caAdminSession.editCA(internalAdmin, x509cainfo);
+		assertTrue("The test expects the CA \""+DEFAULT_CA_NAME+"\" to exist.", x509cainfo != null);
+		CmsCAServiceInfo cmscainfo = null;
+		Collection extendedCAServiceInfos = x509cainfo.getExtendedCAServiceInfos();
+		if (extendedCAServiceInfos == null) {
+			wasCMSDisabled = true;
+		} else {
+			Iterator iter = extendedCAServiceInfos.iterator();
+			while(iter.hasNext()){
+				ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
+				if(serviceinfo instanceof CmsCAServiceInfo){
+					cmscainfo = (CmsCAServiceInfo) serviceinfo;
+					if (cmscainfo.getStatus() == CmsCAServiceInfo.STATUS_INACTIVE) {
+						wasCMSDisabled = true;
+					}
 				}
 			}
+		}
+		if (wasCMSDisabled) {
+			ArrayList extendedcaserviceinfos = new ArrayList();
+			extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE, false));    
+			extendedcaserviceinfos.add(new XKMSCAServiceInfo(XKMSCAServiceInfo.STATUS_ACTIVE, false)); 
+			extendedcaserviceinfos.add(new CmsCAServiceInfo(CmsCAServiceInfo.STATUS_ACTIVE, "CN=CMSCertificate, " + x509cainfo.getSubjectDN(), "",
+					((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeySpec(), ((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeyAlgorithm()));
+			x509cainfo.setExtendedCAServiceInfos(extendedcaserviceinfos);
+			caAdminSession.editCA(internalAdmin, x509cainfo);
 		}
 		try {
 			// Write an logevent and make sure it complains about an empty log
