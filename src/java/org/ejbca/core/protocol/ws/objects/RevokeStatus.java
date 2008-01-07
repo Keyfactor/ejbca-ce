@@ -26,7 +26,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
  *   Reason (One of the REVOKATION_REASON constants)
  *
  * @author Philip Vendil
- * $id$
+ * @version $Id: RevokeStatus.java,v 1.3 2008-01-07 13:07:28 anatom Exp $
  */
 
 public class RevokeStatus {

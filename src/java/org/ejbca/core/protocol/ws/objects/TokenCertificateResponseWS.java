@@ -22,9 +22,8 @@ import org.ejbca.core.protocol.ws.common.HardTokenConstants;
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: TokenCertificateResponseWS.java,v 1.2 2007-04-13 06:22:37 herrvendil Exp $
+ * @version $Id: TokenCertificateResponseWS.java,v 1.3 2008-01-07 13:07:29 anatom Exp $
  */
-
 public class TokenCertificateResponseWS {
 	
 

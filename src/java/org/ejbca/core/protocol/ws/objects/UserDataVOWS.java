@@ -22,9 +22,8 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * Is used instead of UserDataVO because of profilenames is used instead of id's.
  * 
  * @author Philip Vendil
- * $id$
+ * @version $Id: UserDataVOWS.java,v 1.3 2008-01-07 13:07:27 anatom Exp $
  */
-
 public class UserDataVOWS implements Serializable{
 	
 	public static final java.lang.String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 

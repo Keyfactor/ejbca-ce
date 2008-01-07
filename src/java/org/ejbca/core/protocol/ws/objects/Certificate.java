@@ -16,6 +16,9 @@ import java.security.cert.CertificateEncodingException;
 
 import org.ejbca.util.Base64;
 
+/**
+ * @version $Id: Certificate.java,v 1.5 2008-01-07 13:07:27 anatom Exp $
+ */
 public class Certificate extends TokenCertificateResponseWS {
 	
 	private byte[] certificateData = null;
