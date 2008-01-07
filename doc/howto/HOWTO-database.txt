@@ -164,6 +164,11 @@ For v8.x the 8.1 driver works fine.
 
 Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
+Sample setup:
+ admin@host:~$ sudo su postgres
+ postgres@host:~$ createuser -SDRP ejbca
+  <enter password twice>
+ postgres@host:~$ createdb ejbca
 
 Oracle specifics
 ----------------
