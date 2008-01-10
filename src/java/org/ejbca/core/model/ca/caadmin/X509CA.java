@@ -141,7 +141,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.84 2008-01-10 15:27:52 anatom Exp $
+ * @version $Id: X509CA.java,v 1.85 2008-01-10 15:28:54 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -579,7 +579,7 @@ public class X509CA extends CA implements Serializable {
     	X509Extensions overridenexts = extgen.generate();
         while(certStdExtIter.hasNext()){
         	String oid = (String)certStdExtIter.next();
-        	if (overridenexts.getExtension(new DERObjectIdentifier(oid)) != null) {
+        	if (overridenexts.getExtension(new DERObjectIdentifier(oid)) == null) {
             	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
             	if (certExt != null) {
             		DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
@@ -601,7 +601,7 @@ public class X509CA extends CA implements Serializable {
         	 Integer id = (Integer) certExtIter.next();
         	 CertificateExtension certExt = fact.getCertificateExtensions(id);
         	 if (certExt != null) {
-        		 if (overridenexts.getExtension(new DERObjectIdentifier(certExt.getOID())) != null) {
+        		 if (overridenexts.getExtension(new DERObjectIdentifier(certExt.getOID())) == null) {
         			 DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
         			 if (value != null) {
         				 extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
