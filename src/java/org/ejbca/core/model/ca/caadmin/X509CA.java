@@ -141,7 +141,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.83 2008-01-10 14:42:15 anatom Exp $
+ * @version $Id: X509CA.java,v 1.84 2008-01-10 15:27:52 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -576,14 +576,19 @@ public class X509CA extends CA implements Serializable {
         CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
         List usedStdCertExt = certProfile.getUsedStandardCertificateExtensions();
         Iterator certStdExtIter = usedStdCertExt.iterator();
+    	X509Extensions overridenexts = extgen.generate();
         while(certStdExtIter.hasNext()){
         	String oid = (String)certStdExtIter.next();
-        	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
-        	if (certExt != null) {
-        		DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
-        		if (value != null) {
-        			extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
-        		}
+        	if (overridenexts.getExtension(new DERObjectIdentifier(oid)) != null) {
+            	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
+            	if (certExt != null) {
+            		DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
+            		if (value != null) {
+            			extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
+            		}
+            	}        		
+        	} else {
+        		log.debug("Extension with oid "+oid+" has been overridden, standard extension will not be added.");
         	}
         }
 
@@ -596,10 +601,14 @@ public class X509CA extends CA implements Serializable {
         	 Integer id = (Integer) certExtIter.next();
         	 CertificateExtension certExt = fact.getCertificateExtensions(id);
         	 if (certExt != null) {
-        		 DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
-        		 if (value != null) {
-                	 extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
-        		 }
+        		 if (overridenexts.getExtension(new DERObjectIdentifier(certExt.getOID())) != null) {
+        			 DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
+        			 if (value != null) {
+        				 extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
+        			 }             		
+        		 } else {
+             		log.debug("Extension with oid "+certExt.getOID()+" has been overridden, custom extension will not be added.");
+             	}
         	 }
          }
          
