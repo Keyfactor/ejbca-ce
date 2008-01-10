@@ -79,9 +79,8 @@
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
-  static final String CHECKBOX_USECAISSUERS			              = "checkusecaissuers";
   static final String CHECKBOX_USEOCSPNOCHECK                     = "checkuseocspnocheck";
-  static final String CHECKBOX_USEOCSPSERVICELOCATOR              = "checkuseocspservicelocator";
+  static final String CHECKBOX_USEAUTHORITYINFORMATIONACCESS      = "checkuseauthorityinformationaccess";
   static final String CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR      = "checkusedefaultocspservicelocator";
   static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
   static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
@@ -526,20 +525,6 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
               certificateprofiledata.setPublisherList(availablepublishers);
 
               use = false;
-              value = request.getParameter(CHECKBOX_USECAISSUERS);
-              if(value != null){
-           		  use = value.equals(CHECKBOX_VALUE);
-                  certificateprofiledata.setUseCaIssuers(use);
-               
-                  value = request.getParameter(TEXTFIELD_CAISSUERURI);
-               	  if((value != null) && (value.trim().length() > 0)) {
-                 	  certificateprofiledata.addCaIssuer(value);
-               	  } 
-           	  } else {
-            	  certificateprofiledata.setUseCaIssuers(false);
-               	  certificateprofiledata.setCaIssuers(null);
-           	  }
-
               value = request.getParameter(CHECKBOX_USEOCSPNOCHECK);
               if(value != null){
                   use = value.equals(CHECKBOX_VALUE);
@@ -548,30 +533,36 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
               else{
                   certificateprofiledata.setUseOcspNoCheck(false);
               }
-              
-             use = false;
-             value = request.getParameter(CHECKBOX_USEOCSPSERVICELOCATOR);
-             if(value != null){
-                 use = value.equals(CHECKBOX_VALUE);
-                 certificateprofiledata.setUseOCSPServiceLocator(use);
 
-                 value = request.getParameter(CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR);
-                 if(value != null){
-                   certificateprofiledata.setUseDefaultOCSPServiceLocator(value.equals(CHECKBOX_VALUE));
-                 }else{
-                   certificateprofiledata.setUseDefaultOCSPServiceLocator(false);
-                 }          
+              /* Authority Information Access extension */
+              use = false;
+              value = request.getParameter(CHECKBOX_USEAUTHORITYINFORMATIONACCESS);
+              if(value != null){
+           		  use = value.equals(CHECKBOX_VALUE);
+                  certificateprofiledata.setUseAuthorityInformationAccess(use);
+                  // Ocsp service locator
+                  value = request.getParameter(CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR);
+                  if(value != null){
+                    certificateprofiledata.setUseDefaultOCSPServiceLocator(value.equals(CHECKBOX_VALUE));
+                  }else{
+                    certificateprofiledata.setUseDefaultOCSPServiceLocator(false);
+                  }          
                   
-                 value = request.getParameter(TEXTFIELD_OCSPSERVICELOCATOR);
-                 if(value != null && !certificateprofiledata.getUseDefaultOCSPServiceLocator()){
-                   value=value.trim();
-                   certificateprofiledata.setOCSPServiceLocatorURI(value);
-                 } 
-             }
-             else{
-                 certificateprofiledata.setUseOCSPServiceLocator(false);                 
-                 certificateprofiledata.setOCSPServiceLocatorURI("");
-             }
+                  value = request.getParameter(TEXTFIELD_OCSPSERVICELOCATOR);
+                  if(value != null && !certificateprofiledata.getUseDefaultOCSPServiceLocator()){
+                    value=value.trim();
+                    certificateprofiledata.setOCSPServiceLocatorURI(value);
+                  } 
+                  // CA issuers
+                  value = request.getParameter(TEXTFIELD_CAISSUERURI);
+               	  if((value != null) && (value.trim().length() > 0)) {
+                 	  certificateprofiledata.addCaIssuer(value);
+               	  } 
+           	  } else {
+            	  certificateprofiledata.setUseAuthorityInformationAccess(false);
+               	  certificateprofiledata.setCaIssuers(null);
+                  certificateprofiledata.setOCSPServiceLocatorURI("");
+           	  }
              
              /* Freshest CRL extension */
              use = false;

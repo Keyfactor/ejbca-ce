@@ -103,16 +103,33 @@ function checkusecadefinedfreshestcrlfield(){
   }
 }
 
-function checkuseocspservicelocatorfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USEOCSPSERVICELOCATOR %>.checked){    
+function checkuseaiafield(){
+  var attr = "";
+  if(document.editcertificateprofile.<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>.checked){    
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = true;
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
+    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = false;
+    for (var i = 0; i<3; i++) {
+      attr = "<%=TEXTFIELD_CAISSUERURI%>"+i;
+      document.editcertificateprofile[attr].removeAttribute('disabled');
+    }
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
+    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = true;
+    for (var i = 0; i<3; i++) {
+      attr = "<%=TEXTFIELD_CAISSUERURI%>"+i;
+      document.editcertificateprofile[attr].setAttribute('disabled', 'true');
+      document.editcertificateprofile[attr].setAttribute('value', '');
+    }
   }
 }
 
@@ -313,19 +330,6 @@ function checkuseextendedkeyusagefield(){
     document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.checked = false;
-  }
-}
-
-function checkusecaissuersfield(){
-  if(document.editcertificateprofile.<%=CHECKBOX_USECAISSUERS %>.checked){
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
-    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = false;
-  }
-  else{
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = true;
-    document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
-    document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = true;
   }
 }
 
@@ -655,24 +659,33 @@ function checkallfields(){
       </td>
     </tr>
     
+    <%-- authority information access (aia) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("OCSPSERVICELOCATOR") %> <br> <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %>
+        <%= ejbcawebbean.getText("USEAUTHORITYINFORMATIONACCESS") %> <br> 
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEOCSPSERVICELOCATOR %>" onClick="checkuseocspservicelocatorfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseOCSPServiceLocator())
+           <input type="checkbox" name="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>" onClick="checkuseaiafield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseAuthorityInformationAccess())
                  out.write("CHECKED");
-           %>> <br> 
+           %>>  
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %>
+      </td>
+      <%-- ocsp service locator part of authority information access (aia) extension --%>
+      <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>" onClick="checkdefaultocspservicelocatorfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(!certificateprofiledata.getUseOCSPServiceLocator())
+           <% if(!certificateprofiledata.getUseAuthorityInformationAccess())
                  out.write(" disabled ");
               if(certificateprofiledata.getUseDefaultOCSPServiceLocator())
                  out.write(" CHECKED ");
                  
            %>> <br>
            <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseOCSPServiceLocator() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
+           <%       if(!certificateprofiledata.getUseAuthorityInformationAccess() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
                       out.write(" disabled "); 
                     else 
                       if(!certificateprofiledata.getOCSPServiceLocatorURI().equals(""))
@@ -682,18 +695,7 @@ function checkallfields(){
       </td>
     </tr>
 
-    <%-- Use of caIssuers extension --%>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECAISSUERS") %> <br>
-      </td>
-      <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USECAISSUERS %>" onClick="checkusecaissuersfield()" value="<%=CHECKBOX_VALUE %>" 
-           <% if(certificateprofiledata.getUseCaIssuers())
-                 out.write("CHECKED");
-           %>> 
-      </td>
-    </tr>
+    <%-- caIssuers part of authority information access (aia) extension --%>
     <%-- List of already defined caIssuers URIs. --%>
     <% List caissuers = certificateprofiledata.getCaIssuers();
 
@@ -724,12 +726,12 @@ function checkallfields(){
       <td width="50%" align="right">
         <table border="0">
           <tr>
-            <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_CAISSUERURI %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseCaIssuers() ? "" : "disabled"%>/></td>
+            <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_CAISSUERURI %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/></td>
             <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CAISSUERURI") %></td>
           </tr>
         </table>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCaIssuers() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="60" maxlength="255" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/><br/>
       </td>
     </tr>
 
