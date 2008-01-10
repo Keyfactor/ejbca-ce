@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.ca.certextensions;
 
+import java.security.PublicKey;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -30,7 +31,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: CertificateExtension.java,v 1.1 2007-01-09 16:47:19 herrvendil Exp $
+ * @version $Id: CertificateExtension.java,v 1.2 2008-01-10 14:42:17 anatom Exp $
  */
 
 public abstract class CertificateExtension {
@@ -43,7 +44,7 @@ public abstract class CertificateExtension {
 	/**
 	 * Constuctor for creating a Certificate Extension. 
 	 */
-	protected CertificateExtension() {
+	public CertificateExtension() {
 		super();
 	}
 
@@ -62,10 +63,24 @@ public abstract class CertificateExtension {
 	}
 	
 	/**
+	 * @param The unique OID of the extension
+	 */
+	public void setOID(String oID) {
+		this.oID = oID;
+	}
+	
+	/**
 	 * @return flag indicating if the extension should be marked as critical or not.
 	 */
 	public boolean isCriticalFlag() {
 		return criticalFlag;
+	}
+
+	/**
+	 * @param flag indicating if the extension should be marked as critical or not.
+	 */
+	public void setCriticalFlag(boolean criticalFlag) {
+		this.criticalFlag = criticalFlag;
 	}
 
 	/**
@@ -113,9 +128,11 @@ public abstract class CertificateExtension {
 	 * @param userData the userdata of the issued certificate.
 	 * @param ca the CA data with access to all the keys etc
 	 * @param certProfile the certificate profile
-	 * @return a DEREncodable never null.
+	 * @param userPublicKey public key of the user, or null if not available
+	 * @return a DEREncodable or null, if this extension should not be used, which was determined from the values somehow.
+	 * @throws CertificateExtensionException TODO
 	 */
-	public abstract DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile ) throws CertificateExtentionConfigurationException;
+	public abstract DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
 
 	
 }

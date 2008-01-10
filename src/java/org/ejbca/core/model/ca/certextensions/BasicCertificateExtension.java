@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.certextensions;
 
 import java.math.BigInteger;
+import java.security.PublicKey;
 
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERBoolean;
@@ -40,7 +41,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: BasicCertificateExtension.java,v 1.4 2007-09-05 08:24:33 jeklund Exp $
+ * @version $Id: BasicCertificateExtension.java,v 1.5 2008-01-10 14:42:17 anatom Exp $
  */
 
 public class BasicCertificateExtension extends CertificateExtension {
@@ -69,11 +70,11 @@ public class BasicCertificateExtension extends CertificateExtension {
 	 * @param userData not used
 	 * @param ca not used
 	 * @param certProfile not used
-	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile)
+	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, PublicKey)
 	 */
 	public DEREncodable getValue(UserDataVO userData, CA ca,
-			CertificateProfile certProfile)
-			throws CertificateExtentionConfigurationException {
+			CertificateProfile certProfile, PublicKey userPublicKey)
+			throws CertificateExtentionConfigurationException, CertificateExtensionException {
 
 		if(dEREncodable == null){
 		  String value = getProperties().getProperty(PROPERTY_VALUE);		  

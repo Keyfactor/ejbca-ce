@@ -13,11 +13,14 @@
 
 package org.ejbca.core.model.ca.certextensions;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 
 import org.bouncycastle.asn1.DERPrintableString;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 
 /**
  * 
@@ -25,7 +28,7 @@ import org.bouncycastle.asn1.DERPrintableString;
  * 
  * @author Philip Vendil 2007 jan 7
  *
- * @version $Id: TestCertificateExtensionManager.java,v 1.1 2007-01-09 16:47:20 herrvendil Exp $
+ * @version $Id: TestCertificateExtensionManager.java,v 1.2 2008-01-10 14:42:16 anatom Exp $
  */
 
 public class TestCertificateExtensionManager extends TestCase {
@@ -80,8 +83,8 @@ public class TestCertificateExtensionManager extends TestCase {
 		assertTrue(certExt.getId() == 1);
 		assertTrue(certExt.getOID().equals("1.2.3.4"));
 		assertTrue(certExt.isCriticalFlag());
-		assertTrue(certExt.getValue(null, null, null) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) certExt.getValue(null, null, null)).getString().equals("Test 123"));
+		assertTrue(certExt.getValue(null, null, null, null) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null)).getString().equals("Test 123"));
 		
 		assertNull(fact.getCertificateExtensions(new Integer(2)));
 		
@@ -90,11 +93,35 @@ public class TestCertificateExtensionManager extends TestCase {
 		assertTrue(certExt.getId() == 3);
 		assertTrue(certExt.getOID().equals("3.2.3.4"));
 		assertTrue(!certExt.isCriticalFlag());
-		assertTrue(certExt.getValue(null, null, null) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) certExt.getValue(null, null, null)).getString().equals("Test 321"));
+		assertTrue(certExt.getValue(null, null, null, null) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null)).getString().equals("Test 321"));
 		
 	}
 	
+	public void test02StandardCertificateExtensions() throws Exception{
+		
+		CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
+    	CertificateProfile profile = new CertificateProfile();
+    	profile.setUseAuthorityInformationAccess(true);
+    	profile.setUseCertificatePolicies(true);
+    	profile.setUseCRLDistributionPoint(true);
+    	profile.setUseFreshestCRL(true);
+    	profile.setUseMicrosoftTemplate(true);
+    	profile.setUseOcspNoCheck(true);
+    	profile.setUseQCStatement(true);
+    	profile.setUseExtendedKeyUsage(true);
+    	profile.setUseSubjectDirAttributes(true);
+        List usedStdCertExt = profile.getUsedStandardCertificateExtensions();
+        assertEquals(usedStdCertExt.size(), 14);
+        Iterator certStdExtIter = usedStdCertExt.iterator();
+        while(certStdExtIter.hasNext()){
+        	String oid = (String)certStdExtIter.next();
+        	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, profile);
+        	assertNotNull(certExt);
+        }
+
+		
+	}
 
 
 }

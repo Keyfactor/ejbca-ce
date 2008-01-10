@@ -13,6 +13,8 @@
 
 package org.ejbca.core.model.ca.certextensions;
 
+import java.security.PublicKey;
+
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -28,7 +30,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: DummyAdvancedCertificateExtension.java,v 1.1 2007-01-09 16:47:19 herrvendil Exp $
+ * @version $Id: DummyAdvancedCertificateExtension.java,v 1.2 2008-01-10 14:42:17 anatom Exp $
  */
 
 public class DummyAdvancedCertificateExtension extends CertificateExtension {
@@ -39,10 +41,10 @@ public class DummyAdvancedCertificateExtension extends CertificateExtension {
 	 * The main method that should return a DEREncodable
 	 * using the input data (optional) or defined properties (optional)
 	 * 
-	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile)
+	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, PublicKey)
 	 */	
 	public DEREncodable getValue(UserDataVO userData, CA ca,
-			CertificateProfile certProfile) {
+			CertificateProfile certProfile, PublicKey userPublicKey) throws CertificateExtensionException {
 		
 		String value = getProperties().getProperty(PROPERTY_VALUE);
 		

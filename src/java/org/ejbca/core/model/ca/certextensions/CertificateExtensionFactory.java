@@ -21,7 +21,26 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.ca.certextensions.standard.AuthorityInformationAccess;
+import org.ejbca.core.model.ca.certextensions.standard.AuthorityKeyIdentifier;
+import org.ejbca.core.model.ca.certextensions.standard.BasicConstraint;
+import org.ejbca.core.model.ca.certextensions.standard.CertificatePolicies;
+import org.ejbca.core.model.ca.certextensions.standard.CrlDistributionPoints;
+import org.ejbca.core.model.ca.certextensions.standard.ExtendedKeyUsage;
+import org.ejbca.core.model.ca.certextensions.standard.FreshestCrl;
+import org.ejbca.core.model.ca.certextensions.standard.KeyUsage;
+import org.ejbca.core.model.ca.certextensions.standard.MsTemplate;
+import org.ejbca.core.model.ca.certextensions.standard.OcspNoCheck;
+import org.ejbca.core.model.ca.certextensions.standard.QcStatement;
+import org.ejbca.core.model.ca.certextensions.standard.StandardCertificateExtension;
+import org.ejbca.core.model.ca.certextensions.standard.SubjectAltNames;
+import org.ejbca.core.model.ca.certextensions.standard.SubjectDirectoryAttributes;
+import org.ejbca.core.model.ca.certextensions.standard.SubjectKeyIdentifier;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.util.CertTools;
 
 /**
  * Class parsing the src/java/certextensions.properties file 
@@ -33,7 +52,7 @@ import org.ejbca.core.model.InternalResources;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: CertificateExtensionFactory.java,v 1.4 2007-03-14 09:37:45 anatom Exp $
+ * @version $Id: CertificateExtensionFactory.java,v 1.5 2008-01-10 14:42:17 anatom Exp $
  */
 
 public class CertificateExtensionFactory {
@@ -53,6 +72,23 @@ public class CertificateExtensionFactory {
 	
 	private ArrayList availableCertificateExtensions = new ArrayList();
 	private HashMap certificateExtensions = new HashMap();
+	private HashMap standardCertificateExtensions = new HashMap();
+	{
+		standardCertificateExtensions.put(X509Extensions.BasicConstraints.getId(), BasicConstraint.class.getName());
+		standardCertificateExtensions.put(X509Extensions.SubjectKeyIdentifier.getId(), SubjectKeyIdentifier.class.getName());
+		standardCertificateExtensions.put(X509Extensions.AuthorityKeyIdentifier.getId(), AuthorityKeyIdentifier.class.getName());
+		standardCertificateExtensions.put(X509Extensions.KeyUsage.getId(), KeyUsage.class.getName());
+		standardCertificateExtensions.put(X509Extensions.ExtendedKeyUsage.getId(), ExtendedKeyUsage.class.getName());
+		standardCertificateExtensions.put(X509Extensions.SubjectAlternativeName.getId(), SubjectAltNames.class.getName());
+		standardCertificateExtensions.put(X509Extensions.CRLDistributionPoints.getId(), CrlDistributionPoints.class.getName());
+		standardCertificateExtensions.put(X509Extensions.FreshestCRL.getId(), FreshestCrl.class.getName());
+		standardCertificateExtensions.put(X509Extensions.CertificatePolicies.getId(), CertificatePolicies.class.getName());
+		standardCertificateExtensions.put(X509Extensions.SubjectDirectoryAttributes.getId(), SubjectDirectoryAttributes.class.getName());
+		standardCertificateExtensions.put(X509Extensions.AuthorityInfoAccess.getId(), AuthorityInformationAccess.class.getName());
+		standardCertificateExtensions.put(X509Extensions.QCStatements.getId(), QcStatement.class.getName());
+		standardCertificateExtensions.put(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId(), OcspNoCheck.class.getName());
+		standardCertificateExtensions.put(CertTools.OID_MSTEMPLATE, MsTemplate.class.getName());
+	}
 	
 	private CertificateExtensionFactory(){}
 	
@@ -99,6 +135,34 @@ public class CertificateExtensionFactory {
 		CertificateExtension ret = (CertificateExtension) certificateExtensions.get(id);
 		if (ret == null) {
 			log.error(intres.getLocalizedMessage("certext.noextensionforid", id));			
+		}
+		return ret;
+	}
+
+	/**
+	 * Method returning the instance of the standard CertificateExtension
+	 * given its object identifier
+	 * 
+	 * @returns null if the CertificateExtension doesn't exist
+	 */
+	public CertificateExtension getStandardCertificateExtension(String oid, CertificateProfile certProf){
+		StandardCertificateExtension ret = null;
+		String classPath = (String)standardCertificateExtensions.get(oid);
+		if (classPath != null) {
+			try {
+				Class implClass = Class.forName(classPath);
+				ret = (StandardCertificateExtension)implClass.newInstance();					
+				ret.init(certProf);                    
+			} catch (ClassNotFoundException e) {
+				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);			
+			} catch (InstantiationException e) {
+				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);			
+			} catch (IllegalAccessException e) {
+				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);			
+			}			
+		}
+		if (ret == null) {
+			log.error(intres.getLocalizedMessage("certext.noextensionforid", oid));			
 		}
 		return ret;
 	}

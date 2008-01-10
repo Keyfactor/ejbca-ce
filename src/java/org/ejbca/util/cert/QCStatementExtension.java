@@ -25,6 +25,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
@@ -36,7 +37,7 @@ import org.ejbca.util.CertTools;
  * A class for reading values from QC-statement extension.
  *
  * @author  Tomas Gustavsson
- * @version $Id: QCStatementExtension.java,v 1.2 2006-07-28 07:14:16 anatom Exp $
+ * @version $Id: QCStatementExtension.java,v 1.3 2008-01-10 14:42:18 anatom Exp $
  */
 public class QCStatementExtension extends CertTools {
 
@@ -55,7 +56,7 @@ public class QCStatementExtension extends CertTools {
      * @throws IOException if there is a problem parsing the certificate
      */
     public static boolean hasQcStatement(X509Certificate cert) throws IOException {
-        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
+        DERObject obj = getExtensionValue(cert, X509Extensions.QCStatements.getId());
         if (obj == null) {
             return false;
         }
@@ -69,7 +70,7 @@ public class QCStatementExtension extends CertTools {
      */
     public static Collection getQcStatementIds(X509Certificate cert) throws IOException {
         ArrayList ret = new ArrayList();
-        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
+        DERObject obj = getExtensionValue(cert, X509Extensions.QCStatements.getId());
         if (obj == null) {
             return ret;
         }
@@ -91,7 +92,7 @@ public class QCStatementExtension extends CertTools {
      */
     public static String getQcStatementValueLimit(X509Certificate cert) throws IOException {
     	String ret = null;
-        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
+        DERObject obj = getExtensionValue(cert, X509Extensions.QCStatements.getId());
         if (obj == null) {
             return null;
         }
@@ -141,7 +142,7 @@ public class QCStatementExtension extends CertTools {
      */
     public static String getQcStatementAuthorities(X509Certificate cert) throws IOException {
         String ret = null;
-        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
+        DERObject obj = getExtensionValue(cert, X509Extensions.QCStatements.getId());
         if (obj == null) {
             return null;
         }

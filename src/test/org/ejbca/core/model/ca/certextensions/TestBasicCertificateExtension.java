@@ -24,7 +24,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		DEREncodable value = baseExt.getValue(null, null, null);
+		DEREncodable value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERNull);
 		assertTrue(baseExt.getOID().equals("1.2.3"));
 		assertTrue(baseExt.getId() == 1);
@@ -39,7 +39,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		DEREncodable value = baseExt.getValue(null, null, null);
+		DEREncodable value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERInteger);
 		assertTrue(((DERInteger)value).toString(),((DERInteger)value).toString().equals("1234"));
 		assertTrue(baseExt.getOID().equals("1.2.3"));
@@ -53,7 +53,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		try{
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = baseExt.getValue(null, null, null);
+		  value = baseExt.getValue(null, null, null, null);
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
 		}
@@ -68,7 +68,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);		
 		byte[] result = {15};
-		DEREncodable value = baseExt.getValue(null, null, null);
+		DEREncodable value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
 		assertEquals(((DERBitString)value).getBytes()[0],result[0]);
 		assertEquals(((DERBitString)value).getPadBits(), 0);
@@ -84,7 +84,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
-		value = baseExt.getValue(null, null, null);
+		value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
 		BigInteger bi = new BigInteger(((DERBitString)value).getBytes());
 		//System.out.println(bi.toString(2));
@@ -105,7 +105,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		DEREncodable value = baseExt.getValue(null, null, null);
+		DEREncodable value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERBoolean);
 		assertTrue(((DERBoolean)value).toString(),((DERBoolean)value).toString().equals("TRUE"));
 		assertTrue(baseExt.getOID().equals("1.2.3"));
@@ -117,7 +117,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		value = baseExt.getValue(null, null, null);		
+		value = baseExt.getValue(null, null, null, null);		
 		assertTrue(((DERBoolean)value).toString(),((DERBoolean)value).toString().equals("FALSE"));
 		
 		props = new Properties();
@@ -127,7 +127,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		try{
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = baseExt.getValue(null, null, null);
+		  value = baseExt.getValue(null, null, null, null);
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
 		}
@@ -142,7 +142,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		DEREncodable value = baseExt.getValue(null, null, null);
+		DEREncodable value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DEROctetString);
 		assertTrue(((DEROctetString)value).toString(),((DEROctetString)value).toString().equalsIgnoreCase("#DBE81232"));
 		
@@ -153,7 +153,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		try{	
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = baseExt.getValue(null, null, null);		  
+		  value = baseExt.getValue(null, null, null, null);		  
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
 		}
@@ -169,7 +169,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		DEREncodable value = baseExt.getValue(null, null, null);
+		DEREncodable value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERPrintableString);
 		assertTrue(((DERPrintableString)value).toString(),((DERPrintableString)value).toString().equals("This is a printable string"));
 		
@@ -180,7 +180,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		try{	
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = baseExt.getValue(null, null, null);
+		  value = baseExt.getValue(null, null, null, null);
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
 		}
@@ -196,7 +196,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		DEREncodable value = baseExt.getValue(null, null, null);
+		DEREncodable value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERUTF8String);
 		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 ��� ��string"));
         
@@ -212,7 +212,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		boolean exceptionThrown =false;
 		try{	
 
-			baseExt.getValue(null, null, null);
+			baseExt.getValue(null, null, null, null);
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
 		}

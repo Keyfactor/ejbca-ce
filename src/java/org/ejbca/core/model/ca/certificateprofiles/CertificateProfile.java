@@ -24,9 +24,12 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 
@@ -34,7 +37,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.28 2007-12-28 10:30:29 nponte Exp $
+ * @version $Id: CertificateProfile.java,v 1.29 2008-01-10 14:42:17 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -42,7 +45,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 24.0;
+    public static final float LATEST_VERSION = (float) 25.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -53,7 +56,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -8069608639716545204L;
+    private static final long serialVersionUID = -8069608639716545205L;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -105,62 +108,68 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** Contant holding the default available bit lengths for certificate profiles */
     public static final int[] DEFAULTBITLENGTHS= {0,192,239,256,384,512,1024,2048,4096};
     
-    // protected fields.
+    // Profile fields
     protected static final String CERTVERSION                    = "certversion";
     protected static final String VALIDITY                       = "validity";
     protected static final String ALLOWVALIDITYOVERRIDE          = "allowvalidityoverride";
-    protected static final String USEBASICCONSTRAINTS            = "usebasicconstrants";
-    protected static final String BASICCONSTRAINTSCRITICAL       = "basicconstraintscritical";
-    protected static final String USEKEYUSAGE                    = "usekeyusage";
-    protected static final String KEYUSAGECRITICAL               = "keyusagecritical";
-    protected static final String USESUBJECTKEYIDENTIFIER        = "usesubjectkeyidentifier";
-    protected static final String SUBJECTKEYIDENTIFIERCRITICAL   = "subjectkeyidentifiercritical";
-    protected static final String USEAUTHORITYKEYIDENTIFIER      = "useauthoritykeyidentifier";
-    protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
-    protected static final String USECRLNUMBER                   = "usecrlnumber";
-    protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
-    protected static final String USESUBJECTALTERNATIVENAME      = "usesubjectalternativename";
-    protected static final String SUBJECTALTERNATIVENAMECRITICAL = "subjectalternativenamecritical";
-    protected static final String USECRLDISTRIBUTIONPOINT        = "usecrldistributionpoint";
-    protected static final String USEDEFAULTCRLDISTRIBUTIONPOINT = "usedefaultcrldistributionpoint";
-    protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
-    protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
-    protected static final String USECRLDISTRIBUTIONPOINTONCRL   = "usecrldistributionpointoncrl";
-    protected static final String CRLISSUER                      = "crlissuer";
-    protected static final String USEFRESHESTCRL                 = "usefreshestcrl";
-    protected static final String USECADEFINEDFRESHESTCRL        = "usecadefinedfreshestcrl";
-    protected static final String FRESHESTCRLURI                 = "freshestcrluri";    
-    protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
-    protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
-    /** Policy containng oid, User Notice and Cps Url */
-    protected static final String CERTIFICATE_POLICIES           = "certificatepolicies";
     protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
-    protected static final String KEYUSAGE                       = "keyusage";
     protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH      = "maximumavailablebitlength";
     public    static final String TYPE                           = "type";
-    protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
-    protected static final String USEEXTENDEDKEYUSAGE            = "useextendedkeyusage";
-    protected static final String EXTENDEDKEYUSAGE               = "extendedkeyusage";
-    protected static final String EXTENDEDKEYUSAGECRITICAL       = "extendedkeyusagecritical";
     protected static final String AVAILABLECAS                   = "availablecas";
     protected static final String USEDPUBLISHERS                 = "usedpublishers";         
-    protected static final String USEOCSPNOCHECK                 = "useocspnocheck";
-	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";
-	protected static final String USEDEFAULTOCSPSERVICELOCATOR   = "usedefaultocspservicelocator";	
-	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";
-    protected static final String USECAISSUERS                = "usecaissuersuri";
-    protected static final String CAISSUERS                      = "caissuers";
-	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
-	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
 	protected static final String USECNPOSTFIX                   = "usecnpostfix";
 	protected static final String CNPOSTFIX                      = "cnpostfix";	
 	protected static final String USESUBJECTDNSUBSET             = "usesubjectdnsubset";
 	protected static final String SUBJECTDNSUBSET                = "subjectdnsubset";
 	protected static final String USESUBJECTALTNAMESUBSET        = "usesubjectaltnamesubset";
 	protected static final String SUBJECTALTNAMESUBSET           = "subjectaltnamesubset";
+    protected static final String USEDCERTIFICATEEXTENSIONS      = "usedcertificateextensions";
+    //
+    // CRL extensions
+    protected static final String USECRLNUMBER                   = "usecrlnumber";
+    protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
+    protected static final String USECRLDISTRIBUTIONPOINTONCRL   = "usecrldistributionpointoncrl";
+    //
+    // Certificate extensions
+    protected static final String USEBASICCONSTRAINTS            = "usebasicconstrants";
+    protected static final String BASICCONSTRAINTSCRITICAL       = "basicconstraintscritical";
 	protected static final String USEPATHLENGTHCONSTRAINT        = "usepathlengthconstraint";
 	protected static final String PATHLENGTHCONSTRAINT           = "pathlengthconstraint";
+    protected static final String USEKEYUSAGE                    = "usekeyusage";
+    protected static final String KEYUSAGECRITICAL               = "keyusagecritical";
+    protected static final String KEYUSAGE                       = "keyusage";
+    protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
+    protected static final String USESUBJECTKEYIDENTIFIER        = "usesubjectkeyidentifier";
+    protected static final String SUBJECTKEYIDENTIFIERCRITICAL   = "subjectkeyidentifiercritical";
+    protected static final String USEAUTHORITYKEYIDENTIFIER      = "useauthoritykeyidentifier";
+    protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
+    protected static final String USESUBJECTALTERNATIVENAME      = "usesubjectalternativename";
+    protected static final String SUBJECTALTERNATIVENAMECRITICAL = "subjectalternativenamecritical";
+    protected static final String USECRLDISTRIBUTIONPOINT        = "usecrldistributionpoint";
+    protected static final String USEDEFAULTCRLDISTRIBUTIONPOINT = "usedefaultcrldistributionpoint";
+    protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
+    protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
+    protected static final String CRLISSUER                      = "crlissuer";
+    protected static final String USEFRESHESTCRL                 = "usefreshestcrl";
+    protected static final String USECADEFINEDFRESHESTCRL        = "usecadefinedfreshestcrl";
+    protected static final String FRESHESTCRLURI                 = "freshestcrluri";    
+    protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
+    protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
+    /** Policy containing oid, User Notice and Cps Url */
+    protected static final String CERTIFICATE_POLICIES           = "certificatepolicies";
+    protected static final String USEEXTENDEDKEYUSAGE            = "useextendedkeyusage";
+    protected static final String EXTENDEDKEYUSAGE               = "extendedkeyusage";
+    protected static final String EXTENDEDKEYUSAGECRITICAL       = "extendedkeyusagecritical";
+    protected static final String USEOCSPNOCHECK                 = "useocspnocheck";
+    protected static final String USEAUTHORITYINFORMATIONACCESS  = "useauthorityinformationaccess";
+	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";
+	protected static final String USEDEFAULTOCSPSERVICELOCATOR   = "usedefaultocspservicelocator";	
+	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";
+    protected static final String USECAISSUERS                   = "usecaissuersuri";
+    protected static final String CAISSUERS                      = "caissuers";
+	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
+	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
     protected static final String USEQCSTATEMENT                 = "useqcstatement";
     protected static final String USEPKIXQCSYNTAXV2              = "usepkixqcsyntaxv2";
     protected static final String QCSTATEMENTCRITICAL            = "useqcstatementcritical";
@@ -176,8 +185,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCCUSTOMSTRINGOID              = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT             = "qccustomstringtext";
     protected static final String USESUBJECTDIRATTRIBUTES        = "usesubjectdirattributes";
-    protected static final String USEDCERTIFICATEEXTENSIONS      = "usedcertificateextensions";
-     
+
+    /** Constants holding the use properties for certificate extensions */
+    protected static final HashMap useStandardCertificateExtensions = new HashMap();
+    {
+    	useStandardCertificateExtensions.put(USEBASICCONSTRAINTS,X509Extensions.BasicConstraints.getId());
+    	useStandardCertificateExtensions.put(USEKEYUSAGE,X509Extensions.KeyUsage.getId());
+    	useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER,X509Extensions.SubjectKeyIdentifier.getId());
+    	useStandardCertificateExtensions.put(USEAUTHORITYKEYIDENTIFIER,X509Extensions.AuthorityKeyIdentifier.getId());
+    	useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME,X509Extensions.SubjectAlternativeName.getId());
+    	useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT,X509Extensions.CRLDistributionPoints.getId());
+    	useStandardCertificateExtensions.put(USEFRESHESTCRL,X509Extensions.FreshestCRL.getId());
+    	useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES,X509Extensions.CertificatePolicies.getId());
+    	useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE,X509Extensions.ExtendedKeyUsage.getId());
+    	useStandardCertificateExtensions.put(USEQCSTATEMENT,X509Extensions.QCStatements.getId());
+    	useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES,X509Extensions.SubjectDirectoryAttributes.getId());
+    	useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS,X509Extensions.AuthorityInfoAccess.getId());
+    	useStandardCertificateExtensions.put(USEOCSPNOCHECK,OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
+    	useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE,CertTools.OID_MSTEMPLATE);
+    }
+
     // Old values used to upgrade from v22 to v23
     protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
     /** Policy Notice Url to CPS field alias in the data structure */
@@ -284,6 +311,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setQCCustomStringText(null);
       
       setUseSubjectDirAttributes(false);
+      setUseAuthorityInformationAccess(false);
+      setUseCRLDistributionPointOnCRL(false);
+      setUseOcspNoCheck(false);
+      setUseFreshestCRL(false);
       
       setUsedCertificateExtensions(new ArrayList());
       
@@ -782,6 +813,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	}   
 
     /**
+	 * @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead
      * @param use
      */
     public void setUseCaIssuers(boolean use) {
@@ -789,6 +821,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
+	 * @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead
      * @return
      */
     public boolean getUseCaIssuers() {
@@ -815,7 +848,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public List getCaIssuers() {
-        return (List) data.get(CAISSUERS);
+        if(data.get(CAISSUERS) == null) {
+            return new ArrayList(); 
+        } else {
+            return (List) data.get(CAISSUERS);
+        }
     }
 
     public void removeCaIssuer(String caIssuer) {
@@ -836,7 +873,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(USEOCSPNOCHECK, Boolean.valueOf(useocspnocheck));
     }
 
-    public boolean getUseOCSPServiceLocator(){ return ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue(); }
+    public boolean getUseAuthorityInformationAccess(){ return ((Boolean) data.get(USEAUTHORITYINFORMATIONACCESS)).booleanValue(); }
+	public void setUseAuthorityInformationAccess(boolean useauthorityinformationaccess) { data.put(USEAUTHORITYINFORMATIONACCESS, Boolean.valueOf(useauthorityinformationaccess));}
+
+	/** @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead */
+	public boolean getUseOCSPServiceLocator(){ return ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue(); }
+	/** @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead */
 	public void setUseOCSPServiceLocator(boolean useocspservicelocator) { data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(useocspservicelocator));}
     
 	public boolean getUseDefaultOCSPServiceLocator(){ return ((Boolean) data.get(USEDEFAULTOCSPSERVICELOCATOR)).booleanValue(); }
@@ -923,7 +965,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	
     	return (List) data.get(USEDCERTIFICATEEXTENSIONS); 
     }
-    
+
     /**
      * Method setting a list of used certificate extensions
      * a list of Integers containing CertificateExtension Id is expected
@@ -935,7 +977,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       else
         data.put(USEDCERTIFICATEEXTENSIONS,usedCertificateExtensions);
     }
-    
+
+    /** Function that looks up in the profile all certificate extensions that we should use
+     * if the value si that we should use it, the oid for this extension is returned in the list
+     * @return List of oid Strings for standard certificate extensions that should be used
+     */
+    public List getUsedStandardCertificateExtensions() {
+    	ArrayList ret = new ArrayList();
+    	Iterator iter = useStandardCertificateExtensions.keySet().iterator();
+    	while (iter.hasNext()) {
+    		String s = (String)iter.next();
+            if ( (data.get(s) != null) && ((Boolean)data.get(s)).booleanValue() ) {
+                ret.add(useStandardCertificateExtensions.get(s)); 
+                log.debug("Using standard certificate extension: "+s);
+            } else {
+            	log.debug("Not using standard certificate extensions: "+s);
+            }
+    	}
+    	return ret;
+    }
+
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
       HashMap clonedata = (HashMap) clone.saveData();
@@ -950,13 +1011,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       return clone;
     }
 
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
     /** 
-     * Implemtation of UpgradableDataHashMap function upgrade. 
+     * Implementation of UpgradableDataHashMap function upgrade. 
      */
     public void upgrade(){
         log.debug(">upgrade");
@@ -982,7 +1043,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 data.put(USEDPUBLISHERS, new ArrayList());   
             }            
             if(data.get(USEOCSPSERVICELOCATOR) == null){
-                setUseOCSPServiceLocator(false);            
+                // setUseOCSPServiceLocator(false);            
+                data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(false));
                 setOCSPServiceLocatorURI("");
             }
             
@@ -1093,8 +1155,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     setUseCRLDistributionPointOnCRL(false); // v24
                 }
                 if(data.get(USECAISSUERS) == null) {
-                    setUseCaIssuers(false);
+                    //setUseCaIssuers(false); // v24
+                    data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
                     setCaIssuers(new ArrayList());
+                }
+                if ( (data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null) ){
+                	setUseAuthorityInformationAccess(true); // v25
+                } else {
+                	setUseAuthorityInformationAccess(false);
                 }
 
             }

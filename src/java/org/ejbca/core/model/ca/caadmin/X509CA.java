@@ -40,11 +40,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -66,26 +67,20 @@ import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
-import org.bouncycastle.asn1.x509.DisplayText;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
-import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.PolicyInformation;
-import org.bouncycastle.asn1.x509.PolicyQualifierId;
-import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
+import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
@@ -130,7 +125,6 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
-import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -138,7 +132,6 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
-import org.ejbca.util.cert.SubjectDirAttrExtension;
 import org.ejbca.util.dn.DnComponents;
 
 
@@ -148,7 +141,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.82 2008-01-03 12:43:51 anatom Exp $
+ * @version $Id: X509CA.java,v 1.83 2008-01-10 14:42:15 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -534,11 +527,6 @@ public class X509CA extends CA implements Serializable {
           dn = CertTools.insertCNPostfix(dn,certProfile.getCNPostfix());	
         }
                 
-        String altName = subject.getSubjectAltName(); 
-        if(certProfile.getUseSubjectAltNameSubSet()){
-        	altName = certProfile.createSubjectAltNameSubSet(altName);
-        }
-        
         X509NameEntryConverter converter = null;
         if (getUsePrintableStringSubjectDN()) {
         	converter = new PrintableStringEntryConverter();
@@ -567,415 +555,61 @@ public class X509CA extends CA implements Serializable {
         certgen.setPublicKey(publicKey);
 
         //
-        // Extensions
+        // X509 Certificate Extensions
         //
         
-        // Basic constraints, all subcerts are NOT CAs
-        if (certProfile.getUseBasicConstraints() == true) {
-        	BasicConstraints bc = new BasicConstraints(false);
-            if ((certProfile.getType() == CertificateProfile.TYPE_SUBCA)
-                || (certProfile.getType() == CertificateProfile.TYPE_ROOTCA)){            	
-            	if(certProfile.getUsePathLengthConstraint()){
-            		bc = new BasicConstraints(certProfile.getPathLengthConstraint());
-            	}else{
-            		bc =  new BasicConstraints(true);
-            	}            	
-            }
-                            
-            certgen.addExtension(
-                X509Extensions.BasicConstraints.getId(),
-                certProfile.getBasicConstraintsCritical(),
-                bc);
-        }
-        // Key usage
-        int newKeyUsage = -1;
-        if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
-            newKeyUsage = keyusage;
-        	log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: "+newKeyUsage);
-        } else {
-            newKeyUsage = CertTools.sunKeyUsageToBC(certProfile.getKeyUsage());
-        	log.debug("Using KeyUsage from profile: "+newKeyUsage);
-        }
-        if ( (certProfile.getUseKeyUsage() == true) && (newKeyUsage >=0) ){
-            X509KeyUsage ku = new X509KeyUsage(newKeyUsage);
-            certgen.addExtension(
-                X509Extensions.KeyUsage.getId(),
-                certProfile.getKeyUsageCritical(),
-                ku);
-        }
-        // Extended Key usage
-        if (certProfile.getUseExtendedKeyUsage() == true) {
-            // Get extended key usage from certificate profile
-            Collection c = certProfile.getExtendedKeyUsageAsOIDStrings();
-            Vector usage = new Vector();
-            Iterator iter = c.iterator();
-            while (iter.hasNext()) {
-                usage.add(new DERObjectIdentifier((String)iter.next()));
-            }
-            // Don't add empty key usage extension
-            if (!usage.isEmpty()) {
-                ExtendedKeyUsage eku = new ExtendedKeyUsage(usage);
-                // Extended Key Usage may be either critical or non-critical
-                certgen.addExtension(
-                    X509Extensions.ExtendedKeyUsage.getId(),
-                    certProfile.getExtendedKeyUsageCritical(),
-                    eku);            	
-            }
-        }
-        // Subject key identifier
-        if (certProfile.getUseSubjectKeyIdentifier() == true) {
-            SubjectPublicKeyInfo spki =
-                new SubjectPublicKeyInfo(
-                    (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded())).readObject());
-            SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
-            certgen.addExtension(
-                X509Extensions.SubjectKeyIdentifier.getId(),
-                certProfile.getSubjectKeyIdentifierCritical(), ski);
-        }
-        // Authority key identifier
-        if (certProfile.getUseAuthorityKeyIdentifier() == true) {
-        	AuthorityKeyIdentifier aki = null;
-            // Default value is that we calculate it from scratch!
-            // (If this is a root CA we must calculate the AuthorityKeyIdentifier from scratch)
-            // (If the CA signing this cert does not have a SubjectKeyIdentifier we must calculate the AuthorityKeyIdentifier from scratch)
-            try{
-            	byte[] keybytes = getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded();
-            	SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(keybytes)).readObject());
-                aki = new AuthorityKeyIdentifier(apki);
-            }catch(CATokenOfflineException e){
-            	log.debug("X509CA: CA Token Offline Exception: ", e);                
-            	throw e; 
-            }
-            
-        	// If we have a CA-certificate (i.e. this is not a Root CA), we must take the authority key identifier from 
-        	// the CA-certificates SubjectKeyIdentifier if it exists. If we don't do that we will get the wrong identifier if the 
-        	// CA does not follow RFC3280 (guess if MS-CA follows RFC3280?)
-            if ( (cacert != null) && (!isRootCA) ) {
-            	byte[] akibytes = CertTools.getSubjectKeyId(cacert);
-            	if (akibytes != null) {
-            		// TODO: The code below is snipped from AuthorityKeyIdentifier.java in BC 1.36, because there is no method there
-            		// to set only a pre-computed key identifier
-            		// This should be replaced when such a method is added to BC
-            		ASN1OctetString keyidentifier = new DEROctetString(akibytes);
-            		ASN1EncodableVector  v = new ASN1EncodableVector();
-            		v.add(new DERTaggedObject(false, 0, keyidentifier));
-            		ASN1Sequence seq = new DERSequence(v);
-
-            		aki = new AuthorityKeyIdentifier(seq);
-            		log.debug("Using AuthorityKeyIdentifier from CA-certificates SubjectKeyIdentifier.");
-            	}
-            }
-            certgen.addExtension(
-                X509Extensions.AuthorityKeyIdentifier.getId(),
-                certProfile.getAuthorityKeyIdentifierCritical(), aki);
-        }
-         // Subject Alternative name
-        if ( (certProfile.getUseSubjectAlternativeName() == true) && (altName != null) && (altName.length() > 0) ) {
-            GeneralNames san = CertTools.getGeneralNamesFromAltName(altName);            
-            if (san != null) {
-                certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), certProfile.getSubjectAlternativeNameCritical(), san);
-            }
-        }
+        X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
         
-        // Certificate Policies
-        if (certProfile.getUseCertificatePolicies() == true) {
-        	// The UserNotice policy qualifier can have two different character encodings,
-        	// the correct one (UTF8) or the wrong one (BMP) used by IE < 7.
-        	int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
-        	if (getUseUTF8PolicyText()) {
-        		displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
-        	}
-        	// Iterate through policies and add oids and policy qualifiers if they exist
-        	List policies = certProfile.getCertificatePolicies();
-        	Map policiesMap = new HashMap(); //<DERObjectIdentifier, ASN1EncodableVector>
-        	// Each Policy OID can be entered several times, with different qualifiers, 
-        	// because of this we make a map of oid and qualifiers, and we can add a new qualifier
-        	// in each round of this for loop
-        	for(Iterator it = policies.iterator(); it.hasNext(); ) {
-        		CertificatePolicy policy = (CertificatePolicy) it.next();
-        		DERObjectIdentifier oid = new DERObjectIdentifier(policy.getPolicyID());
-        		ASN1EncodableVector qualifiers;
-        		if(policiesMap.containsKey(oid)) {
-        			qualifiers = (ASN1EncodableVector) policiesMap.get(oid);
-        		} else {
-        			qualifiers = new ASN1EncodableVector();
+        // Key usage override
+        if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
+        	log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: "+keyusage);
+            if ( (certProfile.getUseKeyUsage() == true) && (keyusage >=0) ){
+                X509KeyUsage ku = new X509KeyUsage(keyusage);
+                extgen.addExtension(
+                    X509Extensions.KeyUsage, certProfile.getKeyUsageCritical(), ku);
+            }
+        } 
+        
+        // Check for standard Certificate Extensions that should be added.
+        // Standard certificate extensions are defined in CertificateProfile and CertificateExtensionFactory
+        // and implemented in package org.ejbca.core.model.certextensions.standard
+        CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
+        List usedStdCertExt = certProfile.getUsedStandardCertificateExtensions();
+        Iterator certStdExtIter = usedStdCertExt.iterator();
+        while(certStdExtIter.hasNext()){
+        	String oid = (String)certStdExtIter.next();
+        	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
+        	if (certExt != null) {
+        		DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
+        		if (value != null) {
+        			extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
         		}
-    			PolicyQualifierInfo pqi = getPolicyQualifierInformation(policy, displayencoding);
-    			if (pqi != null) {
-    				qualifiers.add(pqi);
-    			}
-    			policiesMap.put(oid, qualifiers);
-        	}
-        	ASN1EncodableVector seq = new ASN1EncodableVector();
-        	for(Iterator it = policiesMap.keySet().iterator(); it.hasNext(); ) {
-        		DERObjectIdentifier oid = (DERObjectIdentifier) it.next();
-        		ASN1EncodableVector qualifiers = (ASN1EncodableVector) policiesMap.get(oid);
-        		if(qualifiers.size() == 0) {
-        			seq.add(new PolicyInformation(oid, null));
-        		} else {
-        			seq.add(new PolicyInformation(oid, new DERSequence(qualifiers)));
-        		}
-        	}
-        	if (seq.size() > 0) {
-            	certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
-            			certProfile.getCertificatePoliciesCritical(),
-            			new DERSequence(seq));        		
         	}
         }
 
-         // CRL Distribution point URI
-         if (certProfile.getUseCRLDistributionPoint() == true) {
-        	 String crldistpoint = certProfile.getCRLDistributionPointURI();
-             String crlissuer=certProfile.getCRLIssuer();
-        	 if(certProfile.getUseDefaultCRLDistributionPoint()){
-        		 crldistpoint = getDefaultCRLDistPoint();
-        		 crlissuer = getDefaultCRLIssuer();
-        	 }
-             // Multiple CDPs are spearated with the ';' sign        	         	 
-            ArrayList dpns = new ArrayList();
-            if (StringUtils.isNotEmpty(crldistpoint)) {
-                StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
-                while (tokenizer.hasMoreTokens()) {
-                    // 6 is URI
-                    String uri = tokenizer.nextToken();
-                    GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
-                    log.debug("Added CRL distpoint: "+uri);
-                    ASN1EncodableVector vec = new ASN1EncodableVector();
-                    vec.add(gn);
-                    GeneralNames gns = new GeneralNames(new DERSequence(vec));
-                    DistributionPointName dpn = new DistributionPointName(0, gns);
-                    dpns.add(dpn);
-                }            	
-            }
-            // CRL issuer works much like Dist point URI. If separated by ; it is put in the same global distPoint as the URI, 
-            // if there is more of one of them, the one with more is put in an own global distPoint.
-            ArrayList issuers = new ArrayList();
-            if (StringUtils.isNotEmpty(crlissuer)) {
-                StringTokenizer tokenizer = new StringTokenizer(crlissuer, ";", false);
-                while (tokenizer.hasMoreTokens()) {
-                	String issuer = tokenizer.nextToken();
-                	GeneralName gn = new GeneralName(new X509Name(issuer));
-                    log.debug("Added CRL issuer: "+issuer);
-                    ASN1EncodableVector vec = new ASN1EncodableVector();
-                    vec.add(gn);
-                    GeneralNames gns = new GeneralNames(new DERSequence(vec));
-                    issuers.add(gns);
-                }            	
-            }
-            ArrayList distpoints = new ArrayList();
-            if ( (issuers.size() > 0) || (dpns.size() > 0) ) {
-            	int i = dpns.size();
-            	if (issuers.size() > i) {
-            		i = issuers.size();
-            	}
-            	for (int j = 0; j < i; j++) {
-            		DistributionPointName dpn = null;
-            		GeneralNames issuer = null;
-            		if (dpns.size() > j) {
-            			dpn = (DistributionPointName)dpns.get(j);
-            		}
-            		if (issuers.size() > j) {
-            			issuer = (GeneralNames)issuers.get(j);
-            		}
-            		if ( (dpn != null) || (issuer != null) ) {
-                        distpoints.add(new DistributionPoint(dpn, null, issuer));            	            			
-            		}
-            	}
-            }
-            if (distpoints.size() > 0) {
-                CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
-                certgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
-                    certProfile.getCRLDistributionPointCritical(), ext);
-            }
-         }
-         
-         // Freshest CRL Distribution point URI
-         if (certProfile.getUseFreshestCRL() == true) {
-             String freshestcrldistpoint = certProfile.getFreshestCRLURI();
-             if(certProfile.getUseCADefinedFreshestCRL() == true){
-                 freshestcrldistpoint = getCADefinedFreshestCRL();
-             }
-             // Multiple FCDPs are separated with the ';' sign 
-             if (freshestcrldistpoint != null) {
-                 StringTokenizer tokenizer = new StringTokenizer(freshestcrldistpoint, ";", false);
-                 ArrayList distpoints = new ArrayList();
-                 while (tokenizer.hasMoreTokens()) {
-                     String uri = tokenizer.nextToken();
-                     GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
-                     log.debug("Added freshest CRL distpoint: "+uri);
-                     ASN1EncodableVector vec = new ASN1EncodableVector();
-                     vec.add(gn);
-                     GeneralNames gns = new GeneralNames(new DERSequence(vec));
-                     DistributionPointName dpn = new DistributionPointName(0, gns);
-                     distpoints.add(new DistributionPoint(dpn, null, null));
-                 }
-                 if (distpoints.size() > 0) {
-                     CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
-                     certgen.addExtension(X509Extensions.FreshestCRL.getId(), false, ext);
-                 }            	 
-             } else {
-            	 log.debug("UseFreshestCRL is true, but no URI string defined!");
-             }
-         }
-         
-         /*
-          * Authority Information Access
-          */
-         ASN1EncodableVector accessList = new ASN1EncodableVector();
-         GeneralName accessLocation;
-         String url;
-
-         // caIssuers
-         if(certProfile.getUseCaIssuers()) {
-             List caIssuers = certProfile.getCaIssuers();
-
-             for(Iterator it = caIssuers.iterator(); it.hasNext(); ) {
-                 url = (String) it.next();
-                 if(StringUtils.isNotEmpty(url)) {
-                     accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
-                     accessList.add(new AccessDescription(AccessDescription.id_ad_caIssuers,
-                                                          accessLocation));
-                 }
-             }
-         }
-
-         // ocsp url
-         if (certProfile.getUseOCSPServiceLocator() == true) {
-             url = certProfile.getOCSPServiceLocatorURI();
-             if(certProfile.getUseDefaultOCSPServiceLocator()){
-                 url = getDefaultOCSPServiceLocator();
-             }
-             if (StringUtils.isNotEmpty(url)) {
-                 accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
-                 accessList.add(new AccessDescription(AccessDescription.id_ad_ocsp,
-                                                      accessLocation));
-             }
-         }
-
-         if(accessList.size() > 0) {
-             certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
-                                  false,
-                                  new AuthorityInformationAccess(new DERSequence(accessList)));
-         }
-
-         // OCSP nocheck extension (rfc 2560)
-         if(certProfile.getUseOcspNoCheck()) {
-        	 certgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
-         }
-
-         // Microsoft Template
-         if (certProfile.getUseMicrosoftTemplate() == true) {
-             String mstemplate = certProfile.getMicrosoftTemplate();             
-             DERObjectIdentifier oid = new DERObjectIdentifier(CertTools.OID_MSTEMPLATE);                           
-             certgen.addExtension(oid, false, new DERIA5String(mstemplate));             
-         }
-         
-         // QCStatement (rfc3739)
-         if (certProfile.getUseQCStatement() == true) {
-             String names = certProfile.getQCStatementRAName();
-             GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
-             SemanticsInformation si = null;
-             if (san != null) {
-                 if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-                     si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()), san.getNames());
-                 } else {
-                     si = new SemanticsInformation(san.getNames());                     
-                 }
-             } else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-                 si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()));                 
-             }
-             ArrayList qcs = new ArrayList();
-             QCStatement qc = null;
-             // First the standard rfc3739 QCStatement with an optional SematicsInformation
-             DERObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1;
-             if (certProfile.getUsePkixQCSyntaxV2()) {
-            	 pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2;
-             }
-             if ( (si != null)  ) {
-                 qc = new QCStatement(pkixQcSyntax, si);
-                 qcs.add(qc);
-             } else {
-            	 qc = new QCStatement(pkixQcSyntax);
-                 qcs.add(qc);
-             }
-             // ETSI Statement that the certificate is a Qualified Certificate
-             if (certProfile.getUseQCEtsiQCCompliance()) {
-            	 qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance);
-                 qcs.add(qc);
-             }
-             // ETSI Statement regarding limit on the value of transactions
-             if (certProfile.getUseQCEtsiValueLimit()) {
-            	 // Both value and currency must be availabel for this extension
-            	 if ( (certProfile.getQCEtsiValueLimit() > 0) && (certProfile.getQCEtsiValueLimitCurrency() != null) ) {
-            		 int limit = certProfile.getQCEtsiValueLimit();
-            		 // The exponent should be default 0
-            		 int exponent = certProfile.getQCEtsiValueLimitExp();
-            		 MonetaryValue value = new MonetaryValue(new Iso4217CurrencyCode(certProfile.getQCEtsiValueLimitCurrency()), limit, exponent);
-            		 qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue, value);
-            		 qcs.add(qc);
-            	 }
-             }
-             // ETSI Statement claiming that the private key resides in a Signature Creation Device
-             if (certProfile.getUseQCEtsiSignatureDevice()) {
-            	 qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD);
-                 qcs.add(qc);
-             }
-             // Custom UTF8String QC-statement:
- 			 // qcStatement-YourCustom QC-STATEMENT ::= { SYNTAX YourCustomUTF8String
-			 //   IDENTIFIED BY youroid }
-			 //   -- This statement gives you the possibility to define your own QC-statement
-			 //   -- using an OID and a simple UTF8String, with describing text. A sample text could for example be:
-			 //   -- This certificate, according to Act. No. xxxx Electronic Signature Law is a qualified electronic certificate
-			 //
-			 // YourCustomUTF8String ::= UTF8String
-             if (certProfile.getUseQCCustomString()) {
-            	 if (!StringUtils.isEmpty(certProfile.getQCCustomStringOid()) && !StringUtils.isEmpty(certProfile.getQCCustomStringText())) {
-            		 DERUTF8String str = new DERUTF8String(certProfile.getQCCustomStringText());
-            		 DERObjectIdentifier oid = new DERObjectIdentifier(certProfile.getQCCustomStringOid());
-                	 qc = new QCStatement(oid, str);
-                     qcs.add(qc);            		 
-            	 }
-             }
-             if (qcs.size() >  0) {
-            	 ASN1EncodableVector vec = new ASN1EncodableVector();
-                 Iterator iter = qcs.iterator();
-                 while (iter.hasNext()) {
-                	 QCStatement q = (QCStatement)iter.next();
-                     vec.add(q);
-                 }
-                 certgen.addExtension(CertTools.QCSTATEMENTS_OBJECTID, certProfile.getQCStatementCritical(), new DERSequence(vec));                 
-             }
-         }
-         
-         // Subject Directory Attributes
-         if (certProfile.getUseSubjectDirAttributes() == true) {
-        	 // Get the attributes from ExtendedInformation
-        	 String dirAttrString = subject.getExtendedinformation().getSubjectDirectoryAttributes();
-        	 if (StringUtils.isNotEmpty(dirAttrString)) {
-            	 // Subject Directory Attributes is a sequence of Attribute
-            	 Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
-            	 ASN1EncodableVector vec = new ASN1EncodableVector();
-            	 Iterator iter = attr.iterator();
-            	 while (iter.hasNext()) {
-            		 Attribute a = (Attribute)iter.next();
-            		 vec.add(a);
-            	 }        		 
-            	 // Subject Directory Attributes must always be non-critical
-            	 certgen.addExtension(X509Extensions.SubjectDirectoryAttributes, false, new DERSequence(vec));                 
-        	 }
-        	 
-         }         
-
-         // Check for Certificate Extensions
-         CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
+         // Check for custom Certificate Extensions that should be added.
+         // Custom certificate extensions is defined in certextensions.properties
+         fact = CertificateExtensionFactory.getInstance();
          List usedCertExt = certProfile.getUsedCertificateExtensions();
          Iterator certExtIter = usedCertExt.iterator();
          while(certExtIter.hasNext()){
         	 Integer id = (Integer) certExtIter.next();
         	 CertificateExtension certExt = fact.getCertificateExtensions(id);
         	 if (certExt != null) {
-            	 certgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),certExt.getValue(subject, this, certProfile));        	         		 
+        		 DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
+        		 if (value != null) {
+                	 extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
+        		 }
         	 }
+         }
+         
+         // Finally add extensions to certificate generator
+         X509Extensions exts = extgen.generate();
+         Enumeration en = exts.oids();
+         while (en.hasMoreElements()) {
+        	 DERObjectIdentifier oid = (DERObjectIdentifier)en.nextElement();
+        	 X509Extension ext = exts.getExtension(oid);
+        	 certgen.addExtension(oid, ext.isCritical(), ext.getValue().getOctets());
          }
          
          //
@@ -1378,31 +1012,4 @@ public class X509CA extends CA implements Serializable {
 		return ed.getEncoded(); 
 	}
     
-    /**
-     * Obtains the Policy Qualifier Information object
-     * 
-     * @param policy,
-     *          CertificatePolicy with oid, user notice and cps uri
-     * @param displayencoding,
-     *          the encoding used for UserNotice text, DisplayText.CONTENT_TYPE_BMPSTRING, CONTENT_TYPE_UTF8STRING, CONTENT_TYPE_IA5STRING or CONTENT_TYPE_VISIBLESTRING 
-     *          
-     * @return PolicyQualifierInfo
-     */
-	private PolicyQualifierInfo getPolicyQualifierInformation(CertificatePolicy policy, int displayencoding) {
-		PolicyQualifierInfo pqi = null;
-		String qualifierId = policy.getQualifierId();
-		if ((qualifierId != null) && !StringUtils.isEmpty(qualifierId.trim())) {
-			String qualifier = policy.getQualifier();
-			if ( (qualifier != null) && !StringUtils.isEmpty(qualifier.trim()) ) {
-				if (qualifierId.equals(PolicyQualifierId.id_qt_cps.getId())) {
-					pqi = new PolicyQualifierInfo(qualifier);
-				} else if (qualifierId.equals(PolicyQualifierId.id_qt_unotice.getId())){
-					// Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
-					UserNotice un = new UserNotice(null, new DisplayText(displayencoding, qualifier));
-					pqi = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
-				}
-			}
-		}
-		return pqi;
-	}   
 }

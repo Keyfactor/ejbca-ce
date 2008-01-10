@@ -98,7 +98,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.49 2007-12-13 13:23:39 anatom Exp $
+ * @version $Id: CertTools.java,v 1.50 2008-01-10 14:42:17 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -153,9 +153,7 @@ public class CertTools {
      *                    -- ISO 3166 Country Code 
      */
     public static final String id_pda_countryOfResidence = id_pda + ".5"; 
-    /** Object id for qcStatements Extension */
-    public static final String QCSTATEMENTS_OBJECTID = "1.3.6.1.5.5.7.1.3";
-    /** OID used for creating MS Templates */
+    /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
           
     

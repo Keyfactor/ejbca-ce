@@ -22,6 +22,8 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
@@ -29,13 +31,14 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.9 2007-11-07 13:26:00 anatom Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.10 2008-01-10 14:42:16 anatom Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);
@@ -257,6 +260,61 @@ public class TestCertificateProfile extends TestCase {
         assertEquals("", cp.getQCSemanticsId());
         cp.setQCSemanticsId("1.1.1.2");
         assertEquals("1.1.1.2", cp.getQCSemanticsId());
-    }
-    
+    } // test08CertificateProfileValues
+
+    public void test09CertificateExtensions() throws Exception{
+        log.debug(">test09CertificateExtensions()");
+
+    	CertificateProfile profile = new CertificateProfile();
+    	
+    	// Check standard values for the certificate profile
+    	List l = profile.getUsedStandardCertificateExtensions();
+    	assertEquals(l.size(), 5);
+    	assertTrue(l.contains(X509Extensions.KeyUsage.getId()));
+    	assertTrue(l.contains(X509Extensions.BasicConstraints.getId()));
+    	assertTrue(l.contains(X509Extensions.SubjectKeyIdentifier.getId()));
+    	assertTrue(l.contains(X509Extensions.AuthorityKeyIdentifier.getId()));
+    	assertTrue(l.contains(X509Extensions.SubjectAlternativeName.getId()));
+
+    	CertificateProfile eprofile = new EndUserCertificateProfile();
+    	
+    	// Check standard values for the certificate profile
+    	l = eprofile.getUsedStandardCertificateExtensions();
+    	assertEquals(l.size(), 6);
+    	assertTrue(l.contains(X509Extensions.KeyUsage.getId()));
+    	assertTrue(l.contains(X509Extensions.BasicConstraints.getId()));
+    	assertTrue(l.contains(X509Extensions.SubjectKeyIdentifier.getId()));
+    	assertTrue(l.contains(X509Extensions.AuthorityKeyIdentifier.getId()));
+    	assertTrue(l.contains(X509Extensions.SubjectAlternativeName.getId()));
+    	assertTrue(l.contains(X509Extensions.ExtendedKeyUsage.getId()));
+
+    	profile = new CertificateProfile();
+    	profile.setUseAuthorityInformationAccess(true);
+    	profile.setUseCertificatePolicies(true);
+    	profile.setUseCRLDistributionPoint(true);
+    	profile.setUseFreshestCRL(true);
+    	profile.setUseMicrosoftTemplate(true);
+    	profile.setUseOcspNoCheck(true);
+    	profile.setUseQCStatement(true);
+    	profile.setUseExtendedKeyUsage(true);
+    	profile.setUseSubjectDirAttributes(true);
+    	l = profile.getUsedStandardCertificateExtensions();
+    	assertEquals(l.size(), 14);
+    	assertTrue(l.contains(X509Extensions.KeyUsage.getId()));
+    	assertTrue(l.contains(X509Extensions.BasicConstraints.getId()));
+    	assertTrue(l.contains(X509Extensions.SubjectKeyIdentifier.getId()));
+    	assertTrue(l.contains(X509Extensions.AuthorityKeyIdentifier.getId()));
+    	assertTrue(l.contains(X509Extensions.SubjectAlternativeName.getId()));
+    	assertTrue(l.contains(X509Extensions.ExtendedKeyUsage.getId()));
+    	assertTrue(l.contains(X509Extensions.AuthorityInfoAccess.getId()));
+    	assertTrue(l.contains(X509Extensions.CertificatePolicies.getId()));
+    	assertTrue(l.contains(X509Extensions.CRLDistributionPoints.getId()));
+    	assertTrue(l.contains(X509Extensions.FreshestCRL.getId()));
+    	assertTrue(l.contains(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId()));
+    	assertTrue(l.contains(X509Extensions.QCStatements.getId()));
+    	assertTrue(l.contains(X509Extensions.SubjectDirectoryAttributes.getId()));
+    	assertTrue(l.contains(CertTools.OID_MSTEMPLATE));
+    	
+    } // test09CertificateExtensions
+
 }
