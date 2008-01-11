@@ -36,7 +36,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * See rfc3280 or later for spec of this extension.
  * 
  * @author: Tomas Gustavsson
- * @version $Id: SubjectDirectoryAttributes.java,v 1.1 2008-01-10 14:42:15 anatom Exp $
+ * @version $Id: SubjectDirectoryAttributes.java,v 1.2 2008-01-11 13:44:48 anatom Exp $
  */
 public class SubjectDirectoryAttributes extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);
@@ -82,7 +82,7 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
 			}
 		}			
 		if (ret == null) {
-			log.error("SubjectDirectoryAttributes missconfigured, probably directory attribute string is empty.");
+			log.debug("No directory attributes trying to create SubjectDirectoryAttributes extension: "+dirAttrString);
 		}
 		return ret;
 	}	
