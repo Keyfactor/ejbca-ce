@@ -141,7 +141,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.85 2008-01-10 15:28:54 anatom Exp $
+ * @version $Id: X509CA.java,v 1.86 2008-01-11 08:35:39 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -579,6 +579,9 @@ public class X509CA extends CA implements Serializable {
     	X509Extensions overridenexts = extgen.generate();
         while(certStdExtIter.hasNext()){
         	String oid = (String)certStdExtIter.next();
+         	// We don't want to try to add standard extensions with the same oid if we have already added them 
+        	// from the request, if AllowExtensionOverride is enabled.
+        	// Two extensions with the same oid is not allowed in the standard.
         	if (overridenexts.getExtension(new DERObjectIdentifier(oid)) == null) {
             	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
             	if (certExt != null) {
@@ -601,6 +604,9 @@ public class X509CA extends CA implements Serializable {
         	 Integer id = (Integer) certExtIter.next();
         	 CertificateExtension certExt = fact.getCertificateExtensions(id);
         	 if (certExt != null) {
+             	// We don't want to try to add custom extensions with the same oid if we have already added them 
+             	// from the request, if AllowExtensionOverride is enabled.
+             	// Two extensions with the same oid is not allowed in the standard.
         		 if (overridenexts.getExtension(new DERObjectIdentifier(certExt.getOID())) == null) {
         			 DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
         			 if (value != null) {
