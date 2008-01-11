@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.43 2007-12-21 09:01:57 anatom Exp $
+$Id: UPGRADE,v 1.44 2008-01-11 08:36:00 anatom Exp $
 
 UPGRADE
 =======
@@ -59,6 +59,10 @@ PostgreSQL:
   alter table CRLData alter column deltaCRLIndicator set default -1;
 Oracle: 
   alter table CRLData add deltaCRLIndicator NUMBER(10) default -1;
+
+If you are using another application server than JBoss, you need to create new tables in the database 
+manually. Create the new tables ProtectedLogData, ProtectedLogExportData and ProtectedLogTokenData from
+one of the database scripts in doc/howto/create-tables-xxx.sql.
 
 You should be able to upgrade from EJBCA 3.1.x directly to 3.6.x, by following the same instructions
 as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
