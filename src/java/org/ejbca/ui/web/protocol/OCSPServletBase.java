@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.30 2008-01-11 13:54:40 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.31 2008-01-11 14:07:00 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -273,8 +273,14 @@ abstract class OCSPServletBase extends HttpServlet {
     }
     
     protected int getCaid( X509Certificate cacert ) {
-        int result = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()).hashCode();
-        m_log.debug( cacert.getSubjectDN() + " has caid: " + result );
+    	X509Certificate cert = cacert;
+    	if (cacert == null) {
+    		m_log.debug("No correct CA-certificate available to sign response, signing with default CA: "+m_defaultResponderId);
+            cert = findCertificateBySubject(m_defaultResponderId, m_cacerts);    		
+    	}
+
+        int result = CertTools.stringToBCDNString(cert.getSubjectDN().toString()).hashCode();
+        m_log.debug( cert.getSubjectDN() + " has caid: " + result );
         return result;
     }
 
