@@ -17,6 +17,11 @@ ocsp.usecasigningcert=true
 # Default: SHA1WithRSA;SHA1WithECDSA
 #ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA
 
+# Specifies if the OCSP-responder should require signed requests or not.
+#
+# Default: false
+#ocsp.signaturerequired=false
+
 # Specifies OCSP extension oids that will result in a call to an extension class, 
 # separate multiple entries with ;"
 # Leave out if you do not know what this is.

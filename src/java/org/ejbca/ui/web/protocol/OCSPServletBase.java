@@ -77,7 +77,7 @@ import org.ejbca.util.CertTools;
  *   
  * @web.servlet-init-param description="If set to true the servlet will enforce OCSP request signing"
  *   name="enforceRequestSigning"
- *   value="false"
+ *   value="${ocsp.signaturerequired}"
  *   
  * @web.servlet-init-param description="If set to true the certificate chain will be returned with the OCSP response"
  *   name="includeCertChain"
@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.29 2008-01-11 13:33:09 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.30 2008-01-11 13:54:40 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
