@@ -14,7 +14,6 @@
 package se.anatom.ejbca.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
@@ -23,6 +22,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 import javax.ejb.CreateException;
 import javax.naming.Context;
@@ -30,7 +31,18 @@ import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.misc.NetscapeCertType;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
@@ -64,6 +76,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Cert Profile with name KeyId1 must have key usage "digital signature", non-overridable
  * Cert Profile with name KeyId2 must have key usage "non repudiation", non-overridable
  * Cert Profile with name KeyId3 must have key usage "key encipherment", overridable
+ * Cert Profile with name KeyId4 must be the same as KeyId2, but have "Enable Extension Override".
  * 
  * EE Profile with name KeyId1 must have a fixed, non-modifiable C=SE, an O, a CN and be using certProfile KeyId1
  * EE Profile with name KeyId1 must have a modifyable rfc822Name and UPN field allowed in subjectAltNames 
@@ -78,8 +91,11 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * EE Profile with name KeyId3 must have default CA with name CmpCA2 
  * (use entity profile KeyId2 as template for KeyId3)
  * 
+ * EE Profile with name KeyId4 should be the same as KeyId3, but use certProfile KeyId4
+ * (use entity profile KeyId3 as template for KeyId4)
+ * 
  * @author Tomas Gustavsson
- * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.4 2007-11-18 11:09:07 anatom Exp $
+ * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.5 2008-01-11 13:15:20 anatom Exp $
  */
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
@@ -175,7 +191,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
 		// A message with the KeyId "foobarfoobar" should not be known by this
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "foobarfoobar");
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -197,7 +213,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1");
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -286,7 +302,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1");
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -341,7 +357,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2");
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -396,7 +412,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2");
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -468,7 +484,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId3");
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -483,9 +499,9 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
 		X509Certificate cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
-		FileOutputStream fos = new FileOutputStream("/home/tomas/foo.crt");
-		fos.write(cert.getEncoded());
-		fos.close();
+//		FileOutputStream fos = new FileOutputStream("/home/tomas/foo.crt");
+//		fos.write(cert.getEncoded());
+//		fos.close();
 		String altNames = CertTools.getSubjectAlternativeName(cert);
 		assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
 		assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -520,9 +536,120 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
 		checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
-	}
+	} //test06CrmfTcpOkUserKeyId3
 
-	
+
+	public void test07ExtensionOverride() throws Exception {
+
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
+		
+		// Create some crazy extensions to see that we get them when using extension override.
+		// We should not get our values when not using extension override
+		X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+		// SubjectAltName
+		GeneralNames san = CertTools.getGeneralNamesFromAltName("dnsName=foo.bar.com");
+		extgen.addExtension(X509Extensions.SubjectAlternativeName, false, san);
+		// KeyUsage
+		int bcku = 0;
+		bcku = X509KeyUsage.decipherOnly;
+		X509KeyUsage ku = new X509KeyUsage(bcku);
+		extgen.addExtension(X509Extensions.KeyUsage, false, ku);
+		// Extended Key Usage
+		Vector usage = new Vector();
+		usage.add(KeyPurposeId.id_kp_codeSigning);
+		ExtendedKeyUsage eku  = new ExtendedKeyUsage(usage);
+		extgen.addExtension(X509Extensions.ExtendedKeyUsage, false, eku);
+        // OcspNoCheck
+		extgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
+        // Netscape cert type            
+		extgen.addExtension(new DERObjectIdentifier("2.16.840.1.113730.1.1"), false, new NetscapeCertType(NetscapeCertType.objectSigningCA));
+		// My completely own
+		extgen.addExtension(new DERObjectIdentifier("1.1.1.1.1"), false, new DERIA5String("PrimeKey"));
+		
+		// Make the complete extension package
+        X509Extensions exts = extgen.generate(); 
+
+		// First test without extension override
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2");
+
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+		assertNotNull(req);
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DEROutputStream out = new DEROutputStream(bao);
+		out.writeObject(req);
+		byte[] ba = bao.toByteArray();
+		// Send request and receive response
+		byte[] resp = sendCmpTcp(ba, 5);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
+		X509Certificate cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+		String altNames = CertTools.getSubjectAlternativeName(cert);
+		assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
+		
+		// Check key usage that it is nonRepudiation for KeyId2
+		boolean[] kubits = cert.getKeyUsage();
+		assertFalse(kubits[0]);
+		assertTrue(kubits[1]);
+		assertFalse(kubits[2]);
+		assertFalse(kubits[3]);
+		assertFalse(kubits[4]);
+		assertFalse(kubits[5]);
+		assertFalse(kubits[6]);
+		assertFalse(kubits[7]);
+		assertFalse(kubits[8]);
+		// Our own ext should not be here
+		assertNull(cert.getExtensionValue("1.1.1.1.1"));
+		assertNull(cert.getExtensionValue("2.16.840.1.113730.1.1"));
+		assertNull(cert.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId()));
+
+		// Skip confirmation message, we have tested that several times already
+
+		//
+		// Do the same with keyId4, that has full extension override
+        one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts);
+        req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId4");
+
+        reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+		assertNotNull(req);
+		bao = new ByteArrayOutputStream();
+		out = new DEROutputStream(bao);
+		out.writeObject(req);
+		ba = bao.toByteArray();
+		// Send request and receive response
+		resp = sendCmpTcp(ba, 5);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
+		cert = checkCmpCertRepMessage(userDN2, cacert2, resp, reqId);
+		altNames = CertTools.getSubjectAlternativeName(cert);
+		assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
+		
+		// Check key usage that it is decipherOnly for KeyId4
+		kubits = cert.getKeyUsage();
+		assertFalse(kubits[0]);
+		assertFalse(kubits[1]);
+		assertFalse(kubits[2]);
+		assertFalse(kubits[3]);
+		assertFalse(kubits[4]);
+		assertFalse(kubits[5]);
+		assertFalse(kubits[6]);
+		assertFalse(kubits[7]);
+		assertTrue(kubits[8]);
+		// Our own ext should not be here
+		assertNotNull(cert.getExtensionValue("1.1.1.1.1"));
+		assertNotNull(cert.getExtensionValue("2.16.840.1.113730.1.1"));
+		assertNotNull(cert.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId()));
+		List l = cert.getExtendedKeyUsage();
+		assertEquals(1, l.size());
+		String s = (String)l.get(0);
+		assertEquals(KeyPurposeId.id_kp_codeSigning.getId(), s);
+		
+		// Skip confirmation message, we have tested that several times already
+	} // test07ExtensionOverride
+
 	public void test99CleanUp() throws Exception {
 		String user1 = CertTools.getPartFromDN(userDN1, "CN");
 		String user2 = CertTools.getPartFromDN(userDN2, "CN");

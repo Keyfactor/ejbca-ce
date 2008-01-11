@@ -31,6 +31,7 @@ import java.util.Iterator;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cms.CMSException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
@@ -72,7 +73,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.23 2007-12-21 09:02:51 anatom Exp $
+ * @version $Id: CA.java,v 1.24 2008-01-11 13:15:21 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -461,15 +462,28 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             notAfter.setTime(notAfter.getTime() + ( validity * 24 * 60 * 60 * 1000));        	
         }
         Date notBefore = new Date(); 
-    	return generateCertificate(subject, publicKey, keyusage, notBefore, notAfter, certProfile); 
+    	return generateCertificate(subject, publicKey, keyusage, notBefore, notAfter, certProfile, null); 
     }
-    
+
+    /**
+     * 
+     * @param subject
+     * @param publicKey
+     * @param keyusage
+     * @param notBefore
+     * @param notAfter
+     * @param certProfile
+     * @param extensions an optional set of extensions to set in the created certificate, if the profile allows extension override, null if the profile default extensions should be used.
+     * @return
+     * @throws Exception
+     */
     public abstract Certificate generateCertificate(UserDataVO subject, 
                                                     PublicKey publicKey, 
                                                     int keyusage,
                                                     Date notBefore,
                                                     Date notAfter,
-                                                    CertificateProfile certProfile) throws Exception;
+                                                    CertificateProfile certProfile,
+                                                    X509Extensions extensions) throws Exception;
     
     public abstract CRL generateCRL(Collection certs, int crlnumber) throws Exception;
     

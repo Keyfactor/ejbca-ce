@@ -171,7 +171,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.45 2008-01-03 12:52:39 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.46 2008-01-11 13:15:21 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -721,10 +721,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                     if (status.equals(ResponseStatus.SUCCESS)) {
                     	Date notBefore = req.getRequestValidityNotBefore(); // Optionally requested validity
                     	Date notAfter = req.getRequestValidityNotAfter(); // Optionally requested validity
+                    	X509Extensions exts = req.getRequestExtensions(); // Optionally requested extensions
                     	int ku = keyUsage;
                     	if (ku < 0) {
                     		debug("KeyUsage < 0, see if we can override KeyUsage");
-                        	X509Extensions exts = req.getRequestExtensions(); // Optionally requested key usage
                         	if (exts != null) {
                             	X509Extension ext = exts.getExtension(X509Extensions.KeyUsage);
                             	if (ext != null) {
@@ -738,7 +738,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                             	}
                         	}
                     	}
-                    	cert = createCertificate(admin, data, ca, reqpk, ku, notBefore, notAfter);
+                    	cert = createCertificate(admin, data, ca, reqpk, ku, notBefore, notAfter, exts);
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -1391,7 +1391,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
 
             // Now finally after all these checks, get the certificate
-            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter);
+            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null);
             // Call authentication session and tell that we are finished with this user
             if (ca.getFinishUser() == true) {
                 finishUser(admin, username, password);
@@ -1418,11 +1418,13 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param ca       the CA that will sign the certificate
      * @param pk       ther users public key to be put in the certificate
      * @param keyusage requested key usage for the certificate, may be ignored by the CA
+     * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
+     * @param extensions an optional set of extensions to set in the created certificate, if the profile allows extension override, null if the profile default extensions should be used.
      * @return Certificate that has been generated and signed by the CA
      * @throws IllegalKeyException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions) throws IllegalKeyException {
         debug(">createCertificate(pk, ku, notAfter)");
         try {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
@@ -1480,7 +1482,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     throw new IllegalKeyException(text);
                 }
 
-                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile);
+                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions);
 
                 getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
                 if (log.isDebugEnabled()) {

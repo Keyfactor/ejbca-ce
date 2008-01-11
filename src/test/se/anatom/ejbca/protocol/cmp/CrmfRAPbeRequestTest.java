@@ -68,7 +68,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * You need a CMP tcp listener configured on port 5547.
  * 
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java,v 1.13 2007-08-17 14:45:47 jeklund Exp $
+ * @version $Id: CrmfRAPbeRequestTest.java,v 1.14 2008-01-11 13:15:20 anatom Exp $
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
@@ -151,7 +151,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -226,7 +226,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();

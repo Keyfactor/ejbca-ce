@@ -42,32 +42,22 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
@@ -75,7 +65,6 @@ import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -83,12 +72,6 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
-import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
-import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
-import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
-import org.bouncycastle.asn1.x509.qualified.QCStatement;
-import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
-import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSProcessable;
@@ -141,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.86 2008-01-11 08:35:39 anatom Exp $
+ * @version $Id: X509CA.java,v 1.87 2008-01-11 13:15:21 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -404,7 +387,8 @@ public class X509CA extends CA implements Serializable {
                                            int keyusage, 
                                            Date notBefore,
                                            Date notAfter,
-                                           CertificateProfile certProfile) throws Exception{
+                                           CertificateProfile certProfile,
+                                           X509Extensions extensions) throws Exception{
                                                
     	    	
         final String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
@@ -558,25 +542,47 @@ public class X509CA extends CA implements Serializable {
         // X509 Certificate Extensions
         //
         
+        // Extensions we will add to the cetificate, later when we have filled the structure with 
+        // everything we want.
         X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
         
-        // Key usage override
+        // First we check if there is general extension override, and add all extensions from 
+        // the request in that case
+        if (certProfile.getAllowExtensionOverride()) {
+        	Enumeration en = extensions.oids();
+        	while (en.hasMoreElements()) {
+        		DERObjectIdentifier oid = (DERObjectIdentifier)en.nextElement();
+        		X509Extension ext = extensions.getExtension(oid);
+        		log.debug("Overriding extension with oid: "+oid);
+        		extgen.addExtension(oid, ext.isCritical(), ext.getValue().getOctets());
+        	}
+        }
+        
+        // Second we see if there is Key usage override
+    	X509Extensions overridenexts = extgen.generate();
         if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
         	log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: "+keyusage);
             if ( (certProfile.getUseKeyUsage() == true) && (keyusage >=0) ){
                 X509KeyUsage ku = new X509KeyUsage(keyusage);
-                extgen.addExtension(
-                    X509Extensions.KeyUsage, certProfile.getKeyUsageCritical(), ku);
+             	// We don't want to try to add custom extensions with the same oid if we have already added them 
+             	// from the request, if AllowExtensionOverride is enabled.
+             	// Two extensions with the same oid is not allowed in the standard.
+        		 if (overridenexts.getExtension(X509Extensions.KeyUsage) == null) {
+                     extgen.addExtension(
+                             X509Extensions.KeyUsage, certProfile.getKeyUsageCritical(), ku);        			 
+        		 } else {
+        			 log.debug("KeyUsage was already overridden by an extension, not using KeyUsage from parameter.");
+        		 }
             }
         } 
         
-        // Check for standard Certificate Extensions that should be added.
+        // Third, check for standard Certificate Extensions that should be added.
         // Standard certificate extensions are defined in CertificateProfile and CertificateExtensionFactory
         // and implemented in package org.ejbca.core.model.certextensions.standard
         CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
         List usedStdCertExt = certProfile.getUsedStandardCertificateExtensions();
         Iterator certStdExtIter = usedStdCertExt.iterator();
-    	X509Extensions overridenexts = extgen.generate();
+    	overridenexts = extgen.generate();
         while(certStdExtIter.hasNext()){
         	String oid = (String)certStdExtIter.next();
          	// We don't want to try to add standard extensions with the same oid if we have already added them 
@@ -595,7 +601,7 @@ public class X509CA extends CA implements Serializable {
         	}
         }
 
-         // Check for custom Certificate Extensions that should be added.
+         // Fourth, check for custom Certificate Extensions that should be added.
          // Custom certificate extensions is defined in certextensions.properties
          fact = CertificateExtensionFactory.getInstance();
          List usedCertExt = certProfile.getUsedCertificateExtensions();

@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
@@ -37,7 +38,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.29 2008-01-10 14:42:17 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.30 2008-01-11 13:15:20 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -45,7 +46,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 25.0;
+    public static final float LATEST_VERSION = (float) 26.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -56,7 +57,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -8069608639716545205L;
+    private static final long serialVersionUID = -8069608639716545206L;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -82,8 +83,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int SMARTCARDLOGON      = 9;
 	public static final int OCSPSIGNING         = 10;
 	
-    public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {"1.3.6.1.5.5.7.3.0", "1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "1.3.6.1.5.5.7.3.3", "1.3.6.1.5.5.7.3.4",
-                                                              "1.3.6.1.5.5.7.3.5", "1.3.6.1.5.5.7.3.6", "1.3.6.1.5.5.7.3.7", "1.3.6.1.5.5.7.3.8", "1.3.6.1.4.1.311.20.2.2", "1.3.6.1.5.5.7.3.9"};
+    public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {KeyPurposeId.anyExtendedKeyUsage.getId(), KeyPurposeId.id_kp_serverAuth.getId(),
+    	KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_emailProtection.getId(),
+    	KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_ipsecTunnel.getId(), KeyPurposeId.id_kp_ipsecUser.getId(), 
+    	KeyPurposeId.id_kp_timeStamping.getId(), KeyPurposeId.id_kp_smartcardlogon.getId(), KeyPurposeId.id_kp_OCSPSigning.getId()};
 
 	/** Microsoft Template Constants */
 	public static final String MSTEMPL_DOMAINCONTROLLER  = "DomainController";
@@ -112,6 +115,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CERTVERSION                    = "certversion";
     protected static final String VALIDITY                       = "validity";
     protected static final String ALLOWVALIDITYOVERRIDE          = "allowvalidityoverride";
+    protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
+    protected static final String ALLOWEXTENSIONOVERRIDE         = "allowextensionoverride";
     protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
     protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH      = "maximumavailablebitlength";
@@ -139,7 +144,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEKEYUSAGE                    = "usekeyusage";
     protected static final String KEYUSAGECRITICAL               = "keyusagecritical";
     protected static final String KEYUSAGE                       = "keyusage";
-    protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
     protected static final String USESUBJECTKEYIDENTIFIER        = "usesubjectkeyidentifier";
     protected static final String SUBJECTKEYIDENTIFIERCRITICAL   = "subjectkeyidentifiercritical";
     protected static final String USEAUTHORITYKEYIDENTIFIER      = "useauthoritykeyidentifier";
@@ -226,6 +230,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setCertificateVersion(VERSION_X509V3);
       setValidity(730);
       setAllowValidityOverride(false);
+      
+      setAllowExtensionOverride(false);
 
       setUseBasicConstraints(true);
       setBasicConstraintsCritical(true);
@@ -347,6 +353,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * starting point in the future.
      */
     public void setAllowValidityOverride(boolean allowvalidityoverride) {data.put(ALLOWVALIDITYOVERRIDE, Boolean.valueOf(allowvalidityoverride));}
+
+    /** If extension override is allowed, the X509 certificate extension created in a certificate can
+     * some from the request sent by the user. If the request contains an extension than will be used instead of the one defined in the profile.
+     * If the request does not caontain an extension, the one defined in the profile will be used.
+     */
+    public boolean getAllowExtensionOverride(){ 
+    	Object d = data.get(ALLOWEXTENSIONOVERRIDE);
+    	if (d == null) return false;
+    	return ((Boolean)d).booleanValue(); 
+    }
+    /** @see #getAllowExtensionOverride() */
+    public void setAllowExtensionOverride(boolean allowextensionoverride) {data.put(ALLOWEXTENSIONOVERRIDE, Boolean.valueOf(allowextensionoverride));}
 
     public boolean getUseBasicConstraints(){ return ((Boolean)data.get(USEBASICCONSTRAINTS)).booleanValue(); }
     public void setUseBasicConstraints(boolean usebasicconstraints) {data.put(USEBASICCONSTRAINTS, Boolean.valueOf(usebasicconstraints));}
@@ -1164,6 +1182,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 } else {
                 	setUseAuthorityInformationAccess(false);
                 }
+
+                if (data.get(ALLOWEXTENSIONOVERRIDE) == null) {
+                	setAllowExtensionOverride(false); // v26
+                } 
 
             }
             data.put(VERSION, new Float(LATEST_VERSION));

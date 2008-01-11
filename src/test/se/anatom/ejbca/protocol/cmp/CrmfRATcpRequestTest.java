@@ -57,7 +57,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * requires setup of the CMP with a tcp listener on port 5547
  * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
- * @version $Id: CrmfRATcpRequestTest.java,v 1.7 2007-01-16 12:40:46 anatom Exp $
+ * @version $Id: CrmfRATcpRequestTest.java,v 1.8 2008-01-11 13:15:20 anatom Exp $
  */
 public class CrmfRATcpRequestTest extends CmpTestCase {
 	
@@ -140,7 +140,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -165,7 +165,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -214,7 +214,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true);
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
 
 		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -234,7 +234,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, true, PBEPASSWORD);
 
 		assertNotNull(req);

@@ -54,7 +54,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test requires:
  * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
- * @version $Id: CrmfRARequestTest.java,v 1.11 2007-07-26 09:54:19 anatom Exp $
+ * @version $Id: CrmfRARequestTest.java,v 1.12 2008-01-11 13:15:20 anatom Exp $
  */
 public class CrmfRARequestTest extends CmpTestCase {
 	
@@ -138,7 +138,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();

@@ -75,6 +75,7 @@
   static final String CHECKBOX_USEFRESHESTCRL                     = "checkboxusefreshestcrl";
   static final String CHECKBOX_USECADEFINEDFRESHESTCRL            = "checkboxusecadefinedfreshestcrl";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
+  static final String CHECKBOX_ALLOWEXTENSIONOVERRIDE             = "checkallowextensionoverride";
   static final String CHECKBOX_ALLOWVALIDITYOVERRIDE              = "checkallowvalidityoverride";
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
@@ -260,10 +261,18 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
              if(value != null){
                 use = value.equals(CHECKBOX_VALUE);
                 certificateprofiledata.setAllowValidityOverride(use);
-             }
-             else
+             } else {
                 certificateprofiledata.setAllowValidityOverride(false);
+             }
              
+             value = request.getParameter(CHECKBOX_ALLOWEXTENSIONOVERRIDE);
+             if(value != null){
+                use = value.equals(CHECKBOX_VALUE);
+                certificateprofiledata.setAllowExtensionOverride(use);
+             } else {
+                certificateprofiledata.setAllowExtensionOverride(false);
+             }
+                
              value = request.getParameter(CHECKBOX_BASICCONSTRAINTS);
              if(value != null){
                  use = value.equals(CHECKBOX_VALUE);

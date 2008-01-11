@@ -55,7 +55,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test must be run in normal mode (default mode)
  * 
  * @author tomas
- * @version $Id: CrmfRequestTest.java,v 1.15 2007-08-28 10:46:44 anatom Exp $
+ * @version $Id: CrmfRequestTest.java,v 1.16 2008-01-11 13:15:20 anatom Exp $
  *
  */
 public class CrmfRequestTest extends CmpTestCase {
@@ -137,7 +137,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false);
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null);
 		assertNotNull(req);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -165,7 +165,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false);
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null);
 		assertNotNull(req);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();

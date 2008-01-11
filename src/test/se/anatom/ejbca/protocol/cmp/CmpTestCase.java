@@ -55,10 +55,14 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.misc.NetscapeCertType;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
@@ -70,6 +74,8 @@ import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.util.CertTools;
+
+import sun.security.x509.NetscapeCertTypeExtension;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -100,7 +106,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Helper class for CMP Junit tests
  * @author tomas
- * @version $Id: CmpTestCase.java,v 1.6 2007-11-18 11:09:07 anatom Exp $
+ * @version $Id: CmpTestCase.java,v 1.7 2008-01-11 13:15:20 anatom Exp $
  *
  */
 public class CmpTestCase extends TestCase {
@@ -117,7 +123,7 @@ public class CmpTestCase extends TestCase {
 		super(arg0);
 	}
 
-	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
 		myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
@@ -131,11 +137,12 @@ public class CmpTestCase extends TestCase {
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
         SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence)dIn.readObject());
 		myCertTemplate.setPublicKey(keyInfo);
-		// Some altNames
-        GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com");
-        X509Extensions exts = null;
-        if (san != null) {
+		// If we did not pass any extensions as parameter, we will create some of our own, standard ones
+        X509Extensions exts = extensions;
+        if (exts == null) {
         	// SubjectAltName
+    		// Some altNames
+            GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com");
             ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
             DEROutputStream         dOut = new DEROutputStream(bOut);
             dOut.writeObject(san);
@@ -156,7 +163,9 @@ public class CmpTestCase extends TestCase {
         	X509Extension kuext = new X509Extension(false, new DEROctetString(value));
             values.add(kuext);
             oids.add(X509Extensions.KeyUsage);            
-            exts = new X509Extensions(oids, values);            
+
+            // Make the complete extension package
+            exts = new X509Extensions(oids, values); 
         }
 		myCertTemplate.setExtensions(exts);
 		
