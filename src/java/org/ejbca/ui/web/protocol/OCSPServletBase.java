@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.28 2007-01-16 11:46:14 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.29 2008-01-11 13:33:09 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -493,16 +493,23 @@ abstract class OCSPServletBase extends HttpServlet {
                     }
                     //GeneralName requestor = req.getRequestorName();
                     X509Certificate[] certs = req.getCerts("BC");
+                    String signer = null;
+                    if (certs.length > 0) {
+                    	signer = certs[0].getSubjectDN().getName();
+                    }
                     // We must find a cert to verify the signature with...
                     boolean verifyOK = false;
                     for (int i = 0; i < certs.length; i++) {
                         if (req.verify(certs[i].getPublicKey(), "BC") == true) {
                             verifyOK = true;
+                        	signer = certs[i].getSubjectDN().getName();
+                    		String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
+                            m_log.info(infoMsg);
                             break;
                         }
                     }
                     if (!verifyOK) {
-                		String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature");
+                		String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signer);
                         m_log.error(errMsg);
                         throw new SignRequestSignatureException(errMsg);
                     }
