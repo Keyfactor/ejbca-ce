@@ -7,10 +7,10 @@
                                         http://www.bea.com/ns/weblogic/90/weblogic-rdbms20-persistence.xsd">
 
    <weblogic-rdbms-bean>
-      <ejb-name>ServiceData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>PublisherData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>ServiceData</table-name>
+      <table-name>PublisherData</table-name>
       <field-map>
          <cmp-field>id</cmp-field>
          <dbms-column>id</dbms-column>
@@ -20,83 +20,19 @@
          <dbms-column>name</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
-      </field-map>
-      </table-map>
-
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>EndEntityProfileData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>EndEntityProfileData</table-name>
-      <field-map>
-         <cmp-field>id</cmp-field>
-         <dbms-column>id</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>profileName</cmp-field>
-         <dbms-column>profileName</dbms-column>
+         <cmp-field>updateCounter</cmp-field>
+         <dbms-column>updateCounter</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>data</cmp-field>
          <dbms-column>data</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>GlobalConfigurationData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>GlobalConfigurationData</table-name>
-      <field-map>
-         <cmp-field>configurationId</cmp-field>
-         <dbms-column>configurationId</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
-      </field-map>
-      </table-map>
-
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>AccessRulesData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>AccessRulesData</table-name>
-      <field-map>
-         <cmp-field>primKey</cmp-field>
-         <dbms-column>pK</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>accessRule</cmp-field>
-         <dbms-column>accessRule</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>rule</cmp-field>
-         <dbms-column>rule</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>isRecursive</cmp-field>
-         <dbms-column>isRecursive</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>CertReqHistoryData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
       <table-name>CertReqHistoryData</table-name>
       <field-map>
@@ -125,87 +61,10 @@
       </field-map>
       </table-map>
 
-
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>CRLData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>CRLData</table-name>
-      <field-map>
-         <cmp-field>crlNumber</cmp-field>
-         <dbms-column>cRLNumber</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>issuerDN</cmp-field>
-         <dbms-column>issuerDN</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>fingerprint</cmp-field>
-         <dbms-column>fingerprint</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>caFingerprint</cmp-field>
-         <dbms-column>cAFingerprint</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>thisUpdate</cmp-field>
-         <dbms-column>thisUpdate</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>nextUpdate</cmp-field>
-         <dbms-column>nextUpdate</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>base64Crl</cmp-field>
-         <dbms-column>base64Crl</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>AuthorizationTreeUpdateData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>AuthorizationTreeUpdateData</table-name>
-      <field-map>
-         <cmp-field>primKey</cmp-field>
-         <dbms-column>pK</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>authorizationTreeUpdateNumber</cmp-field>
-         <dbms-column>authorizationTreeUpdateNumber</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>UserDataSourceData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>UserDataSourceData</table-name>
-      <field-map>
-         <cmp-field>id</cmp-field>
-         <dbms-column>id</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>name</cmp-field>
-         <dbms-column>name</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>updateCounter</cmp-field>
-         <dbms-column>updateCounter</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>LogConfigurationData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>OldLogConfigurationData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
       <table-name>LogConfigurationData</table-name>
       <field-map>
@@ -215,9 +74,6 @@
       <field-map>
          <cmp-field>logConfiguration</cmp-field>
          <dbms-column>logConfiguration</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
       </field-map>
       <field-map>
          <cmp-field>logEntryRowNumber</cmp-field>
@@ -227,82 +83,60 @@
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>HardTokenIssuerData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>TableProtectData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>HardTokenIssuerData</table-name>
+      <table-name>TableProtectData</table-name>
       <field-map>
          <cmp-field>id</cmp-field>
          <dbms-column>id</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>alias</cmp-field>
-         <dbms-column>alias</dbms-column>
+         <cmp-field>version</cmp-field>
+         <dbms-column>version</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>adminGroupId</cmp-field>
-         <dbms-column>adminGroupId</dbms-column>
+         <cmp-field>hashVersion</cmp-field>
+         <dbms-column>hashVersion</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>AdminPreferencesData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>AdminPreferencesData</table-name>
-      <field-map>
-         <cmp-field>id</cmp-field>
-         <dbms-column>id</dbms-column>
+         <cmp-field>protectionAlg</cmp-field>
+         <dbms-column>protectionAlg</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>KeyRecoveryData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>KeyRecoveryData</table-name>
-      <field-map>
-         <cmp-field>certSN</cmp-field>
-         <dbms-column>certSN</dbms-column>
+         <cmp-field>hash</cmp-field>
+         <dbms-column>hash</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>issuerDN</cmp-field>
-         <dbms-column>issuerDN</dbms-column>
+         <cmp-field>signature</cmp-field>
+         <dbms-column>signature</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>username</cmp-field>
-         <dbms-column>username</dbms-column>
+         <cmp-field>time</cmp-field>
+         <dbms-column>time</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>markedAsRecoverable</cmp-field>
-         <dbms-column>markedAsRecoverable</dbms-column>
+         <cmp-field>dbKey</cmp-field>
+         <dbms-column>dbKey</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>keyData</cmp-field>
-         <dbms-column>keyData</dbms-column>
+         <cmp-field>dbType</cmp-field>
+         <dbms-column>dbType</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>keyRef</cmp-field>
+         <dbms-column>keyRef</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>keyType</cmp-field>
+         <dbms-column>keyType</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>LogEntryData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
       <table-name>LogEntryData</table-name>
       <field-map>
@@ -343,152 +177,220 @@
       </field-map>
       <field-map>
          <cmp-field>comment</cmp-field>
-         <dbms-column>comment_</dbms-column>
+         <dbms-column>comment</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>CertificateData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>EndEntityProfileData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>CertificateData</table-name>
+      <table-name>EndEntityProfileData</table-name>
       <field-map>
-         <cmp-field>issuerDN</cmp-field>
-         <dbms-column>issuerDN</dbms-column>
+         <cmp-field>id</cmp-field>
+         <dbms-column>id</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>profileName</cmp-field>
+         <dbms-column>profileName</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>HardTokenIssuerData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>HardTokenIssuerData</table-name>
+      <field-map>
+         <cmp-field>id</cmp-field>
+         <dbms-column>id</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>alias</cmp-field>
+         <dbms-column>alias</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>adminGroupId</cmp-field>
+         <dbms-column>adminGroupId</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>LogConfigurationData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>LogConfigurationData</table-name>
+      <field-map>
+         <cmp-field>id</cmp-field>
+         <dbms-column>id</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>logConfiguration</cmp-field>
+         <dbms-column>logConfiguration</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>logEntryRowNumber</cmp-field>
+         <dbms-column>logEntryRowNumber</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>HardTokenCertificateMap</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>HardTokenCertificateMap</table-name>
+      <field-map>
+         <cmp-field>certificateFingerprint</cmp-field>
+         <dbms-column>certificateFingerprint</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>tokenSN</cmp-field>
+         <dbms-column>tokenSN</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>CAData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>CAData</table-name>
+      <field-map>
+         <cmp-field>caId</cmp-field>
+         <dbms-column>cAId</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>name</cmp-field>
+         <dbms-column>name</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>subjectDN</cmp-field>
          <dbms-column>subjectDN</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>fingerprint</cmp-field>
-         <dbms-column>fingerprint</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>caFingerprint</cmp-field>
-         <dbms-column>cAFingerprint</dbms-column>
-      </field-map>
-      <field-map>
          <cmp-field>status</cmp-field>
          <dbms-column>status</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>type</cmp-field>
-         <dbms-column>type</dbms-column>
+         <cmp-field>expireTime</cmp-field>
+         <dbms-column>expireTime</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>serialNumber</cmp-field>
-         <dbms-column>serialNumber</dbms-column>
+         <cmp-field>updateTime</cmp-field>
+         <dbms-column>updateTime</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>expireDate</cmp-field>
-         <dbms-column>expireDate</dbms-column>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>ProtectedLogData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>ProtectedLogData</table-name>
+      <field-map>
+         <cmp-field>pk</cmp-field>
+         <dbms-column>pk</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>revocationDate</cmp-field>
-         <dbms-column>revocationDate</dbms-column>
+         <cmp-field>adminType</cmp-field>
+         <dbms-column>adminType</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>revocationReason</cmp-field>
-         <dbms-column>revocationReason</dbms-column>
+         <cmp-field>adminData</cmp-field>
+         <dbms-column>adminData</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>base64Cert</cmp-field>
-         <dbms-column>base64Cert</dbms-column>
+         <cmp-field>caId</cmp-field>
+         <dbms-column>caId</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>module</cmp-field>
+         <dbms-column>module</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>eventTime</cmp-field>
+         <dbms-column>eventTime</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>username</cmp-field>
          <dbms-column>username</dbms-column>
       </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>HardTokenPropertyData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>HardTokenPropertyData</table-name>
       <field-map>
-         <cmp-field>id</cmp-field>
-         <dbms-column>id</dbms-column>
+         <cmp-field>certificateSerialNumber</cmp-field>
+         <dbms-column>certificateSerialNumber</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>property</cmp-field>
-         <dbms-column>property</dbms-column>
+         <cmp-field>certificateIssuerDN</cmp-field>
+         <dbms-column>certificateIssuerDN</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>value</cmp-field>
-         <dbms-column>value</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>ApprovalData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>ApprovalData</table-name>
-      <field-map>
-         <cmp-field>id</cmp-field>
-         <dbms-column>id</dbms-column>
+         <cmp-field>eventId</cmp-field>
+         <dbms-column>eventId</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>approvalid</cmp-field>
-         <dbms-column>approvalid</dbms-column>
+         <cmp-field>eventComment</cmp-field>
+         <dbms-column>eventComment</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>approvaltype</cmp-field>
-         <dbms-column>approvaltype</dbms-column>
+         <cmp-field>nodeGUID</cmp-field>
+         <dbms-column>nodeGUID</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>endentityprofileid</cmp-field>
-         <dbms-column>endentityprofileid</dbms-column>
+         <cmp-field>counter</cmp-field>
+         <dbms-column>counter</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>caid</cmp-field>
-         <dbms-column>caid</dbms-column>
+         <cmp-field>nodeIP</cmp-field>
+         <dbms-column>nodeIP</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>reqadmincertissuerdn</cmp-field>
-         <dbms-column>reqadmincertissuerdn</dbms-column>
+         <cmp-field>b64LinkedInEventIdentifiers</cmp-field>
+         <dbms-column>b64LinkedInEventIdentifiers</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>reqadmincertsn</cmp-field>
-         <dbms-column>reqadmincertsn</dbms-column>
+         <cmp-field>b64LinkedInEventsHash</cmp-field>
+         <dbms-column>b64LinkedInEventsHash</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>status</cmp-field>
-         <dbms-column>status</dbms-column>
+         <cmp-field>currentHashAlgorithm</cmp-field>
+         <dbms-column>currentHashAlgorithm</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>approvaldata</cmp-field>
-         <dbms-column>approvaldata</dbms-column>
+         <cmp-field>protectionKeyIdentifier</cmp-field>
+         <dbms-column>protectionKeyIdentifier</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>requestdata</cmp-field>
-         <dbms-column>requestdata</dbms-column>
+         <cmp-field>protectionKeyAlgorithm</cmp-field>
+         <dbms-column>protectionKeyAlgorithm</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>requestdate</cmp-field>
-         <dbms-column>requestdate</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>expiredate</cmp-field>
-         <dbms-column>expiredate</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>remainingapprovals</cmp-field>
-         <dbms-column>remainingapprovals</dbms-column>
+         <cmp-field>b64Protection</cmp-field>
+         <dbms-column>b64Protection</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>HardTokenProfileData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>UserDataSourceData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>HardTokenProfileData</table-name>
+      <table-name>UserDataSourceData</table-name>
       <field-map>
          <cmp-field>id</cmp-field>
          <dbms-column>id</dbms-column>
@@ -509,8 +411,312 @@
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
+      <ejb-name>HardTokenPropertyData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>HardTokenPropertyData</table-name>
+      <field-map>
+         <cmp-field>id</cmp-field>
+         <dbms-column>id</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>property</cmp-field>
+         <dbms-column>property</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>value</cmp-field>
+         <dbms-column>value</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>AdminGroupData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>AdminGroupData</table-name>
+      <field-map>
+         <cmp-field>primKey</cmp-field>
+         <dbms-column>pK</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>adminGroupName</cmp-field>
+         <dbms-column>adminGroupName</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>caId</cmp-field>
+         <dbms-column>cAId</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>ServiceData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>ServiceData</table-name>
+      <field-map>
+         <cmp-field>id</cmp-field>
+         <dbms-column>id</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>name</cmp-field>
+         <dbms-column>name</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>ProtectedLogTokenData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>ProtectedLogTokenData</table-name>
+      <field-map>
+         <cmp-field>pk</cmp-field>
+         <dbms-column>pk</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>tokenIdentifier</cmp-field>
+         <dbms-column>tokenIdentifier</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>tokenType</cmp-field>
+         <dbms-column>tokenType</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>b64TokenCertificate</cmp-field>
+         <dbms-column>b64TokenCertificate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>tokenReference</cmp-field>
+         <dbms-column>tokenReference</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>CRLData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>CRLData</table-name>
+      <field-map>
+         <cmp-field>crlNumber</cmp-field>
+         <dbms-column>cRLNumber</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>deltaCRLIndicator</cmp-field>
+         <dbms-column>deltaCRLIndicator</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>issuerDN</cmp-field>
+         <dbms-column>issuerDN</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>fingerprint</cmp-field>
+         <dbms-column>fingerprint</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>caFingerprint</cmp-field>
+         <dbms-column>cAFingerprint</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>thisUpdate</cmp-field>
+         <dbms-column>thisUpdate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>nextUpdate</cmp-field>
+         <dbms-column>nextUpdate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>base64Crl</cmp-field>
+         <dbms-column>base64Crl</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>KeyRecoveryData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>KeyRecoveryData</table-name>
+      <field-map>
+         <cmp-field>certSN</cmp-field>
+         <dbms-column>certSN</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>issuerDN</cmp-field>
+         <dbms-column>issuerDN</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>username</cmp-field>
+         <dbms-column>username</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>markedAsRecoverable</cmp-field>
+         <dbms-column>markedAsRecoverable</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>keyData</cmp-field>
+         <dbms-column>keyData</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>AdminPreferencesData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>AdminPreferencesData</table-name>
+      <field-map>
+         <cmp-field>id</cmp-field>
+         <dbms-column>id</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>ProtectedLogExportData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>ProtectedLogExportData</table-name>
+      <field-map>
+         <cmp-field>pk</cmp-field>
+         <dbms-column>pk</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>timeOfExport</cmp-field>
+         <dbms-column>timeOfExport</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>exportEndTime</cmp-field>
+         <dbms-column>exportEndTime</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>exportStartTime</cmp-field>
+         <dbms-column>exportStartTime</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>b64LogDataHash</cmp-field>
+         <dbms-column>b64LogDataHash</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>b64PreviosExportHash</cmp-field>
+         <dbms-column>b64PreviosExportHash</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>currentHashAlgorithm</cmp-field>
+         <dbms-column>currentHashAlgorithm</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>b64SignatureCertificate</cmp-field>
+         <dbms-column>b64SignatureCertificate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>deleted</cmp-field>
+         <dbms-column>deleted</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>b64Signature</cmp-field>
+         <dbms-column>b64Signature</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>AdminEntityData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>AdminEntityData</table-name>
+      <field-map>
+         <cmp-field>primKey</cmp-field>
+         <dbms-column>pK</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>matchWith</cmp-field>
+         <dbms-column>matchWith</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>matchType</cmp-field>
+         <dbms-column>matchType</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>matchValue</cmp-field>
+         <dbms-column>matchValue</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>AccessRulesData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>AccessRulesData</table-name>
+      <field-map>
+         <cmp-field>primKey</cmp-field>
+         <dbms-column>pK</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>accessRule</cmp-field>
+         <dbms-column>accessRule</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>rule</cmp-field>
+         <dbms-column>rule</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>isRecursive</cmp-field>
+         <dbms-column>isRecursive</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>HardTokenData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>HardTokenData</table-name>
+      <field-map>
+         <cmp-field>tokenSN</cmp-field>
+         <dbms-column>tokenSN</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>username</cmp-field>
+         <dbms-column>username</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>ctime</cmp-field>
+         <dbms-column>cTime</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>mtime</cmp-field>
+         <dbms-column>mTime</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>tokenType</cmp-field>
+         <dbms-column>tokenType</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>significantIssuerDN</cmp-field>
+         <dbms-column>significantIssuerDN</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
       <ejb-name>UserData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
       <table-name>UserData</table-name>
       <field-map>
@@ -585,220 +791,178 @@
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>HardTokenData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>CertificateProfileData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>HardTokenData</table-name>
-      <field-map>
-         <cmp-field>tokenSN</cmp-field>
-         <dbms-column>tokenSN</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>username</cmp-field>
-         <dbms-column>username</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>ctime</cmp-field>
-         <dbms-column>cTime</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>mtime</cmp-field>
-         <dbms-column>mTime</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>tokenType</cmp-field>
-         <dbms-column>tokenType</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>significantIssuerDN</cmp-field>
-         <dbms-column>significantIssuerDN</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>OldLogConfigurationData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>LogConfigurationData</table-name>
+      <table-name>CertificateProfileData</table-name>
       <field-map>
          <cmp-field>id</cmp-field>
          <dbms-column>id</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>logConfiguration</cmp-field>
-         <dbms-column>logConfiguration</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
+         <cmp-field>certificateProfileName</cmp-field>
+         <dbms-column>certificateProfileName</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>logEntryRowNumber</cmp-field>
-         <dbms-column>logEntryRowNumber</dbms-column>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>CAData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>GlobalConfigurationData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>CAData</table-name>
+      <table-name>GlobalConfigurationData</table-name>
       <field-map>
-         <cmp-field>caId</cmp-field>
-         <dbms-column>cAId</dbms-column>
+         <cmp-field>configurationId</cmp-field>
+         <dbms-column>configurationId</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>name</cmp-field>
-         <dbms-column>name</dbms-column>
+         <cmp-field>data</cmp-field>
+         <dbms-column>data</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
+      <ejb-name>ApprovalData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
+      <table-map>
+      <table-name>ApprovalData</table-name>
+      <field-map>
+         <cmp-field>id</cmp-field>
+         <dbms-column>id</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>subjectDN</cmp-field>
-         <dbms-column>subjectDN</dbms-column>
+         <cmp-field>approvalid</cmp-field>
+         <dbms-column>approvalid</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>approvaltype</cmp-field>
+         <dbms-column>approvaltype</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>endentityprofileid</cmp-field>
+         <dbms-column>endentityprofileid</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>caid</cmp-field>
+         <dbms-column>caid</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>reqadmincertissuerdn</cmp-field>
+         <dbms-column>reqadmincertissuerdn</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>reqadmincertsn</cmp-field>
+         <dbms-column>reqadmincertsn</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>status</cmp-field>
          <dbms-column>status</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>expireTime</cmp-field>
-         <dbms-column>expireTime</dbms-column>
+         <cmp-field>approvaldata</cmp-field>
+         <dbms-column>approvaldata</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>updateTime</cmp-field>
-         <dbms-column>updateTime</dbms-column>
+         <cmp-field>requestdata</cmp-field>
+         <dbms-column>requestdata</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
+         <cmp-field>requestdate</cmp-field>
+         <dbms-column>requestdate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>expiredate</cmp-field>
+         <dbms-column>expiredate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>remainingapprovals</cmp-field>
+         <dbms-column>remainingapprovals</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>TableProtectData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>AuthorizationTreeUpdateData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>TableProtectData</table-name>
-      <field-map>
-         <cmp-field>id</cmp-field>
-         <dbms-column>id</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>version</cmp-field>
-         <dbms-column>version</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>hashVersion</cmp-field>
-         <dbms-column>hashVersion</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>protectionAlg</cmp-field>
-         <dbms-column>protectionAlg</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>hash</cmp-field>
-         <dbms-column>hash</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>signature</cmp-field>
-         <dbms-column>signature</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>time</cmp-field>
-         <dbms-column>time</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>dbKey</cmp-field>
-         <dbms-column>dbKey</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>dbType</cmp-field>
-         <dbms-column>dbType</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>keyRef</cmp-field>
-         <dbms-column>keyRef</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>keyType</cmp-field>
-         <dbms-column>keyType</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>AdminGroupData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>AdminGroupData</table-name>
+      <table-name>AuthorizationTreeUpdateData</table-name>
       <field-map>
          <cmp-field>primKey</cmp-field>
          <dbms-column>pK</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>adminGroupName</cmp-field>
-         <dbms-column>adminGroupName</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>caId</cmp-field>
-         <dbms-column>cAId</dbms-column>
+         <cmp-field>authorizationTreeUpdateNumber</cmp-field>
+         <dbms-column>authorizationTreeUpdateNumber</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>HardTokenCertificateMap</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>CertificateData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>HardTokenCertificateMap</table-name>
+      <table-name>CertificateData</table-name>
       <field-map>
-         <cmp-field>certificateFingerprint</cmp-field>
-         <dbms-column>certificateFingerprint</dbms-column>
+         <cmp-field>issuerDN</cmp-field>
+         <dbms-column>issuerDN</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>tokenSN</cmp-field>
-         <dbms-column>tokenSN</dbms-column>
+         <cmp-field>subjectDN</cmp-field>
+         <dbms-column>subjectDN</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>fingerprint</cmp-field>
+         <dbms-column>fingerprint</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>caFingerprint</cmp-field>
+         <dbms-column>cAFingerprint</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>status</cmp-field>
+         <dbms-column>status</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>type</cmp-field>
+         <dbms-column>type</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>serialNumber</cmp-field>
+         <dbms-column>serialNumber</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>expireDate</cmp-field>
+         <dbms-column>expireDate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>revocationDate</cmp-field>
+         <dbms-column>revocationDate</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>revocationReason</cmp-field>
+         <dbms-column>revocationReason</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>base64Cert</cmp-field>
+         <dbms-column>base64Cert</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>username</cmp-field>
+         <dbms-column>username</dbms-column>
       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>AdminEntityData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <ejb-name>HardTokenProfileData</ejb-name>
+      <data-source-name>EjbcaDS</data-source-name>
       <table-map>
-      <table-name>AdminEntityData</table-name>
-      <field-map>
-         <cmp-field>primKey</cmp-field>
-         <dbms-column>pK</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>matchWith</cmp-field>
-         <dbms-column>matchWith</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>matchType</cmp-field>
-         <dbms-column>matchType</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>matchValue</cmp-field>
-         <dbms-column>matchValue</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>PublisherData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>PublisherData</table-name>
+      <table-name>HardTokenProfileData</table-name>
       <field-map>
          <cmp-field>id</cmp-field>
          <dbms-column>id</dbms-column>
@@ -818,29 +982,6 @@
       </table-map>
 
    </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>CertificateProfileData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>CertificateProfileData</table-name>
-      <field-map>
-         <cmp-field>id</cmp-field>
-         <dbms-column>id</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>certificateProfileName</cmp-field>
-         <dbms-column>certificateProfileName</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>data</cmp-field>
-         <dbms-column>data</dbms-column>
-         <dbms-column-type>
-          Blob
-         </dbms-column-type>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
 
      <!-- 
        To add weblogic relationships for beans not managed by XDoclet, add
@@ -849,19 +990,6 @@
      --> 
 
    <weblogic-rdbms-relation>
-      <relation-name>AdminGroupDataToAdminEntities</relation-name>
-      <weblogic-relationship-role>
-
-         <relationship-role-name>AdminEntityData</relationship-role-name>
-         <relationship-role-map>
-         <column-map>
-            <foreign-key-column>AdminGroupData_adminEntities</foreign-key-column>
-            <key-column>pK</key-column>
-         </column-map>
-         </relationship-role-map>
-      </weblogic-relationship-role>
-   </weblogic-rdbms-relation>
-   <weblogic-rdbms-relation>
       <relation-name>AdminGroupDataToAccessRules</relation-name>
       <weblogic-relationship-role>
 
@@ -869,6 +997,19 @@
          <relationship-role-map>
          <column-map>
             <foreign-key-column>AdminGroupData_accessRules</foreign-key-column>
+            <key-column>pK</key-column>
+         </column-map>
+         </relationship-role-map>
+      </weblogic-relationship-role>
+   </weblogic-rdbms-relation>
+   <weblogic-rdbms-relation>
+      <relation-name>AdminGroupDataToAdminEntities</relation-name>
+      <weblogic-relationship-role>
+
+         <relationship-role-name>AdminEntityData</relationship-role-name>
+         <relationship-role-map>
+         <column-map>
+            <foreign-key-column>AdminGroupData_adminEntities</foreign-key-column>
             <key-column>pK</key-column>
          </column-map>
          </relationship-role-map>
