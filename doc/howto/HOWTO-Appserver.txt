@@ -335,7 +335,9 @@ Here are instructions for developers who need to update EJBCA for various applic
 Developer: Creating deployment descriptors for Weblogic 9:
 ----------------------------------------------
 
-XDoclet can only make descriptors for Weblogic 8.x, not 9.x.
+XDoclet can only make descriptors for Weblogic 8.x, not 9.x. To generate this decriptor enable the 
+'weblogic' task in target 'run-xdoc' in compile.xmli, and then do ant.
+
 In the generated tmp/bin/dd/META-INF/weblogic-cmp-rdbms-jar.xml, remove the DTD line and replace:
   <weblogic-rdbms-jar>
 with:

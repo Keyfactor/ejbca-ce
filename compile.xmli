@@ -252,6 +252,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
                 mergeDir="${ejbdd.src}/merge"
                 datasource="${datasource.jndi-name-prefix}${datasource.jndi-name}" 
                 datasourcemapping="${datasource.mapping}" />
+ <!--                
             <weblogic version="8.1" 
                 xmlencoding="UTF-8" 
                 validatexml="false" 
@@ -259,6 +260,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
                 datasource="${datasource.jndi-name}" 
                 persistence="weblogic"
                 createTables="Disabled" />
+ -->
  <!--
             <oc4j version="9.0.4.0.0" 
                 xmlencoding="UTF-8" 
