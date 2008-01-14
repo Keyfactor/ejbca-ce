@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.18 2007-12-21 09:03:10 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.19 2008-01-14 14:03:57 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -247,6 +247,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public byte[] runDeltaCRL(Admin admin, String issuerdn)  {
+    	debug(">runDeltaCRL: "+issuerdn);
     	int caid = issuerdn.hashCode();
     	try {
     		ICAAdminSessionLocal caadmin = caadminHome.create();
@@ -280,6 +281,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     		X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
     		debug("Created delta CRL with expire date: "+crl.getNextUpdate());
 
+        	debug("<runDeltaCRL: "+issuerdn);
     		return crlBytes;
     	} catch (Exception e) {
     		logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,e.getMessage());
