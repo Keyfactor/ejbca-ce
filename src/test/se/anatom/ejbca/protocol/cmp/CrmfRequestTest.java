@@ -56,7 +56,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test must be run in normal mode (default mode)
  * 
  * @author tomas
- * @version $Id: CrmfRequestTest.java,v 1.17 2008-01-14 15:35:12 anatom Exp $
+ * @version $Id: CrmfRequestTest.java,v 1.18 2008-01-14 15:37:11 anatom Exp $
  *
  */
 public class CrmfRequestTest extends CmpTestCase {
@@ -242,7 +242,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Make user that we know...
         boolean userExists = false;
 		userDN = "C=SE,O=PrimeKey,CN=cmptest";
-    	UserDataVO user = new UserDataVO("cmptest", "UserDN", caid, null, "cmptest@primekey.se",SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+    	UserDataVO user = new UserDataVO("cmptest", userDN, caid, null, "cmptest@primekey.se",SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
     	user.setPassword("foo123");
         try {
         	usersession.addUser(admin, user, false);
