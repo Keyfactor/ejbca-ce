@@ -472,7 +472,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void addProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow) {
-		log.debug(">addProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">addProtectedLogEventRow");			
+		}
 		try {
 			getProtectedLogData().create(
 					protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
@@ -487,7 +489,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.error("", e);
 			throw new EJBException(e);
 		}
-		log.debug("<addProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<addProtectedLogEventRow");
+		}
 	}
 
 	/**
@@ -496,7 +500,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventRow getProtectedLogEventRow(ProtectedLogEventIdentifier identifier) {
-		log.debug(">getProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">getProtectedLogEventRow");
+		}
 		ProtectedLogEventRow protectedLogEventRow = null;
 		try {
 			if (identifier != null) {
@@ -505,7 +511,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 		} catch (FinderException e) {
 		}
-		log.debug("<getProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<getProtectedLogEventRow");
+		}
 		return protectedLogEventRow;
 	}
 
@@ -516,7 +524,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier[] findNewestProtectedLogEventsForAllOtherNodes(int nodeToExclude, long newerThan) {
-		log.debug(">findNewestProtectedLogEventsForAllOtherNodes");
+		if (log.isDebugEnabled()) {
+			log.debug(">findNewestProtectedLogEventsForAllOtherNodes");
+		}
 		if (newerThan < 0) {
 			newerThan = 0;
 		}
@@ -528,7 +538,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				protectedLogEventIdentifiers[i] = protectedLogEventRows[i].getEventIdentifier(); 
 			}
 		}
-		log.debug("<findNewestProtectedLogEventsForAllOtherNodes");
+		if (log.isDebugEnabled()) {
+			log.debug("<findNewestProtectedLogEventsForAllOtherNodes");
+		}
 		return protectedLogEventIdentifiers;
 	}
 
@@ -536,7 +548,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Find the newest ProtectedLogEvent for all nodes except one, that have an eventTime newer than the requested.
 	 */
 	private ProtectedLogEventRow[] findNewestProtectedLogEventsForAllOtherNodesInternal(int nodeToExclude, long newerThan) {
-		log.debug(">findNewestProtectedLogEventsForAllOtherNodesInternal");
+		if (log.isDebugEnabled()) {
+			log.debug(">findNewestProtectedLogEventsForAllOtherNodesInternal");
+		}
 		// TODO: Double check the algo on this one to make it more efficient
 		ProtectedLogEventRow[] protectedLogEventRows = null;
 		try {
@@ -574,7 +588,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Get newest for every one
 		} catch (FinderException e) {
 		}
-		log.debug("<findNewestProtectedLogEventsForAllOtherNodesInternal");
+		if (log.isDebugEnabled()) {
+			log.debug("<findNewestProtectedLogEventsForAllOtherNodesInternal");
+		}
 		return protectedLogEventRows;
 	}
 
@@ -584,7 +600,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(int nodeGUID) {
-		log.debug(">findNewestProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">findNewestProtectedLogEventRow");
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -606,7 +624,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<findNewestProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<findNewestProtectedLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 
@@ -616,7 +636,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findNewestLogEventRow(int nodeGUID) {
-		log.debug(">findNewestLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">findNewestLogEventRow");
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -638,7 +660,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<findNewestLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<findNewestLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 
@@ -657,7 +681,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(boolean isProtected) {
-		log.debug(">findNewestProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">findNewestProtectedLogEventRow");
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -678,7 +704,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<findNewestProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<findNewestProtectedLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 
@@ -688,7 +716,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findOldestProtectedLogEventRow() {
-		log.debug(">findOldestProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">findOldestProtectedLogEventRow");
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -709,7 +739,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<findOldestProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<findOldestProtectedLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 
@@ -720,7 +752,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findOldestSignedProtectedLogEventRow() {
-		log.debug(">findOldestSignedProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">findOldestSignedProtectedLogEventRow");
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -741,7 +775,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<findOldestSignedProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<findOldestSignedProtectedLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 
@@ -840,7 +876,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventRow[] findNextProtectedLogEventRows(long exportStartTime, long exportEndTime, int fetchSize) {
-		log.debug(">findNextProtectedLogEventRows");
+		if (log.isDebugEnabled()) {
+			log.debug(">findNextProtectedLogEventRows");
+		}
 		ArrayList protectedLogEventRows = new ArrayList();
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -872,7 +910,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<findNextProtectedLogEventRows");
+		if (log.isDebugEnabled()) {
+			log.debug("<findNextProtectedLogEventRows");
+		}
 		return (ProtectedLogEventRow[]) protectedLogEventRows.toArray(new ProtectedLogEventRow[0]);
 	}
 
@@ -1212,14 +1252,18 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public boolean verifyProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow) {
-		log.debug(">verifyProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug(">verifyProtectedLogEventRow");
+		}
 		// If signed - verify this PLER
 		if (protectedLogEventRow.getProtection() != null) {
 			ProtectedLogToken protectedLogToken = getToken(protectedLogEventRow.getProtectionKeyIdentifier());
 			try {
 				return protectedLogToken.verify(protectedLogEventRow.getAsByteArray(false), protectedLogEventRow.getProtection());
 			} catch (Exception e) {
-				log.debug("Could not verify.", e);
+				if (log.isDebugEnabled()) {
+					log.debug("Could not verify.", e);
+				}
 				return false;
 			}
 		} else {
@@ -1256,7 +1300,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				return verifyProtectedLogEventRow(nextProtectedLogEventRow);
 			}
 		}
-		log.debug("<verifyProtectedLogEventRow");
+		if (log.isDebugEnabled()) {
+			log.debug("<verifyProtectedLogEventRow");
+		}
 		return false;
 	}
 

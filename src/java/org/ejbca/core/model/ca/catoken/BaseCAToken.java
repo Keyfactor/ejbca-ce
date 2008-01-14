@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.22 2007-11-26 13:54:02 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.23 2008-01-14 14:42:00 anatom Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -286,8 +286,10 @@ public abstract class BaseCAToken implements ICAToken {
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.ca.caadmin.ICAToken#getCATokenStatus()
 	 */
-    public int getCATokenStatus() {
-    	log.debug(">getCATokenStatus");
+    public int getCATokenStatus() {    	
+		if (log.isDebugEnabled()) {
+			log.debug(">getCATokenStatus");
+		}
     	autoActivate();
     	int ret = ICAToken.STATUS_OFFLINE;
     	// If we have no keystrings, no point in continuing...
@@ -307,7 +309,9 @@ public abstract class BaseCAToken implements ICAToken {
             	} catch (CATokenOfflineException e) {
             		privateKey = null;
             		publicKey = null;
-            		log.debug("no test key defined");
+            		if (log.isDebugEnabled()) {
+            			log.debug("no test key defined");
+            		}
             	}
             	if ( privateKey!=null && publicKey!=null ) {
             		//Check that that the testkey is usable by doing a test signature.
@@ -321,7 +325,9 @@ public abstract class BaseCAToken implements ICAToken {
             	}
         	}
     	}
-    	log.debug("<getCATokenStatus: "+ret);
+		if (log.isDebugEnabled()) {
+			log.debug("<getCATokenStatus: "+ret);
+		}
     	return ret;
     }
 }
