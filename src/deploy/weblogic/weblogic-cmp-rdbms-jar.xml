@@ -7,7 +7,7 @@
                                         http://www.bea.com/ns/weblogic/90/weblogic-rdbms20-persistence.xsd">
    <weblogic-rdbms-bean>
       <ejb-name>ServiceData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>ServiceData</table-name>
       <field-map>
@@ -27,7 +27,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>EndEntityProfileData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>EndEntityProfileData</table-name>
       <field-map>
@@ -47,7 +47,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>GlobalConfigurationData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>GlobalConfigurationData</table-name>
       <field-map>
@@ -63,7 +63,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>AccessRulesData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>AccessRulesData</table-name>
       <field-map>
@@ -87,7 +87,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>CertReqHistoryData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>CertReqHistoryData</table-name>
       <field-map>
@@ -119,7 +119,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>CRLData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>CRLData</table-name>
       <field-map>
@@ -159,7 +159,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>AuthorizationTreeUpdateData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>AuthorizationTreeUpdateData</table-name>
       <field-map>
@@ -175,7 +175,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>UserDataSourceData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>UserDataSourceData</table-name>
       <field-map>
@@ -199,7 +199,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>LogConfigurationData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>LogConfigurationData</table-name>
       <field-map>
@@ -219,7 +219,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>HardTokenIssuerData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>HardTokenIssuerData</table-name>
       <field-map>
@@ -243,7 +243,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>AdminPreferencesData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>AdminPreferencesData</table-name>
       <field-map>
@@ -259,7 +259,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>ProtectedLogExportData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>ProtectedLogExportData</table-name>
       <field-map>
@@ -307,7 +307,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>KeyRecoveryData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>KeyRecoveryData</table-name>
       <field-map>
@@ -335,7 +335,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>LogEntryData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>LogEntryData</table-name>
       <field-map>
@@ -383,7 +383,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>ProtectedLogData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>ProtectedLogData</table-name>
       <field-map>
@@ -471,7 +471,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>CertificateData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>CertificateData</table-name>
       <field-map>
@@ -527,7 +527,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>HardTokenPropertyData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>HardTokenPropertyData</table-name>
       <field-map>
@@ -547,7 +547,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>ApprovalData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>ApprovalData</table-name>
       <field-map>
@@ -607,7 +607,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>HardTokenProfileData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>HardTokenProfileData</table-name>
       <field-map>
@@ -631,7 +631,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>UserData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>UserData</table-name>
       <field-map>
@@ -707,7 +707,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>HardTokenData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>HardTokenData</table-name>
       <field-map>
@@ -743,7 +743,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>OldLogConfigurationData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>LogConfigurationData</table-name>
       <field-map>
@@ -763,7 +763,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>ProtectedLogTokenData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>ProtectedLogTokenData</table-name>
       <field-map>
@@ -791,7 +791,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>CAData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>CAData</table-name>
       <field-map>
@@ -827,7 +827,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>TableProtectData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>TableProtectData</table-name>
       <field-map>
@@ -879,7 +879,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>AdminGroupData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>AdminGroupData</table-name>
       <field-map>
@@ -899,7 +899,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>HardTokenCertificateMap</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>HardTokenCertificateMap</table-name>
       <field-map>
@@ -915,7 +915,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>AdminEntityData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>AdminEntityData</table-name>
       <field-map>
@@ -939,7 +939,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>PublisherData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>PublisherData</table-name>
       <field-map>
@@ -963,7 +963,7 @@
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
       <ejb-name>CertificateProfileData</ejb-name>
-      <data-source-name>EjbcaDS</data-source-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
       <table-name>CertificateProfileData</table-name>
       <field-map>
