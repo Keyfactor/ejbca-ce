@@ -61,6 +61,13 @@ Create tables in the database configured for EjbcaPool and EjbcaDS in Weblogic.
   select table_name from user_tables;
 - In Weblogic9, you only create a 'Data Source', no Pools exists any longer.
 - Don't forget to apply a Target for your DataSource.
+- Example EjbcaDS in Weblogic 9.2:
+-- URL: jdbc:bea:oracle://127.0.0.1:1521
+-- Driver: weblogic.jdbcx.oracle.OracleDataSource
+-- Properties: user=weblogic
+               portNumber=1521
+               SID=XE
+               serverName=127.0.0.1
 
 See the file create-tables-ejbca3-oracle.sql for table definitions, or just run /doc/howto/create-tables-ejbca3-oracle.sql for Oracle.
 
