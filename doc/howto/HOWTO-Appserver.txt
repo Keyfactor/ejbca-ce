@@ -338,6 +338,12 @@ Developer: Creating deployment descriptors for Weblogic 9:
 XDoclet can only make descriptors for Weblogic 8.x, not 9.x. To generate this decriptor enable the 
 'weblogic' task in target 'run-xdoc' in compile.xmli, and then do ant.
 
+When new beans have been added or data fields have been changed in data beans, the two Weblogic xml files 
+in src/deploy/weblogic must be generated:
+- weblogic-ejb-jar.xml
+- weblogic-cmp-rdbms-jar.xml
+Only the rdbms file need manual editing, the XDoclet generated weblogic-ejb-jar.xml can be used without modifications.
+
 In the generated tmp/bin/dd/META-INF/weblogic-cmp-rdbms-jar.xml, remove the DTD line and replace:
   <weblogic-rdbms-jar>
 with:
@@ -351,6 +357,11 @@ After this you remove all sections:
   <weblogic-query>
   ...
   </weblogic-query>
+
+Replace all:
+<data-source-name>EjbcaDS</data-source-name>
+with:
+<data-source-jndi-name>EjbcaDS</data-source-jndi-name>
 
 Last you remove the options in the end:
    <order-database-operations>True</order-database-operations>
