@@ -72,7 +72,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.36 2008-01-04 13:27:23 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.37 2008-01-14 12:51:32 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -577,8 +577,7 @@ public class TestSignSession extends TestCase {
         X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "swede", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
-        assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"));
+        assertEquals("Wrong DN med swedechars", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"), CertTools.getSubjectDN(cert));
 //        FileOutputStream fos = new FileOutputStream("/tmp/swedecert.crt");
 //        fos.write(cert.getEncoded());
 //        fos.close();
