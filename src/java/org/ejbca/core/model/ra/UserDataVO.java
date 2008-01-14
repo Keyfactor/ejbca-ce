@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.11 2008-01-03 12:52:41 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.12 2008-01-14 14:04:13 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -75,6 +75,7 @@ public class UserDataVO implements Serializable {
      * be set amnually though. This is so you should be sure what you do with the password.
      *
      * @param user DOCUMENT ME!
+     * @param caid CA id of the CA that the user is registered with
      * @param dn DOCUMENT ME!
      * @param subjectaltname DOCUMENT ME!
      * @param email DOCUMENT ME!
@@ -112,6 +113,7 @@ public class UserDataVO implements Serializable {
      * 
      * @param user 
      * @param dn 
+     * @param caid CA id of the CA that the user is registered with
      * @param subjectaltname 
      * @param email 
      * @param type one of SecConst.ENDUSER || ...
