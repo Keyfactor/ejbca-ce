@@ -158,7 +158,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.24 2008-01-04 08:55:20 jeklund Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.25 2008-01-14 10:33:13 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -245,6 +245,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public Properties getProperties(Class logDeviceClass) {
         Iterator i = logdevices.iterator();
@@ -259,6 +260,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     
     /**
      * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
      */
     public Collection getAvailableLogDevices() {
     	ArrayList ret = new ArrayList();
@@ -276,6 +278,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     /**
      * Replace existing devices with new ones. Used for testing.
      * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
      */
     public void setTestDevice(Class implClass, Properties properties) {
     	try {
@@ -308,6 +311,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     /**
      * Replace test device with original ones. Used for testing.
      * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
      */
     public void restoreTestDevice() {
         ILogDevice dev = (ILogDevice) logdevices.iterator().next();

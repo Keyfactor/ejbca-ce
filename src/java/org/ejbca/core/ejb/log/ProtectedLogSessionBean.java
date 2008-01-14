@@ -1825,6 +1825,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Temporary halts the verification and export services
 	 * @return true if successful
 	 * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
 	 */
 	public boolean stopServices() {
 		// Disable services first.
@@ -1867,6 +1868,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Restarts the verification and export services
 	 * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
 	 */
 	public void startServices() {
 		// Enable services again
