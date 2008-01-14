@@ -363,6 +363,11 @@ Replace all:
 with:
 <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
 
+For LogEntryData:
+<dbms-column>comment</dbms-column>
+must be:
+<dbms-column>comment_</dbms-column>
+
 Last you remove the options in the end:
    <order-database-operations>True</order-database-operations>
    <enable-batch-operations>True</enable-batch-operations>
