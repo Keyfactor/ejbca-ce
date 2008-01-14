@@ -51,7 +51,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests Delta CRLs.
  *
- * @version $Id: TestDeltaCRL.java,v 1.2 2008-01-04 13:26:18 anatom Exp $
+ * @version $Id: TestDeltaCRL.java,v 1.3 2008-01-14 09:18:55 jeklund Exp $
  */
 public class TestDeltaCRL extends TestCase {
 
@@ -109,7 +109,7 @@ public class TestDeltaCRL extends TestCase {
         ICAAdminSessionRemote casession = cahome.create();
         // Use Test CA created before
         CAInfo cainfo = casession.getCAInfo(admin, "TEST");
-        assertNotNull("CA TEST not active. You must run TestCAs before this test");
+        assertNotNull("CA TEST not active. You must run TestCAs before this test", cainfo);
         cadn = cainfo.getSubjectDN();
         caid = cainfo.getCAId();
         log.debug("<setUp()");
@@ -201,9 +201,10 @@ public class TestDeltaCRL extends TestCase {
         X509Certificate cert = createUserAndCert();
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);        
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         // Create a new CRL again...
         remote.runDeltaCRL(admin, cadn);
+        Thread.sleep(2000);
         // Check that our newly signed certificate is present in a new CRL
         crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
