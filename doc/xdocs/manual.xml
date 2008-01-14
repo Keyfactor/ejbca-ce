@@ -1616,6 +1616,15 @@ bin/ejbca.sh ra setclearpwd $username $userpass
 <source>
 bin/ejbca.sh batch
 </source>
+<p>
+The same can be accomplished using a browser:
+<ul>
+<li>Admin GUI - List/Edit End Entities - View_Certificates for user - Revoke the certificate with revocation reason</li>
+<li>Admin GUI - List/Edit End Entities - View_Certificates for user - Recover Key, Close</li>
+<li>Admin GUI - List/Edit End Entities - Edit_End_Entity for user - Enter new password for user, Save</li>
+<li>Public Web - Create Keystore - Enter username and password - Fetch the keystore</li>
+</ul>
+</p>
 </section>
 
 <section name="Email notifications">
