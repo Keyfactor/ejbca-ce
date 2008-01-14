@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <weblogic-application xmlns="http://www.bea.com/ns/weblogic/90">
+    <application-param>
+      <param-name>webapp.encoding.default</param-name>
+      <param-value>UTF-8</param-value>
+    </application-param>
+    <prefer-application-packages>
+      <package-name>javax.jws.*</package-name>
+    </prefer-application-packages>
+</weblogic-application>
