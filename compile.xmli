@@ -213,6 +213,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     <target name="wls-dd-postprocess" if="weblogic.version9">
          <!-- If we are using weblogic 9.x, we must replace the generated cmp-mappings file with a manually created one -->
 		<copy  file="${mainsrc}/deploy/weblogic/weblogic-cmp-rdbms-jar.xml" tofile="${src.dd}/META-INF/weblogic-cmp-rdbms-jar.xml" overwrite="true" failonerror="true"/>
+		<copy  file="${mainsrc}/deploy/weblogic/weblogic-ejb-jar.xml" tofile="${src.dd}/META-INF/weblogic-ejb-jar.xml" overwrite="true" failonerror="true"/>
     </target>
     
     <!-- =================================================================== -->
