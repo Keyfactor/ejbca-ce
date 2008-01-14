@@ -43,6 +43,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.Base64;
@@ -55,7 +56,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test must be run in normal mode (default mode)
  * 
  * @author tomas
- * @version $Id: CrmfRequestTest.java,v 1.16 2008-01-11 13:15:20 anatom Exp $
+ * @version $Id: CrmfRequestTest.java,v 1.17 2008-01-14 15:35:12 anatom Exp $
  *
  */
 public class CrmfRequestTest extends CmpTestCase {
@@ -241,8 +242,11 @@ public class CrmfRequestTest extends CmpTestCase {
         // Make user that we know...
         boolean userExists = false;
 		userDN = "C=SE,O=PrimeKey,CN=cmptest";
+    	UserDataVO user = new UserDataVO("cmptest", "UserDN", caid, null, "cmptest@primekey.se",SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+    	user.setPassword("foo123");
         try {
-            usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+        	usersession.addUser(admin, user, false);
+            //usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: cmptest, foo123, "+userDN);
         } catch (Exception e) {
         	userExists = true;
@@ -250,6 +254,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         if (userExists) {
             log.debug("User cmptest already exists.");
+            usersession.changeUser(admin, user, false);
             usersession.setUserStatus(admin,"cmptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
