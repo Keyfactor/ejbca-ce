@@ -27,7 +27,6 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.CertTools;
 
 /**
@@ -35,7 +34,7 @@ import org.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.3 2007-12-04 14:23:02 jeklund Exp $
+ * @version $Id: Authorizer.java,v 1.4 2008-01-14 17:38:38 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable {
     
