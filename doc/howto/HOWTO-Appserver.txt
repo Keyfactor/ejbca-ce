@@ -33,7 +33,8 @@ ejbcaws.enabled=false
 
 Default http port of Weblogic is 7001, default of EJBCA on JBoss is 8080.
 Default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
-Disabling ejbcaws must be done until we have fixed JaxWS configuration for weblogic.
+Disabling ejbcaws must be done until we have fixed JaxWS configuration for weblogic. 
+See https://jira.primekey.se/browse/ECA-687, tips are welcome.
 
 Edit conf/xkms.properties and change/set some values:
 xkms.enabled=false
