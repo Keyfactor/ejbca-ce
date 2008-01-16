@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.19 2008-01-14 14:03:57 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.20 2008-01-16 15:38:45 thamwickenberg Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -180,7 +180,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             if (cainfo == null) {
                 throw new CADoesntExistsException("CA not found: "+issuerdn);
             }
-            int crlperiod = cainfo.getCRLPeriod();
+            long crlperiod = cainfo.getCRLPeriod();
             // Find all revoked certificates for a complete CRL
             Collection revcerts = store.listRevokedCertInfo(admin, issuerdn, -1);
             debug("Found "+revcerts.size()+" revoked certificates.");
@@ -252,21 +252,15 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	try {
     		ICAAdminSessionLocal caadmin = caadminHome.create();
     		ICertificateStoreSessionLocal store = storeHome.create();
-
     		CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     		if (cainfo == null) {
     			throw new CADoesntExistsException("CA not found: "+issuerdn);
     		}
-    		int crlperiod = cainfo.getDeltaCRLPeriod();
     		CRLInfo basecrlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(), false);
     		// Find all revoked certificates
     		Collection revcertinfos = store.listRevokedCertInfo(admin, issuerdn, basecrlinfo.getCreateDate().getTime());
     		debug("Found "+revcertinfos.size()+" revoked certificates.");
-
     		// Go through them and create a CRL, at the same time archive expired certificates
-    		Date now = new Date();
-    		// crlperiod is hours = crlperiod*60*60*1000 milliseconds
-    		now.setTime(now.getTime() - (crlperiod * 60 * 60 * 1000));
     		ArrayList certs = new ArrayList();
     		Iterator iter = revcertinfos.iterator();
     		while (iter.hasNext()) {

@@ -22,6 +22,7 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -38,165 +39,183 @@ import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.CrlExtensions;
 
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.1 2007-12-21 09:02:15 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.2 2008-01-16 15:38:44 thamwickenberg Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
-    private static Logger log = Logger.getLogger(TestCreateCRLSession.class);
-    private static Context ctx;
-    private static ICreateCRLSessionHome home;
-    private static ICreateCRLSessionRemote remote;
-    private static ICertificateStoreSessionHome storehome;
-    private static ICertificateStoreSessionRemote storeremote;
-    private static IUserAdminSessionRemote usersession;
-    private static ISignSessionRemote signsession;
-    private static Admin admin;
-    private static int caid;
-    private static String cadn;
+	private static Logger log = Logger.getLogger(TestCreateCRLSession.class);
+	private static Context ctx;
+	private static ICreateCRLSessionHome home;
+	private static ICreateCRLSessionRemote crlSession;
+	private static ICertificateStoreSessionHome storehome;
+	private static ICertificateStoreSessionRemote storeremote;
+	private static ICAAdminSessionRemote casession;
+	private static IUserAdminSessionRemote usersession;
+	private static ISignSessionRemote signsession;
+	private static IRaAdminSessionRemote rasession;
+	private static Admin admin;
+	private static int caid;
+	private static String cadn;
+	private static final String TESTUSERNAME = "TestCreateCRLSessionUser";
+	private static final String TESTPROFILE = "TestCreateCRLSessionProfile";	
 
-    /**
-     * Creates a new TestCreateCRLSession object.
-     *
-     * @param name name
-     */
-    public TestCreateCRLSession(String name) {
-        super(name);
-    }
+	/**
+	 * Creates a new TestCreateCRLSession object.
+	 *
+	 * @param name name
+	 */
+	public TestCreateCRLSession(String name) {
+		super(name);
+	}
 
-    protected void setUp() throws Exception {
-        log.debug(">setUp()");
-        CertTools.installBCProvider();
+	protected void setUp() throws Exception {
+		log.debug(">setUp()");
+		CertTools.installBCProvider();
 
-        ctx = getInitialContext();
+		ctx = getInitialContext();
 
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
+		admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-        Object obj = ctx.lookup("CreateCRLSession");
-        home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICreateCRLSessionHome.class);
-        remote = home.create();
+		Object obj = ctx.lookup("CreateCRLSession");
+		home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICreateCRLSessionHome.class);
+		crlSession = home.create();
 
-        Object obj1 = ctx.lookup("CertificateStoreSession");
-        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        storeremote = storehome.create();
-        
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
+		Object obj1 = ctx.lookup("CertificateStoreSession");
+		storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+		storeremote = storehome.create();
 
-        obj = ctx.lookup("RSASignSession");
-        ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        signsession = signhome.create();
+		obj = ctx.lookup("UserAdminSession");
+		IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
+		usersession = userhome.create();
 
-        obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-            CAInfo cainfo = casession.getCAInfo(admin, caid);
-            cadn = cainfo.getSubjectDN();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
+		obj = ctx.lookup("RSASignSession");
+		ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
+		signsession = signhome.create();
 
+		obj = ctx.lookup("CAAdminSession");
+		ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
+		casession = cahome.create();
+		Collection caids = casession.getAvailableCAs(admin);
+		Iterator iter = caids.iterator();
+		if (iter.hasNext()) {
+			caid = ((Integer) iter.next()).intValue();
+			CAInfo cainfo = casession.getCAInfo(admin, caid);
+			cadn = cainfo.getSubjectDN();
+		} else {
+			assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+		}
 
-        log.debug("<setUp()");
-    }
+		obj = ctx.lookup(IRaAdminSessionHome.JNDI_NAME);
+		IRaAdminSessionHome raadminhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
+		rasession = raadminhome.create(); 
 
-    protected void tearDown() throws Exception {
-    }
+		log.debug("<setUp()");
+	}
 
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+	protected void tearDown() throws Exception {
+	}
 
-        return ctx;
-    }
+	private Context getInitialContext() throws NamingException {
+		log.debug(">getInitialContext");
+		Context ctx = new javax.naming.InitialContext();
+		log.debug("<getInitialContext");
 
-    /**
-     * creates new crl
-     *
-     * @throws Exception error
-     */
-    public void test01CreateNewCRL() throws Exception {
-        log.debug(">test01CreateNewCRL()");
-        remote.run(admin, cadn);
-        log.debug("<test01CreateNewCRL()");
-    }
+		return ctx;
+	}
 
-    /**
-     * gets last crl
-     *
-     * @throws Exception error
-     */
-    public void test02LastCRL() throws Exception {
-        log.debug(">test02LastCRL()");
-        // Get number of last CRL
-        int number = storeremote.getLastCRLNumber(admin, cadn, false);
-        log.debug("Last CRLNumber = " + number);
-        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
-        assertNotNull("Could not get CRL", crl);
-        X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-        BigInteger num = CrlExtensions.getCrlNumber(x509crl);
-        // Create a new CRL again to see that the number increases
-        remote.run(admin, cadn);
-        int number1 = storeremote.getLastCRLNumber(admin, cadn, false);
-        assertEquals(number+1, number1);
-        byte[] crl1 = storeremote.getLastCRL(admin, cadn, false);
-        X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
-        BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
-        assertEquals(num.intValue()+1, num1.intValue());
-        log.debug("<test02LastCRL()");
-    }
+	/**
+	 * creates new crl
+	 *
+	 * @throws Exception error
+	 */
+	public void test01CreateNewCRL() throws Exception {
+		log.debug(">test01CreateNewCRL()");
+		crlSession.run(admin, cadn);
+		log.debug("<test01CreateNewCRL()");
+	}
 
-    /**
-     * check revoked certificates
-     *
-     * @throws Exception error
-     */
-    public void test03CheckNumberofRevokedCerts() throws Exception {
-        log.debug(">test03CheckNumberofRevokedCerts()");
+	/**
+	 * gets last crl
+	 *
+	 * @throws Exception error
+	 */
+	public void test02LastCRL() throws Exception {
+		log.debug(">test02LastCRL()");
+		// Get number of last CRL
+		int number = storeremote.getLastCRLNumber(admin, cadn, false);
+		log.debug("Last CRLNumber = " + number);
+		byte[] crl = storeremote.getLastCRL(admin, cadn, false);
+		assertNotNull("Could not get CRL", crl);
+		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+		BigInteger num = CrlExtensions.getCrlNumber(x509crl);
+		// Create a new CRL again to see that the number increases
+		crlSession.run(admin, cadn);
+		int number1 = storeremote.getLastCRLNumber(admin, cadn, false);
+		assertEquals(number+1, number1);
+		byte[] crl1 = storeremote.getLastCRL(admin, cadn, false);
+		X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
+		BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
+		assertEquals(num.intValue()+1, num1.intValue());
+		log.debug("<test02LastCRL()");
+	}
 
-        // Get number of last CRL
-        Collection revfp = storeremote.listRevokedCertInfo(admin, cadn, -1);
-        log.debug("Number of revoked certificates=" + revfp.size());
-        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
-        assertNotNull("Could not get CRL", crl);
+	/**
+	 * check revoked certificates
+	 *
+	 * @throws Exception error
+	 */
+	public void test03CheckNumberofRevokedCerts() throws Exception {
+		log.debug(">test03CheckNumberofRevokedCerts()");
 
-        X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-        Set revset = x509crl.getRevokedCertificates();
-        int revsize = 0;
+		// Get number of last CRL
+		Collection revfp = storeremote.listRevokedCertInfo(admin, cadn, -1);
+		log.debug("Number of revoked certificates=" + revfp.size());
+		byte[] crl = storeremote.getLastCRL(admin, cadn, false);
+		assertNotNull("Could not get CRL", crl);
 
-        if (revset != null) {
-            revsize = revset.size();
-            assertEquals(revfp.size(), revsize);
-        }
-        log.debug("<test03CheckNumberofRevokedCerts()");
-    }
+		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+		Set revset = x509crl.getRevokedCertificates();
+		int revsize = 0;
 
-    /**
-     * Test revocation and un-revokation of certificates
-     *
-     * @throws Exception error
-     */
-    public void test04RevokeAndUnrevoke() throws Exception {
+		if (revset != null) {
+			revsize = revset.size();
+			assertEquals(revfp.size(), revsize);
+		}
+		log.debug("<test03CheckNumberofRevokedCerts()");
+	}
+
+	/**
+	 * Test revocation and un-revokation of certificates
+	 *
+	 * @throws Exception error
+	 */
+	public void test04RevokeAndUnrevoke() throws Exception {
         log.debug(">test04RevokeAndUnrevoke()");
 
         // Make user that we know...
@@ -222,8 +241,8 @@ public class TestCreateCRLSession extends TestCase {
         log.debug("Cert=" + cert.toString());
 
         // Create a new CRL again...
-        remote.run(admin, cadn);
-        // Check that our newloy signed certificate is not present in a new CRL
+        crlSession.run(admin, cadn);
+        // Check that our newly signed certificate is not present in a new CRL
         byte[] crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -238,7 +257,7 @@ public class TestCreateCRLSession extends TestCase {
 
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
         // Create a new CRL again...
-        remote.run(admin, cadn);
+        crlSession.run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
         crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
@@ -259,7 +278,7 @@ public class TestCreateCRLSession extends TestCase {
         // Unrevoke the certificate that we just revoked
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
         // Create a new CRL again...
-        remote.run(admin, cadn);
+        crlSession.run(admin, cadn);
         // Check that our newly signed certificate IS NOT present in the new CRL.
         crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
@@ -279,7 +298,7 @@ public class TestCreateCRLSession extends TestCase {
 
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
         // Create a new CRL again...
-        remote.run(admin, cadn);
+        crlSession.run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
         crl = storeremote.getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
@@ -298,7 +317,7 @@ public class TestCreateCRLSession extends TestCase {
 
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
         // Create a new CRL again...
-        remote.run(admin, cadn);
+        crlSession.run(admin, cadn);
         // Check that our newly signed certificate is present in the new CRL, because the revocation reason
         // was not CERTIFICATE_HOLD, we can only un-revoke certificates that are on hold.
         crl = storeremote.getLastCRL(admin, cadn, false);
@@ -317,25 +336,126 @@ public class TestCreateCRLSession extends TestCase {
         log.debug("<test04RevokeAndUnrevoke()");
     }
 
-    // 
-    // Helper methods
-    //
-    
-    /**
-     * Generates a RSA key pair.
-     *
-     * @return KeyPair the generated key pair
-     *
-     * @throws Exception if en error occurs...
-     */
-    private static KeyPair genKeys() throws Exception {
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
-        keygen.initialize(512);
-        log.debug("Generating keys, please wait...");
-        KeyPair rsaKeys = keygen.generateKeyPair();
-        log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
-                ((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());
+	/**
+	 * Test Overflow of CRL Period
+	 *
+	 * @throws Exception error
+	 */
+	public void test05CRLPeriodOverflow() throws Exception {
+		log.debug(">test05CRLPeriodOverflow()");
+		// Fetch CAInfo and save CRLPeriod
+		CAInfo cainfo = casession.getCAInfo(admin, caid);
+		int tempCRLPeriod = cainfo.getCRLPeriod();
+		try {
+			// Create a user that Should be revoked
+			boolean userExists = false;
+			try {
+				int certprofileid = 0;
+				// add a Certificate Profile with overridable validity
+				try {
+					CertificateProfile certProfile = new CertificateProfile();
+					certProfile.setAllowValidityOverride(true);
+					storeremote.addCertificateProfile(admin, TESTPROFILE, certProfile);
+				} catch (CertificateProfileExistsException cpeee) {
+				} 
+				certprofileid = storeremote.getCertificateProfileId(admin, TESTPROFILE);
+				assertTrue(certprofileid != 0);
+				// add End Entity Profile with validity limitations
+				EndEntityProfile profile;
+				try {
+					rasession.removeEndEntityProfile(admin, TESTPROFILE);
+					profile = new EndEntityProfile();
+					profile.setUse(EndEntityProfile.ENDTIME, 0, true);
+					profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD,0,false);
+					profile.setValue(EndEntityProfile.CLEARTEXTPASSWORD,0,EndEntityProfile.FALSE);
+					profile.setValue(EndEntityProfile.AVAILCAS, 0, new Integer(caid).toString());
+					profile.setUse(EndEntityProfile.STARTTIME, 0, true);
+					profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, new Integer(certprofileid).toString());
+					profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, new Integer(certprofileid).toString());
+					rasession.addEndEntityProfile(admin, TESTPROFILE, profile);
+				} catch (EndEntityProfileExistsException pee) {
+				}
+				// Create a new user
+				ExtendedInformation ei = new ExtendedInformation();
+				ei.setCustomData(EndEntityProfile.STARTTIME, "0:00:00");
+				ei.setCustomData(EndEntityProfile.ENDTIME, "0:00:50");
+				UserDataVO userdata = new UserDataVO(TESTUSERNAME, "CN="+TESTUSERNAME, caid, "","foo@bar.se",  UserDataConstants.STATUS_NEW, 
+						SecConst.USER_ENDUSER, rasession.getEndEntityProfileId(admin, TESTPROFILE), 
+						certprofileid, new Date(), new Date() , SecConst.TOKEN_SOFT_PEM , 0, ei);
+				userdata.setPassword("foo123");
+				try {
+					usersession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+				} catch (NotFoundException nfe ){
+				}
+				usersession.addUser(admin, userdata, false);
+				log.debug("created user");
+			} catch (RemoteException re) {
+				re.printStackTrace();
+				userExists = true;
+			} catch (DuplicateKeyException dke) {
+				userExists = true;
+			}
+			if (userExists) {
+				log.info("User testCRLPeriod already exists, resetting status.");
+				usersession.setUserStatus(admin,TESTUSERNAME,UserDataConstants.STATUS_NEW);
+				log.debug("Reset status to NEW");
+			}
+			KeyPair keys = genKeys();
+			// user that we know exists...
+			X509Certificate cert = (X509Certificate)signsession.createCertificate(admin, TESTUSERNAME, "foo123", keys.getPublic());
+			assertNotNull("Failed to create certificate", cert);
+			log.debug("Cert=" + cert.toString());
+			// Revoke the user
+			storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+			// Change CRLPeriod
+			cainfo.setCRLPeriod(Integer.MAX_VALUE);
+			casession.editCA(admin, cainfo);
+			// Create new CRL's
+			crlSession.run(admin, cadn);
+			//Verify that status is not archived
+			CertificateInfo certinfo = storeremote.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+			assertFalse("Non Expired Revoked Certificate was archived",certinfo.getStatus() == CertificateDataBean.CERT_ARCHIVED);
+		} finally {
+			// Restore CRL Period
+			cainfo.setCRLPeriod(tempCRLPeriod);
+			casession.editCA(admin, cainfo); 
+			// Delete and revoke User
+			usersession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+			// Delete end entity profile
+			try{
+				storeremote.removeCertificateProfile(admin, TESTPROFILE);
+			} catch (RemoteException e )
+			{
+				log.error("Could not remove Certificate Profile");
+			}
+				// Delete certificate profile
+			try {
+				rasession.removeEndEntityProfile(admin, TESTPROFILE);
+			} catch (Exception e ) {
+				log.error("Could not remove End Entity Profile");
+			}
+		}
+	}
 
-        return rsaKeys;
-    } // genKeys
+	// 
+	// Helper methods
+	//
+
+	/**
+	 * Generates a RSA key pair.
+	 *
+	 * @return KeyPair the generated key pair
+	 *
+	 * @throws Exception if en error occurs...
+	 */
+	private static KeyPair genKeys() throws Exception {
+		KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
+		keygen.initialize(512);
+		log.debug("Generating keys, please wait...");
+		KeyPair rsaKeys = keygen.generateKeyPair();
+		log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
+				((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());
+
+		return rsaKeys;
+	} // genKeys
 }
