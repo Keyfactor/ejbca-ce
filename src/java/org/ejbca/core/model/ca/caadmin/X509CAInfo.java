@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.14 2007-12-21 09:02:51 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.15 2008-01-18 15:08:24 nponte Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -46,6 +46,8 @@ public class X509CAInfo extends CAInfo{
   private boolean useUTF8PolicyText;
   private boolean usePrintableStringSubjectDN;
   private boolean useLdapDNOrder;
+  private boolean useCrlDistributionPointOnCrl;
+  private boolean crlDistributionPointOnCrlCritical;
     
     /**
      * Constructor that should be used when creating CA and retreiving CA info.
@@ -56,7 +58,8 @@ public class X509CAInfo extends CAInfo{
                     Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
-                    Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder) {
+                    Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
+                    boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -108,6 +111,8 @@ public class X509CAInfo extends CAInfo{
         this.numOfReqApprovals = numOfReqApprovals;
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
         this.useLdapDNOrder = useLdapDnOrder;
+        this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
+        this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
     }
 
     /**
@@ -119,7 +124,8 @@ public class X509CAInfo extends CAInfo{
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl,
                       boolean finishuser, Collection extendedcaserviceinfos, 
-                      boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder) {        
+                      boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
+                      boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -144,6 +150,8 @@ public class X509CAInfo extends CAInfo{
         this.numOfReqApprovals = numOfReqApprovals;
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
         this.useLdapDNOrder = useLdapDnOrder;
+        this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
+        this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
     }  
   
   
@@ -166,14 +174,21 @@ public class X509CAInfo extends CAInfo{
   public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical)
                 {this.authoritykeyidentifiercritical=authoritykeyidentifiercritical;}
   
-  
   public String getDefaultCRLDistPoint(){ return defaultcrldistpoint; }
+
+  public void setDefaultCRLDistPoint(String defaultCRLDistPoint) {
+      this.defaultcrldistpoint = defaultCRLDistPoint;
+  }
   
   public String getDefaultCRLIssuer(){ return defaultcrlissuer; }
   
   public String getDefaultOCSPServiceLocator(){ return defaultocsplocator; }
   
   public String getCADefinedFreshestCRL(){ return this.cadefinedfreshestcrl; }
+
+  public void setCADefinedFreshestCRL(String cADefinedFreshestCRL) {
+      this.cadefinedfreshestcrl = cADefinedFreshestCRL;
+  }
 
   public String getSubjectAltName(){ return subjectaltname; }
   
@@ -183,5 +198,16 @@ public class X509CAInfo extends CAInfo{
   
   public boolean getUseLdapDnOrder() { return useLdapDNOrder; }
 
-  
+  public boolean getUseCrlDistributionPointOnCrl() {
+      return this.useCrlDistributionPointOnCrl;
+  }
+
+  public void setUseCrlDistributionPointOnCrl(boolean useCrlDistributionPointOnCrl) {
+      this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
+  }
+
+  public boolean getCrlDistributionPointOnCrlCritical() {
+      return this.crlDistributionPointOnCrlCritical;
+  }
+
 }

@@ -199,7 +199,9 @@ public class TestCAImportExport extends TestCase  {
                 new ArrayList(), // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
-                true // Use LDAP DN order by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false  // CRL Distribution Point on CRL critical
                 );
 		return cainfo;
 	}

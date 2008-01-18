@@ -48,7 +48,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.27 2007-12-21 09:02:16 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.28 2008-01-18 15:08:26 nponte Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -170,7 +170,9 @@ public class TestCAs extends TestCase {
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
-            		true // Use LDAP DN order by default
+            		true, // Use LDAP DN order by default
+            		false, // Use CRL Distribution Point on CRL
+            		false  // CRL Distribution Point on CRL critical
             		);
 
             cacheAdmin.createCA(admin, cainfo);
@@ -307,7 +309,9 @@ public class TestCAs extends TestCase {
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
-                    true // Use LDAP DN order by default
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false  // CRL Distribution Point on CRL critical
                     );
 
 
@@ -410,7 +414,9 @@ public class TestCAs extends TestCase {
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default 
-                    true // Use LDAP DN order by default
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false  // CRL Distribution Point on CRL critical
                     );
 
             cacheAdmin.createCA(admin, cainfo);
@@ -510,7 +516,9 @@ public class TestCAs extends TestCase {
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
-                    true // Use LDAP DN order by default
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false  // CRL Distribution Point on CRL critical
                     );
 
             cacheAdmin.createCA(admin, cainfo);
@@ -600,7 +608,9 @@ public class TestCAs extends TestCase {
             		new ArrayList(), // Approvals Settings
             		1, // Number of Req approvals
             		false, // Use UTF8 subject DN by default
-                    true // Use LDAP DN order by default
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false  // CRL Distribution Point on CRL critical
                     );
 
             cacheAdmin.createCA(admin, cainfo);
@@ -693,7 +703,9 @@ public class TestCAs extends TestCase {
             		new ArrayList(), // Approvals Settings
             		1, // Number of Req approvals
             		false, // Use UTF8 subject DN by default
-                    false // Use X500 DN order
+                    false, // Use X500 DN order
+                    false, // Use CRL Distribution Point on CRL
+                    false  // CRL Distribution Point on CRL critical
                     );
 
             cacheAdmin.createCA(admin, cainfo);

@@ -112,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.68 2008-01-07 13:06:01 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.69 2008-01-18 15:08:24 nponte Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1635,7 +1635,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		                                   new ArrayList(), // Approvals Settings
 		                                   1, // Number of Req approvals
 		                                   false, // Use UTF8 subject DN by default
-		                                   true // Use LDAP DN order by default
+		                                   true, // Use LDAP DN order by default
+		                                   false,  // Use CRL Distribution Point on CRL
+		                                   false  // CRL Distribution Point on CRL critical
 		                                   );
 		X509CA ca = new X509CA(cainfo);
 		// We must activate the token, in case it does not have the default password

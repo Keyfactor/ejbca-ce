@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.crl;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
@@ -33,6 +34,14 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
@@ -48,6 +57,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -65,7 +75,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.2 2008-01-16 15:38:44 thamwickenberg Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.3 2008-01-18 15:08:25 nponte Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -437,7 +447,51 @@ public class TestCreateCRLSession extends TestCase {
 		}
 	}
 
-	// 
+    /**
+     * Tests the extension CRL Distribution Point on CRLs
+     *
+     * @throws Exception error
+     */
+    public void test06CRLDistPointOnCRL() throws Exception {
+        log.debug(">test06CRLDistPointOnCRL()");
+
+        final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
+        X509CAInfo cainfo = (X509CAInfo) casession.getCAInfo(admin, caid);
+        X509CRL x509crl;
+        byte [] cdpDER;
+
+        cainfo.setUseCrlDistributionPointOnCrl(true);
+        cainfo.setDefaultCRLDistPoint(cdpURL);
+        casession.editCA(admin, cainfo);
+        crlSession.run(admin, cadn);
+        x509crl = CertTools.getCRLfromByteArray(storeremote.getLastCRL(admin, cadn, false));
+        cdpDER = x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId());
+        assertNotNull("CRL has no distribution points", cdpDER);
+
+        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
+        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+        CRLDistPoint cdp = new CRLDistPoint((ASN1Sequence) aIn.readObject());
+        DistributionPoint[] distpoints = cdp.getDistributionPoints();
+
+        assertEquals("More CRL distributions points than expected", 1, distpoints.length);
+        assertEquals("CRL distribution point is different",
+                     cdpURL,
+                     ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint().getName()).getNames()[0].getName()).getString());
+
+        cainfo.setUseCrlDistributionPointOnCrl(false);
+        cainfo.setDefaultCRLDistPoint("");
+        casession.editCA(admin, cainfo);
+        crlSession.run(admin, cadn);
+        x509crl =
+            CertTools.getCRLfromByteArray(storeremote.getLastCRL(admin, cadn, false));
+        assertNull("CRL has distribution points",
+                   x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
+
+        log.debug("<test06CRLDistPointOnCRL()");
+    }
+
+    // 
 	// Helper methods
 	//
 

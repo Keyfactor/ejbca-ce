@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.87 2008-01-11 13:15:21 anatom Exp $
+ * @version $Id: X509CA.java,v 1.88 2008-01-18 15:08:24 nponte Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -134,7 +134,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = 14;
+    public static final float LATEST_VERSION = 15;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -153,6 +153,8 @@ public class X509CA extends CA implements Serializable {
     protected static final String USEUTF8POLICYTEXT              = "useutf8policytext";
     protected static final String USEPRINTABLESTRINGSUBJECTDN    = "useprintablestringsubjectdn";
     protected static final String USELDAPDNORDER                 = "useldapdnorder";
+    protected static final String USECRLDISTRIBUTIONPOINTONCRL   = "usecrldistributionpointoncrl";
+    protected static final String CRLDISTRIBUTIONPOINTONCRLCRITICAL = "crldistributionpointoncrlcritical";
 
     // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
@@ -172,7 +174,9 @@ public class X509CA extends CA implements Serializable {
       setUseUTF8PolicyText(cainfo.getUseUTF8PolicyText());
       setUsePrintableStringSubjectDN(cainfo.getUsePrintableStringSubjectDN());
       setUseLdapDNOrder(cainfo.getUseLdapDnOrder());
-      
+      setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
+      setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
+
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
     }
@@ -194,7 +198,8 @@ public class X509CA extends CA implements Serializable {
         		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
-        		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder());
+        		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder(),
+        		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical());
         super.setCAInfo(info);
     }
 
@@ -286,6 +291,22 @@ public class X509CA extends CA implements Serializable {
     	  data.put(USELDAPDNORDER, Boolean.valueOf(useldapdnorder));
       }
 
+      public boolean getUseCrlDistributionPointOnCrl() {
+          return ((Boolean)data.get(USECRLDISTRIBUTIONPOINTONCRL)).booleanValue();
+      }
+
+      public void setUseCrlDistributionPointOnCrl(boolean useCrlDistributionPointOnCrl) {
+          data.put(USECRLDISTRIBUTIONPOINTONCRL, Boolean.valueOf(useCrlDistributionPointOnCrl));
+      }
+
+      public boolean getCrlDistributionPointOnCrlCritical() {
+          return ((Boolean)data.get(CRLDISTRIBUTIONPOINTONCRLCRITICAL)).booleanValue();
+      }
+
+      public void setCrlDistributionPointOnCrlCritical(boolean crlDistributionPointOnCrlCritical) {
+          data.put(CRLDISTRIBUTIONPOINTONCRLCRITICAL, Boolean.valueOf(crlDistributionPointOnCrlCritical));
+      }
+
       public void updateCA(CAInfo cainfo) throws Exception{
     	  super.updateCA(cainfo); 
     	  X509CAInfo info = (X509CAInfo) cainfo;
@@ -301,6 +322,8 @@ public class X509CA extends CA implements Serializable {
     	  setUseUTF8PolicyText(info.getUseUTF8PolicyText());
           setUsePrintableStringSubjectDN(info.getUsePrintableStringSubjectDN());
           setUseLdapDNOrder(info.getUseLdapDnOrder());
+          setUseCrlDistributionPointOnCrl(info.getUseCrlDistributionPointOnCrl());
+          setCrlDistributionPointOnCrlCritical(info.getCrlDistributionPointOnCrlCritical());
       }
     
 
@@ -677,12 +700,12 @@ public class X509CA extends CA implements Serializable {
     
     public CRL generateCRL(Collection certs, int crlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-    	return generateCRL(certs, getCRLPeriod(), crlnumber, false, 0, null);
+    	return generateCRL(certs, getCRLPeriod(), crlnumber, false, 0);
     }
 
-    public CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber, CertificateProfile certprof)
+    public CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber)
         throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-    	return generateCRL(certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, certprof);
+    	return generateCRL(certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
     }
 
     
@@ -703,12 +726,12 @@ public class X509CA extends CA implements Serializable {
      * @throws CRLException
      * @throws NoSuchAlgorithmException
      */
-    private CRL generateCRL(Collection certs, int crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber, CertificateProfile certProfile) 
+    private CRL generateCRL(Collection certs, int crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg= getCAToken().getCATokenInfo().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
-            log.debug("generateCRL("+certs.size()+", "+crlPeriod+", "+crlnumber+", "+isDeltaCRL+", "+basecrlnumber+", certProfile");        	
+            log.debug("generateCRL("+certs.size()+", "+crlPeriod+", "+crlnumber+", "+isDeltaCRL+", "+basecrlnumber);        	
         }
         Date thisUpdate = new Date();
         Date nextUpdate = new Date();
@@ -763,33 +786,33 @@ public class X509CA extends CA implements Serializable {
         	crlgen.addExtension(X509Extensions.DeltaCRLIndicator.getId(), true, basecrlnum);        	
         }
     	// CRL Distribution point URI
-    	if(certProfile != null) {
-    		if(certProfile.getUseCRLDistributionPointOnCRL() == true) {
-    			if (certProfile.getUseCRLDistributionPoint() == true) {
-    				String crldistpoint = certProfile.getCRLDistributionPointURI();
-    				if(certProfile.getUseDefaultCRLDistributionPoint() == true){
-    					crldistpoint = getDefaultCRLDistPoint();
-    				}
-    				// Multiple CDPs are spearated with the ';' sign  
-    				StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
-    				ArrayList distpoints = new ArrayList();
-    				while (tokenizer.hasMoreTokens()) {
-    					String uri = tokenizer.nextToken();
-    					GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
-    					log.debug("Added CRL distpoint: "+uri);
-    					ASN1EncodableVector vec = new ASN1EncodableVector();
-    					vec.add(gn);
-    					GeneralNames gns = new GeneralNames(new DERSequence(vec));
-    					DistributionPointName dpn = new DistributionPointName(0, gns);
-    					distpoints.add(new DistributionPoint(dpn, null, null));
-    				}
-    				if (distpoints.size() > 0) {
-    					CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
-    					crlgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
-    							certProfile.getCRLDistributionPointCritical(), ext);
-    				}
-    			}
-    		}
+  	    if(getUseCrlDistributionPointOnCrl()) {
+  	        String crldistpoint;
+  	        if(isDeltaCRL) {
+  	            crldistpoint = getCADefinedFreshestCRL();
+  	        } else {
+  	            crldistpoint = getDefaultCRLDistPoint();
+  	        }
+  	        // Multiple CDPs are spearated with the ';' sign  
+  	        StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
+  	        ArrayList distpoints = new ArrayList();
+  	        while (tokenizer.hasMoreTokens()) {
+  	            String uri = tokenizer.nextToken();
+  	            GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
+  	            if(log.isDebugEnabled()) {
+  	                log.debug("Added CRL distpoint: " + uri);
+  	            }
+  	            ASN1EncodableVector vec = new ASN1EncodableVector();
+  	            vec.add(gn);
+  	            GeneralNames gns = new GeneralNames(new DERSequence(vec));
+  	            DistributionPointName dpn = new DistributionPointName(0, gns);
+  	            distpoints.add(new DistributionPoint(dpn, null, null));
+  	        }
+  	        if (distpoints.size() > 0) {
+  	            CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
+  	            crlgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
+  	                                getCrlDistributionPointOnCrlCritical(), ext);
+  	        }
     	}
 
         X509CRL crl;
@@ -856,7 +879,13 @@ public class X509CA extends CA implements Serializable {
             if (data.get(DELTACRLPERIOD) == null) {
             	setDeltaCRLPeriod(0); // v14
             }
-            
+            if (data.get(USECRLDISTRIBUTIONPOINTONCRL) == null) {
+                setUseCrlDistributionPointOnCrl(false); // v15
+            }
+            if (data.get(CRLDISTRIBUTIONPOINTONCRLCRITICAL) == null) {
+                setCrlDistributionPointOnCrlCritical(false); // v15
+            }
+
             data.put(VERSION, new Float(LATEST_VERSION));
         }  
     }

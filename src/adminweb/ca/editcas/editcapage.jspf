@@ -687,6 +687,27 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+         <%= ejbcawebbean.getText("CRLDISTPOINTONCRL") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTONCRLCRITICAL") %> 
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL %>" onClick="checkusefield('<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL %>', '<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
+           <% if((editca && x509cainfo.getUseCrlDistributionPointOnCrl()) || !editca)
+                 out.write("CHECKED");
+              if(isexternal) out.write(" disabled "); 
+           %>> <br> 
+          <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <%
+             if(editca){
+               if(!x509cainfo.getUseCrlDistributionPointOnCrl() || isexternal)
+                 out.write(" disabled ");  
+               else
+               if(x509cainfo.getCrlDistributionPointOnCrlCritical())
+                 out.write("CHECKED");
+             }%>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLPERIOD") %> (<%= ejbcawebbean.getText("HOURS") %>)
       </td>
       <td width="50%">

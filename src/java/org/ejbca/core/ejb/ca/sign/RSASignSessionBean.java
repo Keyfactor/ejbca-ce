@@ -171,7 +171,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.46 2008-01-11 13:15:21 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.47 2008-01-18 15:08:25 nponte Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1182,11 +1182,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             int deltanumber = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN(), true);
             int number = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
             X509CRL crl = null;
-            int id = ca.getCertificateProfileId();
-            CertificateProfile certprof = certificateStore.getCertificateProfile(admin, id);
             boolean deltaCRL = (basecrlnumber > -1);
             if (deltaCRL) {
-            	crl = (X509CRL) ca.generateDeltaCRL(certs, number, basecrlnumber, certprof);	
+            	crl = (X509CRL) ca.generateDeltaCRL(certs, number, basecrlnumber);	
             } else {
             	crl = (X509CRL) ca.generateCRL(certs, number);
             }

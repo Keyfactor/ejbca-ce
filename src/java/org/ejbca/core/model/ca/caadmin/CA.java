@@ -73,7 +73,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.24 2008-01-11 13:15:21 anatom Exp $
+ * @version $Id: CA.java,v 1.25 2008-01-18 15:08:24 nponte Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -487,7 +487,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public abstract CRL generateCRL(Collection certs, int crlnumber) throws Exception;
     
-    public abstract CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber, CertificateProfile certprof) throws Exception;
+    public abstract CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber) throws Exception;
 
     public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;            
 

@@ -93,6 +93,8 @@
   static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
   static final String CHECKBOX_USEPRINTABLESTRINGSUBJECTDN        = "checkboxuseprintablestringsubjectdn";
   static final String CHECKBOX_USELDAPDNORDER                     = "checkboxuseldapdnorder";
+  static final String CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL       = "checkboxusecrldistributionpointoncrl";
+  static final String CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL  = "checkboxcrldistributionpointoncrlcritical";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   static final String CHECKBOX_ACTIVATEXKMSSERVICE                = "checkboxactivatexkmsservice";
@@ -472,6 +474,16 @@
              if(value != null) {
             	 useldapdnorder = value.equals(CHECKBOX_VALUE);                             
              }
+             boolean usecrldistpointoncrl = false;
+             value = request.getParameter(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL);
+             if(value != null) {
+                 usecrldistpointoncrl = value.equals(CHECKBOX_VALUE);                             
+             }
+             boolean crldistpointoncrlcritical = false;
+             value = request.getParameter(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL);
+             if(value != null) {
+                 crldistpointoncrlcritical = value.equals(CHECKBOX_VALUE);                             
+             }
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -559,7 +571,9 @@
                                                         approvalsettings,
                                                         numofreqapprovals,
                                                         useprintablestringsubjectdn,
-                                                        useldapdnorder);
+                                                        useldapdnorder,
+                                                        usecrldistpointoncrl,
+                                                        crldistpointoncrlcritical);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -617,7 +631,9 @@
                                                         approvalsettings,
                                                         numofreqapprovals,
                                                         useprintablestringsubjectdn,
-                                                        useldapdnorder);
+                                                        useldapdnorder,
+                                                        usecrldistpointoncrl,
+                                                        crldistpointoncrlcritical);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -757,6 +773,16 @@
              if(value != null) {
             	 useldapdnorder = value.equals(CHECKBOX_VALUE);                             
              }
+             boolean usecrldistpointoncrl = false;
+             value = request.getParameter(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL);
+             if(value != null) {
+                 usecrldistpointoncrl = value.equals(CHECKBOX_VALUE);                             
+             }
+             boolean crldistpointoncrlcritical = false;
+             value = request.getParameter(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL);
+             if(value != null) {
+                 crldistpointoncrlcritical = value.equals(CHECKBOX_VALUE);
+             }
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -847,7 +873,9 @@
                                                       approvalsettings,
                                                       numofreqapprovals,
                                                       useprintablestringsubjectdn,
-                                                      useldapdnorder);
+                                                      useldapdnorder,
+                                                      usecrldistpointoncrl,
+                                                      crldistpointoncrlcritical);
                  
                cadatahandler.editCA((CAInfo) x509cainfo);
                  
@@ -1064,6 +1092,8 @@
               if (DnComponents.isReverseOrder()) {
                   useldapdnorder = false;            	  
               }
+              boolean usecrldistpointoncrl = false;
+              boolean crldistpointoncrlcritical = false;
               ArrayList crlpublishers = new ArrayList(); 
               ArrayList approvalsettings = new ArrayList(); 
               int numofreqapprovals = 1;
@@ -1086,7 +1116,9 @@
                                                         approvalsettings,
                                                         numofreqapprovals, 
                                                         useprintablestringsubjectdn,
-                                                        useldapdnorder);
+                                                        useldapdnorder,
+                                                        usecrldistpointoncrl,
+                                                        crldistpointoncrlcritical);
                  try{
                    PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
