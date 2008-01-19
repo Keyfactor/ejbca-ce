@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.22 2007-04-13 08:02:30 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.23 2008-01-19 01:53:25 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -53,11 +53,23 @@ public class HSMKeyTool {
                 return;
             } else */
             if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
-                if ( args.length < 6 )
-                    System.err.println(commandString + "<key size> <key entry name> " +
-                                       (isP11 ? "<slot number>" : "[<keystore ID>]"));
-                else
-                    KeyStoreContainer.getIt(args[4], args[2], args[3], args.length>7 ? args[7] : null).generate(Integer.parseInt(args[5].trim()), args.length>6 ? args[6] :"myKey");
+                if ( args.length < 6 ) {
+                    System.err.print(commandString + "<key size> <key entry name> ");
+                    if ( isP11 ) {
+                        System.err.println("<slot number> [<attribute file name>]");
+                        System.err.println("The <attribute file name> could be used if you want to change the default attributes of your HSM");
+                        System.err.println("The format of the file is described in the Sun PKCS#11 provider documentation.");
+                        System.err.println("Please note the the attributes \"library\" and \"name\" and \"slot\" should not be specified since they are specified on the command line.");
+                        System.err.println("Here follows an example on how the file could look:");
+                        System.err.println("attributes(generate,*,*) = {");
+                        System.err.println("  CKA_UNWRAP = true");
+                        System.err.println("  CKA_DECRYPT = true");
+                        System.err.println("  CKA_SIGN = true");
+                        System.err.println("}");
+                    } else
+                        System.err.println("[<keystore ID>]");
+                } else
+                    KeyStoreContainer.getIt(args[4], args[2], args[3], args.length>7 ? args[7] : null, args.length>8 ? args[8] : null).generate(Integer.parseInt(args[5].trim()), args.length>6 ? args[6] :"myKey");
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
                 if ( args.length < 6 )

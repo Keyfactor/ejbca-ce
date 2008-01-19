@@ -62,7 +62,7 @@ import org.ejbca.util.KeyTools;
 import com.sun.security.auth.callback.TextCallbackHandler;
 
 /**
- * @version $Id: KeyStoreContainer.java,v 1.21 2007-07-17 13:41:11 anatom Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.22 2008-01-19 01:53:25 primelars Exp $
  */
 public abstract class KeyStoreContainer {
     
@@ -73,9 +73,17 @@ public abstract class KeyStoreContainer {
                                    final String providerClassName,
                                    final String encryptProviderClassName,
                                    final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
+        return getIt(keyStoreType, providerClassName, encryptProviderClassName, storeID, null);
+    }
+    static KeyStoreContainer getIt(final String keyStoreType,
+                                   final String providerClassName,
+                                   final String encryptProviderClassName,
+                                   final String storeID,
+                                   final String attributeConfigFileName) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
         if ( isP11(keyStoreType) )
             return KeyStoreContainerP11.getIt( storeID,
-                                               providerClassName );
+                                               providerClassName,
+                                               attributeConfigFileName);
         else
             return KeyStoreContainerJCE.getIt( keyStoreType,
                                                providerClassName,
@@ -361,8 +369,9 @@ class KeyStoreContainerP11 extends KeyStoreContainer {
         this.keyStore.load(null, null);
     }
     static KeyStoreContainer getIt(final String slot,
-                                   final String libName) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-        AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName);
+                                   final String libName,
+                                   final String attributeConfigFileName) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
+        AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName, attributeConfigFileName);
         final String providerName = provider.getName();
         Security.addProvider(provider);
         final CallbackHandler cbh = new TextCallbackHandler();

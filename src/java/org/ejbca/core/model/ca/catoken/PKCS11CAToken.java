@@ -24,7 +24,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.13 2008-01-03 12:06:26 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.14 2008-01-19 01:53:25 primelars Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -76,7 +76,7 @@ public class PKCS11CAToken extends BaseCAToken {
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
     	// Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         init("slot", properties, signaturealgorithm, false);
-        setProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary")) );
+        setProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary"), null) );
         autoActivate();
     }
 }

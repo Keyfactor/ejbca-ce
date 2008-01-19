@@ -13,9 +13,11 @@
  
 package org.ejbca.util;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -60,7 +62,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.12 2007-12-21 13:36:39 primelars Exp $
+ * @version $Id: KeyTools.java,v 1.13 2008-01-19 01:53:25 primelars Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -470,7 +472,8 @@ public class KeyTools {
      * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11"
      * @throws IOException if the pkcs11 library can not be found, or the SunPKCS11 can not be created.
      */ 
-    public static AuthProvider getP11AuthProvider(final String slot, final String libName) throws IOException {
+    public static AuthProvider getP11AuthProvider(final String slot, final String libName,
+                                                  final String attributeFileName) throws IOException {
     	if (StringUtils.isEmpty(libName)) {
     		throw new IOException("A shared library PKCS11 file name must be supplied.");
     	}
@@ -485,11 +488,16 @@ public class KeyTools {
     	if ( (slot != null) && (slot.length() > 0) ) {
         	pw.println("slot = "+slot);    		
     	}
-        pw.println("attributes(generate,*,*) = {");
-        pw.println("  CKA_UNWRAP = true");
-        pw.println("  CKA_DECRYPT = true");
-        pw.println("  CKA_SIGN = true");
-        pw.println("}");
+        if ( attributeFileName!=null ) {
+            final BufferedReader br = new BufferedReader(new FileReader(attributeFileName));
+            while ( true ) {
+                final String line = br.readLine();
+                if (line!=null)
+                    pw.println(line);
+                else
+                    break;
+            }
+        }
         pw.flush();
     	pw.close();
     	if (log.isDebugEnabled()) {
