@@ -2230,7 +2230,7 @@ You have to check if that support is available.
 <subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
 The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
-tested with Utimaco Cryptoserver, nCipher nFast/netHSM and Eracom.
+tested with Utimaco Cryptoserver and nCipher nFast/netHSM and Eracom and AEP Keyper.
 </p><p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
 <ul>
@@ -2238,7 +2238,21 @@ Besides the keys previously described the property field of the administration G
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
 </ul>
 </p><p>
-The tool $EJBCA/bin/pkcs11HSM.sh is used administrate generate keys. Use it without parameters to get all valid options.
+The tool $EJBCA/bin/pkcs11HSM.sh is used administrate and generate keys. Use it without parameters to get all valid options.
+Keys may be generated in two ways. Examples:
+</p>
+<source>
+./bin/pkcs11HSM.sh generate hsmp11.so 2048 defaultKey 0
+</source>
+<source>
+./bin/pkcs11HSM.sh generate hsmp11.conf 2048 defaultKey
+</source>
+<p>
+The first example uses the default attributes of the HSM and are then using specified slot and PKCS#11 library.
+The second uses a configuration file.
+The contents of the file is specified in the PKCS#11 wrapper documentation from Sun.
+Often it is enough to use the default but with some HSM it necessary to define some PKCS#11
+attributes for the generated key.
 </p>
 </subsection>
 

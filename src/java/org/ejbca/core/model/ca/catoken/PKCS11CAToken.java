@@ -24,7 +24,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.14 2008-01-19 01:53:25 primelars Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.15 2008-01-22 03:57:02 primelars Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -42,7 +42,7 @@ public class PKCS11CAToken extends BaseCAToken {
         try {
         	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
         } catch (Throwable t) {
-            throw new InstantiationException("SUN pkcs11 wrapper class \"SunPKCS11\" not found");
+            throw new InstantiationException("SUN pkcs11 wrapper class \"SunPKCS11\" not found.");
         }
     }
 
@@ -76,7 +76,7 @@ public class PKCS11CAToken extends BaseCAToken {
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
     	// Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         init("slot", properties, signaturealgorithm, false);
-        setProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary"), null) );
+        setProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary")) );
         autoActivate();
     }
 }

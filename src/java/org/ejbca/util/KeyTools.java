@@ -13,11 +13,10 @@
  
 package org.ejbca.util;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -62,7 +61,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.13 2008-01-19 01:53:25 primelars Exp $
+ * @version $Id: KeyTools.java,v 1.14 2008-01-22 03:57:03 primelars Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -464,45 +463,39 @@ public class KeyTools {
             throw new RuntimeException("error creating key");
         }
     } // createSubjectKeyId
-    
+
     /** Creates the SUN PKCS#11 provider using the passed in pkcs11 library.
      * 
-     * @param slot pkcs11 slot number
-     * @param libName the manufacturers provided pkcs11 library (.dll or .so) 
+     * @param slot pkcs11 slot number or config file name if libName is null
+     * @param fileName the manufacturers provided pkcs11 library (.dll or .so) 
      * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11"
      * @throws IOException if the pkcs11 library can not be found, or the SunPKCS11 can not be created.
      */ 
-    public static AuthProvider getP11AuthProvider(final String slot, final String libName,
-                                                  final String attributeFileName) throws IOException {
-    	if (StringUtils.isEmpty(libName)) {
-    		throw new IOException("A shared library PKCS11 file name must be supplied.");
+    public static AuthProvider getP11AuthProvider(final String slot, final String fileName) throws IOException {
+    	if (StringUtils.isEmpty(fileName)) {
+    		throw new IOException("A file name must be supplied.");
     	}
-    	final File libFile = new File(libName);
+    	final File libFile = new File(fileName);
     	if ( !libFile.isFile() || !libFile.canRead() ) {
-    		throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
+    		throw new IOException("The file "+fileName+" can't be read.");
     	}
+        if ( slot==null )
+            return getP11AuthProvider(new FileInputStream(fileName));
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter pw = new PrintWriter(baos);
     	pw.println("name = "+libFile.getName()+"-slot"+slot);
     	pw.println("library = "+libFile.getCanonicalPath());
-    	if ( (slot != null) && (slot.length() > 0) ) {
+    	if ( slot.length() > 0) {
         	pw.println("slot = "+slot);    		
     	}
-        if ( attributeFileName!=null ) {
-            final BufferedReader br = new BufferedReader(new FileReader(attributeFileName));
-            while ( true ) {
-                final String line = br.readLine();
-                if (line!=null)
-                    pw.println(line);
-                else
-                    break;
-            }
-        }
-        pw.flush();
+    	pw.flush();
     	pw.close();
     	if (log.isDebugEnabled()) {
     		log.debug(baos.toString());
     	}
+        return getP11AuthProvider(new ByteArrayInputStream(baos.toByteArray()));
+    }
+    private static AuthProvider getP11AuthProvider(final InputStream is) throws IOException {
 
         // We will construct the PKCS11 provider (sun.security...) using reflextion, because 
         // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
@@ -511,8 +504,7 @@ public class KeyTools {
     	try {
     		final Class implClass = Class.forName(SUNPKCS11CLASS);
     		final Constructor construct = implClass.getConstructor(InputStream.class);
-    		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    		return (AuthProvider)construct.newInstance(new Object[] {bais});
+    		return (AuthProvider)construct.newInstance(new Object[] {is});
     	} catch (Exception e) {
     		log.error("Error constructing pkcs11 provider: ", e);
     		IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
