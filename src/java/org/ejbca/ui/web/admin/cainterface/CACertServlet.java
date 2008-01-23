@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -37,7 +36,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.StringTools;
 
 /**
  * Servlet used to distribute CA certificates <br>
@@ -49,7 +47,7 @@ import org.ejbca.util.StringTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.11 2007-08-02 14:06:02 jeklund Exp $
+ * @version $Id: CACertServlet.java,v 1.12 2008-01-23 11:11:08 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
