@@ -31,7 +31,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthorizationSession.java,v 1.1 2007-05-09 08:00:49 anatom Exp $
+ * @version $Id: TestAuthorizationSession.java,v 1.2 2008-01-23 11:07:25 jeklund Exp $
  */
 public class TestAuthorizationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthorizationSession.class);
@@ -134,4 +134,10 @@ public class TestAuthorizationSession extends TestCase {
         log.debug("<test01Initialize()");
     }
 
+    public void test02ExistMethods() throws Exception {
+    	log.debug(">test02ExistMethods");
+    	authorizationsession.existsCAInRules(admin, caid);
+    	log.debug("<test02ExistMethods");
+    }
+    
 }

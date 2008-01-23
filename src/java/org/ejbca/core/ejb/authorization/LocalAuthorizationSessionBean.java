@@ -59,7 +59,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.13 2007-12-04 14:22:31 jeklund Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.14 2008-01-23 11:07:25 jeklund Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -1024,13 +1024,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         PreparedStatement ps = null;
         ResultSet rs = null;
         int count = 1; // return true as default.
-
-        String whereclause = "cAId = '" + caid + "'";
-
         try {
             // Construct SQL query.
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from AdminGroupData where " + whereclause);
+            ps = con.prepareStatement("select COUNT(*) from AdminGroupData where cAId = ?");
+			ps.setInt(1, caid);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
@@ -1039,7 +1037,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             }
             debug("<existsCAInAdminGroupss()");
             return count > 0;
-
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {
