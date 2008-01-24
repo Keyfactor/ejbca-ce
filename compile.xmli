@@ -420,7 +420,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     </target>
 
 	<target name="preprocess" depends="preprocess.luna" unless="precompiled">
-        <copy todir="${preprocessed}" encoding="ISO-8859-1">>
+        <copy todir="${preprocessed}" encoding="ISO-8859-1">
             <fileset dir="src">
               <include name="**"/>
               <exclude name="**/*.java"/>
@@ -476,9 +476,26 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		  Copy application server specific deployment descriptors and insert database settings etc in them 
 		-->
 		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
-		    <fileset dir="${deploy.src}/sun/">
-		        <include name="sun-ejb*.xml"/>
+		    <fileset dir="${deploy.src}/${appserver.type}/">
+		        <!-- Sun and oracle uses some xml files -->
+		        <include name="*.xml"/>
+		        <!-- Websphere uses xmi, xml, properties and backends -->
+		        <include name="*.xmi"/>
+		        <include name="ejb-jar.xml"/>
+		        <include name="*.properties"/>
+		        <include name="backends/**/*"/>
 		    </fileset> 
+			<filterchain>
+			<tokenfilter>			    
+				<replacestring from="@database.driver@" to="${database.driver}"/>
+				<replacestring from="@database.url@" to="${database.url}"/>
+				<replacestring from="@database.username@" to="${database.username}"/>
+				<replacestring from="@database.password@" to="${database.password}"/>
+				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
+				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
+				<replacestring from="@mail.jndi-name@" to="${mail.jndi-name}"/>
+			</tokenfilter>
+			</filterchain>
 		</copy>
         <copy file="${deploy.src}/sun/sun-cmp-mappings-${database.name}.xml" tofile="${src.dd}/META-INF/sun-cmp-mappings.xml" overwrite="true" failonerror="false" />
         <copy file="${deploy.src}/sun/schema/${database.name}/ejbca-ejb.dbschema" tofile="${src.dd}/ejbca-ejb.dbschema" overwrite="true" failonerror="false" />
@@ -498,40 +515,6 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			</tokenfilter>
 			</filterchain>
         </copy>
-        <!-- Database deployment descriptors for Oracle application server -->
-		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
-		    <fileset dir="${deploy.src}/oracle/">
-		        <include name="*.xml"/>
-		    </fileset> 
-			<filterchain>
-			<tokenfilter>			    
-				<replacestring from="@database.driver@" to="${database.driver}"/>
-				<replacestring from="@database.url@" to="${database.url}"/>
-				<replacestring from="@database.username@" to="${database.username}"/>
-				<replacestring from="@database.password@" to="${database.password}"/>
-			</tokenfilter>
-			</filterchain>
-		</copy>
-        <!-- EJB deployment descriptors for Websphere application server -->
-		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
-		    <fileset dir="${deploy.src}/websphere/">
-		        <include name="*.xmi"/>
-		        <include name="ejb-jar.xml"/>
-		        <include name="*.properties"/>
-		    </fileset> 
-			<filterchain>
-			<tokenfilter>			    
-				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
-				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
-				<replacestring from="@mail.jndi-name@" to="${mail.jndi-name}"/>
-			</tokenfilter>
-			</filterchain>
-		</copy>
-		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false">
-		    <fileset dir="${deploy.src}/websphere/">
-		        <include name="backends/**/*"/>
-		    </fileset> 
-		</copy>
         
         <!-- 
 	      Replace more values in java and xml files 
