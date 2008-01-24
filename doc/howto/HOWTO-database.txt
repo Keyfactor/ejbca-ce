@@ -4,12 +4,13 @@ Set up a database for EJBCA in JBoss
 The following databases have in some stage been tested with EJBCA:
 
 * Hypersoniq (hsqldb) (default in JBoss)
-* PostegreSQL 7.2 and 8.0 (http://www.postgresql.org/)
-* MySQL (http://www.mysql.com/)
-* Oracle 8i and 9i (http://www.oracle.com/)
+* PostegreSQL 7.2 and 8.x (http://www.postgresql.org/)
+* MySQL 4.x and 5.x (http://www.mysql.com/)
+* Oracle 8i, 9i and 10g (http://www.oracle.com/)
 * Sybase
-* MS-SQL2000
+* MS-SQL2000 and 2003
 * Informix 9.2
+* DB2
 
 Unless you are adventurous and know what you're doing, it is recommended to define
 another datasource for ejbca and not reconfigure DefaultDS with another database
@@ -159,7 +160,7 @@ PostgreSQL specifics
 EJBCA have been tested with PostgreSQL 7.x and 8.x.
 
 JDBC driver: 
-For v7.x the 7.4 driver (development) is needed to support the JDBC used by JBoss.
+For v7.x the 7.4 driver is needed to support the JDBC used by JBoss.
 For v8.x the 8.1 driver works fine.
 
 Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
