@@ -1,5 +1,5 @@
 --
--- These definitions should work for EJBCA 3.4.x, MySQL 4.x or 5.x.
+-- These definitions should work for EJBCA 3.6.x, MySQL 4.x or 5.x.
 --
 
 DROP TABLE AccessRulesData;
