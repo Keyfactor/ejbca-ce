@@ -14,7 +14,7 @@
     </ejb-ref>
     <ejb-ref>
         <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
-        <jndi-name></jndi-name>
+        <jndi-name>CertificateStoreSession</jndi-name>
     </ejb-ref>
     <ejb-ref>
         <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
