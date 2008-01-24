@@ -19,8 +19,10 @@ import java.io.InputStream;
 
 import javax.servlet.ServletContext;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.util.CertTools;
 
 
 /**
@@ -28,10 +30,11 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * the presented text in the users preferred language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.6 2007-10-15 09:32:24 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.7 2008-01-24 16:10:27 anatom Exp $
  */
 public class WebLanguages implements java.io.Serializable {
-	
+    private static final Logger log = Logger.getLogger(WebLanguages.class);
+
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -65,6 +68,9 @@ public class WebLanguages implements java.io.Serializable {
                 if(is==null) {
                     //if not available as stream, try it as a file
                     is = new FileInputStream("/tmp"+propsfile);
+                }
+                if (log.isDebugEnabled()) {
+                	log.debug("Loading language from file: "+propsfile);
                 }
                 languages[i].load(is);
             }

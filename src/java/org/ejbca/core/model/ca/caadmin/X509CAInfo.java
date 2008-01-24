@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.15 2008-01-18 15:08:24 nponte Exp $
+ * @version $Id: X509CAInfo.java,v 1.16 2008-01-24 16:10:26 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -74,7 +74,7 @@ public class X509CAInfo extends CAInfo{
 		try {
 			if (certificatechain != null) {
 		        X509Certificate[] certs = (X509Certificate[])certificatechain.toArray(new X509Certificate[0]);
-		        ArrayList list = CertTools.getCertCollectionFromArray(certs, "SUN");
+		        ArrayList list = CertTools.getCertCollectionFromArray(certs, CertTools.SYSTEM_SECURITY_PROVIDER);
 		        this.certificatechain = list;        				
 			} else {
 				this.certificatechain = null;

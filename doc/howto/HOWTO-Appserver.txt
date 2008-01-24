@@ -450,3 +450,122 @@ Developer: Creating deployment descriptors for Oracle oc4j 10:
                    toplink:version-locking-policy -> remove all these items completely
                    TL_<tablename> -> <tablename>
                    the whole <toplink:login> section
+
+Developer: Creating deployment descriptors for Websphere:
+---------------------------------------------------------
+
+Websphere runs with IBMs java 5 and EJBCA must be compiled with this compiler as well.
+Websphere currently works with Oracle database.
+Install the Unlimited strength crypto policy files for the IBM java shipped with Websphere.
+
+Installing Websphere on ubuntu required you to change /bin/sh to /bin/bash in all shell scripts.
+sudo perl -p -i -e "s/\/sh$/\/bash/"  /opt/IBM/WebSphere/AppServer/bin/*.sh
+(point the IBM directory to where you install Websphere)
+
+Websphere has a tendancy to get StackOverflowExceptions. I add some more memory by adding
+-Xmx512m -Xms256m
+To Servers->Application servers->server1->Java and Process management->Process Definition->Java Virtual Machine->Generic JVM arguments.
+
+Deploy:
+- Create a new MailSession called 'MailSession' with jndiName same as mail.jndi-name configured in conf/mail.properties 
+  in 'Resources->Mail->Mail sessions'.
+- Create a new DataSource, see below.
+- Install new application
+  - select ejbca.ear and 'Show me all installation options and parameters' and click next
+  - click next unless anything else is noted here
+  - click next
+  - When you get the option to select database type (Deploy EJB option - Database type) select 'ORACLE_V10G', or the database you want to use EJBCA with.
+  - click next until you reach the end
+  - click finish
+  
+  - Copy the generated ejbca-ejb.jar to local lib, so we have it in the classpath for command line operations.
+    example: cp /home/tomas/Dev/IBM/WebSphere/AppServer/profiles/AppSrv04/installedApps/tomaslapNode01Cell/EJBCA.ear/ejbca-ejb.jar $EJBCA_HOME/lib/.
+    (this is only needed on Websphere, strange appserver)
+
+- Configure the SSL port to require client certificate in order to access the admin-GUI.
+  - Navigate to Servers->Application servers->Web Container Settings->Web container transport chains
+    Change the WCInboundDefaultSecure to require client certificate. The trick is to create a new node SSL 
+    configuration that manages this connection. You don't want to require SSL in the NodeDefauleSSLSettings, since
+    that will apply to your Websphere admin as well. You set 'require client cert' in the Quality of protection settings.
+    Add the CA certificate from EJBCA to the default trusts store and use that.
+    You have to restart the server after konfiguring this.
+
+
+  Creating a datasource for Oracle:
+  - Install the oracle jdbc jar (ex ojdbc4.jar) in $WAS_HOME/lib.
+  - Navigate to Resources->JDBC->JDBC Providers
+  - Click New
+  - Select 'Oracle' from 'Database type' dropdown
+  - Select 'Connection pool data source' from 'Implementation type' dropdown
+  - Insert the path to the jar file, i.e. $WAS_HOME/lib
+  
+  - Navigate to Resources->JDBC->Data sources
+  - Click new
+  - Provide a data source and Jndi name, i.e. EjbcaDS
+  - Click next 
+  - Select your created JDBC Provider
+  - Done
+  
+  - Navigate to Resources->JDBC->Data sources
+  - Select the created data source
+  - Click on the 'JAAS - J2C authentication data' link
+    - Add new record:
+      Alias: ejbca
+      User ID: ejbca
+      Password: ejbca
+  - Save all changes
+  - Select the create authentication provider as 'Component-managed authentication alias'
+  - Click OK.
+  
+  
+  Creating a datasource for PostgreSQL:
+  - Install the postgresql jdbc jar (ex postgresql-8.2-507.jdbc3.jar) in $WAS_HOME/lib.
+  - Navigate to Resources->JDBC->JDBC Providers
+  - Click New
+  - Select User-defined from 'Database type' dropdown
+  - Insert org.postgresql.ds.PGConnectionPoolDataSource as implementation class name
+  - Insert a name and description
+  - Insert the path of the jar file, i.e. $WAS_HOME/lib/postgresql-8.2-507.jdbc3.jar.
+  
+  - Navigate to Resources->JDBC->Data sources
+  - Click new
+  - Provide a data source and Jndi name, i.e. EjbcaDS
+  - Click next 
+  - Select your created JDBC Provider
+  - Click next 
+  - Enter your database url: jdbc:oracle:thin:@192.168.1.110:1521:XE and the 'Oracle 10g data store helper'
+  - Click next and finish
+  - Done
+  
+  - Navigate to Resources->JDBC->Data sources
+  - Select the created data source
+  - Click on the 'Custom properties' link
+  - Add the following properties
+    databaseName=ejbca
+    serverName=my.db.host.com (optional, default is localhost)
+    port=5555 (optional, default is 5432)
+- Save all changes and back to the 'Data sources' form
+- Click on the 'JAAS - J2C authentication data' link
+- Add new record:
+  Alias: ejbca
+  User ID: ejbca
+  Password: ejbca
+- Save all changes
+
+Generating deployment descriptors:
+- Compile EJBCA with the IBM JVM from Websphere. It also works to compile with Sun JDK5 though, as log as the major version matches.
+- Enable XDoclet generation of ibm specific deployment descriptors in compile.xmli.
+  Basically you need to hand create the ibm deployment descriptors, the generated ones are kind of a skeleton.
+- Edit the generated ibm-ejb-jar-bnd.xml and add <ejbRefBindings>:
+            <ejbRefBindings xmi:id="EJBLocalRef_1" jndiName="ejb/CADataLocal">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_1"/>
+            </ejbRefBindings>
+  In the end of the file add:
+  <defaultCMPConnectionFactory xmi:id="CMPConnectionFactoryBinding_1200574366244" 
+           jndiName="@datasource.jndi-name-prefix@@datasource.jndi-name@" 
+           resAuth="Per_Connection_Factory"/>
+- Copy the edited ibm-*.xml files to src/deploy/websphere.
+- Create/edit ibm-web-bnd.xml for all web apps with ejbRef and resRef.
+- Unforturnately even tje ejb-jar.xml is extemely tighly integrated due to the requirements for id's.
+  the generated, working ejbca-jar.xml also have to be copied to src/deploy/websphere. 
+

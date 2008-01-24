@@ -27,11 +27,14 @@
             <include name="server/lib/weblogic.jar"/>
         	<!-- oracle -->
             <include name="j2ee/home/oc4jclient.jar"/>
+        	<!-- websphere -->
+            <include name="runtimes/com.ibm.*.jar"/>
         </fileset>
     </path>
 	<!-- Can be used for debugging 
-	<property name="cp" refid="classpath"/> 
+	<property name="cp" refid="classpath"/>
 	-->
+
 
 <!--
     This is a transcript of the install.sh content to avoid platform specific problems
@@ -157,7 +160,7 @@ appserver.home         : ${appserver.home}
         <attribute name="arg"/>
         <sequential>
         <echo message="@{name} @{arg}"/>
-        <java classname="org.ejbca.ui.cli.@{name}" classpathref="classpath">
+        <java classname="org.ejbca.ui.cli.@{name}" classpathref="classpath" fork="true">
             <arg line="@{arg}"/>
         </java>
         </sequential>

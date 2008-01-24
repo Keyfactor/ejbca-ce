@@ -66,6 +66,9 @@ if [ -n "$APPSRV_HOME" ]; then
     elif [ -r "$APPSRV_HOME"/j2ee/home/oc4jclient.jar ]; then
         echo Using Oracle JNDI provider...
         J2EE_DIR="${APPSRV_HOME}"/j2ee/home
+    elif [ -d "$APPSRV_HOME"/runtimes ]; then
+        echo Using Websphere JNDI provider...
+        J2EE_DIR="${APPSRV_HOME}"/runtimes
     else 
         echo "Using JBoss JNDI provider..."
     fi
@@ -104,7 +107,6 @@ CP=$EJBCA_HOME/bin:$CP
 if $cygwin; then
   CP=`cygpath --path --windows "$CP"`
 fi
-
 #exec "$JAVACMD" -Dlog4j.debug=1 -cp $CP $class_name "$@"
 exec "$JAVACMD" -cp $CP $class_name "$@"
 

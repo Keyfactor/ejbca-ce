@@ -18,18 +18,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.apache.log4j.Logger;
+import org.ejbca.util.CertTools;
+
 /** Properties bag that handles "double type encoding".
  * 
- * @version $Id: LanguageProperties.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: LanguageProperties.java,v 1.2 2008-01-24 16:10:27 anatom Exp $
  */
 public class LanguageProperties extends java.util.Properties {  
+    private static Logger log = Logger.getLogger(LanguageProperties.class);
+    
 	private static final String keyValueSeparators = "=: \t\r\n\f";  
 	private static final String strictKeyValueSeparators = "=:";
 	//private static final String specialSaveChars = "=: \t\r\n\f#!";
 	private static final String whiteSpaceChars = " \t\r\n\f";
 	
 	public synchronized void load(InputStream inStream) throws IOException {   
-		BufferedReader in = new BufferedReader(new InputStreamReader(inStream));//This sentence is crucial
+		// If we don't specify any encoding, it works good except on Websphere where it throws an
+		// sun.io.MalformedInputException because it expects a UTF-8 encoded file (if system encoding if UTF-8) 
+		// but finds a ISO-8859-1 encoded one
+		// Maybe we should make sure everything is UTF-8?
+		// Try first with system default, revert to ISO-8859-1 if it bombs
+		BufferedReader in = new BufferedReader(new InputStreamReader(inStream, "ISO-8859-1")); //This sentence is crucial
+		try {
+			put(in); 			
+		} catch (Throwable t) {
+			log.info("Caught exception loading LanguageProperties with system default encoding, will try with ISO-8859-1: "+t.getMessage());
+			in = new BufferedReader(new InputStreamReader(inStream, "ISO-8859-1"));
+			clear(); // Clear any possibly inserted keys from the faulty download
+			put(in); 			
+		}
+	}
+	private void put(BufferedReader in) throws IOException {
 		while (true) { 
 			// Get next line 
 			String line = in.readLine();   
@@ -107,7 +127,7 @@ public class LanguageProperties extends java.util.Properties {
 					put(key, value);     
 				}  
 			} 
-		} 
+		}
 	} 
 	/* 
 	 * Returns true if the given line is a line that must

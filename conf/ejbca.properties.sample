@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.28 2007-12-27 16:32:29 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.29 2008-01-24 16:10:25 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -9,13 +9,14 @@
 #
 
 # Which application server is used?
-# Possible values: jboss, glassfish, weblogic, oracle
+# Possible values: jboss, glassfish, weblogic, oracle, websphere
 # Default jboss
 #appserver.type=jboss
 
 # Application server home directory used during development
 # Default: $APPSRV_HOME or $JBOSS_HOME
-#appserver.home=/home/jboss/jboss-4.0.5.GA
+#appserver.home=/home/jboss/jboss-4.2.2.GA
+#appserver.home=/home/ibm/WebSphere/Appserver
 #appserver.home=${env.APPSRV_HOME}
 
 # which compiler to use

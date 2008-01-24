@@ -43,7 +43,7 @@ import org.w3c.dom.Document;
  *  The service have it's own certificate used for signing and encryption 
  * 
  * @author Philip Vendil
- * @version $Id: XKMSCAService.java,v 1.4 2007-04-30 10:14:11 anatom Exp $
+ * @version $Id: XKMSCAService.java,v 1.5 2008-01-24 16:10:26 anatom Exp $
  */
 public class XKMSCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -107,7 +107,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
             // Due to a bug in Glassfish v1 (fixed in v2), we need to make sure all certificates in this 
             // Array i of SUNs own provider
             //this.xKMScertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
-            this.xKMScertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), "SUN");
+            this.xKMScertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), CertTools.SYSTEM_SECURITY_PROVIDER);
             this.info = new XKMSCAServiceInfo(getStatus(),
                                               getSubjectDN(),
                                               getSubjectAltName(), 

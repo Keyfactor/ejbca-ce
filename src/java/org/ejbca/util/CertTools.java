@@ -28,6 +28,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -98,7 +99,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.50 2008-01-10 14:42:17 anatom Exp $
+ * @version $Id: CertTools.java,v 1.51 2008-01-24 16:10:26 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -172,6 +173,12 @@ public class CertTools {
     private static String IMPLICITLYCA_G = "@ecdsa.implicitlyca.g@"; 
     private static String IMPLICITLYCA_N = "@ecdsa.implicitlyca.n@";
 
+    /** System provider used to circumvent a bug in Glassfish. Should only be used by 
+     * X509CAInfo, OCSPCAService, XKMSCAService, CMSCAService. 
+     * Defaults to SUN but can be changed to IBM by the installBCProvider method.
+     */
+    public static String SYSTEM_SECURITY_PROVIDER = "SUN";
+    
     /** Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
      * this is needed so you don't have to restart JBoss all the time. 
      * In production it may cause failures because the BC provider may get removed just when another thread wants to use it.
@@ -631,7 +638,7 @@ public class CertTools {
         Security.removeProvider("BC");    	
     }
     public static synchronized void installBCProvider() {
-        // A flag that ensures that we intall the parameters for implcitlyCA only when we have installed a new provider
+        // A flag that ensures that we install the parameters for implcitlyCA only when we have installed a new provider
         boolean installImplicitlyCA = false;
         if (Security.addProvider(new BouncyCastleProvider()) < 0) {
             // If already installed, remove so we can handle redeploy
@@ -670,10 +677,19 @@ public class CertTools {
         }
         
         // 2007-05-25
-        // Finally we must configure SERIALNUMBER behaviour in BC >=1.36 to be the same
-        // as the behaviour in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36
+        // Finally we must configure SERIALNUMBER behavior in BC >=1.36 to be the same
+        // as the behavior in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36
         // We must be backwards compatible
         X509Name.DefaultSymbols.put(X509Name.SN, "SN");
+        
+        // We hard specify the system security provider in a few cases (see SYSTEM_SECURITY_PROVIDER). 
+        // If the SUN provider does not exist, we will always use BC.
+        Provider p = Security.getProvider(CertTools.SYSTEM_SECURITY_PROVIDER);
+        if (p == null) {
+        	log.debug("SUN security provider does not exist, using BC as system default provider.");
+        	SYSTEM_SECURITY_PROVIDER = "BC";
+        }
+        
     }
 
     /** Check if parameters have been set correctly during pre-process, otherwise log an error and
