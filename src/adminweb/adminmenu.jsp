@@ -48,7 +48,7 @@
   final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
                                                   + "/administratorprivileges.jsp";
   
-  final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
+  final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl()+"index.jsp";
   
   final String MYPREFERENCES_LINK     =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
   final String HELP_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 

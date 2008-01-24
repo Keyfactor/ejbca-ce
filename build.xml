@@ -252,10 +252,6 @@
 				<include name="conf/**"/>
 			</fileset>	
             <fileset dir="${src}/upgrade"/>
-        	<fileset dir="${src}/java">
-        	    <include name="dncomponents.properties"/>
-        		<include name="profilemappings.properties"/>
-        	</fileset>	
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
         	</fileset>	
@@ -573,6 +569,8 @@
                     <include name="server/lib/weblogic.jar"/>
                 	<!-- oracle -->
                     <include name="j2ee/home/oc4jclient.jar"/>
+                	<!-- websphere -->
+                    <include name="runtimes/com.ibm.*.jar"/>
                 </fileset>
                 <fileset dir="${lib}" includes="**/*.jar" />
             </classpath>

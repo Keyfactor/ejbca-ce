@@ -1,6 +1,6 @@
 <?xml version = '1.0' encoding = 'ISO-8859-1'?>
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
-<web-app>
+<web-app id="web-app_1">
     <display-name>CA Health Check Configuration</display-name>
     <servlet>
         <servlet-name>EJBCAHealthCheckServlet</servlet-name>
@@ -84,15 +84,16 @@
     <env-entry-value>@datasource.jndi-name-prefix@@datasource.jndi-name@</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
-  <ejb-local-ref>
+  
+  <ejb-local-ref id="EJBLocalRef_1">
     <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
     <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
     <ejb-link>CAAdminSession</ejb-link>
   </ejb-local-ref>
-  <ejb-local-ref>
-    <ejb-ref-name>ejb/IPublisherSessionLocal</ejb-ref-name>
+  <ejb-local-ref id="EJBLocalRef_2">
+    <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
     <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>

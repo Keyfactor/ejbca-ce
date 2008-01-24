@@ -209,6 +209,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 	<condition property="weblogic.version9">
 		<contains string="${appserver.home}" substring="9"/>
 	</condition>
+    <!-- Websphere -->
+	<condition property="websphere.version">
+		<contains string="${appserver.type}" substring="websphere"/>
+	</condition>
 
     <target name="wls-dd-postprocess" if="weblogic.version9">
          <!-- If we are using weblogic 9.x, we must replace the generated cmp-mappings file with a manually created one -->
@@ -277,11 +281,13 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
                 cmpResourceJndiName="${datasource.jndi-name-prefix}${datasource.jndi-name}"
                 validatexml="false" />
  -->
+ <!--
             <websphere
                 xmlencoding="UTF-8" 
                 validatexml="false" 
             	useIds="true"
                 destdir="${src.dd}/META-INF" />
+-->
 <!--            
             <jonas version="3.0" 
                 xmlencoding="UTF-8" 
@@ -302,7 +308,8 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
              description="EJBCA Administration web" 
              mergeDir="${webdd.src}/merge-${web.jsfimpl}"
              distributable="false"
-             validatexml="false" >
+             validatexml="false" 
+             useIds="true" >             
              </deploymentdescriptor>
         </webdoclet>
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
@@ -315,7 +322,9 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
              sessiontimeout="30" 
              description="OCSP responder" 
              distributable="false" 	
-             validatexml="false" />
+             validatexml="false" 
+             useIds="true" >
+             </deploymentdescriptor>
         </webdoclet>
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
             <fileset dir="${src.java}">
@@ -326,7 +335,9 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
              sessiontimeout="30" 
              description="CMP server" 
              distributable="false" 	
-             validatexml="false" />
+             validatexml="false" 
+             useIds="true" >
+             </deploymentdescriptor>
         </webdoclet>
         
         <!-- Do some postprecessing on created dd's if needed -->
@@ -335,7 +346,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     </target>
 	
     <!-- =================================================================== -->
-    <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
+    <!-- Autogenerate all ejb interfaces and deployment descriptors for standalone OCSP responder         -->
     <!-- =================================================================== -->
     <target name="ocsp-run-xdoc" depends="init, preprocess" unless="precompiled">
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
@@ -409,7 +420,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     </target>
 
 	<target name="preprocess" depends="preprocess.luna" unless="precompiled">
-        <copy todir="${preprocessed}">
+        <copy todir="${preprocessed}" encoding="ISO-8859-1">>
             <fileset dir="src">
               <include name="**"/>
               <exclude name="**/*.java"/>
@@ -417,6 +428,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
               <exclude name="**/*.html"/>
               <exclude name="**/*.htm"/>            	
               <exclude name="**/*.xml"/>
+              <exclude name="**/*.xmi"/>
               <exclude name="**/*.jsp"/>
               <exclude name="**/*.jspf"/>
               <exclude name="**/*.properties"/>
@@ -426,12 +438,13 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 	    <!-- 
 	      Copy java files and insert some variables in them 
 	    -->
-        <copy todir="${preprocessed}">
+        <copy todir="${preprocessed}" encoding="ISO-8859-1">
             <fileset dir="src">
                 <include name="**/*.java"/>
                 <include name="**/*.html"/>
                 <include name="**/*.htm"/>
                 <include name="**/*.xml"/>
+                <include name="**/*.xmi"/>
                 <include name="**/*.jsp"/>
                 <include name="**/*.jspf"/>
                 <include name="**/*.properties"/>
@@ -485,6 +498,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			</tokenfilter>
 			</filterchain>
         </copy>
+        <!-- Database deployment descriptors for Oracle application server -->
 		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
 		    <fileset dir="${deploy.src}/oracle/">
 		        <include name="*.xml"/>
@@ -497,6 +511,26 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 				<replacestring from="@database.password@" to="${database.password}"/>
 			</tokenfilter>
 			</filterchain>
+		</copy>
+        <!-- EJB deployment descriptors for Websphere application server -->
+		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
+		    <fileset dir="${deploy.src}/websphere/">
+		        <include name="*.xmi"/>
+		        <include name="ejb-jar.xml"/>
+		        <include name="*.properties"/>
+		    </fileset> 
+			<filterchain>
+			<tokenfilter>			    
+				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
+				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
+				<replacestring from="@mail.jndi-name@" to="${mail.jndi-name}"/>
+			</tokenfilter>
+			</filterchain>
+		</copy>
+		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false">
+		    <fileset dir="${deploy.src}/websphere/">
+		        <include name="backends/**/*"/>
+		    </fileset> 
 		</copy>
         
         <!-- 

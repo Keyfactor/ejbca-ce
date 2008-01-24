@@ -179,6 +179,8 @@
             <include name="server/lib/weblogic.jar"/>
         	<!-- oracle -->
             <include name="j2ee/home/oc4jclient.jar"/>
+        	<!-- websphere -->
+            <include name="runtimes/com.ibm.*.jar"/>
         </fileset>
     </path>
 
