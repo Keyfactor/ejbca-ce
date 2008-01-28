@@ -11,6 +11,16 @@ There are database upgrades in this release so please pay attention!
 Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
 EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgrade instructions.
 
+EJBCA 3.5.4
+-----------
+This is a minor release, fixing a few bugs.
+- A configuration file according to the Sun notation can now be used when creating keys on PKCS11 HSMs.
+- A DB synchronization bug is fixed. Before two EJBCAs could update the log table with same sequence number.
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.5.3
 -----------
 This is a minor release, fixing a few bugs and introducing a new tool.
