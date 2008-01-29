@@ -160,10 +160,8 @@ Generating deployment descriptors:
 - Unforturnately even the ejb-jar.xml is extemely tighly integrated due to the requirements for id's.
   the generated, working ejbca-jar.xml also have to be copied to src/deploy/websphere. 
 
+- Create database mappings to put in src/deploy/websphere/backends with for example:
+./ejbdeploy.sh /home/dev/workspace/ejbca/dist/ejbca.ear /tmp/ejbca /tmp/ejbca/ejbca.ear -codegen -dbvendor ORACLE_V10G
+
 Deploy  EJBCA as when deploying normally on Websphere.
-
-  - Copy the generated ejbca-ejb.jar to local lib, so we have it in the classpath for command line operations.
-    example: cp /home/tomas/Dev/IBM/WebSphere/AppServer/profiles/AppSrv04/installedApps/tomaslapNode01Cell/EJBCA.ear/ejbca-ejb.jar $EJBCA_HOME/lib/.
-    (this is only needed on Websphere, strange appserver)
-
 

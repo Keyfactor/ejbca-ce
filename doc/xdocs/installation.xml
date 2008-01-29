@@ -722,18 +722,26 @@ Log into the admin console of Websphere to deploy EJBCA.
 <li>Click next. Click next all the time unless anything else is noted here.</li>
 <li>When you get the option to select database type (Deploy EJB option - Database type) select 'ORACLE_V10G', or the database you want to use EJBCA with.</li>
 <li>Click next until you reach the end</li>
-<li>click finish</li>
-<li>Configure the SSL port to require client certificate in order to access the admin-GUI.
-<ul>
+<li>Click finish</li>
+<li>In order to use the cli in EJBCA you must copy the generated ejbca-ejb.jar to local lib, so we have it in the classpath for command line operations.
+example: cp /opt/IBM/WebSphere/AppServer/profiles/AppSrv04/installedApps/computerNode01Cell/EJBCA.ear/ejbca-ejb.jar $EJBCA_HOME/lib/.
+</li>
+<li>Now you can run 'ant install' to install EJBCA.</li>
+</ol>
+</p>
+<p>
+Efter deployment and installation you want to configure SSL in Websphere so you can access the Admin-GUI in EJBCA. 
+The admin-GUI in EJBCA requires client certificate authentication.  
+<br/>Configure the SSL port to require client certificate in order to access the admin-GUI:
+<ol>
   <li>Navigate to Servers->Application servers->Web Container Settings->Web container transport chains</li>
   <li>Change the WCInboundDefaultSecure to require client certificate. The trick is to create a new node SSL 
     configuration that manages this connection. You don't want to require SSL in the NodeDefauleSSLSettings, since
     that will apply to your Websphere admin as well. You set 'require client cert' in the Quality of protection settings.</li>
   <li>Add the CA certificate from EJBCA to the default trust store and use that.</li>
   <li>You have to restart the server after configuring this.</li>
-</ul></li>
 </ol>
-After this you should be able to access the admin-GUI in EJBCA.
+After this you should be able to access the admin-GUI in EJBCA after installing $EJBCA_HOME/p12/superadmin.p12 in your browser.
 </p>
 </subsubsection>
 
