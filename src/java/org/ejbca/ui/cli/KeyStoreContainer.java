@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.AuthProvider;
@@ -49,6 +50,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
@@ -59,13 +61,14 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.util.KeyTools;
 
-import com.sun.security.auth.callback.TextCallbackHandler;
-
 /**
- * @version $Id: KeyStoreContainer.java,v 1.23 2008-01-22 03:57:03 primelars Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.24 2008-01-29 15:23:08 anatom Exp $
  */
 public abstract class KeyStoreContainer {
-    
+
+    /** The name of Suns textcallbackhandler (for pkcs11) implementation */
+    public static final String SUNTEXTCBHANDLERCLASS = "com.sun.security.auth.callback.TextCallbackHandler";
+
     protected final KeyStore keyStore;
     private final String providerName;
     private final String ecryptProviderName;
@@ -365,7 +368,22 @@ class KeyStoreContainerP11 extends KeyStoreContainer {
         AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName);
         final String providerName = provider.getName();
         Security.addProvider(provider);
-        final CallbackHandler cbh = new TextCallbackHandler();
+        CallbackHandler cbh = null;
+    	try {
+    		// We will construct the PKCS11 text callback handler (sun.security...) using reflection, because 
+    		// the sun class does not exist on other JDKs than sun, and we want to be able to compile everything on i.e. IBM JDK.
+    		//   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
+    		final Class implClass = Class.forName(SUNTEXTCBHANDLERCLASS);
+    		cbh = (CallbackHandler)implClass.newInstance();
+    	} catch (Exception e) {
+            System.err.println("Error constructing pkcs11 text callback handler:");
+    		e.printStackTrace();
+    		IOException ioe = new IOException("Error constructing pkcs11 text callback handler: "+e.getMessage());
+    		ioe.initCause(e);
+    		throw ioe;
+    	} 
+        // The above code replaces the single line:
+        //final CallbackHandler cbh = new TextCallbackHandler();
         KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider,
                                                                 new CallbackHandlerProtection(cbh));
         final KeyStore keyStore = builder.getKeyStore();
