@@ -31,7 +31,11 @@
 	   <property name="web.jsfimpl" value="myfaces"/>
 	   <echo>OC4J uses Apache Myfaces JSF implementation</echo>
     </target>
-	<target name="set.jsfimpl" depends="jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl,oc4jjsfimpl">
+    <target name="webspherejsfimpl" depends="webspheretargetcheck" if="websphere.enabled">
+	   <property name="web.jsfimpl" value="sunri"/>
+	   <echo>Websphere uses SunRI JSF implementation</echo>
+    </target>
+	<target name="set.jsfimpl" depends="jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl,oc4jjsfimpl,webspherejsfimpl">
 	</target>
     <!-- =================================================================== -->
     <!-- Create the time stamp and build directory -->
@@ -476,7 +480,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<!-- 
 		  Copy application server specific deployment descriptors and insert database settings etc in them 
 		-->
-		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
+		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false">
 		    <fileset dir="${deploy.src}/${appserver.type}/">
 		        <!-- Sun and oracle uses some xml files -->
 		        <include name="*.xml"/>
