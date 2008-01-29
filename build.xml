@@ -330,6 +330,11 @@
     <!-- different appservers and different JSF implementations behaves differently. -->
 	<!-- JBoss does not need anything, because it uses Myfaces by default    -->
     <!-- =================================================================== -->
+	<target name="webspheretargetcheck">
+			<condition property="websphere.enabled">
+				<equals arg1="${appserver.type}" arg2="websphere"/>
+			</condition>
+	</target>
 	<target name="wlstargetcheck">
 			<condition property="weblogic.enabled">
 				<equals arg1="${appserver.type}" arg2="weblogic"/>
