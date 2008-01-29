@@ -5,261 +5,14 @@
   </properties>
 <body>
 
-<section name="About">
+<section name="About and Installation">
 <p>
-EJBCA is a fully functional Certificate Authority built in Java.
-Based on J2EE technology it constitutes a robust, high
-performance and component based CA. Both flexible and platform independent,
-EJBCA can be used standalone or integrated in any J2EE application.
-</p><p>
-The EJBCA Homepage can be found at http://ejbca.sourceforge.net/.
-Information about contacting the EJBCA team, contributing to
-EJBCA, etc can be found through the Homepage.
-</p><p>
-More documentation can also be found on the homepage and on the documentation site http://docs.primekey.se/.
-</p><p>
-EJBCA is completely written in Java and should as such run on any
-platform where a J2EE server runs. Development and testing is
-performed on Linux and Windows platforms.
+Information how to install EJBCA can be found in the Installation guide.</p>
+<p>
+Please read the <a href="installation.html">Installation</a> guide before setting up EJBCA.
 </p></section>
 
-<section name="Security">
-<p>
-Security is discussed below in the chapter about configuration
-and in <a href="security.html">Security</a>.
-</p><p>
-Please take a minute to thoroughly consider the security
-implications and make sure you know what you are doing when you are setting
-up a CA.
-</p><p>
-If running on Linux, you should consider using the sample
-firewall script provided in 'ejbcafirewall.sh'. If running on Windows, a
-similar approach should be taken with firewall software/hardware.
-</p></section>
-
-<section name="Upgrade">
-<p>
-See doc/RELEASE_NOTES and UPGRADE for information about upgrading from an 
-earlier version of EJBCA.
-</p></section>
-
-<section name="Quick start guide">
-
-<subsection name="Prerequisites">
-<note>
-EJBCA makes use of strong crypto and keystore passwords longer than 7 characters.
-For this to work you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
-The policy files can be found at the same place as the JDK download at java.sun.com. The text
-"Using exportable cryptography" is shown on the first page in the Admin GUI if you fail to
-install this package. Further information on this can be found in the Sun documentation on
-the JCE.
-</note>
-<note>
-The default, and easiest, installation is done on JBoss. EJBCA can however also run on Glassfish and Weblogic. 
-If you want to deploy on these application servers, read the file doc/howto/HOWTO-Appserver.txt.
-</note>
-<p>
-Needed to build and run are:
-<ul>
-<li>JDK 1.5.x or 1.6.x (support for 1.4.x was dropped in EJBCA 3.5).</li>
-<li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
-<li>JBOSS >=4.0.4 (latest tested verison is JBoss 4.2.2)</li>
-<li>Ant >= 1.6.5 to build (http://jakarta.apache.org/ant/)</li>
-</ul>
-</p><p>
-Set the environment variable APPSRV_HOME (or JBOSS_HOME) to the directory where
-JBoss's root is
- (/jboss-version). This is done so the deploy script will
- know where files are to be copied, they are copied to the
- directory $APPSRV_HOME/server/default/deploy.
- </p><p>
- Windows/Unix: 
- When we describe command line commands below we use
- unix notation, e.g. 'ejbca.sh' for the executable command files.
- The same command files are available for windows as cmd-files,
- e.g. 'ejbca.cmd.'
-</p>
-        <p>
-        Java 1.6.0<br/>
-        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6.0
-        <br/><a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>
-        </p>
-        <p>
-        Java 1.5.0<br/>
-        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 5.0
-        <br/><a href="http://java.sun.com/j2se/1.5.0/download.jsp">http://java.sun.com/j2se/1.5.0/download.jsp</a>
-        </p>
-<p>NOTE: If you are unsure what version of EJBCA you are running, type 'ant ejbcaversion' in the EJBCA_HOME directory. (EJBCA 3.5 and newer.)</p>
-</subsection>
-
-<subsection name="Configure">
-<p>
-If you are only testing EJBCA at this stage and is not setting up a production environment, you can skip this step.
-</p><p>
-Now when everything is prepared, there are a few things to
-configure before starting JBOSS and running everything in a production environment.
-
-</p><p>
-In a production environment you should use something like the following structure:
-<ol>
-<li>Go through the install process creating an AdminCA. Use a simple DN. 
-This CA should only used to issue the administrator certificates. Not published in LDAP. 
-If you want to use an HSM for this CA, see the documentation in the configuration file conf/ejbca.properties.sample.</li>
-<li>Once installed, create all your REAL CAs using the admin-GUI. Now you can use the certificate 
-profiles etc that you like. These certificates can be published in LDAP.
-See doc/howto/HOWTO-multiplecas.txt for example of a detailed configuration guide.</li>
-</ol>
-</p><p>
-In a production environment you should use something else than the default Hypersonic database that comes 
-with JBoss for the reasons:
-<ol>
-<li>Hypersonic database is in-memory, which means that over time it will consume more memory. If a large
-number of certificates is issued, it will become an issue after a while.</li>
-<li>Hypersonic does not support full SQL, in particular ALTER statements. When a new version of EJBCA is 
-released we can not create scripts that updates the database if some tables changed. This will make 
-upgrades much much harder.</li>
-</ol>
-</p><p>
-For information about installing JDBC drivers for other databases, see the document <i>'doc/howto/HOWTO-database.txt'</i>
-in the distribution.
-</p>
-
-<subsubsection name="Memory configuration">
-<p>
-The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
-a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
-configuration of java memory arguments to set them to
-at least '-Xms128m -Xmx512m'. 
-For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
-</p>
-<source>
-JAVA_OPTS="-server -Xms128m -Xmx512m"
-</source>
-<p>
-can be changed.
-</p>
-</subsubsection>
-
-</subsection>
-
-<subsection name="Install">
-<p>
-Note that the installation must be done with a user with privileges to write to APPSRV_HOME and subdirs. 
-</p><p>
-1) Set the environment variable APPSRV_HOME to where your JBoss is installed,
-example /opt/jboss-4.2.0 or C:\jboss-4.2.0.
-<br/>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
-</p><p>
-2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
-The default values works fine for a test installation. 
-</p><p>
-<ul>
-<li>Customize the CA properties if you need to do so.
-For production use you need to do this, don't forget to edit
-passwords to be secure and secret. Keep conf/ejbca.properties as secret as possible.
-DO NOT forget the passwords, if you need to re-install the software sometime.</li>
-<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties. You also need to add the appropriate values to the ca.tokenproperties file for the HSM. Read the HSM documentation for the right values.</li>
-<li>
-To put the initial superadmin certificate on a smartcard, set superadmin.batch=false in
-web.properties. Enroll from public web after the installation is complete, as you would
-with any other smartcard user. Username is &quot;superadmin&quot; and password is superadmin.password
-from web.properties.
-</li>
-<li>Customize the database if needed but easiest thing is to keep the default as it is,
-it will use the JBoss embedded HSQLDB and everything will be easier for you.
-For production use you should use a real database instead of the embedded one.</li>
-<li>Small note, in the ca.dn you can not use DC components for the initial CA, 
-you can create CAs using DC components later on once the admin GUI is up and running.</li>
-</ul>
-</p><p>
-3) Open a console and type 'ant bootstrap'
-it will compile, jar, war, ear everything and deploy it to JBoss.
-</p><p>
-4) Open a console (terminal) and start JBoss.
-You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
-or the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
-picking up everything and deploying the ear without errors.
-</p><p>
-5) Type 'ant install' it will generate all certificates, keys, etc needed to run with an initial CA.
-You will find admin keys in ${ejbca.home}/p12. (do not delete those files!)
-<br/>The command 'ant install' is only run once, when the CA is first installed. It creates lots of things in the database, 
-and can not be run again (it will give an error if you try).
-<ul>
-<li>tomcat.jks is for the servlet container (don't bother with it)</li>
-<li>superadmin.p12 should be imported in your browser, that's your administration certificate.</li>
-</ul>
-</p><p>
-You will need administrative privileges (e.g. root) for the CA-certificate to be installed
-in Javas trust-keystore ($JAVA_HOME/jre/lib/security/cacerts, default pwd 'changeit').
-If you don't have root permission now, you can do it manually later after step 9. It's important so don't forget!
-</p><p>
-6) Stop JBoss (ctrl+c or whatever)
-</p><p>
-7) type 'ant deploy', this will deploy everything again and configure the servlet
-container with the keystore file (this is why we needed to stop the container).
-If you want to use jboss specific service for automatic creation of the CRL:s you should enable this option in ejbca.properties,
- see the chapter about 'CRL generation'.
-</p><p>
-8) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
-This is the super administrators certificate used to access the admin GUI. 
-Other administrators with specific privileges can be created later on.
-The default password for superadmin.p12 is ejbca, and is configured in ejbca.properties.
-</p><p>
-9) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
-or http://localhost:8080/ejbca for the public pages.
-</p><p>
-If you did not have root permission and get an error during installation step 5, you can 
-install the root certificate afterwards with the following commands, WITH the right permissions:
-</p>
-<source>
-ant javatruststore
-</source>
-<p>
-For example on Ubuntu you can run:
-</p>
-<source>
-sudo ant javatruststore
-</source>
-<p>
-What this does in the background are the following commands. You do not have to run these command manually.
-</p>
-<source>
-bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
-keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
-</source>
-<p>
-where AdminCA1 is the CA name as configured in conf/ejbca.properties (default is AdminCA1).
-You must stop and start JBoss after doing this.
-</p>
-<p>
-You can use this command to install the certificate of any CA in the java truststore by giving an argument: 
-<br/>ant javatruststore -Dca.name=MyCaName
-</p></subsection>
-
-<subsection name="Additional howtos">
-<p>
-In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
-</p>
-</subsection>
-
-<subsection name="Running optional tests">
-<p>
-If you want to run a thorough test of your new CA, run the automated tests with 'ant test:run'.
-To run the tests you must copy the file lib/ext/junti-1.5.8 to ANT_HOME/lib.
-</p><p>
-NOTE: After running tests with 'ant test:run', you might
-consider deleting the database since some leftovers are left in the database.
-The tests will create and revoke some test certificates, so afterwards your CRLs will be populated with a few entries.
-'ant test:run' should not be run on a production system, only
-to test the installation.
-</p><p>
-NOTE! Don't forget to configure JBoss for security! See
-<a href="security.html">security</a>.
-Security is CRITICAL for a CA.
-</p></subsection>
-</section>
-
-<section name="After the installation">
+<section name="Misc information">
 <subsection name="Administrative tutorials">
 <p>
 There are additional documentation and administrative tutorial movies at <a href="http://docs.primekey.se/">http://docs.primekey.se/</a>.
@@ -4321,78 +4074,30 @@ information on how to configure and use the device.
 
 <section name="Reference manual">
 <p>
-All configuration options, JNDI names etc is configured through the use of a conf/ejbca.properties file. 
+All configuration options, JNDI names etc is configured through the use of properties files in conf/*.properties file.
+You can copy the .sample files to respective .properties files and configures. Most options are documented in the .samples files. 
 </p>
 
-<subsection name="Administrating CA">
+<subsection name="Command line interface">
 <p>
-The CA has a command line interface 'bin/ejbca.sh ca. Options are:
-<ul>
-<li>info - prints information about a CA.</li>
-<li>init - creates a new Root CA.
-<li>listcas - lists all CAs in the system.</li>
-Stores CA certificates and publishes first CRL.
-Quote the DN (") so it is treated as one argument.</li>
-<li>getrootcert - exports the CA certificates to file.</li>
-<li>createcrl - issues a CRL. With no CA name given it issues all CRLs that are 'due'. If a CA name is given CRL generation for that CA is 'forced'.</li>
-<li>getcrl - retrieves the latest CRL.</li>
-<li>listexpired - List certificates that will expire within a
-given number of days.</li>
-<li>exportprofiles - exports entity and certificate profiles to xml-files.</li>
-<li>importprofiles - imports entity and certificate profiles from xml-files.
-When you export a profile that should be imported in another CA, make sure the 
-'Available CAs' is set to 'Any CA' for the profiles you export. Otherwise you
-can get into trouble with authorization if you don't have the same CAs with the same 
-caids (DNs) where you import the profiles.</li>
-<li>importca - creates a new CA by importing keys from en existing PKCS12 file.
-A PKCS12 file can be generates from PEM files with openssl.</li>
-<li>importcert - creates a user and imports a certificate for him/her.</li>
-<li>republish - republishes certificates for a CA and all users. 
-Can be used to add a publisher to a CA after some time, and then publish all certs. You can add the flag '-a'
-after the command to publish all certificates for all users. Note, that this command relies upon the publisher 
-for the users profiles to do it's job. So if you have changed profiles for users, the result may not be as expected, 
-but ut may be depending on how your profiles are constructed.</li>
-</ul>
-</p></subsection>
-
-<subsection name="Administrating RA">
+EJBCA have command line interfaces (cli) to both the CA and RA, and some other operations.
+</p>
 <p>
-The RA has a command line interface 'bin/ejbca.sh ra'. Options are:
-<ul>
-<li>adduser - adds a user to the database, after addition a user
-may apply for a
-certificate. If email address is set to 'null', no email is put
-in certificates.
-Quote the DN (") so it is treated as one argument.
-Altnames is a string similar to the DN string but using
-alternative names from
-RFC3280, i.e. "rfc822Name=<i>email</i>, dNSName=<i>hostname</i>, 
-uri=http://<i>whatever</i>, iPAddress=10.56.32.245"
-The full list is: otherName, rfc822Name, dNSName, x400Address,
-directoryName,
-ediPartyName, uniformResourceIdentifier, iPAddress, registeredID
-Only rfc822Name, dNSName, iPAddress, uniformResourceIdentifier (uri) and directoryName is
-supported at the moment. Also the MS UPN and GUID are supported.</li>
-<li>deluser - removes a user from the database, any issued
-certificates remain  active and present in the database.</li>
-<li>setpwd - set a new password for a user. The password is stored
-as a hash in the database.</li>
-<li>setclearpwd - set a clear text
-password for a user, needed to generate  certificates batch-wise.</li>
-<li>setuserstatus - sets status of a user, users can only apply
-for certificates when their status is NEW.</li> 
-<li>finduser - find a user in the database and lists details.</li>
-<li>getusercert - get all certificates for a specific user on stdout.</li>
-<li>listnewusers - lists all users with status NEW.</li>
-<li>listusers - lists users with specified status (give command to
-see list of status codes).</li>
-<li>revokeuser - revokes a user and all certificates issued to the
-user.</li>
-<li>keyrecover - recovers keys related to a specific certificate.</li>
-<li>keyrecovernewest - recovers the latest keys for a user.</li>
-<li>setsubjectdirattr - add subject directory attributes for a user.</li>
-</ul>
-</p></subsection>
+The best documentation for the cli can be found by running it.
+<source>
+bin/ejbca.sh
+bin/ejbca.sh ca
+bin/ejbca.sh ra
+</source>
+this will give a list of all available cli commands. To find out which options are available for a specific command, simply run 
+the command with no options:
+<source>
+bin/ejbca.sh ra adduser
+</source>
+This will give documentation about available options. 
+To access the usage information for some commands, that does not take parameters, the option '-?' can normally be provided.
+</p>
+</subsection>
 
 <subsection name="Other Configuration">
 <p>
@@ -4439,9 +4144,10 @@ with clear text passwords. To set a clear text password for a user use
 </p>
 <source>
 bin/ejbca.sh ra setclearpwd username password
+bin/ejbca.sh ra setuserstatus username 10
 </source>
 <p>
-The same is accomplished in the ADmin-GUI by checking the checkbox 'Batch generation' when adding the user.
+The same is accomplished in the Admin-GUI by checking the checkbox 'Batch generation' when adding the user.
 </p>
 <p>
 To generate keystore files for all users with status NEW or FAILED, run 

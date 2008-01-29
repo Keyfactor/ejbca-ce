@@ -22,6 +22,7 @@
 
             <menu name="Documentation">
                 <item name="Architecture"	  href="/architecture.html"/>
+                <item name="Installation"		  href="/installation.html"/>
                 <item name="User Guide"		  href="/manual.html"/>
                 <item name="FAQ"		  href="/faq.html"/>
                 <item name="Tutorials and more"   href="http://docs.primekey.se/"/>
