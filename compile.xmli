@@ -170,6 +170,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <delete dir="${mainbin}/META-INF/" />
         <delete file="${mainbin}/jndi.properties" />
         <delete file="${mainsrc}/java/jndi.properties" />
+        <delete file="velocity.log" />
     </target>
 
     <!-- =================================================================== -->
