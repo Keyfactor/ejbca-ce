@@ -38,7 +38,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.31 2008-01-30 09:13:18 thamwickenberg Exp $
+ * @version $Id: CertificateProfile.java,v 1.32 2008-01-30 14:56:11 thamwickenberg Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -82,6 +82,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int TIMESTAMPING        = 8;
     public static final int SMARTCARDLOGON      = 9;
 	public static final int OCSPSIGNING         = 10;
+	public static final int EFS_OBJECTID        = 11;
+	public static final int EFSR_OBJECTID       = 12;
 	
 	
     public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {KeyPurposeId.anyExtendedKeyUsage.getId(), KeyPurposeId.id_kp_serverAuth.getId(),
