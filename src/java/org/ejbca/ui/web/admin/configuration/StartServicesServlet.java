@@ -19,9 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Properties;
 
 import javax.ejb.CreateException;
@@ -46,7 +44,7 @@ import org.ejbca.core.ejb.services.IServiceSessionLocal;
 import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.ProtectedLogDevice;
@@ -65,7 +63,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.23 2008-01-03 17:32:46 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.24 2008-01-30 12:31:59 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -79,7 +77,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.23 2008-01-03 17:32:46 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.24 2008-01-30 12:31:59 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -351,6 +349,9 @@ public class StartServicesServlet extends HttpServlet {
 		} catch (Exception e) {
 			log.error("Error init ServiceSession: ", e);
 		}
+		
+		log.debug(">init CATokenManager");
+		CATokenManager.instance();
 		
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
         log.debug(">init loading CAs into cache");
