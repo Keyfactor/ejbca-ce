@@ -1142,7 +1142,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("NOTIFICATIONMESSAGE") %> <br/>
       </td>
       <td width="70%">       
-        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols=40 rows=4 <% if(!used) out.write(" disabled ");%>><%= not.getNotificationMessage()%>></textarea>  
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols="40" rows="4" <% if(!used) out.write(" disabled "); %> > <%= not.getNotificationMessage() %> </textarea>  
       </td>
       
     </tr>
@@ -1215,7 +1215,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("NOTIFICATIONMESSAGE") %> <br/>
       </td>
       <td width="70%">
-        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols=40 rows=4  <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%></textarea>
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols="40" rows="4" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%> ></textarea>
       </td>
             
     </tr>
