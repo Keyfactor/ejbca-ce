@@ -40,7 +40,7 @@ import org.ejbca.util.CertTools;
 
 /**
  * @author Lars Silvén, PrimeKey Solutions AB
- * @version $Id: StressTestCommand.java,v 1.7 2007-12-31 23:32:30 primelars Exp $
+ * @version $Id: StressTestCommand.java,v 1.8 2008-01-30 12:48:13 primelars Exp $
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -123,18 +123,20 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         final private KeyPair keys;
         final private Random random;
         final private EjbcaWS ejbcaWS;
+        final private String endEntityProfileName;
         /**
          * @throws NoSuchAlgorithmException 
          * @throws IOException 
          * @throws FileNotFoundException 
          * 
          */
-        public TestInstance(int _nr, Log _log, String _caName, int _waitTime, Statistic _statistic, Random _random) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
+        public TestInstance(int _nr, Log _log, String _caName, String _endEntityProfileName, int _waitTime, Statistic _statistic, Random _random) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
             this.log = _log;
             this.nr = _nr;
             this.caName = _caName;
             this.maxWaitTime = _waitTime;
             this.statistic = _statistic;
+            this.endEntityProfileName = _endEntityProfileName;
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(1024);
             this.keys = kpg.generateKeyPair();
@@ -185,7 +187,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             user1.setSubjectAltName(null);
             user1.setStatus(UserDataConstants.STATUS_NEW);
             user1.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-            user1.setEndEntityProfileName("EMPTY");
+            user1.setEndEntityProfileName(endEntityProfileName);
             user1.setCertificateProfileName("ENDUSER");
             this.statistic.addRegisterTime(new CallWS(new EditUserCommand(ejbcaWS, user1),log).getTimeConsumed());
         }
@@ -218,7 +220,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         getPrintStream().println("The command will start up a number of threads.");
         getPrintStream().println("Each thread will continuously add new users to EJBCA. After adding a new user the thread will fetch a certificate for it.");
         getPrintStream().println();
-        getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user>");
+        getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>]");
         getPrintStream().println();
         getPrintStream().println("Here is an example of how the test could be started:");
         getPrintStream().println("./ejbcawsracli.sh stress AdminCA1 20 5000");
@@ -240,12 +242,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final int numberOfThreads = args.length>2 ? Integer.parseInt(args[2]) : 1;
             final int waitTime = args.length>3 ? Integer.parseInt(args[3]) : -1;
             final String caName = args[1];
+            final String endEntityProfileName = args.length>4 ? args[4] : "EMPTY";
             final Statistic statistic = new Statistic(numberOfThreads);
             final Thread threads[] = new Thread[numberOfThreads];
             final Random random = new Random();
             System.out.println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
             for(int i=0; i < numberOfThreads;i++)
-                threads[i] = new Thread(new TestInstance(i,log, caName, waitTime, statistic, random));
+                threads[i] = new Thread(new TestInstance(i,log, caName, endEntityProfileName, waitTime, statistic, random));
             for(int i=0; i < numberOfThreads;i++)
                 threads[i].start();
             new Thread(statistic).start();
