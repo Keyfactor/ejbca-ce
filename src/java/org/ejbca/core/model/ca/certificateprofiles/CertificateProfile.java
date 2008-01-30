@@ -38,7 +38,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.30 2008-01-11 13:15:20 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.31 2008-01-30 09:13:18 thamwickenberg Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -83,10 +83,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int SMARTCARDLOGON      = 9;
 	public static final int OCSPSIGNING         = 10;
 	
+	
     public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {KeyPurposeId.anyExtendedKeyUsage.getId(), KeyPurposeId.id_kp_serverAuth.getId(),
     	KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_emailProtection.getId(),
     	KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_ipsecTunnel.getId(), KeyPurposeId.id_kp_ipsecUser.getId(), 
-    	KeyPurposeId.id_kp_timeStamping.getId(), KeyPurposeId.id_kp_smartcardlogon.getId(), KeyPurposeId.id_kp_OCSPSigning.getId()};
+    	KeyPurposeId.id_kp_timeStamping.getId(), KeyPurposeId.id_kp_smartcardlogon.getId(), KeyPurposeId.id_kp_OCSPSigning.getId(),
+    	CertTools.EFS_OBJECTID, CertTools.EFSR_OBJECTID};
 
 	/** Microsoft Template Constants */
 	public static final String MSTEMPL_DOMAINCONTROLLER  = "DomainController";

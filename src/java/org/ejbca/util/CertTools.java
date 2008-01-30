@@ -99,7 +99,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.51 2008-01-24 16:10:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.52 2008-01-30 09:13:20 thamwickenberg Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -127,6 +127,10 @@ public class CertTools {
     public static final String GUID = "guid";
     /** ObjectID for upn altName for windows domain controller guid */
     public static final String GUID_OBJECTID = "1.3.6.1.4.1.311.25.1";
+    /** ObjectID for Mircosoft Encrypted File System Certificates */
+    public static final String EFS_OBJECTID = "1.3.6.1.4.1.311.10.3.4";
+    /** ObjectID for Mircosoft Encrypted File System Recovery Certificates */
+    public static final String EFSR_OBJECTID = "1.3.6.1.4.1.311.10.3.4.1";
     /** Object id id-pkix */
     public static final String id_pkix = "1.3.6.1.5.5.7";
     /** Object id id-pda */

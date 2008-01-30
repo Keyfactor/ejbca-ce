@@ -42,7 +42,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.5 2006-12-02 11:17:57 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.6 2008-01-30 09:13:19 thamwickenberg Exp $
  */
 public class CertificateView implements java.io.Serializable {
 
@@ -61,7 +61,7 @@ public class CertificateView implements java.io.Serializable {
    public static final String[] EXTENDEDKEYUSAGETEXTS = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
                                     "CODESIGNING", "EMAILPROTECTION", "IPSECENDSYSTEM", 
                                     "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING", "SMARTCARDLOGON",
-                                    "OCSPSIGNER"};
+                                    "OCSPSIGNER", "EFS_CRYPTO", "EFS_RECOVERY"};
 
 
    private static final int SUBALTNAME_OTHERNAME     = 0;
