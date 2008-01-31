@@ -680,9 +680,10 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <p>
 Configure Websphere in the admin console.
 <ol>
+<li>Create tables in your Oracle database using the script supplied in doc/howto/create-tables-ejbca3-oracle.sql.</li>
 <li>Navigate to 'Resources->Mail->Mail sessions' and create a new MailSession called 'MailSession' with jndiName 
   same as mail.jndi-name configured in conf/mail.properties (EjbcaMail).</li> 
-<li>Create a new DataSource<br/>.
+<li>Create a new DataSource:<br/>
   Creating a datasource for Oracle:
   <ul>
   <li>Install the oracle jdbc jar (ex ojdbc4.jar) in $WAS_HOME/lib.</li>
@@ -708,7 +709,8 @@ Configure Websphere in the admin console.
   <li>Select the create authentication provider as 'Component-managed authentication alias'</li>
   <li>Click OK</li>
   <li>You can now go in and 'Test Connection' for your new DataSource.</li>
-  </ul></li>
+  </ul>
+  </li>
 </ol>
 </p>
 </subsubsection>
