@@ -67,7 +67,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.9 2007-01-16 12:34:47 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.10 2008-01-31 12:28:32 anatom Exp $
  */
 public class CmpMessageHelper {
 	private static Logger log = Logger.getLogger(CmpMessageHelper.class);
@@ -112,6 +112,7 @@ public class CmpMessageHelper {
 		if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5)) {
 			oid = PKCSObjectIdentifiers.md5WithRSAEncryption;			
 		}
+		log.debug("Signing CMP message with signature alg oid: "+oid.getId());
 		pKIMessage.getHeader().setProtectionAlg( new AlgorithmIdentifier(oid) );
 		
 		Signature sig = Signature.getInstance( pKIMessage.getHeader().getProtectionAlg().getObjectId().getId(), provider );

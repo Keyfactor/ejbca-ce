@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.9 2007-10-04 08:08:12 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.10 2008-01-31 12:28:31 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -92,16 +92,17 @@ public class CmpResponseMessage implements IResponseMessage {
 	/** transaction id */
 	private String transactionId = null;
 	
+	/** Default digest algorithm for SCEP response message, can be overridden */
+	private String digestAlg = CMSSignedGenerator.DIGEST_SHA1;
+	/** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
+	private String provider = "BC";
+
 	/** Certificate to be in certificate response message, not serialized */
 	private transient Certificate cert = null;
-	/** Default digest algorithm for SCEP response message, can be overridden */
-	private transient String digestAlg = CMSSignedGenerator.DIGEST_SHA1;
 	/** Certificate for the signer of the response message (CA) */
 	private transient X509Certificate signCert = null;
 	/** Private key used to sign the response message */
 	private transient PrivateKey signKey = null;
-	/** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
-	private transient String provider = "BC";
 	/** used to choose response body type */
 	private transient int requestType;
 	/** used to match request with response */

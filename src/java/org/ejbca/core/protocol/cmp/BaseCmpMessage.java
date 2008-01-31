@@ -20,7 +20,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 public abstract class BaseCmpMessage {
 
-	private PKIMessage msg = null;
+	private transient PKIMessage msg = null;
 	private String b64SenderNonce = null;
 	private String b64RecipientNonce = null;
 	private String b64TransId = null;

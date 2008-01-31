@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -31,6 +32,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DEROctetString;
@@ -69,7 +71,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.17 2007-11-18 11:09:07 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.18 2008-01-31 12:28:32 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -84,12 +86,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    static final long serialVersionUID = 1001L;
+    static final long serialVersionUID = 1002L;
 
     private int requestType = 0;
     private int requestId = 0;
-    private PKIMessage msg;
-	private CertReqMsg req;
 	private String b64SenderNonce = null;
 	private String b64TransId = null;
 	private String defaultCA = null;
@@ -100,8 +100,20 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
     /** manually set password */
     private String password = null;
 
+	/** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
+	 * we can restore the PKIMessage after serialization/deserialization. */ 
+	private byte[] pkimsgbytes = null;
+	private transient CertReqMsg req = null;
+	/** Because CertReqMsg is not serializable we may need to encode/decode bytes if the object is lost during deserialization. */ 
+	private CertReqMsg getReq() {
+		if (req == null) {
+			init();
+		}
+		return this.req;
+	}
+
     /** preferred digest algorithm to use in replies, if applicable */
-    private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
+    private String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
     /**
      * 
@@ -112,17 +124,41 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
      * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the DN should have been pre-set, here it is the same as CN.
      */
 	public CrmfRequestMessage(PKIMessage msg, String defaultCA, boolean allowRaVerifyPopo, String extractUsernameComponent) {
-		this.msg = msg;
-		PKIBody body = msg.getBody();
-		PKIHeader header = msg.getHeader();
-		requestType = body.getTagNo();
-		CertReqMessages msgs = getCertReqFromTag(body, requestType);
-		requestId = msgs.getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        log.debug(">CrmfRequestMessage");
+		setPKIMessage(msg);
 		this.defaultCA = defaultCA;
 		this.allowRaVerifyPopo = allowRaVerifyPopo;
 		this.extractUsernameComponent = extractUsernameComponent;
+        init();
+        log.debug("<CrmfRequestMessage");
+	}
+
+	public PKIMessage getPKIMessage() {
+		if (getMessage() == null) {
+			try {
+				setMessage(PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(pkimsgbytes)).readObject()));				
+			} catch (IOException e) {
+				log.error("Error decoding bytes for PKIMessage: ", e);
+			}
+		}
+		return getMessage();
+	}
+	public void setPKIMessage(PKIMessage msg) {
+		try {
+			this.pkimsgbytes = msg.getDERObject().getEncoded();
+		} catch (IOException e) {
+			log.error("Error getting encoded bytes from PKIMessage: ", e);
+		}
+		setMessage(msg);
+	}
+
+	private void init() {
+		PKIBody body = getPKIMessage().getBody();
+		PKIHeader header = getPKIMessage().getHeader();
+		requestType = body.getTagNo();
+		CertReqMessages msgs = getCertReqFromTag(body, requestType);
+		requestId = msgs.getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		this.req = msgs.getCertReqMsg(0);
-		setMessage(this.msg);
 		DEROctetString os = header.getTransactionID();
 		if (os != null) {
 			byte[] val = os.getOctets();
@@ -142,7 +178,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	}
 	
 	public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-		CertRequest request = req.getCertReq();
+		CertRequest request = getReq().getCertReq();
 		CertTemplate templ = request.getCertTemplate();
 		SubjectPublicKeyInfo keyInfo = templ.getPublicKey();
 		PublicKey pk = getPublicKey(keyInfo, "BC");
@@ -175,7 +211,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 			AttributeTypeAndValue av = null;
 			int i = 0;
 			do {
-				av = req.getRegInfo(i);
+				av = getReq().getRegInfo(i);
 				if (av != null) {
 					if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
 						DEREncodable enc = av.getParameters();
@@ -226,7 +262,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	}
 	public String getIssuerDN() {
 		String ret = null;
-		CertTemplate templ = req.getCertReq().getCertTemplate();
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		X509Name name = templ.getIssuer();
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
@@ -251,7 +287,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 
 	public String getRequestDN() {
 		String ret = null;
-		CertTemplate templ = req.getCertReq().getCertTemplate();
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		X509Name name = templ.getSubject();
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
@@ -262,7 +298,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	
     public String getRequestAltNames() {
     	String ret = null;
-		CertTemplate templ = req.getCertReq().getCertTemplate();
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		X509Extensions exts = templ.getExtensions();
 		if (exts != null) {
 			X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
@@ -276,7 +312,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 
 	public Date getRequestValidityNotBefore() {
 		Date ret = null;
-		CertTemplate templ = req.getCertReq().getCertTemplate();
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		OptionalValidity val = templ.getValidity();
 		if (val != null) {
 			Time time = val.getNotBefore();
@@ -290,7 +326,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	
 	public Date getRequestValidityNotAfter() {
 		Date ret = null;
-		CertTemplate templ = req.getCertReq().getCertTemplate();
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		OptionalValidity val = templ.getValidity();
 		if (val != null) {
 			Time time = val.getNotAfter();
@@ -303,7 +339,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	}
 
 	public X509Extensions getRequestExtensions() {
-		CertTemplate templ = req.getCertReq().getCertTemplate();
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		X509Extensions exts = templ.getExtensions();
 		if (exts != null) {
 			log.debug("Request contains extensions");			
@@ -315,7 +351,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 
 	public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		boolean ret = false;
-		ProofOfPossession pop = req.getPop();
+		ProofOfPossession pop = getReq().getPop();
 		if ( (pop.getRaVerified() != null) && allowRaVerifyPopo) {
 			ret = true;
 		} else if (pop.getSignature() != null) {
@@ -327,7 +363,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 				PublicKey pk = getRequestPublicKey();
 				ByteArrayOutputStream bao = new ByteArrayOutputStream();
 				DEROutputStream out = new DEROutputStream(bao);
-				out.writeObject(req.getCertReq());
+				out.writeObject(getReq().getCertReq());
 				byte[] protBytes = bao.toByteArray();	
 				log.debug("POP protection bytes length: "+protBytes.length);
 				Signature sig;
@@ -400,7 +436,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	// Returns the subject DN from the request
 	public String getSubjectDN() {
 		String ret = null;
-		CertTemplate templ = req.getCertReq().getCertTemplate();
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		X509Name name = templ.getSubject();
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
