@@ -662,12 +662,12 @@ sudo perl -p -i -e "s/\/sh$/\/bash/"  /opt/IBM/WebSphere/AppServer/bin/*.sh
 <li>Edit conf/ejbca.properties, you should at least set appserver.type, appserver.home and logging.log4j.config.</li>
 <li>Edit conf/database.properties, you must configure the database settings for your chosen database.<br/>
       use 'datasource.jndi-name-prefix='</li>
-<li>Edit conf/web.properties, you should set desired values and also http/s ports.</li>
+<li>Edit conf/web.properties, you should set desired values and also http/s ports (i.e. 9080 etc).</li>
 <li>Edit conf/mail.properties set 'mail.jndi-name=EjbcaMail'</li>
 <li>Edit conf/jaxws.properties set 'ejbcaws.enabled=false'</li>
 <li>Edit conf/xkms.properties set 'xkms.enabled=false'<br/>
     Disabling ejbcaws and xkms  must be done until we have fixed JaxWS configuration for Websphere.</li>
-<li>Edit conf/jndi.properties.websphere</li>
+<li>Edit conf/jndi.properties.websphere and set the currect port from Servers->Application servers->server1 (your server)->Ports->BOOTSTRAP_ADDRESS.</li>
 </ol>
 
 Build EJBCA with 'ant'.<br/>
