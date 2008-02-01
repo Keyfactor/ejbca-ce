@@ -162,6 +162,13 @@ Generating deployment descriptors:
 
 - Create database mappings to put in src/deploy/websphere/backends with for example:
 ./ejbdeploy.sh /home/dev/workspace/ejbca/dist/ejbca.ear /tmp/ejbca /tmp/ejbca/ejbca.ear -codegen -dbvendor ORACLE_V10G
+The column names in the generated database mappings file must be altered to be correct. It sets some weird things like DATA1 etc.
 
+To create database mappings for other databases (postgres) you have to install RAD and import ejbca-ejb.jar and do EJB-RDB mapping from 
+there by right-clicking on the project and selecting to create EJB-RDB mapping.
+  
 Deploy  EJBCA as when deploying normally on Websphere.
 
+  Create a datasource for PostgreSQL:<br/>
+  For postgres I used the jdbc driver postgresql-8.2-507.jdbc3.jar. You have to specify the 'Implementation class name' for the provider 'org.postgresql.jdbc3.Jdbc3ConnectionPool'.<br/>
+  You also have to add Custom Properties to the datasource with databaseName, serverName and port (port is optional).   
