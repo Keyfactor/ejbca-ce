@@ -65,7 +65,7 @@
 		  </apt>
 	</target>
 
-    <target depends="ws.init" name="ws.build" unless="ejbcaws.isjava14">
+    <target depends="ws.init" name="ws.build">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="on"  destdir="${build}" >
             <src path="${src.java}"/>
@@ -80,19 +80,13 @@
 
     </target>
 	
-    <target name="isjava14check">
-		<condition property="ejbcaws.isjava14">
-			<equals arg1="${ant.java.version}" arg2="1.4"/>
-		</condition>
-    </target>
-
 	<target name="ejbcawsconditioncheck">
 		<condition property="ejbcaws.conditionenabled">
 			<istrue value="${ejbcaws.enabled}"/>
 		</condition>
 	</target>
 	
-    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,isjava14check,ws.build" if="ejbcaws.conditionenabled" unless="ejbcaws.isjava14">
+    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,isjava14check,ws.build" if="ejbcaws.conditionenabled">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/ws/*.class"/>
@@ -126,7 +120,7 @@
         </wsimport>
     </target>
 	
-    <target name="ws.build.client" depends="ws.init, ejbca-util.jar" unless="ejbcaws.isjava14">
+    <target name="ws.build.client" depends="ws.init, ejbca-util.jar">
         <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/jaxws/gen-classes/client" >
             <src path="src/jaxws/gen-java/client"/>
             <classpath refid="jaxws.client.classpath"/>        	
@@ -198,7 +192,7 @@
         </jar>    	    	
     </target>
 
-    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,isjava14check,ws.build.client" if="ejbcawsconditioncheck" unless="ejbcaws.isjava14" description="Build the EJBCA WS-API client"/>
+    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,isjava14check,ws.build.client" if="ejbcawsconditioncheck" description="Build the EJBCA WS-API client"/>
 
     <!-- Compile JAXWS JUnit testcases -->
     <target name="test:compilews" depends="ws.build, ws.build.client">

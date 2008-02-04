@@ -2,10 +2,6 @@
 
 <project basedir="."  name="xkms" default="xkms.war">
 
-	<condition property="jdk15.present">
-	  <equals arg1="${ant.java.version}" arg2="1.5"/>
-	</condition>
-
     <path id="xkms.classpath">
 
     	<fileset dir="lib/xmlsign">
@@ -53,7 +49,7 @@
         </wsimport>
 	</target>
 	
-    <target name="xkms.build" depends="xkms.init, preprocess" unless="xkms.isjava14">
+    <target name="xkms.build" depends="xkms.init, preprocess">
         <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/xkms/gen-classes" >
             <src path="src/xkms/gen-java"/>
             <classpath refid="xkms.classpath"/>        	
@@ -68,19 +64,13 @@
         </javac>    	
     </target>
 
-    <target name="xkmsisjava14check">
-		<condition property="xkms.isjava14">
-			<equals arg1="${ant.java.version}" arg2="1.4"/>
-		</condition>
-    </target>
-    
 	<target name="xkmsconditioncheck">
 		<condition property="xkms.conditionenabled">
 			<istrue value="${xkms.enabled}"/>
 		</condition>
 	</target>
 	
-    <target name="xkms.war" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build" if="xkms.conditionenabled" unless="xkms.isjava14">
+    <target name="xkms.war" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build" if="xkms.conditionenabled">
         <copy todir="tmp/xkms/gen-classes">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/xkms/*.class"/>
@@ -101,7 +91,7 @@
 
 	
 
-	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled" unless="xkms.isjava14, precompiled">
+	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled", precompiled">
 
 	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
 	            <src path="${src.java}"/>
@@ -178,7 +168,7 @@
 	        </jar>    	    	
 	    </target>
 
-	<target name="xkms.client" depends="xkmsconditioncheck,xkmsisjava14check,xkms.build.client" if="xkms.conditionenabled" unless="xkms.isjava14" description="Build the XKMS client"/>
+	<target name="xkms.client" depends="xkmsconditioncheck,xkmsisjava14check,xkms.build.client" if="xkms.conditionenabled" description="Build the XKMS client"/>
 	
 	<!-- compile XKMS JUnit testcases -->
     <target name="test:compile:xkms" depends="xkms.build, preprocess">
