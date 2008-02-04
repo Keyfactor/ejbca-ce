@@ -15,9 +15,6 @@
 	<loader-repository>org.ejbca.loader:loader=ejbca-ca.ear</loader-repository>
 	  -->
 
-   <!-- String indicating where crlcreateservice should be replaced -->
-   <!--@crlcreateservice.jar@-->
-
    <!-- String indicating where cmptcpservice should be replaced -->
    <!--@cmptcpservice.jar@-->
 

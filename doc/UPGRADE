@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.44 2008-01-11 08:36:00 anatom Exp $
+$Id: UPGRADE,v 1.45 2008-02-04 08:32:17 anatom Exp $
 
 UPGRADE
 =======
@@ -70,6 +70,9 @@ Also see instructions below for additional issues when upgrading all the way fro
 
 If an upgrade option for your database is not included, take a look in src/upgrade/35_36 where upgrade 
 sql scripts are located. We will happily include upgrade scripts for other databases as well. 
+
+The JBoss Mbean create CRL service has been removed in EJBCA 3.6. It has been replaced with the much easier, 
+more portable etc CRL Update Service configured in the Admin-GUI. See the User Guide about CRL creation for details.
 
 From EJBCA 3.5.x to EJBCA 3.5.x
 -------------------------------

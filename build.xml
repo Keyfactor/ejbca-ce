@@ -14,7 +14,6 @@
 	<import file="./jaxws.xmli" />
 	<import file="./xkms.xmli" />
 	<import file="./cmptcp.xmli" />
-	<import file="./crlservice.xmli" />
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
 	
@@ -623,7 +622,7 @@
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="build, buildwithcmptcpservice, buildwithcreatecrlservice" description="Deploy the main EJBCA application">
+    <target name="deploy" depends="build, buildwithcmptcpservice" description="Deploy the main EJBCA application">
         <antcall target="j2ee:deploy" />
     </target>
     <target name="ocsp-deploy" depends="ocsp-ear" description="Deploy the standalone OCSP reponder" >

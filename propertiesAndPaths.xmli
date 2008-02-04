@@ -130,10 +130,6 @@
     <property name="caear" value="${dist.dir}/${app.name}.ear" />
     <property name="ocspear" value="${ocsp-dist.dir}/${app.name}.ear" />
 
-	<property name="createcrlservice.name" value="crlcreateservice.jar" />
-    <property name="createcrlservice.build" value="${tmp}/${createcrlservice.name}" />	
-    <property name="createcrlservicejar" value="${dist.dir}/${createcrlservice.name}" />
-
 	<property name="cmptcpservice.name" value="cmptcpservice.jar" />
     <property name="cmptcpservice.build" value="${tmp}/${cmptcpservice.name}" />	
     <property name="cmptcpservicejar" value="${dist.dir}/${cmptcpservice.name}" />
@@ -275,8 +271,6 @@
         <equals arg1="${database.name}" arg2="oracle"/>
     </condition>
 
-	<!-- If the create CRL service MBean should be deployed -->
-    <property name="createcrl.service.enabled" value="false" />    
 	<!-- Log4j configuration for glassfish -->
     <property name="logging.log4j.config" value="false" />    
 

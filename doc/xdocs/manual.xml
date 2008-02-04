@@ -313,29 +313,10 @@ Now this service will run with the interval you have configured and generate CRL
 </p>
 </subsection>
 <subsection name="JBoss service">
-<p><strong>DEPRECATED!</strong></p>
-<p>
-Another way to have CRLs generated automatically is to build and deploy the JBOSS CRL Service.
- This is done by setting the option 'createcrl.service.enabled' to true in ejbca.properties.
-After settin the option you must re-deploy EJBCA and re-start JBoss. 
- </p><p>
-This service will by default check if CRL generation is needed every minute. 
-If this default behaviour can be changed by editing the attribute 'Polltime' in 
-src/appserver/jboss/crlcreate-service.xml. 
-A new CRL is created if the old one expires within the polltime + 10 minutes, so a CRL is always created
-at least 10 minutes before the old one expires.
-In this way we will in the worst case get the overlap time (10 min) as the time when applications can 
-fetch the new CRL before the old one expires.
-
-The attribute can have the following values:
-</p>
-<source>
-DAILY   =  Every midnight
-HOURLY  =  At XX:00 every hour.
-30MIN   =  At XX:30 and XX:00 every hour
-15MIN   =  At XX:15, XX:30, XX:45,XX:00, every hour 
-1MIN    =  Every minute
-</source>
+<p><strong>DEPRECATED! The JBoss Mbean CRL Service generator has been deprecated.</strong></p>
+<p>This service has been removed as of EJBCA 3.6. If you are still using this service, you must create a CRL Update service
+as described above. It is very simple.
+</p> 
 </subsection>
 <subsection name="Cron job">
 <p>

@@ -89,7 +89,6 @@ log.maxqueryrowcount             = ${log.maxqueryrowcount}
 approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
 approval.excludedClasses         = ${approval.excludedClasses}
-createcrl.service.enabled        = ${createcrl.service.enabled}
 logging.log4j.config             = ${logging.log4j.config}
 cmp.allowraverifypopo           = ${cmp.allowraverifypopo}
 cmp.defaultca                   = ${cmp.defaultca}

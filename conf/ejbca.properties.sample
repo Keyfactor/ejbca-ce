@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.29 2008-01-24 16:10:25 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.30 2008-02-04 08:32:17 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -120,13 +120,6 @@ ca.cmskeystorepass=foo123
 # Example: org.ejbca.extra.caservice.ExtRACAProcess
 # Default : empty 
 #approval.excludedClasses=
-
-# ------------ CRL Creation service configuration ---------------------
-# 
-# Enable this (set to true) if you want to deploy the create CRL service MBean for JBoss.
-# There are several ways to automatically create CRLs, see the section "CRL generation" in the User's Guide.
-# Default: false
-#createcrl.service.enabled=false
 
 # ------------ Log4j logging configuration ---------------------
 # 
