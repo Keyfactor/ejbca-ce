@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.30 2008-02-04 08:32:17 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.31 2008-02-04 08:50:10 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -200,11 +200,3 @@ ca.cmskeystorepass=foo123
 #
 # Default: false
 #certtools.dnorderreverse=false
-
-# Flag indicating if the BC security provider should be removed before installing it again. When developing and re-deploying alot
-# this is needed so you don't have to restart JBoss all the time. 
-# In production it may cause failures because the BC provider may get removed just when another thread wants to use it.
-# Therefore the default value is false. Do not change this unless you are an EJBCA developer.
-#
-# Default: false
-#development.provider.installation=false
