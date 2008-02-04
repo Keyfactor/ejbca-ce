@@ -44,6 +44,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.crypto.Cipher;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -61,7 +63,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.14 2008-01-22 03:57:03 primelars Exp $
+ * @version $Id: KeyTools.java,v 1.15 2008-02-04 09:05:53 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -511,6 +513,25 @@ public class KeyTools {
     		ioe.initCause(e);
     		throw ioe;
     	} 
+    }
+
+    /**
+     * Detect if "Unlimited Strength" Policy files hase bean properly installed.
+     * 
+     * @return true if key strength is limited
+     */
+    public static boolean isUsingExportableCryptography()
+    {
+    	boolean returnValue = true;
+    	try {
+    		int keylen = Cipher.getMaxAllowedKeyLength("DES");
+    		log.debug("MaxAllowedKeyLength for DES is: "+keylen);
+			if (  keylen == Integer.MAX_VALUE ) {
+				returnValue = false;
+			}
+		} catch (NoSuchAlgorithmException e) {
+		}
+		return returnValue;
     }
 
 } // KeyTools

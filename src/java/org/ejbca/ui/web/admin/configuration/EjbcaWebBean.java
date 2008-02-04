@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.net.URLDecoder;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
-import javax.crypto.Cipher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,13 +51,14 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
+import org.ejbca.util.KeyTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.14 2007-12-04 14:22:23 jeklund Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.15 2008-02-04 09:05:54 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -620,16 +619,7 @@ public class EjbcaWebBean implements java.io.Serializable {
      */
     public boolean isUsingExportableCryptography()
     {
-    	boolean returnValue = true;
-    	try {
-    		int keylen = Cipher.getMaxAllowedKeyLength("DES");
-    		log.debug("MaxAllowedKeyLength for DES is: "+keylen);
-			if (  keylen == Integer.MAX_VALUE ) {
-				returnValue = false;
-			}
-		} catch (NoSuchAlgorithmException e) {
-		}
-		return returnValue;
+    	return KeyTools.isUsingExportableCryptography();
     }
 
     /**

@@ -37,13 +37,14 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
+import org.ejbca.util.KeyTools;
 import org.ejbca.util.StringTools;
 
 
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.24 2008-01-18 15:08:24 nponte Exp $
+ * @version $Id: CaInitCommand.java,v 1.25 2008-02-04 09:05:54 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -111,6 +112,16 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	policies.add(new CertificatePolicy(id, CertificatePolicy.id_qt_cps, cpsurl));
             }
                         
+            if (KeyTools.isUsingExportableCryptography()) {
+            	getOutputStream().println("WARNING!");
+            	getOutputStream().println("WARNING: Using exportable strength crypto!");
+            	getOutputStream().println("WARNING!");
+            	getOutputStream().println("The Unlimited Strength Crypto policy files have not been installed. EJBCA may not function correctly using exportable crypto.");
+            	getOutputStream().println("Please install the Unlimited Strength Crypto policy files as documented in the Installation guide.");
+            	getOutputStream().println("Sleeping 10 seconds...");
+            	getOutputStream().println();
+            	Thread.sleep(10000);
+            }
             getOutputStream().println("Initializing CA");            
             
             getOutputStream().println("Generating rootCA keystore:");
