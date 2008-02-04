@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.log;
 
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.OldLogDevice;
 import org.ejbca.core.model.log.OldLogDeviceFactory;
-import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -158,7 +156,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.25 2008-01-14 10:33:13 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.26 2008-02-04 15:32:33 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
