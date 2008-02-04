@@ -3056,6 +3056,9 @@ The search filter is defined in the two fields under "LDAP search settings":
 <li>Suffix base DN of LDAP Search - the base for your search filter.</li>
 <li>LDAP filter of the search - your LDAP filter.</li>
 </ul>
+If you build your search filter on DN components, you also have to select thos components as 'LDAP location fields'.
+</p>
+<p>
 The best example of such a search filter is if base is "dc=primekey,dc=se" and filter is "uid=$USERNAME".
 The search done by ejbca will be equal to the search:<br></br>
 ldapsearch -x -b "dc=primekey,dc=se" "(uid=$USERNAME)"
