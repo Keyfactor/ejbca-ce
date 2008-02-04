@@ -61,7 +61,9 @@ public class LdapSearchPublisher extends LdapPublisher {
 			// Filtro est�tico:
 			//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 			String searchFilter = getSearchFilter();
-			log.debug("Compiling search filter: " +searchFilter);
+			if (log.isDebugEnabled()) {
+				log.debug("Compiling search filter: " +searchFilter+", from dn: "+dn);
+			}
 			if (username != null) {
 				Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
 				searchFilter = USER.matcher(searchFilter).replaceAll(username);
@@ -85,6 +87,10 @@ public class LdapSearchPublisher extends LdapPublisher {
 			if (CertTools.getPartFromDN(dn, "C") != null) {
 				Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
 				searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "C"));
+			}
+			if (CertTools.getPartFromDN(dn, "UID") != null) {
+				Pattern C = Pattern.compile("\\$UID", Pattern.CASE_INSENSITIVE);
+				searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "UID"));
 			}
 			log.debug("Resulting search filter '" + searchFilter+"'.");
 			log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
