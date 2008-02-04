@@ -86,7 +86,7 @@
 		</condition>
 	</target>
 	
-    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,isjava14check,ws.build" if="ejbcaws.conditionenabled">
+    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,ws.build" if="ejbcaws.conditionenabled">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/ws/*.class"/>
@@ -192,7 +192,7 @@
         </jar>    	    	
     </target>
 
-    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,isjava14check,ws.build.client" if="ejbcawsconditioncheck" description="Build the EJBCA WS-API client"/>
+    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,ws.build.client" if="ejbcawsconditioncheck" description="Build the EJBCA WS-API client"/>
 
     <!-- Compile JAXWS JUnit testcases -->
     <target name="test:compilews" depends="ws.build, ws.build.client">

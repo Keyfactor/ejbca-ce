@@ -70,7 +70,7 @@
 		</condition>
 	</target>
 	
-    <target name="xkms.war" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build" if="xkms.conditionenabled">
+    <target name="xkms.war" depends="xkmsconditioncheck, xkms.build" if="xkms.conditionenabled">
         <copy todir="tmp/xkms/gen-classes">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/xkms/*.class"/>
@@ -91,7 +91,7 @@
 
 	
 
-	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled", precompiled">
+	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkms.build, ejbca-util.jar" if="xkms.conditionenabled" unless="precompiled">
 
 	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
 	            <src path="${src.java}"/>
@@ -168,7 +168,7 @@
 	        </jar>    	    	
 	    </target>
 
-	<target name="xkms.client" depends="xkmsconditioncheck,xkmsisjava14check,xkms.build.client" if="xkms.conditionenabled" description="Build the XKMS client"/>
+	<target name="xkms.client" depends="xkmsconditioncheck,xkms.build.client" if="xkms.conditionenabled" description="Build the XKMS client"/>
 	
 	<!-- compile XKMS JUnit testcases -->
     <target name="test:compile:xkms" depends="xkms.build, preprocess">
