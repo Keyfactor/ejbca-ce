@@ -3352,13 +3352,13 @@ A guide for configuring OpenLDAP on Solaris can be found at
 </subsubsection>
 <subsubsection name="Sample Ubuntu installation">
 <source>
-- apt-get install slapd ldap-utils
-- dpkg-reconfigure slapd
-  Configure slapd with your domain and admin password.
-- /etc/init.d/slapd restart
+- sudo apt-get install slapd ldap-utils
+- sudo dpkg-reconfigure slapd
+  Configure slapd with your domain and admin password (primekey.se in this case).
+- sudo /etc/init.d/slapd restart
 - 'ps -ef|grep slap' 
   should show a slapd running
-- ldapsearch -x -b 'dc=PrimeKey,dc=com' '(objectclass=*)'
+- ldapsearch -x -b 'dc=primekey,dc=se' '(objectclass=*)'
   To look at the results
 - slapcat -l backup.ldif
   Make backup
