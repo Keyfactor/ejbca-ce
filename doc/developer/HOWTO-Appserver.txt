@@ -172,3 +172,5 @@ Deploy  EJBCA as when deploying normally on Websphere.
   Create a datasource for PostgreSQL:<br/>
   For postgres I used the jdbc driver postgresql-8.2-507.jdbc3.jar. You have to specify the 'Implementation class name' for the provider 'org.postgresql.jdbc3.Jdbc3ConnectionPool'.<br/>
   You also have to add Custom Properties to the datasource with databaseName, serverName and port (port is optional).   
+  Probably not: Implementation must be XA in Websphere which has implementation class: org.postgresql.xa.PGXADataSource
+  
