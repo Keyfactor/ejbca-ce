@@ -158,7 +158,7 @@ CREATE TABLE hardtokencertificatemap (
   certificateFingerprint TEXT NOT NULL, 
   tokenSN TEXT, 
  CONSTRAINT pk_hardtokencertificatemap PRIMARY KEY (certificateFingerprint)
-):
+);
 
 DROP TABLE HARDTOKENDATA;
 
