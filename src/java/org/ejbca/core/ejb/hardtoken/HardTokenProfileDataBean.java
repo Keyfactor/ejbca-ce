@@ -185,7 +185,11 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 
 		try {
             if (log.isDebugEnabled()) {
-                log.debug("Profiledata: \n" + baos.toString("UTF8"));
+            	if (baos.size() < 10000) {
+                    log.debug("Profiledata: \n" + baos.toString("UTF8"));            		
+            	} else {
+            		log.debug("Profiledata larger than 10000 bytes, not displayed.");
+            	}
             }
 			setData(baos.toString("UTF8"));
 		} catch (UnsupportedEncodingException e) {
