@@ -643,11 +643,12 @@ After this you should be able to access the admin-GUI in EJBCA.
 
 <subsection name="Websphere">
 <p>
-EJBCA has been tested with Websphere ND 6.1 and Oracle 10g database.
+EJBCA has been tested with Websphere ND 6.1 and Oracle 10g or PostgreSQL 8.2 database.
+<br/>(Websphere Express seems broken and Websphere Community Edition is a completely different appserver).
 </p>
 <p>Install the Unlimited strength crypto policy files for the IBM java shipped with Websphere. 
 You need to download these files from IBM. The IBM policy files version 1.4.2 works with IBM JDK 5.</p>
-<p>Websphere runs with IBMs java 5 and EJBCA must be compiled with this compiler as well.</p>
+<p>Websphere runs with IBMs java 5 and EJBCA should be compiled with this compiler as well.</p>
 <p>
 Installing Websphere on Ubuntu linux requires you to change /bin/sh to /bin/bash in all shell scripts, because Ubuntu uses /bin/dash as /bin/sh but Websphere requires bash.<br/>
 </p><source>
@@ -661,7 +662,8 @@ sudo perl -p -i -e "s/\/sh$/\/bash/"  /opt/IBM/WebSphere/AppServer/bin/*.sh
 <ol>
 <li>Edit conf/ejbca.properties, you should at least set appserver.type, appserver.home and logging.log4j.config.</li>
 <li>Edit conf/database.properties, you must configure the database settings for your chosen database.<br/>
-      use 'datasource.jndi-name-prefix='</li>
+      use 'datasource.jndi-name=EjbcaDS' (default)<br/>
+      use 'datasource.jndi-name-prefix=jdbc/'</li>
 <li>Edit conf/web.properties, you should set desired values and also http/s ports (i.e. 9080 etc).</li>
 <li>Edit conf/mail.properties set 'mail.jndi-name=EjbcaMail'</li>
 <li>Edit conf/jaxws.properties set 'ejbcaws.enabled=false'</li>
@@ -694,7 +696,7 @@ Configure Websphere in the admin console.
   <li>Insert the path to the jar file, i.e. $WAS_HOME/lib</li>
   <li>Navigate to Resources->JDBC->Data sources</li>
   <li>Click new</li>
-  <li>Provide a data source and Jndi name, i.e. EjbcaDS</li>
+  <li>Provide a data source and Jndi name, jndi name must be jdbc/EjbcaDS</li>
   <li>Click next</li> 
   <li>Select your created JDBC Provider</li>
   <li>Done</li>
@@ -710,6 +712,11 @@ Configure Websphere in the admin console.
   <li>Click OK</li>
   <li>You can now go in and 'Test Connection' for your new DataSource.</li>
   </ul>
+  Creating a datasource for PostgreSQL:<br/>
+  <ul>
+  <li>DataSourceProvider: For postgres I used the jdbc driver postgresql-8.2-507.jdbc3.jar. You have to specify the 'Implementation class name' for the provider 'org.postgresql.jdbc3.Jdbc3ConnectionPool', or 'org.postgresql.xa.PGXADataSource'.</li>
+  <li>DataSource: You have to add Custom Properties to the datasource with databaseName, serverName and port (port is optional).</li>
+  </ul>     
   </li>
 </ol>
 </p>
@@ -722,8 +729,9 @@ Log into the admin console of Websphere to deploy EJBCA.
 <li>Install new application.</li>
 <li>Select ejbca.ear and 'Show me all installation options and parameters' and click next.</li>
 <li>Click next. Click next all the time unless anything else is noted here.</li>
-<li>When you get the option to select database type (Deploy EJB option - Database type) select 'ORACLE_V10G', or the database you want to use EJBCA with.</li>
-<li>Click next until you reach the end</li>
+<li>When you get the option to select database type at Step 3 (Deploy EJB option - Database type) select 'ORACLE_V10G' for Oracle, or empty for PostgreSQL.</li>
+<li>At the next step, Step 4, select Current Backend Id, ORACLE_V10_1 for Oracle or CLOUDSCAPE_V51_1 for PostgreSQL.</li>
+<li>Click next until you reach the end, or jump directly to the last step by clicking in the left meny.</li>
 <li>Click finish</li>
 <li>In order to use the cli in EJBCA you must copy the generated ejbca-ejb.jar to local lib, so we have it in the classpath for command line operations.
 example: cp /opt/IBM/WebSphere/AppServer/profiles/AppSrv04/installedApps/computerNode01Cell/EJBCA.ear/ejbca-ejb.jar $EJBCA_HOME/lib/.
@@ -740,8 +748,12 @@ The admin-GUI in EJBCA requires client certificate authentication.
   <li>Change the WCInboundDefaultSecure to require client certificate. The trick is to create a new node SSL 
     configuration that manages this connection. You don't want to require SSL in the NodeDefauleSSLSettings, since
     that will apply to your Websphere admin as well. You set 'require client cert' in the Quality of protection settings.</li>
-  <li>Add the CA certificate from EJBCA to the default trust store and use that.</li>
-  <li>You have to restart the server after configuring this.</li>
+  <li>Add the CA certificate from EJBCA to the default trust store and use that. In Websphere ND you add certificates to the truststore under
+      Security->SSL Certificateas and key mgmt->Key stores and certificates->CellDefaultTrustStore->Signer certificates.<br/>
+      You can download the certificate for AdminCA1 for example with the CLI command:<br/> 
+      bin/ejbca.sh ca getrootcert AdminCA1 adminca1.der -der<br/>
+      Then you add the certificate in CellDefaultTrustStore as 'Binary DER data'.</li>
+  <li>You have to restart the server after configuring this (complete restart with server, node and mgr).</li>
 </ol>
 After this you should be able to access the admin-GUI in EJBCA after installing $EJBCA_HOME/p12/superadmin.p12 in your browser.
 </p>

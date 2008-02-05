@@ -112,7 +112,7 @@
             <description><![CDATA[The JDBC datasource to be used]]></description>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_7">
@@ -205,7 +205,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
@@ -432,7 +432,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
@@ -542,7 +542,7 @@
             <description><![CDATA[The JDBC datasource to be used]]></description>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_46">
@@ -587,7 +587,7 @@
             <description><![CDATA[JDBC datasource to be used]]></description>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Enable or disable protection of database entrys]]></description>
@@ -672,7 +672,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_57">
@@ -717,7 +717,7 @@
             <description><![CDATA[JDBC datasource to be used]]></description>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Enable or disable protection of database entrys]]></description>
@@ -760,7 +760,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
@@ -824,7 +824,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_67">
@@ -983,7 +983,7 @@
             <description><![CDATA[JDBC datasource to be used]]></description>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_76">
@@ -1062,7 +1062,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_84">
@@ -1113,7 +1113,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
@@ -1205,7 +1205,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
@@ -1290,7 +1290,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
@@ -1368,7 +1368,7 @@
          <env-entry>
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaDS]]></env-entry-value>
+            <env-entry-value><![CDATA[jdbc/EjbcaDS]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Custom Available Access Rules, use ';' to separate multiple accessrules]]></description>
