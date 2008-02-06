@@ -696,7 +696,7 @@ Configure Websphere in the admin console.
   <li>Insert the path to the jar file, i.e. $WAS_HOME/lib</li>
   <li>Navigate to Resources->JDBC->Data sources</li>
   <li>Click new</li>
-  <li>Provide a data source and Jndi name, jndi name must be jdbc/EjbcaDS</li>
+  <li>Provide a data source and Jndi name, jndi name must match the jndi-name-prefix and jndi-name configured in database.properties, e.g. jdbc/EjbcaDS</li>
   <li>Click next</li> 
   <li>Select your created JDBC Provider</li>
   <li>Done</li>

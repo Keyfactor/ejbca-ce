@@ -159,6 +159,7 @@ Generating deployment descriptors:
 - Create/edit ibm-web-bnd.xml for all web apps with ejbRef and resRef.
 - Unforturnately even the ejb-jar.xml is extemely tighly integrated due to the requirements for id's.
   the generated, working ejbca-jar.xml also have to be copied to src/deploy/websphere. 
+  Some parameters that must change must be altered in the generated file, look for @xxx@ replacement parameters. 
 
 - Create database mappings to put in src/deploy/websphere/backends with for example:
 ./ejbdeploy.sh /home/dev/workspace/ejbca/dist/ejbca.ear /tmp/ejbca /tmp/ejbca/ejbca.ear -codegen -dbvendor ORACLE_V10G
