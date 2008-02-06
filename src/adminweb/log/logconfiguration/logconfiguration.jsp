@@ -216,7 +216,7 @@
    </table>
    <table width="100%" border="0" cellspacing="3" cellpadding="3"> 
     <tr > 
-      <td width="100%" valign="top" halign="left"> 
+      <td colspan="4" width="100%" valign="top" halign="left"> 
         This configuration do not apply to the Protected Log Device, where all events always are logged.
       </td>
 <!--
