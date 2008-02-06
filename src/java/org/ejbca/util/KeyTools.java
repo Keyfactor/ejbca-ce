@@ -63,7 +63,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.15 2008-02-04 09:05:53 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.16 2008-02-06 14:25:24 primelars Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -473,7 +473,8 @@ public class KeyTools {
      * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11"
      * @throws IOException if the pkcs11 library can not be found, or the SunPKCS11 can not be created.
      */ 
-    public static AuthProvider getP11AuthProvider(final String slot, final String fileName) throws IOException {
+    public static AuthProvider getP11AuthProvider(final String slot, final String fileName,
+                                                  final boolean isIndex) throws IOException {
     	if (StringUtils.isEmpty(fileName)) {
     		throw new IOException("A file name must be supplied.");
     	}
@@ -487,8 +488,17 @@ public class KeyTools {
     	PrintWriter pw = new PrintWriter(baos);
     	pw.println("name = "+libFile.getName()+"-slot"+slot);
     	pw.println("library = "+libFile.getCanonicalPath());
-    	if ( slot.length() > 0) {
-        	pw.println("slot = "+slot);    		
+        final int slotNr;
+        try {
+            if (slot.length()>0)
+                slotNr = Integer.parseInt(slot);
+            else
+                slotNr = -1;
+        } catch( NumberFormatException e ) {
+            throw new IOException("Slot nr "+slot+" not an integer.");
+        }
+    	if ( slotNr>=0 ) {
+        	pw.println("slot"+(isIndex ? "ListIndex":"")+" = "+slot);    		
     	}
     	pw.flush();
     	pw.close();

@@ -62,7 +62,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.util.KeyTools;
 
 /**
- * @version $Id: KeyStoreContainer.java,v 1.24 2008-01-29 15:23:08 anatom Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.25 2008-02-06 14:25:24 primelars Exp $
  */
 public abstract class KeyStoreContainer {
 
@@ -76,10 +76,21 @@ public abstract class KeyStoreContainer {
                                    final String providerClassName,
                                    final String encryptProviderClassName,
                                    final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
-        if ( isP11(keyStoreType) )
-            return KeyStoreContainerP11.getIt( storeID,
-                                               providerClassName );
-        else
+        if ( isP11(keyStoreType) ) {
+            final char firstChar = storeID!=null && storeID.length()>0 ? storeID.charAt(0) : '\0';
+            final String slotID;
+            final boolean isIndex;
+            if ( firstChar=='i'||firstChar=='I' ) {
+                slotID = storeID.substring(1);
+                isIndex = true;
+            } else {
+                slotID = storeID;
+                isIndex = false;
+            }
+            return KeyStoreContainerP11.getIt( slotID,
+                                               providerClassName,
+                                               isIndex );
+        } else
             return KeyStoreContainerJCE.getIt( keyStoreType,
                                                providerClassName,
                                                encryptProviderClassName,
@@ -364,8 +375,9 @@ class KeyStoreContainerP11 extends KeyStoreContainer {
         this.keyStore.load(null, null);
     }
     static KeyStoreContainer getIt(final String slot,
-                                   final String libName) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-        AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName);
+                                   final String libName,
+                                   final boolean isIx) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
+        AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName, isIx);
         final String providerName = provider.getName();
         Security.addProvider(provider);
         CallbackHandler cbh = null;

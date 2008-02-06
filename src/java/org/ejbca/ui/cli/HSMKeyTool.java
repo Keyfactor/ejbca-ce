@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.24 2008-01-22 03:57:03 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.25 2008-02-06 14:25:24 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -40,7 +40,7 @@ public class HSMKeyTool {
     public static void main(String[] args) {
         try {
             final boolean isP11 = args.length>4 && KeyStoreContainer.isP11(args[4]);
-            final String sKeyStore =  isP11 ? "<slot number>" : "<keystore ID>";
+            final String sKeyStore =  isP11 ? "<slot number. start with \'i\' to indicate index in list>" : "<keystore ID>";
             final String commandString = args[0] + " " + args[1] + (isP11 ? " <shared library name> " : " ");
             /*if ( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_CA_SWITCH)) {
                 try {
@@ -54,9 +54,9 @@ public class HSMKeyTool {
             } else */
             if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
                 if ( args.length < 6 ) {
-                    System.err.println(commandString + "<key size> <key entry name> " +
-                                       (isP11 ? "[<slot number>]" : "[<keystore ID>]"));
-                    System.out.println("If <slot number> is omitted then <the shared library name> will specify the sun config file.");
+                    System.err.println(commandString + "<key size> <key entry name> " + '['+sKeyStore+']');
+                    if ( isP11 )
+                        System.err.println("If <slot number> is omitted then <the shared library name> will specify the sun config file.");
                 } else
                     KeyStoreContainer.getIt(args[4], args[2], args[3], args.length>7 ? args[7] : null).generate(Integer.parseInt(args[5].trim()), args.length>6 ? args[6] :"myKey");
                 return;
