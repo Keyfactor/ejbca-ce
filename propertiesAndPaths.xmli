@@ -281,6 +281,8 @@
     <property name="protection.keyref" value="key1" />
     <property name="protection.key" value="foo123" />
     <property name="protection.keytype" value="SOFT_HMAC" />
+    <property name="protection.warnonmissingrow" value="true" />
+    
 	
 	<!-- CMP settings -->
 	<property name="cmp.allowraverifypopo" value="false" />
