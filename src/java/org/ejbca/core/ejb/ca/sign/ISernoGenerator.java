@@ -14,12 +14,13 @@
 package org.ejbca.core.ejb.ca.sign;
 
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 
 
 /**
  * Interface for a serial number generator.
  *
- * @version $Id: ISernoGenerator.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: ISernoGenerator.java,v 1.2 2008-02-06 12:31:13 anatom Exp $
  */
 public interface ISernoGenerator {
     /**
@@ -45,4 +46,20 @@ public interface ISernoGenerator {
      * @param the seed used to initilize the serno generator.
      */
     public void setSeed(long seed);
+    
+    /** 
+     * Set the algorithm used for the serial number generator, if needed to set.
+     * Usually a default value is provided for your serial number generator. 
+     * This can be used to override default values. 
+     * @param an (optional) algorithm for a serial number generator implementation
+     */
+     public void setAlgorithm(String algo) throws NoSuchAlgorithmException;
+     
+     /** 
+      * Sets the desired length of serial number returned by the generator. 
+      * The generator should have a default value, which could be overridden though.
+      * @param the size of the requested serial numbers in octets, i.e. 8, 4, ...
+      */
+     public void setSernoOctetSize(int noOctets);
+
 }

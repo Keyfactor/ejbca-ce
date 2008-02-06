@@ -871,6 +871,12 @@
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value><![CDATA[SHA1PRNG]]></env-entry-value>
          </env-entry>
+         <env-entry>
+            <description><![CDATA[The size in octets of the certificate serial numbers. We recommend to use 64 bit serial numbers.]]></description>
+            <env-entry-name>serialNumberOctetSize</env-entry-name>
+            <env-entry-type>java.lang.String</env-entry-type>
+            <env-entry-value><![CDATA[8]]></env-entry-value>
+         </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_70">
             <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>

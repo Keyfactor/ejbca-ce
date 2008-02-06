@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.31 2008-02-04 08:50:10 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.32 2008-02-06 12:31:33 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -103,6 +103,13 @@ ca.xkmskeystorepass=foo123
 # Password user to protect CMS keystores in the database (CAs CMS signer/enc certificate).
 # The default value is the same for convenience.
 ca.cmskeystorepass=foo123
+
+# The length in octets of certificate serial numbers generated. 8 octets is a 64 bit serial number.
+# It is really recommended to use at least 64 bits, so please leave as default unless you are really sure, 
+# and have a really good reason to change it.
+# Possible values: 8 or 4
+# Default: 8
+#ca.serialnumberoctetsize=8
 
 # ------------- Approval configuration ------------------------
 # Settings working as default values in the approval functionality

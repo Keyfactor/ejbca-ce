@@ -209,6 +209,7 @@
     <property name="ca.ocspkeystorepass" value="foo123"/>
     <property name="ca.xkmskeystorepass" value="foo123"/>
     <property name="ca.cmskeystorepass" value="foo123"/>
+    <property name="ca.serialnumberoctetsize" value="8"/>
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
     <property name="ocsp.usecasigningcert" value="true"/>
     <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA"/>

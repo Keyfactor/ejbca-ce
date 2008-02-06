@@ -22,7 +22,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
@@ -112,6 +111,11 @@ import org.ejbca.util.KeyTools;
  *   type="java.lang.String"
  *   value="SHA1PRNG"
  *
+ * @ejb.env-entry description="The size in octets of the certificate serial numbers. We recommend to use 64 bit serial numbers."
+ *   name="serialNumberOctetSize"
+ *   type="java.lang.String"
+ *   value="${ca.serialnumberoctetsize}"
+ *   
  * @ejb.ejb-external-ref description="The CA entity bean"
  *   view-type="local"
  *   ref-name="ejb/CADataLocal"
@@ -171,7 +175,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.47 2008-01-18 15:08:25 nponte Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.48 2008-02-06 12:31:13 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -200,10 +204,6 @@ public class RSASignSessionBean extends BaseSessionBean {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /**
-     * Source of good random data
-     */
-    SecureRandom randomSource = null;
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -226,12 +226,17 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             publishHome = (IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
 
-            // Get a decent source of random data
+            // Set up the serial number generator for Certificate Serial numbers
+            // The serial number generator is a Singleton, so it can be initialized here and 
+            // used by X509CA
             String randomAlgorithm = getLocator().getString("java:comp/env/randomAlgorithm");
-            randomSource = SecureRandom.getInstance(randomAlgorithm);
-            SernoGenerator.setAlgorithm(randomAlgorithm);
-
-
+            if (randomAlgorithm != null) {
+                SernoGenerator.instance().setAlgorithm(randomAlgorithm);
+            }
+            String sernoSize = getLocator().getString("java:comp/env/serialNumberOctetSize");
+            if (sernoSize != null) {
+                SernoGenerator.instance().setSernoOctetSize(Integer.valueOf(sernoSize).intValue());            	
+            }
         } catch (Exception e) {
             debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
@@ -1480,21 +1485,43 @@ public class RSASignSessionBean extends BaseSessionBean {
                     throw new IllegalKeyException(text);
                 }
 
-                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions);
+                // Below we have a small loop if it would happen that we generate the same serial number twice
+                int retrycounter = 0;
+                boolean stored = false;
+                Exception storeEx = null; // this will not be null if stored == false after the below passage
+                X509Certificate cert = null;
+                String cafingerprint = null;
+                while (!stored && retrycounter < 5) {
+                    cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions);
 
+                    // Store certificate in the database
+                    Certificate cacert = ca.getCACertificate();
+                    if (cacert instanceof X509Certificate) {
+                        cafingerprint = CertTools.getFingerprintAsString((X509Certificate)cacert);
+                    }
+                    try {
+                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
+                        stored = true;
+                    } catch (CreateException e) {
+                    	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
+                    	// get a CreateException here if we would happen to generate a certificate with the same serialNumber
+                    	// as one already existing certificate.
+                    	log.info("Can not store certificate with serNo ("+cert.getSerialNumber().toString(16)+"), will retry (retrycounter="+retrycounter+") with a new certificate with new serialNo: "+e.getMessage());
+                    	storeEx = e;
+                    }
+                    retrycounter++;
+                }
+                if (!stored) {
+                	log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
+                	throw storeEx;
+                }
+                
                 getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
                 if (log.isDebugEnabled()) {
                     debug("Generated certificate with SerialNumber '" + cert.getSerialNumber().toString(16) + "' for user '" + data.getUsername() + "'.");
                     debug(cert.toString());                	
                 }
 
-                // Store certificate in the database
-                String cafingerprint = null;
-                Certificate cacert = ca.getCACertificate();
-                if (cacert instanceof X509Certificate) {
-                    cafingerprint = CertTools.getFingerprintAsString((X509Certificate)cacert);
-                }
-                certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
                 // Store the request data in history table.
                 certificateStore.addCertReqHistoryData(admin,cert,data);
                 // Store certificate in certificate profiles publishers.

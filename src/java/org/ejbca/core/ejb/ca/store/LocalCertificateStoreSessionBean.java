@@ -171,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.36 2007-12-21 10:40:09 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.37 2008-02-06 12:31:01 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -306,37 +306,32 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param status   Status of the certificate (from CertificateData).
      * @param type     Type of certificate (CERTTYPE_ENDENTITY etc from CertificateDataBean).
      * @return true if storage was successful.
+     * @throws CreateException if the certificate can not be stored in the database
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
-                                    int status, int type) {
+                                    int status, int type) throws CreateException {
         debug(">storeCertificate(" + cafp + ", " + status + ", " + type + ")");
 
-        try {
-            // Strip dangerous chars
-            username = StringTools.strip(username);
+        // Strip dangerous chars
+        username = StringTools.strip(username);
 
-            X509Certificate cert = (X509Certificate) incert;
-            CertificateDataPK pk = new CertificateDataPK();
-            pk.fingerprint = CertTools.getFingerprintAsString(cert);            
-            CertificateDataLocal data1 = null;
-            data1 = certHome.create(cert);
-            data1.setUsername(username);
-            data1.setCaFingerprint(cafp);
-            data1.setStatus(status);
-            data1.setType(type);
-        	String msg = intres.getLocalizedMessage("store.storecert");            	
-            getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
-            if (protect) {
-        		CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason());
-            	TableProtectSessionLocal protect = protecthome.create();
-            	protect.protect(admin, entry);            	
-            }
-        } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("store.errorstorecert");            	
-            getLogSession().log(admin, (X509Certificate) incert, LogConstants.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
-            throw new EJBException(e);
+        X509Certificate cert = (X509Certificate) incert;
+        CertificateDataPK pk = new CertificateDataPK();
+        pk.fingerprint = CertTools.getFingerprintAsString(cert);            
+        CertificateDataLocal data1 = null;
+        data1 = certHome.create(cert);
+        data1.setUsername(username);
+        data1.setCaFingerprint(cafp);
+        data1.setStatus(status);
+        data1.setType(type);
+        String msg = intres.getLocalizedMessage("store.storecert");            	
+        getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
+        if (protect) {
+        	CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason());
+        	TableProtectSessionLocal protect = protecthome.create();
+        	protect.protect(admin, entry);            	
         }
         debug("<storeCertificate()");
         return true;
