@@ -757,6 +757,10 @@ The admin-GUI in EJBCA requires client certificate authentication.
 </ol>
 After this you should be able to access the admin-GUI in EJBCA after installing $EJBCA_HOME/p12/superadmin.p12 in your browser.
 </p>
+<p>
+Public web will be at: http://127.0.0.1:9080/ejbca/index.jsp<br/>
+Admin web will be at: https://127.0.0.1:9443/ejbca/adminweb/index.jsp
+</p>
 </subsubsection>
 
 </subsection>
