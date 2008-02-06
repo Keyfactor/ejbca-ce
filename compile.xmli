@@ -491,6 +491,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		    </fileset> 
 			<filterchain>
 			<tokenfilter>			    
+				<replacestring from="@ca.keystorepass@" to="${ca.keystorepass}"/>
+				<replacestring from="@ca.ocspkeystorepass@" to="${ca.ocspkeystorepass}"/>
+				<replacestring from="@ca.xkmskeystorepass@" to="${ca.xkmskeystorepass}"/>
+				<replacestring from="@ca.cmskeystorepass@" to="${ca.cmskeystorepass}"/>
 				<replacestring from="@database.driver@" to="${database.driver}"/>
 				<replacestring from="@database.url@" to="${database.url}"/>
 				<replacestring from="@database.username@" to="${database.username}"/>
