@@ -342,7 +342,7 @@
         </select>
     <br />
 
-    <label for="enchancedeid">Add to eID card:</label>
+    <label for="enchancedeid">Add to enhanced eID card:</label>
     <input type="checkbox" name="enchancedeid" value="true" accesskey="a" /> 
     <br />
 
