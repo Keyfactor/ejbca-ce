@@ -715,7 +715,8 @@ function checkallfields(){
                 out.write("" + x509cainfo.getCRLPeriod());
               }else{ %>
          <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
-            <% if(editca) out.write(" value='" + x509cainfo.getCRLPeriod()+ "'");%>>
+            <% if(editca) { out.write(" value='" + x509cainfo.getCRLPeriod()+ "'");
+                          } else { out.write(" value='24'"); }%>>
            <% } %> 
       </td>
     </tr>
@@ -729,7 +730,8 @@ function checkallfields(){
                 out.write("" + x509cainfo.getCRLIssueInterval());
               }else{ %>
          <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + x509cainfo.getCRLIssueInterval()+ "'"); }%>>
+            <% if(editca) { out.write(" value='" + x509cainfo.getCRLIssueInterval()+ "'");
+                          } else { out.write(" value='0'"); }%>>
            <% } %> 
       </td>
     </tr>
@@ -743,7 +745,8 @@ function checkallfields(){
                 out.write("" + x509cainfo.getCRLOverlapTime());
               }else{ %>
          <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + x509cainfo.getCRLOverlapTime()+ "'"); }%>>
+            <% if(editca) { out.write(" value='" + x509cainfo.getCRLOverlapTime()+ "'");
+                          } else { out.write(" value='10'"); }%>>
            <% } %> 
       </td>
     </tr>
@@ -758,7 +761,8 @@ function checkallfields(){
                 out.write("" + x509cainfo.getDeltaCRLPeriod());
               }else{ %>
          <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
-            <% if(editca) out.write(" value='" + x509cainfo.getDeltaCRLPeriod()+ "'");%>>
+            <% if(editca) { out.write(" value='" + x509cainfo.getDeltaCRLPeriod()+ "'");
+                          } else { out.write(" value='0'"); }%>>
            <% } %> 
       </td>
     </tr>       
