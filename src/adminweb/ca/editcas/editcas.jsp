@@ -414,7 +414,7 @@
               String crlissueint = request.getParameter(TEXTFIELD_CRLISSUEINTERVAL);
               if (crlissueint != null && !crlissueint.trim().equals(""))
                   crlIssueInterval = Integer.parseInt(crlissueint);
-              int crlOverlapTime = 0;
+              int crlOverlapTime = 10;
               String crloverlapint = request.getParameter(TEXTFIELD_CRLOVERLAPTIME);
               if (crloverlapint != null && !crloverlapint.trim().equals(""))
             	  crlOverlapTime = Integer.parseInt(crloverlapint);
