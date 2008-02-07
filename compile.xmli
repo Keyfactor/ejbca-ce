@@ -126,7 +126,6 @@ xkms.krss.servergenkeylength    = ${xkms.krss.servergenkeylength}
 xkms.krss.allowrevokation       = ${xkms.krss.allowrevokation}
 xkms.krss.allowautomaticreissue = ${xkms.krss.allowautomaticreissue}
 certtools.dnorderreverse          = ${certtools.dnorderreverse}
-development.provider.installation = ${development.provider.installation}
       </echo>
 <!--
 protection.enabled=${protection.enabled}

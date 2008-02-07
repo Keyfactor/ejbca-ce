@@ -334,6 +334,5 @@
 
 	<!-- Development and debug setting -->
 	<property name="certtools.dnorderreverse" value="false" />
-	<property name="development.provider.installation" value="false" />
 	
 	
