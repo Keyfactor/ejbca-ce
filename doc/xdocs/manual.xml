@@ -508,7 +508,7 @@ Use the complete path as for the Cisco VPN client below as server name.
 </p></subsubsection>
 <subsubsection name="Cisco VPN client">
 <p>
-Tested with version 4.0.2.
+Tested with version 4.0.2 and 5.0.
 </p><p>
 To enroll using the Cisco VPN client use:
 <ul>
@@ -516,7 +516,15 @@ To enroll using the Cisco VPN client use:
 <li>CA Domain=you CAs name in EJBCA</li>
 <li>In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'</li>
 </ul>
-</p></subsubsection>
+</p>
+<p>
+When using an External RA to enroll with the Cisco VPN client, the RA certificate must have 
+KeyUsage SigitalSignature and KeyEncipherment for the client to accept the CA certificates.
+However, to locate the RA encryption certificate, only KeyEncipherment can be set, which makes things quite complicated.<br/>
+Cisco VPN client is probably the worst SCEP implementation we have come across.
+<br/>The conclusion is that RA enrolment does not work with Cisco VPN client.
+</p>
+</subsubsection>
 <subsubsection name="Cisco PIX/3000">
 <p>
 Cisco PIX is working as of EJBCA 3.1.3.

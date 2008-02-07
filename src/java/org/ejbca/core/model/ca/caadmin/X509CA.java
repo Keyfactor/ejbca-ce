@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.88 2008-01-18 15:08:24 nponte Exp $
+ * @version $Id: X509CA.java,v 1.89 2008-02-07 10:28:17 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -344,7 +344,7 @@ public class X509CA extends CA implements Serializable {
             certList.addAll(chain);
         }
         try {
-            CMSProcessable msg = new CMSProcessableByteArray("EJBCA".getBytes());
+            CMSProcessable msg = new CMSProcessableByteArray(new byte[0]);
             CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             if (getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN) == null) {
