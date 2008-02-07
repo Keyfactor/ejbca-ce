@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.10 2007-12-21 09:02:51 anatom Exp $
+ * @version $Id: CAInfo.java,v 1.11 2008-02-07 16:39:51 anatom Exp $
  */
 public class CAInfo implements Serializable {
 
@@ -79,10 +79,14 @@ public class CAInfo implements Serializable {
     protected int revokationreason;
     protected Date revokationdate;
     protected int certificateprofileid;
-    protected int crlperiod;
+    /** Default value 24 hours */
+    protected int crlperiod = 24;
+    /** Default value 0 */
     protected int crlIssueInterval = 0;
+    /** Default value 10 minutes */
     protected int crlOverlapTime = 10;
-    protected int deltacrlperiod; 
+    /** Default value 0 = disabled */
+    protected int deltacrlperiod = 0; 
     protected Collection crlpublishers;  
 	protected boolean finishuser;  
 	protected Collection extendedcaserviceinfos;
