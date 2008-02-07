@@ -55,8 +55,8 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #web.availablelanguages=EN,FR,IT,ES,SE,ZH,DE,PT
 
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
-# Default: ISO-8859-1
-#web.contentencoding=ISO-8859-1
+# Default: UTF-8
+#web.contentencoding=UTF-8
 
 # The language that should be used internally for logging, exceptions and approval notifications.
 # The languagefile is stored in src/intresources/intresources.xx.properties
