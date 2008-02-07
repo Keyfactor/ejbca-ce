@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.45 2008-02-04 08:32:17 anatom Exp $
+$Id: UPGRADE,v 1.46 2008-02-07 10:26:53 anatom Exp $
 
 UPGRADE
 =======
@@ -112,7 +112,7 @@ These parameters are only used when freshly installing EJBCA though. If you plan
 old configuration files, you should merge changes from ejbca.properties.sample and web.properties.sample.
 No worry if you forget though, since you will be prompted for the values instead.
 
-You should be ablo to upgrade from EJBCA 3.1.x directly to 3.5.x, by following the same instructions for database 
+You should be able to upgrade from EJBCA 3.1.x directly to 3.5.x, by following the same instructions for database 
 upgrade as for EJBCA 3.4.
 
 From EJBCA 3.4.x to EJBCA 3.4.x
@@ -144,7 +144,7 @@ and then simply update the software on the other nodes.
 
 5. Start up JBoss. You will see some errors during startup due to that the database is not upgraded yet.
 
-6. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the neccesary database updates. 
+6. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the necessary database updates. 
    If you are upgrading from EJBCA 3.2 or 3.3, answer 'no' to the second question.
    Note: On weblogic you have to upgrade the database manually, see below.
 
@@ -201,7 +201,7 @@ Merge changes from ejbca.properties.sample into your ejbca.properties.
 Copy the directory 'p12' from the earlier installation and 'ant deploy' 
 (or deploywithjbossservice) this new one.
 
-You should be ablo to upgrade from EJBCA 3.1.x directly to 3.3.x, by following the same instructions
+You should be able to upgrade from EJBCA 3.1.x directly to 3.3.x, by following the same instructions
 as when upgrading from 3.1.x to 3.2.x (untested though).
 
 If you are using Eracom HSM, please notice that property names have changed for determining which key is used.
