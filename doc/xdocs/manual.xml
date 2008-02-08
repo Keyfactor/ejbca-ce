@@ -1916,7 +1916,7 @@ When implementing support for a new HSM the 'KeyStrings' class could be used to 
 </p><p>
 Same activation code must be used for all keys used by a CA. 
 </p><p>
-EJBCA 3.1 and later has build-in support for the nCipher NFast HSM.
+EJBCA 3.1 and later has build-in support for the nCipher nShield HSM.
 </p><p>
 EJBCA 3.2 and later also has an implementation for the Eracom HSM. The configuration was changed to 3.3.
 </p><p>
@@ -1972,7 +1972,7 @@ You have to check if that support is available.
 <subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
 The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
-tested with Utimaco Cryptoserver and nCipher nFast/netHSM and Eracom and AEP Keyper.
+tested with Utimaco Cryptoserver and nCipher nShield/netHSM and Eracom and AEP Keyper.
 </p><p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
 <ul>
@@ -2066,72 +2066,19 @@ You can check the status of a CryptoServer LAN device, for example the emulator 
 ./csadm Device=TCP:3001@172.16.175.128 GetState
 </source>
 </subsection>
-
-<subsection name="nCipher PKCS#11">
+<subsection name="nCipher nShield">
 <p>
-For nCipher the slot name is some vritual slot that we don't know the number of. 
-Luckily we can simply use the default slot by leaving out the slot number.
-<br/>
-When using nCipher PKCS#11 you first set some options. Create the file /opt/nfast/cknfastrc with the following contents:
+This subsection describes how the nShield card from nCipher is used.
+</p><p>
+First the card has to be installed and admin and operator card sets has to be created. This is described in step 1.
+</p><p>
+Step 2 describes environments variables that must be set before generating keys and installing a new CA.
+</p><p>
+Then there are 2 alternatives when creating a CA. Either the PKCS#11 provider could be used or the JCA provider.
+Step 3a-5a describes the setup using PKCS#11.
+Step 3b-5b describes the setup using JCA.
 </p>
-<source>
-CKNFAST_LOADSHARING=1
-CKNFAST_NO_ACCELERATOR_SLOTS=1
-CKNFAST_NO_UNWRAP=1
-CKNFAST_OVERRIDE_SECURITY_ASSURANCES=import
-</source>
-<p>
-Now you can generate keys with for example keytool. You can use keytool if you edit $JAVA_HOME/jre/lib/security/java.security and add a new provider
-for the SUN PKCS#11 wrapper:
-</p>
-<source>
-# configuration for security providers 1-6 omitted
-security.provider.7=sun.security.pkcs11.SunPKCS11 /opt/nfast/nfast-sunpkcs11.cfg
-</source>
-<p>
-The file /opt/nfast/nfast-sunpkcs11.cfg should contain:
-</p>
-<source>
-name=NFastJava
-library=/opt/nfast/toolkits/pkcs11/libcknfast.so
-</source>
-<p>
-You can generate keys with keytool with the command:
-</p>
-<source>
-keytool -genkey -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooSign -keyalg RSA -keysize 4096
-keytool -genkey -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooDefault -keyalg RSA -keysize 2048
-keytool -genkey -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooTest -keyalg RSA -keysize 1024
-</source>
-<p>(in Java 6 it's called -genkeypair instead of -genkey)
-</p>
-<p>AFTER you have generated the keys, you can now start JBoss. If you start JBoss before generating the keys JBoss will not find them, 
-it seems the PKCS#11 session is cached so new stuff don't appear for already present PKCS#11 sessions.
-</p>
-<p>
-Now it is possible to access the nCipher PKCS#11 default slot, protected by operator cards.
-</p>
-<p>
-This is a example of a property field when creating the CA:
-</p>
-<source>
-defaultKey fooDefault
-certSignKey fooSign
-crlSignKey fooSign
-testKey fooTest
-pin user1
-sharedLibrary /opt/nfast/toolkits/pkcs11/cknfast.so
-</source>
-<p>
-If you have generated keys with the nCipher tools, you must also associate a certificate (can be dummy) with the key.
-</p>
-</subsection>
-
-<subsection name="nCipher NFast">
-<p>
-Follow these steps to create a CA that is using a nFast card:
-</p>
-<strong>1. Install the nFast card</strong>
+<strong>1. Install the nShield card</strong>
 <p>
 Make sure you have all necessary software and drivers installed and created the user and group nfast. In Linux should the software be installed to /opt/nfast or the location environment variable NFAST_HOME is pointing to.
 </p>
@@ -2268,18 +2215,6 @@ Open the file '/opt/nfast/kmdata/config/config' and set 'nonpriv_port=9000' and 
 <p>
 Restart from scratch: 'sudo /etc/init.d/nfast restart'.
 </p>
-<strong>2. Create keys that should be used on the NFast card</strong>
-<p>
-Login as the user that is running the application server. This user must be a member of the nfast group. 
-<br/>
-The following environment variables should be set for this user:
-<ul>
-<li>JAVA_HOME (/usr/local/jdk1.5.0_11 or similar)</li>
-<li>APPSRV_HOME (/home/jboss/jboss-4.2.0.GA or similar)</li>
-<li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
-<li>NFAST_HOME (/opt/nfast)</li>
-</ul>
-</p>
 <note>
 The preload command (see below) must always be called as the same user unless the directory /opt/nfast/kmdata/preload is removed.
 <br/>If you get a "HostDataAccessDenied" error when running preload or starting JBoss, it is because the
@@ -2305,6 +2240,63 @@ Card reading complete.
 
 Loading complete; now pausing
 </source>
+<strong>Step 2. Setup the environment.</strong>
+<p>
+Login as the user that is running the application server. This user must be a member of the nfast group. 
+<br/>
+The following environment variables should be set for this user:
+<ul>
+<li>JAVA_HOME (/usr/local/jdk1.5.0_11 or similar)</li>
+<li>APPSRV_HOME (/home/jboss/jboss-4.2.0.GA or similar)</li>
+<li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
+<li>NFAST_HOME (/opt/nfast)</li>
+</ul>
+</p>
+<strong>Step 3a. Create PKCS#11 keys that should be used on the nShield card</strong>
+<source>
+jboss@donny:~/work/test/keygen$ cat ocs-sunpkcs11.cfg 
+name=NFastJava
+library=/opt/nfast/toolkits/pkcs11/libcknfast.so
+slotListIndex=1
+attributes(generate,CKO_PRIVATE_KEY,*) = {
+  CKA_PRIVATE = true
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_TOKEN = true
+}
+</source>
+<source>
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 default
+Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 default
+PKCS11 Token [SunPKCS11-NFastJava] Password: 
+Creating certificate with entry default.
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 crypt
+Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-d165e440baa8dc9963780c682836ba17513e8cbf key (RSAPrivate) on modules 1
+Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 crypt
+PKCS11 Token [SunPKCS11-NFastJava] Password: 
+Creating certificate with entry crypt.
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 1024 test
+Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-27cfdae84bf4298f2dde83cd00980a81bcf095bf key (RSAPrivate) on modules 1
+Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 1024 test
+PKCS11 Token [SunPKCS11-NFastJava] Password: 
+Creating certificate with entry test.
+jboss@donny:~/work/test/keygen$ 
+</source>
+<strong>Step 4b. Start EJBCA with nShield HSM</strong>
+<source>
+jboss@donny:~/work/test/ca$ ~nfast/bin/preload -c ejbca $JBOSS_HOME/bin/run.sh
+</source>
+<strong>Step 5a. Create a new CA in the web GUI of EJBCA</strong>
+<source>
+defaultKey default
+testKey test
+keyEncryptKey crypt
+hardTokenEncrypt crypt
+pin dummy
+slotListIndex 1
+sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
+</source>
+<strong>Step 3b. Create JCA keys that should be used on the nShield card</strong>
 <p>
 Start a new window and login as the same user (jboss user).
 Now 3 keys protected by the key set 'ejbca' are created like this:
@@ -2340,49 +2332,18 @@ Different CAs may share the same keystore but may also have different key stores
 The last key in the example is used to check the status of the HSM by EJBCA.
 This key is small (512 bit) to enhance performance.
 </p>
-<strong>3. Start EJBCA with NFast HSM</strong>
+<strong>Step 4b. Start EJBCA with nShield HSM</strong>
 <p>
 To start EJBCA, preload must be running with the required key stores loaded. In this example this was done in step 2. A provided script may be used to start EJBCA:
 </p>
 <source>
 jboss@donny:~/tmp$ $EJBCA_HOME/bin/nCipherJboss.sh start
-CMD_START = /opt/nfast/bin/preload /home/jboss/jboss/bin/run.sh
-Executing /home/jboss/jboss/bin/run.sh
-=========================================================================
-
-  JBoss Bootstrap Environment
-
-  JBOSS_HOME: /home/jboss/jboss
-
-  JAVA: /usr/local/jdk/bin/java
-
-  JAVA_OPTS: -server -Xms128m -Xmx512m -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Dprogram.name=run.sh
-
-  CLASSPATH: /opt/nfast/java/classes/kmcsp.jar:/opt/nfast/java/classes/kmjava.jar:/opt/nfast/java/classes/nfjava.jar:/opt/nfast/java/classes/rsaprivenc.jar:/home/jboss/jboss/bin/run.jar:/usr/local/jdk/lib/tools.jar
-
-=========================================================================
-
-09:36:49,419 INFO  [Server] Starting JBoss (MX MicroKernel)...
-09:36:49,432 INFO  [Server] Release ID: JBoss [Zion] 4.0.4.GA (build: CVSTag=JBoss_4_0_4_GA date=200605151000)
-09:36:49,471 INFO  [Server] Home Dir: /home/jboss/jboss-4.0.4.GA
-09:36:49,472 INFO  [Server] Home URL: file:/home/jboss/jboss-4.0.4.GA/
-09:36:49,474 INFO  [Server] Patch URL: null
-09:36:49,475 INFO  [Server] Server Name: default
-09:36:49,475 INFO  [Server] Server Home Dir: /home/jboss/jboss-4.0.4.GA/server/default
-09:36:49,476 INFO  [Server] Server Home URL: file:/home/jboss/jboss-4.0.4.GA/server/default/
-09:36:49,477 INFO  [Server] Server Log Dir: /home/jboss/jboss-4.0.4.GA/server/default/log
-09:36:49,478 INFO  [Server] Server Temp Dir: /home/jboss/jboss-4.0.4.GA/server/default/tmp
-09:36:49,479 INFO  [Server] Root Deployment Filename: jboss-service.xml
-09:36:50,495 INFO  [ServerInfo] Java version: 1.5.0_06,Sun Microsystems Inc.
-09:36:50,496 INFO  [ServerInfo] Java VM: Java HotSpot(TM) Server VM 1.5.0_06-b05,Sun Microsystems Inc.
-09:36:50,496 INFO  [ServerInfo] OS-System: Linux 2.6.15-26-server,i386
-09:36:52,755 INFO  [Server] Core system initialized
 </source>
-<strong>4. Create a new CA in the web GUI of EJBCA</strong>
+<strong>Step 5b. Create a new CA in the web GUI of EJBCA</strong>
 <p>
 Choose NFastCAToken as "CA Token Type".
 </p><p>
-Define the keystore on the nFast card that should be used. The keystore is defined by the hexadecimal hash string from the output of the key generation.
+Define the keystore on the nShield card that should be used. The keystore is defined by the hexadecimal hash string from the output of the key generation.
 Define which keys in the keystore that should be used and the purpose of these keys.
 </p><p>
 Use one row for each definition. Begin the row with a key word. It is one row for the keystore and one for each key definition. Key word and value is separated by one or more spaces.
