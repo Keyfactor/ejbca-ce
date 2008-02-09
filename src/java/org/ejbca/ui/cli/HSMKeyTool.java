@@ -21,19 +21,20 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.25 2008-02-06 14:25:24 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.26 2008-02-09 21:41:04 primelars Exp $
  *
  */
 public class HSMKeyTool {
 //    private static String CREATE_CA_SWITCH = "createca";
-    private static String ENCRYPT_SWITCH = "encrypt";
-    private static String DECRYPT_SWITCH = "decrypt";
-    private static String GENERATE_SWITCH = "generate";
-    private static String DELETE_SWITCH = "delete";
-    private static String TEST_SWITCH = "test";
-    private static String CREATE_KEYSTORE_SWITCH = "createkeystore";
-    private static String CREATE_KEYSTORE_MODULE_SWITCH = "createkeystoremodule";
-    private static String MOVE_SWITCH = "move";
+    private static final String ENCRYPT_SWITCH = "encrypt";
+    private static final String DECRYPT_SWITCH = "decrypt";
+    private static final String GENERATE_SWITCH = "generate";
+    private static final String GENERATE_MODULE_SWITCH = GENERATE_SWITCH+"module";
+    private static final String DELETE_SWITCH = "delete";
+    private static final String TEST_SWITCH = "test";
+    private static final String CREATE_KEYSTORE_SWITCH = "createkeystore";
+    private static final String CREATE_KEYSTORE_MODULE_SWITCH = CREATE_KEYSTORE_SWITCH+"module";
+    private static final String MOVE_SWITCH = "move";
     /**
      * @param args
      */
@@ -52,13 +53,16 @@ public class HSMKeyTool {
                 }
                 return;
             } else */
-            if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
+            if ( args.length > 1 && args[1].toLowerCase().trim().contains(GENERATE_SWITCH) ) {
                 if ( args.length < 6 ) {
                     System.err.println(commandString + "<key size> <key entry name> " + '['+sKeyStore+']');
                     if ( isP11 )
                         System.err.println("If <slot number> is omitted then <the shared library name> will specify the sun config file.");
-                } else
+                } else {
+                    if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) )
+                        System.setProperty("protect", "module");
                     KeyStoreContainer.getIt(args[4], args[2], args[3], args.length>7 ? args[7] : null).generate(Integer.parseInt(args[5].trim()), args.length>6 ? args[6] :"myKey");
+                }
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
                 if ( args.length < 6 )
@@ -92,11 +96,9 @@ public class HSMKeyTool {
                     KeyStoreContainer.move(args[2], args[3], args[4], args[5], args[6]);
                 return;
             } else if ( !isP11 ){
-                if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_SWITCH)) {
-                    KeyStoreContainer.getIt(args[4], args[2], args[3], null).storeKeyStore();
-                    return;
-                } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_MODULE_SWITCH)) {
-                    System.setProperty("protect", "module");
+                if( args.length > 1 && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
+                    if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH))
+                        System.setProperty("protect", "module");
                     KeyStoreContainer.getIt(args[4], args[2], args[3], null).storeKeyStore();
                     return;
                 }
@@ -105,6 +107,9 @@ public class HSMKeyTool {
             pw.println("Use one of following commands: ");
 //            pw.println("  "+args[0]+" "+CREATE_CA_SWITCH);
             pw.println("  "+args[0]+" "+GENERATE_SWITCH);
+            if ( !isP11 ){
+                pw.println("  "+args[0]+" "+GENERATE_MODULE_SWITCH);
+            } 
             pw.println("  "+args[0]+" "+DELETE_SWITCH);
             pw.println("  "+args[0]+" "+TEST_SWITCH);
             if ( !isP11 ){
