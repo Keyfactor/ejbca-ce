@@ -2432,53 +2432,30 @@ sub-CA's certificate. Activate the CA-token from Basic Functions when needed.
 </p>
 <strong>Using module protected keys</strong>
 <p>
-The security world has to be initialized in the default FIPS 140-2 Level 2 for this to work.
-First backup and edit %JAVA_HOME%\jre\lib\security\java.security and insert com.ncipher.provider.km.nCipherKM as the first provider
-</p><source>
-security.provider.1=com.ncipher.provider.km.nCipherKM
-security.provider.2=sun.security.provider.Sun
-...
-</source><p>
-Then create an empty a keystore with
-</p>
-<source>host&gt; %EJBCA_HOME%\bin\nCipherHSM.cmd createkeystoremodule
- ...
- Next line will contain the identity identifying the keystore:
- 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
-</source>
-<p>
-This hash should be written to a file that has to be exactly 40 bytes long:
-</p>
-<ul>
-<li>Linux: 'cat &gt; temp.keystore' and copypaste the string, press Ctrl-D and Ctrl-C.</li>
-<li>Windows: 'copy con: temp.keystore' and copypaste the string, press Ctrl-Z and Enter.</li>
-</ul>
-<p>
-Generate module protected key "defaultRoot" in this keystore
+Module protected keys do not need an operator card set. Hence no PIN code is needed to active such a key. A CA could be configured to use a keystore with module protected keys.
 </p>
 <source>
-host&gt; %NFAST_HOME%\bin\nfkminfo.exe -k
- AppName jcecsp Ident 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
- 
-host&gt; %NFAST_HOME%\bin\generatekey.exe --batch --generate jcecsp type=rsa size=4096 protect=module alias=defaultRoot keystore=temp.keystore
- ...
- ERROR: Could not write to temp.keystore
- ...
-host&gt; %NFAST_HOME%\bin\nfkminfo.exe -k
- AppName jcecsp Ident 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
- AppName jcecsp Ident 0acea7eb80528b15851e6a3e7969d4a21eb2d57c-key-a68f3efde60a519b7c9d4e4df22fd2b53ded37f3
+jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 4096 default
+Warning: NFAST_HOME not set, using default to /opt/nfast
+Creating KeyStore of type nCipher.sworld with provider nCipherKM.
+Creating certificate with entry defaultKey.
+Next line will contain the identity identifying the keystore:
+41ca8b21186cb508c5e3b84f9df9b4208042f681
+jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 512 test 41ca8b21186cb508c5e3b84f9df9b4208042f681
+Warning: NFAST_HOME not set, using default to /opt/nfast
+Creating KeyStore of type nCipher.sworld with provider nCipherKM with ID 41ca8b21186cb508c5e3b84f9df9b4208042f681.
+Creating certificate with entry test.
+Next line will contain the identity identifying the keystore:
+41ca8b21186cb508c5e3b84f9df9b4208042f681
 </source>
 <p>
-Despite the error message the key is still created.
-</p><p>
-Important: Restore %JAVA_HOME%\jre\lib\security\java.security now or EJBCA will stop working!
-</p><p>
-Start JBoss as for any soft token and create a new CA 'ModuleProtectedCA' in the Admin GUI.
+Start JBoss and create a new CA 'ModuleProtectedCA' in the Admin GUI.
 Choose CA Token Type 'NFastCAToken' and enter the generated key's properties.
 </p>
 <source>
-keyStore 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
-defaultKey defaultRoot
+keyStore 41ca8b21186cb508c5e3b84f9df9b4208042f681
+defaultKey default
+testKey test
 </source>
 <p>
 Complete the form and press "Create". Go to Admin GUI -> Basic Functions -> View Information for 'ModuleProtectedCA' -> Activate.
