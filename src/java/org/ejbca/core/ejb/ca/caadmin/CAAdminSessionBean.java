@@ -112,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.69 2008-01-18 15:08:24 nponte Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.70 2008-02-10 21:03:46 primelars Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -332,10 +332,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
         CATokenContainer catoken = new CATokenContainerImpl(catokeninfo);
 		String authCode = catokeninfo.getAuthenticationCode();
-		if (StringUtils.isEmpty(authCode)) {
-			log.debug("Creating CA using system default keystore password");
-    	    authCode = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");        			
-		}
+        authCode = getDefaultKeyStorePassIfSWAndEmpty(authCode, catokeninfo);
         if(catokeninfo instanceof SoftCATokenInfo){
         	try{
         		// There are two ways to get the authentication code:
@@ -1179,16 +1176,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		CATokenContainer caToken = ca.getCAToken();
     		if (regenerateKeys) {
         		boolean renew = true;
-        		// Soft keystores can not have empty passwords, it probably mens to use the default one
-        		if (caToken.getCATokenInfo() instanceof SoftCATokenInfo) {
-            		if (StringUtils.isEmpty(keystorepass)) {
-            			keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");          		
-                		if (keystorepass == null) {
-                			log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");
-                			throw new IllegalArgumentException("Missing keyStorePass property.");		    		
-                		}
-            		}        			
-        		}
+                keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
         		caToken.generateKeys(keystorepass, renew);
     			ca.setCAToken(caToken);
     		}
@@ -1286,6 +1274,25 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CARENEWED,msg);
     	debug("<CAAdminSession, renewCA(), caid=" + caid);
     } // renewCA
+
+    /**
+     * Soft keystores can not have empty passwords, it probably mens to use the default one
+     * @param keystorepass The password that can not be empty if SW.
+     * @param tokenInfo Tells if SW.
+     * @return The password to use.
+     */
+    private String getDefaultKeyStorePassIfSWAndEmpty(String keystorepass, CATokenInfo tokenInfo) {
+        if (tokenInfo instanceof SoftCATokenInfo && StringUtils.isEmpty(keystorepass)) {
+            log.debug("Using system default keystore password");
+            keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");                
+            if (keystorepass == null) {
+                log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");
+                throw new IllegalArgumentException("Missing keyStorePass property.");
+            }
+        }
+        return keystorepass;
+    }
+
 
     /**
      *  Method that revokes the CA. After this is all certificates created by this CA

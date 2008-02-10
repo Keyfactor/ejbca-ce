@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.32 2008-02-06 12:31:33 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.33 2008-02-10 21:03:46 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -57,6 +57,7 @@ ca.tokentype=soft
 
 # Password for the CA token.
 # With soft token, use password null.
+# If no password should be used (for example nCipher module protected), use password ''.
 ca.tokenpassword=null
 
 # Configuration file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui.
