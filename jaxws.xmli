@@ -97,7 +97,7 @@
     	
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
         <war warfile="${dist.dir}/ejbcaws.war" webxml="src/jaxws/web.xml">
-            <webinf dir="src/jaxws" includes="sun-jaxws.xml, weblogic.xml"/>
+            <webinf dir="src/jaxws" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
             <!-- <zipfileset
                     dir="tmp/jaxws/wsdl"
                     includes="*.wsdl, *.xsd"
