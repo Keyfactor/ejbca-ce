@@ -690,16 +690,19 @@ Configure Websphere in the admin console.
   <ul>
   <li>Install the oracle jdbc jar (ex ojdbc4.jar) in $WAS_HOME/lib.</li>
   <li>Navigate to Resources->JDBC->JDBC Providers</li>
-  <li>Click New</li>
+  <li>Select for example Cell scope, and click New</li>
   <li>Select 'Oracle' from 'Database type' dropdown</li>
   <li>Select 'Connection pool data source' from 'Implementation type' dropdown</li>
   <li>Insert the path to the jar file, i.e. $WAS_HOME/lib</li>
+  <li>Finish and save</li>
   <li>Navigate to Resources->JDBC->Data sources</li>
-  <li>Click new</li>
+  <li>Select for example Cell scope, and click new</li>
   <li>Provide a data source and Jndi name, jndi name must match the jndi-name-prefix and jndi-name configured in database.properties, e.g. jdbc/EjbcaDS</li>
   <li>Click next</li> 
-  <li>Select your created JDBC Provider</li>
-  <li>Done</li>
+  <li>Select your created JDBC Provider, and click Next</li>
+  <li>Enter the database URL, e.g. jdbc:oracle:thin:@127.0.0.1:1521:ejbca</li>
+  <li>Select 'Oracle10g data store helper', and click Next. The checkbox 'Use this data source in container managed persistence (CMP)' must be checked.</li>
+  <li>Finish</li>
   <li>Navigate to Resources->JDBC->Data sources</li>
   <li>Select the created data source</li>
   <li>Click on the 'JAAS - J2C authentication data' link</li>
@@ -708,9 +711,9 @@ Configure Websphere in the admin console.
       User ID: ejbca<br/>
       Password: ejbca</li>
   <li>Save all changes</li>
-  <li>Select the create authentication provider as 'Component-managed authentication alias'</li>
-  <li>Click OK</li>
-  <li>You can now go in and 'Test Connection' for your new DataSource.</li>
+  <li>Go back to the datasource and select the create authentication provider as 'Component-managed authentication alias'</li>
+  <li>Click OK and save all changes</li>
+  <li>You can now go in and 'Test Connection' for your new DataSource. Make sure it is successful</li>
   </ul>
   Creating a datasource for PostgreSQL:<br/>
   <ul>
