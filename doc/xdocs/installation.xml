@@ -717,7 +717,7 @@ Configure Websphere in the admin console.
   </ul>
   Creating a datasource for PostgreSQL:<br/>
   <ul>
-  <li>DataSourceProvider: For postgres I used the jdbc driver postgresql-8.2-507.jdbc3.jar. You have to specify the 'Implementation class name' for the provider 'org.postgresql.jdbc3.Jdbc3ConnectionPool', or 'org.postgresql.xa.PGXADataSource'.</li>
+  <li>DataSourceProvider: For postgres I used 'User-defined' type and implementation class name 'org.postgresql.jdbc3.Jdbc3ConnectionPool', or 'org.postgresql.xa.PGXADataSource'. I used the jdbc driver postgresql-8.2-507.jdbc3.jar.</li>
   <li>DataSource: You have to add Custom Properties to the datasource with databaseName, serverName and port (port is optional).</li>
   </ul>     
   </li>
@@ -747,9 +747,9 @@ Efter deployment and installation you want to configure SSL in Websphere so you 
 The admin-GUI in EJBCA requires client certificate authentication.  
 <br/>Configure the SSL port to require client certificate in order to access the admin-GUI:
 <ol>
-  <li>Navigate to Servers->Application servers->Web Container Settings->Web container transport chains</li>
+  <li>Navigate to Servers->Application servers->server1->Web Container Settings->Web container transport chains</li>
   <li>Change the WCInboundDefaultSecure to require client certificate. The trick is to create a new node SSL 
-    configuration that manages this connection. You don't want to require SSL in the NodeDefauleSSLSettings, since
+    configuration that manages this connection. You don't want to require SSL in the NodeDefaultSSLSettings, since
     that will apply to your Websphere admin as well. You set 'require client cert' in the Quality of protection settings.</li>
   <li>Add the CA certificate from EJBCA to the default trust store and use that. In Websphere ND you add certificates to the truststore under
       Security->SSL Certificateas and key mgmt->Key stores and certificates->CellDefaultTrustStore->Signer certificates.<br/>
