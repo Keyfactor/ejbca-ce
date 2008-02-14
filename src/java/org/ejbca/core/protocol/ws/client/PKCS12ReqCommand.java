@@ -26,7 +26,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Request a keystore given a pkcs12
  *
- * @version $Id: PKCS12ReqCommand.java,v 1.4 2006-11-02 08:03:22 anatom Exp $
+ * @version $Id: PKCS12ReqCommand.java,v 1.5 2008-02-14 12:53:25 jeklund Exp $
  */
 public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -57,7 +57,7 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
        
     	try {   
            
-            if(args.length <  5 || args.length > 6){
+            if (args.length < 6 || args.length > 7) {
             	usage();
             	System.exit(-1);
             }
@@ -69,7 +69,7 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
             
             String outputPath = null;
-            if(args.length == 6){
+            if (args.length == 7) {
               outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
             }
             
