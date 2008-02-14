@@ -26,7 +26,12 @@ rem Prepare arguments
 set ARGS=%0 %1 %2
 if "%1" == "" (
 echo foo
-   set ARGS=%0 dummy
+   set ARGS=%0 dummy dummy
+)
+
+if "%2" == "" (
+echo foo
+   set ARGS=%0 %1 dummy
 )
 
 rem Finally run java
