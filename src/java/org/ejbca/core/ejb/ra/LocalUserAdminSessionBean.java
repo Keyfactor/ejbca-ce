@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.58 2008-01-04 13:27:23 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.59 2008-02-15 14:35:58 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1082,7 +1082,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         try {
             data = home.findByPrimaryKey(pk);
 		} catch (FinderException e) {
-			throw new NotFoundException ("User " + username + "not found."); 
+			throw new NotFoundException ("User '" + username + "' not found."); 
         }
     	// Authorized?
         int caid = data.getCaId();
