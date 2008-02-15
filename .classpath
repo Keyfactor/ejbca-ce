@@ -28,7 +28,6 @@
 	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
 	<classpathentry kind="lib" path="lib/ext/httpunit.jar"/>
 	<classpathentry kind="lib" path="lib/ext/nekohtml.jar"/>
-	<classpathentry kind="lib" path="lib/xerces_2_3_0.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15.jar"/>
