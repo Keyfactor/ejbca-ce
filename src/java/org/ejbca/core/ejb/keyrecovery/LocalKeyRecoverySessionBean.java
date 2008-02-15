@@ -59,7 +59,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.11 2007-12-04 14:22:52 jeklund Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.12 2008-02-15 15:06:12 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -640,12 +640,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public boolean markAsRecoverable(Admin admin, X509Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {
-        debug(">markAsRecoverable(certificatesn: " + certificate.getSerialNumber() + ")");
-        
-        boolean returnval = false;
+    public boolean markAsRecoverable(Admin admin, X509Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
         final String hexSerial = certificate.getSerialNumber().toString(16);
         final String dn = CertTools.getIssuerDN(certificate);        
+        debug(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
+        boolean returnval = false;
         try {
             String username = null;
             KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
