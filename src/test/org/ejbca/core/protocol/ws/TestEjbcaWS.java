@@ -12,7 +12,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** To run you must have the file tmp/bin/junit/jndi.properties
  * 
- * @version $Id: TestEjbcaWS.java,v 1.13 2008-01-03 16:15:29 anatom Exp $
+ * @version $Id: TestEjbcaWS.java,v 1.14 2008-02-15 14:50:27 anatom Exp $
  */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
 	
@@ -116,54 +116,8 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     }
 
     
-    public void test99cleanUp() throws Exception {
-		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
-		//getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-		if (getUserAdminSession().existsUser(intAdmin, wsTestAdminUsername)) {
-			// Remove from admin group
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
-			AdminGroup admingroup = getAuthSession().getAdminGroup(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId());
-			Iterator iter = admingroup.getAdminEntities().iterator();
-			while(iter.hasNext()){
-				AdminEntity adminEntity = (AdminEntity) iter.next();
-				if(adminEntity.getMatchValue().equals(wsTestAdminUsername)){
-					ArrayList<AdminEntity> list = new ArrayList<AdminEntity>();
-					list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,wsTestAdminUsername,cainfo.getCAId()));
-					getAuthSession().removeAdminEntities(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId(), list);
-					getAuthSession().forceRuleUpdate(intAdmin);
-				}
-			}
-			// Remove user
-			getUserAdminSession().revokeAndDeleteUser(intAdmin, wsTestAdminUsername, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-		}
-		if (getUserAdminSession().existsUser(intAdmin, wsTestNonAdminUsername)) {
-			getUserAdminSession().revokeAndDeleteUser(intAdmin, wsTestNonAdminUsername, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-		}
-        if (new File("p12/" + wsTestAdminUsername + ".jks").exists()) {
-        	new File("p12/" + wsTestAdminUsername + ".jks").delete();
-        }
-        if (new File("p12/" + wsTestNonAdminUsername + ".jks").exists()) {
-        	new File("p12/" + wsTestNonAdminUsername + ".jks").delete();
-        }
-        
-		// Remove test user
-        try {
-        	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-        try {
-        	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-        // Remove Key recovery end entity profile
-        try {
-        	getRAAdmin().removeEndEntityProfile(intAdmin, "KEYRECOVERY");
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-
+    public void test99cleanUpAdmins() throws Exception {
+    	super.test99cleanUpAdmins();
     }
     
 }

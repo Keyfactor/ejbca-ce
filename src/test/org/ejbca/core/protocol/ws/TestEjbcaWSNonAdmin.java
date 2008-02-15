@@ -57,73 +57,8 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 	private Admin reqadmin;  
 
 	public void test00SetupAccessRights() throws Exception{
-		Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		boolean userAdded = false;
-		
-		if(!getUserAdminSession().existsUser(intAdmin, "wstest")){
-			UserDataVO user1 = new UserDataVO();
-			user1.setUsername("wstest");
-			user1.setPassword("foo123");			
-			user1.setDN("CN=wstest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
-			user1.setCAId(cainfo.getCAId());
-			user1.setEmail(null);
-			user1.setSubjectAltName(null);
-			user1.setStatus(10);
-			user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
-			user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-			user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-			user1.setType(65);
-			
-			getUserAdminSession().addUser(intAdmin, user1, true);
-			userAdded = true;
-
-			boolean adminExists = false;
-			AdminGroup admingroup = getAuthSession().getAdminGroup(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId());
-			Iterator iter = admingroup.getAdminEntities().iterator();
-			while(iter.hasNext()){
-				AdminEntity adminEntity = (AdminEntity) iter.next();
-				if(adminEntity.getMatchValue().equals("wstest")){
-					adminExists = true;
-				}
-			}
-			
-			if(!adminExists){
-				ArrayList list = new ArrayList();
-				list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,"wstest",cainfo.getCAId()));
-				getAuthSession().addAdminEntities(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId(), list);
-				getAuthSession().forceRuleUpdate(intAdmin);
-			}
-			
-		}
-		
-		if(!getUserAdminSession().existsUser(intAdmin, "wsnonadmintest")){
-			UserDataVO user1 = new UserDataVO();
-			user1.setUsername("wsnonadmintest");
-			user1.setPassword("foo123");			
-			user1.setDN("CN=wsnonadmintest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
-			user1.setCAId(cainfo.getCAId());
-			user1.setEmail(null);
-			user1.setSubjectAltName(null);
-			user1.setStatus(10);
-			user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
-			user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-			user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-			user1.setType(1);
-			
-			getUserAdminSession().addUser(intAdmin, user1, true);
-			userAdded = true;	
-		}
-		
-		if(userAdded){
-			BatchMakeP12 batch = new BatchMakeP12();
-			batch.setMainStoreDir("p12");
-			batch.createAllNew();
-		}	
+		super.test00SetupAccessRights();
 	}
-	
-
     
     public void test01checkNonAuthorizatied() throws Exception{	
     	setUpNonAdmin();
@@ -320,6 +255,13 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 
     }
     
+    public void test99cleanUpAdmins() throws Exception {
+    	super.test99cleanUpAdmins();
+    }
+
+    //
+    // private helper functions
+    //
     private void setupApprovals() throws Exception{
 		ctx = getInitialContext();
 		Object obj = ctx.lookup("ApprovalSession");
