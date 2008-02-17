@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Download</title>
+  </properties>
+
+<body>
+  <section name="Main source packages">
+    <p>
+    Download the main packages from <a href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">Sourceforge</a>.
+    </p>
+  </section>
+  <section name="Debian packages">
+    <p>
+    For Debian stable(etch) and unstable EJBCA 3.5.x Packages see:<br/>
+    <a href="http://han.pp.se/gl/article.php?story=20080115235612100">http://han.pp.se/gl/article.php?story=20080115235612100</a>.
+    </p>
+  </section>
+
+</body>
+</document>
+
