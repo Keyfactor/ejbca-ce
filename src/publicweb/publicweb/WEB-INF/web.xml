@@ -23,6 +23,14 @@
         <url-pattern>/certreq</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>AutoEnrollServlet</servlet-name>
+        <servlet-class>org.ejbca.ui.web.pub.AutoEnrollServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AutoEnrollServlet</servlet-name>
+        <url-pattern>/autoenroll</url-pattern>
+    </servlet-mapping>
 
 <!--
     <servlet>
@@ -132,6 +140,13 @@ The old certificates will be removed when the new ones are added.
 	    <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
 	    <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
 	    <ejb-link>CertificateStoreSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref id="EJBLocalRef_5">
+	    <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
+	    <ejb-ref-type>Session</ejb-ref-type>
+	    <local-home>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome</local-home>
+	    <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
+	    <ejb-link>RaAdminSession</ejb-link>
     </ejb-local-ref>
 
 </web-app>

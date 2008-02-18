@@ -21,7 +21,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.11 2007-06-20 11:22:12 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.12 2008-02-18 14:50:49 jeklund Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -61,7 +61,17 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
 
     // Title of ra admin web interface.
     private static final  String   DEFAULTEJBCATITLE             = "@EJBCA@ Administration";
-
+    
+    // Default values for AutoEnroll
+    private static final  String  AUTOENROLL_DEFAULT_ADSERVER = "dc1.company.local";
+    private static final  int  AUTOENROLL_DEFAULT_ADPORT = 0;
+    private static final  String  AUTOENROLL_DEFAULT_BASEDN_USER = "CN=Users,DC=company,DC=local";
+    public static final  int  AUTOENROLL_DEFAULT_CA = -1;
+    private static final  String  AUTOENROLL_DEFAULT_CONNECTIONDN = "CN=ADReader,CN=Users,DC=company,DC=local";
+    private static final  String  AUTOENROLL_DEFAULT_CONNECTIONPWD = "foo123";
+    private static final  boolean  AUTOENROLL_DEFAULT_SSLCONNECTION = false;
+    private static final  boolean  AUTOENROLL_DEFAULT_USE = false;
+    
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
     public static final  int      SE                 = 1;
@@ -365,8 +375,48 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
  
        public   void    setApprovalNotificationFromAddress(String approvalNotificationFromAddress){ 
        	data.put(APPROVALNOTIFICATIONFROMADDR, approvalNotificationFromAddress);
-       }     
-      
+       }
+   
+       public void setAutoEnrollADServer(String server) { data.put(AUTOENROLL_ADSERVER, server); }
+       public String getAutoEnrollADServer() {
+    	   String ret = (String) data.get(AUTOENROLL_ADSERVER);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_ADSERVER : ret);
+       }
+       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, new Integer(caid)); }
+       public int getAutoEnrollADPort() {
+    	   Integer ret = (Integer) data.get(AUTOENROLL_ADPORT);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_ADPORT : ret);
+       }
+       public void setAutoEnrollBaseDNUser(String baseDN) { data.put(AUTOENROLL_BASEDN_USER, baseDN); }
+       public String getAutoEnrollBaseDNUser() {
+    	   String ret = (String) data.get(AUTOENROLL_BASEDN_USER);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_BASEDN_USER : ret);
+   	   }
+       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, new Integer(caid)); }
+       public int getAutoEnrollCA() {
+    	   Integer ret = (Integer) data.get(AUTOENROLL_CA);
+    	   return (ret == null ? AUTOENROLL_DEFAULT_CA : ret);
+       }
+       public void setAutoEnrollConnectionDN(String connectionDN) { data.put(AUTOENROLL_CONNECTIONDN, connectionDN); }
+       public String getAutoEnrollConnectionDN() {
+    	   String ret = (String) data.get(AUTOENROLL_CONNECTIONDN);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONDN : ret);
+       }
+       public void setAutoEnrollConnectionPwd(String connectionDN) { data.put(AUTOENROLL_CONNECTIONPWD, connectionDN); }
+       public String getAutoEnrollConnectionPwd() {
+    	   String ret = (String) data.get(AUTOENROLL_CONNECTIONPWD);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONPWD : ret);
+       }
+       public void setAutoEnrollSSLConnection(boolean use) { data.put(AUTOENROLL_SSLCONNECTION, Boolean.valueOf(use)); }
+       public boolean getAutoEnrollSSLConnection() {
+    	   Boolean ret = (Boolean) data.get(AUTOENROLL_SSLCONNECTION);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_SSLCONNECTION : ret);
+       }
+       public void setAutoEnrollUse(boolean use) { data.put(AUTOENROLL_USE, Boolean.valueOf(use)); }
+       public boolean getAutoEnrollUse() {
+    	   Boolean ret = (Boolean) data.get(AUTOENROLL_USE);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_USE : ret);
+       }
 
     /** Implemtation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
@@ -420,8 +470,16 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
     private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
     private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
-       
 
+    // Configuration for Auto Enrollment
+    private static final   String AUTOENROLL_USE = "autoenroll.use";
+    private static final   String AUTOENROLL_ADSERVER = "autoenroll.adserver";
+    private static final   String AUTOENROLL_ADPORT = "autoenroll.adport";
+    private static final   String AUTOENROLL_SSLCONNECTION = "autoenroll.sslconnection";
+    private static final   String AUTOENROLL_CONNECTIONDN = "autoenroll.connectiondn";
+    private static final   String AUTOENROLL_CONNECTIONPWD = "autoenroll.connectionpwd";
+    private static final   String AUTOENROLL_BASEDN_USER = "autoenroll.basedn.user";
+    private static final   String AUTOENROLL_CA = "autoenroll.caid";
     
       // Paths
     private static final   String AUTHORIZATION_PATH  = "authorization_path";

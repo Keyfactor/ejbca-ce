@@ -248,6 +248,7 @@ CA Certificate
   When the users certificate is created, the certificate is published to the AM LDAP server and certificate authentication can be configured and used in AM.
   </p>
   </section>
+  
   <section name="Setting up an Apache Web Server as a proxy in front of EJBCA">
   <p>
   This section will show you how to use an Apache Web Server Proxy in front of EJBCA.
@@ -377,6 +378,729 @@ NameVirtualHost *:443
   prevent future services from being exploited).
   </p>
   </section>
+
+  <section name="Setting up Autoenrollment for Windows clients with EJBCA [Alpha]">
+  <p>
+  This section will show you how to set up automatic certificate enroll of
+  machines and users in an Windows environment with EJBCA.
+  </p><p>
+  General idea
+  </p>
+  <ul>
+	<li>Use mod_auth_kerb on a Apache2 web server proxy to validate the requesters identity using Kerberos.</li>
+	<li>A login VBS-Script creates a certificate request that is sent to the proxy using IE-components.</li>
+	<li>A Servlet protected by the proxy receives the requstes and creates a new cert</li>
+	<li>The new certificate will use information from the request (UPN and CertificateTemplate) and read.</li>
+	<li>information from active directory (CN,DC etc)</li>
+	<li>Autoenrollment should be configurable in the Admin GUI.</li>
+  </ul>
+  <subsection name="Current status and known issues">
+  <p>
+  Current status
+  </p>
+  <ul>
+  	<li>Machine enroll on Domain Controller: WORKING </li>
+	<li>DomainController enroll on Domain Controller: WORKING </li>
+	<li>User enroll (Administrator) on Domain Controller: <b>NOT WORKING</b> (Does not trusts ca-server as Intranet, despite GP) </li>
+	<li>Machine enroll on other WS2K3 client: WORKING (not checked in a while) </li>
+	<li>User enroll (Administrator) on other WS2K3 client: <b>NOT WORKING</b> (Does not trusts ca-server as Intranet, despite GP, also complains about untrusted VBS if ran manually) </li>
+	<li>Machine enroll on WinXP client: WORKING </li>
+	<li>User enroll (Administrator) on WinXP client: WORKING </li>
+  </ul>
+  <p>
+  Known issues
+  </p>
+  <ul>
+	<li>EnrollDomainController should only try to run if the host is an actual DC..</li>
+	<li>The enroll scripts always fetches new certificates, dispite the existence of new and valid ones..</li>
+	<li>AdminWeb cannot verify admin certificates if non-"/ejbca/" path is used in URL.</li>
+	<li>Autoenroll Servelt don't get X-Remote-User if "/ejbca/" path is used in URL.</li>
+	<li>Order of Subject DNs is wrong compared with MS certs..</li>
+	<li>SSL connection to AD has not been tested.</li>
+	<li>Certificates don't have the CertificateTemplate attrib yet.. looks nices in Certificate MMC snapin..</li>
+	<li>JavaScript "onchange" behaves strangely in IE6. Only activated when the table is clicked, not the checkbox..</li>
+	<li>Creation of EEPs is inefficient due to attempted removal of EEP before each new request.. (Debug-code)</li>
+  </ul>
+  <p>
+  ...
+  </p>
+  </subsection>
+  <subsection name="Machines and software">
+  <p>
+	Domain Controller: dc1.company.local
+  </p>
+  <ul>
+	<li>Windows Server 2003 EE patched to SP2</li>
+	<li>Active Directory</li>
+	<li>DNS Server</li>
+  </ul>
+  <p>
+	CA Server:	ca-server.company.local
+  </p>
+  <ul>
+	<li>Ubuntu 64 Server 7.10</li>
+	<li>Apache2 with modules</li>
+	<li>Kerberos 5</li>
+	<li>Java 1.6u4</li>
+	<li>JBoss 4.2.2.GA</li>
+	<li>EJBCA 3.6 Alpha</li>
+	<li>Apache Ant 1.7.0</li>
+  </ul>
+  <p>
+	Desktop client: client-01.company.local
+  </p>
+  <ul>
+	<li>Windows XP Pro SP1 patched to SP2</li>
+  </ul>
+  </subsection>
+  <subsection name="Install EJBCA">
+  <p>
+	Configure EJBCA not to respond to external web-requests by editing $EJBCA_HOME/conf/web.properties
+  </p>
+<source>
+...
+httpsserver.bindaddress.pubhttp=127.0.0.1
+httpsserver.bindaddress.pubhttps=127.0.0.1
+httpsserver.bindaddress.privhttps=127.0.0.1
+...
+</source>
+  <p>
+	After installation, go to EJBCA Admin GUI → System Configuration and
+	configure the autoenrollment settings.
+  </p>
+  </subsection>
+  <subsection name="Setting up Kerberos authentication and Apache">
+  <p>
+	This could probably be done on a Windows server as well, since Apache
+	and Kerberos is supposed to work on that platform too..
+  </p>
+<source>
+$sudo su
+#apt-get update
+#apt-get install krb5-user apache2 libapache2-mod-auth-kerb
+ ** Skip kerberos config.. we will configure this later **
+#cd /etc/apache2/mods-enabled/
+#ln -s ../mods-available/proxy.load proxy.load
+#ln -s ../mods-available/proxy_ajp.load proxy_ajp.load
+#ln -s ../mods-available/proxy_balancer.load proxy_balancer.load
+#ln -s ../mods-available/rewrite.load rewrite.load
+#ln -s ../mods-available/ssl.load ssl.load
+#ln -s ../mods-available/headers.load headers.load
+</source>
+  <p>
+  	Edit /etc/krb5.conf where dc1.company.local is the DNS-name of the Domain Controller and COMPANY.LOCAL is our domain.
+  </p>
+<source>
+[libdefaults]
+default_realm = COMPANY.LOCAL
+
+[realms]
+COMPANY.LOCAL = {
+    kdc = dc1.company.local:88
+    admin_server = dc1.company.local:88
+}
+
+[domain_realm]
+    .company.local = COMPANY.LOCAL
+    company.local = COMPANY.LOCAL
+
+[logging]
+default = FILE:/var/log/apache2/krb5.log
+</source>
+  <p>
+  	Edit /etc/network/interfaces and set a static IP address
+  </p>
+<source>
+...
+#iface eth0 inet dhcp
+iface eth0 inet static
+    address 192.168.0.102	# Address of this machine
+    netmask 255.255.255.0
+    gateway 192.168.0.101	# In our local network this is the Domain Controller
+</source>
+  <p>
+	Use the DC as DNS server in /etc/resolv.conf
+  </p>
+<source>
+search localdomain
+nameserver 192.168.0.101
+</source>
+  <p>
+  	and restart networking (sudo /etc/init.d/networking restart).
+  </p>
+  <p>
+  	Add "ntdpdate dc1.company.local" to /etc/rc.local or a cron job to make sure the
+  	ca-server is syncronized with the Domain Controller.
+  </p>
+  <p>
+  	Create the SSL certificates for the Apache proxy using the same CA as our EJBCA installation and the same subject DN.
+  </p>
+<source>
+$cd $EJBCA_HOME
+$bin/ejbca.sh ra adduser apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" AdminCA1 "" 1 PEM
+$bin/ejbca.sh ra setclearpwd apache-ssl foo123
+$bin/ejbca.sh batch
+$ls p12/pem/ca-server.company.local*
+p12/pem/ca-server.company.local-CA.pem  p12/pem/ca-server.company.local-Key.pem  p12/pem/ca-server.company.local.pem
+</source>
+  <p>
+  	Edit /etc/apache2/sites-enabled/000-default to display an apache proxy front for EJBCA
+  </p>
+<source>
+NameVirtualHost *:80
+&lt;VirtualHost *:80&gt;
+        DocumentRoot /var/www/
+
+        # Proxy requests to EJBCA instances (only one on local machine configured)
+        &lt;Proxy balancer://mycluster-kerb&gt;
+                BalancerMember ajp://localhost:8009/ejbca/
+        &lt;/Proxy&gt;
+        ProxyPass / balancer://mycluster-kerb/
+
+        RewriteEngine   On
+        # Redirect all but the CRL Distribution Point, OCSP and Helthcheck to HTTPS
+        RewriteCond     %{THE_REQUEST} !(/publicweb/webdist/certdist.*cmd=crl|/publicweb/status/)
+        RewriteRule     ^(.*)$ https://%{SERVER_NAME}$1 [L,R]
+        # Treat reqeusts to / and /ejbca/ as the same. Required by EJBCA's Admin Web.
+        RewriteCond     %{THE_REQUEST}  /ejbca/
+        RewriteRule     ^/ejbca/(.*)$ /$1 [PT]
+
+        # Configure log
+        LogLevel warn
+        ErrorLog /var/log/apache2/error.log
+        CustomLog /var/log/apache2/access.log combined
+&lt;/VirtualHost&gt;
+
+NameVirtualHost *:443
+&lt;VirtualHost *:443&gt;
+        DocumentRoot /var/www/
+
+        RewriteEngine   On
+        # Treat reqeusts to / and /ejbca/ as the same. Required by EJBCA's Admin Web.
+        RewriteCond     %{THE_REQUEST}  /ejbca/
+        RewriteRule     ^/ejbca/(.*)$ /$1 [PT]
+
+        # Configure secure SSL for this server using SSL certificate generated by EJBCA
+        SSLEngine on
+        SSLCipherSuite HIGH
+        SSLProtocol all -SSLv2
+        SSLCertificateFile /home/jboss/ejbca/p12/pem/ca-server.company.local.pem
+        SSLCertificateKeyFile /home/jboss/ejbca/p12/pem/ca-server.company.local-Key.pem
+
+        # Require Client SSL certificate for the Admin GUI
+        &lt;Location /adminweb&gt;
+                SSLVerifyClient require
+                SSLVerifyDepth 1
+                SSLCACertificateFile /home/jboss/ejbca/p12/pem/ca-server.company.local-CA.pem
+        &lt;/Location&gt;
+
+        # Require Kerberos authentication for the Autoenroll Servlet
+        &lt;Location /autoenroll&gt;
+                AuthType Kerberos
+                Krb5Keytab /etc/apache2/http.keytab
+                KrbAuthRealms COMPANY.LOCAL
+                KrbServiceName HTTP
+                KrbMethodNegotiate on
+                KrbMethodK5Passwd off
+                Require valid-user
+        &lt;/Location&gt;
+
+        # Forward the UPN as variable X-Remote-User
+        RewriteCond %{IS_SUBREQ} ^false$
+        RewriteCond %{LA-U:REMOTE_USER} (.+)
+        RewriteRule .* - [E=RU:%1]
+        RequestHeader set X-Remote-User %{RU}e
+
+        # Proxy requests to EJBCA instances (only one on local machine configured)
+        &lt;Proxy balancer://mycluster-kerb&gt;
+                BalancerMember ajp://localhost:8009/ejbca/
+        &lt;/Proxy&gt;
+        ProxyPass / balancer://mycluster-kerb/
+
+        # Configure log
+        LogLevel warn
+        ErrorLog /var/log/apache2/error.log
+        CustomLog /var/log/apache2/access.log combined
+&lt;/VirtualHost&gt;
+</source>
+  <p>
+  	Restart apache with "sudo /etc/init.d/apache2 restart"
+  </p>
+  <p>
+	Install Windows support tools on the Domain Controller (found in %WIN2k3CD%\SUPPORT\TOOLS\SUPTOOLS.msi) to get ktpass.exe.
+	Create a new user "ca-server@company.local" and a strong password e.g not FooBar123 used here.
+	Create a keytab-file "http.keytab" on the Domain Controller:
+  </p>
+<source>
+ktpass.exe -princ HTTP/ca-server.company.local@COMPANY.LOCAL -mapuser ca-server -crypto DES-CBC-MD5 -ptype KRB5_NT_PRINCIPAL -mapop set +desonly -pass FooBar123 -out http.keytab
+ ...
+ keysize 55 HTTP/ca-server.company.local@COMPANY.LOCAL ptype 1 (KRB5_NT_PRINCIPAL) vno 3 etype
+ 0x3 (DES-CBC-MD5) keylength 8 (0x64614c9d256bcd6d)
+ ...
+</source>
+  <p>
+	And move the file to ca-server.company.local:/etc/apache2/http.keytab change permissions to be
+	readable only by the apache-process.
+  </p>
+<source>
+$chown root:root /etc/apace2/http.keytab
+</source>
+  <p>
+  Verify that the keytab is correct: 
+  </p>
+<source>
+$kinit Administrator
+$kvno HTTP/ca-server.company.local
+$klist -e
+** Output here should match the one from ktpass.exe **
+</source>
+  <p>
+	Verify that the keytab can be used
+  </p>
+<source>
+$kdestroy
+$sudo kinit -k -t /etc/apache2/http.keytab HTTP/ca-server.company.local
+$sudo klist
+(You should have received a ticket here if everything is working.)
+$sudo kdestroy
+</source>
+  <p>
+	Add ca-server.company.local (192.168.1.2) to your Domain Controllers DNS server as a "Host (A)" record.
+  </p>
+  </subsection>
+  <subsection name="Set up enrollment scripts to run automatically">
+  <p>
+	Create a Shared directory on the Domain Controller, C:\Shared with read and exec rights by Everyone
+  </p>
+<source>
+copy %SYSTEMROOT%\system32\certreq.exe C:\Shared\Autoenroll\
+copy %SYSTEMROOT%\system32\certcli.dll C:\Shared\Autoenroll\
+copy %SYSTEMROOT%\system32\certadm.dll C:\Shared\Autoenroll\
+(copy %SYSTEMROOT%\system32\certutil.exe C:\Shared\Autoenroll\ This is used by EnrollDomainController and is already available at all DCs.)
+</source>
+  <p>
+	Edit or create C:\Shared\Autoenroll\autoenroll.conf
+  </p>
+<source>
+# This is a primitive config file that does not allow spaces
+
+# The request URL is built from the following properties
+# https://[requestpath]?request=...
+# 
+
+# Standard SSL-port and using URL rewrite from /ejbca/* to /*
+requestpath=ca-server.company.local/autoenroll
+
+# Non-standard SSL-port and not using URL rewrite
+#requestpath=ca-server.company.local:4443/ejbca/autoenroll
+
+# Debug setting, use only for manual testing
+#debug=true
+debug=false
+</source>
+  <p>
+	Edit or create C:\Shared\Autoenroll\RequestAndInstall.vbs
+  </p>
+<source>
+	Set oArgs = WScript.Arguments 
+	if oArgs.Count &lt; 1 then 
+		WScript.Echo "Usage: thisscript.vbs fullpathnameofrequest.inf"
+		WScript.Quit 1
+	else 
+		sRequestInfo = Trim(oArgs(0))
+	end if 
+	
+	Set WS = CreateObject("WScript.Shell")
+	
+	sRequest = WS.ExpandEnvironmentStrings("%TEMP%") &amp; "\autoenrolled.req"
+	sResult = WS.ExpandEnvironmentStrings("%TEMP%") &amp; "\autoenrolled.p7b"
+	
+	Set oFilesystem = CreateObject("Scripting.FileSystemObject")
+	On Error Resume Next	' Ignore if we try to delete a file that does not exist
+	oFilesystem.DeleteFile(sRequest)
+	Err.Clear
+	On Error GoTo 0
+	sSharedDir = oFilesystem.GetParentFolderName(WScript.ScriptFullName) &amp; "\"
+	
+	Set iFile = oFilesystem.OpenTextFile(sSharedDir &amp; "autoenroll.conf") 
+	Do While iFile.AtEndOfStream &lt;&gt; True 
+	    sLine = iFile.Readline
+	    If InStr(Left(sLine,1), "#") = 0 then
+	        If InStr(sLine, "requestpath=") &lt;&gt; 0 then
+		    	sRequestPath = Trim(Right(sLine, Len(sLine)-Len("requestpath=")))
+	        end if 
+	        If InStr(sLine, "debug=") &lt;&gt; 0 then
+		    	sDebug = Trim(Right(sLine, Len(sLine)-Len("debug=")))
+	        end if 
+	    End if
+	Loop 
+	iFile.Close
+	
+	WS.Run sSharedDir &amp; "certreq.exe -f -new " &amp; sRequestInfo &amp; " " &amp; sRequest, 0, True
+	
+	sRequestData = ""
+	Set objFile = oFilesystem.OpenTextFile(sRequest, 1)
+	Do Until objFile.AtEndOfStream
+		sRequestData = sRequestData &amp; objFile.ReadLine
+	Loop
+	objFile.Close
+	
+	set oIE = CreateObject("InternetExplorer.Application")
+	
+	oIE.navigate2("https://" &amp; sRequestPath &amp; "?debug=" &amp; sDebug &amp; "&amp;request=" &amp; sRequestData)
+	
+	If sDebug = "true" Then
+		oIE.visible = true
+	End If
+	
+	'Wait max 30 seconds
+	wscript.sleep 1000
+	counter = 0
+	While oIE.Busy = true And counter &lt; 30
+		counter = counter + 1
+		wscript.sleep 1000
+	Wend
+	
+	sResultData = oIE.Document.Body.innerHTML
+	sResultData = Mid(sResultData, 6, Len(sResultData)-11)
+	
+	Set oFile = oFilesystem.CreateTextFile(sResult, True)
+	oFile.WriteLine sResultData
+	oFile.Close
+	
+	on error resume next ' in case the Task Manager is used to close IE.
+	If sDebug &lt;&gt; "true" Then
+		oIE.quit ' Close the window
+		WS.Run sSharedDir &amp; "certreq.exe -accept " &amp; Chr(34) &amp; sResult &amp; Chr(34), 0, True
+	End If
+</source>
+  <p>
+	Edit or create C:\Shared\Autoenroll\EnrollDomainController.vbs
+  </p>
+<source>
+	' This Script is based on the script found at http://www.microsoft.com/technet/prodtechnol/windowsserver2003/technologies/security/advcert.mspx#EURAE
+	
+	Set WS = CreateObject("WScript.Shell")
+	
+	Set objDC = GetObject("LDAP://" &amp; CreateObject("ADSystemInfo").ComputerName) 
+	sGUID = objDC.GUID 
+	sDNShostname = objDC.DNShostname 
+	
+	Set oFilesystem = CreateObject("Scripting.FileSystemObject") 
+	sTempfilePrefix = WS.ExpandEnvironmentStrings("%TEMP%") &amp; "\autoenrolled"
+	sRequestInfo = sTempFilePrefix &amp; ".inf"
+	sSharedDir = oFilesystem.GetParentFolderName(WScript.ScriptFullName) &amp; "\"
+	
+	'Create b64 encoded extension
+	Dim aASNsubstring(2, 5) 
+	Const HEX_DATA_LENGTH = 1 
+	Const ASCIIDATA = 2 
+	Const HEXDATA = 3 
+	Const HEX_BLOB_LENGTH = 4 
+	Const HEX_TYPE = 5
+	' Encode DNS
+	aASNsubstring(0, ASCIIDATA) = sDNShostname 
+	aASNsubstring(0, HEX_TYPE) = "82" 
+	For i = 1 to Len(aASNsubstring(0, ASCIIDATA)) 
+	    aASNsubstring(0, HEXDATA) = aASNsubstring(0, HEXDATA) &amp; Hex(Asc(Mid(aASNsubstring(0, ASCIIDATA), i, 1))) 
+	Next 
+	aASNsubstring(0, HEX_DATA_LENGTH) = ComputeASN1 (Len(aASNsubstring(0, HEXDATA)) / 2) 
+	sASN = aASNsubstring(0, HEX_TYPE) &amp; aASNsubstring(0, HEX_DATA_LENGTH) &amp; aASNsubstring(0, HEXDATA) 
+	' Encode GUID
+	aASNsubstring(1, HEXDATA) = sGUID 
+	aASNsubstring(1, HEX_TYPE) = "A0" 
+	aASNsubstring(1, HEX_DATA_LENGTH) = ComputeASN1 (Len(aASNsubstring(1, HEXDATA)) / 2) 
+	sASN = sASN &amp; "A01F06092B0601040182371901" &amp; aASNsubstring(1, HEX_TYPE) &amp; "120410" &amp; aASNsubstring(1, HEXDATA) 
+	
+	Set oFile = oFilesystem.CreateTextFile(sTempfilePrefix &amp; ".asn") 
+	oFile.WriteLine "30" &amp; ComputeASN1 (Len(sASN) / 2) &amp; sASN 
+	oFile.Close 
+	WS.Run "certutil -f -decodehex " &amp; sTempfilePrefix &amp; ".asn " &amp; sTempfilePrefix &amp; ".bin", 0, True 
+	WS.Run "certutil -f -encode " &amp; sTempfilePrefix &amp; ".bin " &amp; sTempfilePrefix &amp; ".b64", 0, True 
+	
+	Set iFile = oFilesystem.OpenTextFile(sTempfilePrefix &amp; ".b64") 
+	Set oFile = oFilesystem.CreateTextFile(sRequestInfo, True)
+	oFile.WriteLine "[Version]" 
+	oFile.WriteLine "Signature= " &amp; Chr(34) &amp; "$Windows NT$" &amp; Chr(34) 
+	oFile.WriteLine "" 
+	oFile.WriteLine "[NewRequest]"
+	oFile.WriteLine "Subject = " &amp; Chr(34) &amp; "CN=IgnoredValue" &amp; Chr(34)
+	oFile.WriteLine "KeySpec = 1" 
+	oFile.WriteLine "KeyLength = 2048" 
+	oFile.WriteLine "Exportable = TRUE" 
+	oFile.WriteLine "MachineKeySet = TRUE" 
+	oFile.WriteLine "SMIME = FALSE" 
+	oFile.WriteLine "PrivateKeyArchive = FALSE" 
+	oFile.WriteLine "UserProtected = FALSE" 
+	oFile.WriteLine "UseExistingKeySet = FALSE"
+	oFile.WriteLine "ProviderName = " &amp; Chr(34) &amp; "Microsoft RSA SChannel Cryptographic Provider" &amp; Chr(34) 
+	oFile.WriteLine "ProviderType = 12" 
+	oFile.WriteLine "RequestType = PKCS10" 
+	oFile.WriteLine "KeyUsage = 0xa0"
+	oFile.WriteLine "" 
+	oFile.WriteLine "[EnhancedKeyUsageExtension]" 
+	oFile.WriteLine "OID=1.3.6.1.5.5.7.3.1" 
+	oFile.WriteLine "OID=1.3.6.1.5.5.7.3.2" 
+	oFile.WriteLine "" 
+	oFile.WriteLine "[Extensions]" 
+	iLine = 0 
+	Do While iFile.AtEndOfStream &lt;&gt; True 
+	    sLine = iFile.Readline 
+	    If sLine = "-----END CERTIFICATE-----" then 
+	        Exit Do 
+	    end if 
+	    if sLine &lt;&gt; "-----BEGIN CERTIFICATE-----" then 
+	        if iLine = 0 then 
+	            oFile.WriteLine "2.5.29.17=" &amp; sLine 
+	        else 
+	            oFile.WriteLine "_continue_=" &amp; sLine 
+	        end if 
+	        iLine = iLine + 1 
+	    end if 
+	Loop 
+	oFile.WriteLine "Critical=2.5.29.17" 
+	oFile.WriteLine "" 
+	oFile.WriteLine "[RequestAttributes]" 
+	oFile.WriteLine "CertificateTemplate = DomainController"
+	oFile.Close
+	iFile.Close
+	
+	WS.Run sSharedDir &amp; "RequestAndInstall.vbs " &amp; sRequestInfo, 0, True
+	
+	' Sub
+	Function ComputeASN1 (iStrLen) 
+	    If Len(Hex(iStrLen)) Mod 2 = 0 then 
+	        sLength = Hex(iStrLen) 
+	    else 
+	        sLength = "0" &amp; Hex(iStrLen) 
+	    end if 
+	    if iStrLen &gt; 127 then 
+	        ComputeASN1 = Hex (128 + (Len(sLength) / 2)) &amp; sLength 
+	    else 
+	        ComputeASN1 = sLength 
+	    End If 
+	End Function
+</source>
+  <p>
+	Edit or create C:\Shared\Autoenroll\EnrollMachine.vbs
+  </p>
+<source>
+	Set WS = CreateObject("WScript.Shell")
+	Set oFilesystem = CreateObject("Scripting.FileSystemObject")
+	sRequestInfo = WS.ExpandEnvironmentStrings("%TEMP%") &amp; "\autoenrolled.inf"
+	Set oFile = oFilesystem.CreateTextFile(sRequestInfo, True)
+	oFile.WriteLine "[Version]" 
+	oFile.WriteLine "Signature= " &amp; Chr(34) &amp; "$Windows NT$" &amp; Chr(34) 
+	oFile.WriteLine "" 
+	oFile.WriteLine "[NewRequest]"
+	oFile.WriteLine "Subject = " &amp; Chr(34) &amp; "CN=IgnoredValue" &amp; Chr(34)
+	oFile.WriteLine "KeyLength = 2048" 
+	oFile.WriteLine "MachineKeySet = TRUE" 
+	oFile.WriteLine "RequestType = PKCS10" 
+	oFile.WriteLine "" 
+	oFile.WriteLine "[RequestAttributes]" 
+	oFile.WriteLine "CertificateTemplate = Machine"
+	oFile.Close
+	
+	sSharedDir = oFilesystem.GetParentFolderName(WScript.ScriptFullName) &amp; "\"
+	WS.Run sSharedDir &amp; "RequestAndInstall.vbs " &amp; sRequestInfo, 0, True
+</source>
+  <p>
+	Edit or create C:\Shared\Autoenroll\EnrollUser.vbs
+  </p>
+<source>
+	Set WS = CreateObject("WScript.Shell")
+	Set oFilesystem = CreateObject("Scripting.FileSystemObject")
+	sRequestInfo = WS.ExpandEnvironmentStrings("%TEMP%") &amp; "\autoenrolled.inf"
+	Set oFile = oFilesystem.CreateTextFile(sRequestInfo, True)
+	oFile.WriteLine "[Version]" 
+	oFile.WriteLine "Signature= " &amp; Chr(34) &amp; "$Windows NT$" &amp; Chr(34) 
+	oFile.WriteLine "" 
+	oFile.WriteLine "[NewRequest]"
+	oFile.WriteLine "Subject = " &amp; Chr(34) &amp; "CN=IgnoredValue" &amp; Chr(34)
+	oFile.WriteLine "KeyLength = 2048" 
+	oFile.WriteLine "RequestType = PKCS10" 
+	oFile.WriteLine "" 
+	oFile.WriteLine "[RequestAttributes]" 
+	oFile.WriteLine "CertificateTemplate = User"
+	oFile.Close
+	
+	sSharedDir = oFilesystem.GetParentFolderName(WScript.ScriptFullName) &amp; "\"
+	WS.Run sSharedDir &amp; "RequestAndInstall.vbs " &amp; sRequestInfo, 0, True
+</source>
+  <p>
+	Verify that all the file in Shared\Autoenroll directory has read end exec right for Everyone.
+  </p><p>
+	Install Certificate Templates by adding the corresponding Snap-in i the MMC console.
+  </p><p>
+	Install the root CA-certificate(s) in the NTAuthStore, so windows can verify all cerificates produced by EJBCA.
+	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
+	Edit Default Domain Policy → Computer Configuration → Windows Settings → Security Settings → Public Key Policies →
+	Trusted Root Certificate Authorities → Import → import the root ca certificate and run "gpupdate /force" on
+	machines that are used for testing. 
+	(You can fetch the CA certificate using the EJCBA CLI with "$EJBCA_HOME/bin/ejbca.sh ca getrootcert AdminCA1 ~/AdminCA1.crt -der".)
+  </p><p>
+  	Add Startup Scripts in 
+	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
+	Edit Default Domain Policy → Computer Configuration → Windows Settings → Scripts → Startup →
+	Add the machine-related scripts from the shared directory.
+  </p><p>
+  	Add Login Scripts in 
+	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
+	Edit Default Domain Policy → User Configuration → Windows Settings → Scripts → Logon →
+	Add the user-related scripts from the shared directory.
+  </p><p>
+  	Add the ca-server and shared directory to the Intranet
+	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
+	Edit Default Domain Policy → Computer Configuration | User Configuration (do both!!) → Administrative Templates →
+	Windows Components → Internet Explorer → Internet Control Page → Security Page →
+	Site to Zone assignement list → Enabled and added "https://ca-server.company.local" to zone "1", "\\Dc1\Shared" to zone "1"
+  </p><p>
+  	Configure clients to synchronize time using NTP:
+	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
+	Edit Default Domain Policy → Computer Configuration → Administrative Templates →
+	System → Windows Time Service → Time Providers → Configure Windows NTP Client (Add "dc1.company.local" as an NTP server.)
+	and Enable Windows NTP Client.
+  </p><p>
+  	Use "gpupdate /force" on clients before running tests or wait 8h.. =)
+  </p>
+  </subsection>
+  <subsection name="Debugging">
+  <p>
+  	Well, good luck with Windows error messages.. but you can enable debug
+  	("debug=true" in autoenroll.conf) to see the response from the Servlet.
+  </p><p>
+	Test the machine-cert-retreival script by starting a Console as "LocalSystem". C:\Shared\Autoenroll\ConsoleAsLocalSystem.vbs:
+  </p>
+<source>
+	Set WS = CreateObject("WScript.Shell")
+	WS.Run "sc.exe delete lsc", 0, True
+	WS.Run "sc.exe create lsc binpath= " &amp; Chr(34) &amp; "cmd /K start" &amp; Chr(34) &amp; " type= own type= interact", 0, True
+	WS.Run "sc.exe start lsc", 0, True
+</source>
+  <p>
+	Test the machine-cert-retreival script by starting a Console as "LocalSystem". C:\Shared\ConsoleAsLocalSystem.vbs:
+  </p>
+<source>
+	Set WS = CreateObject("WScript.Shell")
+	WS.Run "sc.exe delete lsc", 0, True
+	WS.Run "sc.exe create lsc binpath= " &amp; Chr(34) &amp; "cmd /K start" &amp; Chr(34) &amp; " type= own type= interact", 0, True
+	WS.Run "sc.exe start lsc", 0, True
+</source>
+  <p>
+	Adding a custom Administrative template can be done as in this example if needed:
+	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
+	Edit Default Domain Policy → Computer Configuration → Administrative Templates → Add/Remove Templates → Add Autoenroll.adm
+  </p>
+  <p>
+	This is just a sample, but shows how a custom GP can be configured.. (<b>Use the intructions above instead of this template.</b>
+	The example Administrative Template "Autoenroll Related" can be used to force ca-server.company.local
+	into the Intranet zone or add a NTP syncronizing policy. C:\Shared\Autoenroll\Autoenroll.adm:
+  </p>
+<source>
+CLASS MACHINE
+
+CATEGORY "Autoenroll Related"
+    CATEGORY "NTP Synch for clients with AD"
+     POLICY "Enable NTP synch"
+      SUPPORTED "This is a hack to get WinXP clients working"
+      EXPLAIN ".."
+      KEYNAME "Software\Policies\Microsoft\W32Time\TimeProviders"
+      VALUENAME "NtpServer"
+      VALUEON NUMERIC 1
+      VALUEOFF NUMERIC 0
+
+       ACTIONLISTON
+        KEYNAME "Software\Policies\Microsoft\W32Time\Parameters"
+        VALUENAME "Type"
+        VALUE "NTP"
+       
+        KEYNAME "Software\Policies\Microsoft\W32Time\Config"
+        VALUENAME "AnnounceFlags"
+        VALUE NUMERIC 5
+        
+        KEYNAME "Software\Policies\Microsoft\W32Time\Config"
+        VALUENAME "MaxPosPhaseCorrection"
+        VALUE NUMERIC 1099511627775
+        
+        KEYNAME "Software\Policies\Microsoft\W32Time\Config"
+        VALUENAME "MaxNegPhaseCorrection"
+        VALUE NUMERIC 1099511627775
+       END ACTIONLISTON
+
+      PART "NTP Servers in the form ntp.server1.com,0x1 ntp.server2.com,0x1 ntp.server3.com,0x1" EDITTEXT
+       KEYNAME "Software\Policies\Microsoft\W32Time\Parameters"
+       VALUENAME "NtpServer"
+       MAXLEN 4096
+      END PART
+
+      PART "Poll interval in seconds" NUMERIC
+        KEYNAME "Software\Policies\Microsoft\W32Time\TimeProviders\NtpClient"
+        VALUENAME "SpecialPollInterval"
+        DEFAULT 900
+      END PART
+     END POLICY
+    END CATEGORY
+
+    CATEGORY "Required trust"
+     POLICY "Trust ca-server.company.local"
+      SUPPORTED "Might need IE6 for this to work.."
+      EXPLAIN "This adds the ca-server.company.local to the list of intranet-sites.."
+      KEYNAME "Software\Policies\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\company.local\ca-server"
+      VALUENAME "https"
+      VALUEON NUMERIC 1
+      VALUEOFF NUMERIC 0     
+     END POLICY
+    END CATEGORY
+END CATEGORY 
+
+CLASS USER
+
+CATEGORY "Autoenroll Related"
+    CATEGORY "Required trust"
+     POLICY "Trust ca-server.company.local"
+      SUPPORTED "Might need IE6 for this to work.."
+      EXPLAIN "This adds the ca-server.company.local to the list of intranet-sites.."
+      KEYNAME "Software\Policies\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\company.local\ca-server"
+      VALUENAME "https"
+      VALUEON NUMERIC 1
+      VALUEOFF NUMERIC 0     
+     END POLICY
+    END CATEGORY
+END CATEGORY
+</source>
+  <p>
+	Useful reg-for VMwares with runaway clocks if GP mod didn't work or you just want to modify a single client.
+  </p>
+<source>
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Config]
+"AnnounceFlags"=dword:00000005
+"MaxPosPhaseCorrection"=dword:ffffffff
+"MaxNegPhaseCorrection"=dword:ffffffff
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters]
+"Type"="NTP"
+"NtpServer"="dc1.company.local,0x1"
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters\NtpServer]
+"NtpServer"="dc1.company.local,0x1"
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpClient]
+"SpecialPollInterval"=dword:00000030
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer]
+"Enabled"=dword:00000001
+</source>
+  </subsection>
+  <subsection name="References">
+  <ul>
+  	<li>Kerberos authentication on Apache2, http://www.grolmsnet.de/kerbtut/.</li>
+  	<li>MS Certificate requests, http://technet2.microsoft.com/WindowsServer/en/library/008acdeb-0650-4063-a9a2-1258b3229d4f1033.mspx</li>
+  </ul>
+  </subsection>
+  </section>  
 </body>
 </document>
 

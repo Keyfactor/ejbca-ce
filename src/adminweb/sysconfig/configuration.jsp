@@ -26,12 +26,20 @@
 
   static final String TEXTFIELD_APPROVALADMINEMAILADDRESS    = "textfieldapprovaladminemailaddress";
   static final String TEXTFIELD_APPROVALNOTIFICATIONFROMADDR = "textfieldapprovalnoificationfromaddr";  
+  
+  static final String TEXTFIELD_AUTOENROLL_ADSERVER          = "textfieldautoenrolladserver";
+  static final String TEXTFIELD_AUTOENROLL_ADPORT            = "textfieldautoenrolladport";
+  static final String TEXTFIELD_AUTOENROLL_BASEDN_USER       = "textfieldautoenrollbasednuser";
+  static final String TEXTFIELD_AUTOENROLL_CONNECTIONDN      = "textfieldautoenrollconnectiondn";
+  static final String TEXTFIELD_AUTOENROLL_CONNECTIONPWD     = "textfieldautoenrollconnectionpwd";
 
   static final String CHECKBOX_ENABLEEEPROFILELIMITATIONS    = "checkboxendentityprofilelimitations"; 
   static final String CHECKBOX_ENABLEAUTHENTICATEDUSERSONLY  = "checkboxauthenticatedusersonly"; 
   static final String CHECKBOX_ENABLEKEYRECOVERY             = "checkboxenablekeyrecovery";
   static final String CHECKBOX_ISSUEHARDWARETOKENS           = "checkboxissuehardwaretokens";
   static final String CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS = "checkboxapprovaluseemailnotifications";
+  static final String CHECKBOX_AUTOENROLL_SSLCONNECTION      = "checkboxautoenrollsslconnection";
+  static final String CHECKBOX_AUTOENROLL_USE                = "checkboxautoenrolluse";
 
 // Lists used in defaultuserprefereces.jsp
   static final String LIST_PREFEREDLANGUAGE                  = "listpreferedlanguage";
@@ -41,6 +49,7 @@
 
   static final String LIST_VIEWPUKREQUIREDAPPROVALS          = "viewpukrequiredapprovals";  
   static final String LIST_HARDTOKENENCRYPTCA                = "hardtokenencryptca";  
+  static final String LIST_AUTOENROLL_CA                     = "listautoenrollcaname";
   
 
   static final String CHECKBOX_VALUE             = "true";
@@ -50,6 +59,8 @@
   final String THIS_FILENAME                          =  "configuration.jsp";
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.REGULAR_EDITSYSTEMCONFIGURATION); 
+  GlobalConfiguration gc = globalconfiguration;
+  AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
 
   String forwardurl = "/" + globalconfiguration .getMainFilename(); 
 
@@ -59,14 +70,15 @@
   if( request.getParameter(BUTTON_CANCEL) != null){
        // Cancel current values and go back to old ones.
        ejbcawebbean.reloadGlobalConfiguration ();
-      
 %> 
  <jsp:forward page="<%= forwardurl %>"/>
-<%  }
-    if( request.getParameter(BUTTON_PREVIOUS) != null){
-      // Return to Webconfiguration
-      // Temporatly save preivous settings
-        AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
+<%  }	%>
+
+
+<%
+     if( request.getParameter(BUTTON_SAVE) != null){
+        // Save global configuration.
+
         String[] languages = ejbcawebbean.getAvailableLanguages();
         if(request.getParameter(LIST_PREFEREDLANGUAGE) != null){
           String preferedlanguage = request.getParameter(LIST_PREFEREDLANGUAGE); 
@@ -84,14 +96,9 @@
           String entriesperpage = request.getParameter(LIST_ENTIESPERPAGE); 
           dup.setEntriesPerPage(Integer.parseInt(entriesperpage.trim()));
         }
-        ejbcawebbean.saveDefaultAdminPreference(dup);
-%>
-       <%@ include file="webconfiguration.jspf" %>
-<%  }
 
-    if( request.getParameter(BUTTON_NEXT) != null){
        // Change global configuration and proceed with default user preferences.
-      GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration();
+      //GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration();
        if(request.getParameter(TEXTFIELD_TITLE) != null){
          String title = request.getParameter(TEXTFIELD_TITLE); 
          gc.setEjbcaTitle(title);
@@ -154,37 +161,42 @@
        }else{
     	   gc.setHardTokenEncryptCA(0);
        }
-       
+       // Parse Auto Enrollment fields
+       if(request.getParameter(CHECKBOX_AUTOENROLL_USE) != null){
+		   gc.setAutoEnrollUse(request.getParameter(CHECKBOX_AUTOENROLL_USE).equals(CHECKBOX_VALUE));
+		   if(request.getParameter(LIST_AUTOENROLL_CA) != null ){
+	    	   gc.setAutoEnrollCA(Integer.parseInt(request.getParameter(LIST_AUTOENROLL_CA)));
+	       }else{
+	    	   gc.setAutoEnrollCA(GlobalConfiguration.AUTOENROLL_DEFAULT_CA);
+	       }
+	       if(request.getParameter(CHECKBOX_AUTOENROLL_SSLCONNECTION) != null){
+	         gc.setAutoEnrollSSLConnection(request.getParameter(CHECKBOX_AUTOENROLL_SSLCONNECTION).equals(CHECKBOX_VALUE));
+	       } else {
+	         gc.setAutoEnrollSSLConnection(false);
+	       }
+	       if(request.getParameter(TEXTFIELD_AUTOENROLL_ADSERVER) != null){
+	         gc.setAutoEnrollADServer(request.getParameter(TEXTFIELD_AUTOENROLL_ADSERVER));
+	       }
+	       if(request.getParameter(TEXTFIELD_AUTOENROLL_ADPORT) != null){
+	         gc.setAutoEnrollADPort(Integer.parseInt(request.getParameter(TEXTFIELD_AUTOENROLL_ADPORT)));
+	       }
+	       if(request.getParameter(TEXTFIELD_AUTOENROLL_CONNECTIONDN) != null){
+	         gc.setAutoEnrollConnectionDN(request.getParameter(TEXTFIELD_AUTOENROLL_CONNECTIONDN));
+	       }
+	       if(request.getParameter(TEXTFIELD_AUTOENROLL_CONNECTIONPWD) != null){
+	         gc.setAutoEnrollConnectionPwd(request.getParameter(TEXTFIELD_AUTOENROLL_CONNECTIONPWD));
+	       }
+	       if(request.getParameter(TEXTFIELD_AUTOENROLL_BASEDN_USER) != null){
+	         gc.setAutoEnrollBaseDNUser(request.getParameter(TEXTFIELD_AUTOENROLL_BASEDN_USER));
+	       }
+       } else {
+           gc.setAutoEnrollUse(false);
+       }
 
-%>  
-           <%@ include file="defaultuserpreferences.jspf" %>
-<%  }
-     if( request.getParameter(BUTTON_SAVE) != null){
-        // Save global configuration.
-        AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
-        String[] languages = ejbcawebbean.getAvailableLanguages();
-        if(request.getParameter(LIST_PREFEREDLANGUAGE) != null){
-          String preferedlanguage = request.getParameter(LIST_PREFEREDLANGUAGE); 
-          dup.setPreferedLanguage(languages, preferedlanguage.trim());
-        }
-        if(request.getParameter(LIST_SECONDARYLANGUAGE) != null){
-          String secondarylanguage = request.getParameter(LIST_SECONDARYLANGUAGE); 
-          dup.setSecondaryLanguage(languages, secondarylanguage.trim());
-        }
-        if(request.getParameter(LIST_THEME) != null){
-          String theme = request.getParameter(LIST_THEME); 
-          dup.setTheme(theme.trim());
-        }
-        if(request.getParameter(LIST_ENTIESPERPAGE) != null){
-          String entriesperpage = request.getParameter(LIST_ENTIESPERPAGE); 
-          dup.setEntriesPerPage(Integer.parseInt(entriesperpage.trim()));
-        }        
-        
         ejbcawebbean.saveGlobalConfiguration();
         ejbcawebbean.saveDefaultAdminPreference(dup);
-%>          
- <jsp:forward page="<%=forwardurl %>"/>
-<%   }
+     }
+
      if(request.getParameter(BUTTON_SAVE) == null &&
         request.getParameter(BUTTON_NEXT) == null &&
         request.getParameter(BUTTON_CANCEL) == null &&
@@ -192,10 +204,8 @@
  
       // get current global configuration.
         ejbcawebbean.reloadGlobalConfiguration();
-%>
-           <%@ include file="webconfiguration.jspf" %>
-<%  }  %>
+     }
+      %>
 
-
-
-
+       <%@ include file="webconfiguration.jspf" %>
+       <%@ include file="defaultuserpreferences.jspf" %>

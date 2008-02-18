@@ -43,6 +43,7 @@ import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
@@ -52,7 +53,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.11 2007-11-19 12:56:01 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.12 2008-02-18 14:50:54 jeklund Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -166,7 +167,7 @@ public class RequestHelper {
 		PKCS10RequestMessage req = genPKCS10RequestMessageFromPEM(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
-        IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(X509ResponseMessage.class.getName()));
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         if(resulttype == ENCODED_CERTIFICATE)
           result = cert.getEncoded();

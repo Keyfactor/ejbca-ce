@@ -1,4 +1,4 @@
-<% GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration(); 
+<% //GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration(); 
    // This page is not translated because documant root isn't known yet.
    java.util.HashMap caidToNameMap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 %>
@@ -25,6 +25,26 @@ function checkuseapprovalnotifications(){
     document.webconfiguration.<%= TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>.disabled = true;
     document.webconfiguration.<%= TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>.value = "";   
     
+  }
+}
+
+function checkuseautoenroll(){
+  if(document.webconfiguration.<%=CHECKBOX_AUTOENROLL_USE %>.checked){
+    document.webconfiguration.<%= LIST_AUTOENROLL_CA %>.disabled = false;
+    document.webconfiguration.<%= CHECKBOX_AUTOENROLL_SSLCONNECTION %>.disabled = false;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_ADSERVER %>.disabled = false;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_ADPORT %>.disabled = false;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_CONNECTIONDN %>.disabled = false;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_CONNECTIONPWD %>.disabled = false;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_BASEDN_USER %>.disabled = false;
+  } else {
+    document.webconfiguration.<%= LIST_AUTOENROLL_CA %>.disabled = true;
+    document.webconfiguration.<%= CHECKBOX_AUTOENROLL_SSLCONNECTION %>.disabled = true;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_ADSERVER %>.disabled = true;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_ADPORT %>.disabled = true;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_CONNECTIONDN %>.disabled = true;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_CONNECTIONPWD %>.disabled = true;
+    document.webconfiguration.<%= TEXTFIELD_AUTOENROLL_BASEDN_USER %>.disabled = true;
   }
 }
 -->
@@ -183,16 +203,85 @@ function checkuseapprovalnotifications(){
         <input type="text" name="<%=TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>" value="<%= gc.getApprovalNotificationFromAddress() %>" <% if(!gc.getUseApprovalNotifications()){ out.write(" disabled "); }%>maxlength="150" size="70">
       </td>
     </tr>          
-    <tr> 
-      <td width="49%" valign="top">&nbsp;</td>
-      <td width="51%" valign="top">
-        <input type="submit" name="<%= BUTTON_NEXT %>" value="<%= ejbcawebbean.getText("NEXT") %>">
-        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLUSE") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLUSEHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+      <input type="checkbox" name="<%=CHECKBOX_AUTOENROLL_USE%>" onchange="checkuseautoenroll()" value="<%=CHECKBOX_VALUE %>" 
+		<% if(gc.getAutoEnrollUse()) out.write(" CHECKED "); %>> 
+      </td>
+    </tr> 
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLCA") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLCAHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <select name="<%= LIST_AUTOENROLL_CA %>" <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>>
+          <% int currentCA = gc.getAutoEnrollCA(); %>
+          <% java.util.Iterator iter2 = ejbcawebbean.getAuthorizedCAIds().iterator();
+             while(iter2.hasNext()){
+            	Integer caid = (Integer) iter2.next(); 
+          %>   <option <% if(currentCA == caid.intValue() || currentCA == GlobalConfiguration.AUTOENROLL_DEFAULT_CA){ currentCA = caid.intValue(); %> selected <% } %>
+                  value='<%= caid%>'><%= caidToNameMap.get(caid) %></option>
+          <% } %>
+        </select>
       </td>
     </tr>
-  </table>
- </form>
-
-</body>
-</html>
-
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLSSLCONNECTION") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLSSLCONNECTIONHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+      <input type="checkbox" name="<%=CHECKBOX_AUTOENROLL_SSLCONNECTION%>" value="<%=CHECKBOX_VALUE %>" 
+		<% if(gc.getAutoEnrollSSLConnection()) out.write(" CHECKED "); %> <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>> 
+      </td>
+    </tr> 
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLADSERVER") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLADSERVERHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_ADSERVER %>" value="<%= gc.getAutoEnrollADServer() %>" <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="70">
+      </td>
+    </tr>          
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLADPORT") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLADPORTHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_ADPORT %>" value="<%= gc.getAutoEnrollADPort() %>" <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="70">
+      </td>
+    </tr>          
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLCONNECTIONDN") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLCONNECTIONDNHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONDN %>" value="<%= gc.getAutoEnrollConnectionDN() %>" <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="70">
+      </td>
+    </tr>          
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLCONNECTIONPWD") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLCONNECTIONPWDHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="password" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONPWD %>" value="<%= gc.getAutoEnrollConnectionPwd() %>" <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="70">
+      </td>
+    </tr>          
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("AUTOENROLLBASEDNUSER") %></h3>
+        <h5><%= ejbcawebbean.getText("AUTOENROLLBASEDNUSERHELP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_BASEDN_USER %>" value="<%= gc.getAutoEnrollBaseDNUser() %>" <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="70">
+      </td>
+    </tr>          

@@ -1,19 +1,3 @@
-<% AdminPreference dup = ejbcawebbean.getDefaultAdminPreference(); %>
-<html>
-<head>
-<title><%= globalconfiguration .getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
-</head>
-
-<body>
-<div align="center"> 
-  <h2><%= ejbcawebbean.getText("EJBCADEFAULTADMINPREF") %><br>
-  </h2>
-</div>
-<form name="defaultuserpreferences" method="post" action="<%= globalconfiguration .getConfigPath() + "/" + THIS_FILENAME %>">
-  <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
         <div align="left"> 
@@ -98,8 +82,7 @@
     <tr  id="Row1"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
-        <input type="submit" name="<%= BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("PREVIOUS") %>">
-        <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" onclick="parent.location.reload()">
+        <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" "> <!-- onclick="parent.location.reload() -->
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>
