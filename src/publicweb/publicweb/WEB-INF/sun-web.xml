@@ -24,5 +24,9 @@
         <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
         <jndi-name>CertificateStoreSession</jndi-name>
     </ejb-ref>
+    <ejb-ref>
+        <ejb-ref-name>ejb/RAAdminSessionLocal</ejb-ref-name>
+        <jndi-name>RaAdminSession</jndi-name>
+    </ejb-ref>
  
 </sun-web-app>

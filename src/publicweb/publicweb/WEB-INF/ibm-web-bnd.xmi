@@ -18,4 +18,7 @@
   <ejbRefBindings xmi:id="EJBLocalRefBinding_4" jndiName="CertificateStoreSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_4"/>
   </ejbRefBindings>
+  <ejbRefBindings xmi:id="EJBLocalRefBinding_5" jndiName="RaAdminSession">
+    <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_5"/>
+  </ejbRefBindings>
 </webappbnd:WebAppBinding>
