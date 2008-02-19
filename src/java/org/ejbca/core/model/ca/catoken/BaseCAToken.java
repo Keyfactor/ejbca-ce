@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.23 2008-01-14 14:42:00 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.24 2008-02-19 11:47:22 primelars Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -118,7 +118,7 @@ public abstract class BaseCAToken implements ICAToken {
             KeyPair pair = mTmp.get(keyAliases[i]);
             testKey(pair);
             if (log.isDebugEnabled()) {
-                log.debug("Key with alias "+keyAliases[i]+" tested. toString for private part: "+pair.getPrivate());            	
+                log.debug("Key with alias "+keyAliases[i]+" tested.");            	
             }
         }
         mKeys = mTmp;
