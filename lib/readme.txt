@@ -2,7 +2,7 @@
 Commons-x jars are apache jars (http://jakarta.apache.org/commons/index.html), License is Apache.
 The jars: 
  commons-logging.jar 
- commons-digester.jar 
+ commons-digester-1.8.jar 
  commons-el-1.0.jar 
  commons-beanutils.jar 
  commons-codec-1.3.jar

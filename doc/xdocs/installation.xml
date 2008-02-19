@@ -682,7 +682,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <p>
 Configure Websphere in the admin console.
 <ol>
-<li>Create tables in your Oracle database using the script supplied in doc/howto/create-tables-ejbca3-oracle.sql.</li>
+<li>Create tables in your database using the script supplied in doc/howto/create-tables-ejbca3-oracle.sql or doc/howto/create-tables-ejbca3-postgres.sql.</li>
 <li>Navigate to 'Resources->Mail->Mail sessions' and create a new MailSession called 'MailSession' with jndiName 
   same as mail.jndi-name configured in conf/mail.properties (EjbcaMail).</li> 
 <li>Create a new DataSource:<br/>
