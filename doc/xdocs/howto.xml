@@ -411,7 +411,7 @@ NameVirtualHost *:443
   Known issues
   </p>
   <ul>
-	<li>EnrollDomainController should only try to run if the host is an actual DC..</li>
+	<li>The Servlet should verify that e.g. only Users can request User certificates, DCs only DC certs etc..</li>
 	<li>The enroll scripts always fetches new certificates, dispite the existence of new and valid ones..</li>
 	<li>AdminWeb cannot verify admin certificates if non-"/ejbca/" path is used in URL.</li>
 	<li>Autoenroll Servelt don't get X-Remote-User if "/ejbca/" path is used in URL.</li>
@@ -780,6 +780,12 @@ debug=false
 <source>
 	' This Script is based on the script found at http://www.microsoft.com/technet/prodtechnol/windowsserver2003/technologies/security/advcert.mspx#EURAE
 	
+	iRole = GetLastDomainRole()
+	If iRole <> 4 And iRole <> 5 Then
+		WScript.Echo "This script should only run on a Domain Controller."
+		WScript.Quit 1
+	End If
+	
 	Set WS = CreateObject("WScript.Shell")
 	
 	Set objDC = GetObject("LDAP://" &amp; CreateObject("ADSystemInfo").ComputerName) 
@@ -879,6 +885,26 @@ debug=false
 	    else 
 	        ComputeASN1 = sLength 
 	    End If 
+	End Function
+	
+	'Return the domain role number where:
+	'-1 Error
+	'0 Standalone Workstation
+	'1 Member Workstation
+	'2 Standalone Server
+	'3 Member Server
+	'4 Backup Domain Controller
+	'5 Primary Domain Controller 
+	Function GetLastDomainRole () 
+	    On Error Resume Next
+	    strComputer = "."
+	    Set objWMIService = GetObject("winmgmts:\\" & strComputer & "\root\cimv2")
+	    Set colItems = objWMIService.ExecQuery("Select DomainRole from Win32_ComputerSystem",,48)
+	    For Each objItem in colItems
+	        iReturn = objItem.DomainRole
+	    Next
+	    On Error Goto 0
+	    GetLastDomainRole = iReturn
 	End Function
 </source>
   <p>
