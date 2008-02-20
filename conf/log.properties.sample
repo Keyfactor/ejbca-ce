@@ -6,7 +6,7 @@
 # Used log devices.
 #  The devices will be displayed in reversed order in the Admin GUI.
 #  Default is "Log4jLogDevice;OldLogDevice" for now.
-#usedLogDevices=Log4jLogDevice;OldLogDevice;ProtectedLogDevice
+#usedLogDevices=Log4jLogDevice;ProtectedLogDevice
 
 #
 # List of available loggers, name=Factory Class;propertyfile

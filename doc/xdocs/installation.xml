@@ -665,10 +665,11 @@ sudo perl -p -i -e "s/\/sh$/\/bash/"  /opt/IBM/WebSphere/AppServer/bin/*.sh
       use 'datasource.jndi-name=EjbcaDS' (default)<br/>
       use 'datasource.jndi-name-prefix=jdbc/'</li>
 <li>Edit conf/web.properties, you should set desired values and also http/s ports (i.e. 9080 etc).</li>
-<li>Edit conf/mail.properties set 'mail.jndi-name=EjbcaMail'</li>
-<li>Edit conf/jaxws.properties set 'ejbcaws.enabled=false'<br/>
+<li>Edit conf/mail.properties, set 'mail.jndi-name=EjbcaMail'</li>
+<li>Edit conf/jaxws.properties, set 'ejbcaws.enabled=false'<br/>
       You can use ejbcaws.enabled=true if you have the WebService FEP and the EJB3 FEP installed.</li>
-<li>Edit conf/xkms.properties set 'xkms.enabled=false'</li>
+<li>Edit conf/xkms.properties, set 'xkms.enabled=false'</li>
+<li>Edit conf/log.properties, enable the ProtectedLogDevice, 'usedLogDevices=Log4jLogDevice;ProtectedLogDevice'</li>
 <li>Edit conf/jndi.properties.websphere and set the currect port from Servers->Application servers->server1 (your server)->Ports->BOOTSTRAP_ADDRESS.</li>
 </ol>
 
