@@ -764,6 +764,9 @@ After this you should be able to access the admin-GUI in EJBCA after installing 
 Public web will be at: http://127.0.0.1:9080/ejbca/index.jsp<br/>
 Admin web will be at: https://127.0.0.1:9443/ejbca/adminweb/index.jsp
 </p>
+<p>
+The default password for SSL keystore (key.p12) in Websphere is WebAS.
+</p>
 </subsubsection>
 
 </subsection>
