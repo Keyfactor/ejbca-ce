@@ -81,7 +81,7 @@
     	
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@xkms.war@-->" value="module>&lt;web>&lt;web-uri>xkms.war&lt;/web-uri>&lt;context-root>/${app.name}/xkms&lt;/context-root>&lt;/web>&lt;/module>"/>
         <war warfile="${dist.dir}/xkms.war" webxml="${src}/xkms/web.xml">
-            <webinf dir="${src}/xkms" includes="sun-jaxws.xml"/>
+            <webinf dir="${src}/xkms" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
             <classes dir="${tmp}/xkms/gen-classes"/>
          	<lib dir="${lib}/jaxws" includes="*.jar"/>  
         	<zipfileset dir="${src}/xkms/wsdl"/>
