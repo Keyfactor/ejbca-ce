@@ -135,12 +135,12 @@ appserver.home         : ${appserver.home}
 		-->
 		<delete file="${ejbca.home}/p12/superadmin.p12" />
 		<java dir="${ejbca.home}" fork="true" classname="org.ejbca.ui.cli.batch.BatchMakeP12" classpathref="classpath"/>
-		<available filepath="${ejbca.home}/p12" file="superadmin.p12" property="batchGenerationOk" />
 		<fail message="Batch generation failed!">
 			<condition>
-				<not>
-					<equals arg1="${batchGenerationOk}" arg2="true" />
-				</not>
+                <and>
+		            <not><available filepath="${ejbca.home}/p12" file="superadmin.p12"/></not>
+           			<istrue value="${superadmin.batch}" />
+                </and>
 			</condition>
 		</fail>
 	</target>
