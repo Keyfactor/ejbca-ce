@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.89 2008-02-07 10:28:17 anatom Exp $
+ * @version $Id: X509CA.java,v 1.90 2008-02-22 10:36:15 primelars Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -571,9 +571,9 @@ public class X509CA extends CA implements Serializable {
         
         // First we check if there is general extension override, and add all extensions from 
         // the request in that case
-        if (certProfile.getAllowExtensionOverride()) {
+        if (certProfile.getAllowExtensionOverride() && extensions!=null) {
         	Enumeration en = extensions.oids();
-        	while (en.hasMoreElements()) {
+        	while (en!=null && en.hasMoreElements()) {
         		DERObjectIdentifier oid = (DERObjectIdentifier)en.nextElement();
         		X509Extension ext = extensions.getExtension(oid);
         		log.debug("Overriding extension with oid: "+oid);
