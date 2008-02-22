@@ -1972,13 +1972,16 @@ You have to check if that support is available.
 <subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
 The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
-tested with Utimaco Cryptoserver and nCipher nShield/netHSM and Eracom and AEP Keyper.
+tested with Utimaco Cryptoserver and nCipher nShield/netHSM and Eracom and AEP Keyper and ARX CoSign.
 </p><p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
 <ul>
 <li>slot                - the slot of the CA.</li>
+<li>slotListIndex	- the index number in the slot list for the slot of the CA</li>
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
 </ul>
+</p><p>
+But only one of 'slot' or 'slotListIndex' should exist.
 </p><p>
 The tool $EJBCA/bin/pkcs11HSM.sh is used administrate and generate keys. Use it without parameters to get all valid options.
 Keys may be generated in two ways. Examples:
@@ -2253,8 +2256,11 @@ The following environment variables should be set for this user:
 </ul>
 </p>
 <strong>Step 3a. Create PKCS#11 keys that should be used on the nShield card</strong>
+<p>
+Start a new window and login as the same user (jboss user).
+Create a file (ocs-sunpkcs11.cfg) with the following contents:
+</p>
 <source>
-jboss@donny:~/work/test/keygen$ cat ocs-sunpkcs11.cfg 
 name=NFastJava
 library=/opt/nfast/toolkits/pkcs11/libcknfast.so
 slotListIndex=1
@@ -2265,14 +2271,17 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
   CKA_TOKEN = true
 }
 </source>
+<p>
+Now 3 keys protected by the key set 'ejbca' are created like this:
+</p>
 <source>
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 default
-Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 default
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
+Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry default.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 crypt
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-d165e440baa8dc9963780c682836ba17513e8cbf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 crypt
+Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry crypt.
 jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 1024 test
@@ -2282,16 +2291,33 @@ PKCS11 Token [SunPKCS11-NFastJava] Password:
 Creating certificate with entry test.
 jboss@donny:~/work/test/keygen$ 
 </source>
-<strong>Step 4b. Start EJBCA with nShield HSM</strong>
+<strong>Step 4a. Start EJBCA with nShield HSM</strong>
+<p>
+To start EJBCA, preload must be running with the required key stores loaded. In this example this was done in step 2. Preload is now used to start jboss:
+</p>
 <source>
 jboss@donny:~/work/test/ca$ ~nfast/bin/preload -c ejbca $JBOSS_HOME/bin/run.sh
 </source>
 <strong>Step 5a. Create a new CA in the web GUI of EJBCA</strong>
+<p>
+Choose PKCS#11 as "CA Token Type".
+</p><p>
+Properties are defined according to the "Generic PKCS#11 provider" section above.
+</p><p>
+All preloaded operator card sets (OCSs) has it's own slot. It is not possible to predict the slot ID. But the index of the slot in the slot list is predictable. "slotListIndex" must therefore be used. If only one OCS is preloaded this index is always 1.
+</p><p>
+If several CAs is sharing same OCS (and hence slot) each key (identified by a key label) may only be used for one CA but the test key. Same test key could be used for all CAs.
+</p><p>
+Example with previous generated keys where signRoot is used for CAs signing, and defaultRoot is used for everything else (encryption):
+</p><p>
+When preload is used no authentication code is needed to activate a CA. You could give any value for the authentication code when activating.
+The 'pin' property could be used in the configuration to automatically activate a CA. The value of this property could be anything.
+</p>
 <source>
-defaultKey default
+defaultKey defaultRoot
 testKey test
-keyEncryptKey crypt
-hardTokenEncrypt crypt
+keyEncryptKey cryptRoot
+hardTokenEncrypt cryptRoot
 pin dummy
 slotListIndex 1
 sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
