@@ -8,13 +8,21 @@
 # Example:
 #
 
-if [ -z $EJBCA_HOME ]; then
-        echo "Fatal error: EJBCA_HOME is not set"
-        exit 1
+if [ -z "$EJBCA_HOME" ] ; then
+	EJBCA_FILE="$0" 
+	EJBCA_HOME=`echo $(dirname $(dirname $EJBCA_FILE))`
 fi
 
-if [ -z $JAVA_HOME ]; then
-        echo "Fatal error: JAVA_HOME is not set"
+JAVACMD=`which java`
+# Check that JAVA_HOME is set
+if [ ! -n "$JAVA_HOME" ]; then
+    if [ ! -n "$JAVACMD" ]
+    then
+        echo "You must set JAVA_HOME before running the EJBCA cli."
+        exit 1
+    fi
+else
+    JAVACMD=$JAVA_HOME/bin/java
 fi
 
 if [ -z $NFAST_HOME ]; then
@@ -43,4 +51,4 @@ args="$args com.ncipher.provider.km.nCipherKM com.ncipher.fixup.provider.nCipher
 
 # Finally run java
 #set -x
-$JAVA_HOME/bin/java -cp $CLASSES org.ejbca.ui.cli.HSMKeyTool $args
+$JAVACMD -cp $CLASSES org.ejbca.ui.cli.HSMKeyTool $args
