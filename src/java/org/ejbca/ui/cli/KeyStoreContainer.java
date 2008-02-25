@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.AuthProvider;
@@ -50,7 +49,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
@@ -62,7 +60,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.util.KeyTools;
 
 /**
- * @version $Id: KeyStoreContainer.java,v 1.25 2008-02-06 14:25:24 primelars Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.26 2008-02-25 09:28:29 anatom Exp $
  */
 public abstract class KeyStoreContainer {
 
