@@ -2459,6 +2459,21 @@ sub-CA's certificate. Activate the CA-token from Basic Functions when needed.
 <strong>Using module protected keys</strong>
 <p>
 Module protected keys do not need an operator card set. Hence no PIN code is needed to active such a key. A CA could be configured to use a keystore with module protected keys.
+</p><p>
+When using PKCS#11 slot 0 is used to indicate module protection. The only other thing except using slot 0 you have to do is to use a slightly different configuration file when creating the key. The file could look like this:
+</p>
+<source>
+name=NFastJava
+library=/opt/nfast/toolkits/pkcs11/libcknfast.so
+slotListIndex=0
+attributes(generate,CKO_PRIVATE_KEY,*) = {
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_TOKEN = true
+}
+</source>
+<p>
+When using JCA all you have to do is to replace 'generate' with 'generatemodule'. Example:
 </p>
 <source>
 jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 4096 default
@@ -2474,23 +2489,14 @@ Creating certificate with entry test.
 Next line will contain the identity identifying the keystore:
 41ca8b21186cb508c5e3b84f9df9b4208042f681
 </source>
-<p>
-Start JBoss and create a new CA 'ModuleProtectedCA' in the Admin GUI.
-Choose CA Token Type 'NFastCAToken' and enter the generated key's properties.
-</p>
-<source>
-keyStore 41ca8b21186cb508c5e3b84f9df9b4208042f681
-defaultKey default
-testKey test
-</source>
-<p>
-Complete the form and press "Create". Go to Admin GUI -> Basic Functions -> View Information for 'ModuleProtectedCA' -> Activate.
-Create a CRL to verify functionality by Admin GUI -> Basic Functions -> Create CRL for 'ModuleProtectedCA'.
-</p>
 <strong>Not using preload.</strong>
 <p>
 If a 1/N card set is used then preload don't have to be used (but it can be used). If preload is not used then jboss could be made to start automatically
-at boot time. Use the "-np" switch to the starting script if you don't want preload:
+at boot time.
+</p><p>
+For PKCS#11 simple do not use the preload command. The authentication code is now needed when activating the CA.
+</p><p>
+For JCA use the "-np" switch to the starting script if you don't want preload:
 </p>
 <source>$EJBCA_HOME/bin/nCipherJboss.sh -np start</source>
 <strong>Setting public exponent.</strong>
@@ -2508,6 +2514,22 @@ length of the file is 40 byte.
 If the file is called "single.jks" then the key is created like this:
 </p>
 <source>/opt/nfast/bin/generatekey -g -csingle -b jcecsp alias=default keystore=single.jks type=RSA pubexp=3 size=2048 keystorepass=single</source>
+</subsection>
+
+<subsection name="AEP Keyper">
+<p>
+This HSM needs a configuration file when generating the keys. It could look like this:
+</p>
+<source>
+name=Keyper
+library=/Users/flourish/Keyper/PKCS11Provider/pkcs11.GCC4.0.1_i386.so.4.04
+slot=0
+attributes(generate,CKO_PRIVATE_KEY,*) = {
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_TOKEN = true
+}
+</source>
 </subsection>
 
 <subsection name="SafeNet Luna SA HSM">
