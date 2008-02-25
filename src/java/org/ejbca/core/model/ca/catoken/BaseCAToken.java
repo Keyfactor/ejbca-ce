@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.25 2008-02-25 13:04:27 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.26 2008-02-25 15:49:01 anatom Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -152,7 +152,9 @@ public abstract class BaseCAToken implements ICAToken {
     }
 
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoActivate) {
-        log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
+    	if (log.isDebugEnabled()) {
+    		log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
+    	}
         keyStrings = new KeyStrings(properties);
         if (sSlotLabelKey != null) {
             sSlotLabel = properties.getProperty(sSlotLabelKey);        	
