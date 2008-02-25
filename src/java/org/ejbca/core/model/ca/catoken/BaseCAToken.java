@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.26 2008-02-25 15:49:01 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.27 2008-02-25 15:55:18 anatom Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -73,6 +73,8 @@ public abstract class BaseCAToken implements ICAToken {
                 log.debug(e);
             }
     }
+
+
     private void testKey( KeyPair pair ) throws Exception {
         final byte input[] = "Lillan gick p� v�gen ut, m�tte d�r en katt ...".getBytes();
         final byte signBV[];
@@ -216,8 +218,17 @@ public abstract class BaseCAToken implements ICAToken {
     protected void setProvider( String providerClassName ) throws Exception {
         setProvider( (Provider)Class.forName(providerClassName).newInstance() );
     }
-    protected void setProvider( Provider prov ) throws Exception {
+    protected void setProvider( Provider prov ) throws Exception 
+    {
         sProviderName = prov.getName();
+        if (sProviderName.startsWith("Luna")) {
+        	// Luna Java provider does not contain support for RSA/ECB/PKCS1Padding but this is 
+        	// the same as the alias below on small amounts of data  
+            prov.put("Alg.Alias.Cipher.RSA/NONE/NoPadding","RSA//NoPadding");
+            prov.put("Alg.Alias.Cipher.1.2.840.113549.1.1.1","RSA//NoPadding");
+            prov.put("Alg.Alias.Cipher.RSA/ECB/PKCS1Padding","RSA//PKCS1v1_5");
+            prov.put("Alg.Alias.Cipher.1.2.840.113549.3.7","DES3/CBC/PKCS5Padding");
+        }
         if ( Security.getProvider(getProvider())==null )
             Security.addProvider( prov );
         if ( Security.getProvider(getProvider())==null )
@@ -272,6 +283,13 @@ public abstract class BaseCAToken implements ICAToken {
      */
     public String getProvider() {
         return sProviderName;
+    }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#getJCEProvider()
+     */
+    public String getJCEProvider() {
+        return getProvider();
     }
 
 	/* (non-Javadoc)

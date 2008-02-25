@@ -23,7 +23,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * 
- * @version $Id: CATokenContainer.java,v 1.3 2007-07-26 09:11:37 anatom Exp $
+ * @version $Id: CATokenContainer.java,v 1.4 2008-02-25 15:55:18 anatom Exp $
  */
 public abstract class CATokenContainer extends UpgradeableDataHashMap implements java.io.Serializable{
 
@@ -91,10 +91,16 @@ public abstract class CATokenContainer extends UpgradeableDataHashMap implements
     
     
     /** Returns the signature Provider that should be used to sign things with
-     *  the PrivateKey object returned by this signingdevice implementation.
+     *  the PrivateKey object returned by this signing device implementation.
      * @return String the name of the Provider
      */
     public abstract String getProvider();
+    
+    /** Returns the crypto Provider that should be used to encrypt/decrypt things with
+     *  the PrivateKey object returned by this signing device implementation.
+     * @return String the name of the Provider
+     */
+    public abstract String getJCEProvider();
 
 	/**
 	 * Method that generates the keys that will be used by the CAToken.

@@ -175,7 +175,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.48 2008-02-06 12:31:13 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.49 2008-02-25 15:55:19 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -683,7 +683,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getJCEProvider());
             }
             // Verify the request
             if (req.verify() == false) {
