@@ -1920,10 +1920,11 @@ EJBCA 3.1 and later has build-in support for the nCipher nShield HSM.
 </p><p>
 EJBCA 3.2 and later also has an implementation for the Eracom HSM. The configuration was changed to 3.3.
 </p><p>
-</p><p>
 EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
 </p><p>
 EJBCA 3.5 and later has an implementation for a generic PKCS#11 provider, tested with Utimaco and nCipher.
+</p><p>
+EJBCA 3.6 adds tested support for AEP KeyPer and ARX CoSign.
 </p><p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
@@ -2554,7 +2555,7 @@ Do the setup according the documentation from SafeNet. After "Assign a Client to
 <p>
 Do the following:
 <ul>
-<li>1. Put LunaJCASP.jar from SafeNet in $EJBCA_HOME/lib and in $APPSRV_HOME/server/default/lib</li>
+<li>1. Put LunaJCASP.jar and LunaJCESP.jar from SafeNet in $EJBCA_HOME/lib and in $APPSRV_HOME/server/default/lib</li>
 <li>2. Define the property 'hsm.luna' in conf/ejbca.properties (see uncommented line in conf/ejbca.properties.sample).</li>
 <li>3. ant deploy</li>
 </ul>
