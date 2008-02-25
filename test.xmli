@@ -75,6 +75,29 @@
         </junitreport>
     </target>
 
+    <target name="test:runperf" depends="test:compile,j2ee:assert-run" description="run JUnit performance tests">
+        <delete dir="${test.dir}/perf/reports" />
+        <mkdir dir="${test.dir}/perf/reports/html" />
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath>
+                <path refid="test.compile.classpath" />
+                <path location="${test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${test.dir}/perf/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/sign/TestSignLotsOfCerts.class" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <junitreport todir="${test.dir}/perf/reports">
+            <fileset dir="${test.dir}/perf/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.dir}/perf/reports/html" />
+        </junitreport>
+    </target>
+
     <target name="test:runweb" depends="test:compile,j2ee:assert-run" description="run JUnit web testcases">
         <delete dir="${test.dir}/web/reports" />
         <mkdir dir="${test.dir}/web/reports/html" />
