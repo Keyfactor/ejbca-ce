@@ -75,6 +75,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Nicolas Coudene, nicolas.coudene(at)linagora.com, completing the DB2 support, updates to french translation.</li>
 <li>Sébastien Levesque, slevesque(at)linagora.com, WS-API calls for listing CAs and profiles.</li>
 <li>Abbas Razam, abbasrazam(at)yahoo.com, fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
+li>Darren Johnson, darren.johnson(at)safenet-inc.com, split CAToken to be able to use separate JCE/JCA providers, makes SCEP work on Luna HSM with java provider.</li>
 </ul>
     </section>
   </body>
