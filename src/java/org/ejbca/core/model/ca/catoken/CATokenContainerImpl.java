@@ -24,9 +24,9 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
-
-import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -46,11 +46,62 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.7 2007-12-19 15:04:48 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.8 2008-02-25 13:04:27 primelars Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
-	/** Log4j instance */
+	/**
+     * 
+     */
+    private static final long serialVersionUID = 3363098236866891317L;
+
+    /**
+     * @author lars
+     *
+     */
+    private class PropertiesWithHiddenPIN extends Properties {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -2240419700704551683L;
+        /**
+         * 
+         */
+        public PropertiesWithHiddenPIN() {
+        }
+        /**
+         * @param defaults
+         */
+        public PropertiesWithHiddenPIN(Properties defaults) {
+            super(defaults);
+        }
+        public synchronized String toString() {
+            int max = size() - 1;
+            if (max == -1)
+                return "{}";
+
+            final StringBuilder sb = new StringBuilder();
+            final Iterator<Map.Entry<Object,Object>> it = entrySet().iterator();
+
+            sb.append('{');
+            for (int i = 0; ; i++) {
+                final Map.Entry<Object, Object> e = it.next();
+                final String key = (String)e.getKey();
+                final String readValue = (String)e.getValue();
+                final String value = readValue!=null && readValue.length()>0 && key.trim().equalsIgnoreCase(ICAToken.AUTOACTIVATE_PIN_PROPERTY) ? "xxxx" : readValue;
+                sb.append(key);
+                sb.append('=');
+                sb.append(value);
+
+                if (i == max)
+                    return sb.append('}').toString();
+                sb.append(", ");
+            }
+        }
+
+    }
+    /** Log4j instance */
 	private static final Logger log = Logger.getLogger(CATokenContainerImpl.class);
 	
 	/** Internal localization of logs and errors */
@@ -432,7 +483,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 	}
 
 	private Properties getProperties() throws IOException{
-		Properties prop = new Properties();
+		Properties prop = new PropertiesWithHiddenPIN();
 		String pdata = getPropertyData();
 		if (pdata != null) {
 			prop.load(new ByteArrayInputStream(pdata.getBytes()));			

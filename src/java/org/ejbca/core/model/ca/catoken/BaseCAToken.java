@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.24 2008-02-19 11:47:22 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.25 2008-02-25 13:04:27 primelars Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -152,18 +152,7 @@ public abstract class BaseCAToken implements ICAToken {
     }
 
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoActivate) {
-    	if (log.isDebugEnabled()) {
-    		// We must make sure that we don't put out activation passwords in the log file
-        	String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
-    		if (pin != null) {
-    			BaseCAToken.setAutoActivatePin(properties, "xxxxxx", false);
-    		}
-            log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
-    		if (pin != null) {
-    			// No encryption because we read out the raw value, which was possibly already encrypted
-    			BaseCAToken.setAutoActivatePin(properties, pin, false);
-    		}
-    	}
+        log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
         keyStrings = new KeyStrings(properties);
         if (sSlotLabelKey != null) {
             sSlotLabel = properties.getProperty(sSlotLabelKey);        	
