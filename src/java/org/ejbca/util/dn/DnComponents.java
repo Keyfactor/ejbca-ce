@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.10 2007-08-19 13:20:56 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.11 2008-02-26 17:04:05 jeklund Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -73,12 +73,14 @@ public class DnComponents {
         oids.put("email", X509Name.EmailAddress);
         oids.put("unstructuredname", X509Name.UnstructuredName); //unstructuredName 
         oids.put("unstructuredaddress", X509Name.UnstructuredAddress); //unstructuredAddress
+        oids.put("postalcode", X509Name.POSTAL_CODE);
+        oids.put("businesscategory", X509Name.BUSINESS_CATEGORY);
     }
     /** Default values used when constructing DN strings that are put in the database
      * 
      */
     private static String[] dNObjectsForward = {
-        "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
+        "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     // Default values    
@@ -109,6 +111,8 @@ public class DnComponents {
     public static final String COUNTRY            = "COUNTRY";
     public static final String UNSTRUCTUREDADDRESS = "UNSTRUCTUREDADDRESS";
     public static final String UNSTRUCTUREDNAME    = "UNSTRUCTUREDNAME";
+    public static final String POSTALCODE = "POSTALCODE";
+    public static final String BUSINESSCATEGORY    = "BUSINESSCATEGORY";
     
     // AltNames
     public static final String RFC822NAME         = "RFC822NAME";
