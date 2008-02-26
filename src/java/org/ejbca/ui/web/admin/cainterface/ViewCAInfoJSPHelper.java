@@ -18,6 +18,8 @@ import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
@@ -31,7 +33,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.6 2007-07-26 11:10:39 anatom Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.7 2008-02-26 15:37:13 herrvendil Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -113,6 +115,11 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	         	 } catch (CATokenOfflineException catoe) {
 	         		 activationerrormessage = "ERROR";
 	         		 activationerrorreason = catoe.getMessage();
+	         	 } catch (ApprovalException e) {
+	         		activationerrormessage = "CAACTIVATIONREQEXISTS";
+	         		activationerrorreason = cainfo.getCAInfo().getName();
+	         	 } catch (WaitingForApprovalException e){
+	         		 activationmessage = "CAACTIVATIONSENTAPPROVAL";
 	         	 }
     	      }
     	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.

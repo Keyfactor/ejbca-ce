@@ -56,6 +56,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
@@ -68,6 +70,13 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalExecutorUtil;
+import org.ejbca.core.model.approval.ApprovalOveradableClassName;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -112,7 +121,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.70 2008-02-10 21:03:46 primelars Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.71 2008-02-26 15:37:14 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -183,6 +192,14 @@ import org.ejbca.util.KeyTools;
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
  *   link="AuthorizationSession"
+ *   
+ * @ejb.ejb-external-ref description="The Approval Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/ApprovalSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
+ *   business="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
+ *   link="ApprovalSession"
  *
  * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
  *   view-type="local"
@@ -232,10 +249,27 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /** The local interface of the job runner session bean used to create crls.*/
     private ICreateCRLSessionLocal jobrunner;
+    
+    /**
+     * The local interface of the approval session bean
+     */
+    private IApprovalSessionLocal approvalsession;
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
+    private IApprovalSessionLocal getApprovalSession(){
+        if(approvalsession == null){
+            try {
+              IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
+  			approvalsession = approvalsessionhome.create();
+  		} catch (CreateException e) {
+  			throw new EJBException(e);
+  		}  
+        }
+        return approvalsession;
+      }
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -1858,11 +1892,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      *  @throws AuthorizationDeniedException it the administrator isn't authorized to activate the CA.
      *  @throws CATokenAuthenticationFailedException if the current status of the ca or authenticationcode is wrong.
-     *  @throws CATokenOfflineException if the CA token is still offline when calling the method.
+     *  @throws CATokenOfflineException if the CA token is still off-line when calling the method.
+     *  @throws ApprovalException if an approval already is waiting for specified action 
+     *  @throws WaitingForApprovalException  if approval is required and the action have been added in the approval queue.  
      *  
      * @ejb.interface-method
      */
-    public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException{
+    public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException{
        // Authorize
         try{
             getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_ACTIVATECA);
@@ -1872,6 +1908,19 @@ public class CAAdminSessionBean extends BaseSessionBean {
             throw new AuthorizationDeniedException(msg);
         }
 
+        // Check if approvals is required.
+        CAInfo cainfo = getCAInfo(admin, caid);
+        if (cainfo == null) {
+    		log.error("No CA info exists for CA id: "+caid);
+    	}
+        int numOfApprovalsRequired = ApprovalExecutorUtil.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo);
+        ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(),authorizationcode,admin,numOfApprovalsRequired,caid,ApprovalDataVO.ANY_ENDENTITYPROFILE);
+        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {       		    		
+        	getApprovalSession().addApprovalRequest(admin, ar);
+            String msg = intres.getLocalizedMessage("ra.approvalcaactivation");            	
+        	throw new WaitingForApprovalException(msg);
+        }
+        
     	try{
     		if(caid >=0 && caid <= CAInfo.SPECIALCAIDBORDER){
         		String msg = intres.getLocalizedMessage("caadmin.erroractivatetoken", new Integer(caid));            	
@@ -1916,6 +1965,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	}
     }
 
+	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN = {
+		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest",null),
+	};
+    
     /**
      *  Deactivates an 'active' CA token and sets the CA status to offline.
      *  The admin must be authorized to "/ca_functionality/basic_functions/activate_ca" inorder to activate/deactivate.

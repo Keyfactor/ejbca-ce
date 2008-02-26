@@ -32,6 +32,8 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
@@ -57,7 +59,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.11 2007-07-26 09:11:37 anatom Exp $
+ * @version $Id: CADataHandler.java,v 1.12 2008-02-26 15:37:13 herrvendil Exp $
  */
 public class CADataHandler implements Serializable {
     private static final Logger log = Logger.getLogger(CADataHandler.class);
@@ -298,7 +300,7 @@ public class CADataHandler implements Serializable {
 		}  
 	 }
  
- public void activateCAToken(int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException {
+ public void activateCAToken(int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException {
    caadminsession.activateCAToken(administrator,caid,authorizationcode);	
  }
  

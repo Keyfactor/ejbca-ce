@@ -16,6 +16,8 @@ package org.ejbca.ui.cli;
 import java.rmi.UnmarshalException;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 
@@ -26,7 +28,7 @@ import org.ejbca.core.model.ca.catoken.ICAToken;
 /**
  * Activates the specified HSM CA.
  *
- * @version $Id: CaActivateCACommand.java,v 1.6 2007-07-26 11:10:39 anatom Exp $
+ * @version $Id: CaActivateCACommand.java,v 1.7 2008-02-26 15:37:13 herrvendil Exp $
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
     /**
@@ -71,6 +73,10 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             		// with a class we don't have here at the CLI. It is probably invalid PIN
             		getOutputStream().println("Error returned, did you enter the correct PIN?");
             		getOutputStream().println(e.getMessage());
+            	} catch (ApprovalException e){
+            		getOutputStream().println("Error: CA Token activation approval request already exists.");
+            	} catch (WaitingForApprovalException e){
+            		getOutputStream().println("CA requires an approval to be activated. A request have been sent to authorized administrators." );
             	}
             }else{
             	getOutputStream().println("Error: CA or CAToken must be offline to be activated.");
