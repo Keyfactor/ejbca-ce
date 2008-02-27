@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.90 2008-02-22 10:36:15 primelars Exp $
+ * @version $Id: X509CA.java,v 1.91 2008-02-27 08:52:37 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -1030,7 +1030,7 @@ public class X509CA extends CA implements Serializable {
     	Iterator    it =  recipients.getRecipients().iterator();
     	RecipientInformation   recipient = (RecipientInformation) it.next();
     	ObjectInputStream ois = null;
-    	byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getProvider());
+    	byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getJCEProvider());
     	ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
     	    	    	
     	return (KeyPair) ois.readObject();  
