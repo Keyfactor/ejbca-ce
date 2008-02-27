@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.46 2008-02-07 10:26:53 anatom Exp $
+$Id: UPGRADE,v 1.47 2008-02-27 11:12:55 anatom Exp $
 
 UPGRADE
 =======
@@ -73,6 +73,8 @@ sql scripts are located. We will happily include upgrade scripts for other datab
 
 The JBoss Mbean create CRL service has been removed in EJBCA 3.6. It has been replaced with the much easier, 
 more portable etc CRL Update Service configured in the Admin-GUI. See the User Guide about CRL creation for details.
+
+If you are using PrimeCardHSM you need to upgrade to a new version, matching EJBCA 3.6.
 
 From EJBCA 3.5.x to EJBCA 3.5.x
 -------------------------------
