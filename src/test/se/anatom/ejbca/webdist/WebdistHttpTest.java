@@ -13,14 +13,15 @@
  
 package se.anatom.ejbca.webdist;
 
+import java.net.URL;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebConnection;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebResponse;
 
 /** Tests http pages of public webdist
  **/
@@ -46,15 +47,16 @@ public class WebdistHttpTest extends TestCase {
         String resourceName = "publicweb/webdist/certdist";
         String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0";
 
-        // We want to get a 404 response without exceptions
-        HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
-        WebConversation wc   = new WebConversation();
-        WebRequest request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName );
-        WebResponse response = wc.getResponse( request );
-        assertEquals( "Response code", 400, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName1 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
+        final WebClient webClient = new WebClient();
+        WebConnection con = webClient.getWebConnection();
+        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName));
+        WebResponse resp = con.getResponse(settings);
+        assertEquals( "Response code", 400, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName1));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
     }
 
     public void testPublicWeb() throws Exception {
@@ -69,33 +71,40 @@ public class WebdistHttpTest extends TestCase {
         String resourceName6 = "enrol/server.jsp";
         String resourceName7 = "enrol/keystore.jsp";
 
-        // We want to get a 404 response without exceptions
-        HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
-        WebConversation wc   = new WebConversation();
-        WebRequest request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName );
-        WebResponse response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName1 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName2 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName3 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName4 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName5 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName6 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
-        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName7 );
-        response = wc.getResponse( request );
-        assertEquals( "Response code", 200, response.getResponseCode() );
+        final WebClient webClient = new WebClient();
+        WebConnection con = webClient.getWebConnection();
+        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName));
+        WebResponse resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName1));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName2));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName3));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName4));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName5));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName6));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
+        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName7));
+        resp = con.getResponse(settings);
+        assertEquals( "Response code", 200, resp.getStatusCode() );
+
     }
 
 }

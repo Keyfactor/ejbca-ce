@@ -87,11 +87,10 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebConnection;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebResponse;
 
 /** Tests http pages of ocsp
  **/
@@ -143,8 +142,6 @@ public class ProtocolOcspHttpTest extends TestCase {
         super(name);
         httpReqPath = reqP;
         resourceOcsp = res;
-        // We want to get error responses without exceptions
-        HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
 
         // Install BouncyCastle provider
         CertTools.installBCProvider();
@@ -220,13 +217,12 @@ public class ProtocolOcspHttpTest extends TestCase {
     } // genKeys
 
     public void test01Access() throws Exception {
-
-        WebConversation wc = new WebConversation();
-
         // Hit with GET gives a 405 with OCSP: BAD_METHOD
-        WebRequest request = new GetMethodWebRequest(httpReqPath + '/' + resourceOcsp);
-        WebResponse response = wc.getResponse(request);
-        assertEquals("Response code", 405, response.getResponseCode());
+        final WebClient webClient = new WebClient();
+        WebConnection con = webClient.getWebConnection();
+        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceOcsp));
+        WebResponse resp = con.getResponse(settings);
+        assertEquals( "Response code", 405, resp.getStatusCode() );
     }
 
 

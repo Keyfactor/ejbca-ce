@@ -24,10 +24,7 @@
 	<classpathentry kind="lib" path="lib/batik-util.jar"/>
 	<classpathentry kind="lib" path="lib/batik-css.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-3.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/ext/servlet-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
-	<classpathentry kind="lib" path="lib/ext/httpunit.jar"/>
-	<classpathentry kind="lib" path="lib/ext/nekohtml.jar"/>
+	<classpathentry kind="lib" path="lib/ext/htmlunit-1.14.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15.jar"/>

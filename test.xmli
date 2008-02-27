@@ -114,13 +114,16 @@
                     <include name="**/protocol/ProtocolScepHttpTest*" />
                     <include name="**/protocol/ProtocolOcspHttpTest*" />
                     <include name="**/protocol/cmp/CrmfRequestTest*" />
+                	<include name="**/webdist/WebdistHttpTest*" />
+                	<include name="**/protocol/CertRequestHttpTest*" />
+                    <!-- Test for standalone OCSP responder -->
+                    <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
+                	<!-- Below tests require RA mode and special settings in cmp.properties, see java files -->
                     <exclude name="**/protocol/cmp/CrmfRARequestTest*" />
                     <exclude name="**/protocol/cmp/CrmfRATcpRequestTest*" />
                     <exclude name="**/protocol/cmp/CrmfRAPbeRequestTest*" />
+                    <!-- Special test for OCSP UNID look up service, see java file -->
                     <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
-                    <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
-                	<include name="**/webdist/WebdistHttpTest*" />
-                	<include name="**/protocol/CertRequestHttpTest*" />
                 </fileset>
             </batchtest>
         </junit>

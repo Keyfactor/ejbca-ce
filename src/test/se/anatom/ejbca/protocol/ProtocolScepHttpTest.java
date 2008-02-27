@@ -37,6 +37,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -47,6 +48,7 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -85,11 +87,11 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.SubmitMethod;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebConnection;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebResponse;
 
 /** Tests http pages of scep
  **/
@@ -162,9 +164,6 @@ public class ProtocolScepHttpTest extends TestCase {
         // Install BouncyCastle provider
         CertTools.installBCProvider();
 
-        // We want to get error responses without exceptions
-        HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
-
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
         ctx = getInitialContext();
@@ -214,11 +213,12 @@ public class ProtocolScepHttpTest extends TestCase {
     }
  
     public void test01Access() throws Exception {
-        WebConversation wc = new WebConversation();
         // Hit scep, gives a 400: Bad Request
-        WebRequest request = new GetMethodWebRequest(httpReqPath + '/' + resourceScep);
-        WebResponse response = wc.getResponse(request);
-        assertEquals("Response code", 400, response.getResponseCode());
+        final WebClient webClient = new WebClient();
+        WebConnection con = webClient.getWebConnection();
+        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceScep));
+        WebResponse resp = con.getResponse(settings);
+        assertEquals( "Response code", 400, resp.getStatusCode() );
     }
 
     /** Tests a random old scep message from OpenScep
@@ -227,15 +227,18 @@ public class ProtocolScepHttpTest extends TestCase {
     public void test02OpenScep() throws Exception {
         log.debug(">test02OpenScep()");
         // send message to server and see what happens
-        WebConversation wc = new WebConversation();
-        WebRequest request = new GetMethodWebRequest(httpReqPath + '/' + resourceScep);
-        request.setParameter("operation", "PKIOperation");
-        request.setParameter("message", new String(Base64.encode(openscep)));
-        WebResponse response = wc.getResponse(request);
+        final WebClient webClient = new WebClient();
+        WebConnection con = webClient.getWebConnection();
+        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceScep), SubmitMethod.GET);
+        ArrayList<NameValuePair> l = new ArrayList<NameValuePair>();
+        l.add(new NameValuePair("operation", "PKIOperation"));
+        l.add(new NameValuePair("message", new String(Base64.encode(openscep))));
+        settings.setRequestParameters(l);
+        WebResponse resp = con.getResponse(settings);
         // TODO: since our request most certainly uses the wrong CA cert to encrypt the
         // request, it will fail. If we get something back, we came a little bit at least :)
         // We should get a NOT_FOUND error back.
-        assertEquals("Response code", 404, response.getResponseCode());
+        assertEquals( "Response code", 404, resp.getStatusCode() );
         log.debug("<test02OpenScep()");
     }
 
