@@ -83,7 +83,7 @@ function viewocspcert(){
 	    <td>
  	         <%= ejbcawebbean.getText("AUTHENTICATIONCODE") + ": " %>
 	         <input type="password" name="<%= viewcainfohelper.PASSWORD_AUTHENTICATIONCODE %>" size="10" maxlength="255"  value=''>
-             <input type="submit" name="<%= viewcainfohelper.BUTTON_ACTIVATE %>" value="<%= ejbcawebbean.getText("ACTIVATE") %>" onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREACTIVATECA") %>")'>
+             <input type="submit" name="<%= viewcainfohelper.BUTTON_ACTIVATE %>" value="<%= ejbcawebbean.getText("ACTIVATE") %>" onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREACTIVATECA",true) %>")'>
         </td>
       </tr> 
      <% }
@@ -91,7 +91,7 @@ function viewocspcert(){
      <tr id="Row<%=(row++)%2%>">
 	 <td width="<%=columnwidth%>"></td>
 	 <td>
-             <input type="submit" name="<%= viewcainfohelper.BUTTON_MAKEOFFLINE %>" value="<%= ejbcawebbean.getText("MAKEOFFLINE") %>" onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREMAKECAOFFLINE") %>")'>
+             <input type="submit" name="<%= viewcainfohelper.BUTTON_MAKEOFFLINE %>" value="<%= ejbcawebbean.getText("MAKEOFFLINE") %>" onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREMAKECAOFFLINE",true) %>")'>
          </td>
       </tr>           
      <% } %>      

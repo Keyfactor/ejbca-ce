@@ -70,7 +70,7 @@
                 <input type="submit" name="<%= BUTTON_EDIT_ACCESSRULES %>" value="<%= ejbcawebbean.getText("EDITACCESSRULES") %>">
               </td>
               <td>
-                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE") %>');" name="<%= BUTTON_DELETE_ADMINGROUP %>" value="<%= ejbcawebbean.getText("DELETEGROUP") %>">
+                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_ADMINGROUP %>" value="<%= ejbcawebbean.getText("DELETEGROUP") %>">
               </td>
             </tr>
           </table> 
@@ -98,8 +98,8 @@
               </option>
             <%}%>
           </select>
-          <input type="submit" name="<%= BUTTON_ADD_ADMINGROUP%>" onClick='return checkfieldforlegalchars("document.editgroup.<%=TEXTFIELD_GROUPNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("ADDADMINGROUP") %>">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= BUTTON_RENAME_SELECTED%>" onClick='return checkfieldforlegalchars("document.editgroup.<%=TEXTFIELD_GROUPNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAMESELECTEDADMINGROUP") %>">
+          <input type="submit" name="<%= BUTTON_ADD_ADMINGROUP%>" onClick='return checkfieldforlegalchars("document.editgroup.<%=TEXTFIELD_GROUPNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("ADDADMINGROUP") %>">&nbsp;&nbsp;&nbsp;
+          <input type="submit" name="<%= BUTTON_RENAME_SELECTED%>" onClick='return checkfieldforlegalchars("document.editgroup.<%=TEXTFIELD_GROUPNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTEDADMINGROUP") %>">
         </td>
       </tr>
       <tr> 

@@ -204,7 +204,7 @@ function confirmrevokation(){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
      returnval = false;
   }else{
-    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKETOKEN") %>");
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKETOKEN",true) %>");
   } 
   return returnval;
 }
@@ -212,7 +212,7 @@ function confirmrevokation(){
 function confirmkeyrecovery(){
   var returnval = false;
 
-  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREKEYRECTOKEN") %>");
+  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREKEYRECTOKEN",true) %>");
   
   return returnval;
 }

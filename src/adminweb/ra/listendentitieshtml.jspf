@@ -53,15 +53,15 @@ function viewtoken(row){
 
 function confirmdelete(){
   var returnval;
-  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETE") %>");
-  returnval = returnval && confirm("<%= ejbcawebbean.getText("HAVEYOUREVOKEDTHEENDENTITIES") %>");
+  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETE",true) %>");
+  returnval = returnval && confirm("<%= ejbcawebbean.getText("HAVEYOUREVOKEDTHEENDENTITIES",true) %>");
 
   return returnval;
 }
 
 function confirmdeleterevoke(){
   var returnval;
-  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETEREVOKE") %>");  
+  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETEREVOKE",true) %>");  
 
   return returnval;
 }
@@ -72,7 +72,7 @@ function confirmrevokation(){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
      returnval = false;
   }else{
-    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKE") %>");
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKE",true) %>");
   } 
   return returnval;
 }
@@ -463,7 +463,7 @@ function confirmrevokation(){
       <%/* try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value="<%= ejbcawebbean.getText("CHANGESTATUSTO") %>"
-               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE") %>")'><br>
+               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE",true) %>")'><br>
         <select name="<%=SELECT_CHANGE_STATUS %>">
          <option selected value='<%= Integer.toString(UserDataConstants.STATUS_NEW) %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
      <!--   <option value='<%= Integer.toString(UserDataConstants.STATUS_FAILED) %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->

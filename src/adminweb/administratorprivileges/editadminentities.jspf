@@ -128,7 +128,7 @@
         </td>
         <td width="26%"> 
           <input type="submit" name="<%= BUTTON_ADD_ADMINENTITY %>" 
-                 onClick='return checkfieldforlegalchars("document.addadmins.<%=TEXTFIELD_MATCHVALUE%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")'
+                 onClick='return checkfieldforlegalchars("document.addadmins.<%=TEXTFIELD_MATCHVALUE%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")'
                  value="<%= ejbcawebbean.getText("ADD") %>">
         </td>
       </tr>
@@ -224,7 +224,7 @@
     </tr>
     <tr> 
         <td width="66%" valign="middle"><H3><%= ejbcawebbean.getText("DELETESELECTED") %></H3>
-          <input type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE") %>');"  name="<%= BUTTON_DELETE_ADMINENTITIES %>" value="<%= ejbcawebbean.getText("DELETE") %>">
+          <input type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');"  name="<%= BUTTON_DELETE_ADMINENTITIES %>" value="<%= ejbcawebbean.getText("DELETE") %>">
         </td>  
         <td width="32%">&nbsp;</td>
         <td width="2%" valign="middle">&nbsp; </td>

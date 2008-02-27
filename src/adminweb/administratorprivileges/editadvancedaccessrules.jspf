@@ -156,7 +156,7 @@
     </tr>
     <tr> 
         <td width="66%" valign="middle"><H2><%= ejbcawebbean.getText("DELETESELECTED") %></H2>
-          <input type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE") %>');" name="<%=BUTTON_DELETE_ACCESSRULES %>" value="<%= ejbcawebbean.getText("DELETE") %>">
+          <input type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%=BUTTON_DELETE_ACCESSRULES %>" value="<%= ejbcawebbean.getText("DELETE") %>">
         </td>  <td width="16%">&nbsp;</td>
         <td width="18%" valign="middle">&nbsp; </td>
     </tr>

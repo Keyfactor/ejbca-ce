@@ -281,13 +281,13 @@ function confirmrevokation(){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
      returnval = false;
   }else{
-    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECERT") %>");
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECERT",true) %>");
   } 
   return returnval;
 }
 
 function confirmunrevokation(){
-  var returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREUNREVOKECERT") %>");
+  var returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREUNREVOKECERT",true) %>");
   return returnval;
 }
 

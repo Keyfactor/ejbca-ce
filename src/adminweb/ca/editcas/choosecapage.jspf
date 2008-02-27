@@ -138,7 +138,7 @@
                 <input type="submit" name="<%= BUTTON_EDIT_CA %>" value="<%= ejbcawebbean.getText("EDIT") %>">
               </td>
               <td width="33%">
-                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA") %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
+                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
               </td>
               <td width="34%">
 		          <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA")+".." %>">
@@ -160,9 +160,9 @@
         <td width="5%"></td>
         <td width="95%"> 
           <input type="text" name="<%=TEXTFIELD_CANAME%>" size="40" maxlength="255">   
-          <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("CREATE") %>">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>"><br>
-          <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>">
+          <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("CREATE") %>">&nbsp;&nbsp;&nbsp;
+          <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>"><br>
+          <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>">
         </td>
       </tr>
       <tr> 

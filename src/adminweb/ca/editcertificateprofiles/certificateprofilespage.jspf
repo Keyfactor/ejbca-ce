@@ -90,7 +90,7 @@
              &nbsp; 
               </td>
               <td>
-                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE") %>');" name="<%= BUTTON_DELETE_CERTIFICATEPROFILES %>" value="<%= ejbcawebbean.getText("DELETECERTPROF") %>">
+                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_CERTIFICATEPROFILES %>" value="<%= ejbcawebbean.getText("DELETECERTPROF") %>">
               </td>
             </tr>
           </table> 

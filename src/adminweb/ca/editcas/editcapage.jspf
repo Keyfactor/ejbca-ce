@@ -229,7 +229,7 @@ function confirmrevokation(){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
      returnval = false;
   }else{
-    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECA") %>");
+    returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECA",true) %>");
   } 
   return returnval;
 }
@@ -245,7 +245,7 @@ function viewcacert(){
   <% } if(editca && !isexternal){ %>
 function confirmrenewal(){
     
-  return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA") %>") && checkallfields();     
+  return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA",true) %>") && checkallfields();     
 }
 
 
