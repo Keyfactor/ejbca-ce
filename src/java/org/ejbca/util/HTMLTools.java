@@ -209,4 +209,11 @@ public class HTMLTools {
         }
         return buf.toString();
     }
+    
+    public static String javascriptEscape(String str) {
+    	String ret = str;
+    	// In javascript the apostrof will destroy strings and cause the javascript to break
+    	ret = ret.replaceAll("'", "\\\\'");
+    	return ret;
+    }
 }

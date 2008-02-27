@@ -58,7 +58,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.15 2008-02-04 09:05:54 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.16 2008-02-27 13:14:26 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -531,7 +531,14 @@ public class EjbcaWebBean implements java.io.Serializable {
      */
     public String getText(String template, boolean unescape){
         String str = getText(template);
-        return HTMLTools.htmlunescape(str);
+        if (unescape == true) {
+            str = HTMLTools.htmlunescape(str);
+            log.debug("String after unescape: "+str);
+            // If unescape == true it most likely means we will be displaying a javascript
+            str = HTMLTools.javascriptEscape(str);
+            log.debug("String after javascriptEscape: "+str);
+        }
+        return str;
       }
 
     public String printDate(Date date){
