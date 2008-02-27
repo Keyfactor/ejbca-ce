@@ -24,7 +24,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.16 2008-02-06 14:25:22 primelars Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.17 2008-02-27 09:50:33 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -83,7 +83,7 @@ public class PKCS11CAToken extends BaseCAToken {
             isIndex = sSlotLabel!=null;
         } else
             isIndex = false;
-        setProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary"), isIndex) );
+        setJCAProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary"), isIndex) );
         autoActivate();
     }
 }

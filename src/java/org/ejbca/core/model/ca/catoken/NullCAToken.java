@@ -19,10 +19,9 @@ import java.util.HashMap;
 import java.util.Properties;
 
 
-/** Handles maintenance of the soft devices producing signatures and handling the private key
- *  and stored in database.
+/** This class is used as CAToken for virtual CAs that does not have a keystore, such as external SubCAs.
  * 
- * @version $Id: NullCAToken.java,v 1.4 2007-07-26 11:09:37 anatom Exp $
+ * @version $Id: NullCAToken.java,v 1.5 2008-02-27 09:50:33 anatom Exp $
  */
 public class NullCAToken extends BaseCAToken {
 
@@ -39,6 +38,7 @@ public class NullCAToken extends BaseCAToken {
      * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+    	setJCAProviderName("BC");
     }
 
    /**
@@ -77,15 +77,7 @@ public class NullCAToken extends BaseCAToken {
     }
     
 
-    /** Returns the signature Provider that should be used to sign things with
-     *  the PrivateKey object returned by this signingdevice implementation.
-     * @return String the name of the Provider
-     */
-    public String getProvider(){
-      return "BC";  
-    }
-
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
     }

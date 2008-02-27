@@ -30,7 +30,7 @@ import org.ejbca.util.Base64;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.18 2007-10-18 11:09:41 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.19 2008-02-27 09:50:33 anatom Exp $
  */
 public class SoftCAToken extends BaseCAToken {
 
@@ -39,7 +39,7 @@ public class SoftCAToken extends BaseCAToken {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    /** When upgradeing this version, you must up the version of the CA as well, 
+    /** When upgrading this version, you must up the version of the CA as well, 
      * otherwise the upgraded CA token will not be stored in the database.
      */
     public static final float LATEST_VERSION = 3; 
@@ -59,6 +59,8 @@ public class SoftCAToken extends BaseCAToken {
     
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
 
+    	super.setJCAProviderName(PROVIDER);
+    	
     	if(data.get(CATokenContainer.KEYSTORE) != null){ 
     		keyStoreData =  Base64.decode(((String) data.get(CATokenContainer.KEYSTORE)).getBytes());
     	}
@@ -103,14 +105,6 @@ public class SoftCAToken extends BaseCAToken {
    }
     
    
-    /** Returns the signature Provider that should be used to sign things with
-     *  the PrivateKey object returned by this signingdevice implementation.
-     * @return String the name of the Provider
-     */
-    public String getProvider(){
-      return PROVIDER;  
-    }
-    
 	/**
 	 * Loads the keystore and retrieves the keys.
 	 * 

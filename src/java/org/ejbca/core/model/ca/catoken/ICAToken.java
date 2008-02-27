@@ -22,10 +22,10 @@ import java.util.Properties;
 
 
 /** Handles maintenance of the hardware device producing signatures and handling the private key.
- *  All HardCAToken plug-ins must implement this interface.
+ *  All CAToken plug-ins must implement this interface.
  * 
  * 
- * @version $Id: ICAToken.java,v 1.3 2008-02-25 15:55:18 anatom Exp $
+ * @version $Id: ICAToken.java,v 1.4 2008-02-27 09:50:33 anatom Exp $
  */
 public interface ICAToken {
 

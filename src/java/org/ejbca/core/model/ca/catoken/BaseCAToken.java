@@ -20,6 +20,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
+import java.security.ProviderException;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
@@ -39,7 +40,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.27 2008-02-25 15:55:18 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.28 2008-02-27 09:50:33 anatom Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -48,7 +49,10 @@ public abstract class BaseCAToken implements ICAToken {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    private String sProviderName;
+    /** Used for signatures */
+    private String mJcaProviderName = null;
+    /** Used for encrypt/decrypt, can be same as for signatures for example for pkcs#11 */
+    private String mJceProviderName = null;
 
     private KeyStrings keyStrings;
     protected String sSlotLabel = null;
@@ -215,13 +219,48 @@ public abstract class BaseCAToken implements ICAToken {
     	return ret;
     }
     
-    protected void setProvider( String providerClassName ) throws Exception {
-        setProvider( (Provider)Class.forName(providerClassName).newInstance() );
+    /** Sets both signature and encryption providers. If encryption provider is the same as signature provider this 
+     * class name can be null.
+     * @param jcaProviderClassName signature provider class name
+     * @param jceProviderClassName encryption provider class name, can be null
+     * @throws ClassNotFoundException 
+     * @throws IllegalAccessException 
+     * @throws InstantiationException
+     * @see {@link #setJCAProvider(Provider)} 
+     */
+    protected void setProviders(String jcaProviderClassName, String jceProviderClassName) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    	Provider jcaProvider = (Provider)Class.forName(jcaProviderClassName).newInstance();
+        setProvider(jcaProvider);
+        mJcaProviderName = jcaProvider.getName(); 
+        if (jceProviderClassName != null) {
+        	Provider jceProvider = (Provider)Class.forName(jceProviderClassName).newInstance();
+            setProvider(jceProvider);        	
+            mJceProviderName = jceProvider.getName(); 
+        } else {
+        	mJceProviderName = null;
+        }
     }
-    protected void setProvider( Provider prov ) throws Exception 
-    {
-        sProviderName = prov.getName();
-        if (sProviderName.startsWith("Luna")) {
+    /** If we only have one provider to handle both JCA and JCE, and perhaps it is not so straightforward to 
+     * create the provider (for example PKCS#11 provider), we can create the provider in sub class and set it 
+     * here, instead of calling setProviders.
+     * 
+     * @param prov the fully constructed Provider
+     * @see #setProviders(String, String)
+     */
+    protected void setJCAProvider(Provider prov) {
+    	setProvider(prov);
+    	mJcaProviderName = prov.getName();
+    }
+    /** If we don't use any of the methods to set a specific provider, but use some already existing provider
+     * we should set the name of that provider at least.
+     * @param pName the provider name as retriever from Provider.getName()
+     */ 
+    protected void setJCAProviderName(String pName) {
+    	mJcaProviderName = pName;
+    }
+    private void setProvider(Provider prov) {
+    	String pName = prov.getName();
+        if (pName.startsWith("Luna")) {
         	// Luna Java provider does not contain support for RSA/ECB/PKCS1Padding but this is 
         	// the same as the alias below on small amounts of data  
             prov.put("Alg.Alias.Cipher.RSA/NONE/NoPadding","RSA//NoPadding");
@@ -229,10 +268,10 @@ public abstract class BaseCAToken implements ICAToken {
             prov.put("Alg.Alias.Cipher.RSA/ECB/PKCS1Padding","RSA//PKCS1v1_5");
             prov.put("Alg.Alias.Cipher.1.2.840.113549.3.7","DES3/CBC/PKCS5Padding");
         }
-        if ( Security.getProvider(getProvider())==null )
+        if ( Security.getProvider(pName)==null )
             Security.addProvider( prov );
-        if ( Security.getProvider(getProvider())==null )
-            throw new Exception("not possible to install provider");
+        if ( Security.getProvider(pName)==null )
+            throw new ProviderException("Not possible to install provider: "+pName);
     }
 
     /* (non-Javadoc)
@@ -282,14 +321,19 @@ public abstract class BaseCAToken implements ICAToken {
      * @see org.ejbca.core.model.ca.catoken.ICAToken#getProvider()
      */
     public String getProvider() {
-        return sProviderName;
+        return mJcaProviderName;
     }
 
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.ICAToken#getJCEProvider()
      */
     public String getJCEProvider() {
-        return getProvider();
+    	// If we don't have a specific JCE provider, it is most likely the same
+    	// as the JCA provider
+    	if (mJceProviderName == null) {
+    		return mJcaProviderName;
+    	}
+    	return mJceProviderName;
     }
 
 	/* (non-Javadoc)

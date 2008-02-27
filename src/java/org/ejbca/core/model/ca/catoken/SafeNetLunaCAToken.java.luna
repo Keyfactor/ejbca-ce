@@ -23,7 +23,7 @@ import com.chrysalisits.crypto.LunaTokenManager;
 
 /**
  * @author lars
- * @version $Id: SafeNetLunaCAToken.java.luna,v 1.8 2008-02-25 15:55:18 anatom Exp $
+ * @version $Id: SafeNetLunaCAToken.java.luna,v 1.9 2008-02-27 09:50:33 anatom Exp $
  *
  */
 public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
@@ -111,15 +111,8 @@ public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
     }
 
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
-        setProvider(PROVIDER_CLASS_JCE);
-        setProvider(PROVIDER_CLASS);
+        setProviders(PROVIDER_CLASS, PROVIDER_CLASS_JCE);
         init(SLOT_LABEL_KEY, properties, signaturealgorithm, true);
     }
-
-
-    public String getJCEProvider() {
-        return PROVIDER_NAME_JCE;
-    }
-
 
 }

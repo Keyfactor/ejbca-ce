@@ -31,7 +31,7 @@ import org.ejbca.core.model.InternalResources;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silven
- * @version $Id: NFastCAToken.java,v 1.18 2007-07-26 11:09:36 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.19 2008-02-27 09:50:33 anatom Exp $
  */
 public class NFastCAToken extends BaseCAToken {
 
@@ -42,6 +42,8 @@ public class NFastCAToken extends BaseCAToken {
 
     static final public String SLOT_LABEL_KEY = "keyStore";
     static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM";
+
+    static final private String PROVIDER_CLASS_JCE = "com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt";
 
     private KeyStore keyStore; // The used keystore has to be saved. Otherwise the used keys of the store are destroyed when the 
                                // KeyStore destructor is called after the reference is lost. This is a workaround for a nCipher bug.
@@ -92,7 +94,7 @@ public class NFastCAToken extends BaseCAToken {
      * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
-        setProvider(PROVIDER_CLASS);
+        setProviders(PROVIDER_CLASS, PROVIDER_CLASS_JCE);
         init(SLOT_LABEL_KEY, properties, signaturealgorithm, true);
     }
 }
