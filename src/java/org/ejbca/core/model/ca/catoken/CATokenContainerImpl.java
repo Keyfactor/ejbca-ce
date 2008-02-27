@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.9 2008-02-25 15:55:18 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.10 2008-02-27 09:52:48 anatom Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
@@ -82,11 +82,11 @@ public class CATokenContainerImpl extends CATokenContainer {
                 return "{}";
 
             final StringBuilder sb = new StringBuilder();
-            final Iterator<Map.Entry<Object,Object>> it = entrySet().iterator();
+            final Iterator it = entrySet().iterator();
 
             sb.append('{');
             for (int i = 0; ; i++) {
-                final Map.Entry<Object, Object> e = it.next();
+                final Map.Entry e = (Map.Entry)it.next();
                 final String key = (String)e.getKey();
                 final String readValue = (String)e.getValue();
                 final String value = readValue!=null && readValue.length()>0 && key.trim().equalsIgnoreCase(ICAToken.AUTOACTIVATE_PIN_PROPERTY) ? "xxxx" : readValue;
