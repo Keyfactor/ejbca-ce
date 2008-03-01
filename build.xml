@@ -313,7 +313,6 @@
             	<exclude name="status/**"/>
             </fileset>
             <fileset dir="${ocsp-build}"/>
-            <fileset dir="${src}/log"/>
             <fileset dir="${ocsp.hardToken.classes}"/>
         	<fileset dir="${src}">
         	    <include name="intresources/*.properties"/>

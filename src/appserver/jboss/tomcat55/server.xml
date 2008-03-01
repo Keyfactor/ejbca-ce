@@ -21,6 +21,7 @@
          protocol="AJP/1.3"/>
 
     <!-- A HTTPS Connector without client cert on port 8442 -->
+@definitions_away_begin@
     <Connector port="@httpserver.pubhttps@" address="@httpsserver.bindaddress.pubhttps@"
          maxThreads="100" strategy="ms" maxHttpHeaderSize="8192"
          emptySessionPath="true"
@@ -29,8 +30,9 @@
          keystorePass="@httpsserver.password@" sslProtocol = "TLS" 
          truststoreFile="${jboss.server.home.dir}/@truststore.file@" truststorePass="@java.trustpassword@" truststoreType="JKS"
          URIEncoding="@web.contentencoding@" />
-    
+@definitions_away_end@
     <!-- HTTPS Connector requiring client cert on port 8443 -->
+@definitions_away_begin@
     <Connector port="@httpserver.privhttps@" address="@httpsserver.bindaddress.privhttps@"
          maxThreads="100" strategy="ms" maxHttpHeaderSize="8192"
          emptySessionPath="true"
@@ -39,7 +41,7 @@
          keystorePass="@httpsserver.password@" sslProtocol = "TLS" 
          truststoreFile="${jboss.server.home.dir}/@truststore.file@" truststorePass="@java.trustpassword@" truststoreType="JKS"
          URIEncoding="@web.contentencoding@" />
-
+@definitions_away_end@
       <Engine name="jboss.web" defaultHost="localhost">
 
          <!-- The JAAS based authentication and authorization realm implementation
