@@ -42,21 +42,22 @@
 <li>OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
 <li>Simple OCSP client in pure java.</li>
 <li>Supports a subset of CMP (RFC4210 and RFC4211).</li>
-<li>Supports synchronious XKMS version 2 requests.</li>
+<li>Supports synchronous XKMS version 2 requests.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
 <li>CRL creation and URL-based CRLDistribution Points according to RFC3280. Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
 <li>Optional multiple publishers for publishing certificates and CRLs in LDAP. Several flexible standard publishers exist to meet different demands.</li>
 <li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
 <li>Component based architecture for publishing certificates and CRLs to different sources.</li>
 <li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
-<li>API for an external RA, restricting inbound traffic to CA.</li>
+<li>Advanced log signing of PKI audit logs.</li>
+<li>API for an external RA, restricting in-bound traffic to CA.</li>
 <li>Optional approval mechanism for RA so several admins are required to perform an action.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
 <li>Possible to integrate into large java applications for optimal integration into bussiness process.</li>
 <li>Deploys easily in a clustered high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
-<li>Supports multiple application servers: JBoss, Weblogic, Glassfish</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL2000, Derby, Informix.</li>
+<li>Supports multiple application servers: JBoss, Weblogic, Glassfish, OC4J, Websphere</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL, Derby, Informix.</li>
 </ul>    
 
   </section>

@@ -6,12 +6,6 @@
   </properties>
 
 <body>
-  <section name="FOSDEM 2008">
-  <note>
-  EJBCA will be present with a stand at FOSDEM 2008, join us there!
-  <a href="http://www.fosdem.org"><img src="http://www.fosdem.org/promo/fosdem" alt="FOSDEM, the Free and Open Source Software Developers' European Meeting" /></a>
-  </note>
-  </section>
   <section name="Latest News">
     <note>
     EJBCA 3.5.4 is now available for <a

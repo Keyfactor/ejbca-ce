@@ -533,7 +533,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 </subsubsection>
 </subsection>
 
-<subsection name="OC4J">
+<subsection name="OC4J (EJBCA >=3.6)">
 <p>
 EJBCA has been tested on Oc4j 10g (10.1.3.3.0) using Oracle 10g database.
 </p>
@@ -644,7 +644,7 @@ After this you should be able to access the admin-GUI in EJBCA.
 </subsubsection>
 </subsection>
 
-<subsection name="Websphere">
+<subsection name="Websphere (EJBCA >=3.6)">
 <p>
 EJBCA has been tested with Websphere ND 6.1 and Oracle 10g or PostgreSQL 8.2 database.
 <br/>(Websphere Express seems broken and Websphere Community Edition is a completely different appserver).
