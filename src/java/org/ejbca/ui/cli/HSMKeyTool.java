@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.27 2008-03-03 10:45:56 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.28 2008-03-03 11:37:21 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -35,8 +35,8 @@ public class HSMKeyTool {
     private static final String CREATE_KEYSTORE_SWITCH = "createkeystore";
     private static final String CREATE_KEYSTORE_MODULE_SWITCH = CREATE_KEYSTORE_SWITCH+"module";
     private static final String MOVE_SWITCH = "move";
-    private static final String CERT_REQ = "certReq";
-    private static final String INSTALL_CERT = "installCert";
+    private static final String CERT_REQ = "certreq";
+    private static final String INSTALL_CERT = "installcert";
     /**
      * @param args
      */
