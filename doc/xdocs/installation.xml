@@ -670,7 +670,7 @@ sudo perl -p -i -e "s/\/sh$/\/bash/"  /opt/IBM/WebSphere/AppServer/bin/*.sh
 <li>Edit conf/web.properties, you should set desired values and also http/s ports (i.e. 9080 etc).</li>
 <li>Edit conf/mail.properties, set 'mail.jndi-name=EjbcaMail'</li>
 <li>Edit conf/jaxws.properties, set 'ejbcaws.enabled=false'<br/>
-      You can use ejbcaws.enabled=true if you have the WebService FEP and the EJB3 FEP installed.</li>
+      If you want to use EJBCA WebService API you have to have the WebService FEP and the EJB3 FEP installed. See below for separate instructions for that</li>
 <li>Edit conf/xkms.properties, set 'xkms.enabled=false'</li>
 <li>Edit conf/log.properties, enable the ProtectedLogDevice, 'usedLogDevices=Log4jLogDevice;ProtectedLogDevice'</li>
 <li>Edit conf/jndi.properties.websphere and set the currect port from Servers->Application servers->server1 (your server)->Ports->BOOTSTRAP_ADDRESS.</li>
@@ -680,6 +680,17 @@ Build EJBCA with 'ant'.<br/>
 (files in src/deploy/websphere will be populated with your configured database settings)<br/>
 Do 'ant clean' first if you have tried with different appservers, or database settings.
 </p>
+</subsubsection>
+
+<subsubsection name="WebService API">
+<p>
+It is possible to deploy EJBCA WebService API in Websphere as a separate war file.<br/>
+AFTER you have deployed and installed EJBCA below you can perform these steps:
+<ol>
+<li>Generate the stand alone ejbcaws.war file for Websphere with 'ant ejbcaws.war.ibm'.</li>
+<li>Deploy the file dist/ejbcaws.war in Websphere.</li>
+</ol>
+</p>  
 </subsubsection>
 
 <subsubsection name="Configure Websphere">

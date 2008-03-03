@@ -106,6 +106,25 @@
         </war>
     </target>
 	
+	<target name="ejbcaws.war.ibm" depends="ws.build">
+        <copy todir="tmp/jaxws/gen-classes/server">
+    	  <fileset dir="${build}">
+            <include name="org/ejbca/core/protocol/ws/*.class"/>
+            <include name="org/ejbca/core/protocol/ws/common/*.class"/>
+            <include name="org/ejbca/core/protocol/ws/objects/*.class"/>            	
+          </fileset>
+        </copy>	
+    	
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
+    	<copy tofile="tmp/jaxws/web.xml" file="src/jaxws/web.xml" overwrite="true"/>
+    	<!-- Override the default web.xml with an appserver specific one, if there exists such -->
+    	<copy tofile="tmp/jaxws/web.xml" file="src/jaxws/${appserver.type}/web.xml" overwrite="true"/>
+        <war warfile="${dist.dir}/ejbcaws.war" webxml="tmp/jaxws/web.xml">
+            <webinf dir="src/jaxws" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
+            <classes dir="tmp/jaxws/gen-classes/server" excludes="**/*XKMS*"/>
+         	<lib dir="lib" includes="ejbca-ejb.jar,log4j.jar,bcprov-jdk15.jar,commons-lang-2.0.jar"/>
+        </war>
+    </target>
 	
     <target name="ws.gen.client" depends="ws.init" description="Generate JAX-WS client stubs when developing new WS-API calls.">
     	<echo>Note: The Application server must be on and deployed in order to generate client src.</echo>
