@@ -96,14 +96,13 @@
         </copy>	
     	
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
-        <war warfile="${dist.dir}/ejbcaws.war" webxml="src/jaxws/web.xml">
+    	<copy tofile="tmp/jaxws/web.xml" file="src/jaxws/web.xml" overwrite="true"/>
+    	<!-- Override the default web.xml with an appserver specific one, if there exists such -->
+    	<copy tofile="tmp/jaxws/web.xml" file="src/jaxws/${appserver.type}/web.xml" overwrite="true"/>
+        <war warfile="${dist.dir}/ejbcaws.war" webxml="tmp/jaxws/web.xml">
             <webinf dir="src/jaxws" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
-            <!-- <zipfileset
-                    dir="tmp/jaxws/wsdl"
-                    includes="*.wsdl, *.xsd"
-                    prefix="WEB-INF/wsdl"/> -->
             <classes dir="tmp/jaxws/gen-classes/server"/>
-         	<lib dir="lib/jaxws" includes="*.jar"/>        		
+         	<lib dir="lib/jaxws" includes="*.jar"/>       		
         </war>
     </target>
 	
