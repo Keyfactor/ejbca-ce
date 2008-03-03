@@ -64,13 +64,12 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
 /**
- * @version $Id: KeyStoreContainer.java,v 1.28 2008-03-03 12:07:57 primelars Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.29 2008-03-03 13:25:28 anatom Exp $
  */
 public abstract class KeyStoreContainer {
 
@@ -273,7 +272,7 @@ public abstract class KeyStoreContainer {
         if ( !certReq.verify() )
             throw new Exception("Certificate request is not verifying.");
         final Writer writer = new FileWriter(alias+".pem");
-        writer.write(Base64.encode(certReq.getEncoded()));
+        writer.write(new String(Base64.encode(certReq.getEncoded())));
         writer.close();
     }
     public void installCertificate(final String fileName) throws Exception {
