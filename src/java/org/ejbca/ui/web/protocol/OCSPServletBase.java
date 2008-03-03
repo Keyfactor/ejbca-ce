@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.31 2008-01-11 14:07:00 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.32 2008-03-03 20:50:12 primelars Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -150,7 +150,7 @@ abstract class OCSPServletBase extends HttpServlet {
 
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
      */
-    protected synchronized void loadCertificates() throws IOException, ServletException {
+    protected synchronized void loadCertificates() throws Exception {
         // Kolla om vi har en cachad collection och om den inte ?r f?r gammal
         if (m_cacerts != null && m_certValidTo > new Date().getTime()) {
             return;
@@ -162,7 +162,7 @@ abstract class OCSPServletBase extends HttpServlet {
         loadPrivateKeys(m_adm);
         m_certValidTo = new Date().getTime() + VALID_TIME;
     }
-    abstract protected void loadPrivateKeys(Admin adm) throws ServletException, IOException;
+    abstract protected void loadPrivateKeys(Admin adm) throws Exception;
 
     abstract protected Collection findCertificatesByType(Admin adm, int i, String issuerDN);
 

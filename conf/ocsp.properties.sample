@@ -75,13 +75,25 @@ ocsp.usecasigningcert=true
 # Default: empty
 #ocsp.keys.storePassword=
 
-# The password for key stored on card
+# The password for keys stored on card.
 # Default: empty
 #ocsp.keys.cardPassword=
 
-# The class that implements hardware signing of the OCSP response
+# The class that implements card signing of the OCSP response
 # Default: se.primeKey.caToken.card.CardKeysImpl
 #ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
+
+# P11 shared library path name.
+# Default: empty
+#ocsp.p11.sharedLibrary=/opt/nfast/toolkits/pkcs11/libcknfast.so
+
+# P11 password.
+# Default: foo123
+#ocsp.p11.p11password=foo123
+
+# P11 slot number. Prefix with 'i' to indicate index in list.
+# Default: i1
+#ocsp.p11.slot=i1
 
 # Directory of classes implementing hardware signing of the OCSP response
 # Default ./ocspHardTokenClasses

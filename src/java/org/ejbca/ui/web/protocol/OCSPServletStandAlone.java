@@ -21,8 +21,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.KeyStore.PasswordProtection;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -54,6 +58,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
+import org.ejbca.util.KeyTools;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -70,21 +75,33 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *   name="softKeyDirectoryName"
  *   value="${ocsp.keys.dir}"
  *
- * @web.servlet-init-param description="Signing key password. Must be same for all signing keys."
+ * @web.servlet-init-param description="The password for the all the soft keys of the OCSP responder."
  *   name="keyPassword"
  *   value="${ocsp.keys.keyPassword}"
  *
- * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
+ * @web.servlet-init-param description="The password to all soft keystores."
  *   name="storePassword"
  *   value="${ocsp.keys.storePassword}"
  *
- * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
+ * @web.servlet-init-param description="The password for all keys stored on card."
  *   name="cardPassword"
  *   value="${ocsp.keys.cardPassword}"
  *
- * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
+ * @web.servlet-init-param description="The class that implements card signing of the OCSP response."
  *   name="hardTokenClassName"
  *   value="${ocsp.hardToken.className}"
+ *
+ * @web.servlet-init-param description="P11 shared library path name."
+ *   name="sharedLibrary"
+ *   value="${ocsp.p11.sharedLibrary}"
+ *
+ * @web.servlet-init-param description="P11 password."
+ *   name="p11password"
+ *   value="${ocsp.p11.p11password}"
+ *
+ * @web.servlet-init-param description="P11 slot number."
+ *   name="slot"
+ *   value="${ocsp.p11.slot}"
  *
  * @web.resource-ref
  *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
@@ -99,20 +116,28 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.36 2007-01-25 14:15:20 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.37 2008-03-03 20:50:12 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7093480682721604160L;
     static final private Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
     private String mKeystoreDirectoryName;
-    private char mKeyPassword[];
-    private char mStorePassword[];
-    private CardKeys mHardTokenObject;
+    private String mKeyPassword;
+    private String mStorePassword;
+    private CardKeys mCardTokenObject;
 	private final Map mSignEntity;
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
+    private String mSlot;
+    private String mSharedLibrary;
+    private String mP11Password;
+    private boolean mIsIndex;
 
     public OCSPServletStandAlone() {
         super();
@@ -121,25 +146,33 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
-            {
-                final String keyPassword = config.getInitParameter("keyPassword");
-                mKeyPassword = keyPassword!=null ? keyPassword.toCharArray() : null;
-            }
-            if ( mKeyPassword==null || mKeyPassword.length==0 )
+            mSharedLibrary = config.getInitParameter("sharedLibrary");
+            if ( mSharedLibrary!=null && mSharedLibrary.length()>0 ) {
+                final String slot = config.getInitParameter("slot");
+                final char firstChar = slot!=null && slot.length()>0 ? slot.charAt(0) : '\0';
+                if ( firstChar=='i'||firstChar=='I' ) {
+                    mSlot = slot.substring(1);
+                    mIsIndex = true;
+                } else {
+                    mSlot = slot;
+                    mIsIndex = false;
+                }
+                mP11Password = config.getInitParameter("p11password");
+            } else
+                mSlot = null;
+            mKeyPassword = config.getInitParameter("keyPassword");
+            if ( mKeyPassword==null || mKeyPassword.length()==0 )
                 throw new ServletException("no keystore password given");
-            {
-                final String storePassword = config.getInitParameter("storePassword");
-                mStorePassword = storePassword!=null ? storePassword.toCharArray() : null;
-            }
-            if ( mHardTokenObject==null ) {
+            mStorePassword = config.getInitParameter("storePassword");
+            if ( mCardTokenObject==null ) {
                 final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
                 if ( hardTokenClassName!=null && hardTokenClassName.length()>0 ) {
                     String sCardPassword = config.getInitParameter("cardPassword");
                     sCardPassword = sCardPassword!=null ? sCardPassword.trim() : null;
                     if ( sCardPassword!=null && sCardPassword.length()>0 ) {
                         try {
-                            mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
-                            mHardTokenObject.autenticate(sCardPassword);
+                            mCardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
+                            mCardTokenObject.autenticate(sCardPassword);
                         } catch( ClassNotFoundException e) {
                     		String iMsg = intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName);
                             m_log.info(iMsg);
@@ -153,7 +186,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             		m_log.info(iMsg);
                 }
             }
-            if ( mStorePassword==null || mStorePassword.length==0 )
+            if ( mStorePassword==null || mStorePassword.length()==0 )
                 mStorePassword = mKeyPassword;
             mKeystoreDirectoryName = config.getInitParameter("softKeyDirectoryName");
             if ( mKeystoreDirectoryName!=null && mKeystoreDirectoryName.length()>0 ) {
@@ -233,54 +266,92 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         }
         return chain;
     }
-    private boolean loadFromKeyStore(Admin adm, String fileName) {
-        final Enumeration eAlias;
-        final KeyStore keyStore;
+    private boolean loadFromP11HSM(Admin adm) throws Exception {
+        if ( mSharedLibrary==null || mSharedLibrary.length()<1 )
+            return false;
+        final Provider provider = KeyTools.getP11AuthProvider(mSlot, mSharedLibrary, mIsIndex);
+
+        final PasswordProtection pwp =new PasswordProtection( (mP11Password!=null && mP11Password.length()>0)? mStorePassword.toCharArray():null );
+        final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider, pwp);
+        final KeyStore keyStore = builder.getKeyStore();
+        m_log.debug("Loading key from slot '"+mSlot+"' using pin.");
+        keyStore.load(null, null);
+        loadFromKeyStore(adm, keyStore, null, mSharedLibrary, provider.getName());
+        pwp.destroy();
+        return true;
+    }
+    private boolean loadFromSWKeyStore(Admin adm, String fileName) {
         try {
-            KeyStore tmpKeyStore;
+            KeyStore keyStore;
             try {
-                tmpKeyStore = KeyStore.getInstance("JKS");
-                tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
+                keyStore = KeyStore.getInstance("JKS");
+                keyStore.load(new FileInputStream(fileName), mStorePassword.toCharArray());
             } catch( IOException e ) {
-                tmpKeyStore = KeyStore.getInstance("PKCS12", "BC");
-                tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
+                keyStore = KeyStore.getInstance("PKCS12", "BC");
+                keyStore.load(new FileInputStream(fileName), mStorePassword.toCharArray());
             }
-            keyStore = tmpKeyStore;
-            eAlias = keyStore.aliases();
+            loadFromKeyStore(adm, keyStore, mKeyPassword, fileName, "BC");
         } catch( Exception e ) {
             m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
             return false;
         }
+        return true;
+    }
+    private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
+        final String sigAlgName = "SHA1withRSA";
+        final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
+        final byte signBA[];
+        final boolean result;{
+            Signature signature = Signature.getInstance(sigAlgName, providerName);
+            signature.initSign( privateKey );
+            signature.update( signInput );
+            signBA = signature.sign();
+        }
+        {
+            Signature signature = Signature.getInstance(sigAlgName);
+            signature.initVerify(publicKey);
+            signature.update(signInput);
+            result = signature.verify(signBA);
+            m_log.debug("Signature test of key "+alias+
+                        ": signature length " + signBA.length +
+                        "; first byte " + Integer.toHexString(0xff&signBA[0]) +
+                        "; verifying " + result);
+        }
+        return result;
+    }
+    private void loadFromKeyStore(Admin adm, KeyStore keyStore, String keyPassword,
+                                  String errorComment, String providerName) throws KeyStoreException {
+        final Enumeration eAlias = keyStore.aliases();
         while( eAlias.hasMoreElements() ) {
             final String alias = (String)eAlias.nextElement();
             try {
-                final PrivateKey key = (PrivateKey)keyStore.getKey(alias, mKeyPassword);
+                final PrivateKey key = (PrivateKey)keyStore.getKey(alias, keyPassword!=null ? keyPassword.toCharArray() : null);
                 final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
-                if ( key!=null && cert!=null )
-                    putSignEntity(new PrivateKeyFactorySW(key), cert, adm, "BC");
+                
+                if ( key!=null && cert!=null && signTest(key, cert.getPublicKey(), errorComment, providerName) ) {
+                    putSignEntity(new PrivateKeyFactoryKeyStore(key), cert, adm, providerName);
+                }
             } catch (Exception e) {
-        		String errMsg = intres.getLocalizedMessage("ocsp.errorgetalias", alias, fileName);
+                String errMsg = intres.getLocalizedMessage("ocsp.errorgetalias", alias, errorComment);
                 m_log.error(errMsg, e);
             }
         }
-        return true;
     }
     private boolean putSignEntity( PrivateKeyFactory keyFactory, X509Certificate cert, Admin adm, String providerName ) {
-        if ( keyFactory!=null && cert!=null ) {
-            X509Certificate[] chain = getCertificateChain(cert, adm);
-            if ( chain!=null ) {
-                int caid = getCaid(chain[1]);
-                m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
-                SigningEntity oldSigningEntity = (SigningEntity)mSignEntity.get(new Integer(caid));
-                if ( oldSigningEntity!=null && !oldSigningEntity.getCertificateChain().equals(chain) ) {
-            		String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
-                	m_log.warn(wMsg);
-                }
-                mSignEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerName) );
+        if ( keyFactory==null || cert==null )
+            return false;
+        X509Certificate[] chain = getCertificateChain(cert, adm);
+        if ( chain!=null ) {
+            int caid = getCaid(chain[1]);
+            m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
+            SigningEntity oldSigningEntity = (SigningEntity)mSignEntity.get(new Integer(caid));
+            if ( oldSigningEntity!=null && !oldSigningEntity.getCertificateChain().equals(chain) ) {
+                String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
+                m_log.warn(wMsg);
             }
-            return true;
+            mSignEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerName) );
         }
-        return false;
+        return true;
     }
     public String healtCheck() {
     	StringWriter sw = new StringWriter();
@@ -310,9 +381,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 
 		boolean isOK();
     }
-    private class PrivateKeyFactorySW implements PrivateKeyFactory {
+    private class PrivateKeyFactoryKeyStore implements PrivateKeyFactory {
         final private PrivateKey privateKey;
-        PrivateKeyFactorySW( PrivateKey key) {
+        PrivateKeyFactoryKeyStore( PrivateKey key) {
             privateKey = key;
         }
         public PrivateKey getKey() throws Exception {
@@ -323,22 +394,22 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 			return privateKey!=null;
 		}
     }
-    private class PrivateKeyFactoryHW implements PrivateKeyFactory {
+    private class PrivateKeyFactoryCard implements PrivateKeyFactory {
         final private RSAPublicKey publicKey;
-        PrivateKeyFactoryHW( RSAPublicKey key) {
+        PrivateKeyFactoryCard( RSAPublicKey key) {
             publicKey = key;
         }
         public PrivateKey getKey() throws Exception {
-            return mHardTokenObject.getPrivateKey(publicKey);
+            return mCardTokenObject.getPrivateKey(publicKey);
         }
 		public boolean isOK() {
-			return mHardTokenObject.isOK(publicKey);
+			return mCardTokenObject.isOK(publicKey);
 		}
     }
-    private boolean putSignEntityHW( Object obj, Admin adm ) {
+    private boolean putSignEntityCard( Object obj, Admin adm ) {
         if ( obj!=null && obj instanceof X509Certificate ) {
             X509Certificate cert = (X509Certificate)obj;
-            PrivateKeyFactory keyFactory = new PrivateKeyFactoryHW((RSAPublicKey)cert.getPublicKey());
+            PrivateKeyFactory keyFactory = new PrivateKeyFactoryCard((RSAPublicKey)cert.getPublicKey());
             putSignEntity( keyFactory, cert, adm, "PrimeKey" );
             m_log.debug("HW key added. Serial number: "+cert.getSerialNumber().toString(0x10));
             return true;
@@ -358,7 +429,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             if ( c!=null && !c.isEmpty() ) {
                 Iterator i = c.iterator();
                 while (i.hasNext()) {
-                    if ( putSignEntityHW(i.next(), adm) )
+                    if ( putSignEntityCard(i.next(), adm) )
                         fileType = "PKCS#7";
                 }
             }
@@ -368,7 +439,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             try {// read concatinated cert in PEM format
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
                 while (bis.available() > 0) {
-                    if ( putSignEntityHW(cf.generateCertificate(bis), adm) )
+                    if ( putSignEntityCard(cf.generateCertificate(bis), adm) )
                         fileType="PEM";
                 }
             } catch(Exception e){
@@ -379,8 +450,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         else
             m_log.debug("File "+fileName+" has no cert.");
     }
-    protected void loadPrivateKeys(Admin adm) throws ServletException, IOException {
+    protected void loadPrivateKeys(Admin adm) throws Exception {
         mSignEntity.clear();
+        if ( loadFromP11HSM(adm) )
+            return;
         File dir = new File(mKeystoreDirectoryName);
         if ( dir==null || dir.isDirectory()==false )
             throw new ServletException(dir.getCanonicalPath() + " is not a directory.");
@@ -389,8 +462,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());
         for ( int i=0; i<files.length; i++ ) {
             final String fileName = files[i].getCanonicalPath();
-            if ( !loadFromKeyStore(adm, fileName) )
-                loadFromKeyCards(adm, fileName);
+            if ( loadFromSWKeyStore(adm, fileName) )
+                return;
+            loadFromKeyCards(adm, fileName);
         }
         if ( mSignEntity.size()==0 )
             throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());

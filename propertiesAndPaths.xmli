@@ -223,6 +223,9 @@
     <property name="ocsp.keys.storePassword" value=""/>
     <property name="ocsp.keys.cardPassword" value=""/>
     <property name="ocsp.hardToken.className" value="se.primeKey.caToken.card.CardKeysImpl"/>
+    <property name="ocsp.p11.sharedLibrary" value=""/>
+    <property name="ocsp.p11.p11password" value="foo123"/>
+    <property name="ocsp.p11.slot" value="i1"/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
