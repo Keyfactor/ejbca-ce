@@ -579,6 +579,8 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <li>Configure a connection pool (EjbcaPool) and a datasource in Oracle AS (EjbcaDS, jdbc/EjbcaDS).</li>
 <li>There is an orion-application.xml under src/deploy/ear/META-INF that you can edit if you really know what you are doing with OC4J.<br/>
     Normally you don't edit this file.</li>
+<li>Give the server some more PermGen space, otherwise re-deploying and re-starting will not work very often. Do this by adding '-XX:MaxPermSize=192m' 
+    as a new parameter under server->Administration->Server Properties->Start-parameters</li>
 </ol>
 </p>
 </subsubsection>
@@ -620,6 +622,7 @@ If you have an Apache front-end:<br/>
 <ul>
 <li>Enable SSL in Apache:<br/>
   These options must be enabled in ssl.conf:<br/>
+  SSLVerifyClient require<br/>
   SSLOptions +StdEnvVars +ExportCertData</li>
 <li>Add EJBCA CA-certificate to wallet with owm (oracle wallet manager)</li>
 <li>Enable SSL in opmn<br/>
@@ -758,6 +761,8 @@ The admin-GUI in EJBCA requires client certificate authentication.
       bin/ejbca.sh ca getrootcert AdminCA1 adminca1.der -der<br/>
       Then you add the certificate in CellDefaultTrustStore as 'Binary DER data'.</li>
   <li>You have to restart the server after configuring this (complete restart with server, node and mgr).</li>
+  <li>(You can also add a new server SSL keystore by creating a PKCS12 file in EJBCA and adding that in 'Key stores and certificates' and using 
+it in the SSLSettings for WCInboundDefaultSecure).</li>
 </ol>
 After this you should be able to access the admin-GUI in EJBCA after installing $EJBCA_HOME/p12/superadmin.p12 in your browser.
 </p>
