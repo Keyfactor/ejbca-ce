@@ -70,7 +70,7 @@ import org.ejbca.util.KeyTools;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 /**
- * @version $Id: KeyStoreContainer.java,v 1.27 2008-03-03 10:45:56 primelars Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.28 2008-03-03 12:07:57 primelars Exp $
  */
 public abstract class KeyStoreContainer {
 
@@ -84,6 +84,7 @@ public abstract class KeyStoreContainer {
                                    final String providerClassName,
                                    final String encryptProviderClassName,
                                    final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
+        Security.addProvider( new BouncyCastleProvider() );
         if ( isP11(keyStoreType) ) {
             final char firstChar = storeID!=null && storeID.length()>0 ? storeID.charAt(0) : '\0';
             final String slotID;
@@ -325,7 +326,6 @@ class KeyStoreContainerJCE extends KeyStoreContainer {
                                    final String encryptProviderClassName,
                                    final byte storeID[],
                                    final PasswordReader passwordReader) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-        Security.addProvider( new BouncyCastleProvider() );
         final String providerName = getProviderName(providerClassName);
         final String ecryptProviderName; {
             String tmp;
