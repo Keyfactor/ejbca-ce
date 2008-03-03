@@ -116,7 +116,7 @@ import org.ejbca.util.KeyTools;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.37 2008-03-03 20:50:12 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.38 2008-03-03 21:45:21 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -452,8 +452,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
     protected void loadPrivateKeys(Admin adm) throws Exception {
         mSignEntity.clear();
-        if ( loadFromP11HSM(adm) )
-            return;
+        loadFromP11HSM(adm);
         File dir = new File(mKeystoreDirectoryName);
         if ( dir==null || dir.isDirectory()==false )
             throw new ServletException(dir.getCanonicalPath() + " is not a directory.");
@@ -462,9 +461,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());
         for ( int i=0; i<files.length; i++ ) {
             final String fileName = files[i].getCanonicalPath();
-            if ( loadFromSWKeyStore(adm, fileName) )
-                return;
-            loadFromKeyCards(adm, fileName);
+            if ( !loadFromSWKeyStore(adm, fileName) )
+                loadFromKeyCards(adm, fileName);
         }
         if ( mSignEntity.size()==0 )
             throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
