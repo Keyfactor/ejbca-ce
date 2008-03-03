@@ -17,10 +17,13 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.AuthProvider;
@@ -32,6 +35,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.Security;
 import java.security.SignatureException;
@@ -40,6 +44,7 @@ import java.security.KeyStore.CallbackHandlerProtection;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -49,18 +54,23 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
 import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+
 /**
- * @version $Id: KeyStoreContainer.java,v 1.26 2008-02-25 09:28:29 anatom Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.27 2008-03-03 10:45:56 primelars Exp $
  */
 public abstract class KeyStoreContainer {
 
@@ -249,6 +259,34 @@ public abstract class KeyStoreContainer {
     }
     public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
         new EncryptStream().code(is, os, alias);
+    }
+    public void generateCertReq(String alias) throws Exception {
+        final RSAPublicKey publicKey = (RSAPublicKey)keyStore.getCertificate(alias).getPublicKey();
+        final PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias, null);
+        final PKCS10CertificationRequest certReq =
+            new PKCS10CertificationRequest( "SHA1withRSA",
+                                            new X509Name("CN="+alias),
+                                            publicKey, null,
+                                            privateKey,
+                                            keyStore.getProvider().getName() );
+        if ( !certReq.verify() )
+            throw new Exception("Certificate request is not verifying.");
+        final Writer writer = new FileWriter(alias+".pem");
+        writer.write(Base64.encode(certReq.getEncoded()));
+        writer.close();
+    }
+    public void installCertificate(final String fileName) throws Exception {
+        final X509Certificate chain[] = (X509Certificate[])CertTools.getCertsFromPEM(new FileInputStream(fileName)).toArray(new X509Certificate[0]);
+        final Enumeration<String> eAlias = keyStore.aliases();
+        String alias = null;
+        while ( eAlias.hasMoreElements() ) {
+            alias = eAlias.nextElement();
+            if ( keyStore.getCertificate(alias).getPublicKey().equals(chain[0].getPublicKey()) )
+                break;
+        }
+        if ( alias==null )
+            throw new Exception("Key not on token.");
+        keyStore.setKeyEntry(alias, keyStore.getKey(alias, null), null, chain);
     }
 }
 class KeyStoreContainerJCE extends KeyStoreContainer {

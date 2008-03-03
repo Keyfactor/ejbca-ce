@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.26 2008-02-09 21:41:04 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.27 2008-03-03 10:45:56 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -35,6 +35,8 @@ public class HSMKeyTool {
     private static final String CREATE_KEYSTORE_SWITCH = "createkeystore";
     private static final String CREATE_KEYSTORE_MODULE_SWITCH = CREATE_KEYSTORE_SWITCH+"module";
     private static final String MOVE_SWITCH = "move";
+    private static final String CERT_REQ = "certReq";
+    private static final String INSTALL_CERT = "installCert";
     /**
      * @param args
      */
@@ -69,6 +71,18 @@ public class HSMKeyTool {
                     System.err.println(commandString + sKeyStore + " [<key entry name>]");
                 else
                     KeyStoreContainer.getIt(args[4], args[2], args[3], args[5]).delete(args.length>6 ? args[6] : null);
+                return;
+            } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(CERT_REQ)) {
+                if ( args.length < 7 )
+                    System.err.println(commandString + sKeyStore + " <key entry name>");
+                else
+                    KeyStoreContainer.getIt(args[4], args[2], args[3], args[5]).generateCertReq(args[6]);
+                return;
+            } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
+                if ( args.length < 7 )
+                    System.err.println(commandString + sKeyStore + " <certificate in PEM format>");
+                else
+                    KeyStoreContainer.getIt(args[4], args[2], args[3], args[5]).installCertificate(args[6]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
                 if ( args.length < 9 )
@@ -109,7 +123,9 @@ public class HSMKeyTool {
             pw.println("  "+args[0]+" "+GENERATE_SWITCH);
             if ( !isP11 ){
                 pw.println("  "+args[0]+" "+GENERATE_MODULE_SWITCH);
-            } 
+            }
+            pw.println("  "+args[0]+" "+CERT_REQ);
+            pw.println("  "+args[0]+" "+INSTALL_CERT);
             pw.println("  "+args[0]+" "+DELETE_SWITCH);
             pw.println("  "+args[0]+" "+TEST_SWITCH);
             if ( !isP11 ){
