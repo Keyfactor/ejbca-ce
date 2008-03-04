@@ -25,6 +25,7 @@ import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.KeyStore.PasswordProtection;
 import java.security.cert.Certificate;
@@ -116,7 +117,7 @@ import org.ejbca.util.KeyTools;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.38 2008-03-03 21:45:21 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.39 2008-03-04 09:41:40 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -270,6 +271,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         if ( mSharedLibrary==null || mSharedLibrary.length()<1 )
             return false;
         final Provider provider = KeyTools.getP11AuthProvider(mSlot, mSharedLibrary, mIsIndex);
+        Security.addProvider( provider );
 
         final PasswordProtection pwp =new PasswordProtection( (mP11Password!=null && mP11Password.length()>0)? mStorePassword.toCharArray():null );
         final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider, pwp);
