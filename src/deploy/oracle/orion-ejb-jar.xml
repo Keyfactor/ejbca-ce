@@ -163,67 +163,67 @@
 			<ejb-ref-mapping name="ejb/AuthorizationTreeUpdateDataLocal" />
 			<ejb-ref-mapping name="ejb/AdminGroupDataLocal" />
 		</session-deployment>
-		<entity-deployment name="PublisherData" location="PublisherData" local-location="ejbca-ejb_PublisherDataLocal" concrete-bean-class="PublisherData_ConcreteSubClass60" data-source="jdbc/OracleDS" local-wrapper="PublisherData_LocalHomeProxy_634lm59">
+		<entity-deployment name="PublisherData" location="PublisherData" local-location="ejbca-ejb_PublisherDataLocal" concrete-bean-class="PublisherData_ConcreteSubClass60" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="PublisherData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="CertReqHistoryData" location="CertReqHistoryData" local-location="ejbca-ejb_CertReqHistoryDataLocal" concrete-bean-class="CertReqHistoryData_ConcreteSubClass61" data-source="jdbc/OracleDS" local-wrapper="CertReqHistoryData_LocalHomeProxy_634lm59">
+		<entity-deployment name="CertReqHistoryData" location="CertReqHistoryData" local-location="ejbca-ejb_CertReqHistoryDataLocal" concrete-bean-class="CertReqHistoryData_ConcreteSubClass61" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CertReqHistoryData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="OldLogConfigurationData" location="OldLogConfigurationData" local-location="ejbca-ejb_OldLogConfigurationDataLocal" concrete-bean-class="OldLogConfigurationData_ConcreteSubClass62" data-source="jdbc/OracleDS" local-wrapper="OldLogConfigurationData_LocalHomeProxy_634lm59">
+		<entity-deployment name="OldLogConfigurationData" location="OldLogConfigurationData" local-location="ejbca-ejb_OldLogConfigurationDataLocal" concrete-bean-class="OldLogConfigurationData_ConcreteSubClass62" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="OldLogConfigurationData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="TableProtectData" location="TableProtectData" local-location="ejbca-ejb_TableProtectDataLocal" concrete-bean-class="TableProtectData_ConcreteSubClass63" data-source="jdbc/OracleDS" local-wrapper="TableProtectData_LocalHomeProxy_634lm59">
+		<entity-deployment name="TableProtectData" location="TableProtectData" local-location="ejbca-ejb_TableProtectDataLocal" concrete-bean-class="TableProtectData_ConcreteSubClass63" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="TableProtectData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="LogEntryData" location="LogEntryData" local-location="ejbca-ejb_LogEntryDataLocal" concrete-bean-class="LogEntryData_ConcreteSubClass64" data-source="jdbc/OracleDS" local-wrapper="LogEntryData_LocalHomeProxy_634lm59">
+		<entity-deployment name="LogEntryData" location="LogEntryData" local-location="ejbca-ejb_LogEntryDataLocal" concrete-bean-class="LogEntryData_ConcreteSubClass64" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="LogEntryData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="EndEntityProfileData" location="EndEntityProfileData" local-location="ejbca-ejb_EndEntityProfileDataLocal" concrete-bean-class="EndEntityProfileData_ConcreteSubClass65" data-source="jdbc/OracleDS" local-wrapper="EndEntityProfileData_LocalHomeProxy_634lm59">
+		<entity-deployment name="EndEntityProfileData" location="EndEntityProfileData" local-location="ejbca-ejb_EndEntityProfileDataLocal" concrete-bean-class="EndEntityProfileData_ConcreteSubClass65" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="EndEntityProfileData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="HardTokenIssuerData" location="HardTokenIssuerData" local-location="ejbca-ejb_HardTokenIssuerDataLocal" concrete-bean-class="HardTokenIssuerData_ConcreteSubClass66" data-source="jdbc/OracleDS" local-wrapper="HardTokenIssuerData_LocalHomeProxy_634lm59">
+		<entity-deployment name="HardTokenIssuerData" location="HardTokenIssuerData" local-location="ejbca-ejb_HardTokenIssuerDataLocal" concrete-bean-class="HardTokenIssuerData_ConcreteSubClass66" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="HardTokenIssuerData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="LogConfigurationData" location="LogConfigurationData" local-location="ejbca-ejb_LogConfigurationDataLocal" concrete-bean-class="LogConfigurationData_ConcreteSubClass67" data-source="jdbc/OracleDS" local-wrapper="LogConfigurationData_LocalHomeProxy_634lm59">
+		<entity-deployment name="LogConfigurationData" location="LogConfigurationData" local-location="ejbca-ejb_LogConfigurationDataLocal" concrete-bean-class="LogConfigurationData_ConcreteSubClass67" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="LogConfigurationData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="HardTokenCertificateMap" location="HardTokenCertificateMap" local-location="ejbca-ejb_HardTokenCertificateMapLocal" concrete-bean-class="HardTokenCertificateMap_ConcreteSubClass68" data-source="jdbc/OracleDS" local-wrapper="HardTokenCertificateMap_LocalHomeProxy_634lm59">
+		<entity-deployment name="HardTokenCertificateMap" location="HardTokenCertificateMap" local-location="ejbca-ejb_HardTokenCertificateMapLocal" concrete-bean-class="HardTokenCertificateMap_ConcreteSubClass68" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="HardTokenCertificateMap_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="CAData" location="CAData" local-location="ejbca-ejb_CADataLocal" concrete-bean-class="CAData_ConcreteSubClass69" data-source="jdbc/OracleDS" local-wrapper="CAData_LocalHomeProxy_634lm59">
+		<entity-deployment name="CAData" location="CAData" local-location="ejbca-ejb_CADataLocal" concrete-bean-class="CAData_ConcreteSubClass69" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CAData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="ProtectedLogData" location="ProtectedLogData" local-location="ejbca-ejb_ProtectedLogDataLocal" concrete-bean-class="ProtectedLogData_ConcreteSubClass70" data-source="jdbc/OracleDS" local-wrapper="ProtectedLogData_LocalHomeProxy_634lm59">
+		<entity-deployment name="ProtectedLogData" location="ProtectedLogData" local-location="ejbca-ejb_ProtectedLogDataLocal" concrete-bean-class="ProtectedLogData_ConcreteSubClass70" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ProtectedLogData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="UserDataSourceData" location="UserDataSourceData" local-location="ejbca-ejb_UserDataSourceDataLocal" concrete-bean-class="UserDataSourceData_ConcreteSubClass71" data-source="jdbc/OracleDS" local-wrapper="UserDataSourceData_LocalHomeProxy_634lm59">
+		<entity-deployment name="UserDataSourceData" location="UserDataSourceData" local-location="ejbca-ejb_UserDataSourceDataLocal" concrete-bean-class="UserDataSourceData_ConcreteSubClass71" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="UserDataSourceData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="HardTokenPropertyData" location="HardTokenPropertyData" local-location="ejbca-ejb_HardTokenPropertyDataLocal" concrete-bean-class="HardTokenPropertyData_ConcreteSubClass72" data-source="jdbc/OracleDS" local-wrapper="HardTokenPropertyData_LocalHomeProxy_634lm59">
+		<entity-deployment name="HardTokenPropertyData" location="HardTokenPropertyData" local-location="ejbca-ejb_HardTokenPropertyDataLocal" concrete-bean-class="HardTokenPropertyData_ConcreteSubClass72" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="HardTokenPropertyData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="AdminGroupData" location="AdminGroupData" local-location="ejbca-ejb_AdminGroupDataLocal" concrete-bean-class="AdminGroupData_ConcreteSubClass73" data-source="jdbc/OracleDS" local-wrapper="AdminGroupData_LocalHomeProxy_634lm59">
+		<entity-deployment name="AdminGroupData" location="AdminGroupData" local-location="ejbca-ejb_AdminGroupDataLocal" concrete-bean-class="AdminGroupData_ConcreteSubClass73" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="AdminGroupData_LocalHomeProxy_634lm59">
 			<ejb-ref-mapping name="ejb/AdminEntityDataLocal" />
 			<ejb-ref-mapping name="ejb/AccessRulesDataLocal" />
 		</entity-deployment>
-		<entity-deployment name="ServiceData" location="ServiceData" local-location="ejbca-ejb_ServiceDataLocal" concrete-bean-class="ServiceData_ConcreteSubClass74" data-source="jdbc/OracleDS" local-wrapper="ServiceData_LocalHomeProxy_634lm59">
+		<entity-deployment name="ServiceData" location="ServiceData" local-location="ejbca-ejb_ServiceDataLocal" concrete-bean-class="ServiceData_ConcreteSubClass74" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ServiceData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="ProtectedLogTokenData" location="ProtectedLogTokenData" local-location="ejbca-ejb_ProtectedLogTokenDataLocal" concrete-bean-class="ProtectedLogTokenData_ConcreteSubClass75" data-source="jdbc/OracleDS" local-wrapper="ProtectedLogTokenData_LocalHomeProxy_634lm59">
+		<entity-deployment name="ProtectedLogTokenData" location="ProtectedLogTokenData" local-location="ejbca-ejb_ProtectedLogTokenDataLocal" concrete-bean-class="ProtectedLogTokenData_ConcreteSubClass75" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ProtectedLogTokenData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="CRLData" location="CRLData" local-location="ejbca-ejb_CRLDataLocal" concrete-bean-class="CRLData_ConcreteSubClass76" data-source="jdbc/OracleDS" local-wrapper="CRLData_LocalHomeProxy_634lm59">
+		<entity-deployment name="CRLData" location="CRLData" local-location="ejbca-ejb_CRLDataLocal" concrete-bean-class="CRLData_ConcreteSubClass76" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CRLData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="KeyRecoveryData" location="KeyRecoveryData" local-location="ejbca-ejb_KeyRecoveryDataLocal" concrete-bean-class="KeyRecoveryData_ConcreteSubClass77" data-source="jdbc/OracleDS" local-wrapper="KeyRecoveryData_LocalHomeProxy_634lm59">
+		<entity-deployment name="KeyRecoveryData" location="KeyRecoveryData" local-location="ejbca-ejb_KeyRecoveryDataLocal" concrete-bean-class="KeyRecoveryData_ConcreteSubClass77" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="KeyRecoveryData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="AdminPreferencesData" location="AdminPreferencesData" local-location="ejbca-ejb_AdminPreferencesDataLocal" concrete-bean-class="AdminPreferencesData_ConcreteSubClass78" data-source="jdbc/OracleDS" local-wrapper="AdminPreferencesData_LocalHomeProxy_634lm59">
+		<entity-deployment name="AdminPreferencesData" location="AdminPreferencesData" local-location="ejbca-ejb_AdminPreferencesDataLocal" concrete-bean-class="AdminPreferencesData_ConcreteSubClass78" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="AdminPreferencesData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="ProtectedLogExportData" location="ProtectedLogExportData" local-location="ejbca-ejb_ProtectedLogExportDataLocal" concrete-bean-class="ProtectedLogExportData_ConcreteSubClass79" data-source="jdbc/OracleDS" local-wrapper="ProtectedLogExportData_LocalHomeProxy_634lm59">
+		<entity-deployment name="ProtectedLogExportData" location="ProtectedLogExportData" local-location="ejbca-ejb_ProtectedLogExportDataLocal" concrete-bean-class="ProtectedLogExportData_ConcreteSubClass79" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ProtectedLogExportData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="AdminEntityData" location="AdminEntityData" local-location="ejbca-ejb_AdminEntityDataLocal" concrete-bean-class="AdminEntityData_ConcreteSubClass80" data-source="jdbc/OracleDS" local-wrapper="AdminEntityData_LocalHomeProxy_634lm59">
+		<entity-deployment name="AdminEntityData" location="AdminEntityData" local-location="ejbca-ejb_AdminEntityDataLocal" concrete-bean-class="AdminEntityData_ConcreteSubClass80" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="AdminEntityData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="AccessRulesData" location="AccessRulesData" local-location="ejbca-ejb_AccessRulesDataLocal" concrete-bean-class="AccessRulesData_ConcreteSubClass81" data-source="jdbc/OracleDS" local-wrapper="AccessRulesData_LocalHomeProxy_634lm59">
+		<entity-deployment name="AccessRulesData" location="AccessRulesData" local-location="ejbca-ejb_AccessRulesDataLocal" concrete-bean-class="AccessRulesData_ConcreteSubClass81" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="AccessRulesData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="HardTokenData" location="HardTokenData" local-location="ejbca-ejb_HardTokenDataLocal" concrete-bean-class="HardTokenData_ConcreteSubClass82" data-source="jdbc/OracleDS" local-wrapper="HardTokenData_LocalHomeProxy_634lm59">
+		<entity-deployment name="HardTokenData" location="HardTokenData" local-location="ejbca-ejb_HardTokenDataLocal" concrete-bean-class="HardTokenData_ConcreteSubClass82" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="HardTokenData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="UserData" location="UserData" local-location="ejbca-ejb_UserDataLocal" concrete-bean-class="UserData_ConcreteSubClass83" data-source="jdbc/OracleDS" local-wrapper="UserData_LocalHomeProxy_634lm59">
+		<entity-deployment name="UserData" location="UserData" local-location="ejbca-ejb_UserDataLocal" concrete-bean-class="UserData_ConcreteSubClass83" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="UserData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="CertificateProfileData" location="CertificateProfileData" local-location="ejbca-ejb_CertificateProfileDataLocal" concrete-bean-class="CertificateProfileData_ConcreteSubClass84" data-source="jdbc/OracleDS" local-wrapper="CertificateProfileData_LocalHomeProxy_634lm59">
+		<entity-deployment name="CertificateProfileData" location="CertificateProfileData" local-location="ejbca-ejb_CertificateProfileDataLocal" concrete-bean-class="CertificateProfileData_ConcreteSubClass84" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CertificateProfileData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="GlobalConfigurationData" location="GlobalConfigurationData" local-location="ejbca-ejb_GlobalConfigurationDataLocal" concrete-bean-class="GlobalConfigurationData_ConcreteSubClass85" data-source="jdbc/OracleDS" local-wrapper="GlobalConfigurationData_LocalHomeProxy_634lm59">
+		<entity-deployment name="GlobalConfigurationData" location="GlobalConfigurationData" local-location="ejbca-ejb_GlobalConfigurationDataLocal" concrete-bean-class="GlobalConfigurationData_ConcreteSubClass85" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="GlobalConfigurationData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="ApprovalData" location="ApprovalData" local-location="ejbca-ejb_ApprovalDataLocal" concrete-bean-class="ApprovalData_ConcreteSubClass86" data-source="jdbc/OracleDS" local-wrapper="ApprovalData_LocalHomeProxy_634lm59">
+		<entity-deployment name="ApprovalData" location="ApprovalData" local-location="ejbca-ejb_ApprovalDataLocal" concrete-bean-class="ApprovalData_ConcreteSubClass86" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ApprovalData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="AuthorizationTreeUpdateData" location="AuthorizationTreeUpdateData" local-location="ejbca-ejb_AuthorizationTreeUpdateDataLocal" concrete-bean-class="AuthorizationTreeUpdateData_ConcreteSubClass87" data-source="jdbc/OracleDS" local-wrapper="AuthorizationTreeUpdateData_LocalHomeProxy_634lm59">
+		<entity-deployment name="AuthorizationTreeUpdateData" location="AuthorizationTreeUpdateData" local-location="ejbca-ejb_AuthorizationTreeUpdateDataLocal" concrete-bean-class="AuthorizationTreeUpdateData_ConcreteSubClass87" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="AuthorizationTreeUpdateData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="CertificateData" location="CertificateData" local-location="ejbca-ejb_CertificateDataLocal" concrete-bean-class="CertificateData_ConcreteSubClass88" data-source="jdbc/OracleDS" local-wrapper="CertificateData_LocalHomeProxy_634lm59">
+		<entity-deployment name="CertificateData" location="CertificateData" local-location="ejbca-ejb_CertificateDataLocal" concrete-bean-class="CertificateData_ConcreteSubClass88" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CertificateData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="HardTokenProfileData" location="HardTokenProfileData" local-location="ejbca-ejb_HardTokenProfileDataLocal" concrete-bean-class="HardTokenProfileData_ConcreteSubClass89" data-source="jdbc/OracleDS" local-wrapper="HardTokenProfileData_LocalHomeProxy_634lm59">
+		<entity-deployment name="HardTokenProfileData" location="HardTokenProfileData" local-location="ejbca-ejb_HardTokenProfileDataLocal" concrete-bean-class="HardTokenProfileData_ConcreteSubClass89" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="HardTokenProfileData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 	</enterprise-beans>
 	<assembly-descriptor>
