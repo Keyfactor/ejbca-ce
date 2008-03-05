@@ -82,8 +82,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
-        
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
+
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
@@ -120,7 +122,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());

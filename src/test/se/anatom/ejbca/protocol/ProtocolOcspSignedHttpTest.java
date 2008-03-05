@@ -228,7 +228,9 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         //OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -238,8 +240,8 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         // Try with an unsigned request, we should get a status code 5 back from the server (signature required)
         req = gen.generate();
         // Send the request and receive a singleResponse, this response should have error code SIGNATURE_REQUIRED
-        singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 5);
-        assertNull(singleResp);
+        singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 5);
+        assertNull(singleResps[0]);
 
         // sign with a keystore where the CA-certificate is not knowm
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
@@ -251,8 +253,8 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         PrivateKey pk = (PrivateKey)store.getKey("privateKey", "foo123".toCharArray());
         req = gen.generate("SHA1WithRSA", pk, chain, "BC");
         // Send the request and receive a singleResponse, this response should have error code UNAUTHORIZED
-        singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 6);
-        assertNull(singleResp);
+        singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 6);
+        assertNull(singleResps[0]);
 
         log.debug("<test01OcspGood()");
     }

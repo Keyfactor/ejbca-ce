@@ -34,6 +34,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.ObjectNotFoundException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -65,8 +66,15 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -79,6 +87,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -239,28 +248,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         // (send crap message and get good error)
 
         // Make user that we know...
-        boolean userExists = false;
-        try {
-            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
-            log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
-        } catch (RemoteException re) {
-        	userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-
-        if (userExists) {
-            log.debug("User ocsptest already exists.");
-            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
-            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-        // Generate certificate for the new user
-        KeyPair keys = genKeys();
-
-        // user that we know exists...
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        KeyPair keys = createUserCert(caid);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -272,14 +260,17 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
-        
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
+
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
         log.debug("<test02OcspGood()");
     }
+
 
     /** Tests ocsp message
      * @throws Exception error
@@ -297,7 +288,9 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -321,7 +314,9 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
@@ -342,7 +337,9 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
@@ -379,29 +376,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         // send OCSP req and get bad status
         // (send crap message and get good error)
 
-        // Make user that we know...
-        boolean userExists = false;
-        try {
-            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
-            log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
-        } catch (RemoteException re) {
-        	userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-
-        if (userExists) {
-            log.debug("User ocsptest already exists.");
-            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
-            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-        // Generate certificate for the new user
-        KeyPair keys = genKeys();
-
-        // user that we know exists...
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        KeyPair keys = createUserCert(caid);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -462,30 +437,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "prime192v1");
         helper.reloadKeys();
         
-        // Make user that we know...
-        boolean userExists = false;
-        try {
-            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
-            log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
-        } catch (RemoteException re) {
-        	userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-
-        if (userExists) {
-            log.debug("User ocsptest already exists.");
-            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, ecdsacaid);
-            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-        // Generate certificate for the new user
-        KeyPair keys = KeyTools.genKeys("prime192v1", "ECDSA");
-
-        // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, keys.getPrivate(), keys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", selfcert);
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        KeyPair keys = createUserCert(ecdsacaid);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -497,8 +449,10 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
-        
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
+
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
@@ -515,31 +469,8 @@ public class ProtocolOcspHttpTest extends TestCase {
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
         helper.reloadKeys();
         
-        // Make user that we know...
-        boolean userExists = false;
-        try {
-            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
-            log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
-        } catch (RemoteException re) {
-        	userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-
-        if (userExists) {
-            log.debug("User ocsptest already exists.");
-            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, ecdsacaid);
-            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-        // Generate certificate for the new user
-        KeyPair keys = KeyTools.genKeys("implicitlyCA", "ECDSA");
-
-        // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, keys.getPrivate(), keys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", selfcert);
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
-
+        KeyPair keys = createUserCert(ecdsacaid);
+        
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
@@ -550,7 +481,9 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -560,6 +493,42 @@ public class ProtocolOcspHttpTest extends TestCase {
     } // test09OcspEcdsaImplicitlyCAGood
 
     
+    public void test10MultipleRequests() throws Exception {
+    	// Tests that we handle multiple requests in one OCSP request message
+    	
+        // An OCSP request for a certificate from an unknown CA
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
+
+        // And another OCSP request
+        KeyPair keys = createUserCert(caid);
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+
+        OCSPReq req = gen.generate();
+        
+        
+        // Send the request and receive a singleResponse
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        assertEquals("No of SingResps should be 2.", 2, singleResps.length);
+        SingleResp singleResp1 = singleResps[0];
+
+        CertificateID certId = singleResp1.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
+        Object status = singleResp1.getCertStatus();
+        assertTrue("Status is not Unknown", status instanceof UnknownStatus);
+
+        SingleResp singleResp2 = singleResps[1];
+        certId = singleResp2.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        status = singleResp2.getCertStatus();
+        assertEquals("Status is not null (good)", status, null);
+
+    }
+
     /**
      * removes ECDSA CA
      *
@@ -689,6 +658,38 @@ public class ProtocolOcspHttpTest extends TestCase {
         log.debug("<addECDSACA()");
         return cacert;
     }
+    
+    private KeyPair createUserCert(int caid) throws AuthorizationDeniedException,
+    UserDoesntFullfillEndEntityProfile, ApprovalException,
+    WaitingForApprovalException, RemoteException, Exception,
+    ObjectNotFoundException, AuthStatusException, AuthLoginException,
+    IllegalKeyException, CADoesntExistsException {
+    	boolean userExists = false;
+    	try {
+    		usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+    		log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
+    	} catch (RemoteException re) {
+    		userExists = true;
+    	} catch (DuplicateKeyException dke) {
+    		userExists = true;
+    	}
+
+    	if (userExists) {
+    		log.debug("User ocsptest already exists.");
+    		usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+    		//usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
+    		log.debug("Reset status to NEW");
+    	}
+//  	Generate certificate for the new user
+    	KeyPair keys = genKeys();
+
+//  	user that we know exists...
+    	ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
+    	assertNotNull("Misslyckades skapa cert", ocspTestCert);
+    	return keys;
+    }
+
+
 
     static private byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
             + "DjCCAwowggMGBgsqhkiG9w0BDAoBAqCCAqkwggKlMCcGCiqGSIb3DQEMAQMwGQQU"

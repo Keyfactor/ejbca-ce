@@ -40,7 +40,7 @@ public class OcspJunitHelper extends TestCase {
 	 * @throws OCSPException
 	 * @throws NoSuchProviderException
 	 */
-    protected SingleResp sendOCSPPost(byte[] ocspPackage, String nonce, int respCode) throws IOException, OCSPException, NoSuchProviderException {
+    protected SingleResp[] sendOCSPPost(byte[] ocspPackage, String nonce, int respCode) throws IOException, OCSPException, NoSuchProviderException {
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -84,9 +84,7 @@ public class OcspJunitHelper extends TestCase {
         	assertEquals(nonce, new String(oct.getOctets()));
         }
         SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
-        return singleResp;
+        return singleResps;
     }
     
     protected void reloadKeys() throws IOException, OCSPException, NoSuchProviderException {

@@ -113,7 +113,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.33 2008-03-05 10:21:19 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.34 2008-03-05 10:49:33 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -430,7 +430,6 @@ abstract class OCSPServletBase extends HttpServlet {
         }
         try {
             OCSPResp ocspresp = null;
-            ArrayList responseList = new ArrayList();
             OCSPRespGenerator res = new OCSPRespGenerator();
             X509Certificate cacert = null; // CA-certificate used to sign response
             OCSPReq req = new OCSPReq(reqBytes);
@@ -495,6 +494,7 @@ abstract class OCSPServletBase extends HttpServlet {
                 // Add standard response extensions
                 Hashtable responseExtensions = getStandardResponseExtensions(req);
 
+                ArrayList responseList = new ArrayList();
                 for (int i = 0; i < requests.length; i++) {
                     CertificateID certId = requests[i].getCertID();
                     byte[] hashbytes = certId.getIssuerNameHash();
