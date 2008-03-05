@@ -18,6 +18,7 @@ ocsp.usecasigningcert=true
 #ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA
 
 # Specifies if the OCSP-responder should require signed requests or not.
+# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
 #
 # Default: false
 #ocsp.signaturerequired=false

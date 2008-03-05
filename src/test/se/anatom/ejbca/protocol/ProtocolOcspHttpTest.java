@@ -14,9 +14,6 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -24,8 +21,10 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchProviderException;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
@@ -43,19 +42,14 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
@@ -71,6 +65,8 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -83,6 +79,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -124,6 +121,8 @@ public class ProtocolOcspHttpTest extends TestCase {
     private static X509Certificate ocspTestCert = null;
     private static X509Certificate unknowncacert = null;
 
+    protected OcspJunitHelper helper = null;
+
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }
@@ -142,6 +141,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         super(name);
         httpReqPath = reqP;
         resourceOcsp = res;
+        helper = new OcspJunitHelper(reqP, res); 
 
         // Install BouncyCastle provider
         CertTools.installBCProvider();
@@ -272,7 +272,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), "123456789");
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -297,7 +297,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -321,7 +321,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
@@ -342,7 +342,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
@@ -371,15 +371,96 @@ public class ProtocolOcspHttpTest extends TestCase {
         
     }
 
+    public void test07SignedOcsp() throws Exception {
+
+        // find a CA (TestCA?) create a user and generate his cert
+        // send OCSP req to server and get good response
+        // change status of cert to bad status
+        // send OCSP req and get bad status
+        // (send crap message and get good error)
+
+        // Make user that we know...
+        boolean userExists = false;
+        try {
+            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
+        } catch (RemoteException re) {
+        	userExists = true;
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+
+        if (userExists) {
+            log.debug("User ocsptest already exists.");
+            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        // Generate certificate for the new user
+        KeyPair keys = genKeys();
+
+        // user that we know exists...
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
+        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        X509Certificate chain[] = new X509Certificate[2];
+        chain[0] = ocspTestCert;
+        chain[1] = cacert;
+        gen.setRequestorName(ocspTestCert.getSubjectX500Principal());
+        OCSPReq req = gen.generate("SHA1WithRSA", keys.getPrivate(), chain, "BC");
+        //OCSPReq req = gen.generate();
+
+        Collection cacerts = new ArrayList();
+        cacerts.add(cacert);
+        X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, cacerts);
+        assertNotNull(signer);
+        assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
+        
+        // Try with an unsigned request, we should get a SignRequestException
+        req = gen.generate();
+        boolean caught = false;
+        try {
+        	signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, cacerts);
+        } catch (SignRequestException e) {
+        	caught = true;
+        }
+        assertTrue(caught);
+        
+        // sign with a keystore where the CA-certificate is not knowm
+        KeyStore store = KeyStore.getInstance("PKCS12", "BC");
+        ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
+        store.load(fis, "foo123".toCharArray());
+        Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
+        chain[0] = (X509Certificate)certs[0];
+        chain[1] = (X509Certificate)certs[1];
+        PrivateKey pk = (PrivateKey)store.getKey("privateKey", "foo123".toCharArray());
+        req = gen.generate("SHA1WithRSA", pk, chain, "BC");
+        // Send the request and receive a singleResponse, this response should throw an SignRequestSignatureException
+        caught = false;
+        try {
+        	signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, cacerts);
+        } catch (SignRequestSignatureException e) {
+        	caught = true;
+        }
+        assertTrue(caught);
+
+    } // test07SignedOcsp
+
     /** Tests ocsp message
      * @throws Exception error
      */
-    public void test07OcspEcdsaGood() throws Exception {
-        log.debug(">test07OcspEcdsaGood()");
+    public void test08OcspEcdsaGood() throws Exception {
 
         int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "prime192v1");
-        reloadKeys();
+        helper.reloadKeys();
         
         // Make user that we know...
         boolean userExists = false;
@@ -416,25 +497,23 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), "123456789");
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
         
-        log.debug("<test07OcspEcdsaGood()");
-    }
+    } // test08OcspEcdsaGood
 
     /** Tests ocsp message
      * @throws Exception error
      */
-    public void test08OcspEcdsaImplicitlyCAGood() throws Exception {
-        log.debug(">test08OcspEcdsaImplicitlyCAGood()");
+    public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
 
         int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
-        reloadKeys();
+        helper.reloadKeys();
         
         // Make user that we know...
         boolean userExists = false;
@@ -471,22 +550,22 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), "123456789");
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
         
-        log.debug("<test08OcspEcdsaImplicitlyCAGood()");
-    }
+    } // test09OcspEcdsaImplicitlyCAGood
 
+    
     /**
      * removes ECDSA CA
      *
      * @throws Exception error
      */
-    public void test08RemoveECDSACA() throws Exception {
+    public void test99RemoveECDSACA() throws Exception {
         log.debug(">test08RemoveECDSACA()");
         Context context = getInitialContext();
         Object obj1 = context.lookup("CAAdminSession");
@@ -494,7 +573,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         ICAAdminSessionRemote cacheAdmin = cacheHome.create();
         cacheAdmin.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
         cacheAdmin.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
-        log.debug("<test08RemoveECDSACA()");
+        log.debug("<test99RemoveECDSACA()");
     }
 
     //
@@ -611,65 +690,69 @@ public class ProtocolOcspHttpTest extends TestCase {
         return cacert;
     }
 
+    static private byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
+            + "DjCCAwowggMGBgsqhkiG9w0BDAoBAqCCAqkwggKlMCcGCiqGSIb3DQEMAQMwGQQU"
+            + "/h0pQXq7ZVjYWlDvzEwwmiJ8O8oCAWQEggJ4MZ12+kTVGd1w7SP4ZWlq0bCc4MsJ"
+            + "O0FFSX3xeVp8Bx16io1WkEFOW3xfqjuxKOL6YN9atoOZdfhlOMhmbhglm2PJSzIg"
+            + "JSDHvWk2xKels5vh4hY1iXWOh48077Us4wP4Qt94iKglCq4xwxYcSCW8BJwbu93F"
+            + "uxE1twnWXbH192nMhaeIAy0v4COdduQamJEtHRmIJ4GZwIhH+lNHj/ARdIfNw0Dm"
+            + "uPspuSu7rh6rQ8SrRsjg63EoxfSH4Lz6zIJKF0OjNX07T8TetFgznCdGCrqOZ1fK"
+            + "5oRzXIA9hi6UICiuLSm4EoHzEpifCObpiApwNj3Kmp2uyz2uipU0UKhf/WqvmU96"
+            + "yJj6j1JjZB6p+9sgecPFj1UMWhEFTwxMEwR7iZDvjkKDNWMit+0cQyeS7U0Lxn3u"
+            + "m2g5e6C/1akwHZsioLC5OpFq/BkPtnbtuy4Kr5Kwb2y7vSiKpjFr7sKInjdAsgCi"
+            + "8kyUV8MyaIfZdtREjwqBe0imfP+IPVqAsl1wGW95YXsLlK+4P1bspAgeHdDq7Q91"
+            + "bJJQAS5OTD38i1NY6MRtt/fWsShVBLjf2FzNpw6siHHl2N7BDNyO3ALtgfp50e0Z"
+            + "Dsw5WArgKLiXfwZIrIKbYA73RFc10ReDqnJSF+NXgBo1/i4WhZLHC1Osl5UoKt9q"
+            + "UoXIUmYhAwdAT5ZKVw6A8yp4e270yZTXNsDz8u/onEwNc1iM0v0RnPQhNE5sKEZH"
+            + "QrMxttiwbKe3YshCjbruz/27XnNA51t2p1M6eC1HRab4xSHAyH5NTxGJ8yKhOfiT"
+            + "aBKqdTH3P7QzlcoCUDVDDe7aLMaZEf+a2Te63cZTuUVpkysxSjAjBgkqhkiG9w0B"
+            + "CRQxFh4UAHAAcgBpAHYAYQB0AGUASwBlAHkwIwYJKoZIhvcNAQkVMRYEFCfeHSg6"
+            + "EdeP5A1IC8ydjyrjyFSdAAQBAAQBAAQBAAQBAASCCBoAMIAGCSqGSIb3DQEHBqCA"
+            + "MIACAQAwgAYJKoZIhvcNAQcBMCcGCiqGSIb3DQEMAQYwGQQURNy47tUcttscSleo"
+            + "8gY6ZAPFOl0CAWSggASCB8jdZ+wffUP1B25Ys48OFBMg/itT0EBS6J+dYVofZ84c"
+            + "x41q9U+CRMZJwVNZbkqfRZ+F3tLORSwuIcwyioa2/JUpv8uJCjQ2tru5+HtqCrzR"
+            + "Huh7TfdiMqvjkKpnXi69DPPjQdCSPwYMy1ahZrP5KgEZg4S92xpU2unF1kKQ30Pq"
+            + "PTEBueDlFC39rojp51Wsnqb1QzjPo53YvJQ8ztCoG0yk+0omELyPbc/qMKe5/g5h"
+            + "Lx7Q+2D0PC/ZHtoDkCRfMDKwgwALFsSj2uWNJsCplspmc7YgIzSr/GqqeSXHp4Ue"
+            + "dwVJAswrhpkXZTlp1rtl/lCSFl9akwjY1fI144zfpYKpLqfoHL1uI1c3OumrFzHd"
+            + "ZldZYgsM/h3qjgu8qcXqI0sKVXsffcftCaVs+Bxmdu9vpY15rlx1e0an/O05nMKU"
+            + "MBU2XpGkmWxuy0tOKs3QtGzHUJR5+RdEPURctRyZocEjJgTvaIMq1dy/FIaBhi+d"
+            + "IeAbFmjBu7cv9C9v/jMuUjLroycmo7QW9jGgyTOQ68J+6w2/PtqiqIo3Ry9WC0SQ"
+            + "8+fVNOGLr5O2YPpw17sDQa/+2gjozngvL0OHiABwQ3EbXAQLF046VYkTi5R+8iGV"
+            + "3jlTvvStIKY06E/s/ih86bzwJWAQENCazXErN69JO+K3IUiwxac+1AOO5WyR9qyv"
+            + "6m/yHdIdbOVE21M2RARbI8UiDpRihCzk4duPfj/x2bZyFqLclIMhbTd2UOQQvr+W"
+            + "4etpMJRtyFGhdLmNgYAhYrbUgmdL1kRkzPzOs77PqleMpfkii7HPk3HlVkM7NIqd"
+            + "dN0WQaQwGJuh5f1ynhyqtsaw6Gu/X56H7hpziAh0eSDQ5roRE7yy98h2Mcwb2wtY"
+            + "PqVFTmoKuRWR2H5tT6gCaAM3xiSC7RLa5SF1hYQGaqunqBaNPYyUIg/r03dfwF9r"
+            + "AkOhh6Mq7Z2ktzadWTxPl8OtIZFVeyqIOtSKBHhJyGDGiz3+SSnTnSX81NaTSJYZ"
+            + "7YTiXkXvSYNpjpPckIKfjpBw0T4pOva3a6s1z5p94Dkl4kz/zOmgveGd3dal6wUV"
+            + "n3TR+2cyv51WcnvB9RIp58SJOc+CvCvYTvkEdvE2QtRw3wt4ngGJ5pxmC+7+8fCf"
+            + "hRDzw9LBNz/ry88y/0Bidpbhwr8gEkmHuaLp43WGQQsQ+cWYJ8AeLZMvKplbCWqy"
+            + "iuks0MnKeaC5dcB+3BL55OvcTfGkMtz0oYBkcGBTbbR8BKJZgkIAx7Q+/rCaqv6H"
+            + "HN/cH5p8iz5k+R3MkmR3gi6ktelQ2zx1pbPz3IqR67cTX3IyTX56F2aY54ueY17m"
+            + "7hFwSy4aMen27EO06DXn/b6vPKj73ClE2B/IPHO/H2e8r04JWMltFWuStV0If5x0"
+            + "5ZImXx068Xw34eqSWvoMzr97xDxUwdlFgrKrkMKNoTDhA4afrZ/lwHdUbNzh6cht"
+            + "jHW/IfIaMo3NldN/ihO851D399FMsWZW7YA7//RrWzBDiLvh+RfwkMOfEpbujy0G"
+            + "73rO/Feed2MoVXvmuKBRpTNyFuBVvFDwIzBT4m/RaVf5m1pvprSk3lo43aumdN9f"
+            + "NDETktVZ/CYaKlYK8rLcNBKJicM5+maiQSTa06XZXDMY84Q0xtCqJ/aUH4sa/z8j"
+            + "KukVUSyUZDJk/O82B3NA4+CoP3Xyc9LAUKucUvoOmGt2JCw6goB/vqeZEg9Tli0Q"
+            + "+aRer720QdVRkPVXKSshL2FoXHWUMaBF8r//zT6HbjTNQEdxbRcBNvkUXUHzITfl"
+            + "YjQcEn+FGrF8+HVdXCKzSXSgu7mSouYyJmZh42spUFCa4j60Ks1fhQb2H1p72nJD"
+            + "n1mC5sZkU68ITVu1juVl/L2WJPmWfasb1Ihnm9caJ/mEE/i1iKp7qaY9DPTw5hw4"
+            + "3QplYWFv47UA/sOmnWwupRuPk7ISdimuUnih8OYR75rJ0z6OYexvj/2svx9/O5Mw"
+            + "654jFF2hAq69jt7GJo6VZaeCRCAxEU7N97l3EjqaKJVrpIPQ+3yLmqHit/CWxImB"
+            + "iIl3sW7MDEHgPdQy3QiZmAYNLQ0Te0ygcIHwtPyzhFoFmjbQwib2vxDqWaMQpUM1"
+            + "/W96R/vbCjA7tfKYchImwAPCyRM5Je2FHewErG413kZct5tJ1JqkcjPsP7Q8kmgw"
+            + "Ec5QNq1/PZOzL1ZLr6ryfA4gLBXa6bJmf43TUkdFYTvIYbvH2jp4wpAtA152YgPI"
+            + "FL19/Tv0B3Bmb1qaK+FKiiQmYfVOm/J86i/L3b8Z3jj8dRWEBztaI/KazZ/ZVcs/"
+            + "50bF9jH7y5+2uZxByjkM/kM/Ov9zIHbYdxLw2KHnHsGKTCooSSWvPupQLBGgkd6P"
+            + "M9mgE6MntS+lk9ucpP5j1LXo5zlZaLSwrvSzE3/bbWJKsJuomhRbKeZ+qSYOWvPl"
+            + "/1RqREyZHbSDKzVk39oxH9EI9EWKlCbrz5EHWiSv0+9HPczxbO3q+YfqcY8plPYX"
+            + "BvgxHUeDR+LxaAEcVEX6wd2Pky8pVwxQydU4cEgohrgZnKhxxLAvCp5sb9kgqCrh"
+            + "luvBsHpmiUSCi/r0PNXDgApvTrVS/Yv0jTpX9u9IWMmNMrnskdcP7tpEdkw8/dpf"
+            + "RFLLgqwmNEhCggfbyT0JIUxf2rldKwd6N1wZozaBg1uKjNmAhJc1RxsABAEABAEA"
+            + "BAEABAEABAEABAEABAEABAEABAEABAEABAEAAAAAAAAAMDwwITAJBgUrDgMCGgUA"
+            + "BBSS2GOUxqv3IT+aesPrMPNn9RQ//gQUYhjCLPh/h2ULjh+1L2s3f5JIZf0CAWQA"
+            + "AA==").getBytes());
 
-    protected SingleResp sendOCSPPost(byte[] ocspPackage, String nonce) throws IOException, OCSPException, NoSuchProviderException {
-        // POST the OCSP request
-        URL url = new URL(httpReqPath + '/' + resourceOcsp);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
-        // we are going to do a POST
-        con.setDoOutput(true);
-        con.setRequestMethod("POST");
-
-        // POST it
-        con.setRequestProperty("Content-Type", "application/ocsp-request");
-        OutputStream os = con.getOutputStream();
-        os.write(ocspPackage);
-        os.close();
-        assertEquals("Response code", 200, con.getResponseCode());
-        assertEquals("Content-Type", "application/ocsp-response", con.getContentType());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and OCSP requests are small
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
-        assertEquals("Response status not zero.", response.getStatus(), 0);
-        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
-        assertTrue("Response failed to verify.", verify);
-        // Check nonce (if we sent one)
-        if (nonce != null) {
-        	byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
-        	assertNotNull(noncerep);
-        	ASN1InputStream ain = new ASN1InputStream(noncerep);
-        	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
-        	assertEquals(nonce, new String(oct.getOctets()));
-        }
-        SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
-        return singleResp;
-    }
-    
-    protected void reloadKeys() throws IOException, OCSPException, NoSuchProviderException {
-        // POST the OCSP request
-        URL url = new URL(httpReqPath + '/' + resourceOcsp+"?reloadkeys=true");
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
-        // we are going to do a POST
-        con.setDoOutput(true);
-        con.setRequestMethod("GET");
-
-        // POST it
-        con.setRequestProperty("reloadkeys", "true");
-        con.connect();
-        assertEquals("Response code", 405, con.getResponseCode());
-        con.disconnect();
-    }
 }

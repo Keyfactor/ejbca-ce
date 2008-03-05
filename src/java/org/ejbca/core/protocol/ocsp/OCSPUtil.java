@@ -2,12 +2,17 @@ package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -27,13 +32,20 @@ import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.RespID;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.NotSupportedException;
+import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.util.CertTools;
 
 public class OCSPUtil {
 
 	private static final Logger m_log = Logger.getLogger(OCSPUtil.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+
 
     public static BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate respondercert) throws OCSPException, NotSupportedException {
         if (null == req) {
@@ -138,6 +150,113 @@ public class OCSPUtil {
         }
         return sigAlg;
 
+    }
+
+    /** Checks the signature on an OCSP request and checks that it is signed by an allowed CA.
+     * Does not check for revocation of the signer certificate
+     * 
+     * @param clientRemoteAddr The ip address or hostname of the remote client that sent the request, can be null.
+     * @param req The signed OCSPReq
+     * @param cacerts a Collection of X509Certificate, the authorized CA-certificates. The signer certificate must be issued by one of these.
+     * @return X509Certificate which is the certificate that signed the OCSP request
+     * @throws SignRequestSignatureException if signature verification fail, or if the signing certificate is not ahthorized
+     * @throws SignRequestException if there is no signature on the OCSPReq
+     * @throws OCSPException if the request can not be parsed to retrieve certificates
+     * @throws NoSuchProviderException if the BC provider is not installed
+     * @throws CertificateException if the certificate can not be parsed
+     * @throws NoSuchAlgorithmException if the certificate contains an unsupported algorithm
+     * @throws InvalidKeyException if the certificate, or CA key is invalid
+     */
+    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, Collection cacerts)
+    throws SignRequestException, OCSPException,
+    NoSuchProviderException, CertificateException,
+    NoSuchAlgorithmException, InvalidKeyException,
+    SignRequestSignatureException {
+    	
+    	X509Certificate signercert = null;
+    	
+    	if (!req.isSigned()) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq", clientRemoteAddr);
+    		m_log.error(errMsg);
+    		throw new SignRequestException(errMsg);
+    	}
+    	// Get all certificates embedded in the request (probably a certificate chain)
+    	X509Certificate[] certs = req.getCerts("BC");
+    	// Set, as a try, the signer to be the first certificate, so we have a name to log...
+    	String signer = null;
+    	if (certs.length > 0) {
+    		signer = certs[0].getSubjectDN().getName();
+    	}
+        // We must find a cert to verify the signature with...
+    	boolean verifyOK = false;
+    	for (int i = 0; i < certs.length; i++) {
+    		if (req.verify(certs[i].getPublicKey(), "BC") == true) {
+    			signercert = certs[i];
+    			signer = signercert.getSubjectDN().getName();
+    			String signerissuer = signercert.getIssuerDN().getName();
+    			String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
+    			m_log.info(infoMsg);
+    			verifyOK = true;
+    			// Also check that the signer certificate can be verified by one of the CA-certificates
+    			// that we answer for
+    			X509Certificate signerca = findCertificateBySubject(certs[i].getIssuerDN().getName(), cacerts);
+    			if (signerca != null) {
+    				try {
+    					signercert.verify(signerca.getPublicKey());
+    				} catch (SignatureException e) {
+    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", signer, signerissuer, e.getMessage());
+    					m_log.info(infoMsg);
+    					verifyOK = false;
+    				}                            	
+    			} else {
+    				infoMsg = intres.getLocalizedMessage("ocsp.infosigner.nocacert", signer, signerissuer);
+    				m_log.info(infoMsg);
+    				verifyOK = false;
+    			}
+    			break;
+    		}
+    	}
+    	if (!verifyOK) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signer);
+    		m_log.error(errMsg);
+    		throw new SignRequestSignatureException(errMsg);
+    	}
+    	
+    	return signercert;
+    }
+
+    /** Finds a certificate in a collection.
+     * 
+     * @param subjectDN the subjectDN to search for in the collection of certificate
+     * @param certs Collection of X509Certificate to search in
+     * @return X509Certificate from the certs Collection
+     */
+    public static X509Certificate findCertificateBySubject(String subjectDN, Collection certs) {
+        if (certs == null || null == subjectDN) {
+            throw new IllegalArgumentException();
+        }
+
+        if (null == certs || certs.isEmpty()) {
+    		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
+            m_log.info(iMsg);
+            return null;
+        }
+        String dn = CertTools.stringToBCDNString(subjectDN);
+        Iterator iter = certs.iterator();
+        while (iter.hasNext()) {
+            X509Certificate cacert = (X509Certificate) iter.next();
+            if (m_log.isDebugEnabled()) {
+                m_log.debug("Comparing the following certificates:\n"
+                        + " CA certificate DN: " + cacert.getSubjectDN()
+                        + "\n Subject DN: " + dn);
+            }
+            if (dn.equalsIgnoreCase(CertTools.stringToBCDNString(cacert.getSubjectDN().getName()))) {
+                return cacert;
+            }
+        }
+		String iMsg = intres.getLocalizedMessage("ocsp.nomatchingcacert", subjectDN);
+        m_log.info(iMsg);
+        return null;
     }
 
 

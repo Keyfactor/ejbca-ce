@@ -68,6 +68,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.IOCSPExtension;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.CertTools;
 
 /**
@@ -112,7 +113,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.32 2008-03-03 20:50:12 primelars Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.33 2008-03-05 10:21:19 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -221,34 +222,6 @@ abstract class OCSPServletBase extends HttpServlet {
         return null;
     }
 
-    protected X509Certificate findCertificateBySubject(String subjectDN, Collection certs) {
-        if (certs == null || null == subjectDN) {
-            throw new IllegalArgumentException();
-        }
-
-        if (null == certs || certs.isEmpty()) {
-    		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
-            m_log.info(iMsg);
-            return null;
-        }
-        String dn = CertTools.stringToBCDNString(subjectDN);
-        Iterator iter = certs.iterator();
-        while (iter.hasNext()) {
-            X509Certificate cacert = (X509Certificate) iter.next();
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Comparing the following certificates:\n"
-                        + " CA certificate DN: " + cacert.getSubjectDN()
-                        + "\n Subject DN: " + dn);
-            }
-            if (dn.equalsIgnoreCase(CertTools.stringToBCDNString(cacert.getSubjectDN().getName()))) {
-                return cacert;
-            }
-        }
-		String iMsg = intres.getLocalizedMessage("ocsp.nomatchingcacert", subjectDN);
-        m_log.info(iMsg);
-        return null;
-    }
-
     /** returns an HashTable of responseExtensions to be added to the BacisOCSPResponseGenerator with
      * <code>
      * X509Extensions exts = new X509Extensions(table);
@@ -276,7 +249,7 @@ abstract class OCSPServletBase extends HttpServlet {
     	X509Certificate cert = cacert;
     	if (cacert == null) {
     		m_log.debug("No correct CA-certificate available to sign response, signing with default CA: "+m_defaultResponderId);
-            cert = findCertificateBySubject(m_defaultResponderId, m_cacerts);    		
+            cert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);    		
     	}
 
         int result = CertTools.stringToBCDNString(cert.getSubjectDN().toString()).hashCode();
@@ -492,33 +465,17 @@ abstract class OCSPServletBase extends HttpServlet {
                     m_log.debug("Incoming OCSP request is signed : " + req.isSigned());
                 }
                 if (m_reqMustBeSigned) {
-                    if (!req.isSigned()) {
-                		String errMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq");
-                        m_log.error(errMsg);
-                        throw new SignRequestException(errMsg);
-                    }
-                    //GeneralName requestor = req.getRequestorName();
-                    X509Certificate[] certs = req.getCerts("BC");
-                    String signer = null;
-                    if (certs.length > 0) {
-                    	signer = certs[0].getSubjectDN().getName();
-                    }
-                    // We must find a cert to verify the signature with...
-                    boolean verifyOK = false;
-                    for (int i = 0; i < certs.length; i++) {
-                        if (req.verify(certs[i].getPublicKey(), "BC") == true) {
-                            verifyOK = true;
-                        	signer = certs[i].getSubjectDN().getName();
-                    		String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
-                            m_log.info(infoMsg);
-                            break;
-                        }
-                    }
-                    if (!verifyOK) {
-                		String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signer);
-                        m_log.error(errMsg);
-                        throw new SignRequestSignatureException(errMsg);
-                    }
+                    X509Certificate signercert = OCSPUtil.checkRequestSignature(request.getRemoteAddr(), req, m_cacerts);
+					// If it verifies OK, check if it is revoked
+					RevokedCertInfo rci = isRevoked(m_adm, signercert.getIssuerDN().getName(), signercert.getSerialNumber());
+					// If rci == null it means the certificate does not exist in database, we then treat it as ok,
+					// because it may be so that only revoked certificates is in the (external) OCSP database.
+					if ((rci != null) && rci.isRevoked()) {
+						String serno = signercert.getSerialNumber().toString(16);
+						String errMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercert.getSubjectDN().getName(), signercert.getIssuerDN().getName(), serno);
+						m_log.error(errMsg);
+			    		throw new SignRequestSignatureException(errMsg);
+					}
                 }
 
                 Req[] requests = req.getRequestList();
@@ -527,7 +484,7 @@ abstract class OCSPServletBase extends HttpServlet {
                     m_log.error(errMsg);
                     {
                         // All this just so we can create an error response
-                        cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
+                        cacert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);
                     }
                     throw new MalformedRequestException(errMsg);
                 }
@@ -545,7 +502,7 @@ abstract class OCSPServletBase extends HttpServlet {
                     if (hashbytes != null) {
                     	hash = new String(Hex.encode(hashbytes));                    	
                     }
-            		String infoMsg = intres.getLocalizedMessage("ocsp.inforeceivedrequest", certId.getSerialNumber().toString(16), hash);
+            		String infoMsg = intres.getLocalizedMessage("ocsp.inforeceivedrequest", certId.getSerialNumber().toString(16), hash, request.getRemoteAddr());
                     m_log.info(infoMsg);
                     boolean unknownCA = false; // if the certId was issued by an unknown CA
                     // The algorithm here:
@@ -558,7 +515,7 @@ abstract class OCSPServletBase extends HttpServlet {
                         cacert = findCAByHash(certId, m_cacerts);
                         if (cacert == null) {
                             // We could not find certificate for this request so get certificate for default responder
-                            cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
+                            cacert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);
                             unknownCA = true;
                         }
                     } catch (OCSPException e) {
@@ -696,6 +653,12 @@ abstract class OCSPServletBase extends HttpServlet {
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicresp);
+            } catch (SignRequestSignatureException e) {
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+                m_log.info(errMsg, e);
+                // generate the signed response object
+                BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
+                ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, basicresp);
             } catch (Exception e) {
                 if (e instanceof ServletException)
                     throw (ServletException) e;

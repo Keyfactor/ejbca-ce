@@ -8,7 +8,7 @@ Introduction
 You can set up separated OCSP responders in EJBCA. Using this you can isolate the CA from the Internet and still be
 able to answer OCSP request. You can set up firewalls so that only outgoing traffic is allowed from the CA, and
 nothing to the CA.
-Separated OCSP responders is also good when you don't require high-preformance clustering for the CA, but you do need
+Separated OCSP responders is also good when you don't require high-performance clustering for the CA, but you do need
 high-performance for the OCSP responders. This should be a usual setup, if the CA only issues certificates once every year
 for one million users, this does not put much pressure on the CA, but the OCSP responders can be put under high load continuously.
 
@@ -17,8 +17,10 @@ See the image HOWTO-OCSP-RESPONDER.jpg for an overview of a sample setup.
 Building and configuring EJBCA.
 -------------------------------
 EJBCA should be configured as for any other installation but you must also set all preferences
-(ocsp-database.*) of the responder data base. The responder database is the master database of all
-the responders. Then EJBCA is built with the command: ant deploy
+(ocsp-database.*) of the responder data base in conf/ocsp.properties. 
+The responder database is the master database of all the responders, and it is there that EJBCA will 
+publish certificates when they are issued or revoked. 
+Then EJBCA is built and deployed with the command 'ant deploy', as described in the EJBCA installation guide.
 
 The deploy command sets up a datasource java:/OcspDS in JBoss, if you use another application server 
 you must set up this datasource yourself. If should be a datasource that is not involved in transactions
@@ -37,7 +39,7 @@ When all settings above have been done then all created certificates belonging t
 profile that has a the ExternalOCSPPublisher as publisher should be published in the responder
 database as well as in the EJBCA database. When a certificate is revoked it will be revoked in
 the responder database as well.
-If the publishing is not working it is important to notice this and syncronize the databases again, 
+If the publishing is not working it is important to notice this and synchronize the databases again, 
 see 'Error publishing to OCSP database' below.
 
 Building and configuring the Responder.
@@ -47,7 +49,7 @@ and datasource.* and database.* are relevant to the responder but you may keep c
 from the EJBCA setup since definitions of other properties does no harm. 
 Note that the External OCSP responder itself uses the configuration options database.* and not the ocsp-database.* options.
 The ocsp.keys.* preferences (that has no meaning for EJBCA) has also to be configured, 
-please read description of these properties in ocsp.properties.sample, database.properties.sample and perhaps 
+please read description of these properties in conf/ocsp.properties.sample, conf/database.properties.sample and perhaps 
 conf/web.properties.sample (if ssl or different ports should be configured).
 ocsp.usecasigningcert should be set to false. If card keys (see below) should be used then the property
 'ocspHardTokenClasses' must be set to the corresponding directory of PrimeCard.

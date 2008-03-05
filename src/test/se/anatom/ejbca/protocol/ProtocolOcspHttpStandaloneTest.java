@@ -82,7 +82,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -99,7 +99,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
             if ( isRevoked==(store.isRevoked(admin, cert.getIssuerDN().toString(), cert.getSerialNumber()).getReason()!=RevokedCertInfo.NOT_REVOKED) )
                 return cert;
         }
-        assertNotNull("Misslyckades hämta cert", null);
+        assertNotNull("Misslyckades hï¿½mta cert", null);
         return null;
     }
 
@@ -120,7 +120,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
+        SingleResp singleResp = helper.sendOCSPPost(req.getEncoded(), null, 0);
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
