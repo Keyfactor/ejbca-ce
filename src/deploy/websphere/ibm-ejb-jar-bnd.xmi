@@ -96,6 +96,9 @@
             <ejbRefBindings xmi:id="EJBLocalRef_22" jndiName="ServiceTimerSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_22"/>
             </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_23" jndiName="CertificateStoreSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_23"/>
+            </ejbRefBindings>
 
         </ejbBindings>
 
@@ -103,20 +106,20 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_RaAdminSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_23" jndiName="LogSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_23"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_24" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_24" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_24"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_25" jndiName="AdminPreferencesDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_25" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_25"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_26" jndiName="EndEntityProfileDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_26" jndiName="AdminPreferencesDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_26"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_27" jndiName="GlobalConfigurationDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_27" jndiName="EndEntityProfileDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_27"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_28" jndiName="GlobalConfigurationDataLocal">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_28"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -125,20 +128,20 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_AuthenticationSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_28" jndiName="UserAdminSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_28"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_29" jndiName="UserDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_29" jndiName="UserAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_29"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_30" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_30" jndiName="UserDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_30"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_31" jndiName="RaAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_31" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_31"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_32" jndiName="KeyRecoverySession">
+            <ejbRefBindings xmi:id="EJBLocalRef_32" jndiName="RaAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_32"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_33" jndiName="KeyRecoverySession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_33"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -147,20 +150,20 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_CreateCRLSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_33" jndiName="LogSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_33"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_34" jndiName="CertificateDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_34" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_34"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_35" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_35" jndiName="CertificateDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_35"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_36" jndiName="CertificateStoreSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_36" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_36"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_37" jndiName="RSASignSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_37" jndiName="CertificateStoreSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_37"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_38" jndiName="RSASignSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_38"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -169,29 +172,29 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_UserAdminSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_38" jndiName="CertificateStoreSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_38"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_39" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_39" jndiName="CertificateStoreSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_39"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_40" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_40" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_40"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_41" jndiName="RaAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_41" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_41"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_42" jndiName="KeyRecoverySession">
+            <ejbRefBindings xmi:id="EJBLocalRef_42" jndiName="RaAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_42"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_43" jndiName="ApprovalSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_43" jndiName="KeyRecoverySession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_43"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_44" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_44" jndiName="ApprovalSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_44"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_45" jndiName="UserDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_45" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_45"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_46" jndiName="UserDataLocal">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_46"/>
             </ejbRefBindings>
 
             <resRefBindings xmi:id="ResRefBnd_1" jndiName="@mail.jndi-name@">            
@@ -204,14 +207,14 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_HardTokenBatchJobSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_46" jndiName="UserDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_46"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_47" jndiName="HardTokenSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_47" jndiName="UserDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_47"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_48" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_48" jndiName="HardTokenSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_48"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_49" jndiName="LogSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_49"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -220,29 +223,29 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_CertificateStoreSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_49" jndiName="CertificateDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_49"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_50" jndiName="CRLDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_50" jndiName="CertificateDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_50"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_51" jndiName="CertReqHistoryDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_51" jndiName="CRLDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_51"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_52" jndiName="CertificateProfileDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_52" jndiName="CertReqHistoryDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_52"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_53" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_53" jndiName="CertificateProfileDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_53"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_54" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_54" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_54"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_55" jndiName="PublisherSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_55" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_55"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_56" jndiName="TableProtectSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_56" jndiName="PublisherSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_56"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_57" jndiName="TableProtectSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_57"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -251,14 +254,14 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_UserDataSourceSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_57" jndiName="UserDataSourceDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_57"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_58" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_58" jndiName="UserDataSourceDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_58"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_59" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_59" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_59"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_60" jndiName="LogSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_60"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -267,11 +270,11 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_CertificateStoreOnlyDataSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_60" jndiName="CertificateDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_60"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_61" jndiName="TableProtectSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_61" jndiName="CertificateDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_61"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_62" jndiName="TableProtectSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_62"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -280,20 +283,20 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_ProtectedLogSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_62" jndiName="ProtectedLogDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_62"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_63" jndiName="ProtectedLogTokenDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_63" jndiName="ProtectedLogDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_63"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_64" jndiName="ProtectedLogExportDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_64" jndiName="ProtectedLogTokenDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_64"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_65" jndiName="RSASignSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_65" jndiName="ProtectedLogExportDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_65"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_66" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_66" jndiName="RSASignSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_66"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_67" jndiName="CAAdminSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_67"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -302,14 +305,14 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_UpgradeSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_67" jndiName="LogConfigurationDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_67"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_68" jndiName="OldLogConfigurationDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_68" jndiName="LogConfigurationDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_68"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_69" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_69" jndiName="OldLogConfigurationDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_69"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_70" jndiName="CAAdminSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_70"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -318,20 +321,20 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_RSASignSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_70" jndiName="CADataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_70"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_71" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_71" jndiName="CADataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_71"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_72" jndiName="CertificateStoreSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_72" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_72"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_73" jndiName="AuthenticationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_73" jndiName="CertificateStoreSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_73"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_74" jndiName="PublisherSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_74" jndiName="AuthenticationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_74"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_75" jndiName="PublisherSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_75"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -340,8 +343,8 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_TableProtectSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_75" jndiName="TableProtectDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_75"/>
+            <ejbRefBindings xmi:id="EJBLocalRef_76" jndiName="TableProtectDataLocal">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_76"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -350,29 +353,29 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_KeyRecoverySession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_76" jndiName="KeyRecoveryDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_76"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_77" jndiName="RSASignSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_77" jndiName="KeyRecoveryDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_77"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_78" jndiName="CertificateStoreSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_78" jndiName="RSASignSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_78"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_79" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_79" jndiName="CertificateStoreSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_79"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_80" jndiName="UserAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_80" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_80"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_81" jndiName="ApprovalSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_81" jndiName="UserAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_81"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_82" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_82" jndiName="ApprovalSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_82"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_83" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_83" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_83"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_84" jndiName="LogSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_84"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -381,17 +384,17 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_PublisherSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_84" jndiName="PublisherDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_84"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_85" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_85" jndiName="PublisherDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_85"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_86" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_86" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_86"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_87" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_87" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_87"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_88" jndiName="LogSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_88"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -400,32 +403,32 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_ApprovalSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_88" jndiName="ApprovalDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_88"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_89" jndiName="CertificateStoreSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_89" jndiName="ApprovalDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_89"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_90" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_90" jndiName="CertificateStoreSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_90"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_91" jndiName="RaAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_91" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_91"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_92" jndiName="UserAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_92" jndiName="RaAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_92"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_93" jndiName="HardTokenSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_93" jndiName="UserAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_93"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_94" jndiName="KeyRecoverySession">
+            <ejbRefBindings xmi:id="EJBLocalRef_94" jndiName="HardTokenSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_94"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_95" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_95" jndiName="KeyRecoverySession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_95"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_96" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_96" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_96"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_97" jndiName="LogSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_97"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -434,29 +437,29 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_ServiceTimerSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_97" jndiName="ServiceSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_97"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_98" jndiName="CertificateDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_98" jndiName="ServiceSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_98"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_99" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_99" jndiName="CertificateDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_99"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_100" jndiName="UserAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_100" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_100"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_101" jndiName="LogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_101" jndiName="UserAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_101"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_102" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_102" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_102"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_103" jndiName="CreateCRLSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_103" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_103"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_104" jndiName="ProtectedLogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_104" jndiName="CreateCRLSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_104"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_105" jndiName="ProtectedLogSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_105"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -465,26 +468,26 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_LogSession"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_105" jndiName="LogEntryDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_105"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_106" jndiName="LogConfigurationDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_106" jndiName="LogEntryDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_106"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_107" jndiName="TableProtectSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_107" jndiName="LogConfigurationDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_107"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_108" jndiName="RSASignSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_108" jndiName="TableProtectSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_108"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_109" jndiName="AuthorizationSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_109" jndiName="RSASignSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_109"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_110" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_110" jndiName="AuthorizationSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_110"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_111" jndiName="ProtectedLogSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_111" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_111"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_112" jndiName="ProtectedLogSession">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_112"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -493,26 +496,26 @@
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_AuthorizationSession"/>
             
-            <ejbRefBindings xmi:id="EJBLocalRef_112" jndiName="LogSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_112"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_113" jndiName="RaAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_113" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_113"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_114" jndiName="CAAdminSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_114" jndiName="RaAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_114"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_115" jndiName="CertificateStoreSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_115" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_115"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_116" jndiName="UserDataSourceSession">
+            <ejbRefBindings xmi:id="EJBLocalRef_116" jndiName="CertificateStoreSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_116"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_117" jndiName="AuthorizationTreeUpdateDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_117" jndiName="UserDataSourceSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_117"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_118" jndiName="AdminGroupDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_118" jndiName="AuthorizationTreeUpdateDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_118"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_119" jndiName="AdminGroupDataLocal">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_119"/>
             </ejbRefBindings>
 
         </ejbBindings>
@@ -775,11 +778,11 @@
 
             <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_AdminGroupData"/>
 
-            <ejbRefBindings xmi:id="EJBLocalRef_119" jndiName="AdminEntityDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_119"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_120" jndiName="AccessRulesDataLocal">
+            <ejbRefBindings xmi:id="EJBLocalRef_120" jndiName="AdminEntityDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_120"/>
+            </ejbRefBindings>
+            <ejbRefBindings xmi:id="EJBLocalRef_121" jndiName="AccessRulesDataLocal">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_121"/>
             </ejbRefBindings>
 
         </ejbBindings>

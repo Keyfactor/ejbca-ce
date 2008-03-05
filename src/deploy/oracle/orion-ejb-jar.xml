@@ -29,6 +29,7 @@
 			<ejb-ref-mapping name="ejb/ProtectedLogSessionLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/ServiceTimerSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
 		</session-deployment>
 		<session-deployment name="RaAdminSession" location="RaAdminSession" local-location="ejbca-ejb_RaAdminSessionLocal" persistence-filename="RaAdminSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />

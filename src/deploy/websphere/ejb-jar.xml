@@ -256,6 +256,13 @@
             <local>org.ejbca.core.ejb.services.IServiceTimerSessionLocal</local>
             <ejb-link>ServiceTimerSession</ejb-link>
          </ejb-local-ref>
+         <ejb-local-ref id="EJBLocalRef_23">
+            <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
+            <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
+            <ejb-link>CertificateStoreSession</ejb-link>
+         </ejb-local-ref>
 
       </session>
 
@@ -273,35 +280,35 @@
          <session-type>Stateless</session-type>
          <transaction-type>Container</transaction-type>
 
-         <ejb-local-ref id="EJBLocalRef_23">
+         <ejb-local-ref id="EJBLocalRef_24">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_24">
+         <ejb-local-ref id="EJBLocalRef_25">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_25">
+         <ejb-local-ref id="EJBLocalRef_26">
             <ejb-ref-name>ejb/AdminPreferencesDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesDataLocal</local>
             <ejb-link>AdminPreferencesData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_26">
+         <ejb-local-ref id="EJBLocalRef_27">
             <ejb-ref-name>ejb/EndEntityProfileDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocal</local>
             <ejb-link>EndEntityProfileData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_27">
+         <ejb-local-ref id="EJBLocalRef_28">
             <ejb-ref-name>ejb/GlobalConfigurationDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationDataLocalHome</local-home>
@@ -325,35 +332,35 @@
          <session-type>Stateless</session-type>
          <transaction-type>Container</transaction-type>
 
-         <ejb-local-ref id="EJBLocalRef_28">
+         <ejb-local-ref id="EJBLocalRef_29">
             <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
             <ejb-link>UserAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_29">
+         <ejb-local-ref id="EJBLocalRef_30">
             <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.UserDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.UserDataLocal</local>
             <ejb-link>UserData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_30">
+         <ejb-local-ref id="EJBLocalRef_31">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_31">
+         <ejb-local-ref id="EJBLocalRef_32">
             <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
             <ejb-link>RaAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_32">
+         <ejb-local-ref id="EJBLocalRef_33">
             <ejb-ref-name>ejb/KeyRecoverySessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome</local-home>
@@ -377,35 +384,35 @@
          <session-type>Stateless</session-type>
          <transaction-type>Container</transaction-type>
 
-         <ejb-local-ref id="EJBLocalRef_33">
+         <ejb-local-ref id="EJBLocalRef_34">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_34">
+         <ejb-local-ref id="EJBLocalRef_35">
             <ejb-ref-name>ejb/CertificateDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.CertificateDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.CertificateDataLocal</local>
             <ejb-link>CertificateData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_35">
+         <ejb-local-ref id="EJBLocalRef_36">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_36">
+         <ejb-local-ref id="EJBLocalRef_37">
             <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
             <ejb-link>CertificateStoreSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_37">
+         <ejb-local-ref id="EJBLocalRef_38">
             <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
@@ -459,56 +466,56 @@
             <env-entry-value><![CDATA[Hello ${CN}${NL}${NL} This is a notification. ${NL}${NL} Your username: ${USERNAME}${NL} password: ${PASSWORD}${NL}${NL} Your are NOT supposed to go and fetch your certificate, this is only a test.]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_38">
+         <ejb-local-ref id="EJBLocalRef_39">
             <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
             <ejb-link>CertificateStoreSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_39">
+         <ejb-local-ref id="EJBLocalRef_40">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_40">
+         <ejb-local-ref id="EJBLocalRef_41">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_41">
+         <ejb-local-ref id="EJBLocalRef_42">
             <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
             <ejb-link>RaAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_42">
+         <ejb-local-ref id="EJBLocalRef_43">
             <ejb-ref-name>ejb/KeyRecoverySessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal</local>
             <ejb-link>KeyRecoverySession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_43">
+         <ejb-local-ref id="EJBLocalRef_44">
             <ejb-ref-name>ejb/ApprovalSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.approval.IApprovalSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.approval.IApprovalSessionLocal</local>
             <ejb-link>ApprovalSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_44">
+         <ejb-local-ref id="EJBLocalRef_45">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_45">
+         <ejb-local-ref id="EJBLocalRef_46">
             <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.UserDataLocalHome</local-home>
@@ -545,21 +552,21 @@
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_46">
+         <ejb-local-ref id="EJBLocalRef_47">
             <ejb-ref-name>ejb/UserDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.UserDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.UserDataLocal</local>
             <ejb-link>UserData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_47">
+         <ejb-local-ref id="EJBLocalRef_48">
             <ejb-ref-name>ejb/HardTokenSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal</local>
             <ejb-link>HardTokenSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_48">
+         <ejb-local-ref id="EJBLocalRef_49">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
@@ -596,56 +603,56 @@
             <env-entry-value><![CDATA[false]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_49">
+         <ejb-local-ref id="EJBLocalRef_50">
             <ejb-ref-name>ejb/CertificateDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.CertificateDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.CertificateDataLocal</local>
             <ejb-link>CertificateData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_50">
+         <ejb-local-ref id="EJBLocalRef_51">
             <ejb-ref-name>ejb/CRLDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.CRLDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.CRLDataLocal</local>
             <ejb-link>CRLData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_51">
+         <ejb-local-ref id="EJBLocalRef_52">
             <ejb-ref-name>ejb/CertReqHistoryDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.CertReqHistoryDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.CertReqHistoryDataLocal</local>
             <ejb-link>CertReqHistoryData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_52">
+         <ejb-local-ref id="EJBLocalRef_53">
             <ejb-ref-name>ejb/CertificateProfileDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.CertificateProfileDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.CertificateProfileDataLocal</local>
             <ejb-link>CertificateProfileData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_53">
+         <ejb-local-ref id="EJBLocalRef_54">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_54">
+         <ejb-local-ref id="EJBLocalRef_55">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_55">
+         <ejb-local-ref id="EJBLocalRef_56">
             <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
             <ejb-link>PublisherSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_56">
+         <ejb-local-ref id="EJBLocalRef_57">
             <ejb-ref-name>ejb/TableProtectSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.protect.TableProtectSessionLocalHome</local-home>
@@ -675,21 +682,21 @@
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_57">
+         <ejb-local-ref id="EJBLocalRef_58">
             <ejb-ref-name>ejb/UserDataSourceDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceDataLocal</local>
             <ejb-link>UserDataSourceData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_58">
+         <ejb-local-ref id="EJBLocalRef_59">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_59">
+         <ejb-local-ref id="EJBLocalRef_60">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
@@ -726,14 +733,14 @@
             <env-entry-value><![CDATA[false]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_60">
+         <ejb-local-ref id="EJBLocalRef_61">
             <ejb-ref-name>ejb/CertificateDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.CertificateDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.CertificateDataLocal</local>
             <ejb-link>CertificateData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_61">
+         <ejb-local-ref id="EJBLocalRef_62">
             <ejb-ref-name>ejb/TableProtectSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.protect.TableProtectSessionLocalHome</local-home>
@@ -769,35 +776,35 @@
             <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_62">
+         <ejb-local-ref id="EJBLocalRef_63">
             <ejb-ref-name>ejb/ProtectedLogDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ProtectedLogDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ProtectedLogDataLocal</local>
             <ejb-link>ProtectedLogData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_63">
+         <ejb-local-ref id="EJBLocalRef_64">
             <ejb-ref-name>ejb/ProtectedLogTokenDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ProtectedLogTokenDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ProtectedLogTokenDataLocal</local>
             <ejb-link>ProtectedLogTokenData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_64">
+         <ejb-local-ref id="EJBLocalRef_65">
             <ejb-ref-name>ejb/ProtectedLogExportDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ProtectedLogExportDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ProtectedLogExportDataLocal</local>
             <ejb-link>ProtectedLogExportData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_65">
+         <ejb-local-ref id="EJBLocalRef_66">
             <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
             <ejb-link>RSASignSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_66">
+         <ejb-local-ref id="EJBLocalRef_67">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
@@ -827,21 +834,21 @@
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_67">
+         <ejb-local-ref id="EJBLocalRef_68">
             <ejb-ref-name>ejb/LogConfigurationDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.LogConfigurationDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.LogConfigurationDataLocal</local>
             <ejb-link>LogConfigurationData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_68">
+         <ejb-local-ref id="EJBLocalRef_69">
             <ejb-ref-name>ejb/OldLogConfigurationDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>se.anatom.ejbca.log.OldLogConfigurationDataLocalHome</local-home>
             <local>se.anatom.ejbca.log.OldLogConfigurationDataLocal</local>
             <ejb-link>OldLogConfigurationData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_69">
+         <ejb-local-ref id="EJBLocalRef_70">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
@@ -878,35 +885,35 @@
             <env-entry-value><![CDATA[8]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_70">
+         <ejb-local-ref id="EJBLocalRef_71">
             <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.CADataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.CADataLocal</local>
             <ejb-link>CAData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_71">
+         <ejb-local-ref id="EJBLocalRef_72">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_72">
+         <ejb-local-ref id="EJBLocalRef_73">
             <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
             <ejb-link>CertificateStoreSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_73">
+         <ejb-local-ref id="EJBLocalRef_74">
             <ejb-ref-name>ejb/AuthenticationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal</local>
             <ejb-link>AuthenticationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_74">
+         <ejb-local-ref id="EJBLocalRef_75">
             <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
@@ -961,7 +968,7 @@
             <env-entry-value><![CDATA[SOFT_HMAC]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_75">
+         <ejb-local-ref id="EJBLocalRef_76">
             <ejb-ref-name>ejb/TableProtectDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.protect.TableProtectDataLocalHome</local-home>
@@ -992,56 +999,56 @@
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_76">
+         <ejb-local-ref id="EJBLocalRef_77">
             <ejb-ref-name>ejb/KeyRecoveryDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocal</local>
             <ejb-link>KeyRecoveryData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_77">
+         <ejb-local-ref id="EJBLocalRef_78">
             <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
             <ejb-link>RSASignSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_78">
+         <ejb-local-ref id="EJBLocalRef_79">
             <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
             <ejb-link>CertificateStoreSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_79">
+         <ejb-local-ref id="EJBLocalRef_80">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_80">
+         <ejb-local-ref id="EJBLocalRef_81">
             <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
             <ejb-link>UserAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_81">
+         <ejb-local-ref id="EJBLocalRef_82">
             <ejb-ref-name>ejb/ApprovalSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.approval.IApprovalSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.approval.IApprovalSessionLocal</local>
             <ejb-link>ApprovalSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_82">
+         <ejb-local-ref id="EJBLocalRef_83">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_83">
+         <ejb-local-ref id="EJBLocalRef_84">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
@@ -1071,28 +1078,28 @@
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_84">
+         <ejb-local-ref id="EJBLocalRef_85">
             <ejb-ref-name>ejb/PublisherDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.publisher.PublisherDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.publisher.PublisherDataLocal</local>
             <ejb-link>PublisherData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_85">
+         <ejb-local-ref id="EJBLocalRef_86">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_86">
+         <ejb-local-ref id="EJBLocalRef_87">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_87">
+         <ejb-local-ref id="EJBLocalRef_88">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
@@ -1128,63 +1135,63 @@
             <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_88">
+         <ejb-local-ref id="EJBLocalRef_89">
             <ejb-ref-name>ejb/ApprovalDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.approval.ApprovalDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.approval.ApprovalDataLocal</local>
             <ejb-link>ApprovalData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_89">
+         <ejb-local-ref id="EJBLocalRef_90">
             <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
             <ejb-link>CertificateStoreSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_90">
+         <ejb-local-ref id="EJBLocalRef_91">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_91">
+         <ejb-local-ref id="EJBLocalRef_92">
             <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
             <ejb-link>RaAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_92">
+         <ejb-local-ref id="EJBLocalRef_93">
             <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
             <ejb-link>UserAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_93">
+         <ejb-local-ref id="EJBLocalRef_94">
             <ejb-ref-name>ejb/HardTokenSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal</local>
             <ejb-link>HardTokenSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_94">
+         <ejb-local-ref id="EJBLocalRef_95">
             <ejb-ref-name>ejb/KeyRecoverySessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal</local>
             <ejb-link>KeyRecoverySession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_95">
+         <ejb-local-ref id="EJBLocalRef_96">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_96">
+         <ejb-local-ref id="EJBLocalRef_97">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
@@ -1220,56 +1227,56 @@
             <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_97">
+         <ejb-local-ref id="EJBLocalRef_98">
             <ejb-ref-name>ejb/ServiceSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.services.IServiceSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.services.IServiceSessionLocal</local>
             <ejb-link>ServiceSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_98">
+         <ejb-local-ref id="EJBLocalRef_99">
             <ejb-ref-name>ejb/CertificateDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.CertificateDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.CertificateDataLocal</local>
             <ejb-link>CertificateData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_99">
+         <ejb-local-ref id="EJBLocalRef_100">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_100">
+         <ejb-local-ref id="EJBLocalRef_101">
             <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
             <ejb-link>UserAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_101">
+         <ejb-local-ref id="EJBLocalRef_102">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_102">
+         <ejb-local-ref id="EJBLocalRef_103">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_103">
+         <ejb-local-ref id="EJBLocalRef_104">
             <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
             <ejb-link>CreateCRLSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_104">
+         <ejb-local-ref id="EJBLocalRef_105">
             <ejb-ref-name>ejb/ProtectedLogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome</local-home>
@@ -1305,49 +1312,49 @@
             <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_105">
+         <ejb-local-ref id="EJBLocalRef_106">
             <ejb-ref-name>ejb/LogEntryDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.LogEntryDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.LogEntryDataLocal</local>
             <ejb-link>LogEntryData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_106">
+         <ejb-local-ref id="EJBLocalRef_107">
             <ejb-ref-name>ejb/LogConfigurationDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.LogConfigurationDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.LogConfigurationDataLocal</local>
             <ejb-link>LogConfigurationData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_107">
+         <ejb-local-ref id="EJBLocalRef_108">
             <ejb-ref-name>ejb/TableProtectSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.protect.TableProtectSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.protect.TableProtectSessionLocal</local>
             <ejb-link>TableProtectSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_108">
+         <ejb-local-ref id="EJBLocalRef_109">
             <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
             <ejb-link>RSASignSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_109">
+         <ejb-local-ref id="EJBLocalRef_110">
             <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
             <ejb-link>AuthorizationSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_110">
+         <ejb-local-ref id="EJBLocalRef_111">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_111">
+         <ejb-local-ref id="EJBLocalRef_112">
             <ejb-ref-name>ejb/ProtectedLogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome</local-home>
@@ -1383,49 +1390,49 @@
             <env-entry-value><![CDATA[]]></env-entry-value>
          </env-entry>
 
-         <ejb-local-ref id="EJBLocalRef_112">
+         <ejb-local-ref id="EJBLocalRef_113">
             <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
             <ejb-link>LogSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_113">
+         <ejb-local-ref id="EJBLocalRef_114">
             <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
             <ejb-link>RaAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_114">
+         <ejb-local-ref id="EJBLocalRef_115">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
             <ejb-link>CAAdminSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_115">
+         <ejb-local-ref id="EJBLocalRef_116">
             <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
             <ejb-link>CertificateStoreSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_116">
+         <ejb-local-ref id="EJBLocalRef_117">
             <ejb-ref-name>ejb/UserDataSourceSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome</local-home>
             <local>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal</local>
             <ejb-link>UserDataSourceSession</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_117">
+         <ejb-local-ref id="EJBLocalRef_118">
             <ejb-ref-name>ejb/AuthorizationTreeUpdateDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateDataLocal</local>
             <ejb-link>AuthorizationTreeUpdateData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_118">
+         <ejb-local-ref id="EJBLocalRef_119">
             <ejb-ref-name>ejb/AdminGroupDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome</local-home>
@@ -2287,14 +2294,14 @@
          </cmp-field>
          <primkey-field>primKey</primkey-field>
 
-         <ejb-local-ref id="EJBLocalRef_119">
+         <ejb-local-ref id="EJBLocalRef_120">
             <ejb-ref-name>ejb/AdminEntityDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.AdminEntityDataLocalHome</local-home>
             <local>org.ejbca.core.ejb.authorization.AdminEntityDataLocal</local>
             <ejb-link>AdminEntityData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_120">
+         <ejb-local-ref id="EJBLocalRef_121">
             <ejb-ref-name>ejb/AccessRulesDataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
             <local-home>org.ejbca.core.ejb.authorization.AccessRulesDataLocalHome</local-home>

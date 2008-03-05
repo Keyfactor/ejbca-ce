@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,8 +23,13 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
@@ -40,7 +46,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.8 2007-12-06 14:08:10 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.9 2008-03-05 15:35:24 anatom Exp $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -85,7 +91,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
 			try{		
 				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-				ps = con.prepareStatement("SELECT DISTINCT fingerprint, base64Cert, username"
+				// We can not select the base64 certificate data here, because it may be a LONG datatype which we can't simply select
+				ps = con.prepareStatement("SELECT DISTINCT fingerprint, username"
 						+ " FROM CertificateData WHERE ("
 						+ cASelectString + ") AND (" 
 						+ checkDate + ") AND (" 
@@ -96,9 +103,12 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 				while(result.next()){
 					// For each certificate update status.
 					String fingerprint = result.getString(1);
-					String certBase64 = result.getString(2);
-					String username = result.getString(3);
-					X509Certificate cert = CertTools.getCertfromByteArray(Base64.decode(certBase64.getBytes()));					                  
+					String username = result.getString(2);
+					//String certBase64 = result.getString(2);
+					// Get the certificate through a session bean
+					ICertificateStoreSessionLocalHome cs = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+					ICertificateStoreSessionLocal cl = cs.create();
+					X509Certificate cert = (X509Certificate )cl.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
 					
 					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
 					if(userData != null){
