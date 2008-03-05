@@ -23,6 +23,14 @@ ocsp.usecasigningcert=true
 # Default: false
 #ocsp.signaturerequired=false
 
+# If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+# will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
+# This is useful if you want an External OCSP responder database to only contain revoked certificates, and not
+# all certificates.
+#
+# Default: false
+#ocsp.nonexistingisgood=false 
+
 # Specifies OCSP extension oids that will result in a call to an extension class, 
 # separate multiple entries with ;"
 # Leave out if you do not know what this is.

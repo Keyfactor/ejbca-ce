@@ -54,6 +54,8 @@ conf/web.properties.sample (if ssl or different ports should be configured).
 ocsp.usecasigningcert should be set to false. If card keys (see below) should be used then the property
 'ocspHardTokenClasses' must be set to the corresponding directory of PrimeCard.
 
+All options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
+ 
 The responder is then built and deployed with:
     ant ocsp-deploy
 on the external OCSP responder.

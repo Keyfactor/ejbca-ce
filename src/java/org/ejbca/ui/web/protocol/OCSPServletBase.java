@@ -84,11 +84,15 @@ import org.ejbca.util.CertTools;
  *   name="includeCertChain"
  *   value="true"
  *   
- * @web.servlet-init-param description="If set to true the OCSP reponses will be signed directly by the CAs certificate instead of the CAs OCSP responder"
+ * @web.servlet-init-param description="If set to true the OCSP responses will be signed directly by the CAs certificate instead of the CAs OCSP responder"
  *   name="useCASigningCert"
  *   value="${ocsp.usecasigningcert}"
  *   
- * @web.servlet-init-param description="Specifies the subject of a certificate which is used to identifiy the responder which will generate responses when no real CA can be found from the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this server"
+ * @web.servlet-init-param description="If true a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as not revoked."
+ *   name="nonExistingIsGood"
+ *   value="${ocsp.nonexistingisgood}"
+ *   
+ * @web.servlet-init-param description="Specifies the subject of a certificate which is used to identify the responder which will generate responses when no real CA can be found from the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this server"
  *   name="defaultResponderID"
  *   value="${ocsp.defaultresponder}"
  *   
@@ -113,7 +117,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.34 2008-03-05 10:49:33 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.35 2008-03-05 13:36:56 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -142,6 +146,10 @@ abstract class OCSPServletBase extends HttpServlet {
      * Defined in web.xml
      */
     private boolean m_includeChain;
+    /** If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+     * will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
+     */
+    private boolean m_nonExistingIsGood = false;
     /** Configures OCSP extensions, these init-params are optional
      */
     private Collection m_extensionOids = new ArrayList();
@@ -329,6 +337,20 @@ abstract class OCSPServletBase extends HttpServlet {
                 m_includeChain = false;
             }
         }
+        initparam = config.getInitParameter("nonExistingIsGood");
+        if (m_log.isDebugEnabled()) {
+            m_log.debug("Non existing certificates are good: '"
+                        + (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
+                        + "'");
+        }
+        m_nonExistingIsGood = false;
+        if (!StringUtils.isEmpty(initparam)) {
+            if (initparam.equalsIgnoreCase("true")
+                    || initparam.equalsIgnoreCase("yes")) {
+            	m_nonExistingIsGood = true;
+            }
+        }
+
         String extensionOid = null;
         String extensionClass = null;
 		extensionOid = config.getInitParameter("extensionOid");
@@ -560,9 +582,19 @@ abstract class OCSPServletBase extends HttpServlet {
                                         + certId.getSerialNumber().toString(16) + "'"
                                         + " from issuer '" + cacert.getSubjectDN().getName() + "'");                                
                             }
-                    		infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "unknown", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+                            String status = "good";
+                            certStatus = null; // null means "good" in OCSP
+                            // If we do not treat non existing certificateas as good 
+                            // OR
+                            // we don't actually handle requests for the CA issuing the certificate asked about
+                            // then we return unknown
+                            if ( (!m_nonExistingIsGood) || (findCAByHash(certId, m_cacerts) == null) ) {
+                            	status = "unknown";
+                            	certStatus = new UnknownStatus();
+                            } 
+                    		infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
                             m_log.info(infoMsg);
-                            responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));
+                            responseList.add(new OCSPResponseItem(certId, certStatus));
                         } else {
                         	BigInteger rciSerno = rci.getUserCertificate(); 
                         	if (rciSerno.compareTo(certId.getSerialNumber()) == 0) {
