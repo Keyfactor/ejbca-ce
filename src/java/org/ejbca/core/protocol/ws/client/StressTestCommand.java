@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +41,7 @@ import org.ejbca.util.CertTools;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: StressTestCommand.java,v 1.9 2008-02-07 15:19:48 anatom Exp $
+ * @version $Id: StressTestCommand.java,v 1.10 2008-03-06 17:31:49 primelars Exp $
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -124,19 +125,22 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         final private Random random;
         final private EjbcaWS ejbcaWS;
         final private String endEntityProfileName;
+        final private String certificateProfileName;
         /**
+         * @param certificateProfileName 
          * @throws NoSuchAlgorithmException 
          * @throws IOException 
          * @throws FileNotFoundException 
          * 
          */
-        public TestInstance(int _nr, Log _log, String _caName, String _endEntityProfileName, int _waitTime, Statistic _statistic, Random _random) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
+        public TestInstance(int _nr, Log _log, String _caName, String _endEntityProfileName, String _certificateProfileName, int _waitTime, Statistic _statistic, Random _random) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
             this.log = _log;
             this.nr = _nr;
             this.caName = _caName;
             this.maxWaitTime = _waitTime;
             this.statistic = _statistic;
             this.endEntityProfileName = _endEntityProfileName;
+            this.certificateProfileName = _certificateProfileName;
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(1024);
             this.keys = kpg.generateKeyPair();
@@ -171,6 +175,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                         log.info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\". Client waited "+waitTime+"ms before fetching the cert. CN="+commonName);
                     else
                         log.error("Cert not created for right user. Username: \""+userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
+                    log.result(cert.getSerialNumber());
                 } catch( Throwable t ) {
                     log.error("Exeption in thread "+nr+".", t);
                 }
@@ -188,7 +193,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             user1.setStatus(UserDataConstants.STATUS_NEW);
             user1.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
             user1.setEndEntityProfileName(endEntityProfileName);
-            user1.setCertificateProfileName("ENDUSER");
+            user1.setCertificateProfileName(certificateProfileName);
             this.statistic.addRegisterTime(new CallWS(new EditUserCommand(ejbcaWS, user1),log).getTimeConsumed());
         }
         @SuppressWarnings("unchecked")
@@ -220,7 +225,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         getPrintStream().println("The command will start up a number of threads.");
         getPrintStream().println("Each thread will continuously add new users to EJBCA. After adding a new user the thread will fetch a certificate for it.");
         getPrintStream().println();
-        getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>]");
+        getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>] [<certificate profile name>]");
         getPrintStream().println();
         getPrintStream().println("Here is an example of how the test could be started:");
         getPrintStream().println("./ejbcawsracli.sh stress AdminCA1 20 5000");
@@ -243,12 +248,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final int waitTime = args.length>3 ? Integer.parseInt(args[3]) : -1;
             final String caName = args[1];
             final String endEntityProfileName = args.length>4 ? args[4] : "EMPTY";
+            final String certificateProfileName = args.length>5 ? args[5] : "ENDUSER";
             final Statistic statistic = new Statistic(numberOfThreads);
             final Thread threads[] = new Thread[numberOfThreads];
             final Random random = new Random();
             System.out.println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
             for(int i=0; i < numberOfThreads;i++)
-                threads[i] = new Thread(new TestInstance(i,log, caName, endEntityProfileName, waitTime, statistic, random));
+                threads[i] = new Thread(new TestInstance(i,log, caName, endEntityProfileName, certificateProfileName, waitTime, statistic, random));
             for(int i=0; i < numberOfThreads;i++)
                 threads[i].start();
             new Thread(statistic).start();
@@ -327,12 +333,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         private final PrintWriter errorPrinter;
         private final PrintWriter infoPrinter;
         private final PrintWriter allPrinter;
+        private final PrintWriter resultPrinter;
         private boolean inUse;
         Log() {
             try {
                 errorPrinter = new PrintWriter(new FileWriter("error.log"));
                 infoPrinter = new PrintWriter(new FileWriter("info.log"));
                 allPrinter = new PrintWriter(new FileWriter("all.log"));
+                resultPrinter = new PrintWriter(new FileWriter("result.log"));
                 inUse=false;
             } catch (IOException e) {
                 System.out.println("Error opening log file. "+e.getMessage());
@@ -349,10 +357,12 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final String msg;
             final Throwable t;
             final PrintWriter printer;
-            LogThread(String _msg,Throwable _t, PrintWriter _printer) {
+            final boolean doPrintDate;
+            LogThread(String _msg,Throwable _t, PrintWriter _printer, boolean _doPrintDate) {
                 this.msg=_msg;
                 this.t=_t;
                 this.printer=_printer;
+                this.doPrintDate = _doPrintDate;
             }
             @SuppressWarnings("synthetic-access")
             public void run() {
@@ -369,7 +379,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                     }
                     try {
                         Log.this.inUse = true;
-                        printer.println(currentDate + " : " + msg);
+                        if ( doPrintDate )
+                            printer.print(currentDate + " : ");
+                        printer.println(msg);
                         if(t != null){
                             t.printStackTrace(printer);
                             printer.println();
@@ -383,7 +395,10 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             }
         }
         private void log(String msg,Throwable t, PrintWriter printer)  {
-            new Thread(new LogThread(msg, t, printer)).start();
+            new Thread(new LogThread(msg, t, printer, true)).start();
+        }
+        void result(BigInteger serialNumber) {
+            new Thread(new LogThread(serialNumber.toString(), null, resultPrinter, false)).start();
         }
         void error(String msg,Throwable t)  {
             log(msg, t, errorPrinter);
