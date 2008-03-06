@@ -297,6 +297,10 @@ weblogic-oracle-columntype=@weblogic.dbms-column-type Blob</li>
 httpserver.pubhttp=7001<br/>
 httpserver.privhttps=7002</li>
 
+<li>Edit conf/mail.properties and set:<br/> 
+mail.jndi-name=mail/EjbcaMail<br/> 
+(it can be anything of your choice, but this is our suggestion).</li>
+
 <li>Edit conf/jaxws.properties and change/set some values:<br/>
 ejbcaws.enabled=false</li>
 
@@ -355,7 +359,7 @@ On oracle XE you can run for example: sqlplus oracle@XE @create-tables-ejbca3-or
 See the file create-tables-ejbca3-oracle.sql for table definitions, or just run /doc/howto/create-tables-ejbca3-oracle.sql for Oracle.
 </li>
 
-<li>Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should be "EjbcaMail".<br/>
+<li>Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should be "mail/EjbcaMail" (same as you configured in mail.properties).<br/>
   key in the properties:
   <pre>
   mail.store.protocol=pop3
@@ -367,6 +371,7 @@ See the file create-tables-ejbca3-oracle.sql for table definitions, or just run 
   mail.from=foouser@foo.com
   mail.debug=false
   </pre>
+  Do not forget to activate the mail session in you target server.
   </li>
 </ol>
 </p>
