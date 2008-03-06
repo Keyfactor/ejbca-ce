@@ -46,7 +46,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.9 2008-03-05 15:35:24 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.10 2008-03-06 08:24:46 anatom Exp $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -91,7 +91,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
 			try{		
 				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-				// We can not select the base64 certificate data here, because it may be a LONG datatype which we can't simply select
+				// We can not select the base64 certificate data here, because it may be a LONG data type which we can't simply select
 				ps = con.prepareStatement("SELECT DISTINCT fingerprint, username"
 						+ " FROM CertificateData WHERE ("
 						+ cASelectString + ") AND (" 
@@ -100,16 +100,16 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 				
 				result = ps.executeQuery();
 
+				// Certificate store session bean for retrieving the certificate.
+				ICertificateStoreSessionLocalHome cs = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+				ICertificateStoreSessionLocal cl = cs.create();
 				while(result.next()){
 					// For each certificate update status.
 					String fingerprint = result.getString(1);
 					String username = result.getString(2);
 					//String certBase64 = result.getString(2);
 					// Get the certificate through a session bean
-					ICertificateStoreSessionLocalHome cs = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-					ICertificateStoreSessionLocal cl = cs.create();
 					X509Certificate cert = (X509Certificate )cl.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
-					
 					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
 					if(userData != null){
 						if(isSendToEndUsers()){
