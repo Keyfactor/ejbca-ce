@@ -158,6 +158,7 @@
               <include name="org/ejbca/core/protocol/ws/client/*.class"/>
               <include name="org/ejbca/core/protocol/ws/common/*.class"/>
               <include name="org/ejbca/core/protocol/ws/objects/*.class"/>            	
+              <include name="org/ejbca/util/PerformanceTest*.class"/>
             </fileset>	
             <fileset dir="tmp/jaxws/gen-classes/client">
               <include name="**/*.class"/>
