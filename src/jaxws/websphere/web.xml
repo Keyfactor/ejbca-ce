@@ -32,6 +32,16 @@
   <display-name>ejbcaws</display-name>
   <description>ejbcaws</description>
   
+  <servlet>
+	<servlet-name>org.ejbca.core.protocol.ws.EjbcaWS</servlet-name>
+	<servlet-class>org.ejbca.core.protocol.ws.EjbcaWS</servlet-class>
+	<load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+	<servlet-name>org.ejbca.core.protocol.ws.EjbcaWS</servlet-name>
+	<url-pattern>/ejbcaws</url-pattern>
+  </servlet-mapping>
+
    <ejb-local-ref id="EJBLocalRef_1">
       <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
       <ejb-ref-type>Session</ejb-ref-type>

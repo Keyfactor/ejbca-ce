@@ -694,7 +694,7 @@ AFTER you have deployed and installed EJBCA below you can perform these steps:
 <ol>
 <li>Generate the stand alone ejbcaws.war file for Websphere with 'ant ejbcaws.war.standalone'.</li>
 <li>Deploy the file dist/ejbcaws.war in Websphere.</li>
-<li>Get the generated WSDL with url: http://127.0.0.1:9080/ejbcaws/EjbcaWSService/ejbcawsservice.wsdl</li>
+<li>Get the generated WSDL with url: http://127.0.0.1:9080/ejbcaws/ejbcaws?wsdl</li>
 <li>Configure the ejbcaws CLI in dist/ejbcawscli/ejbcawsracli.properties.</li> 
 </ol>
 </p>  
