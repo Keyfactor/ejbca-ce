@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,7 +24,6 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
-import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
@@ -33,8 +31,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.NotificationParamGen;
 
@@ -46,7 +42,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.10 2008-03-06 08:24:46 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.11 2008-03-07 14:35:10 anatom Exp $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -86,7 +82,6 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 			// Execute Query
 			Connection con = null;
 			PreparedStatement ps = null;
-			PreparedStatement updateStatus = null;
 			ResultSet result = null;
 
 			try{		
@@ -140,9 +135,6 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 				log.error("Error running service work: ", fe);
 				throw new ServiceExecutionFailedException(fe);
 			} finally {
-				if(updateStatus != null){
-					JDBCUtil.close(updateStatus);
-				}
 				JDBCUtil.close(con, ps, result);
 			}
 			
