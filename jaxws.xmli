@@ -106,7 +106,7 @@
         </war>
     </target>
 	
-	<target name="ejbcaws.war.ibm" depends="ws.build">
+	<target name="ejbcaws.war.standalone" depends="ws.build">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/ws/*.class"/>
@@ -122,7 +122,7 @@
         <war warfile="${dist.dir}/ejbcaws.war" webxml="tmp/jaxws/web.xml">
             <webinf dir="src/jaxws" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
             <classes dir="tmp/jaxws/gen-classes/server" excludes="**/*XKMS*"/>
-         	<lib dir="lib" includes="ejbca-ejb.jar,log4j.jar,bcprov-jdk15.jar,commons-lang-2.0.jar"/>
+         	<lib dir="lib" includes="ejbca-ejb.jar,log4j.jar,bcprov-jdk15.jar,bcmail-jdk15.jar,commons-lang-2.0.jar"/>
         </war>
     </target>
 	
@@ -139,11 +139,11 @@
     </target>
 	
     <target name="ws.build.client" depends="ws.init, ejbca-util.jar">
-        <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/jaxws/gen-classes/client" >
+        <javac debug="true" destdir="tmp/jaxws/gen-classes/client" >
             <src path="src/jaxws/gen-java/client"/>
             <classpath refid="jaxws.client.classpath"/>        	
         </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
+        <javac debug="true" destdir="${build}" >
             <src path="src/java"/>
             <classpath refid="jaxws.client.classpath"/>
         	<include name="org/ejbca/core/protocol/ws/client/*.java"/>            
