@@ -31,6 +31,7 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
@@ -54,7 +55,7 @@ import org.ejbca.util.query.Query;
 /** Helper class for other classes that wants to call remote EJBs.
  * Methods for fetching ejb session bean interfaces.
  * 
- * @version $Id: EjbcaWSHelper.java,v 1.1 2008-03-07 14:07:40 anatom Exp $
+ * @version $Id: EjbcaWSHelper.java,v 1.2 2008-03-07 15:23:38 anatom Exp $
  */
 public class EjbcaWSHelper extends EjbHelper {
 
@@ -67,10 +68,10 @@ public class EjbcaWSHelper extends EjbHelper {
 		  return getAdmin(false, wsContext);
 	}
 	
-	protected Admin getAdmin(boolean allowNonAdmins, WebServiceContext wsContext) throws AuthorizationDeniedException, EjbcaException{
+	protected Admin getAdmin(boolean allowNonAdmins, WebServiceContext wsContext) throws AuthorizationDeniedException, EjbcaException {
 		Admin admin = null;
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-		try{
+		try {
 			MessageContext msgContext = wsContext.getMessageContext();
 			HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
 			X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
@@ -90,8 +91,10 @@ public class EjbcaWSHelper extends EjbHelper {
 			if(revokeResult == null || revokeResult.getReason() != RevokedCertInfo.NOT_REVOKED){
 				throw new AuthorizationDeniedException("Error administrator certificate doesn't exist or is revoked.");
 			}
-
-		} catch (Exception e) {
+		} catch (RemoteException e) {
+			log.error("EJBCA WebService error: ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
 			log.error("EJBCA WebService error: ",e);
 			throw new EjbcaException(e.getMessage());
 		}
