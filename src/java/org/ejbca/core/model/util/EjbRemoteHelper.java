@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ws;
+package org.ejbca.core.model.util;
 
 import java.rmi.RemoteException;
 
@@ -22,6 +22,8 @@ import org.ejbca.core.ejb.approval.IApprovalSessionHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
@@ -46,9 +48,9 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 /**
  * Helper methods to get EJB session interfaces.
  * 
- * @version $Id: EjbHelper.java,v 1.1 2008-03-07 14:07:40 anatom Exp $
+ * @version $Id: EjbRemoteHelper.java,v 1.1 2008-03-07 17:28:26 anatom Exp $
  */
-public class EjbHelper {
+public class EjbRemoteHelper {
 
 	/**
 	 * return the environment entries locator
@@ -120,6 +122,14 @@ public class EjbHelper {
 			authsession = ((IAuthorizationSessionHome) getLocator().getRemoteHome(IAuthorizationSessionHome.JNDI_NAME,IAuthorizationSessionHome.class)).create();
 		}
 		return authsession;
+	}
+
+	private IAuthenticationSessionRemote authentsession = null;
+	public IAuthenticationSessionRemote getAuthenticationSession() throws RemoteException, ServiceLocatorException, CreateException {
+		if(authentsession == null){	  
+			authentsession = ((IAuthenticationSessionHome) getLocator().getRemoteHome(IAuthenticationSessionHome.JNDI_NAME,IAuthenticationSessionHome.class)).create();
+		}
+		return authentsession;
 	}
 
 	private IApprovalSessionRemote approvalsession = null;

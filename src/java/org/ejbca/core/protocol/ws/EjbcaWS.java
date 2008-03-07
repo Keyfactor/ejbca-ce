@@ -111,7 +111,7 @@ import org.ejbca.util.query.Query;
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.26 2008-03-07 14:07:40 anatom Exp $
+ * $Id: EjbcaWS.java,v 1.27 2008-03-07 17:28:27 anatom Exp $
  */
 @WebService
 public class EjbcaWS implements IEjbcaWS {
@@ -394,7 +394,8 @@ public class EjbcaWS implements IEjbcaWS {
 
 			  X509Certificate cert = null;
 			  try {
-				  java.security.KeyStore pkcs12 = GenerateToken.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+				  GenerateToken tgen = new GenerateToken(false);
+				  java.security.KeyStore pkcs12 = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				  retval = new KeyStore(pkcs12, password);
 				  Enumeration<String> en = pkcs12.aliases();
 				  String alias = en.nextElement();

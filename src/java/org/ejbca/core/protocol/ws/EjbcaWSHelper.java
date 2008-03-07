@@ -31,7 +31,6 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
@@ -42,6 +41,7 @@ import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
@@ -55,9 +55,9 @@ import org.ejbca.util.query.Query;
 /** Helper class for other classes that wants to call remote EJBs.
  * Methods for fetching ejb session bean interfaces.
  * 
- * @version $Id: EjbcaWSHelper.java,v 1.2 2008-03-07 15:23:38 anatom Exp $
+ * @version $Id: EjbcaWSHelper.java,v 1.3 2008-03-07 17:28:27 anatom Exp $
  */
-public class EjbcaWSHelper extends EjbHelper {
+public class EjbcaWSHelper extends EjbRemoteHelper {
 
 	private static final Logger log = Logger.getLogger(EjbcaWSHelper.class);				
 

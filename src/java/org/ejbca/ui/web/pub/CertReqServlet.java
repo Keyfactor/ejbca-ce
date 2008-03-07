@@ -40,8 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
@@ -92,7 +90,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.22 2008-01-03 12:52:38 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.23 2008-03-07 17:28:28 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -250,8 +248,9 @@ public class CertReqServlet extends HttpServlet {
 
             // get users Token Type.
             tokentype = data.getTokenType();
+            GenerateToken tgen = new GenerateToken(true);
             if(tokentype == SecConst.TOKEN_SOFT_P12){
-              KeyStore ks = GenerateToken.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+              KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
               if (StringUtils.equals(openvpn, "on")) {            	  
                   sendOpenVPNToken(ks, username, password, response);
               } else {
@@ -259,11 +258,11 @@ public class CertReqServlet extends HttpServlet {
               }
             }
             if(tokentype == SecConst.TOKEN_SOFT_JKS){
-              KeyStore ks = GenerateToken.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+              KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
               sendJKSToken(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_PEM){
-              KeyStore ks = GenerateToken.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+              KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
               sendPEMTokens(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
