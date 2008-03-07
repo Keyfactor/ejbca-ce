@@ -13,19 +13,11 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.Random;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
@@ -38,175 +30,95 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.PerformanceTest;
+import org.ejbca.util.PerformanceTest.Command;
+import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: StressTestCommand.java,v 1.10 2008-03-06 17:31:49 primelars Exp $
+ * @version $Id: StressTestCommand.java,v 1.11 2008-03-07 23:01:09 primelars Exp $
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
-    private final int STATISTIC_UPDATE_PERIOD_IN_SECONDS = 10;
-    
-    private interface Command {
-        void doIt() throws Exception;
+    final private PerformanceTest performanceTest;
+    private class MyCommandFactory implements CommandFactory {
+        final String caName;
+        final String endEntityProfileName;
+        final String certificateProfileName;
+        MyCommandFactory( String _caName, String _endEntityProfileName, String _certificateProfileName) {
+            this.caName = _caName;
+            this.endEntityProfileName = _endEntityProfileName;
+            this.certificateProfileName = _certificateProfileName;
+        }
+        public Command[] getCommands() throws Exception {
+            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(1024);
+            final EjbcaWS ejbcaWS = getEjbcaRAWSFNewReference();
+            final JobData jobData = new JobData();
+            return new Command[]{
+                                 new EditUserCommand(ejbcaWS, caName, endEntityProfileName, certificateProfileName, jobData),
+                                 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData)
+            };
+        }
+    }
+    private class JobData {
+        String userName;
+        String passWord;
     }
     private class Pkcs10RequestCommand implements Command {
         final private EjbcaWS ejbcaWS;
+        final private JobData jobData;
         final private PKCS10CertificationRequest pkcs10;
-        final private String userName;
-        final private String passWord;
-        CertificateResponse certificateResponse;
-        Pkcs10RequestCommand(EjbcaWS _ejbcaWS, PKCS10CertificationRequest _pkcs10, String _userName, String _passWord) {
+        Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
+            this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
+            this.jobData = _jobData;
             this.ejbcaWS = _ejbcaWS;
-            this.pkcs10 = _pkcs10;
-            this.userName = _userName;
-            this.passWord = _passWord;
         }
         public void doIt() throws Exception {
-            this.certificateResponse = this.ejbcaWS.pkcs10Request(userName, passWord, new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(jobData.userName, jobData.passWord,
+                                                                                       new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
+            X509Certificate cert = null;
+            while ( i.hasNext() )
+                cert = i.next();
+            final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
+            if ( commonName.equals(jobData.userName) )
+                performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
+            else
+                performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
+            performanceTest.getLog().result(cert.getSerialNumber());
+        }
+        public String getJobTimeDescription() {
+            return "Relative time spent signing certificates";
         }
     }
     private class EditUserCommand implements Command {
         final private EjbcaWS ejbcaWS;
         final private UserDataVOWS user;
-        EditUserCommand(EjbcaWS _ejbcaWS, UserDataVOWS _user) {
+        final private JobData jobData;
+        EditUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName, JobData _jobData) {
+            this.jobData = _jobData;
             ejbcaWS = _ejbcaWS;
-            user = _user;
+            this.user = new UserDataVOWS();
+            this.user.setClearPwd(true);
+            this.user.setCaName(caName);
+            this.user.setEmail(null);
+            this.user.setSubjectAltName(null);
+            this.user.setStatus(UserDataConstants.STATUS_NEW);
+            this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+            this.user.setEndEntityProfileName(endEntityProfileName);
+            this.user.setCertificateProfileName(certificateProfileName);
         }
         public void doIt() throws Exception {
+            jobData.passWord = "foo123";
+            jobData.userName = "WSTESTUSER"+performanceTest.getRandom().nextInt();
+            this.user.setSubjectDN("CN="+jobData.userName);
+            this.user.setUsername(jobData.userName);
+            this.user.setPassword(jobData.passWord);
             this.ejbcaWS.editUser(user);
         }
-    }
-    private class CallWS implements Runnable {
-        final private Command command;
-        final private Log log;
-        private boolean bIsFinished;
-        private int time;
-        CallWS( Command _command, Log _log ) throws Exception {
-            bIsFinished = false;
-            this.log = _log;
-            this.command = _command;
-            final Thread thread = new Thread(this);
-            synchronized(this) {
-                thread.start();
-                if ( !bIsFinished )
-                    this.wait(120000);
-                if ( !bIsFinished ) {
-                    thread.interrupt();
-                    throw new Exception("Web service not finished. See the error printout just above.");
-                }
-            }
-        }
-        public void run() {
-            try {
-                final long startTime = new Date().getTime();
-                command.doIt();
-                time = (int)(new Date().getTime()-startTime);
-                bIsFinished = true;
-            } catch (Throwable t) {
-                log.error("WS command failure", t);
-            } finally {
-                synchronized(this) {
-                    this.notifyAll();
-                }
-            }
-        }
-        public int getTimeConsumed() {
-            return time;
-        }
-    }
-    class TestInstance implements Runnable {
-        final private Log log;
-        final private int nr;
-        final private String caName;
-        final private int maxWaitTime;
-        final private Statistic statistic;
-        final private KeyPair keys;
-        final private Random random;
-        final private EjbcaWS ejbcaWS;
-        final private String endEntityProfileName;
-        final private String certificateProfileName;
-        /**
-         * @param certificateProfileName 
-         * @throws NoSuchAlgorithmException 
-         * @throws IOException 
-         * @throws FileNotFoundException 
-         * 
-         */
-        public TestInstance(int _nr, Log _log, String _caName, String _endEntityProfileName, String _certificateProfileName, int _waitTime, Statistic _statistic, Random _random) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
-            this.log = _log;
-            this.nr = _nr;
-            this.caName = _caName;
-            this.maxWaitTime = _waitTime;
-            this.statistic = _statistic;
-            this.endEntityProfileName = _endEntityProfileName;
-            this.certificateProfileName = _certificateProfileName;
-            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(1024);
-            this.keys = kpg.generateKeyPair();
-            this.random = _random;
-            this.ejbcaWS = getEjbcaRAWSFNewReference();
-        }
-
-        /* (non-Javadoc)
-         * @see java.lang.Runnable#run()
-         */
-        public void run() {
-            log.info("Thread nr "+ nr +" started.");
-            while(true) {
-                try {
-                    final String userName = "WSTESTUSER"+random.nextInt();
-                    final String passWord = "foo123";
-                    addUser(userName, passWord);
-                    final int waitTime;
-                    if ( this.maxWaitTime > 0 ) {
-                        waitTime = (int)(this.maxWaitTime*random.nextFloat());
-                        if ( waitTime > 0) {
-                            synchronized(this) {
-                                wait(waitTime);
-                            }
-                            this.statistic.addWaitTime(waitTime);
-                        }
-                    } else
-                        waitTime = 0;
-                    final X509Certificate cert = getCertificate(userName, passWord, this.keys);
-                    final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
-                    if ( commonName.equals(userName) )
-                        log.info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\". Client waited "+waitTime+"ms before fetching the cert. CN="+commonName);
-                    else
-                        log.error("Cert not created for right user. Username: \""+userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
-                    log.result(cert.getSerialNumber());
-                } catch( Throwable t ) {
-                    log.error("Exeption in thread "+nr+".", t);
-                }
-            }
-        }
-        private void addUser(String userName, String passWord) throws Exception {
-            final UserDataVOWS user1 = new UserDataVOWS();
-            user1.setUsername(userName);
-            user1.setPassword(passWord);
-            user1.setClearPwd(true);
-            user1.setSubjectDN("CN="+userName);
-            user1.setCaName(caName);
-            user1.setEmail(null);
-            user1.setSubjectAltName(null);
-            user1.setStatus(UserDataConstants.STATUS_NEW);
-            user1.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-            user1.setEndEntityProfileName(endEntityProfileName);
-            user1.setCertificateProfileName(certificateProfileName);
-            this.statistic.addRegisterTime(new CallWS(new EditUserCommand(ejbcaWS, user1),log).getTimeConsumed());
-        }
-        @SuppressWarnings("unchecked")
-        private X509Certificate getCertificate(String userName, String passWord, KeyPair keys) throws Exception{
-            final PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
-
-            final Pkcs10RequestCommand command = new Pkcs10RequestCommand(ejbcaWS, pkcs10, userName, passWord);
-            this.statistic.addSignTime(new CallWS(command,log).getTimeConsumed());
-            final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(command.certificateResponse.getData()))).iterator();
-            X509Certificate cert = null;
-            while ( i.hasNext() )
-                cert = i.next();
-            return cert;
+        public String getJobTimeDescription() {
+            return "Relative time spent registring new users";
         }
     }
     /**
@@ -214,6 +126,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
      */
     public StressTestCommand(String[] _args) {
         super(_args);
+        performanceTest = new PerformanceTest();
     }
 
     /* (non-Javadoc)
@@ -237,9 +150,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
-        Log log = null;
         try {
-            log = new Log();
             if(args.length <  2){
                 usage();
                 System.exit(-1);
@@ -249,170 +160,18 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final String caName = args[1];
             final String endEntityProfileName = args.length>4 ? args[4] : "EMPTY";
             final String certificateProfileName = args.length>5 ? args[5] : "ENDUSER";
-            final Statistic statistic = new Statistic(numberOfThreads);
-            final Thread threads[] = new Thread[numberOfThreads];
-            final Random random = new Random();
-            System.out.println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
-            for(int i=0; i < numberOfThreads;i++)
-                threads[i] = new Thread(new TestInstance(i,log, caName, endEntityProfileName, certificateProfileName, waitTime, statistic, random));
-            for(int i=0; i < numberOfThreads;i++)
-                threads[i].start();
-            new Thread(statistic).start();
-            System.out.println("Test client started, tail info and error files in this directory for output.");
-            System.out.println("Statistic will be written to standard output each "+STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
+            performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName),
+                                    numberOfThreads, waitTime, getPrintStream());
+            getPrintStream().println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
             synchronized(this) {
                 wait();
             }
         } catch( InterruptedException e) {
             // do nothing since user wants to exit.
-        } catch( NoSuchAlgorithmException e) {
-            throw new ErrorAdminCommandException(e);
-        } catch (FileNotFoundException e) {
-            throw new ErrorAdminCommandException(e);
-        } catch (IOException e) {
+        } catch( Exception e) {
             throw new ErrorAdminCommandException(e);
         }finally{
-            if ( log!=null )
-                log.close();
-        }
-    }
-    private class Statistic implements Runnable {
-        private final int nr;
-        private long registerTime = 0;
-        private long signTime = 0;
-        private long waitTime = 0;
-        private int nrOfSignings = 0;
-        private long startTime;
-        Statistic(int _nr) {
-            this.nr = _nr;
-        }
-        public void addWaitTime(int additionalWaitTime) {
-            waitTime += additionalWaitTime;
-        }
-        void addRegisterTime(int time) {
-            registerTime += time;
-        }
-        void addSignTime(int time) {
-            signTime += time;
-            nrOfSignings++;
-        }
-        private void printStatistics() {
-            final long time = (int)(new Date().getTime()-this.startTime);
-            final long allThreadsTime = this.nr*time;
-            final float signingsPerSecond = (float)nrOfSignings*1000/time;
-            final float relativeWork = (float)(allThreadsTime-this.waitTime-this.signTime-registerTime) / allThreadsTime;
-            final float relativeWait = (float)this.waitTime / allThreadsTime;
-            final float relativeSign = (float)this.signTime / allThreadsTime;
-            final float relativeRegister = (float)registerTime / allThreadsTime;
-            final String CSI = "\u001B[";
-            StressTestCommand.this.getPrintStream().println(CSI+"J"); // clear rest of screen on VT100 terminals.
-            StressTestCommand.this.getPrintStream().println("Total # of signed certificates:                   "+nrOfSignings);
-            StressTestCommand.this.getPrintStream().println("# of certs signed each second:                    "+signingsPerSecond);
-            StressTestCommand.this.getPrintStream().println("Relative time spent registring new users:         "+relativeRegister);
-            StressTestCommand.this.getPrintStream().println("Relative time spent signing certificates:         "+relativeSign);
-            StressTestCommand.this.getPrintStream().println("Relative time spent with test client work:        "+relativeWork);
-            StressTestCommand.this.getPrintStream().println("Relative time spent waiting to fetch certificate: "+relativeWait);
-            StressTestCommand.this.getPrintStream().print(CSI+"7A"); // move up 7 rows.
-            StressTestCommand.this.getPrintStream().flush();
-        }
-        public void run() {
-            startTime = new Date().getTime();
-            while(true) {
-                synchronized(this) {
-                    try {
-                        wait(STATISTIC_UPDATE_PERIOD_IN_SECONDS*1000);
-                    } catch (InterruptedException e) {
-                        // do nothing
-                    }
-                }
-                printStatistics();
-            }
-        }
-    }
-    private class Log {
-        private final PrintWriter errorPrinter;
-        private final PrintWriter infoPrinter;
-        private final PrintWriter allPrinter;
-        private final PrintWriter resultPrinter;
-        private boolean inUse;
-        Log() {
-            try {
-                errorPrinter = new PrintWriter(new FileWriter("error.log"));
-                infoPrinter = new PrintWriter(new FileWriter("info.log"));
-                allPrinter = new PrintWriter(new FileWriter("all.log"));
-                resultPrinter = new PrintWriter(new FileWriter("result.log"));
-                inUse=false;
-            } catch (IOException e) {
-                System.out.println("Error opening log file. "+e.getMessage());
-                System.exit(-1);
-                throw new Error(e);
-            }
-        }
-        void close() {
-            errorPrinter.close();
-            infoPrinter.close();
-            allPrinter.close();
-        }
-        private class LogThread implements Runnable {
-            final String msg;
-            final Throwable t;
-            final PrintWriter printer;
-            final boolean doPrintDate;
-            LogThread(String _msg,Throwable _t, PrintWriter _printer, boolean _doPrintDate) {
-                this.msg=_msg;
-                this.t=_t;
-                this.printer=_printer;
-                this.doPrintDate = _doPrintDate;
-            }
-            @SuppressWarnings("synthetic-access")
-            public void run() {
-                final Date currentDate = new Date();
-                synchronized(Log.this) {
-                    while ( Log.this.inUse ) {
-                        try {
-                            Log.this.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            System.exit(-2);
-                            throw new Error(e);
-                        }
-                    }
-                    try {
-                        Log.this.inUse = true;
-                        if ( doPrintDate )
-                            printer.print(currentDate + " : ");
-                        printer.println(msg);
-                        if(t != null){
-                            t.printStackTrace(printer);
-                            printer.println();
-                        }
-                        printer.flush();
-                    } finally {
-                        Log.this.inUse = false;
-                        Log.this.notifyAll();
-                    }
-                }
-            }
-        }
-        private void log(String msg,Throwable t, PrintWriter printer)  {
-            new Thread(new LogThread(msg, t, printer, true)).start();
-        }
-        void result(BigInteger serialNumber) {
-            new Thread(new LogThread(serialNumber.toString(), null, resultPrinter, false)).start();
-        }
-        void error(String msg,Throwable t)  {
-            log(msg, t, errorPrinter);
-            log(msg, t, allPrinter);
-        }
-        void error(String msg)  {
-            error(msg, null);
-        }
-        void info(String msg,Throwable t) {
-            log(msg, t, infoPrinter);
-            log(msg, t, allPrinter);
-        }
-        void info(String msg) {
-            info(msg,null);
+            performanceTest.getLog().close();
         }
     }
 }
