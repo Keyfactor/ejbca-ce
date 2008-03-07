@@ -117,7 +117,7 @@ import org.ejbca.util.KeyTools;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.39 2008-03-04 09:41:40 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.40 2008-03-07 13:58:56 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -226,13 +226,13 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
         RevokedCertInfo revokedInfo = isRevoked(adm, cert.getIssuerDN().getName(),
                 cert.getSerialNumber());
-		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", cert.getSerialNumber(), cert.getIssuerDN());
+		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", cert.getSerialNumber().toString(16), cert.getIssuerDN());
         if ( revokedInfo==null ) {
             m_log.warn(wMsg);
             return null;
         }
         if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
-    		wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", cert.getSerialNumber(), cert.getIssuerDN());
+    		wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", cert.getSerialNumber().toString(16), cert.getIssuerDN());
             m_log.warn(wMsg);
             return null;
         }
@@ -262,7 +262,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         		break;
         }
         if ( chain==null ) {
-    		wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", cert.getSerialNumber(), cert.getIssuerDN());
+    		wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", cert.getSerialNumber().toString(16), cert.getIssuerDN());
         	m_log.warn(wMsg);
         }
         return chain;
