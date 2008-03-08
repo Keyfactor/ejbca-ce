@@ -13,11 +13,13 @@
 package org.ejbca.util;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,7 +30,7 @@ import java.util.Map.Entry;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: PerformanceTest.java,v 1.1 2008-03-07 23:01:08 primelars Exp $
+ * @version $Id: PerformanceTest.java,v 1.2 2008-03-08 22:41:04 primelars Exp $
  */
 public class PerformanceTest {
 
@@ -229,14 +231,14 @@ public class PerformanceTest {
         private final PrintWriter errorPrinter;
         private final PrintWriter infoPrinter;
         private final PrintWriter allPrinter;
-        private final PrintWriter resultPrinter;
+        private final ObjectOutput resultObject;
         private boolean inUse;
         Log() {
             try {
                 errorPrinter = new PrintWriter(new FileWriter("error.log"));
                 infoPrinter = new PrintWriter(new FileWriter("info.log"));
                 allPrinter = new PrintWriter(new FileWriter("all.log"));
-                resultPrinter = new PrintWriter(new FileWriter("result.log"));
+                resultObject = new ObjectOutputStream(new FileOutputStream("result.log"));
                 inUse=false;
             } catch (IOException e) {
                 System.out.println("Error opening log file. "+e.getMessage());
@@ -250,15 +252,23 @@ public class PerformanceTest {
             allPrinter.close();
         }
         private class LogThread implements Runnable {
-            final String msg;
+            final Object msg;
             final Throwable t;
             final PrintWriter printer;
+            final ObjectOutput objectOutput;
             final boolean doPrintDate;
-            LogThread(String _msg,Throwable _t, PrintWriter _printer, boolean _doPrintDate) {
+            private LogThread(Object _msg,Throwable _t, PrintWriter _printer, ObjectOutput _objectOutput, boolean _doPrintDate) {
                 this.msg=_msg;
                 this.t=_t;
                 this.printer=_printer;
                 this.doPrintDate = _doPrintDate;
+                this.objectOutput = _objectOutput;
+            }
+            LogThread(String msg, Throwable t, PrintWriter printer, boolean doPrintDate) {
+                this(msg, t, printer, null, doPrintDate);
+            }
+            LogThread(Object msg, ObjectOutput objectOutput) {
+                this(msg, null, null, objectOutput, false);
             }
             @SuppressWarnings("synthetic-access")
             public void run() {
@@ -275,14 +285,20 @@ public class PerformanceTest {
                     }
                     try {
                         Log.this.inUse = true;
-                        if ( doPrintDate )
-                            printer.print(currentDate + " : ");
-                        printer.println(msg);
-                        if(t != null){
-                            t.printStackTrace(printer);
-                            printer.println();
+                        if ( printer!=null ) {
+                            if ( doPrintDate )
+                                printer.print(currentDate + " : ");
+                            printer.println(msg);
+                            if(t != null){
+                                t.printStackTrace(printer);
+                                printer.println();
+                            }
+                            printer.flush();
                         }
-                        printer.flush();
+                        if ( objectOutput!=null )
+                            objectOutput.writeObject(msg);
+                    } catch( IOException e ) {
+                        error("Logging fault", e);
                     } finally {
                         Log.this.inUse = false;
                         Log.this.notifyAll();
@@ -293,8 +309,8 @@ public class PerformanceTest {
         private void log(String msg,Throwable t, PrintWriter printer)  {
             new Thread(new LogThread(msg, t, printer, true)).start();
         }
-        public void result(BigInteger serialNumber) {
-            new Thread(new LogThread(serialNumber.toString(), null, resultPrinter, false)).start();
+        public void result(Object object ) {
+            new Thread(new LogThread(object, resultObject)).start();
         }
         public void error(String msg,Throwable t)  {
             log(msg, t, errorPrinter);
