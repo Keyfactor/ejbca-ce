@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -73,7 +74,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.10 2007-01-29 11:02:48 anatom Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.11 2008-03-08 21:30:23 primelars Exp $
  *
  */
 public class OCSPUnidClient {
@@ -135,9 +136,22 @@ public class OCSPUnidClient {
                 return ret;
             }
         }
-        // And an OCSP request
+        return lookup( cert.getSerialNumber(), cacert, getfnr );
+    }
+    /**
+     * @param serialNr serial number of the certificate to verify
+     * @param cacert issuer of the certificate to verify
+     * @return response can contain and an error code but the fnr is allways null, never returns null.
+     * @throws OCSPException
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
+    public OCSPUnidResponse lookup(BigInteger serialNr, X509Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
+        return lookup(serialNr, cacert, false);
+    }
+    private OCSPUnidResponse lookup(BigInteger serialNr, X509Certificate cacert, boolean getfnr) throws OCSPException, IOException, GeneralSecurityException {
         OCSPReqGenerator gen = new OCSPReqGenerator();
-        CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, cacert, cert.getSerialNumber());
+        CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, cacert, serialNr);
 //        System.out.println("Generating CertificateId:\n"
 //                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
 //                + " CA certificate\n"

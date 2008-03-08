@@ -13,26 +13,118 @@
  
 package org.ejbca.ui.cli;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.math.BigInteger;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.ejbca.core.protocol.ocsp.OCSPUnidClient;
 import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
+import org.ejbca.util.PerformanceTest;
+import org.ejbca.util.PerformanceTest.Command;
+import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.3 2006-02-09 17:58:54 anatom Exp $
+ * @version $Id: Ocsp.java,v 1.4 2008-03-08 21:31:24 primelars Exp $
  */
 public class Ocsp {
+    final private PerformanceTest performanceTest;
+    final private String ocspurl;
+    final private X509Certificate cacert;
+    final private SerialNrs serialNrs;
+    private class MyCommandFactory implements CommandFactory {
+        MyCommandFactory() {
+            super();
+        }
+        public Command[] getCommands() throws Exception {
+            return new Command[]{new Lookup()};
+        }
+    }
+    private class SerialNrs {
+        final private List<BigInteger> vSerialNrs;
+        private SerialNrs(String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
+            final ObjectInput oi = new ObjectInputStream(new FileInputStream(fileName));
+            this.vSerialNrs = new ArrayList<BigInteger>();
+            while( oi.available()>0 )
+                vSerialNrs.add((BigInteger)oi.readObject());
+        }
+        BigInteger getRandom() {
+            return vSerialNrs.get(performanceTest.getRandom().nextInt(vSerialNrs.size()));
+        }
+    }
+    private class Lookup implements Command {
+        private final OCSPUnidClient client;
+        Lookup() {
+            this.client = new OCSPUnidClient((KeyStore)null, null, ocspurl);
+        }
+        public void doIt() throws Exception {
+            OCSPUnidResponse response = client.lookup(serialNrs.getRandom(),
+                                                      cacert);
+            if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
+                performanceTest.getLog().error("Error querying OCSP server.");
+                performanceTest.getLog().error("Error code is: "+response.getErrorCode());
+            }
+            if (response.getHttpReturnCode() != 200) {
+                performanceTest.getLog().error("Http return code is: "+response.getHttpReturnCode());
+            }
+            performanceTest.getLog().info("OCSP return value is: "+response.getStatus());
+        }
+        public String getJobTimeDescription() {
+            return "OCSP lookup";
+        }
+    }
+    private Ocsp(String args[]) throws Exception {
+        this.ocspurl = args[1];
+        this.serialNrs = new SerialNrs(args[2]);
+        this.cacert = getCertFromPemFile(args[3]);
+        final int numberOfThreads = Integer.parseInt(args[4]);
+        final int waitTime = Integer.parseInt(args[5]);
+        this.performanceTest = new PerformanceTest();
+        this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
+    }
+    private static X509Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
+        byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
+                                                 "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+        return CertTools.getCertfromByteArray(bytes);
+    }
     /**
      * @param args command line arguments
      */
     public static void main(String[] args) {
         try {
 
-            if ( (args.length != 5) && (args.length != 3) ) {
+            final String ksfilename;
+            final String kspwd;
+            final String ocspurl;
+            final String certfilename;
+            final String cacertfilename;
+            if ( args.length>5 && args[0].equals("test") ) {
+                new Ocsp(args);
+                return;
+            } else if (args.length == 5) {
+                ksfilename = args[0];
+                kspwd = args[1];
+                ocspurl = args[2].equals("null") ? null : args[2];
+                certfilename = args[3];
+                cacertfilename = args[4];            	
+            } else if (args.length == 3) {
+                ksfilename = null;
+                kspwd = null;
+                ocspurl = args[0].equals("null") ? null : args[0];
+                certfilename = args[1];
+                cacertfilename = args[2];
+            } else {
                 System.out.println("Usage 1: OCSP KeyStoreFilename Password, OCSPUrl CertificateFileName CA-certificateFileName");
                 System.out.println("Usage 2: OCSP OCSPUrl CertificateFileName CA-certificateFileName");
                 System.out.println("Keystore should be a PKCS12.");
@@ -41,36 +133,12 @@ public class Ocsp {
                 System.out.println("OcspUrl can be set to 'null', in that case the program looks for an AIA extension containing the OCSP URI.");
                 return;
             }
-            String ksfilename = null;
-            String kspwd = null;
-            String ocspurl = null;
-            String certfilename = null;
-            String cacertfilename = null;
-            if (args.length == 5) {
-                ksfilename = args[0];
-                kspwd = args[1];
-                ocspurl = args[2];
-                certfilename = args[3];
-                cacertfilename = args[4];            	
-            }
-            if (args.length == 3) {
-                ocspurl = args[0];
-                certfilename = args[1];
-                cacertfilename = args[2];            	
-            }
-            if (ocspurl.equals("null")) {
-                ocspurl = null;
-            }
             CertTools.installBCProvider();
-            byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(certfilename),
-                    "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-            X509Certificate cert = CertTools.getCertfromByteArray(bytes);
-            bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(cacertfilename),
-                    "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-            X509Certificate cacert = CertTools.getCertfromByteArray(bytes);
             
             OCSPUnidClient client = new OCSPUnidClient(ksfilename, kspwd, ocspurl);
-            OCSPUnidResponse response = client.lookup(cert, cacert, true);
+            OCSPUnidResponse response = client.lookup(getCertFromPemFile(certfilename),
+                                                      getCertFromPemFile(cacertfilename),
+                                                      true);
             if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
             	System.out.println("Error querying OCSP server.");
             	System.out.println("Error code is: "+response.getErrorCode());
