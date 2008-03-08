@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: PerformanceTest.java,v 1.2 2008-03-08 22:41:04 primelars Exp $
+ * @version $Id: PerformanceTest.java,v 1.3 2008-03-08 22:44:45 primelars Exp $
  */
 public class PerformanceTest {
 
@@ -238,7 +238,7 @@ public class PerformanceTest {
                 errorPrinter = new PrintWriter(new FileWriter("error.log"));
                 infoPrinter = new PrintWriter(new FileWriter("info.log"));
                 allPrinter = new PrintWriter(new FileWriter("all.log"));
-                resultObject = new ObjectOutputStream(new FileOutputStream("result.log"));
+                resultObject = new ObjectOutputStream(new FileOutputStream("result.log", true));
                 inUse=false;
             } catch (IOException e) {
                 System.out.println("Error opening log file. "+e.getMessage());
