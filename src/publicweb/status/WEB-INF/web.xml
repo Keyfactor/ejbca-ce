@@ -37,6 +37,11 @@
          <description><![CDATA[Algorithm used by server to generate signature on OCSP responses]]></description>
       </init-param>
       <init-param>
+         <param-name>ocspSigningCertsValidTime</param-name>
+         <param-value>${ocsp.signingCertsValidTime}</param-value>
+         <description><![CDATA[The interval on which new OCSP signing certs are loaded in seconds]]></description>
+      </init-param>
+      <init-param>
          <param-name>enforceRequestSigning</param-name>
          <param-value>false</param-value>
          <description><![CDATA[If set to true the servlet will enforce OCSP request signing]]></description>

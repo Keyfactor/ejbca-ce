@@ -17,6 +17,12 @@ ocsp.usecasigningcert=true
 # Default: SHA1WithRSA;SHA1WithECDSA
 #ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA
 
+# The interval on which the the OCSP signing certificates are updated in seconds.
+# If set to 0 or negative these certificate are never updated.
+# nCipher P11 HSM is not working after an update so you should set 0 for this HSM
+# Default: 300
+#ocsp.signingCertsValidTime=0
+
 # Specifies if the OCSP-responder should require signed requests or not.
 # If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
 #

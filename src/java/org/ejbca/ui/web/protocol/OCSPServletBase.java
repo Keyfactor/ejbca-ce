@@ -76,6 +76,10 @@ import org.ejbca.util.CertTools;
  *   name="SignatureAlgorithm"
  *   value="${ocsp.signaturealgorithm}"
  *   
+ * @web.servlet-init-param description="The interval on which new OCSP signing certs are loaded in seconds"
+ *   name="ocspSigningCertsValidTime"
+ *   value="${ocsp.signingCertsValidTime}"
+ *
  * @web.servlet-init-param description="If set to true the servlet will enforce OCSP request signing"
  *   name="enforceRequestSigning"
  *   value="${ocsp.signaturerequired}"
@@ -117,7 +121,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.35 2008-03-05 13:36:56 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.36 2008-03-09 19:52:16 primelars Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -132,8 +136,6 @@ abstract class OCSPServletBase extends HttpServlet {
     Collection m_cacerts = null;
     /** Cache time counter */
     private long m_certValidTo = 0;
-    /** Cached list of cacerts is valid 5 minutes */
-    private static final long VALID_TIME = 5 * 60 * 1000;
     /** String used to identify default responder id, used to generatwe responses when a request
      * for a certificate not signed by a CA on this server is received.
      */
@@ -155,6 +157,10 @@ abstract class OCSPServletBase extends HttpServlet {
     private Collection m_extensionOids = new ArrayList();
     private Collection m_extensionClasses = new ArrayList();
     private HashMap m_extensionMap = null;
+    /**
+     * The interval on which new OCSP signing certs are loaded in seconds.
+     */
+    private int m_valid_time;
     
 
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
@@ -169,7 +175,7 @@ abstract class OCSPServletBase extends HttpServlet {
             m_log.debug("Loaded "+m_cacerts == null ? "0":m_cacerts.size()+" ca certificates");        	
         }
         loadPrivateKeys(m_adm);
-        m_certValidTo = new Date().getTime() + VALID_TIME;
+        m_certValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;
     }
     abstract protected void loadPrivateKeys(Admin adm) throws Exception;
 
@@ -286,7 +292,21 @@ abstract class OCSPServletBase extends HttpServlet {
         super.init(config);
         CertTools.installBCProvider();
         m_adm = new Admin(Admin.TYPE_INTERNALUSER);
-        
+        {
+            final String sValue = config.getInitParameter("ocspSigningCertsValidTime");
+            if (StringUtils.isEmpty(sValue)) {
+                final String errorMessage = "Servlet param ocspSigningCertsValidTime missing";
+                m_log.error(errorMessage);
+                throw new ServletException(errorMessage);
+            }
+            try {
+                m_valid_time = Integer.parseInt(sValue)*1000;
+            } catch( NumberFormatException e ) {
+                final String errorMessage = "Servlet param ocspSigningCertsValidTime not an integer: "+sValue;
+                m_log.error(errorMessage);
+                throw new ServletException(errorMessage);
+            }
+        }
         // Parameters for OCSP signing (private) key
         m_sigAlg = config.getInitParameter("SignatureAlgorithm");
         if (StringUtils.isEmpty(m_sigAlg)) {
