@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.cli;
 
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,7 +37,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.4 2008-03-08 21:31:24 primelars Exp $
+ * @version $Id: Ocsp.java,v 1.5 2008-03-09 08:37:23 primelars Exp $
  */
 public class Ocsp {
     final private PerformanceTest performanceTest;
@@ -56,8 +57,10 @@ public class Ocsp {
         private SerialNrs(String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
             final ObjectInput oi = new ObjectInputStream(new FileInputStream(fileName));
             this.vSerialNrs = new ArrayList<BigInteger>();
-            while( oi.available()>0 )
-                vSerialNrs.add((BigInteger)oi.readObject());
+            try {
+                while( true )
+                    vSerialNrs.add((BigInteger)oi.readObject());
+            } catch( EOFException e) {}
         }
         BigInteger getRandom() {
             return vSerialNrs.get(performanceTest.getRandom().nextInt(vSerialNrs.size()));
@@ -103,6 +106,7 @@ public class Ocsp {
      */
     public static void main(String[] args) {
         try {
+            CertTools.installBCProvider();
 
             final String ksfilename;
             final String kspwd;
@@ -133,7 +137,6 @@ public class Ocsp {
                 System.out.println("OcspUrl can be set to 'null', in that case the program looks for an AIA extension containing the OCSP URI.");
                 return;
             }
-            CertTools.installBCProvider();
             
             OCSPUnidClient client = new OCSPUnidClient(ksfilename, kspwd, ocspurl);
             OCSPUnidResponse response = client.lookup(getCertFromPemFile(certfilename),
