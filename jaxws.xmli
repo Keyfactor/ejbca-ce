@@ -122,7 +122,15 @@
         <war warfile="${dist.dir}/ejbcaws.war" webxml="tmp/jaxws/web.xml">
             <webinf dir="src/jaxws" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
             <classes dir="tmp/jaxws/gen-classes/server" excludes="**/*XKMS*"/>
-         	<lib dir="lib" includes="ejbca-ejb.jar,log4j.jar,bcprov-jdk15.jar,bcmail-jdk15.jar,commons-lang-2.0.jar"/>
+         	<lib dir="dist">
+         	 <include name="ejbca-util.jar"/>
+         	</lib>
+         	<lib dir="lib">
+         	 <include name="ejbca-ejb.jar"/>
+         	 <include name="log4j.jar"/>
+         	 <include name="bc*.jar"/>
+         	 <include name="commons-lang-2.0.jar"/>
+         	</lib>
         </war>
     </target>
 	
