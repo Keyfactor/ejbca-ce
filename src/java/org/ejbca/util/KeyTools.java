@@ -63,7 +63,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.17 2008-02-21 08:51:20 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.18 2008-03-10 12:32:14 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -253,37 +253,49 @@ public class KeyTools {
                 X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
                             chain[i].getEncoded()));
                 // Set attributes on CA-cert
-                PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
-                // We constuct a friendly name for the CA, and try with some parts from the DN if they exist.
-                String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
-                // On the ones below we +i to make it unique, O might not be otherwise
-                if (cafriendly == null) {
-                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O")+i;
+                try {
+                    PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
+                    // We construct a friendly name for the CA, and try with some parts from the DN if they exist.
+                    String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+                    // On the ones below we +i to make it unique, O might not be otherwise
+                    if (cafriendly == null) {
+                        cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O")+i;
+                    }
+                    if (cafriendly == null) {
+                        cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU"+i);
+                    }
+                    if (cafriendly == null) {
+                        cafriendly = "CA_unknown"+i;
+                    }
+                    caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
+                        new DERBMPString(cafriendly));                	
+                } catch (ClassCastException e) {
+                	log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
                 }
-                if (cafriendly == null) {
-                    cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU"+i);
-                }
-                if (cafriendly == null) {
-                    cafriendly = "CA_unknown"+i;
-                }
-                caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
-                    new DERBMPString(cafriendly));
             }
         }
 
         // Set attributes on user-cert
-        PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
-        certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
-        // in this case we just set the local key id to that of the public key
-        certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
+        try {
+        	PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
+        	certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
+        	// in this case we just set the local key id to that of the public key
+        	certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
+        } catch (ClassCastException e) {
+        	log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
+        }
         // "Clean" private key, i.e. remove any old attributes
         KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), "BC");
         PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(privKey.getEncoded()));
         // Set attributes for private key
-        PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
-        // in this case we just set the local key id to that of the public key
-        keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
-        keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
+        try {
+        	PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
+        	// in this case we just set the local key id to that of the public key
+        	keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
+        	keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
+        } catch (ClassCastException e) {
+        	log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
+        }
         // store the key and the certificate chain
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
