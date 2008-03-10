@@ -37,7 +37,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.5 2008-03-09 08:37:23 primelars Exp $
+ * @version $Id: Ocsp.java,v 1.6 2008-03-10 15:13:17 primelars Exp $
  */
 public class Ocsp {
     final private PerformanceTest performanceTest;
@@ -71,17 +71,19 @@ public class Ocsp {
         Lookup() {
             this.client = new OCSPUnidClient((KeyStore)null, null, ocspurl);
         }
-        public void doIt() throws Exception {
+        public boolean doIt() throws Exception {
             OCSPUnidResponse response = client.lookup(serialNrs.getRandom(),
                                                       cacert);
             if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
-                performanceTest.getLog().error("Error querying OCSP server.");
-                performanceTest.getLog().error("Error code is: "+response.getErrorCode());
+                performanceTest.getLog().error("Error querying OCSP server. Error code is: "+response.getErrorCode());
+                return false;
             }
             if (response.getHttpReturnCode() != 200) {
                 performanceTest.getLog().error("Http return code is: "+response.getHttpReturnCode());
+                return false;
             }
             performanceTest.getLog().info("OCSP return value is: "+response.getStatus());
+            return true;
         }
         public String getJobTimeDescription() {
             return "OCSP lookup";

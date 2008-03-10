@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: PerformanceTest.java,v 1.3 2008-03-08 22:44:45 primelars Exp $
+ * @version $Id: PerformanceTest.java,v 1.4 2008-03-10 15:13:17 primelars Exp $
  */
 public class PerformanceTest {
 
@@ -51,7 +51,7 @@ public class PerformanceTest {
         Command[] getCommands() throws Exception;
     }
     public interface Command {
-        void doIt() throws Exception;
+        boolean doIt() throws Exception;
 
         String getJobTimeDescription();
     }
@@ -59,11 +59,12 @@ public class PerformanceTest {
         final private Command command;
         private boolean bIsFinished;
         private int time;
+        private boolean isSuccess = false;
         JobRunner( Command _command ) throws Exception {
             bIsFinished = false;
             this.command = _command;
         }
-        void execute() throws Exception {
+        boolean execute() throws Exception {
             final Thread thread = new Thread(this);
             synchronized(this) {
                 thread.start();
@@ -74,11 +75,12 @@ public class PerformanceTest {
                     throw new Exception("Command not finished. See the error printout just above.");
                 }
             }
+            return isSuccess;
         }
         public void run() {
             try {
                 final long startTime = new Date().getTime();
-                command.doIt();
+                isSuccess = command.doIt();
                 time = (int)(new Date().getTime()-startTime);
                 bIsFinished = true;
             } catch (Throwable t) {
@@ -120,7 +122,8 @@ public class PerformanceTest {
             log.info("Thread nr "+ nr +" started.");
             while(true) {
                 try {
-                    for (int i=0; i<commands.length; i++) {
+                    boolean isSuccess = true;
+                    for (int i=0; isSuccess && i<commands.length; i++) {
                         if ( this.maxWaitTime > 0 ) {
                             final int waitTime = (int)(this.maxWaitTime*random.nextFloat());
                             if ( waitTime > 0) {
@@ -131,10 +134,11 @@ public class PerformanceTest {
                             }
                         }
                         final JobRunner jobRunner = new JobRunner(commands[i]);
-                        jobRunner.execute();
+                        isSuccess = jobRunner.execute();
                         this.statistic.addTime(commands[i].getJobTimeDescription(), jobRunner.getTimeConsumed());
                     }
-                    this.statistic.taskFinished();
+                    if ( isSuccess )
+                        this.statistic.taskFinished();
                 } catch( Throwable t ) {
                     log.error("Exeption in thread "+nr+".", t);
                 }

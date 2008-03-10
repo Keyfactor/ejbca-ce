@@ -36,7 +36,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: StressTestCommand.java,v 1.11 2008-03-07 23:01:09 primelars Exp $
+ * @version $Id: StressTestCommand.java,v 1.12 2008-03-10 15:13:17 primelars Exp $
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -74,7 +74,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.jobData = _jobData;
             this.ejbcaWS = _ejbcaWS;
         }
-        public void doIt() throws Exception {
+        public boolean doIt() throws Exception {
             final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(jobData.userName, jobData.passWord,
                                                                                        new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
             final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
@@ -82,11 +82,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             while ( i.hasNext() )
                 cert = i.next();
             final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
-            if ( commonName.equals(jobData.userName) )
+            if ( commonName.equals(jobData.userName) ) {
                 performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
-            else
+                performanceTest.getLog().result(cert.getSerialNumber());
+                return true;
+            } else {
                 performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
-            performanceTest.getLog().result(cert.getSerialNumber());
+                return false;
+            }
         }
         public String getJobTimeDescription() {
             return "Relative time spent signing certificates";
@@ -109,13 +112,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.user.setEndEntityProfileName(endEntityProfileName);
             this.user.setCertificateProfileName(certificateProfileName);
         }
-        public void doIt() throws Exception {
+        public boolean doIt() throws Exception {
             jobData.passWord = "foo123";
             jobData.userName = "WSTESTUSER"+performanceTest.getRandom().nextInt();
             this.user.setSubjectDN("CN="+jobData.userName);
             this.user.setUsername(jobData.userName);
             this.user.setPassword(jobData.passWord);
             this.ejbcaWS.editUser(user);
+            return true;
         }
         public String getJobTimeDescription() {
             return "Relative time spent registring new users";
