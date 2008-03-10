@@ -26,6 +26,8 @@ import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
@@ -48,7 +50,7 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 /**
  * Helper methods to get EJB session interfaces.
  * 
- * @version $Id: EjbRemoteHelper.java,v 1.1 2008-03-07 17:28:26 anatom Exp $
+ * @version $Id: EjbRemoteHelper.java,v 1.2 2008-03-10 14:32:05 anatom Exp $
  */
 public class EjbRemoteHelper {
 
@@ -162,6 +164,14 @@ public class EjbRemoteHelper {
 			publishersession = ((IPublisherSessionHome) getLocator().getRemoteHome(IPublisherSessionHome.JNDI_NAME,IPublisherSessionHome.class)).create();
 		}
 		return publishersession;
+	}
+	
+	private ICreateCRLSessionRemote crlsession = null;
+	public ICreateCRLSessionRemote getCrlSession() throws RemoteException, ServiceLocatorException, CreateException {
+		if(crlsession == null){	  
+			crlsession = ((ICreateCRLSessionHome) getLocator().getRemoteHome(ICreateCRLSessionHome.JNDI_NAME,ICreateCRLSessionHome.class)).create();
+		}
+		return crlsession;
 	}
 
 }

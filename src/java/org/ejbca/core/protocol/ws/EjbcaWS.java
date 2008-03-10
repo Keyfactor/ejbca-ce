@@ -12,15 +12,23 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -40,7 +48,12 @@ import javax.naming.NamingException;
 import javax.xml.ws.WebServiceContext;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -56,6 +69,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -100,18 +114,21 @@ import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
+import com.novosec.pkix.asn1.crmf.CertRequest;
+
 /**
  * Implementor of the IEjbcaWS interface.
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.27 2008-03-07 17:28:27 anatom Exp $
+ * $Id: EjbcaWS.java,v 1.28 2008-03-10 14:32:07 anatom Exp $
  */
 @WebService
 public class EjbcaWS implements IEjbcaWS {
@@ -258,6 +275,28 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#crmfRequest(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public CertificateResponse crmfRequest(String username, String password,
+			String crmf, String hardTokenSN, String responseType)
+	throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+		
+		return new CertificateResponse(responseType, processCertReq(username, password,
+				crmf, REQTYPE_CRMF, hardTokenSN, responseType));
+	}
+	
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#spkacRequest(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public CertificateResponse spkacRequest(String username, String password,
+			String spkac, String hardTokenSN, String responseType)
+	throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+		
+		return new CertificateResponse(responseType, processCertReq(username, password,
+				spkac, REQTYPE_SPKAC, hardTokenSN, responseType));
+	}
+
+	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public CertificateResponse pkcs10Request(String username, String password,
@@ -265,92 +304,140 @@ public class EjbcaWS implements IEjbcaWS {
 			throws AuthorizationDeniedException, NotFoundException,
 			EjbcaException {
 		
-		return new CertificateResponse(responseType, processPkcs10Req(username, password,
-			                           pkcs10, hardTokenSN, responseType));
+		return new CertificateResponse(responseType, processCertReq(username, password,
+			                           pkcs10, REQTYPE_PKCS10, hardTokenSN, responseType));
 	}
 	
-	private byte[] processPkcs10Req(String username, String password,
-			String pkcs10, String hardTokenSN, String responseType) throws AuthorizationDeniedException, NotFoundException, EjbcaException{
+	private static final int REQTYPE_PKCS10 = 1;
+	private static final int REQTYPE_CRMF = 2;
+	private static final int REQTYPE_SPKAC = 3;
+	
+	private byte[] processCertReq(String username, String password,
+			String req, int reqType, String hardTokenSN, String responseType) throws AuthorizationDeniedException, NotFoundException, EjbcaException{
 		byte[] retval = null;
-		
-		try{
-			  EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-			  Admin admin = ejbhelper.getAdmin(wsContext);			  
 
-			  // check CAID
-			  UserDataVO userdata = ejbhelper.getUserAdminSession().findUser(admin,username);
-			  if(userdata == null){
-				  throw new NotFoundException("Error: User " + username + " doesn't exist");
-			  }
-			  int caid = userdata.getCAId();
-			  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
-			  
-			  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
-			  
-			  // Check tokentype
-			  if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
-				  throw new EjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10 requests");
-			  }
-			  
-			  PKCS10RequestMessage pkcs10req=RequestHelper.genPKCS10RequestMessageFromPEM(pkcs10.getBytes());
-		      
-		      java.security.cert.Certificate cert =  ejbhelper.getSignSession().createCertificate(admin,username,password, pkcs10req.getRequestPublicKey());
-		      if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)){
-		    	  retval = cert.getEncoded();
-		      }
-		      if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)){
-		    	  retval = ejbhelper.getSignSession().createPKCS7(admin, cert, false);
-		      }
-		      if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)){
-		    	  retval = ejbhelper.getSignSession().createPKCS7(admin, cert, true);
-		      }
-			  
-			            
-			  if(hardTokenSN != null){ 
-				  ejbhelper.getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,(X509Certificate) cert);				  
-			  }
-			  
-			}catch(AuthorizationDeniedException ade){
-				throw ade;
-			} catch (ClassCastException e) {
-			    log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (CreateException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-		        throw new EjbcaException(e.getMessage());
-			} catch (InvalidKeyException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (ObjectNotFoundException e) {
-				throw new NotFoundException(e.getMessage());
-			} catch (AuthStatusException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (AuthLoginException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (IllegalKeyException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (CADoesntExistsException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (NoSuchAlgorithmException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (NoSuchProviderException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (CertificateEncodingException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (RemoteException e) {
-				log.error("EJBCA WebService error, pkcs10Req : ",e);
-				throw new EjbcaException(e.getMessage());
-			} catch (FinderException e) {
-				new NotFoundException(e.getMessage());
+		try{
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
+			Admin admin = ejbhelper.getAdmin(wsContext);			  
+
+			// check CAID
+			UserDataVO userdata = ejbhelper.getUserAdminSession().findUser(admin,username);
+			if(userdata == null){
+				throw new NotFoundException("Error: User " + username + " doesn't exist");
+			}
+			int caid = userdata.getCAId();
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
+
+			// Check tokentype
+			if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
+				throw new EjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10 requests");
 			}
 
+			PublicKey pubKey = null;
+			if (reqType == REQTYPE_PKCS10) {				
+				PKCS10RequestMessage pkcs10req=RequestHelper.genPKCS10RequestMessageFromPEM(req.getBytes());
+				pubKey = pkcs10req.getRequestPublicKey();
+			}
+			if (reqType == REQTYPE_SPKAC) {
+				// parts copied from request helper.
+				byte[] reqBytes = req.getBytes();
+				if (reqBytes != null) {
+					log.debug("Received NS request: "+new String(reqBytes));
+					byte[] buffer = Base64.decode(reqBytes);
+					if (buffer == null) {
+						return null;
+					}
+					ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
+					ASN1Sequence spkacSeq = (ASN1Sequence) in.readObject();
+					in.close();
+					NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
+					// Verify POPO, we don't care about the challenge, it's not important.
+					nscr.setChallenge("challenge");
+					if (nscr.verify("challenge") == false) {
+						log.debug("POPO verification Failed");
+						throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
+					}
+					log.debug("POPO verification successful");
+					pubKey = nscr.getPublicKey();
+				}		
+			}
+			if (reqType == REQTYPE_CRMF) {
+				ASN1InputStream in = new ASN1InputStream( Base64.decode(req.getBytes()) );
+				ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
+				ASN1Sequence reqSeq =  (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
+				CertRequest certReq = new CertRequest( reqSeq );
+				SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
+				KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+				KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
+				pubKey = keyFact.generatePublic(keySpec);
+			}
+			if (pubKey != null) {
+				retval = getCertResponseFromPublicKey(admin, pubKey, username, password, hardTokenSN, responseType, ejbhelper);
+			}
+		}catch(AuthorizationDeniedException ade){
+			throw ade;
+		
+		} catch (InvalidKeyException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (AuthStatusException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (AuthLoginException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CADoesntExistsException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (SignatureException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());			
+		} catch (InvalidKeySpecException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NoSuchAlgorithmException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NoSuchProviderException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());			
+		} catch (CertificateEncodingException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());			
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());		
+		} catch (IOException e) {
+			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			throw new EjbcaException(e.getMessage());			
+		} catch (FinderException e) {
+			new NotFoundException(e.getMessage());
+		}
+
+		return retval;
+	}
+
+
+	private byte[] getCertResponseFromPublicKey(Admin admin, PublicKey pubKey, String username, String password,
+			String hardTokenSN, String responseType, EjbcaWSHelper ejbhelper) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, RemoteException, ServiceLocatorException, CreateException, CertificateEncodingException, SignRequestSignatureException {
+		byte[] retval = null;
+		java.security.cert.Certificate cert =  ejbhelper.getSignSession().createCertificate(admin,username,password, pubKey);
+		if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)){
+			retval = cert.getEncoded();
+		}
+		if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)){
+			retval = ejbhelper.getSignSession().createPKCS7(admin, cert, false);
+		}
+		if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)){
+			retval = ejbhelper.getSignSession().createPKCS7(admin, cert, true);
+		}
+
+
+		if(hardTokenSN != null){ 
+			ejbhelper.getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,(X509Certificate) cert);				  
+		}
 		return retval;
 	}
 
@@ -1612,6 +1699,27 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new EjbcaException(e.getMessage());
 		} 
 		return ejbhelper.convertTreeMapToArray(ret);
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#createCRL(String)
+	 */
+	public void createCRL(String caname) throws ApprovalException, EjbcaException, ApprovalRequestExpiredException{
+		try {
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
+			Admin admin = ejbhelper.getAdmin(true, wsContext);
+			CAInfo info = ejbhelper.getCAAdminSession().getCAInfo(admin, caname);
+			ejbhelper.getCrlSession().run(admin, info.getSubjectDN());
+		} catch (AuthorizationDeniedException e) {
+			log.error("EJBCA WebService error, isApproved : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, isApproved : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (RemoteException e) {
+			log.error("EJBCA WebService error, isApproved : ",e);
+			throw new EjbcaException(e.getMessage());
+		} 
 	}
 
 }

@@ -45,7 +45,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.16 2008-02-18 14:50:49 jeklund Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.17 2008-03-10 14:31:59 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -517,9 +517,11 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
                   boolean allexists = true;
                   for(int j=0; j < availablecas.length; j++){
                       //debug("Available CA["+j+"]: "+availablecas[j]);
-                      if(!authorizedcaids.contains( new Integer(availablecas[j]))){
+                      Integer caid = new Integer(availablecas[j]);
+                      // If this is the special value ALLCAs we are authorized
+                      if ( (caid.intValue() != SecConst.ALLCAS) && (!authorizedcaids.contains(caid)) ) {
                           allexists = false;
-                          //debug("Profile "+next.getId()+" not authorized");
+                          debug("Profile "+next.getId()+" not authorized");
                           break;
                       }
                   }

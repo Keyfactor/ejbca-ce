@@ -12,7 +12,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** To run you must have the file tmp/bin/junit/jndi.properties
  * 
- * @version $Id: TestEjbcaWS.java,v 1.14 2008-02-15 14:50:27 anatom Exp $
+ * @version $Id: TestEjbcaWS.java,v 1.15 2008-03-10 14:31:56 anatom Exp $
  */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
 	
@@ -30,11 +30,19 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
 		test02findUser(true);
 	}			
 
-	public void test03GeneratePkcs10() throws Exception{
+	public void test03_1GeneratePkcs10() throws Exception{
 		test03GeneratePkcs10(true);
 	}
-	
-    public void test03_2GeneratePkcs10Request() throws Exception {
+
+	public void test03_2GenerateCrmf() throws Exception{
+		test03GenerateCrmf(true);
+	}
+
+	public void test03_3GenerateSpkac() throws Exception{
+		test03GenerateSpkac(true);
+	}
+
+    public void test03_4GeneratePkcs10Request() throws Exception {
     	test19GeneratePkcs10Request(true);  
     }
 
@@ -113,6 +121,20 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
 
     public void test21GetAvailableCAs() throws Exception {
     	test21GetAvailableCAs(true);  
+    }
+
+    public void test22GetAuthorizedEndEntityProfiles() throws Exception {
+    	test22GetAuthorizedEndEntityProfiles(true);  
+    }
+    public void test23GetAvailableCertificateProfiles() throws Exception {
+    	test23GetAvailableCertificateProfiles(true);  
+    }
+    public void test24GetAvailableCAsInProfile() throws Exception {
+    	test24GetAvailableCAsInProfile(true);  
+    }
+
+    public void test25CreateCRL() throws Exception {
+    	test25CreateCRL(true);  
     }
 
     

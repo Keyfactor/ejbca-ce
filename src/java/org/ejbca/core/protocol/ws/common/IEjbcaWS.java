@@ -72,7 +72,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.12 2008-01-07 13:13:41 anatom Exp $
+ * $Id: IEjbcaWS.java,v 1.13 2008-03-10 14:32:08 anatom Exp $
  */
 public interface IEjbcaWS {
 	
@@ -147,6 +147,26 @@ public interface IEjbcaWS {
 			NotFoundException, EjbcaException;
 
 	
+	/** Generate a certificate for a user, works the same as pkcs10Request
+	 * 
+	 * @see #pkcs10Request(String, String, String, String, String)
+	 * @param crmf the CRMF request message (only the public key is used.)
+	 */
+	public abstract CertificateResponse crmfRequest(String username, String password,
+			String crmf, String hardTokenSN, String responseType)
+			throws AuthorizationDeniedException, NotFoundException,
+			EjbcaException;
+
+	/** Generate a certificate for a user, works the same as pkcs10Request
+	 * 
+	 * @see #pkcs10Request(String, String, String, String, String)
+	 * @param spkac the SPKAC (netscape) request message (only the public key is used.)
+	 */
+	public abstract CertificateResponse spkacRequest(String username, String password,
+			String spkac, String hardTokenSN, String responseType)
+			throws AuthorizationDeniedException, NotFoundException,
+			EjbcaException;
+
 	/**
 	 * Method to use to generate a certificate for a user. The method must be preceded by
 	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users.
@@ -172,7 +192,6 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
 	 */
-
 	public abstract CertificateResponse pkcs10Request(String username, String password,
 			String pkcs10, String hardTokenSN, String responseType)
 			throws AuthorizationDeniedException, NotFoundException,
@@ -627,4 +646,17 @@ public interface IEjbcaWS {
 	public abstract NameAndId[] getAvailableCAsInProfile(int entityProfileId) 
 			throws AuthorizationDeniedException, EjbcaException;
 
+	/**
+	 * Authorization requirements:
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /ca/<caid>
+     *
+	 * @param caname the name in EJBCA of the CA that should have a new CRL generated
+	 * @throws ApprovalException
+	 * @throws EjbcaException if an error occured
+	 * @throws ApprovalRequestExpiredException
+	 */
+	public abstract void createCRL(String caname) 
+			throws ApprovalException, EjbcaException, ApprovalRequestExpiredException;
 }

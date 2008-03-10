@@ -24,11 +24,11 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Pkcs12ReqResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs12ReqResponse");
     private final static QName _ExistsHardTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "existsHardTokenResponse");
+    private final static QName _Pkcs12ReqResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs12ReqResponse");
     private final static QName _ExistsHardToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "existsHardToken");
-    private final static QName _GetHardTokenDatas_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDatas");
     private final static QName _AuthorizationDeniedException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "AuthorizationDeniedException");
+    private final static QName _GetHardTokenDatas_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDatas");
     private final static QName _RevokeToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeToken");
     private final static QName _GetAvailableCAsInProfile_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAsInProfile");
     private final static QName _RevokeUser_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeUser");
@@ -39,7 +39,9 @@ public class ObjectFactory {
     private final static QName _UserDataSourceException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UserDataSourceException");
     private final static QName _WaitingForApprovalException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "WaitingForApprovalException");
     private final static QName _Pkcs12Req_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs12Req");
+    private final static QName _CrmfRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "crmfRequest");
     private final static QName _GetHardTokenDatasResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDatasResponse");
+    private final static QName _SpkacRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "spkacRequestResponse");
     private final static QName _RepublishCertificate_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "republishCertificate");
     private final static QName _GetCertificateResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificateResponse");
     private final static QName _DeleteUserDataFromSourceResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "deleteUserDataFromSourceResponse");
@@ -53,6 +55,7 @@ public class ObjectFactory {
     private final static QName _IsAuthorized_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isAuthorized");
     private final static QName _FindCerts_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findCerts");
     private final static QName _FindCertsResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findCertsResponse");
+    private final static QName _CreateCRLResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRLResponse");
     private final static QName _PublisherException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PublisherException");
     private final static QName _GetHardTokenDataResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDataResponse");
     private final static QName _RepublishCertificateResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "republishCertificateResponse");
@@ -67,27 +70,30 @@ public class ObjectFactory {
     private final static QName _ApprovalRequestExpiredException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "ApprovalRequestExpiredException");
     private final static QName _GetAvailableCAs_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAs");
     private final static QName _EditUser_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "editUser");
+    private final static QName _SpkacRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "spkacRequest");
     private final static QName _HardTokenExistsException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "HardTokenExistsException");
     private final static QName _DeleteUserDataFromSource_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "deleteUserDataFromSource");
     private final static QName _CheckRevokationStatusResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "checkRevokationStatusResponse");
+    private final static QName _CrmfRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "crmfRequestResponse");
     private final static QName _CustomLogResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "customLogResponse");
     private final static QName _RevokeUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeUserResponse");
     private final static QName _GetAvailableCertificateProfilesResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCertificateProfilesResponse");
     private final static QName _EjbcaException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaException");
     private final static QName _EditUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "editUserResponse");
-    private final static QName _RevokeCert_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCert");
     private final static QName _ApprovalRequestExecutionException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "ApprovalRequestExecutionException");
+    private final static QName _RevokeCert_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCert");
     private final static QName _FetchUserData_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "fetchUserData");
     private final static QName _GetAvailableCAsInProfileResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAsInProfileResponse");
     private final static QName _NotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "NotFoundException");
     private final static QName _MultipleMatchException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "MultipleMatchException");
     private final static QName _GetAuthorizedEndEntityProfiles_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAuthorizedEndEntityProfiles");
-    private final static QName _CheckRevokationStatus_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "checkRevokationStatus");
     private final static QName _KeyRecoverNewestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverNewestResponse");
+    private final static QName _CheckRevokationStatus_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "checkRevokationStatus");
     private final static QName _Pkcs10RequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs10RequestResponse");
     private final static QName _IllegalQueryException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "IllegalQueryException");
     private final static QName _CustomLog_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "customLog");
     private final static QName _KeyRecoverNewest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverNewest");
+    private final static QName _CreateCRL_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRL");
     private final static QName _GetHardTokenData_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenData");
 
     /**
@@ -95,86 +101,6 @@ public class ObjectFactory {
      * 
      */
     public ObjectFactory() {
-    }
-
-    /**
-     * Create an instance of {@link IsApproved }
-     * 
-     */
-    public IsApproved createIsApproved() {
-        return new IsApproved();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAsResponse }
-     * 
-     */
-    public GetAvailableCAsResponse createGetAvailableCAsResponse() {
-        return new GetAvailableCAsResponse();
-    }
-
-    /**
-     * Create an instance of {@link HardTokenDoesntExistsException }
-     * 
-     */
-    public HardTokenDoesntExistsException createHardTokenDoesntExistsException() {
-        return new HardTokenDoesntExistsException();
-    }
-
-    /**
-     * Create an instance of {@link IsApprovedResponse }
-     * 
-     */
-    public IsApprovedResponse createIsApprovedResponse() {
-        return new IsApprovedResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetCertificate }
-     * 
-     */
-    public GetCertificate createGetCertificate() {
-        return new GetCertificate();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAsInProfileResponse }
-     * 
-     */
-    public GetAvailableCAsInProfileResponse createGetAvailableCAsInProfileResponse() {
-        return new GetAvailableCAsInProfileResponse();
-    }
-
-    /**
-     * Create an instance of {@link CustomLogResponse }
-     * 
-     */
-    public CustomLogResponse createCustomLogResponse() {
-        return new CustomLogResponse();
-    }
-
-    /**
-     * Create an instance of {@link CustomLog }
-     * 
-     */
-    public CustomLog createCustomLog() {
-        return new CustomLog();
-    }
-
-    /**
-     * Create an instance of {@link IsAuthorizedResponse }
-     * 
-     */
-    public IsAuthorizedResponse createIsAuthorizedResponse() {
-        return new IsAuthorizedResponse();
-    }
-
-    /**
-     * Create an instance of {@link ApprovalRequestExpiredException }
-     * 
-     */
-    public ApprovalRequestExpiredException createApprovalRequestExpiredException() {
-        return new ApprovalRequestExpiredException();
     }
 
     /**
@@ -186,171 +112,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CertificateResponse }
+     * Create an instance of {@link FindUser }
      * 
      */
-    public CertificateResponse createCertificateResponse() {
-        return new CertificateResponse();
-    }
-
-    /**
-     * Create an instance of {@link EditUserResponse }
-     * 
-     */
-    public EditUserResponse createEditUserResponse() {
-        return new EditUserResponse();
-    }
-
-    /**
-     * Create an instance of {@link DeleteUserDataFromSource }
-     * 
-     */
-    public DeleteUserDataFromSource createDeleteUserDataFromSource() {
-        return new DeleteUserDataFromSource();
-    }
-
-    /**
-     * Create an instance of {@link RepublishCertificate }
-     * 
-     */
-    public RepublishCertificate createRepublishCertificate() {
-        return new RepublishCertificate();
-    }
-
-    /**
-     * Create an instance of {@link ApprovalException }
-     * 
-     */
-    public ApprovalException createApprovalException() {
-        return new ApprovalException();
-    }
-
-    /**
-     * Create an instance of {@link RevokeUserResponse }
-     * 
-     */
-    public RevokeUserResponse createRevokeUserResponse() {
-        return new RevokeUserResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetAuthorizedEndEntityProfilesResponse }
-     * 
-     */
-    public GetAuthorizedEndEntityProfilesResponse createGetAuthorizedEndEntityProfilesResponse() {
-        return new GetAuthorizedEndEntityProfilesResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAsInProfile }
-     * 
-     */
-    public GetAvailableCAsInProfile createGetAvailableCAsInProfile() {
-        return new GetAvailableCAsInProfile();
-    }
-
-    /**
-     * Create an instance of {@link GenTokenCertificatesResponse }
-     * 
-     */
-    public GenTokenCertificatesResponse createGenTokenCertificatesResponse() {
-        return new GenTokenCertificatesResponse();
-    }
-
-    /**
-     * Create an instance of {@link GetHardTokenDataResponse }
-     * 
-     */
-    public GetHardTokenDataResponse createGetHardTokenDataResponse() {
-        return new GetHardTokenDataResponse();
-    }
-
-    /**
-     * Create an instance of {@link HardTokenDataWS }
-     * 
-     */
-    public HardTokenDataWS createHardTokenDataWS() {
-        return new HardTokenDataWS();
-    }
-
-    /**
-     * Create an instance of {@link FindCerts }
-     * 
-     */
-    public FindCerts createFindCerts() {
-        return new FindCerts();
-    }
-
-    /**
-     * Create an instance of {@link IllegalQueryException }
-     * 
-     */
-    public IllegalQueryException createIllegalQueryException() {
-        return new IllegalQueryException();
-    }
-
-    /**
-     * Create an instance of {@link FindCertsResponse }
-     * 
-     */
-    public FindCertsResponse createFindCertsResponse() {
-        return new FindCertsResponse();
-    }
-
-    /**
-     * Create an instance of {@link CheckRevokationStatusResponse }
-     * 
-     */
-    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
-        return new CheckRevokationStatusResponse();
-    }
-
-    /**
-     * Create an instance of {@link UserDataVOWS }
-     * 
-     */
-    public UserDataVOWS createUserDataVOWS() {
-        return new UserDataVOWS();
-    }
-
-    /**
-     * Create an instance of {@link NameAndId }
-     * 
-     */
-    public NameAndId createNameAndId() {
-        return new NameAndId();
-    }
-
-    /**
-     * Create an instance of {@link UserDoesntFullfillEndEntityProfile }
-     * 
-     */
-    public UserDoesntFullfillEndEntityProfile createUserDoesntFullfillEndEntityProfile() {
-        return new UserDoesntFullfillEndEntityProfile();
-    }
-
-    /**
-     * Create an instance of {@link AuthorizationDeniedException }
-     * 
-     */
-    public AuthorizationDeniedException createAuthorizationDeniedException() {
-        return new AuthorizationDeniedException();
-    }
-
-    /**
-     * Create an instance of {@link MultipleMatchException }
-     * 
-     */
-    public MultipleMatchException createMultipleMatchException() {
-        return new MultipleMatchException();
-    }
-
-    /**
-     * Create an instance of {@link KeyRecoverNewest }
-     * 
-     */
-    public KeyRecoverNewest createKeyRecoverNewest() {
-        return new KeyRecoverNewest();
+    public FindUser createFindUser() {
+        return new FindUser();
     }
 
     /**
@@ -362,235 +128,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link KeyStore }
+     * Create an instance of {@link DeleteUserDataFromSourceResponse }
      * 
      */
-    public KeyStore createKeyStore() {
-        return new KeyStore();
-    }
-
-    /**
-     * Create an instance of {@link GetHardTokenDatas }
-     * 
-     */
-    public GetHardTokenDatas createGetHardTokenDatas() {
-        return new GetHardTokenDatas();
-    }
-
-    /**
-     * Create an instance of {@link RevokeCertResponse }
-     * 
-     */
-    public RevokeCertResponse createRevokeCertResponse() {
-        return new RevokeCertResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeStatus }
-     * 
-     */
-    public RevokeStatus createRevokeStatus() {
-        return new RevokeStatus();
-    }
-
-    /**
-     * Create an instance of {@link ExistsHardTokenResponse }
-     * 
-     */
-    public ExistsHardTokenResponse createExistsHardTokenResponse() {
-        return new ExistsHardTokenResponse();
-    }
-
-    /**
-     * Create an instance of {@link Pkcs10Request }
-     * 
-     */
-    public Pkcs10Request createPkcs10Request() {
-        return new Pkcs10Request();
-    }
-
-    /**
-     * Create an instance of {@link GetCertificateResponse }
-     * 
-     */
-    public GetCertificateResponse createGetCertificateResponse() {
-        return new GetCertificateResponse();
-    }
-
-    /**
-     * Create an instance of {@link AlreadyRevokedException }
-     * 
-     */
-    public AlreadyRevokedException createAlreadyRevokedException() {
-        return new AlreadyRevokedException();
-    }
-
-    /**
-     * Create an instance of {@link Pkcs10RequestResponse }
-     * 
-     */
-    public Pkcs10RequestResponse createPkcs10RequestResponse() {
-        return new Pkcs10RequestResponse();
-    }
-
-    /**
-     * Create an instance of {@link HardTokenExistsException }
-     * 
-     */
-    public HardTokenExistsException createHardTokenExistsException() {
-        return new HardTokenExistsException();
-    }
-
-    /**
-     * Create an instance of {@link WaitingForApprovalException }
-     * 
-     */
-    public WaitingForApprovalException createWaitingForApprovalException() {
-        return new WaitingForApprovalException();
-    }
-
-    /**
-     * Create an instance of {@link RevokeToken }
-     * 
-     */
-    public RevokeToken createRevokeToken() {
-        return new RevokeToken();
-    }
-
-    /**
-     * Create an instance of {@link GetAvailableCAs }
-     * 
-     */
-    public GetAvailableCAs createGetAvailableCAs() {
-        return new GetAvailableCAs();
-    }
-
-    /**
-     * Create an instance of {@link GetAuthorizedEndEntityProfiles }
-     * 
-     */
-    public GetAuthorizedEndEntityProfiles createGetAuthorizedEndEntityProfiles() {
-        return new GetAuthorizedEndEntityProfiles();
-    }
-
-    /**
-     * Create an instance of {@link UserMatch }
-     * 
-     */
-    public UserMatch createUserMatch() {
-        return new UserMatch();
-    }
-
-    /**
-     * Create an instance of {@link FindUser }
-     * 
-     */
-    public FindUser createFindUser() {
-        return new FindUser();
-    }
-
-    /**
-     * Create an instance of {@link CheckRevokationStatus }
-     * 
-     */
-    public CheckRevokationStatus createCheckRevokationStatus() {
-        return new CheckRevokationStatus();
-    }
-
-    /**
-     * Create an instance of {@link PublisherException }
-     * 
-     */
-    public PublisherException createPublisherException() {
-        return new PublisherException();
-    }
-
-    /**
-     * Create an instance of {@link FetchUserDataResponse }
-     * 
-     */
-    public FetchUserDataResponse createFetchUserDataResponse() {
-        return new FetchUserDataResponse();
-    }
-
-    /**
-     * Create an instance of {@link PinDataWS }
-     * 
-     */
-    public PinDataWS createPinDataWS() {
-        return new PinDataWS();
-    }
-
-    /**
-     * Create an instance of {@link GetHardTokenData }
-     * 
-     */
-    public GetHardTokenData createGetHardTokenData() {
-        return new GetHardTokenData();
-    }
-
-    /**
-     * Create an instance of {@link GetHardTokenDatasResponse }
-     * 
-     */
-    public GetHardTokenDatasResponse createGetHardTokenDatasResponse() {
-        return new GetHardTokenDatasResponse();
-    }
-
-    /**
-     * Create an instance of {@link EditUser }
-     * 
-     */
-    public EditUser createEditUser() {
-        return new EditUser();
-    }
-
-    /**
-     * Create an instance of {@link ApprovalRequestExecutionException }
-     * 
-     */
-    public ApprovalRequestExecutionException createApprovalRequestExecutionException() {
-        return new ApprovalRequestExecutionException();
-    }
-
-    /**
-     * Create an instance of {@link Certificate }
-     * 
-     */
-    public Certificate createCertificate() {
-        return new Certificate();
-    }
-
-    /**
-     * Create an instance of {@link TokenCertificateResponseWS }
-     * 
-     */
-    public TokenCertificateResponseWS createTokenCertificateResponseWS() {
-        return new TokenCertificateResponseWS();
-    }
-
-    /**
-     * Create an instance of {@link IsAuthorized }
-     * 
-     */
-    public IsAuthorized createIsAuthorized() {
-        return new IsAuthorized();
-    }
-
-    /**
-     * Create an instance of {@link GenTokenCertificates }
-     * 
-     */
-    public GenTokenCertificates createGenTokenCertificates() {
-        return new GenTokenCertificates();
-    }
-
-    /**
-     * Create an instance of {@link FetchUserData }
-     * 
-     */
-    public FetchUserData createFetchUserData() {
-        return new FetchUserData();
+    public DeleteUserDataFromSourceResponse createDeleteUserDataFromSourceResponse() {
+        return new DeleteUserDataFromSourceResponse();
     }
 
     /**
@@ -602,6 +144,38 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link AlreadyRevokedException }
+     * 
+     */
+    public AlreadyRevokedException createAlreadyRevokedException() {
+        return new AlreadyRevokedException();
+    }
+
+    /**
+     * Create an instance of {@link CheckRevokationStatusResponse }
+     * 
+     */
+    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
+        return new CheckRevokationStatusResponse();
+    }
+
+    /**
+     * Create an instance of {@link ApprovalException }
+     * 
+     */
+    public ApprovalException createApprovalException() {
+        return new ApprovalException();
+    }
+
+    /**
+     * Create an instance of {@link SpkacRequest }
+     * 
+     */
+    public SpkacRequest createSpkacRequest() {
+        return new SpkacRequest();
+    }
+
+    /**
      * Create an instance of {@link UserDataSourceVOWS }
      * 
      */
@@ -610,75 +184,51 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GetAvailableCertificateProfiles }
+     * Create an instance of {@link GenTokenCertificates }
      * 
      */
-    public GetAvailableCertificateProfiles createGetAvailableCertificateProfiles() {
-        return new GetAvailableCertificateProfiles();
+    public GenTokenCertificates createGenTokenCertificates() {
+        return new GenTokenCertificates();
     }
 
     /**
-     * Create an instance of {@link RepublishCertificateResponse }
+     * Create an instance of {@link RevokeToken }
      * 
      */
-    public RepublishCertificateResponse createRepublishCertificateResponse() {
-        return new RepublishCertificateResponse();
+    public RevokeToken createRevokeToken() {
+        return new RevokeToken();
     }
 
     /**
-     * Create an instance of {@link Pkcs12ReqResponse }
+     * Create an instance of {@link ExistsHardTokenResponse }
      * 
      */
-    public Pkcs12ReqResponse createPkcs12ReqResponse() {
-        return new Pkcs12ReqResponse();
+    public ExistsHardTokenResponse createExistsHardTokenResponse() {
+        return new ExistsHardTokenResponse();
     }
 
     /**
-     * Create an instance of {@link DeleteUserDataFromSourceResponse }
+     * Create an instance of {@link GetAvailableCAsInProfileResponse }
      * 
      */
-    public DeleteUserDataFromSourceResponse createDeleteUserDataFromSourceResponse() {
-        return new DeleteUserDataFromSourceResponse();
+    public GetAvailableCAsInProfileResponse createGetAvailableCAsInProfileResponse() {
+        return new GetAvailableCAsInProfileResponse();
     }
 
     /**
-     * Create an instance of {@link Pkcs12Req }
+     * Create an instance of {@link KeyStore }
      * 
      */
-    public Pkcs12Req createPkcs12Req() {
-        return new Pkcs12Req();
+    public KeyStore createKeyStore() {
+        return new KeyStore();
     }
 
     /**
-     * Create an instance of {@link UserDataSourceException }
+     * Create an instance of {@link CustomLogResponse }
      * 
      */
-    public UserDataSourceException createUserDataSourceException() {
-        return new UserDataSourceException();
-    }
-
-    /**
-     * Create an instance of {@link NotFoundException }
-     * 
-     */
-    public NotFoundException createNotFoundException() {
-        return new NotFoundException();
-    }
-
-    /**
-     * Create an instance of {@link RevokeTokenResponse }
-     * 
-     */
-    public RevokeTokenResponse createRevokeTokenResponse() {
-        return new RevokeTokenResponse();
-    }
-
-    /**
-     * Create an instance of {@link ExistsHardToken }
-     * 
-     */
-    public ExistsHardToken createExistsHardToken() {
-        return new ExistsHardToken();
+    public CustomLogResponse createCustomLogResponse() {
+        return new CustomLogResponse();
     }
 
     /**
@@ -690,11 +240,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link EjbcaException }
+     * Create an instance of {@link AuthorizationDeniedException }
      * 
      */
-    public EjbcaException createEjbcaException() {
-        return new EjbcaException();
+    public AuthorizationDeniedException createAuthorizationDeniedException() {
+        return new AuthorizationDeniedException();
     }
 
     /**
@@ -706,20 +256,515 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link GetHardTokenDatas }
+     * 
+     */
+    public GetHardTokenDatas createGetHardTokenDatas() {
+        return new GetHardTokenDatas();
+    }
+
+    /**
+     * Create an instance of {@link RevokeTokenResponse }
+     * 
+     */
+    public RevokeTokenResponse createRevokeTokenResponse() {
+        return new RevokeTokenResponse();
+    }
+
+    /**
+     * Create an instance of {@link MultipleMatchException }
+     * 
+     */
+    public MultipleMatchException createMultipleMatchException() {
+        return new MultipleMatchException();
+    }
+
+    /**
+     * Create an instance of {@link DeleteUserDataFromSource }
+     * 
+     */
+    public DeleteUserDataFromSource createDeleteUserDataFromSource() {
+        return new DeleteUserDataFromSource();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCAsResponse }
+     * 
+     */
+    public GetAvailableCAsResponse createGetAvailableCAsResponse() {
+        return new GetAvailableCAsResponse();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs12ReqResponse }
+     * 
+     */
+    public Pkcs12ReqResponse createPkcs12ReqResponse() {
+        return new Pkcs12ReqResponse();
+    }
+
+    /**
+     * Create an instance of {@link SpkacRequestResponse }
+     * 
+     */
+    public SpkacRequestResponse createSpkacRequestResponse() {
+        return new SpkacRequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link ApprovalRequestExpiredException }
+     * 
+     */
+    public ApprovalRequestExpiredException createApprovalRequestExpiredException() {
+        return new ApprovalRequestExpiredException();
+    }
+
+    /**
+     * Create an instance of {@link UserMatch }
+     * 
+     */
+    public UserMatch createUserMatch() {
+        return new UserMatch();
+    }
+
+    /**
+     * Create an instance of {@link FindCertsResponse }
+     * 
+     */
+    public FindCertsResponse createFindCertsResponse() {
+        return new FindCertsResponse();
+    }
+
+    /**
+     * Create an instance of {@link IsApproved }
+     * 
+     */
+    public IsApproved createIsApproved() {
+        return new IsApproved();
+    }
+
+    /**
+     * Create an instance of {@link UserDoesntFullfillEndEntityProfile }
+     * 
+     */
+    public UserDoesntFullfillEndEntityProfile createUserDoesntFullfillEndEntityProfile() {
+        return new UserDoesntFullfillEndEntityProfile();
+    }
+
+    /**
+     * Create an instance of {@link GetAuthorizedEndEntityProfiles }
+     * 
+     */
+    public GetAuthorizedEndEntityProfiles createGetAuthorizedEndEntityProfiles() {
+        return new GetAuthorizedEndEntityProfiles();
+    }
+
+    /**
+     * Create an instance of {@link RevokeUserResponse }
+     * 
+     */
+    public RevokeUserResponse createRevokeUserResponse() {
+        return new RevokeUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link IllegalQueryException }
+     * 
+     */
+    public IllegalQueryException createIllegalQueryException() {
+        return new IllegalQueryException();
+    }
+
+    /**
+     * Create an instance of {@link CrmfRequest }
+     * 
+     */
+    public CrmfRequest createCrmfRequest() {
+        return new CrmfRequest();
+    }
+
+    /**
+     * Create an instance of {@link ApprovalRequestExecutionException }
+     * 
+     */
+    public ApprovalRequestExecutionException createApprovalRequestExecutionException() {
+        return new ApprovalRequestExecutionException();
+    }
+
+    /**
+     * Create an instance of {@link UserDataSourceException }
+     * 
+     */
+    public UserDataSourceException createUserDataSourceException() {
+        return new UserDataSourceException();
+    }
+
+    /**
+     * Create an instance of {@link EditUserResponse }
+     * 
+     */
+    public EditUserResponse createEditUserResponse() {
+        return new EditUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link RepublishCertificate }
+     * 
+     */
+    public RepublishCertificate createRepublishCertificate() {
+        return new RepublishCertificate();
+    }
+
+    /**
+     * Create an instance of {@link IsApprovedResponse }
+     * 
+     */
+    public IsApprovedResponse createIsApprovedResponse() {
+        return new IsApprovedResponse();
+    }
+
+    /**
+     * Create an instance of {@link UserDataVOWS }
+     * 
+     */
+    public UserDataVOWS createUserDataVOWS() {
+        return new UserDataVOWS();
+    }
+
+    /**
+     * Create an instance of {@link Certificate }
+     * 
+     */
+    public Certificate createCertificate() {
+        return new Certificate();
+    }
+
+    /**
+     * Create an instance of {@link HardTokenDoesntExistsException }
+     * 
+     */
+    public HardTokenDoesntExistsException createHardTokenDoesntExistsException() {
+        return new HardTokenDoesntExistsException();
+    }
+
+    /**
+     * Create an instance of {@link IsAuthorized }
+     * 
+     */
+    public IsAuthorized createIsAuthorized() {
+        return new IsAuthorized();
+    }
+
+    /**
+     * Create an instance of {@link GenTokenCertificatesResponse }
+     * 
+     */
+    public GenTokenCertificatesResponse createGenTokenCertificatesResponse() {
+        return new GenTokenCertificatesResponse();
+    }
+
+    /**
+     * Create an instance of {@link NameAndId }
+     * 
+     */
+    public NameAndId createNameAndId() {
+        return new NameAndId();
+    }
+
+    /**
+     * Create an instance of {@link CreateCRLResponse }
+     * 
+     */
+    public CreateCRLResponse createCreateCRLResponse() {
+        return new CreateCRLResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetCertificate }
+     * 
+     */
+    public GetCertificate createGetCertificate() {
+        return new GetCertificate();
+    }
+
+    /**
+     * Create an instance of {@link ExistsHardToken }
+     * 
+     */
+    public ExistsHardToken createExistsHardToken() {
+        return new ExistsHardToken();
+    }
+
+    /**
+     * Create an instance of {@link EditUser }
+     * 
+     */
+    public EditUser createEditUser() {
+        return new EditUser();
+    }
+
+    /**
+     * Create an instance of {@link PublisherException }
+     * 
+     */
+    public PublisherException createPublisherException() {
+        return new PublisherException();
+    }
+
+    /**
+     * Create an instance of {@link GetAuthorizedEndEntityProfilesResponse }
+     * 
+     */
+    public GetAuthorizedEndEntityProfilesResponse createGetAuthorizedEndEntityProfilesResponse() {
+        return new GetAuthorizedEndEntityProfilesResponse();
+    }
+
+    /**
+     * Create an instance of {@link FetchUserData }
+     * 
+     */
+    public FetchUserData createFetchUserData() {
+        return new FetchUserData();
+    }
+
+    /**
+     * Create an instance of {@link GetHardTokenDatasResponse }
+     * 
+     */
+    public GetHardTokenDatasResponse createGetHardTokenDatasResponse() {
+        return new GetHardTokenDatasResponse();
+    }
+
+    /**
+     * Create an instance of {@link KeyRecoverNewest }
+     * 
+     */
+    public KeyRecoverNewest createKeyRecoverNewest() {
+        return new KeyRecoverNewest();
+    }
+
+    /**
+     * Create an instance of {@link HardTokenExistsException }
+     * 
+     */
+    public HardTokenExistsException createHardTokenExistsException() {
+        return new HardTokenExistsException();
+    }
+
+    /**
+     * Create an instance of {@link CreateCRL }
+     * 
+     */
+    public CreateCRL createCreateCRL() {
+        return new CreateCRL();
+    }
+
+    /**
+     * Create an instance of {@link HardTokenDataWS }
+     * 
+     */
+    public HardTokenDataWS createHardTokenDataWS() {
+        return new HardTokenDataWS();
+    }
+
+    /**
+     * Create an instance of {@link RepublishCertificateResponse }
+     * 
+     */
+    public RepublishCertificateResponse createRepublishCertificateResponse() {
+        return new RepublishCertificateResponse();
+    }
+
+    /**
+     * Create an instance of {@link TokenCertificateResponseWS }
+     * 
+     */
+    public TokenCertificateResponseWS createTokenCertificateResponseWS() {
+        return new TokenCertificateResponseWS();
+    }
+
+    /**
+     * Create an instance of {@link FetchUserDataResponse }
+     * 
+     */
+    public FetchUserDataResponse createFetchUserDataResponse() {
+        return new FetchUserDataResponse();
+    }
+
+    /**
+     * Create an instance of {@link NotFoundException }
+     * 
+     */
+    public NotFoundException createNotFoundException() {
+        return new NotFoundException();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCAs }
+     * 
+     */
+    public GetAvailableCAs createGetAvailableCAs() {
+        return new GetAvailableCAs();
+    }
+
+    /**
+     * Create an instance of {@link EjbcaException }
+     * 
+     */
+    public EjbcaException createEjbcaException() {
+        return new EjbcaException();
+    }
+
+    /**
+     * Create an instance of {@link GetHardTokenDataResponse }
+     * 
+     */
+    public GetHardTokenDataResponse createGetHardTokenDataResponse() {
+        return new GetHardTokenDataResponse();
+    }
+
+    /**
+     * Create an instance of {@link PinDataWS }
+     * 
+     */
+    public PinDataWS createPinDataWS() {
+        return new PinDataWS();
+    }
+
+    /**
+     * Create an instance of {@link GetCertificateResponse }
+     * 
+     */
+    public GetCertificateResponse createGetCertificateResponse() {
+        return new GetCertificateResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCAsInProfile }
+     * 
+     */
+    public GetAvailableCAsInProfile createGetAvailableCAsInProfile() {
+        return new GetAvailableCAsInProfile();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs10RequestResponse }
+     * 
+     */
+    public Pkcs10RequestResponse createPkcs10RequestResponse() {
+        return new Pkcs10RequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link IsAuthorizedResponse }
+     * 
+     */
+    public IsAuthorizedResponse createIsAuthorizedResponse() {
+        return new IsAuthorizedResponse();
+    }
+
+    /**
+     * Create an instance of {@link CustomLog }
+     * 
+     */
+    public CustomLog createCustomLog() {
+        return new CustomLog();
+    }
+
+    /**
+     * Create an instance of {@link CheckRevokationStatus }
+     * 
+     */
+    public CheckRevokationStatus createCheckRevokationStatus() {
+        return new CheckRevokationStatus();
+    }
+
+    /**
+     * Create an instance of {@link CertificateResponse }
+     * 
+     */
+    public CertificateResponse createCertificateResponse() {
+        return new CertificateResponse();
+    }
+
+    /**
+     * Create an instance of {@link WaitingForApprovalException }
+     * 
+     */
+    public WaitingForApprovalException createWaitingForApprovalException() {
+        return new WaitingForApprovalException();
+    }
+
+    /**
+     * Create an instance of {@link FindCerts }
+     * 
+     */
+    public FindCerts createFindCerts() {
+        return new FindCerts();
+    }
+
+    /**
+     * Create an instance of {@link RevokeCertResponse }
+     * 
+     */
+    public RevokeCertResponse createRevokeCertResponse() {
+        return new RevokeCertResponse();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs12Req }
+     * 
+     */
+    public Pkcs12Req createPkcs12Req() {
+        return new Pkcs12Req();
+    }
+
+    /**
+     * Create an instance of {@link GetHardTokenData }
+     * 
+     */
+    public GetHardTokenData createGetHardTokenData() {
+        return new GetHardTokenData();
+    }
+
+    /**
+     * Create an instance of {@link RevokeStatus }
+     * 
+     */
+    public RevokeStatus createRevokeStatus() {
+        return new RevokeStatus();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs10Request }
+     * 
+     */
+    public Pkcs10Request createPkcs10Request() {
+        return new Pkcs10Request();
+    }
+
+    /**
+     * Create an instance of {@link CrmfRequestResponse }
+     * 
+     */
+    public CrmfRequestResponse createCrmfRequestResponse() {
+        return new CrmfRequestResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetAvailableCertificateProfiles }
+     * 
+     */
+    public GetAvailableCertificateProfiles createGetAvailableCertificateProfiles() {
+        return new GetAvailableCertificateProfiles();
+    }
+
+    /**
      * Create an instance of {@link RevokeCert }
      * 
      */
     public RevokeCert createRevokeCert() {
         return new RevokeCert();
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs12ReqResponse }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs12ReqResponse")
-    public JAXBElement<Pkcs12ReqResponse> createPkcs12ReqResponse(Pkcs12ReqResponse value) {
-        return new JAXBElement<Pkcs12ReqResponse>(_Pkcs12ReqResponse_QNAME, Pkcs12ReqResponse.class, null, value);
     }
 
     /**
@@ -732,6 +777,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs12ReqResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs12ReqResponse")
+    public JAXBElement<Pkcs12ReqResponse> createPkcs12ReqResponse(Pkcs12ReqResponse value) {
+        return new JAXBElement<Pkcs12ReqResponse>(_Pkcs12ReqResponse_QNAME, Pkcs12ReqResponse.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardToken }{@code >}}
      * 
      */
@@ -741,21 +795,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDatas }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatas")
-    public JAXBElement<GetHardTokenDatas> createGetHardTokenDatas(GetHardTokenDatas value) {
-        return new JAXBElement<GetHardTokenDatas>(_GetHardTokenDatas_QNAME, GetHardTokenDatas.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizationDeniedException }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "AuthorizationDeniedException")
     public JAXBElement<AuthorizationDeniedException> createAuthorizationDeniedException(AuthorizationDeniedException value) {
         return new JAXBElement<AuthorizationDeniedException>(_AuthorizationDeniedException_QNAME, AuthorizationDeniedException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDatas }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatas")
+    public JAXBElement<GetHardTokenDatas> createGetHardTokenDatas(GetHardTokenDatas value) {
+        return new JAXBElement<GetHardTokenDatas>(_GetHardTokenDatas_QNAME, GetHardTokenDatas.class, null, value);
     }
 
     /**
@@ -849,12 +903,30 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CrmfRequest }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "crmfRequest")
+    public JAXBElement<CrmfRequest> createCrmfRequest(CrmfRequest value) {
+        return new JAXBElement<CrmfRequest>(_CrmfRequest_QNAME, CrmfRequest.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDatasResponse }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatasResponse")
     public JAXBElement<GetHardTokenDatasResponse> createGetHardTokenDatasResponse(GetHardTokenDatasResponse value) {
         return new JAXBElement<GetHardTokenDatasResponse>(_GetHardTokenDatasResponse_QNAME, GetHardTokenDatasResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link SpkacRequestResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "spkacRequestResponse")
+    public JAXBElement<SpkacRequestResponse> createSpkacRequestResponse(SpkacRequestResponse value) {
+        return new JAXBElement<SpkacRequestResponse>(_SpkacRequestResponse_QNAME, SpkacRequestResponse.class, null, value);
     }
 
     /**
@@ -972,6 +1044,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findCertsResponse")
     public JAXBElement<FindCertsResponse> createFindCertsResponse(FindCertsResponse value) {
         return new JAXBElement<FindCertsResponse>(_FindCertsResponse_QNAME, FindCertsResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCRLResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCRLResponse")
+    public JAXBElement<CreateCRLResponse> createCreateCRLResponse(CreateCRLResponse value) {
+        return new JAXBElement<CreateCRLResponse>(_CreateCRLResponse_QNAME, CreateCRLResponse.class, null, value);
     }
 
     /**
@@ -1101,6 +1182,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link SpkacRequest }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "spkacRequest")
+    public JAXBElement<SpkacRequest> createSpkacRequest(SpkacRequest value) {
+        return new JAXBElement<SpkacRequest>(_SpkacRequest_QNAME, SpkacRequest.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link HardTokenExistsException }{@code >}}
      * 
      */
@@ -1125,6 +1215,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatusResponse")
     public JAXBElement<CheckRevokationStatusResponse> createCheckRevokationStatusResponse(CheckRevokationStatusResponse value) {
         return new JAXBElement<CheckRevokationStatusResponse>(_CheckRevokationStatusResponse_QNAME, CheckRevokationStatusResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CrmfRequestResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "crmfRequestResponse")
+    public JAXBElement<CrmfRequestResponse> createCrmfRequestResponse(CrmfRequestResponse value) {
+        return new JAXBElement<CrmfRequestResponse>(_CrmfRequestResponse_QNAME, CrmfRequestResponse.class, null, value);
     }
 
     /**
@@ -1173,21 +1272,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCert }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCert")
-    public JAXBElement<RevokeCert> createRevokeCert(RevokeCert value) {
-        return new JAXBElement<RevokeCert>(_RevokeCert_QNAME, RevokeCert.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ApprovalRequestExecutionException }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "ApprovalRequestExecutionException")
     public JAXBElement<ApprovalRequestExecutionException> createApprovalRequestExecutionException(ApprovalRequestExecutionException value) {
         return new JAXBElement<ApprovalRequestExecutionException>(_ApprovalRequestExecutionException_QNAME, ApprovalRequestExecutionException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCert }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCert")
+    public JAXBElement<RevokeCert> createRevokeCert(RevokeCert value) {
+        return new JAXBElement<RevokeCert>(_RevokeCert_QNAME, RevokeCert.class, null, value);
     }
 
     /**
@@ -1236,21 +1335,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatus")
-    public JAXBElement<CheckRevokationStatus> createCheckRevokationStatus(CheckRevokationStatus value) {
-        return new JAXBElement<CheckRevokationStatus>(_CheckRevokationStatus_QNAME, CheckRevokationStatus.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverNewestResponse }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverNewestResponse")
     public JAXBElement<KeyRecoverNewestResponse> createKeyRecoverNewestResponse(KeyRecoverNewestResponse value) {
         return new JAXBElement<KeyRecoverNewestResponse>(_KeyRecoverNewestResponse_QNAME, KeyRecoverNewestResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatus")
+    public JAXBElement<CheckRevokationStatus> createCheckRevokationStatus(CheckRevokationStatus value) {
+        return new JAXBElement<CheckRevokationStatus>(_CheckRevokationStatus_QNAME, CheckRevokationStatus.class, null, value);
     }
 
     /**
@@ -1287,6 +1386,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverNewest")
     public JAXBElement<KeyRecoverNewest> createKeyRecoverNewest(KeyRecoverNewest value) {
         return new JAXBElement<KeyRecoverNewest>(_KeyRecoverNewest_QNAME, KeyRecoverNewest.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateCRL }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCRL")
+    public JAXBElement<CreateCRL> createCreateCRL(CreateCRL value) {
+        return new JAXBElement<CreateCRL>(_CreateCRL_QNAME, CreateCRL.class, null, value);
     }
 
     /**

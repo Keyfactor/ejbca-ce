@@ -494,11 +494,88 @@ public class CommonEjbcaWSTest extends TestCase {
 		
 		assertNotNull(cert);
 		
-		assertTrue(cert.getSubjectDN().toString().equals("CN=WSTESTUSER1,O=Test"));
-		System.out.println("test03GeneratePkcs10() Certificate " +cert.getSubjectDN().toString() + " equals CN=WSTESTUSER1,O=Test");
+		assertEquals("CN=WSTESTUSER1,O=Test", cert.getSubjectDN().toString());
 		
 	}
 	
+	private static final String crmf = "MIIBdjCCAXIwgdkCBQCghr4dMIHPgAECpRYwFDESMBAGA1UEAxMJdW5kZWZpbmVk"+
+	"poGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCi6+Bmo+0I/ye8k6B6BkhXgv03"+
+	"1jEeD3mEuvjIEZUmmdt2RBvW2qfJzqXV8dsI1HZT4fZqo8SBsrYls4AC7HooWI6g"+
+	"DjSyd3kFcb5HP+qnNlz6De/Ab+qAF1rLJhfb2cXib4C7+bap2lwA56jTjY0qWRYb"+
+	"v3IIfxEEKozVlbg0LQIDAQABqRAwDgYDVR0PAQH/BAQDAgXgoYGTMA0GCSqGSIb3"+
+	"DQEBBQUAA4GBAJEhlvfoWNIAOSvFnLpg59vOj5jG0Urfv4w+hQmtCdK7MD0nyGKU"+
+	"cP5CWCau0vK9/gikPoA49n0PK81SPQt9w2i/A81OJ3eSLIxTqi8MJS1+/VuEmvRf"+
+	"XvedU84iIqnjDq92dTs6v01oRyPCdcjX8fpHuLk1VA96hgYai3l/D8lg";
+	
+	protected void test03GenerateCrmf(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		// Edit our favorite test user
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER1");
+		user1.setPassword("foo123");
+		user1.setClearPwd(true);
+        user1.setSubjectDN("CN=WSTESTUSER1,O=Test");
+		user1.setCaName(getAdminCAName());
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("USERGENERATED");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+		ejbcaraws.editUser(user1);
+
+		CertificateResponse certenv =  ejbcaraws.crmfRequest("WSTESTUSER1","foo123",crmf,null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		
+		assertNotNull(certenv);
+		
+		X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 
+		
+		assertNotNull(cert);
+		System.out.println(cert.getSubjectDN().toString());
+		assertEquals("CN=WSTESTUSER1,O=Test", cert.getSubjectDN().toString());
+	}
+
+	private static final String spkac = "MIICSjCCATIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDbiUJ4Q7a9"+
+		"oaSaHjv4GxYWFTJ3qv1dUmpnEXvIwdWps9W2HHWNki9VzsbT2dBck3kISU7MBCI/"+
+		"J4xgL5I766r4rdvXjy6w9K3pvXcyi+odTngxw8zU1PaKWONcAm7ulDEAiAzM3boM"+
+		"/TGnF+0EzPU6mUv/cWfOICDdhFkGuAscKdewdWvJn6zJpizbgVimewM0p8QDHsoS"+
+		"elap2stD9TPP+KKf3dZGN0NcmndTbtoPxyBgXCQZJfavFP7FLpAgC3EKVWLqtRij"+
+		"5PBmYEMzd306/hSEECp4kJZi704p5pCMgzC9/3086AuAo+VEMDalsd0GwUan4YFi"+
+		"G+I/CTHq8AszAgMBAAEWCjExMjU5ODMwMjEwDQYJKoZIhvcNAQEEBQADggEBAK/D"+
+		"JcXBf2SESg/gguctpDn/z1uueuzxWwaHeD25WBUeqrdNOsGEqGarKP/Xtw2zPO9f"+
+		"NSJ/AtxaNXRLUL0qpGgbhuclX4qJk4+rYAdlse9S2uJFIZEn41qLO1uoygvdoKZh"+
+		"QJN3EABQ5QJP3R3Mhiu2tEtUuZ5zPq3vd/RBoOx5JbzZ1WZdk+dPbqdhyjsCy5ne"+
+		"EkXFB6zflvR1fRrIxhDD0EnylHP1fz2p2kj2nOaQI6vQBH9CgTwkrAGEhy/Iq8aU"+
+		"slAJUoE1+eCkUN/RHm/Z5XaZ2Le4BnjaDRTWJIglAUvFhuCEm7qCi1/bMof8V9Md"+
+		"IP7NsueJRV9KvzdA7y0=";
+
+	protected void test03GenerateSpkac(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		// Edit our favorite test user
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER1");
+		user1.setPassword("foo123");
+		user1.setClearPwd(true);
+        user1.setSubjectDN("CN=WSTESTUSER1,O=Test");
+		user1.setCaName(getAdminCAName());
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("USERGENERATED");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+		ejbcaraws.editUser(user1);
+
+		CertificateResponse certenv =  ejbcaraws.spkacRequest("WSTESTUSER1","foo123",spkac,null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		
+		assertNotNull(certenv);
+		
+		X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 
+		
+		assertNotNull(cert);
+		
+		assertEquals("CN=WSTESTUSER1,O=Test", cert.getSubjectDN().toString());
+	}
 
 	
 	protected void test04GeneratePkcs12(boolean performSetup) throws Exception{
@@ -1313,6 +1390,7 @@ public class CommonEjbcaWSTest extends TestCase {
         profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0,true);
         profile.setReUseKeyRevoceredCertificate(true);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
     	getRAAdmin().addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
 
 		// Add a new user, set token to P12, status to new and end entity profile to key recovery
@@ -1400,6 +1478,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertEquals(profs.size(), ids.size());
 		boolean foundkeyrec = false;
 		for (NameAndId n : profs) {
+			System.out.println("name: "+n.getName());
 			if (n.getName().equals("KEYRECOVERY")) foundkeyrec= true;
 			boolean found = false;
 			for (Integer i : ids) {
@@ -1420,11 +1499,14 @@ public class CommonEjbcaWSTest extends TestCase {
 		int id = getRAAdmin().getEndEntityProfileId(intAdmin, "KEYRECOVERY");
 		List<NameAndId> profs = ejbcaraws.getAvailableCertificateProfiles(id);
 		assertNotNull(profs);
-		assertEquals(profs.size(), 1);
+		for (NameAndId n : profs) {
+			System.out.println("name: "+n.getName());			
+		}
+		assertTrue(profs.size() > 1);
 		NameAndId n = profs.get(0);
-		// This profile only has the empty profile available
+		// This profile only has the enduser certificate profile available
 		assertEquals(1, n.getId());
-		assertEquals("EMPTY", n.getName());
+		assertEquals("ENDUSER", n.getName());
 	} // test23GetAvailableCertificateProfiles
 
 	protected void test24GetAvailableCAsInProfile(boolean performSetup) throws Exception{
@@ -1432,17 +1514,27 @@ public class CommonEjbcaWSTest extends TestCase {
 			setUpAdmin();
 		}
 		int id = getRAAdmin().getEndEntityProfileId(intAdmin, "KEYRECOVERY");
+		System.out.println("id: "+id);
 		List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(id);
 		assertNotNull(cas);
-		// This profile only has ALLCAS available
-		assertTrue(cas.size() > 0);
-		boolean found = false;
-		for (NameAndId n : cas) {
-			if (getAdminCAName().equals(n.getName())) found = true;
-		}
-		assertTrue(found);
+		// This profile only has ALLCAS available, so this list will be empty
+		assertTrue(cas.size() == 0);
+//		boolean found = false;
+//		for (NameAndId n : cas) {
+//			System.out.println("Available CA: "+n.getName());
+//			if (getAdminCAName().equals(n.getName())) found = true;
+//		}
+//		assertTrue(found);
 	} // test24GetAvailableCAsInProfile
 	
+	protected void test25CreateCRL(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		String caname = getAdminCAName();
+		// This will throw exception if it fails
+		ejbcaraws.createCRL(caname);
+	} // test25CreateCRL
 	
     protected void test99cleanUpAdmins() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
