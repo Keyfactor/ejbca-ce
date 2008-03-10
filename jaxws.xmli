@@ -94,6 +94,17 @@
         <delete>
           <fileset dir="${jaxws.libdir}" includes="**/*.jar"/>
         </delete>
+        <copy todir="${jaxws.libdir}">
+	        <fileset dir="dist" >
+	        	<include name="ejbca-util.jar"/>
+	        </fileset>
+	        <fileset dir="${lib}" >
+           	  <include name="ejbca-ejb.jar"/>
+         	  <include name="log4j.jar"/>
+         	  <include name="bc*.jar"/>
+         	  <include name="commons-lang-2.0.jar"/>
+	        </fileset>
+	    </copy>
 	</target>
 	<target name="jaxwslibsstd">
         <!-- the default jaxws libs --> 
