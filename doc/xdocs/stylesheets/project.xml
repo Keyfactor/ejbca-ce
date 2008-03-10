@@ -20,6 +20,10 @@
                 <item name="Release news"        href="http://sourceforge.net/news/?group_id=39716"/>
             </menu>
 
+            <menu name="Download">
+                <item name="Latest releases" href="/download.html"/>
+            </menu>
+
             <menu name="Documentation">
                 <item name="Architecture"	  href="/architecture.html"/>
                 <item name="Installation"		  href="/installation.html"/>
@@ -33,10 +37,6 @@
                 <item name="Release cycle"        href="/releasecycle.html"/>
                 <item name="Database schema"      href="http://www.ejbca.org/library/index.html"/>
                 <item name="Blog"      href="http://blog.ejbca.org/"/>
-            </menu>
-
-            <menu name="Download">
-                <item name="Latest releases" href="/download.html"/>
             </menu>
 
             <menu name="Contributing">
