@@ -46,6 +46,10 @@
                 <item name="CVS Repositories"      href="http://ejbca.cvs.sourceforge.net/ejbca"/>
             </menu>
 
+       	<menu name="Summer of code">
+            <item name="Summer of code" href="/soc.html"/>
+        </menu>
+
             <menu name="Continous integration">
                 <item name="Hudson" href="/hudson.html"/>
             </menu>

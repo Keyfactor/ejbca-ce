@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Google Summer of Code</title>
+  </properties>
+
+<body>
+  <section name="EJBCA Summer of Code">
+    <p>
+    EJBCA aims to be a candidate for the Google Summer of Code.
+    </p>
+  </section>
+  
+  <section name="Projects">
+  <p>
+  To be added...
+  </p>
+  </section>
+  
+  <section name="Candidate criteria">
+    <p>
+    EJBCA is built using Java Enterprise technology, and therefore a candidate would have to know of these areas:
+    <ul>
+    <li>J2EE in general</li>
+    <li>EJB3</li>
+    <li>JSF and JSP</li>
+    </ul>
+    </p>
+  </section>
+
+</body>
+</document>
+
