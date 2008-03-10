@@ -86,7 +86,34 @@
 		</condition>
 	</target>
 	
-    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,ws.build" if="ejbcaws.conditionenabled">
+	<!-- Part below is to be able to build a war file for ejbcaws with different 
+	     jars in it depending on what the appserver needs -->
+	<target name="jaxwslibswebsphere" depends="webspheretargetcheck" if="websphere.enabled">
+		<echo>Websphere JAX-WS target</echo>
+		<!-- In websphere we don't want any libs packaged in the war -->
+        <delete>
+          <fileset dir="${jaxws.libdir}" includes="**/*.jar"/>
+        </delete>
+	</target>
+	<target name="jaxwslibsstd">
+        <!-- the default jaxws libs --> 
+        <copy todir="${jaxws.libdir}">
+	        <fileset dir="${lib}/jaxws" >
+	        	<include name="*.jar"/>
+	        </fileset>
+	    </copy>
+	</target>
+	
+	<target name="jaxwslibspre">
+        <delete dir="${jaxws.libdir}" />
+        <mkdir dir="${jaxws.libdir}" />
+	</target>
+	
+	<target name="jaxwslibs" depends="jaxwslibspre,jaxwslibsstd,jaxwslibswebsphere">
+	</target>
+	
+	<!-- Build the war file to be included in ejbca.ear -->
+    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,ws.build,jaxwslibs" if="ejbcaws.conditionenabled">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/ws/*.class"/>
@@ -101,11 +128,12 @@
     	<copy tofile="tmp/jaxws/web.xml" file="src/jaxws/${appserver.type}/web.xml" overwrite="true" failonerror="false"/>
         <war warfile="${dist.dir}/ejbcaws.war" webxml="tmp/jaxws/web.xml">
             <webinf dir="src/jaxws" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
-            <classes dir="tmp/jaxws/gen-classes/server"/>
-         	<lib dir="lib/jaxws" includes="*.jar"/>       		
+            <classes dir="tmp/jaxws/gen-classes/server" excludes="**/*XKMS*"/>
+         	<lib dir="${jaxws.libdir}" includes="*.jar"/>       		
         </war>
     </target>
 	
+	<!-- Build a standalone war file to be deployed independently of ejbca.ear -->
 	<target name="ejbcaws.war.standalone" depends="ws.build">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
@@ -115,7 +143,6 @@
           </fileset>
         </copy>	
     	
-    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
     	<copy tofile="tmp/jaxws/web.xml" file="src/jaxws/web.xml" overwrite="true"/>
     	<!-- Override the default web.xml with an appserver specific one, if there exists such -->
     	<copy tofile="tmp/jaxws/web.xml" file="src/jaxws/${appserver.type}/web.xml" overwrite="true"/>
@@ -134,6 +161,7 @@
         </war>
     </target>
 	
+	<!-- Development targets below -->
     <target name="ws.gen.client" depends="ws.init" description="Generate JAX-WS client stubs when developing new WS-API calls.">
     	<echo>Note: The Application server must be on and deployed in order to generate client src.</echo>
         <wsimport 
