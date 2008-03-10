@@ -76,6 +76,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Sébastien Levesque, slevesque(at)linagora.com, WS-API calls for listing CAs and profiles.</li>
 <li>Abbas Razam, abbasrazam(at)yahoo.com, fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
 <li>Darren Johnson, darren.johnson(at)safenet-inc.com, split CAToken to be able to use separate JCE/JCA providers, makes SCEP work on Luna HSM with java provider.</li>
+<li>Matt Stevenson, mavricknzwork(at)yahoo.com, code for adding CRMF and SPKAC requests in WS-API.</li>
 </ul>
     </section>
   </body>
