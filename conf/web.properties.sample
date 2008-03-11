@@ -61,7 +61,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # The language that should be used internally for logging, exceptions and approval notifications.
 # The languagefile is stored in src/intresources/intresources.xx.properties
 # and works in the same way as for web.available languages. is a global application setting 
-# Should be one of EN,SE
+# Should be one of EN,FR,PT,SE
 #intresources.preferredlanguage=EN
 
 # The language used internally if a resource not found in the preferred language

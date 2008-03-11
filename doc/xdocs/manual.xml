@@ -3812,7 +3812,7 @@ It's also possible to translate internal log comments, some exception messages a
 This is done separately in it's own resource files since this is done internally in the core application
 and not in the web-layer. 
 </p><p>
-The language used internally is configured in the ejbca.properties file by setting the properties
+The language used internally is configured in the conf/web.properties file by setting the properties
 intresources.preferredlanguage and intresources.secondarylanguage to the language you want to use.
 The letters should be the same as the xx name in the intresources.xx.properties files in the src/intresources 
 directory. The secondary resource file is used if the resource isn't found in the preferred language.
