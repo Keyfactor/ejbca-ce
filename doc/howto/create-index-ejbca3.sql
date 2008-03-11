@@ -12,5 +12,6 @@ create index protect_idx1 on TableProtectData (dbKey,dbType);
 create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
 -- Oracle does not like the b64Protection(1) notification, use simply b64Protection instead
 create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(1));
+create index protectedlogdata_idx3 on ProtectedLogData (username, caid, module);
 create index protectedlogexportdata_idx2 on ProtectedLogExportData (exportStartTime);
 
