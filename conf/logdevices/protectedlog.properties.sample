@@ -1,5 +1,8 @@
 # This is the configuration file for the ProtectedLogDevice
 #
+# All the gory details on how it works can be found in the lastest version of
+# the design document at https://jira.primekey.se/browse/ECA-633
+#
 # Enable log protection by
 #  1. Make sure this device is enabled in conf/log.properties
 #  2. Configure the protection token you want to use in this file (CAName or
@@ -28,12 +31,10 @@
 #protectionTokenReference=AdminCA1
 #protectionTokenReference=file:///home/ejbca/ejbca/keystorefile.jks
 
-# The keystore alias
-#protectionTokenKeyStoreAlias=defaultKey
+# The keystore alias (only used for the URI keystore type)
+#protectionTokenKeyStoreAlias=logsigner
 
-#protectionTokenKeyStoreAlias=signer
-
-# The keystore password
+# The keystore password (only used for the URI keystore type)
 #protectionTokenKeyStorePassword=foo123
 
 # Protection intensity: how often each node should sign a log-row in seconds.
@@ -41,7 +42,9 @@
 #protectionIntensity=0
 
 # Link-in intensity: how often to search for new log-rows from other nodes in
-#  seconds. The last found from each node will be linked in.
+#  seconds. The last found log-row from each node will be linked in. This also
+#  links in old instances so don't disable this unless you know what you are
+#  doing.
 #   -1 disabled, 0 always search
 #  Default is "-1" for the none-token and "1" for all other tokens.
 #linkinIntensity=1
