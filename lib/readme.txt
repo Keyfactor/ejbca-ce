@@ -6,6 +6,7 @@ The jars:
  commons-el-1.0.jar 
  commons-beanutils.jar 
  commons-codec-1.3.jar
+ commons-collections-3.2.jar
 are for example used by MyFaces.
 
 commons-lang-2.0.jar is used throughout EJBCA.
