@@ -33,7 +33,7 @@ import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.7 2007-10-10 12:00:02 anatom Exp $
+ * @version $Id: CAInfoView.java,v 1.8 2008-03-11 14:00:37 anatom Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
 
@@ -57,15 +57,16 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    public static final int CRLISSUEINTERVAL        = 11;
    public static final int CRLOVERLAPTIME          = 12;
    public static final int CRLPUBLISHERS           = 13;
+   public static final int DELTACRLPERIOD          = 14;
    
-   private static final int OCSPSPACER             = 14;
+   private static final int OCSPSPACER             = 15;
    
-   public static final int OCSP                    = 15;
+   public static final int OCSP                    = 16;
   
     
    public static String[] X509CA_CAINFODATATEXTS = {"NAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
                                                     "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
-                                                    "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "CRLPUBLISHERS", "", "OCSPSERVICE"};
+                                                    "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "DELTACRLPERIOD", "CRLPUBLISHERS", "", "OCSPSERVICE"};
    
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;

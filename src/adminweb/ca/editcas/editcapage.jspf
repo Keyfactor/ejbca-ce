@@ -708,7 +708,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLPERIOD") %> (<%= ejbcawebbean.getText("HOURS") %>)
+        <%= ejbcawebbean.getText("CRLPERIOD") %>
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -723,7 +723,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %> (<%= ejbcawebbean.getText("HOURS") %>)
+        <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %>
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -738,7 +738,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLOVERLAPTIME") %> (<%= ejbcawebbean.getText("MINUTES") %>)
+        <%= ejbcawebbean.getText("CRLOVERLAPTIME") %>
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -753,7 +753,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DELTACRLPERIOD") %> (<%= ejbcawebbean.getText("HOURS") %>)<br/>
+        <%= ejbcawebbean.getText("DELTACRLPERIOD") %> <br/>
         <%= ejbcawebbean.getText("NODELTACRLTIP") %>
       </td>
       <td width="50%">
