@@ -16,6 +16,7 @@
 		<li> <a href="http://www.faqs.org/rfcs/rfc2256.html">RFC 2256</a> - X.500(96) User Schema for use with LDAPv3</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2818.html">RFC 2818</a> - HTTP Over TLS</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2595.html">RFC 2595</a> - Using TLS with IMAP, POP3 and ACAP</li>
+		<li> <a href="http://www.ietf.org/rfc/rfc4945.txt">RFC 4945</a> - IP Security PKI Profile</li>
 	</ul>
 	</p>
 	</subsection>
