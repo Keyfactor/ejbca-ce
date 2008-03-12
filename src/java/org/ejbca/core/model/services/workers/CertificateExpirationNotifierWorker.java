@@ -42,7 +42,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.11 2008-03-07 14:35:10 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.12 2008-03-12 12:20:56 anatom Exp $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -87,11 +87,13 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 			try{		
 				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
 				// We can not select the base64 certificate data here, because it may be a LONG data type which we can't simply select
-				ps = con.prepareStatement("SELECT DISTINCT fingerprint, username"
-						+ " FROM CertificateData WHERE ("
-						+ cASelectString + ") AND (" 
-						+ checkDate + ") AND (" 
-						+ statuses + ")");            
+				String sqlstr = "SELECT DISTINCT fingerprint, username"
+					+ " FROM CertificateData WHERE ("
+					+ cASelectString + ") AND (" 
+					+ checkDate + ") AND (" 
+					+ statuses + ")";
+				log.debug("Executing search sql: "+sqlstr);
+				ps = con.prepareStatement(sqlstr);            
 				
 				result = ps.executeQuery();
 
