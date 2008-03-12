@@ -23,7 +23,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
 /**
  * CACertificateProfile is a class defining the fixed characteristics of a CA certificate profile.
  *
- * @version $Id: CACertificateProfile.java,v 1.4 2006-11-01 11:54:01 anatom Exp $
+ * @version $Id: CACertificateProfile.java,v 1.5 2008-03-12 14:34:00 anatom Exp $
  */
 public class CACertificateProfile extends CertificateProfile{
 
@@ -47,6 +47,7 @@ public class CACertificateProfile extends CertificateProfile{
       setKeyUsage(KEYCERTSIGN,true);
       setKeyUsage(CRLSIGN,true);
       setKeyUsageCritical(true);
+      setValidity(25*365+7);	// Default validity for this profile is 25 years including 6 or 7 leap days
 
     }
 
