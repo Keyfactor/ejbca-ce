@@ -42,7 +42,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.12 2008-03-12 12:20:56 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.13 2008-03-12 12:46:58 anatom Exp $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -106,6 +106,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 					String username = result.getString(2);
 					//String certBase64 = result.getString(2);
 					// Get the certificate through a session bean
+					log.debug("Found a certificate we should notify. Username="+username+", fp="+fingerprint);
 					X509Certificate cert = (X509Certificate )cl.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
 					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
 					if(userData != null){
@@ -116,6 +117,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 								log.info(msg);
 							}else{
 								// Populate end user message            	    	        		    
+								log.debug("Adding to email queue for user: "+ userData.getEmail());
 								String message = NotificationParamGen.interpolate(paramGen.getParams(), getEndUserMessage());
 								MailActionInfo mailActionInfo = new MailActionInfo(userData.getEmail(),getEndUserSubject(), message);
 								userEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
@@ -123,12 +125,15 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 						}
 						if(isSendToAdmins()){
 							// Populate admin message        		    
+							log.debug("Adding to email queue for admin");
 							NotificationParamGen paramGen = new NotificationParamGen(userData,cert);
 							String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
 							MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
 							adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
 						}	
-					}					
+					} else {
+						log.error("Trying do send notification to user, but no UserData can be found for user: "+username);
+					}
 				}
 
 
