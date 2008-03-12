@@ -42,7 +42,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.13 2008-03-12 12:46:58 anatom Exp $
+ * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.14 2008-03-12 14:01:47 anatom Exp $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -100,7 +100,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 				// Certificate store session bean for retrieving the certificate.
 				ICertificateStoreSessionLocalHome cs = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
 				ICertificateStoreSessionLocal cl = cs.create();
+				int count=0;
 				while(result.next()){
+					count++;
 					// For each certificate update status.
 					String fingerprint = result.getString(1);
 					String username = result.getString(2);
@@ -135,8 +137,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 						log.error("Trying do send notification to user, but no UserData can be found for user: "+username);
 					}
 				}
-
-
+				if (count == 0) {
+					log.debug("No certificates found for notification.");
+				}
 
 			} catch (Exception fe) {
 				log.error("Error running service work: ", fe);
