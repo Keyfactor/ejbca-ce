@@ -175,7 +175,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.49 2008-02-25 15:55:19 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.50 2008-03-12 12:20:02 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1070,7 +1070,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     ICertificateStoreSessionLocal certificateStore = storeHome.create();
             		X509Certificate cert = (X509Certificate)certificateStore.findCertificateByIssuerAndSerno(admin, dn, serno);
             		if (cert != null) {
-            			dn = cert.getSubjectDN().getName();
+            			dn = CertTools.getSubjectDN(cert);
             		}
             	}
             	debug("Using DN: "+dn);
