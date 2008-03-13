@@ -5,8 +5,7 @@
   <field-name>subjectDN</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>caId</field-name>
-  <column-name>cAId</column-name>
+  <field-name>cAId</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>subjectAltName</field-name>
@@ -28,9 +27,13 @@
 </cmp-field>
 <cmp-field>
   <field-name>timeCreated</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>timeModified</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>endEntityProfileId</field-name>
@@ -47,7 +50,7 @@
 <cmp-field>
   <field-name>extendedInformationData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>IMAGE</sql-type>
+  <sql-type>TEXT</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>keyStorePassword</field-name>

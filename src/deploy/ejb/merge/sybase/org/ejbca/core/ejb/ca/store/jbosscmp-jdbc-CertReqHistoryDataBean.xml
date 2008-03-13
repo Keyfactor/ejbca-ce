@@ -9,11 +9,13 @@
 </cmp-field>
 <cmp-field>
   <field-name>timestamp</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>userDataVO</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>IMAGE</sql-type>
+  <sql-type>TEXT</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>username</field-name>

@@ -3,12 +3,18 @@
 </cmp-field>
 <cmp-field>
   <field-name>timeOfExport</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>exportEndTime</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>exportStartTime</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>b64LogDataHash</field-name>
@@ -21,14 +27,10 @@
 </cmp-field>
 <cmp-field>
   <field-name>b64SignatureCertificate</field-name>
-  <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>IMAGE</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>deleted</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>b64Signature</field-name>
-  <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>IMAGE</sql-type>
 </cmp-field>

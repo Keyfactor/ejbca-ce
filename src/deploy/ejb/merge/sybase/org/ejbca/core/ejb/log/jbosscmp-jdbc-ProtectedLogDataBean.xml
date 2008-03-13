@@ -8,13 +8,15 @@
   <field-name>adminData</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>caId</field-name>
+  <field-name>cAId</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>module</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>eventTime</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>username</field-name>
@@ -31,13 +33,15 @@
 <cmp-field>
   <field-name>eventComment</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>IMAGE</sql-type>
+  <sql-type>TEXT</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>nodeGUID</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>counter</field-name>
+  <jdbc-type>BIGINT</jdbc-type>
+  <sql-type>decimal(20, 0)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>nodeIP</field-name>
@@ -45,7 +49,7 @@
 <cmp-field>
   <field-name>b64LinkedInEventIdentifiers</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>IMAGE</sql-type>
+  <sql-type>TEXT</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>b64LinkedInEventsHash</field-name>
@@ -62,5 +66,5 @@
 <cmp-field>
   <field-name>b64Protection</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>IMAGE</sql-type>
+  <sql-type>TEXT</sql-type>
 </cmp-field>
