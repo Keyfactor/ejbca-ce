@@ -70,7 +70,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 
     /** Columns in the database used in select */
     private final String LOGENTRYDATA_TABLE = "LogEntryData";
-    private final String LOGENTRYDATA_COL = "id, adminType, adminData, caid, module, time, username, certificateSNR, event";
+    private final String LOGENTRYDATA_COL = "id, adminType, adminData, caId, module, time, username, certificateSNR, event";
     // Different column names is an unforturnalte workaround because of Orcale, you cannot have a column named 'comment' in Oracle.
     // The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
     private final String LOGENTRYDATA_COL_COMMENT_OLD = "comment";

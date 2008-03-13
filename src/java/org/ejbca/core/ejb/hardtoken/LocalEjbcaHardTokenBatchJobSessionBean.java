@@ -111,7 +111,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     private static final InternalResources intres = InternalResources.getInstance();
     
     /** Columns in the database used in select */
-    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
+    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearPassword, timeCreated, timeModified, endEntityProfileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
 
     /** The local interface of  hard token session bean */
     private IHardTokenSessionLocal hardtokensession = null;

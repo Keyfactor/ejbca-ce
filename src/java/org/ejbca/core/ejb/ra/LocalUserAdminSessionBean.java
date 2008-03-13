@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.59 2008-02-15 14:35:58 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.60 2008-03-13 12:00:54 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -278,7 +278,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     /**
      * Columns in the database used in select
      */
-    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId, extendedInformationData";
+    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearPassword, timeCreated, timeModified, endEntityProfileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId, extendedInformationData";
 
     /**
      * Default create for SessionBean.
