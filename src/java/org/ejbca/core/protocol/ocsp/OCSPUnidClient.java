@@ -16,7 +16,6 @@ package org.ejbca.core.protocol.ocsp;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,15 +25,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -74,14 +71,16 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.11 2008-03-08 21:30:23 primelars Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.12 2008-03-13 17:58:09 primelars Exp $
  *
  */
 public class OCSPUnidClient {
 
-	private String httpReqPath = null;
-	private KeyStore ks = null;
-	private String passphrase = null;
+	private String httpReqPath;
+	final private KeyStore ks;
+	final private String passphrase;
+    final private PrivateKey signKey;
+    final private Certificate[] certChain;
 	
 	/**  
 	 * 
@@ -89,35 +88,43 @@ public class OCSPUnidClient {
 	 * @param pwd String password for the key store, or null if no keystore is used
 	 * @param ocspurl String url to the OCSP server, or null if we should try to use the AIA extension from the cert; e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp (or https for TLS) 
 	 */
-	public OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl) {
+	private OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl, Certificate[] certs, PrivateKey _signKey) {
 		this.httpReqPath = ocspurl;
 		this.passphrase = pwd;
 		this.ks = keystore;
+        this.signKey = _signKey;
+        this.certChain = certs;
 		CertTools.installBCProvider();
 	}
 	
-	/** 
-	 * 
-	 * @param ksfilename String Filename of PKCS#12 keystore used to authenticate TLS client authentication, or null if TLS is not used
-	 * @param pwd String password for the key store,or null if no keystore is used 
-	 * @param ocspurl String url to the OCSP server, or null if we should try to use the AIA extension from the cert; e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp (or https for TLS)
-	 * @throws NoSuchProviderException 
-	 * @throws KeyStoreException 
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
-	 * @throws CertificateException 
-	 * @throws NoSuchAlgorithmException 
+	/**
+     * @param ksfilename String Filename of PKCS#12 keystore used to authenticate TLS client authentication, or null if TLS is not used
+     * @param pwd String password for the key store,or null if no keystore is used 
+     * @param ocspurl String url to the OCSP server, or null if we should try to use the AIA extension from the cert; e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp (or https for TLS)
+	 * @return the client to use
+     * @throws Exception
 	 */
-	public OCSPUnidClient(String ksfilename, String pwd, String ocspurl) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
-		this.httpReqPath = ocspurl;
-		this.passphrase = pwd;
-		if (ksfilename != null) {
+	public static OCSPUnidClient getOCSPUnidClient(String ksfilename, String pwd, String ocspurl, boolean doSignRequst) throws Exception {
+	    if ( doSignRequst && ksfilename==null )
+            throw new Exception("You got to give the path name for a keystore to use when using signing.");
+        final KeyStore ks;
+        if (ksfilename != null) {
 	        ks = KeyStore.getInstance("PKCS12", "BC");
 	        ks.load(new FileInputStream(ksfilename), pwd.toCharArray());			
-		}
-		CertTools.installBCProvider();
+            Enumeration en = ks.aliases();
+            String alias = null;
+            // If this alias is a trusted certificate entry, we don't want to fetch that, we want the key entry
+            while ( (alias==null || ks.isCertificateEntry(alias)) && en.hasMoreElements() )
+                alias = (String)en.nextElement();
+            final Certificate[] certs = KeyTools.getCertChain(ks, alias);
+            if (certs == null) {
+                throw new IOException("Can not find a certificate entry in PKCS12 keystore for alias "+alias);
+            }
+            final PrivateKey privateKey = doSignRequst ? (PrivateKey)ks.getKey(alias, null) : null;
+            return new OCSPUnidClient(ks, pwd, ocspurl, certs, privateKey);
+		} else
+            return new OCSPUnidClient(null, null, ocspurl, null, null);
 	}
-
     /**
 	 * 
 	 * @param cert X509Certificate to query, the DN should contain serialNumber which is Unid to be looked up
@@ -174,7 +181,13 @@ public class OCSPUnidClient {
             exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         }
         gen.setRequestExtensions(new X509Extensions(exts));        	
-        OCSPReq req = gen.generate();
+        final OCSPReq req;
+        if ( signKey!=null ) {
+            final X509Certificate x509CertChain[] = Arrays.asList(certChain).toArray(new X509Certificate[0]);
+            gen.setRequestorName(x509CertChain[0].getSubjectX500Principal());
+            req = gen.generate("SHA1withRSA", signKey, x509CertChain, "BC");
+        } else
+            req = gen.generate();
 
         // Send the request and receive a BasicResponse
         OCSPUnidResponse ret = sendOCSPPost(req.getEncoded(), cacert, nonce);
@@ -300,16 +313,7 @@ public class OCSPUnidClient {
         KeyStore trustks = KeyStore.getInstance("jks");
         trustks.load(null, "foo123".toCharArray());
         // add trusted CA cert
-        Enumeration en = ks.aliases();
-        String alias = null;
-        // If this alias is a trusted certificate entry, we don't want to fetch that, we want the key entry
-        while ( (alias==null || ks.isCertificateEntry(alias)) && en.hasMoreElements() )
-            alias = (String)en.nextElement();
-        Certificate[] certs = KeyTools.getCertChain(ks, alias);
-        if (certs == null) {
-            throw new IOException("Can not find a certificate entry in PKCS12 keystore for alias "+alias);
-        }
-        trustks.setCertificateEntry("trusted", certs[certs.length-1]);
+        trustks.setCertificateEntry("trusted", certChain[certChain.length-1]);
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(trustks);
 

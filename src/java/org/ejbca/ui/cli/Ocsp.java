@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.math.BigInteger;
-import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -37,13 +36,15 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.6 2008-03-10 15:13:17 primelars Exp $
+ * @version $Id: Ocsp.java,v 1.7 2008-03-13 17:58:04 primelars Exp $
  */
 public class Ocsp {
     final private PerformanceTest performanceTest;
     final private String ocspurl;
     final private X509Certificate cacert;
     final private SerialNrs serialNrs;
+    final private String keyStoreFileName;
+    final private String keyStorePassword;
     private class MyCommandFactory implements CommandFactory {
         MyCommandFactory() {
             super();
@@ -68,8 +69,8 @@ public class Ocsp {
     }
     private class Lookup implements Command {
         private final OCSPUnidClient client;
-        Lookup() {
-            this.client = new OCSPUnidClient((KeyStore)null, null, ocspurl);
+        Lookup() throws Exception {
+            this.client = OCSPUnidClient.getOCSPUnidClient(keyStoreFileName, keyStorePassword, ocspurl, keyStoreFileName!=null);
         }
         public boolean doIt() throws Exception {
             OCSPUnidResponse response = client.lookup(serialNrs.getRandom(),
@@ -90,11 +91,23 @@ public class Ocsp {
         }
     }
     private Ocsp(String args[]) throws Exception {
+        if ( args.length<6 ) {
+            System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> <keystore file>");
+           System.exit(1);
+        }
         this.ocspurl = args[1];
         this.serialNrs = new SerialNrs(args[2]);
         this.cacert = getCertFromPemFile(args[3]);
         final int numberOfThreads = Integer.parseInt(args[4]);
         final int waitTime = Integer.parseInt(args[5]);
+        if( args.length>6 )
+            this.keyStoreFileName = args[6];
+        else
+            this.keyStoreFileName = null;
+        if( args.length>7 )
+            this.keyStorePassword = args[7];
+        else
+            this.keyStorePassword = null;
         this.performanceTest = new PerformanceTest();
         this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
     }
@@ -115,7 +128,7 @@ public class Ocsp {
             final String ocspurl;
             final String certfilename;
             final String cacertfilename;
-            if ( args.length>5 && args[0].equals("test") ) {
+            if ( args.length>0 && args[0].equals("stress") ) {
                 new Ocsp(args);
                 return;
             } else if (args.length == 5) {
@@ -140,7 +153,7 @@ public class Ocsp {
                 return;
             }
             
-            OCSPUnidClient client = new OCSPUnidClient(ksfilename, kspwd, ocspurl);
+            OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspurl, false);
             OCSPUnidResponse response = client.lookup(getCertFromPemFile(certfilename),
                                                       getCertFromPemFile(cacertfilename),
                                                       true);
