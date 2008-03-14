@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.47 2008-02-27 11:12:55 anatom Exp $
+$Id: UPGRADE,v 1.48 2008-03-14 08:20:53 anatom Exp $
 
 UPGRADE
 =======
@@ -75,6 +75,10 @@ The JBoss Mbean create CRL service has been removed in EJBCA 3.6. It has been re
 more portable etc CRL Update Service configured in the Admin-GUI. See the User Guide about CRL creation for details.
 
 If you are using PrimeCardHSM you need to upgrade to a new version, matching EJBCA 3.6.
+
+Note. In EJBCA 3.6 we changed the case of some database column to get full Sybase compatibility. This will not affect
+other database (in that case you would have had problems already), but it can be good to know.
+Column cases changed for most columns in ApprovalData, for cAId in LogEntryData, and for cAId in ProtectedLogData.  
 
 From EJBCA 3.5.x to EJBCA 3.5.x
 -------------------------------

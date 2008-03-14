@@ -2,43 +2,43 @@
   <field-name>id</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>approvalid</field-name>
+  <field-name>approvalId</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>approvaltype</field-name>
+  <field-name>approvalType</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>endentityprofileid</field-name>
+  <field-name>endEntityProfileId</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>caid</field-name>
+  <field-name>cAId</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>reqadmincertissuerdn</field-name>
+  <field-name>reqAdminCertIssuerDn</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>reqadmincertsn</field-name>
+  <field-name>reqAdminCertSn</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>status</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>approvaldata</field-name>
+  <field-name>approvalData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
   <sql-type>LONGTEXT</sql-type>
 </cmp-field>
 <cmp-field>
-  <field-name>requestdata</field-name>
+  <field-name>requestData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
   <sql-type>LONGTEXT</sql-type>
 </cmp-field>
 <cmp-field>
-  <field-name>requestdate</field-name>
+  <field-name>requestDate</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>expiredate</field-name>
+  <field-name>expireDate</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>remainingapprovals</field-name>
+  <field-name>remainingApprovals</field-name>
 </cmp-field>
 
