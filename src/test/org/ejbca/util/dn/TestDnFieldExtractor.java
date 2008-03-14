@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.7 2006-12-04 10:06:26 anatom Exp $
+ * @version $Id: TestDnFieldExtractor.java,v 1.8 2008-03-14 14:16:34 anatom Exp $
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
@@ -56,7 +56,7 @@ public class TestDnFieldExtractor extends TestCase {
     	String dn = "cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	HashMap i = extractor.getNumberOfFields();
-    	assertEquals(17,i.size());
+    	assertEquals(19,i.size());
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
     	cn = extractor.getField(DNFieldExtractor.CN, 1);
