@@ -171,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.37 2008-02-06 12:31:01 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.38 2008-03-14 08:01:01 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1256,8 +1256,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         ResultSet result = null;
         try {
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            String sql = "select MAX(CRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator=?";
-            String deltaCRLSql = "select MAX(CRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator>?";
+            String sql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator=?";
+            String deltaCRLSql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator>?";
             int deltaCRLIndicator = -1;
             if (deltaCRL) {
             	sql = deltaCRLSql;

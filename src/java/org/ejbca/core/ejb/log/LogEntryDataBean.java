@@ -72,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.10 2007-12-07 15:09:02 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.11 2008-03-14 08:00:56 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
@@ -108,14 +108,14 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
     public abstract void setAdminData(String admindata);
 
     /** The id of the CA performing the event.
-     * @ejb.persistence column-name="caId"
+     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method view-type="local"
      */
-    public abstract int getCaId();
+    public abstract int getCAId();
 
     /**
      */
-    public abstract void setCaId(int caid);
+    public abstract void setCAId(int caid);
 
     /** Indicates the module (CA,RA ...) using the logsession bean.
      * @ejb.persistence column-name="module"
@@ -197,7 +197,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      * @return DOCUMENT ME!
      */
     public LogEntry getLogEntry() {
-        return new LogEntry(getId().intValue(), getAdminType(), getAdminData(), getCaId(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
+        return new LogEntry(getId().intValue(), getAdminType(), getAdminData(), getCAId(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
     }
 
     /**
@@ -208,7 +208,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         setId(id);
         setAdminType(admintype);
         setAdminData(admindata);
-        setCaId(caid);
+        setCAId(caid);
         setModule(module);
         setTime(time.getTime());
         setUsername(StringTools.strip(username));

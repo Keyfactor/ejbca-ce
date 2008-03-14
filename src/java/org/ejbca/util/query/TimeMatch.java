@@ -26,7 +26,7 @@ import java.util.Date;
  * Main function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: TimeMatch.java,v 1.2 2006-07-29 11:26:37 herrvendil Exp $
+ * @version $Id: TimeMatch.java,v 1.3 2008-03-14 08:00:58 anatom Exp $
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.UserMatch
@@ -46,7 +46,7 @@ public class TimeMatch extends BasicMatch {
 
     // Private Constants.
     private static final String[] MATCH_WITH_SQLNAMES = {
-        "time", "time", "timeCreated", "timeModified","requestdate","expiredate"
+        "time", "time", "timeCreated", "timeModified","requestDate","expireDate"
     }; // Represents the column names in log/ra tables.
 
     // Public methods.

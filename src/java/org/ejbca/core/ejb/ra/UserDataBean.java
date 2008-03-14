@@ -61,7 +61,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.14 2007-12-06 17:19:08 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.15 2008-03-14 08:00:59 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -93,7 +93,7 @@ import org.ejbca.util.StringTools;
  * @ejb.finder
  *   description="findBySubjectDNAndCAId"
  *   signature="org.ejbca.core.ejb.ra.UserDataLocal findBySubjectDNAndCAId(java.lang.String subjectdn, int caId)"
- *   query="SELECT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.caId=?2"
+ *   query="SELECT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.cAId=?2"
  *
  * @ejb.finder
  *   description="findBySubjectDN"
@@ -148,12 +148,12 @@ public abstract class UserDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="cAId"
      * @ejb.interface-method
      */
-    public abstract int getCaId();
+    public abstract int getCAId();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setCaId(int caid);
+    public abstract void setCAId(int caid);
 
     /**
      * @ejb.persistence column-name="subjectAltName"
@@ -461,7 +461,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     public UserDataVO toUserDataVO() {
         UserDataVO data = new UserDataVO();
         data.setUsername(getUsername());
-        data.setCAId(getCaId());
+        data.setCAId(getCAId());
         data.setCertificateProfileId(getCertificateProfileId());
         data.setDN(getSubjectDN());
         data.setEmail(getSubjectEmail());
@@ -503,7 +503,7 @@ public abstract class UserDataBean extends BaseEntityBean {
         setClearPassword(null);
         setPasswordHash(makePasswordHash(password));
         setSubjectDN(CertTools.stringToBCDNString(dn));
-        setCaId(caid);
+        setCAId(caid);
         setSubjectAltName(null);
         setSubjectEmail(null);
         setStatus(UserDataConstants.STATUS_NEW);

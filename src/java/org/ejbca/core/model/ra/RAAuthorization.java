@@ -28,7 +28,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
  * 
- * @version $Id: RAAuthorization.java,v 1.2 2006-08-09 07:29:51 herrvendil Exp $
+ * @version $Id: RAAuthorization.java,v 1.3 2008-03-14 08:01:00 anatom Exp $
  */
 public class RAAuthorization implements Serializable {
     
@@ -56,9 +56,9 @@ public class RAAuthorization implements Serializable {
         
         while(iter.hasNext()){
           if(authcastring.equals(""))
-            authcastring = " caid = " + ((Integer) iter.next()).toString();   
+            authcastring = " cAId = " + ((Integer) iter.next()).toString();   
           else    
-            authcastring = authcastring + " OR caid = " + ((Integer) iter.next()).toString(); 
+            authcastring = authcastring + " OR cAId = " + ((Integer) iter.next()).toString(); 
         }
         
         if(!authcastring.equals(""))
@@ -82,9 +82,9 @@ public class RAAuthorization implements Serializable {
       	                    
         while(iter.hasNext()){
           if(authendentityprofilestring == null)
-            authendentityprofilestring = " endEntityprofileId = " + ((Integer) iter.next()).toString();   
+            authendentityprofilestring = " endEntityProfileId = " + ((Integer) iter.next()).toString();   
           else    
-            authendentityprofilestring = authendentityprofilestring + " OR endEntityprofileId = " + ((Integer) iter.next()).toString(); 
+            authendentityprofilestring = authendentityprofilestring + " OR endEntityProfileId = " + ((Integer) iter.next()).toString(); 
         }
         
         if(authendentityprofilestring != null)

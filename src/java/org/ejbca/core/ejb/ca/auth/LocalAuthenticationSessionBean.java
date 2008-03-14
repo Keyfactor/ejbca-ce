@@ -52,7 +52,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.11 2008-01-03 12:52:40 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.12 2008-03-14 08:00:53 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -242,13 +242,13 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 if (data.comparePassword(password) == false)
                 {
                 	String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
-                	getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+                	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
                 	throw new AuthLoginException(msg);
                 }
 
             	String msg = intres.getLocalizedMessage("authentication.authok", username);            	
-                getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
-                UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
+                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+                UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), 
                 		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
                 		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
                 ret.setPassword(data.getClearPassword());                             
@@ -256,7 +256,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 return ret;
             }
         	String msg = intres.getLocalizedMessage("authentication.wrongstatus", new Integer(status), username);            	
-        	getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+        	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
         } catch (ObjectNotFoundException oe) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	

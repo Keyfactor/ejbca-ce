@@ -43,23 +43,23 @@ import org.ejbca.util.CertTools;
  * Information stored:
  * <pre>
  *  id (Primary key),    unique row id
- *  approvalid           Constructed from action data as actiontype, admin, username etc. It should
+ *  approvalId           Constructed from action data as actiontype, admin, username etc. It should
  *                       result in the same approvalid if the admin tries to request the same action twice.                   
- *  approvaltype         type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
+ *  approvalType         type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
  *                       constants ex: ApprovalDataVO.APPROVALTYPE_VIEWHARDTOKENDATA
- *  endentityprofileid   For RA specific approval requests should the related end entity profile id be specified
+ *  endEntityProfileId   For RA specific approval requests should the related end entity profile id be specified
  *                       for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
- *  caid                 For CA specific approval requests should the related ca id be specified
+ *  cAId                 For CA specific approval requests should the related ca id be specified
  *                       for non ca request should this field be set to ApprovalDataVO.ANY_CA            
- *  reqadmincertissuerdn The issuerdn of the administrator certificate that generated the request.
- *  reqadmincertsn       The serialnumber of the administrator certificate that generated the request. String in Hex                               
+ *  reqAdminCertIssuerDn The issuerdn of the administrator certificate that generated the request.
+ *  reqAdminCertSn       The serialnumber of the administrator certificate that generated the request. String in Hex                               
  *  status               Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, STATUS_REJECTED, STATUS_EXPIRED, STATUS_EXPIREDANDNOTIFIED, STATUS_EXECUTED                    
- *  approvaldata         Stringrepresentation of data of approvals made by one or more administrators                   
- *  requestdata          Data containing information about the request displayed for the approval administrator.
- *  requestdate          Date the request for approval were added
- *  expiredate           Date the request for action or the approvel action will expire, Long.MAX_VALUE 
+ *  approvalData         Stringrepresentation of data of approvals made by one or more administrators                   
+ *  requestData          Data containing information about the request displayed for the approval administrator.
+ *  requestDate          Date the request for approval were added
+ *  expireDate           Date the request for action or the approvel action will expire, Long.MAX_VALUE 
  *                       means that the request/approval never expires
- *  remainingapprovals   Indicates the number of approvals that remains in order to execute the action                     
+ *  remainingApprovals   Indicates the number of approvals that remains in order to execute the action                     
  * </pre>
  *
  * @ejb.bean
@@ -94,12 +94,12 @@ import org.ejbca.util.CertTools;
  * @ejb.finder
  *   description="findByApprovalId"
  *   signature="Collection findByApprovalId(int approvalid)"
- *   query="SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalid=?1"
+ *   query="SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalId=?1"
  *   
  * @ejb.finder
  *   description="findByApprovalIdNonExpired"
  *   signature="Collection findByApprovalIdNonExpired(int approvalid)"
- *   query="SELECT OBJECT(a) from ApprovalDataBean a WHERE (a.status>-3) and a.approvalid=?1"
+ *   query="SELECT OBJECT(a) from ApprovalDataBean a WHERE (a.status>-3) and a.approvalId=?1"
  *
  * @ejb.finder
  *   description="findAll"
@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.9 2007-11-16 08:10:36 anatom Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.10 2008-03-14 08:00:50 anatom Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 
@@ -139,42 +139,42 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * result in the same approvalid if the admin tries to request the same action twice.
      * 
      * @ejb.pk-field
-     * @ejb.persistence column-name="approvalid"
+     * @ejb.persistence column-name="approvalId"
      */
-    public abstract int getApprovalid();
+    public abstract int getApprovalId();
 
     /**
      * Constructed from action data as actiontype, admin, username etc. It should
      * result in the same approvalid if the admin tries to request the same action twice.
      * 
      */
-    public abstract void setApprovalid(int approvalid);
+    public abstract void setApprovalId(int approvalid);
 
     
     /**   
      * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
      * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
      *     
-     * @ejb.persistence column-name="approvaltype"
+     * @ejb.persistence column-name="approvalType"
      */
-    public abstract int getApprovaltype();
+    public abstract int getApprovalType();
 
     /**
      * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
      * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
      *     
      */
-    public abstract void setApprovaltype(int approvaltype);
+    public abstract void setApprovalType(int approvaltype);
 
     
     /**
      * For RA specific approval requests should the related end entity profile id be specified
      * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
      *     
-     * @ejb.persistence column-name="endentityprofileid"
+     * @ejb.persistence column-name="endEntityProfileId"
      * @ejb.interface-method view-type="local"
      */
-    public abstract int getEndentityprofileid();
+    public abstract int getEndEntityProfileId();
 
     
     /**
@@ -182,16 +182,16 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
      *     
      */
-    public abstract void setEndentityprofileid(int endentityprofileid);
+    public abstract void setEndEntityProfileId(int endentityprofileid);
     
     /**
      * For CA specific approval requests should the related ca id be specified
      * for non ca request should this field be set to ApprovalDataVO.ANY_CA
      *      
-     * @ejb.persistence column-name="caid"
+     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method view-type="local"
      */
-    public abstract int getCaid();
+    public abstract int getCAId();
 
     
     /**
@@ -199,33 +199,33 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * for non ca request should this field be set to ApprovalDataVO.ANY_CA    
      *     
      */
-    public abstract void setCaid(int caid);
+    public abstract void setCAId(int caid);
     
     /**
      * The issuerdn of the administrator certificate that generated the request.
      * 
-     * @ejb.persistence column-name="reqadmincertissuerdn"
+     * @ejb.persistence column-name="reqAdminCertIssuerDn"
      */
-    public abstract String getReqadmincertissuerdn();
+    public abstract String getReqAdminCertIssuerDn();
 
     /**
      * The issuerdn of the administrator certificate that generated the request.
      * 
      */
-    public abstract void setReqadmincertissuerdn(String reqadmincertissuerdn);
+    public abstract void setReqAdminCertIssuerDn(String reqadmincertissuerdn);
     
     /**
      * The serialnumber of the administrator certificate that generated the request. String in Hex.
      * 
-     * @ejb.persistence column-name="reqadmincertsn"
+     * @ejb.persistence column-name="reqAdminCertSn"
      */
-    public abstract String getReqadmincertsn();
+    public abstract String getReqAdminCertSn();
 
     /**
      * The serialnumber of the administrator certificate that generated the request. String in Hex.
      * 
      */
-    public abstract void setReqadmincertsn(String reqadmincertsn);
+    public abstract void setReqAdminCertSn(String reqadmincertsn);
     
     /**
      * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
@@ -246,73 +246,73 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     /**
      * Stringrepresentation of data of approvals made by one or more administrators
      * 
-     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="approvaldata"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="approvalData"
      */
-    public abstract String getApprovaldata();
+    public abstract String getApprovalData();
 
     /**
      * Stringrepresentation of data of approvals made by one or more administrators
      */
-    public abstract void setApprovaldata(String approvaldata);
+    public abstract void setApprovalData(String approvaldata);
 
     /**
      * Data containing information about the request displayed for the approval administrator.
      * 
-     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="requestdata"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="requestData"
      */
-    public abstract String getRequestdata();
+    public abstract String getRequestData();
 
     /**
      * Data containing information about the request displayed for the approval administrator.
      */
-    public abstract void setRequestdata(String requestdata);            
+    public abstract void setRequestData(String requestdata);            
     
     /**
      * Date the request for approval were added
      *
-     * @ejb.persistence column-name="requestdate"
+     * @ejb.persistence column-name="requestDate"
      */
-    public abstract long getRequestdate();
+    public abstract long getRequestDate();
 
     /**
      * Date the request for approval were added
      *
      */
-    public abstract void setRequestdate(long requestdate);
+    public abstract void setRequestDate(long requestdate);
     
     /**
      * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
      * means that the request/approval never expires
      *
-     * @ejb.persistence column-name="expiredate"
+     * @ejb.persistence column-name="expireDate"
      */
-    public abstract long getExpiredate();
+    public abstract long getExpireDate();
 
     /**
      * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
      * means that the request/approval never expires
      *
      */
-    public abstract void setExpiredate(long expiredate);
+    public abstract void setExpireDate(long expiredate);
       
     /**
      * Indicates the number of approvals that remains in order to execute the action
      *      
-     * @ejb.persistence column-name="remainingapprovals"
+     * @ejb.persistence column-name="remainingApprovals"
      */
-    public abstract int getRemainingapprovals();
+    public abstract int getRemainingApprovals();
 
     
     /**
      * Indicates the number of approvals that remains in order to execute the action  
      *     
      */
-    public abstract void setRemainingapprovals(int remainingapprovals);
+    public abstract void setRemainingApprovals(int remainingapprovals);
     
     
     
     private Collection getApprovals() {   
-    	return ApprovalDataUtil.getApprovals(getApprovaldata());
+    	return ApprovalDataUtil.getApprovals(getApprovalData());
     }
     
     /**
@@ -334,7 +334,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     		}
     		oos.flush();
     		
-    		setApprovaldata(new String(Base64.encode(baos.toByteArray(),false)));
+    		setApprovalData(new String(Base64.encode(baos.toByteArray(),false)));
     	} catch (IOException e) {
     		log.error("Error building approvals.",e);
     		throw new EJBException(e);
@@ -342,7 +342,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     }
     
     private ApprovalRequest getApprovalRequest() {
-    	return ApprovalDataUtil.getApprovalRequest(getRequestdata());
+    	return ApprovalDataUtil.getApprovalRequest(getRequestData());
     }
     
     private void setApprovalRequest(ApprovalRequest approvalRequest){
@@ -351,31 +351,31 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	ObjectOutputStream oos = new ObjectOutputStream(baos);
     	oos.writeObject(approvalRequest);
     	oos.flush();
-    	setRequestdata(new String(Base64.encode(baos.toByteArray(),false)));
+    	setRequestData(new String(Base64.encode(baos.toByteArray(),false)));
     	}catch(IOException e){
 			log.error("Error building approval request.",e);
 			throw new EJBException(e);   		
     	}
     }
     
-    private Date getRequestDate(){    
-    	return new Date(getRequestdate());
+    private Date getReqDate(){    
+    	return new Date(getRequestDate());
     }
     
-    private void setRequestDate(Date requestDate){
-    	setRequestdate(requestDate.getTime());
+    private void setReqDate(Date requestDate){
+    	setRequestDate(requestDate.getTime());
     }
     
-    private Date getExpireDate(){    
-    	return new Date(getExpiredate());
+    private Date getExpDate(){    
+    	return new Date(getExpireDate());
     }
 
     /**
      * Method used to set the expire date of the request
      *
      */
-    public void setExpireDate(Date expireDate){
-    	setExpiredate(expireDate.getTime());
+    public void setExpDate(Date expireDate){
+    	setExpireDate(expireDate.getTime());
     }
      
     /**
@@ -386,7 +386,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     private boolean haveRequestOrApprovalExpired(){
     	Date currentDate = new Date();
     	boolean retval = false;
-    	if(currentDate.after(getExpireDate())){
+    	if(currentDate.after(getExpDate())){
     		if(getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL ||
     		   getStatus() == ApprovalDataVO.STATUS_APPROVED ||
     		   getStatus() == ApprovalDataVO.STATUS_REJECTED){
@@ -409,10 +409,10 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     public ApprovalDataVO getApprovalDataVO() {
     	haveRequestOrApprovalExpired();
 
-        return new ApprovalDataVO(getId().intValue(),getApprovalid(),getApprovaltype(),
-        		                  getEndentityprofileid(),getCaid(),getReqadmincertissuerdn(),
-        		                  getReqadmincertsn(), getStatus(),getApprovals(), getApprovalRequest(),
-        		                  getRequestDate(),getExpireDate(),getRemainingapprovals());
+        return new ApprovalDataVO(getId().intValue(),getApprovalId(),getApprovalType(),
+        		                  getEndEntityProfileId(),getCAId(),getReqAdminCertIssuerDn(),
+        		                  getReqAdminCertSn(), getStatus(),getApprovals(), getApprovalRequest(),
+        		                  getReqDate(),getExpDate(),getRemainingApprovals());
         		                                           
     }
     
@@ -435,12 +435,12 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     		throw new ApprovalException("Wrong status of approval request.");
     	}
     	
-    	int numberofapprovalsleft = getRemainingapprovals() -1;
+    	int numberofapprovalsleft = getRemainingApprovals() -1;
     	if(numberofapprovalsleft < 0){
     		throw new ApprovalException("Error already enough approvals have been done on this request.");
     	}
     		
-    	setRemainingapprovals(numberofapprovalsleft);
+    	setRemainingApprovals(numberofapprovalsleft);
     	Collection approvals = getApprovals();
     	approvals.add(approval);
     	setApprovals(approvals);
@@ -456,10 +456,10 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     			  throw e;
     			}
     			setStatus(ApprovalDataVO.STATUS_EXECUTED);
-    			setExpireDate(new Date());
+    			setExpDate(new Date());
     		}else{
     			setStatus(ApprovalDataVO.STATUS_APPROVED);
-    			setExpiredate((new Date()).getTime() + approvalRequest.getApprovalValidity());
+    			setExpireDate((new Date()).getTime() + approvalRequest.getApprovalValidity());
     		}
     	}
         		                                           
@@ -484,22 +484,22 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     		throw new ApprovalException("Wrong status of approval request.");
     	}
     	
-    	int numberofapprovalsleft = getRemainingapprovals() -1;
+    	int numberofapprovalsleft = getRemainingApprovals() -1;
     	if(numberofapprovalsleft < 0){
     		throw new ApprovalException("Error already enough approvals have been done on this request.");
     	}
     		
-    	setRemainingapprovals(0);
+    	setRemainingApprovals(0);
     	Collection approvals = getApprovals();
     	approvals.add(approval);
     	setApprovals(approvals);
     	
     	if(getApprovalRequest().isExecutable()){
 			setStatus(ApprovalDataVO.STATUS_EXECUTIONDENIED);
-			setExpireDate(new Date());    		    		
+			setExpDate(new Date());    		    		
     	}else{
         	setStatus(ApprovalDataVO.STATUS_REJECTED);
-        	setExpiredate((new Date()).getTime() + getApprovalRequest().getApprovalValidity());   		
+        	setExpireDate((new Date()).getTime() + getApprovalRequest().getApprovalValidity());   		
     	}
 
     	        		                                           
@@ -531,7 +531,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	}
     	
     	if(getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
-    		return getRemainingapprovals();
+    		return getRemainingApprovals();
     	}
     	
     	return getStatus();
@@ -556,7 +556,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
         			setStatus(ApprovalDataVO.STATUS_EXPIRED);
         		}
         	}else{
-        		throw new ApprovalRequestExpiredException("Error step " + step + " of approval with id " + getApprovalid() + " have alread been performed");
+        		throw new ApprovalRequestExpiredException("Error step " + step + " of approval with id " + getApprovalId() + " have alread been performed");
         	}
         	
         }
@@ -584,21 +584,21 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     
     public Integer ejbCreate(Integer id, ApprovalRequest approvalRequest) throws CreateException {
         setId(id);
-        setApprovalid(approvalRequest.generateApprovalId());
-        setApprovaltype(approvalRequest.getApprovalType());
-        setEndentityprofileid(approvalRequest.getEndEntityProfileId());        
-        setCaid(approvalRequest.getCAId());
+        setApprovalId(approvalRequest.generateApprovalId());
+        setApprovalType(approvalRequest.getApprovalType());
+        setEndEntityProfileId(approvalRequest.getEndEntityProfileId());        
+        setCAId(approvalRequest.getCAId());
         
         if(approvalRequest.getRequestAdminCert() != null){
-          setReqadmincertissuerdn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
-          setReqadmincertsn(approvalRequest.getRequestAdminCert().getSerialNumber().toString(16));
+          setReqAdminCertIssuerDn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
+          setReqAdminCertSn(approvalRequest.getRequestAdminCert().getSerialNumber().toString(16));
         }
         setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);        
         setApprovals(new ArrayList());
         setApprovalRequest(approvalRequest);                
-        setRequestDate(new Date());
-        setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
-        setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
+        setReqDate(new Date());
+        setExpireDate((new Date()).getTime() + approvalRequest.getRequestValidity());
+        setRemainingApprovals(approvalRequest.getNumOfRequiredApprovals());
 
 
         log.debug("Created approval with id " + id);
