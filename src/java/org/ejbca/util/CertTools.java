@@ -99,7 +99,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.53 2008-03-14 16:31:46 anatom Exp $
+ * @version $Id: CertTools.java,v 1.54 2008-03-14 16:55:36 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -133,6 +133,8 @@ public class CertTools {
     public static final String EFSR_OBJECTID = "1.3.6.1.4.1.311.10.3.4.1";
     /** Object id id-pkix */
     public static final String id_pkix = "1.3.6.1.5.5.7";
+    /** Object id id-kp */
+    public static final String id_kp = id_pkix + ".3";
     /** Object id id-pda */
     public static final String id_pda = id_pkix + ".9";
     /** Object id id-pda-dateOfBirth 
@@ -160,8 +162,11 @@ public class CertTools {
     public static final String id_pda_countryOfResidence = id_pda + ".5"; 
     /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
-    /** New OID for ipsec, replaces old deprecated id_kp_ipsecEndSystem, id_kp_ipsecTunnel and id_kp_ipsecUser */ 
-    public static final String id_kp_ipsecIKE = id_pkix + ".3.17";
+    /** New OID for ipsec (rfc4945), replaces old deprecated id_kp_ipsecEndSystem, id_kp_ipsecTunnel and id_kp_ipsecUser */ 
+    public static final String id_kp_ipsecIKE = id_kp + ".17";
+    /** OIDs for SCVP (rfc5055) */ 
+    public static final String id_kp_scvpServer = id_kp + ".15";
+    public static final String id_kp_scvpClient = id_kp + ".16";
           
     
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };

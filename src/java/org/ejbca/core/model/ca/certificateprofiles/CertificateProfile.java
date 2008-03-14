@@ -38,7 +38,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.33 2008-03-14 16:31:46 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.34 2008-03-14 16:55:37 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -86,6 +86,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	public static final int EFS_OBJECTID        = 11;
 	public static final int EFSR_OBJECTID       = 12;
     public static final int IPSECIKE            = 13;
+    public static final int SCVPSERVER          = 14;
+    public static final int SCVPCLIENT          = 15;
 	
 	
     /** Array of all OIDs for Extended Key Usage 
@@ -94,7 +96,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_emailProtection.getId(),
     	KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_ipsecTunnel.getId(), KeyPurposeId.id_kp_ipsecUser.getId(), 
     	KeyPurposeId.id_kp_timeStamping.getId(), KeyPurposeId.id_kp_smartcardlogon.getId(), KeyPurposeId.id_kp_OCSPSigning.getId(),
-    	CertTools.EFS_OBJECTID, CertTools.EFSR_OBJECTID, CertTools.id_kp_ipsecIKE};
+    	CertTools.EFS_OBJECTID, CertTools.EFSR_OBJECTID, CertTools.id_kp_ipsecIKE,
+    	CertTools.id_kp_scvpServer, CertTools.id_kp_scvpClient};
 
 	/** Microsoft Template Constants */
 	public static final String MSTEMPL_DOMAINCONTROLLER  = "DomainController";
