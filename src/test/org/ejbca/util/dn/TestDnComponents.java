@@ -22,7 +22,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnComponents.java,v 1.2 2006-12-04 12:09:10 anatom Exp $
+ * @version $Id: TestDnComponents.java,v 1.3 2008-03-14 14:09:08 anatom Exp $
  */
 public class TestDnComponents extends TestCase {
     private static Logger log = Logger.getLogger(TestDnComponents.class);
@@ -46,24 +46,23 @@ public class TestDnComponents extends TestCase {
         log.debug("<tearDown()");
     }
 
-    /**
-     * tests stipping whitespace
-     *
-     * @throws Exception error
-     */
     public void test01CheckObjects() throws Exception {
         String[] s = DnComponents.getDnObjects();
-        assertEquals(21, s.length);
-        assertEquals("unstructuredaddress",s[0]);
-        assertEquals("unstructuredname",s[1]);
-        assertEquals("dn",s[5]);
-        assertEquals("uid",s[6]);
-        assertEquals("cn",s[7]);
-        assertEquals("t",s[14]);
-        assertEquals("c",s[20]);
+        assertEquals(23, s.length);
+        assertEquals("businesscategory",s[0]);
+        assertEquals("postalcode",s[1]);
+        assertEquals("unstructuredaddress",s[2]);
+        assertEquals("unstructuredname",s[3]);
+        assertEquals("dn",s[7]);
+        assertEquals("uid",s[8]);
+        assertEquals("cn",s[9]);
+        assertEquals("t",s[16]);
+        assertEquals("c",s[22]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
-        assertEquals(21, s1.length);
+        assertEquals(23, s1.length);
+        assertEquals("businesscategory",s1[22]);
+        assertEquals("postalcode",s1[21]);
         assertEquals("unstructuredaddress",s1[20]);
         assertEquals("unstructuredname",s1[19]);
         assertEquals("uid",s1[14]);
@@ -72,13 +71,15 @@ public class TestDnComponents extends TestCase {
         assertEquals("c",s1[0]);
 
         String[] s2 = DnComponents.getDnObjects();
-        assertEquals(21, s2.length);
-        assertEquals("unstructuredaddress",s2[0]);
-        assertEquals("unstructuredname",s2[1]);
-        assertEquals("uid",s2[6]);
-        assertEquals("cn",s2[7]);
-        assertEquals("t",s2[14]);
-        assertEquals("c",s2[20]);
+        assertEquals(23, s2.length);
+        assertEquals("businesscategory",s2[0]);
+        assertEquals("postalcode",s2[1]);
+        assertEquals("unstructuredaddress",s2[2]);
+        assertEquals("unstructuredname",s2[3]);
+        assertEquals("uid",s2[8]);
+        assertEquals("cn",s2[9]);
+        assertEquals("t",s2[16]);
+        assertEquals("c",s2[22]);
 
     }
     public void test02() {
