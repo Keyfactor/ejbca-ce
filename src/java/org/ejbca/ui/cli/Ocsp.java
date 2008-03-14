@@ -36,7 +36,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.7 2008-03-13 17:58:04 primelars Exp $
+ * @version $Id: Ocsp.java,v 1.8 2008-03-14 13:56:28 primelars Exp $
  */
 public class Ocsp {
     final private PerformanceTest performanceTest;
@@ -70,7 +70,7 @@ public class Ocsp {
     private class Lookup implements Command {
         private final OCSPUnidClient client;
         Lookup() throws Exception {
-            this.client = OCSPUnidClient.getOCSPUnidClient(keyStoreFileName, keyStorePassword, ocspurl, keyStoreFileName!=null);
+            this.client = OCSPUnidClient.getOCSPUnidClient(keyStoreFileName, keyStorePassword, ocspurl, keyStoreFileName!=null, false);
         }
         public boolean doIt() throws Exception {
             OCSPUnidResponse response = client.lookup(serialNrs.getRandom(),
@@ -153,10 +153,9 @@ public class Ocsp {
                 return;
             }
             
-            OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspurl, false);
+            OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspurl, false, true);
             OCSPUnidResponse response = client.lookup(getCertFromPemFile(certfilename),
-                                                      getCertFromPemFile(cacertfilename),
-                                                      true);
+                                                      getCertFromPemFile(cacertfilename));
             if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
             	System.out.println("Error querying OCSP server.");
             	System.out.println("Error code is: "+response.getErrorCode());

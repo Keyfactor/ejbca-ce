@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -71,7 +72,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.12 2008-03-13 17:58:09 primelars Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.13 2008-03-14 13:56:42 primelars Exp $
  *
  */
 public class OCSPUnidClient {
@@ -80,21 +81,38 @@ public class OCSPUnidClient {
 	final private KeyStore ks;
 	final private String passphrase;
     final private PrivateKey signKey;
-    final private Certificate[] certChain;
+    final private X509Certificate[] certChain;
+    final private X509Extensions extensions;
+    final private byte nonce[];
 	
 	/**  
 	 * 
 	 * @param ks KeyStore client keystore used to authenticate TLS client authentication, or null if TLS is not used
 	 * @param pwd String password for the key store, or null if no keystore is used
 	 * @param ocspurl String url to the OCSP server, or null if we should try to use the AIA extension from the cert; e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp (or https for TLS) 
+	 * @throws NoSuchAlgorithmException 
 	 */
-	private OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl, Certificate[] certs, PrivateKey _signKey) {
-		this.httpReqPath = ocspurl;
-		this.passphrase = pwd;
-		this.ks = keystore;
-        this.signKey = _signKey;
-        this.certChain = certs;
-		CertTools.installBCProvider();
+	private OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl, Certificate[] certs, PrivateKey _signKey, boolean getfnr) throws NoSuchAlgorithmException {
+	    this.httpReqPath = ocspurl;
+	    this.passphrase = pwd;
+	    this.ks = keystore;
+	    this.signKey = _signKey;
+	    this.certChain = certs!=null ? Arrays.asList(certs).toArray(new X509Certificate[0]) : null;
+        this.nonce = new byte[16];
+	    {
+	        final Hashtable exts = new Hashtable();
+	        final SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
+	        randomSource.nextBytes(nonce);
+	        final X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));
+	        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, nonceext);
+	        // Don't bother adding Unid extension if we are not using client authentication
+	        if (getfnr && ks!=null) {
+	            X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
+	            exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+	        }
+	        extensions = new X509Extensions(exts);
+	    }
+	    CertTools.installBCProvider();
 	}
 	
 	/**
@@ -104,7 +122,7 @@ public class OCSPUnidClient {
 	 * @return the client to use
      * @throws Exception
 	 */
-	public static OCSPUnidClient getOCSPUnidClient(String ksfilename, String pwd, String ocspurl, boolean doSignRequst) throws Exception {
+	public static OCSPUnidClient getOCSPUnidClient(String ksfilename, String pwd, String ocspurl, boolean doSignRequst, boolean getfnr) throws Exception {
 	    if ( doSignRequst && ksfilename==null )
             throw new Exception("You got to give the path name for a keystore to use when using signing.");
         final KeyStore ks;
@@ -121,9 +139,9 @@ public class OCSPUnidClient {
                 throw new IOException("Can not find a certificate entry in PKCS12 keystore for alias "+alias);
             }
             final PrivateKey privateKey = doSignRequst ? (PrivateKey)ks.getKey(alias, null) : null;
-            return new OCSPUnidClient(ks, pwd, ocspurl, certs, privateKey);
+            return new OCSPUnidClient(ks, pwd, ocspurl, certs, privateKey, getfnr);
 		} else
-            return new OCSPUnidClient(null, null, ocspurl, null, null);
+            return new OCSPUnidClient(null, null, ocspurl, null, null, getfnr);
 	}
     /**
 	 * 
@@ -132,33 +150,31 @@ public class OCSPUnidClient {
 	 * @param getfnr if we should ask for a Unid-Fnr mapping or only query the OCSP server
 	 * @return OCSPUnidResponse conatining the response and the fnr, can contain and an error code and the fnr can be null, never returns null.
 	 */
-	public OCSPUnidResponse lookup(X509Certificate cert, X509Certificate cacert, boolean getfnr) throws OCSPException, IOException, GeneralSecurityException {
+	public OCSPUnidResponse lookup(X509Certificate cert, X509Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
         // See if we must try to get the ocsprul from the cert
         if (httpReqPath == null) {
             httpReqPath = CertTools.getAuthorityInformationAccessOcspUrl(cert);
-            // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
-            if (httpReqPath == null) {
-                OCSPUnidResponse ret = new OCSPUnidResponse();
-                ret.setErrorCode(OCSPUnidResponse.ERROR_NO_OCSP_URI);
-                return ret;
-            }
         }
-        return lookup( cert.getSerialNumber(), cacert, getfnr );
+        return lookup( cert.getSerialNumber(), cacert );
     }
     /**
      * @param serialNr serial number of the certificate to verify
      * @param cacert issuer of the certificate to verify
      * @return response can contain and an error code but the fnr is allways null, never returns null.
-     * @throws OCSPException
+     * @throws OCSPException 
+     * @throws IllegalArgumentException 
      * @throws IOException
      * @throws GeneralSecurityException
      */
     public OCSPUnidResponse lookup(BigInteger serialNr, X509Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
-        return lookup(serialNr, cacert, false);
-    }
-    private OCSPUnidResponse lookup(BigInteger serialNr, X509Certificate cacert, boolean getfnr) throws OCSPException, IOException, GeneralSecurityException {
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, cacert, serialNr);
+        if (httpReqPath == null) {
+            // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
+            OCSPUnidResponse ret = new OCSPUnidResponse();
+            ret.setErrorCode(OCSPUnidResponse.ERROR_NO_OCSP_URI);
+            return ret;
+        }
+        final OCSPReqGenerator gen = new OCSPReqGenerator();
+        final CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, cacert, serialNr);
 //        System.out.println("Generating CertificateId:\n"
 //                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
 //                + " CA certificate\n"
@@ -169,29 +185,16 @@ public class OCSPUnidClient {
 //                + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
         gen.addRequest(certId);
         // Add a nonce to the request
-        Hashtable exts = new Hashtable();
-        byte[] nonce = new byte[16];
-        SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
-        randomSource.nextBytes(nonce);
-        X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, nonceext);
-        // Don't bother adding Unid extension if we are not using client authentication
-        if (getfnr && (ks != null)) {
-            X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
-            exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        }
-        gen.setRequestExtensions(new X509Extensions(exts));        	
+        gen.setRequestExtensions(extensions);        	
         final OCSPReq req;
         if ( signKey!=null ) {
-            final X509Certificate x509CertChain[] = Arrays.asList(certChain).toArray(new X509Certificate[0]);
-            gen.setRequestorName(x509CertChain[0].getSubjectX500Principal());
-            req = gen.generate("SHA1withRSA", signKey, x509CertChain, "BC");
+            gen.setRequestorName(certChain[0].getSubjectX500Principal());
+            req = gen.generate("SHA1withRSA", signKey, certChain, "BC");
         } else
             req = gen.generate();
 
         // Send the request and receive a BasicResponse
-        OCSPUnidResponse ret = sendOCSPPost(req.getEncoded(), cacert, nonce);
-        return ret;
+        return sendOCSPPost(req.getEncoded(), cacert, nonce);
 	}
 
     //
