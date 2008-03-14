@@ -8,7 +8,8 @@
   <field-name>adminData</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>cAId</field-name>
+  <field-name>caId</field-name>
+  <column-name>cAId</column-name>
 </cmp-field>
 <cmp-field>
   <field-name>module</field-name>

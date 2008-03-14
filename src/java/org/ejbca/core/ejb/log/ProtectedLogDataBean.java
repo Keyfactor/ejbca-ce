@@ -117,7 +117,7 @@ public abstract class ProtectedLogDataBean extends BaseEntityBean {
 		setPk(GUIDGenerator.generateGUID(this));
 	    setAdminType(adminType);
 	    setAdminData(admindata);
-	    setCAId(caid);
+	    setCaId(caid);
 	    setModule(module);
 	    setEventTime(eventTime);
 	    setUsername(StringTools.strip(username));
@@ -168,8 +168,8 @@ public abstract class ProtectedLogDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="cAId"
      * @ejb.interface-method
      */
-    public abstract int getCAId();
-    public abstract void setCAId(int caid);
+    public abstract int getCaId();
+    public abstract void setCaId(int caid);
 
     /**
      * @ejb.persistence column-name="module"

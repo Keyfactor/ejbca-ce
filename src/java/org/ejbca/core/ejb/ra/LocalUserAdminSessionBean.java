@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.61 2008-03-14 08:00:58 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.62 2008-03-14 12:38:31 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -678,7 +678,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 data1.setSubjectAltName(userdata.getSubjectAltName());
             if (userdata.getEmail() != null)
                 data1.setSubjectEmail(userdata.getEmail());
-            data1.setCAId(userdata.getCAId());
+            data1.setCaId(userdata.getCAId());
             data1.setType(type);
             data1.setEndEntityProfileId(userdata.getEndEntityProfileId());
             data1.setCertificateProfileId(userdata.getCertificateProfileId());
@@ -757,7 +757,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCAId();
+            caid = data1.getCaId();
 
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
@@ -819,7 +819,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCAId();
+            caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
                 logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
@@ -883,7 +883,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCAId();
+            caid = data1.getCaId();
 
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
@@ -902,7 +902,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             
             // Check if approvals is required.
             int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
-            ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCAId(),data1.getEndEntityProfileId());
+            ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)){       		    		
             	getApprovalSession().addApprovalRequest(admin, ar);
 	            String msg = intres.getLocalizedMessage("ra.approvaledit");            	
@@ -974,7 +974,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         String newpasswd = password;
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-        int caid = data.getCAId();
+        int caid = data.getCaId();
         String dn = data.getSubjectDN();
 
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, data.getEndEntityProfileId());
@@ -1041,7 +1041,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         // Find user
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
-        int caid = data.getCAId();
+        int caid = data.getCaId();
 
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
@@ -1085,7 +1085,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 			throw new NotFoundException ("User '" + username + "' not found."); 
         }
     	// Authorized?
-        int caid = data.getCAId();
+        int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
@@ -1102,9 +1102,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     	try {
 	        if ( getUserStatus(admin, username) != UserDataConstants.STATUS_REVOKED ) {
 		        // Check if approvals is required.
-		        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCAId());
+		        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
 		        RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin,
-		        		numOfReqApprovals, data.getCAId(), data.getEndEntityProfileId());
+		        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
 		        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
 		        	getApprovalSession().addApprovalRequest(admin, ar);
 		            String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
@@ -1140,7 +1140,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
 
-        int caid = data.getCAId();
+        int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
@@ -1160,9 +1160,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             throw new AlreadyRevokedException(msg);
         }
         // Check if approvals is required.
-        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCAId());
+        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
         RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin,
-        		numOfReqApprovals, data.getCAId(), data.getEndEntityProfileId());
+        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
         	getApprovalSession().addApprovalRequest(admin, ar);
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
@@ -1215,7 +1215,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         // Check that the user have revokation rigths.
         authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_REVOKEENDENTITY);
-        int caid = data.getCAId();
+        int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
@@ -1249,9 +1249,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             }            
         }
         // Check if approvals is required.
-        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCAId());
+        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
         RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin,
-        		numOfReqApprovals, data.getCAId(), data.getEndEntityProfileId());
+        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
         	getApprovalSession().addApprovalRequest(admin, ar);
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
@@ -1336,8 +1336,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             return null;
         }
 
-        if (!authorizedToCA(admin, data.getCAId())) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(data.getCAId()));
+        if (!authorizedToCA(admin, data.getCaId())) {
+            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(data.getCaId()));
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -1349,7 +1349,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             }
         }
 
-        UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+        UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                 , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                 , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                 , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
@@ -1427,12 +1427,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         		}
         	}
 
-            if (!authorizedToCA(admin, data.getCAId())) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(data.getCAId()));
+            if (!authorizedToCA(admin, data.getCaId())) {
+                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(data.getCaId()));
                 throw new AuthorizationDeniedException(msg);
             }
 
-            returnval = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+            returnval = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                     , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
@@ -1472,11 +1472,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     break;
             }
 
-            if (!authorizedToCA(admin, data.getCAId())) {
+            if (!authorizedToCA(admin, data.getCaId())) {
                 break;
             }
 
-            UserDataVO user = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+            UserDataVO user = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                     , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
@@ -1513,7 +1513,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             int type = data.getType();
             if ((type & SecConst.USER_ADMINISTRATOR) == 0) {
                 String msg = intres.getLocalizedMessage("ra.errorcertnoadmin", issuerdn, certificatesnr.toString(16));
-                logsession.log(admin, data.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN, msg);
+                logsession.log(admin, data.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         } else {
@@ -2090,7 +2090,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCAId();
+            caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
                 logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);

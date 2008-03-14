@@ -67,7 +67,7 @@ public class ProtectedLogEventRow {
 	public ProtectedLogEventRow(ProtectedLogDataLocal protectedLogDataLocal) {
 		this.adminType = protectedLogDataLocal.getAdminType();
 		this.admindata = protectedLogDataLocal.getAdminData();
-		this.caid = protectedLogDataLocal.getCAId();
+		this.caid = protectedLogDataLocal.getCaId();
 		this.module = protectedLogDataLocal.getModule();
 		this.eventTime = protectedLogDataLocal.getEventTime();
 		this.username = protectedLogDataLocal.getUsername();

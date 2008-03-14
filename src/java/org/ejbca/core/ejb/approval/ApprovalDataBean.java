@@ -49,7 +49,7 @@ import org.ejbca.util.CertTools;
  *                       constants ex: ApprovalDataVO.APPROVALTYPE_VIEWHARDTOKENDATA
  *  endEntityProfileId   For RA specific approval requests should the related end entity profile id be specified
  *                       for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
- *  cAId                 For CA specific approval requests should the related ca id be specified
+ *  caId                 For CA specific approval requests should the related ca id be specified
  *                       for non ca request should this field be set to ApprovalDataVO.ANY_CA            
  *  reqAdminCertIssuerDn The issuerdn of the administrator certificate that generated the request.
  *  reqAdminCertSn       The serialnumber of the administrator certificate that generated the request. String in Hex                               
@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.10 2008-03-14 08:00:50 anatom Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.11 2008-03-14 12:38:30 anatom Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 
@@ -191,7 +191,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="cAId"
      * @ejb.interface-method view-type="local"
      */
-    public abstract int getCAId();
+    public abstract int getCaId();
 
     
     /**
@@ -199,7 +199,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * for non ca request should this field be set to ApprovalDataVO.ANY_CA    
      *     
      */
-    public abstract void setCAId(int caid);
+    public abstract void setCaId(int caid);
     
     /**
      * The issuerdn of the administrator certificate that generated the request.
@@ -410,7 +410,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	haveRequestOrApprovalExpired();
 
         return new ApprovalDataVO(getId().intValue(),getApprovalId(),getApprovalType(),
-        		                  getEndEntityProfileId(),getCAId(),getReqAdminCertIssuerDn(),
+        		                  getEndEntityProfileId(),getCaId(),getReqAdminCertIssuerDn(),
         		                  getReqAdminCertSn(), getStatus(),getApprovals(), getApprovalRequest(),
         		                  getReqDate(),getExpDate(),getRemainingApprovals());
         		                                           
@@ -587,7 +587,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
         setApprovalId(approvalRequest.generateApprovalId());
         setApprovalType(approvalRequest.getApprovalType());
         setEndEntityProfileId(approvalRequest.getEndEntityProfileId());        
-        setCAId(approvalRequest.getCAId());
+        setCaId(approvalRequest.getCAId());
         
         if(approvalRequest.getRequestAdminCert() != null){
           setReqAdminCertIssuerDn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));

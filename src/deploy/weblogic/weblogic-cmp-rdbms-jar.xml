@@ -352,7 +352,7 @@
       </field-map>
       <field-map>
          <cmp-field>caId</cmp-field>
-         <dbms-column>caId</dbms-column>
+         <dbms-column>cAId</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>module</cmp-field>
@@ -400,7 +400,7 @@
       </field-map>
       <field-map>
          <cmp-field>caId</cmp-field>
-         <dbms-column>caId</dbms-column>
+         <dbms-column>cAId</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>module</cmp-field>
@@ -567,8 +567,8 @@
          <dbms-column>endentityprofileid</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>caid</cmp-field>
-         <dbms-column>caid</dbms-column>
+         <cmp-field>caId</cmp-field>
+         <dbms-column>cAId</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>reqadmincertissuerdn</cmp-field>

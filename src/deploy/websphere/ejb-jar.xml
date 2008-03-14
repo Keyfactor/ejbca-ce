@@ -3052,7 +3052,7 @@
          </cmp-field>
          <cmp-field id="CMPAttribute_158">
             <description><![CDATA[For CA specific approval requests should the related ca id be specified for non ca request should this field be set to ApprovalDataVO.ANY_CA]]></description>
-            <field-name>caid</field-name>
+            <field-name>caId</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_159">
             <description><![CDATA[The issuerdn of the administrator certificate that generated the request.]]></description>

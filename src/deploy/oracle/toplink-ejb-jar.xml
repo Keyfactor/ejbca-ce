@@ -1872,7 +1872,7 @@
                <opm:field name="ENDENTITYPROFILEID" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>caid</opm:attribute-name>
+               <opm:attribute-name>caId</opm:attribute-name>
                <opm:field name="CAID" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
