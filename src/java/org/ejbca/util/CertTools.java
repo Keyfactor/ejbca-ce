@@ -99,7 +99,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.52 2008-01-30 09:13:20 thamwickenberg Exp $
+ * @version $Id: CertTools.java,v 1.53 2008-03-14 16:31:46 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -160,6 +160,8 @@ public class CertTools {
     public static final String id_pda_countryOfResidence = id_pda + ".5"; 
     /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
+    /** New OID for ipsec, replaces old deprecated id_kp_ipsecEndSystem, id_kp_ipsecTunnel and id_kp_ipsecUser */ 
+    public static final String id_kp_ipsecIKE = id_pkix + ".3.17";
           
     
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };

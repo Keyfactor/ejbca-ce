@@ -38,7 +38,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.32 2008-01-30 14:56:11 thamwickenberg Exp $
+ * @version $Id: CertificateProfile.java,v 1.33 2008-03-14 16:31:46 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -76,6 +76,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int CLIENTAUTH          = 2;
     public static final int CODESIGNING         = 3;
     public static final int EMAILPROTECTION     = 4;
+    // The following three IPSec key usages are deprecated and replaced by IPSECIKE
     public static final int IPSECENDSYSTEM      = 5;
     public static final int IPSECTUNNEL         = 6;
     public static final int IPSECUSER           = 7;
@@ -84,13 +85,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	public static final int OCSPSIGNING         = 10;
 	public static final int EFS_OBJECTID        = 11;
 	public static final int EFSR_OBJECTID       = 12;
+    public static final int IPSECIKE            = 13;
 	
 	
+    /** Array of all OIDs for Extended Key Usage 
+     */
     public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {KeyPurposeId.anyExtendedKeyUsage.getId(), KeyPurposeId.id_kp_serverAuth.getId(),
     	KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_emailProtection.getId(),
     	KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_ipsecTunnel.getId(), KeyPurposeId.id_kp_ipsecUser.getId(), 
     	KeyPurposeId.id_kp_timeStamping.getId(), KeyPurposeId.id_kp_smartcardlogon.getId(), KeyPurposeId.id_kp_OCSPSigning.getId(),
-    	CertTools.EFS_OBJECTID, CertTools.EFSR_OBJECTID};
+    	CertTools.EFS_OBJECTID, CertTools.EFSR_OBJECTID, CertTools.id_kp_ipsecIKE};
 
 	/** Microsoft Template Constants */
 	public static final String MSTEMPL_DOMAINCONTROLLER  = "DomainController";

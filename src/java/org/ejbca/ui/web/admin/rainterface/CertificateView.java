@@ -42,7 +42,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.6 2008-01-30 09:13:19 thamwickenberg Exp $
+ * @version $Id: CertificateView.java,v 1.7 2008-03-14 16:31:46 anatom Exp $
  */
 public class CertificateView implements java.io.Serializable {
 
@@ -58,10 +58,14 @@ public class CertificateView implements java.io.Serializable {
    
    public static final String[] KEYUSAGETEXTS = {"DIGITALSIGNATURE","NONREPUDIATION", "KEYENCIPHERMENT", "DATAENCIPHERMENT", "KEYAGREEMENT", "KEYCERTSIGN", "CRLSIGN", "ENCIPHERONLY", "DECIPHERONLY" };
    
+   /** Array for texts that must match the indexes in CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS.
+    * if an extended key usage should not be displayed in the GUI, put null as value. 
+    * This is done for deprecated ipsec key usages below. "IPSECENDSYSTEM", "IPSECTUNNEL", "IPSECUSER"  
+    */
    public static final String[] EXTENDEDKEYUSAGETEXTS = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
-                                    "CODESIGNING", "EMAILPROTECTION", "IPSECENDSYSTEM", 
-                                    "IPSECTUNNEL", "IPSECUSER", "TIMESTAMPING", "SMARTCARDLOGON",
-                                    "OCSPSIGNER", "EFS_CRYPTO", "EFS_RECOVERY"};
+                                    "CODESIGNING", "EMAILPROTECTION", null, 
+                                    null, null, "TIMESTAMPING", "SMARTCARDLOGON",
+                                    "OCSPSIGNER", "EFS_CRYPTO", "EFS_RECOVERY", "IPSECIKE"};
 
 
    private static final int SUBALTNAME_OTHERNAME     = 0;

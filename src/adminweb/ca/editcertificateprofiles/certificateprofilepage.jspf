@@ -1021,14 +1021,21 @@ function checkallfields(){
         <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <br>&nbsp;
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="<%=extendedkeyusagetexts.length%>" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
+        <% int ekusize = extendedkeyusagetexts.length;
+           for (int i = 0; i<extendedkeyusagetexts.length; i++)
+             if (extendedkeyusagetexts[i]==null)
+               ekusize--;
+        %>
+        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="<%=ekusize%>" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
            <%  ArrayList eku = certificateprofiledata.getExtendedKeyUsage();
                 for(int i=0; i<extendedkeyusagetexts.length;i++){ %>
+               <% if (extendedkeyusagetexts[i]!=null) { %>
            <option  value="<%= i %>" 
-              <% for(int j=0; j < eku.size(); j++) 
-                   if(((Integer) eku.get(j)).intValue() == i ) out.write(" selected "); %>> 
-              <%= ejbcawebbean.getText(extendedkeyusagetexts[i]) %>
+                 <% for(int j=0; j < eku.size(); j++) 
+                      if(((Integer) eku.get(j)).intValue() == i ) out.write(" selected "); %>> 
+                <%= ejbcawebbean.getText(extendedkeyusagetexts[i]) %>
            </option>
+             <%   } %> 
            <%   } %> 
         </select>
       </td>
