@@ -50,7 +50,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.33 2007-12-28 10:29:41 nponte Exp $
+ * @version $Id: LdapPublisher.java,v 1.34 2008-03-17 09:05:15 herrvendil Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -58,7 +58,7 @@ public class LdapPublisher extends BasePublisher {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 	
-	protected static byte[] fakecrl = null;
+	private static byte[] fakecrl = null;
 	
 	public static final float LATEST_VERSION = 6;
 	
@@ -130,13 +130,7 @@ public class LdapPublisher extends BasePublisher {
         setRemoveRevokedCertificates(true);
         setRemoveUsersWhenCertRevoked(false);
         
-        if(fakecrl == null){          
-		  try {
-			X509CRL crl = CertTools.getCRLfromByteArray(fakecrlbytes);
-			fakecrl = crl.getEncoded();
-		  } catch (CRLException e) {}
-		    catch (IOException e) {}
-		}
+        getFakeCRL();
         
         
     }
@@ -249,10 +243,10 @@ public class LdapPublisher extends BasePublisher {
                 } else {
                     attributeSet.add(certAttr);
                     // Also create using the crlattribute, it may be required
-                    LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), fakecrl);
+                    LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), getFakeCRL());
                     attributeSet.add(crlAttr);
                     // Also create using the arlattribute, it may be required
-                    LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), fakecrl);
+                    LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), getFakeCRL());
                     attributeSet.add(arlAttr);
                     log.debug("Added (fake) attribute for CRL and ARL.");
                 }
@@ -1275,8 +1269,22 @@ public class LdapPublisher extends BasePublisher {
     "EFVr0WDeh2Aglgm4klAFnoJjDWfjTP1NVFdN4GMizqAz/vdXOY3DaDmkwx24eaRw"+
     "7SzqXca4gE7f1GTO").getBytes());
 	
-	
-		
+	/**
+	 * Method to lazy create the fake CRL.
+	 */
+	protected byte[] getFakeCRL(){
+        if(fakecrl == null){          
+  		  try {
+  			X509CRL crl = CertTools.getCRLfromByteArray(fakecrlbytes);
+  			fakecrl = crl.getEncoded();
+  		  } catch (CRLException e) {}
+  		    catch (IOException e) {}
+  		}
+        
+        return fakecrl;
+	}
+    
+    
 	/** 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#clone()
 	 */
