@@ -691,6 +691,8 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <p>If is possible to use the WebService API in WebSphere. Most API functions are working, while a 
 few seems to be hit by incompatibility issues. When EJBCA with WS-API is deployed in WebSphere you
 can use the regular WS CLI (command line interface) to make WS calls from another machine.
+<br/>
+The wsdl is accessible using the url: http://localhost:9080/ejbca/ejbcaws/ejbcaws?wsdl
 </p>
 <p>
 It is also possible to deploy EJBCA WebService API in Websphere as a separate war file.<br/>
