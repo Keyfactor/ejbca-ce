@@ -11,6 +11,13 @@ There are database upgrades in this release so please pay attention!
 Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
 EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgrade instructions.
 
+EJBCA 3.5.5
+-----------
+This is a minor release, fixing a few bugs and adding support for dual authentication for CATokens.
+ - LDAPPublisher initialized the fakeCRL incorrectly
+ - Add support for the fields PostalCode and BusinessCategory, now natively supported by BouncyCastle.
+ - Add Approval option for activation of CAToken
+
 EJBCA 3.5.4
 -----------
 This is a minor release, fixing a few bugs.
