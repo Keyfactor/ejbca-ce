@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * 
  * @author tomas
- * @version $Id: TableVerifyResult.java,v 1.2 2006-08-06 12:37:01 anatom Exp $
+ * @version $Id: TableVerifyResult.java,v 1.3 2008-03-17 12:10:13 jeklund Exp $
  */
 public class TableVerifyResult implements Serializable {
 
@@ -31,6 +31,7 @@ public class TableVerifyResult implements Serializable {
 	public static final int VERIFY_NO_KEY = 4;
 	public static final int VERIFY_WRONG_HASH = 5;
 	public static final int VERIFY_INCOMPATIBLE_ALG = 6;
+	public static final int VERIFY_UNDETERMINED = 7;
 	public static final int VERIFY_UNKNOWN_ERROR = 99;
 
 	public static final String VERIFY_SUCCESS_MSG = "VERIFY_SUCCESS";
@@ -40,6 +41,7 @@ public class TableVerifyResult implements Serializable {
 	public static final String VERIFY_NO_KEY_MSG = "VERIFY_NO_KEY";
 	public static final String VERIFY_WRONG_HASH_MSG = "VERIFY_WRONG_HASH";
 	public static final String VERIFY_INCOMPATIBLE_ALG_MSG = "VERIFY_INCOMPATIBLE_ALG";
+	public static final String VERIFY_UNDETERMINED_MSG = "VERIFY_UNDETERMINED";
 	public static final String VERIFY_UNKNOWN_ERROR_MSG = "VERIFY_UNKNOWN_ERROR";
 	
 	/** One of the codes above */
@@ -76,6 +78,9 @@ public class TableVerifyResult implements Serializable {
 			break;
 		case VERIFY_INCOMPATIBLE_ALG:
 			ret = VERIFY_INCOMPATIBLE_ALG_MSG;
+			break;
+		case VERIFY_UNDETERMINED:
+			ret = VERIFY_UNDETERMINED_MSG;
 			break;
 		case VERIFY_UNKNOWN_ERROR:
 			ret = VERIFY_UNKNOWN_ERROR_MSG;

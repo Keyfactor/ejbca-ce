@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import javax.ejb.EJBException;
 
@@ -264,5 +265,25 @@ public class ProtectedLogEventRow {
 			throw new EJBException(e);
 		}
 		return messageDigest.digest(getAsByteArray(true));
+	}
+
+	public int hashCode() {
+		return getEventIdentifier().hashCode();
+	}
+
+	public boolean equals(Object o) {
+		return o instanceof ProtectedLogEventRow && equals((ProtectedLogEventRow) o);
+	}
+
+	/**
+	 * Return true if both have the same (NodeId,count) value and same hash.
+	 */
+	public boolean equals(ProtectedLogEventRow row) {
+		if (this.getEventIdentifier().equals(row.getEventIdentifier())) {
+			if (Arrays.equals(this.calculateHash(), row.calculateHash())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

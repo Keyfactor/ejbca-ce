@@ -89,4 +89,8 @@ public class ProtectedLogEventIdentifier implements Serializable{
 			setAsByteArray(Base64.decode(data.getBytes()));
 		}
 	}
+	
+	public int hashCode() {
+		return getNodeGUID() + new Long(getCounter()).intValue();
+	}
 }

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.ejb.log;
 
 import java.io.ByteArrayInputStream;
@@ -5,7 +18,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.URI;
 import java.security.Key;
 import java.security.KeyStore;
@@ -72,6 +84,7 @@ import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
+import org.ejbca.util.ManualUpdateCache;
 
 /**
  * The center of the Protected Log functionality. Most services used in this workflow are found here.
@@ -1231,8 +1244,11 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						rs.getString(8), rs.getInt(9), rs.getString(10));
 				// Verify each result
 				String verified = TableVerifyResult.VERIFY_FAILED_MSG;
-				if (verifyProtectedLogEventRow(new ProtectedLogEventRow(protectedLogData.findByPrimaryKey(rs.getString(1))))) {
+				int result = verifyProtectedLogEventRow(new ProtectedLogEventRow(protectedLogData.findByPrimaryKey(rs.getString(1))), true);
+				if (result == 1) {
 					verified = TableVerifyResult.VERIFY_SUCCESS_MSG;
+				} else if (result == 0) {
+					verified = TableVerifyResult.VERIFY_UNDETERMINED_MSG;
 				}
 				data.setVerifyResult(verified);
 				returnval.add(data);
@@ -1247,63 +1263,88 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	}
 
 	/**
-	 * Recurses forward in time, verifying each hash of the previous event until a signature is reached which is verified.
+	 * Iterates forward in time, verifying each hash of the previous event until a signature is reached which is verified.
+	 * @return -1 on failure, 0 if undetermined, 1 if successful
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
-	public boolean verifyProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow) {
+	public int verifyProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow, boolean checkVerifiedSteps) {
 		if (log.isDebugEnabled()) {
 			log.debug(">verifyProtectedLogEventRow");
 		}
-		// If signed - verify this PLER
-		if (protectedLogEventRow.getProtection() != null) {
-			ProtectedLogToken protectedLogToken = getToken(protectedLogEventRow.getProtectionKeyIdentifier());
-			try {
-				return protectedLogToken.verify(protectedLogEventRow.getAsByteArray(false), protectedLogEventRow.getProtection());
-			} catch (Exception e) {
+		int maxVerificationsSteps = ProtectedLogDevice.getMaxVerificationsSteps();
+		ManualUpdateCache cache = ManualUpdateCache.getNewInstance("LogVerification");
+		ProtectedLogEventRow currentProtectedLogEventRow = protectedLogEventRow;
+		int verifiedSteps = -1;
+		while (true) {
+			if (checkVerifiedSteps && verifiedSteps == maxVerificationsSteps) {
+				return 0;
+			}
+			verifiedSteps++;
+			// Is the current row available in cache
+			if (cache.isPresent(currentProtectedLogEventRow)) {
 				if (log.isDebugEnabled()) {
-					log.debug("Could not verify.", e);
+					log.debug("Cache hit at " +currentProtectedLogEventRow.getEventIdentifier().getCounter() + " " +
+							currentProtectedLogEventRow.getEventIdentifier().getNodeGUID());
 				}
-				return false;
+				cache.updateCache();
+				return 1;
 			}
-		} else {
-			// Fetch next from this node
-			ProtectedLogEventIdentifier nextProtectedLogEventIdentifier = new ProtectedLogEventIdentifier(
-					protectedLogEventRow.getEventIdentifier().getNodeGUID(), protectedLogEventRow.getEventIdentifier().getCounter()+1);
-			ProtectedLogEventRow nextProtectedLogEventRow = getProtectedLogEventRow(nextProtectedLogEventIdentifier);
-			if (nextProtectedLogEventRow == null) {
-				return false;
-			}
-			// Make sure that one links in all hashes properly
-			ProtectedLogEventIdentifier[] linkedInEventIdentifiers = nextProtectedLogEventRow.getLinkedInEventIdentifiers();
-			// Create a hash of the linked in nodes
-			MessageDigest messageDigest = null;
-			try {
-				messageDigest = MessageDigest.getInstance(nextProtectedLogEventRow.getCurrentHashAlgorithm(), "BC");
-			} catch (NoSuchAlgorithmException e) {
-				throw new EJBException(e);
-			} catch (NoSuchProviderException e) {
-				throw new EJBException(e);
-			}
-			// Chain nodes with hash
-			byte[] linkedInEventsHash = null;
-			if (linkedInEventIdentifiers != null && linkedInEventIdentifiers.length != 0) {
-				for (int i=0; i<linkedInEventIdentifiers.length; i++) {
-					messageDigest.update(getProtectedLogEventRow(linkedInEventIdentifiers[i]).calculateHash());
-					ProtectedLogEventRow tmpDebug = getProtectedLogEventRow(linkedInEventIdentifiers[i]);
-					//log.info(" ("+linkedInEventIdentifiers[i].getNodeGUID()+"," + linkedInEventIdentifiers[i].getCounter()+") has hash " + tmpDebug.calculateHash()[0] + "...");
+			if (currentProtectedLogEventRow.getProtection() != null) {
+				// If signed the search ends here and the chains is ok if the signature is ok
+				ProtectedLogToken protectedLogToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
+				try {
+					if (protectedLogToken.verify(currentProtectedLogEventRow.getAsByteArray(false), currentProtectedLogEventRow.getProtection())) {
+						cache.updateCache();
+						return 1;
+					} else {
+						return -1;
+					}
+				} catch (Exception e) {
+					if (log.isDebugEnabled()) {
+						log.debug("Could not verify.", e);
+					}
+					return -1;
 				}
-				linkedInEventsHash = messageDigest.digest();
+			} else {
+				// Fetch next from this node
+				ProtectedLogEventIdentifier nextProtectedLogEventIdentifier = new ProtectedLogEventIdentifier(
+						currentProtectedLogEventRow.getEventIdentifier().getNodeGUID(), currentProtectedLogEventRow.getEventIdentifier().getCounter()+1);
+				ProtectedLogEventRow nextProtectedLogEventRow = getProtectedLogEventRow(nextProtectedLogEventIdentifier);
+				if (nextProtectedLogEventRow == null) {
+					return -1;
+				}
+				// Make sure that one links in all hashes properly
+				ProtectedLogEventIdentifier[] linkedInEventIdentifiers = nextProtectedLogEventRow.getLinkedInEventIdentifiers();
+				// Create a hash of the linked in nodes
+				MessageDigest messageDigest = null;
+				try {
+					messageDigest = MessageDigest.getInstance(nextProtectedLogEventRow.getCurrentHashAlgorithm(), "BC");
+				} catch (NoSuchAlgorithmException e) {
+					throw new EJBException(e);
+				} catch (NoSuchProviderException e) {
+					throw new EJBException(e);
+				}
+				// Chain nodes with hash
+				byte[] linkedInEventsHash = null;
+				if (linkedInEventIdentifiers != null && linkedInEventIdentifiers.length != 0) {
+					for (int i=0; i<linkedInEventIdentifiers.length; i++) {
+						messageDigest.update(getProtectedLogEventRow(linkedInEventIdentifiers[i]).calculateHash());
+					}
+					linkedInEventsHash = messageDigest.digest();
+				}
+				// Make sure the hash at the next row is the same as the stored value (this means the current row are ok if the next one is)
+				if (Arrays.equals(linkedInEventsHash, nextProtectedLogEventRow.getLinkedInEventsHash())) {
+					// Recuse through the chain until a protected row is found.
+					currentProtectedLogEventRow = nextProtectedLogEventRow;
+				} else {
+					return -1;
+				}
 			}
-			if (Arrays.equals(linkedInEventsHash, nextProtectedLogEventRow.getLinkedInEventsHash())) {
-				// Recuse through the chain until a protected row is found.
-				return verifyProtectedLogEventRow(nextProtectedLogEventRow);
+			if (log.isDebugEnabled()) {
+				log.debug("<verifyProtectedLogEventRow");
 			}
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<verifyProtectedLogEventRow");
-		}
-		return false;
 	}
 
 	/**
@@ -1345,7 +1386,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				Iterator i = protectedLogDataLocals.iterator();
 				while (i.hasNext()) {
 					ProtectedLogDataLocal protectedLogDataLocal = (ProtectedLogDataLocal) i.next();
-					if (verifyProtectedLogEventRow(new ProtectedLogEventRow(protectedLogDataLocal))) {
+					if (verifyProtectedLogEventRow(new ProtectedLogEventRow(protectedLogDataLocal), false) == 1) {
 						lastExportProtectedLogIdentifier.add(new ProtectedLogEventIdentifier(protectedLogDataLocal.getNodeGUID(), protectedLogDataLocal.getCounter()));
 					}
 					if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
@@ -1588,10 +1629,11 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
-	public ProtectedLogToken getProtectedLogToken(Properties properties) {
+	public ProtectedLogToken getProtectedLogToken() {
 		log.debug(">getProtectedLogToken");
 		ProtectedLogToken protectedLogToken = null;
 		try {
+			Properties properties = ProtectedLogDevice.getPropertiesFromInstance();
 			// Get ProtectedLogToken from configuration data
 			String protectionTokenReferenceType = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
 			String protectionTokenReference = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREF, "AdminCA1");
@@ -1662,7 +1704,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
-	public boolean signAllUnsignedChains(Properties properties, boolean signAll) {
+	public boolean signAllUnsignedChains(boolean signAll) {
 		log.debug(">signAllUnsignedChains");
 		// Find last unsigned event for all nodes, sorted by time, oldest first
 		Integer[] nodeGUIDs = null;
@@ -1670,7 +1712,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Add protection to chains that have frozen
 			Integer[] allNodeGUIDs = getNodeGUIDs(0, new Date().getTime());
 			ArrayList nodeGUIDsArray = new ArrayList();
-			long freezeTreshold = Long.parseLong(properties.getProperty(ProtectedLogVerifier.CONF_FREEZE_THRESHOLD, ProtectedLogVerifier.DEFAULT_FREEZE_THRESHOLD)) * 60 * 1000;
+			long freezeTreshold = ProtectedLogDevice.getFreezeTreshold();
 			for (int i=0; i<allNodeGUIDs.length; i++) {
 				ProtectedLogEventRow protectedLogEventRow = getProtectedLogEventRow(findNewestLogEventRow(allNodeGUIDs[i]));
 				if (protectedLogEventRow != null && protectedLogEventRow.getEventTime() < new Date().getTime() - freezeTreshold &&
@@ -1711,20 +1753,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			messageDigest.update(currentProtectedLogEventRow.calculateHash());
 			byte[] linkedInEventsHash = messageDigest.digest();
-			String nodeIP = ProtectedLogDevice.DEFAULT_NODEIP;
-			try {
-				nodeIP = InetAddress.getLocalHost().getHostAddress();
-			}
-			catch (java.net.UnknownHostException uhe) {
-			}
-			nodeIP = properties.getProperty(ProtectedLogDevice.CONFIG_NODEIP, nodeIP);
+			String nodeIP = ProtectedLogDevice.getNodeIP();
 			ProtectedLogEventRow newProtectedLogEventRow = new ProtectedLogEventRow(Admin.TYPE_INTERNALUSER, null, 0, LogConstants.MODULE_LOG,
 					(new Date().getTime()+10000), null, null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING, "Node-chain was accepted by CLI.",
 					new ProtectedLogEventIdentifier(currentProtectedLogEventIdentifier.getNodeGUID(), currentProtectedLogEventIdentifier.getCounter()+1),
 					nodeIP, linkedInEventIdentifiers, linkedInEventsHash, newestProtectedLogEventRow.getCurrentHashAlgorithm(),
 					newestProtectedLogEventRow.getProtectionKeyIdentifier(), newestProtectedLogEventRow.getProtectionKeyAlgorithm(), null);
 			// Sign new event
-			newProtectedLogEventRow.setProtection(getProtectedLogToken(properties).protect(newProtectedLogEventRow.getAsByteArray(false)));
+			newProtectedLogEventRow.setProtection(getProtectedLogToken().protect(newProtectedLogEventRow.getAsByteArray(false)));
 			// Persist event
 			addProtectedLogEventRow(newProtectedLogEventRow);
         	log.info(intres.getLocalizedMessage("protectedlog.acceptedchain", currentProtectedLogEventIdentifier.getNodeGUID()));
@@ -1970,7 +2006,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						return false;
 					}
 					// Verify current by verifying every step to the next protected log event row with valid protection (cache all steps if signature was valid)
-					if (!verifyProtectedLogEventRow(protectedLogEventRows[i])) {
+					if (verifyProtectedLogEventRow(protectedLogEventRows[i], false) != 1) {
 						ProtectedLogEventIdentifier plei = protectedLogEventRows[i].getEventIdentifier();
 				    	log.error(intres.getLocalizedMessage("protectedlog.error.exportverify", plei.getNodeGUID(), plei.getCounter()));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);

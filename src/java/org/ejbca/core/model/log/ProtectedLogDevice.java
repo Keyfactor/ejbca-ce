@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
@@ -46,12 +59,14 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	public final static String CONFIG_HASHALGO							= "protectionHashAlgorithm";
 	public final static String CONFIG_NODEIP									= "nodeIP";
 	public final static String CONFIG_PROTECTION_INTENSITY		= "protectionIntensity";
+	public final static String CONFIG_MAX_VERIFICATION_STEPS	= "maxVerificationsSteps";
 	public final static String CONFIG_ALLOW_EVENTSCONFIG		= "allowConfigurableEvents";
 	public final static String CONFIG_LINKIN_INTENSITY					= "linkinIntensity";
 	public final static String CONFIG_VERIFYOWN_INTENSITY			= "verifyownIntensity";
 	
 	public final static String DEFAULT_NODEIP								= "127.0.0.1";
 	public final static String DEFAULT_DEVICE_NAME						= "ProtectedLogDevice";
+	public final static String DEFAULT_MAX_VERIFICATION_STEPS	= "0";
 	
 	private static final Logger log = Logger.getLogger(ProtectedLogDevice.class);
     private static final InternalResources intres = InternalResources.getInstance();
@@ -74,7 +89,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private byte[] lastProtectedLogRowHash;
 	private long lastTime;
 	private long protectionIntensity;
-	private String nodeIP = DEFAULT_NODEIP;
+	private String nodeIP;
 	private ProtectedLogToken protectedLogToken;
 	private String protectionHashAlgorithm;
 	private boolean isFirstLogEvent;
@@ -99,7 +114,6 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		systemShutdownNotice = false;
 		lastProtectedLogRowHash = null;
 		lastTime = 0;
-		protectionIntensity = 0;
 		protectedLogToken = null;
 		isFirstLogEvent = true;
 		allowConfigurableEvents = false;
@@ -113,12 +127,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		protectionIntensity = Long.parseLong(properties.getProperty(CONFIG_PROTECTION_INTENSITY, "0")) * 1000; 
 		allowConfigurableEvents = properties.getProperty(CONFIG_ALLOW_EVENTSCONFIG, "false").equalsIgnoreCase("true"); 
 		protectionHashAlgorithm = properties.getProperty(CONFIG_HASHALGO, "SHA-256");
-        try {
-        	nodeIP = InetAddress.getLocalHost().getHostAddress();
-        }
-        catch (java.net.UnknownHostException uhe) {
-        }
-		nodeIP = properties.getProperty(CONFIG_NODEIP, nodeIP);
+		nodeIP = getNodeIP();
 		protectedLogActions = new ProtectedLogActions(properties);
 		if (protectionIntensity != 0 && properties.getProperty(ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, "false").equalsIgnoreCase("true")) {
 	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, CONFIG_PROTECTION_INTENSITY));
@@ -216,7 +225,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 */
 	private ProtectedLogToken getProtectedLogToken() {
 		if (protectedLogToken == null) {
-			protectedLogToken = getProtectedLogSession().getProtectedLogToken(properties);
+			protectedLogToken = getProtectedLogSession().getProtectedLogToken();
 		}
 		return protectedLogToken;
 	}
@@ -436,4 +445,30 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		ret = getProtectedLogSession().performQuery(sql);
 		return ret;
 	} // query
+	
+	public static Properties getPropertiesFromInstance() {
+		if (instance == null) {
+			return new Properties();
+		}
+		return instance.getProperties();
+	}
+	
+	public static int getMaxVerificationsSteps() {
+		return Integer.parseInt(getPropertiesFromInstance().getProperty(CONFIG_MAX_VERIFICATION_STEPS, DEFAULT_MAX_VERIFICATION_STEPS));
+	}
+
+	public static long getFreezeTreshold() {
+		return Long.parseLong(getPropertiesFromInstance().getProperty(ProtectedLogVerifier.CONF_FREEZE_THRESHOLD, ProtectedLogVerifier.DEFAULT_FREEZE_THRESHOLD)) * 60 * 1000;
+	}
+
+	public static String getNodeIP() {
+		String nodeIP = DEFAULT_NODEIP;
+        try {
+        	nodeIP = InetAddress.getLocalHost().getHostAddress();
+        }
+        catch (java.net.UnknownHostException uhe) {
+        }
+		nodeIP = getPropertiesFromInstance().getProperty(CONFIG_NODEIP, nodeIP);
+		return nodeIP;
+	}
 }

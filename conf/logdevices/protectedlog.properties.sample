@@ -10,8 +10,8 @@
 #  3. Run "ant clean" and "ant deploy" to deploy EJBCA with this new
 #     configuration.
 #  4. Start EJBCA
-#  5. Run the ejbca CLI, "bin/ejbca.sh log accept path-to-this-file" or
-#     "bin\ejbca.cmd log accept path-to-this-file"
+#  5. Run the ejbca CLI, "bin/ejbca.sh log accept all" or
+#     "bin\ejbca.cmd log accept all"
 #
 
 # protectionToken is the key used to protect log-rows in the database, the
@@ -40,6 +40,12 @@
 # Protection intensity: how often each node should sign a log-row in seconds.
 #  Default is "0" (sign every line).
 #protectionIntensity=0
+
+# For how many steps of a chain should the algorithm try to find a sealing
+#  singature before concluding "undetermined" when displaying events.
+#  -1 disable verification, 0 undetermined if the requested event isn't signed.
+   Default is "0" which makes sence if protectionIntensity is "0"
+#maxverificationssteps=0
 
 # Link-in intensity: how often to search for new log-rows from other nodes in
 #  seconds. The last found log-row from each node will be linked in. This also
