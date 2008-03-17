@@ -272,6 +272,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			    	log.error(intres.getLocalizedMessage("protectedlog.error.emptyorunprotected"));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_EMPTY_LOG);
 				}
+				lastTimeOfSearchForLogEvents = System.currentTimeMillis();
 			} else {
 				// FInd all new events from other nodes in database to link in, if the right amount of time has passed since last time
 				long now = System.currentTimeMillis();
