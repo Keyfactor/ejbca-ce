@@ -338,7 +338,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="17%">
+    <td width="10%">
                    <% if(sortby.equals(SORTBY_ADMINDATA_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINDATA_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINISTRATOR") %>              
                    <% }else{
@@ -412,18 +412,22 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
+    <td width="7%">
+                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0"><%= ejbcawebbean.getText("VERIFY") %>
+    </td>
   </tr>
   <%     if(logentries == null || logentries.length == 0){     %>
   <tr id="LogTextRow0"> 
     <td width="9%"> &nbsp;</td>
     <td width="7%">&nbsp;</td>
-    <td width="17%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
+    <td width="10%"><%= ejbcawebbean.getText("NOLOGENTRIESFOUND") %></td>
     <td width="10%">&nbsp;</td>
     <td width="5%">&nbsp;</td>
     <td width="9%">&nbsp;</td>
     <td width="7%">&nbsp;</td>
     <td width="18%">&nbsp;</td>
     <td width="18%">&nbsp;</td>
+    <td width="7%">&nbsp;</td>
   </tr>
   <% } else{
          for(int i=0; i < logentries.length; i++){%>
@@ -465,6 +469,13 @@ function viewcert(row){
                     <% } %>
     </td>
     <td width="18%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
+    <td width="7%">
+    <%	if (logentries[i].getValue(LogEntryView.VERIFY).equalsIgnoreCase("VERIFY_SUCCESS")) { %>
+	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("true.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
+	<%	} else {	%>
+	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("false.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
+	<%	} %>
+    </td>
   </tr>
  <%      }
        }%>
