@@ -64,9 +64,9 @@ The database that OcspDS in EJBCA points to only have to contain the Certificate
 created automatically by JBoss when it starts on the external OCSP responder.
 
 The keys used to sign the OCSP response could either be stored on a smart card or soft on the file system
-of the host. It should be one key for each CA.
+of the host or on a PKCS#11 token. It should be one key for each CA.
 
-The certificate profile could be the same for both soft and card keys.
+The certificate profile could be the same for both soft and card and PKCS#11 keys.
 Define a new certificate profile and use 'OCSPSIGNER (FIXED)' as template (use selected as template). 
 This certificate profile is like a normal end entity profile but with the following key usages:
 - Key Usage: Digital Signature
@@ -76,14 +76,24 @@ Configure the newly created certificate profile to use the Ocsp publisher define
 Note: the responders certificate AND the CA certificate need to be published from the CA to the 
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
 
-You also need to create a new End Entity Profile to use the new Certificate Profile. You should set 'Batch' and TokenType=P12
-if you will be issuing soft keys ot the OCSP responder.
+You also need to create a new End Entity Profile to use the new Certificate Profile.
 
 You should then create a user for each CA using this certificate profile.
-Use the token type "p12" or "jks" for soft keys and "user generated" for card keys.
+Use the token type "p12" or "jks" for soft keys and "user generated" for pkcs#11 and card keys.
 
 When a soft key has been created it should be stored in the directory defined by the ocsp.keys.dir property of ejbca.properties.
 The password for each key must be the same and should be equal to the ocsp.keys.keyPassword property of ejbca.properties.
+
+A PKCS#11 certificate is created like this:
+$EJBCA_HOME/bin/pkcs11HSM.sh generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 ocsp i1
+$EJBCA_HOME/bin/pkcs11HSM.sh certreq /opt/nfast/toolkits/pkcs11/libcknfast.so i1 ocsp
+The certificate for the key is then fetched from the enrollment page of EJBCA with the certificate request that was stored in the ocsp.pem
+when the "certreq" command was executed. You then have to manually create a certificate chain file. The OCSP signer certificate should be
+first in this file and the root CA certificate should be last.
+If the chain file is called chain.pem then the certificate chain is installed in the HSM like this:
+$EJBCA_HOME/bin/pkcs11HSM.sh installcert /opt/nfast/toolkits/pkcs11/libcknfast.so i1 chain.pem
+You must then define all ocsp.p11.* properties.
+
 
 Card keys are created on the card with the "create CA Token on card" tool see the HOWTO-CATokenOnCard.txt of PrimeCard.
 Select the choice for one authentication code for all keys on the card. If you want several OCSP responders with same
