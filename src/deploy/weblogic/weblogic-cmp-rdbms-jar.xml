@@ -555,52 +555,52 @@
          <dbms-column>id</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>approvalid</cmp-field>
-         <dbms-column>approvalid</dbms-column>
+         <cmp-field>approvalId</cmp-field>
+         <dbms-column>approvalId</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>approvaltype</cmp-field>
-         <dbms-column>approvaltype</dbms-column>
+         <cmp-field>approvalType</cmp-field>
+         <dbms-column>approvalType</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>endentityprofileid</cmp-field>
-         <dbms-column>endentityprofileid</dbms-column>
+         <cmp-field>endEntityProfileId</cmp-field>
+         <dbms-column>endEntityProfileId</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>caId</cmp-field>
          <dbms-column>cAId</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>reqadmincertissuerdn</cmp-field>
-         <dbms-column>reqadmincertissuerdn</dbms-column>
+         <cmp-field>reqAdminCertIssuerDn</cmp-field>
+         <dbms-column>reqAdminCertIssuerDn</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>reqadmincertsn</cmp-field>
-         <dbms-column>reqadmincertsn</dbms-column>
+         <cmp-field>reqAdminCertSn</cmp-field>
+         <dbms-column>reqAdminCertSn</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>status</cmp-field>
          <dbms-column>status</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>approvaldata</cmp-field>
-         <dbms-column>approvaldata</dbms-column>
+         <cmp-field>approvalData</cmp-field>
+         <dbms-column>approvalData</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>requestdata</cmp-field>
-         <dbms-column>requestdata</dbms-column>
+         <cmp-field>requestData</cmp-field>
+         <dbms-column>requestData</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>requestdate</cmp-field>
-         <dbms-column>requestdate</dbms-column>
+         <cmp-field>requestDate</cmp-field>
+         <dbms-column>requestDate</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>expiredate</cmp-field>
-         <dbms-column>expiredate</dbms-column>
+         <cmp-field>expireDate</cmp-field>
+         <dbms-column>expireDate</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>remainingapprovals</cmp-field>
-         <dbms-column>remainingapprovals</dbms-column>
+         <cmp-field>remainingApprovals</cmp-field>
+         <dbms-column>remainingApprovals</dbms-column>
       </field-map>
       </table-map>
 
