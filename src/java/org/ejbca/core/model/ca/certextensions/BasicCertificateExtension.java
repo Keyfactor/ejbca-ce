@@ -16,6 +16,8 @@ package org.ejbca.core.model.ca.certextensions;
 import java.math.BigInteger;
 import java.security.PublicKey;
 
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERBoolean;
 import org.bouncycastle.asn1.DEREncodable;
@@ -24,6 +26,7 @@ import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.InternalResources;
@@ -41,7 +44,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: BasicCertificateExtension.java,v 1.5 2008-01-10 14:42:17 anatom Exp $
+ * @version $Id: BasicCertificateExtension.java,v 1.6 2008-03-18 08:23:16 jeklund Exp $
  */
 
 public class BasicCertificateExtension extends CertificateExtension {
@@ -56,6 +59,7 @@ public class BasicCertificateExtension extends CertificateExtension {
 	private static String ENCODING_DERUTF8STRING      = "DERUTF8STRING";	 
 	private static String ENCODING_DERIA5STRING       = "DERIA5STRING";	 
 	private static String ENCODING_DERNULL            = "DERNULL";
+	private static String ENCODING_DEROBJECT            = "DEROBJECT";
 	
 	// Defined Properties
 	private static String PROPERTY_VALUE    = "value";
@@ -108,7 +112,11 @@ public class BasicCertificateExtension extends CertificateExtension {
 									  if(encoding.equalsIgnoreCase(ENCODING_DERNULL)){
 										  dEREncodable = new DERNull();
 									  }else{
-										  throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectenc",new Integer(getId())));
+										  if(encoding.equalsIgnoreCase(ENCODING_DEROBJECT)){
+											  dEREncodable = parseHexEncodedDERObject(value);
+										  }else{
+											  throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectenc",new Integer(getId())));
+										  }
 									  }
 		}
 		
@@ -162,7 +170,36 @@ public class BasicCertificateExtension extends CertificateExtension {
 		}
 		return retval;
 	}
-	
+
+	/**
+	 * Tries to read the hex-string as an DERObject. If it contains more than one DEREncodable object, return a DERSequence of the objects.
+	 */
+	private DEREncodable parseHexEncodedDERObject(String value) throws CertificateExtentionConfigurationException {
+		DEREncodable retval = null;
+		if(value.matches("^\\p{XDigit}*")){		  
+		  byte[] bytes = Hex.decode(value);
+		  try {
+			  ASN1InputStream ais = new ASN1InputStream(bytes);
+			  DEREncodable firstObject = ais.readObject();
+			  if (ais.available() > 0) {
+				  ASN1EncodableVector ev = new ASN1EncodableVector();
+				  ev.add(firstObject);
+				  while (ais.available() > 0) {
+					  ev.add(ais.readObject());
+				  }
+				  retval = new DERSequence(ev);
+			  } else {
+				  retval = firstObject;
+			  }
+		  } catch (Exception e) {
+				throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue",value,new Integer(getId())));
+		  }
+		}else{		
+			throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue",value,new Integer(getId())));
+		}
+		return retval;
+	}
+
 	private DEREncodable parseDERBoolean(String value) throws CertificateExtentionConfigurationException {
 		DEREncodable retval = null;
 		if(value.equalsIgnoreCase("TRUE")){
