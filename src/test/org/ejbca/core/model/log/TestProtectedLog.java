@@ -168,8 +168,8 @@ public class TestProtectedLog extends TestCase {
 		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
 		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN.equals(ProtectedLogTestAction.getLastActionCause()));
-		// Sign unsigned chain so ot can be linked in
-		protectedLogSession.signAllUnsignedChains(properties, false);
+		// Sign unsigned chain so it can be linked in
+		protectedLogSession.signAllUnsignedChains(false);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		Thread.sleep(1100);	// By default it takes 1 second between searches new events from other nodes..
 		// And that event will be set 10 seconds in the future so we have to wait 10 more seconds or "cheat"
