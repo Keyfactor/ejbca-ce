@@ -243,7 +243,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 5);
         assertNull(singleResps[0]);
 
-        // sign with a keystore where the CA-certificate is not knowm
+        // sign with a keystore where the CA-certificate is not known
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
         store.load(fis, "foo123".toCharArray());
