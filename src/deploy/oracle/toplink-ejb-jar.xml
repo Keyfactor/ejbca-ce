@@ -1814,7 +1814,7 @@
                      </opm:argument>
                   </opm:arguments>
                   <toplink:call xsi:type="toplink:ejbql-call">
-                     <toplink:ejbql>SELECT OBJECT(a) from ApprovalDataBean a WHERE  (a.status>'-3') and a.approvalid=?1</toplink:ejbql>
+                     <toplink:ejbql>SELECT OBJECT(a) from ApprovalDataBean a WHERE  (a.status>'-3') and a.approvalId=?1</toplink:ejbql>
                   </toplink:call>
                   <toplink:reference-class>org.ejbca.core.ejb.approval.ApprovalDataBean</toplink:reference-class>
                   <toplink:cache-usage>conform</toplink:cache-usage>
@@ -1839,7 +1839,7 @@
                      </opm:argument>
                   </opm:arguments>
                   <toplink:call xsi:type="toplink:ejbql-call">
-                     <toplink:ejbql>SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalid=?1</toplink:ejbql>
+                     <toplink:ejbql>SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalId=?1</toplink:ejbql>
                   </toplink:call>
                   <toplink:reference-class>org.ejbca.core.ejb.approval.ApprovalDataBean</toplink:reference-class>
                   <toplink:cache-usage>conform</toplink:cache-usage>
@@ -1860,15 +1860,15 @@
          </opm:querying>
          <opm:attribute-mappings>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>approvalid</opm:attribute-name>
+               <opm:attribute-name>approvalId</opm:attribute-name>
                <opm:field name="APPROVALID" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>approvaltype</opm:attribute-name>
+               <opm:attribute-name>approvalType</opm:attribute-name>
                <opm:field name="APPROVALTYPE" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>endentityprofileid</opm:attribute-name>
+               <opm:attribute-name>endEntityProfileId</opm:attribute-name>
                <opm:field name="ENDENTITYPROFILEID" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
@@ -1876,11 +1876,11 @@
                <opm:field name="CAID" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>reqadmincertissuerdn</opm:attribute-name>
+               <opm:attribute-name>reqAdminCertIssuerDn</opm:attribute-name>
                <opm:field name="REQADMINCERTISSUERDN" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>reqadmincertsn</opm:attribute-name>
+               <opm:attribute-name>reqAdminCertSn</opm:attribute-name>
                <opm:field name="REQADMINCERTSN" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
@@ -1888,23 +1888,23 @@
                <opm:field name="STATUS" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>approvaldata</opm:attribute-name>
+               <opm:attribute-name>approvalData</opm:attribute-name>
                <opm:field name="APPROVALDATA" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>requestdata</opm:attribute-name>
+               <opm:attribute-name>requestData</opm:attribute-name>
                <opm:field name="REQUESTDATA" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>requestdate</opm:attribute-name>
+               <opm:attribute-name>requestDate</opm:attribute-name>
                <opm:field name="REQUESTDATE" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>expiredate</opm:attribute-name>
+               <opm:attribute-name>expireDate</opm:attribute-name>
                <opm:field name="EXPIREDATE" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>remainingapprovals</opm:attribute-name>
+               <opm:attribute-name>remainingApprovals</opm:attribute-name>
                <opm:field name="REMAININGAPPROVALS" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
