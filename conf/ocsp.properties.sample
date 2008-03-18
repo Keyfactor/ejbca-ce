@@ -116,7 +116,7 @@ ocsp.usecasigningcert=true
 
 #------------------- OCSP publisher db configuration------------------------------
 # All these "ocsp-database.*" properties is used to configure the connection to the database that the
-# ExternalOCSPPublisher will publish to. Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
+# ExternalOCSPPublisher will publish to. Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for information.
 # If no ExternalOCSPPublisher will be used these properties should not be configured.
 # Note that the External OCSP responder itself uses the configuration options database.*.
 #
