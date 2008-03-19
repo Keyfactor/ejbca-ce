@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,9 +30,11 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
+import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.RespID;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.SignRequestException;
@@ -259,5 +262,83 @@ public class OCSPUtil {
         return null;
     }
 
+    /** Finds a certificate in a collection based on the OCSP issuerNameHash and issuerKeyHash
+     * 
+     * @param certId CertificateId from the OCSP request
+     * @param certs the collection of CA certificate to search through
+     * @return X509Certificate A CA certificate or null of not found in the collection
+     * @throws OCSPException
+     */
+    public static X509Certificate findCAByHash(CertificateID certId, Collection certs) throws OCSPException {
+        if (null == certId) {
+            throw new IllegalArgumentException();
+        }
+        if (null == certs || certs.isEmpty()) {
+    		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
+            m_log.info(iMsg);
+            return null;
+        }
+        Iterator iter = certs.iterator();
+        while (iter.hasNext()) {
+            X509Certificate cacert = (X509Certificate) iter.next();
+            try {
+                CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, cacert.getSerialNumber());
+                if (m_log.isDebugEnabled()) {
+                    m_log.debug("Comparing the following certificate hashes:\n"
+                            + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
+                            + " CA certificate\n"
+                            + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
+                            + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
+                            + " CA certificate hashes\n"
+                            + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+                            + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
+                            + " OCSP certificate hashes\n"
+                            + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+                            + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
+                }
+                if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
+                        && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
+                    if (m_log.isDebugEnabled()) {
+                        m_log.debug("Found matching CA-cert with:\n"
+                                + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+                                + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
+                    }
+                    return cacert;
+                }
+            } catch (OCSPException e) {
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
+                m_log.error(errMsg, e);
+            }
+        }
+        if (m_log.isDebugEnabled()) {
+            m_log.debug("Did not find matching CA-cert for:\n"
+                    + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+                    + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");            
+        }
+        return null;
+    }
 
+    /** returns an HashTable of responseExtensions to be added to the BacisOCSPResponseGenerator with
+     * <code>
+     * X509Extensions exts = new X509Extensions(table);
+     * basicRes.setResponseExtensions(responseExtensions);
+     * </code>
+     * 
+     * @param req OCSPReq
+     * @return a Hashtable, can be empty nut not null
+     */
+    public static Hashtable getStandardResponseExtensions(OCSPReq req) {
+        X509Extensions reqexts = req.getRequestExtensions();
+        Hashtable table = new Hashtable();
+        if (reqexts != null) {
+        	// Table of extensions to include in the response
+            X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+            if (null != ext) {
+                //m_log.debug("Found extension Nonce");
+                table.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+            }
+        }
+    	return table;
+    }
+    
 }

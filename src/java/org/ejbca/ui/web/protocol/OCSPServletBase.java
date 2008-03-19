@@ -37,7 +37,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -121,7 +120,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.36 2008-03-09 19:52:16 primelars Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.37 2008-03-19 13:41:19 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -187,78 +186,12 @@ abstract class OCSPServletBase extends HttpServlet {
 
     abstract protected RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber);
 
-    protected X509Certificate findCAByHash(CertificateID certId, Collection certs) throws OCSPException {
-        if (null == certId) {
-            throw new IllegalArgumentException();
-        }
-        if (null == certs || certs.isEmpty()) {
-    		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
-            m_log.info(iMsg);
-            return null;
-        }
-        Iterator iter = certs.iterator();
-        while (iter.hasNext()) {
-            X509Certificate cacert = (X509Certificate) iter.next();
-            try {
-                CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, cacert.getSerialNumber());
-                if (m_log.isDebugEnabled()) {
-                    m_log.debug("Comparing the following certificate hashes:\n"
-                            + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
-                            + " CA certificate\n"
-                            + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
-                            + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
-                            + " CA certificate hashes\n"
-                            + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                            + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
-                            + " OCSP certificate hashes\n"
-                            + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
-                            + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
-                }
-                if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
-                        && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
-                    if (m_log.isDebugEnabled()) {
-                        m_log.debug("Found matching CA-cert with:\n"
-                                + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                                + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
-                    }
-                    return cacert;
-                }
-            } catch (OCSPException e) {
-        		String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
-                m_log.error(errMsg, e);
-            }
-        }
-        if (m_log.isDebugEnabled()) {
-            m_log.debug("Did not find matching CA-cert for:\n"
-                    + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
-                    + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");            
-        }
-        return null;
-    }
-
-    /** returns an HashTable of responseExtensions to be added to the BacisOCSPResponseGenerator with
-     * <code>
-     * X509Extensions exts = new X509Extensions(table);
-     * basicRes.setResponseExtensions(responseExtensions);
-     * </code>
-     * 
-     * @param req OCSPReq
-     * @return a Hashtable, can be empty nut not null
-     */
-    private Hashtable getStandardResponseExtensions(OCSPReq req) {
-        X509Extensions reqexts = req.getRequestExtensions();
-        Hashtable table = new Hashtable();
-        if (reqexts != null) {
-        	// Table of extensions to include in the response
-            X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
-            if (null != ext) {
-                //m_log.debug("Found extension Nonce");
-                table.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-            }
-        }
-    	return table;
-    }
     
+    /** Generates an EJBCA caid from a CA certificate, or looks up the default responder certificate.
+     * 
+     * @param cacert the CA certificate to get the CAid from. If this is null, the default responder CA cert  is looked up and used
+     * @return int 
+     */
     protected int getCaid( X509Certificate cacert ) {
     	X509Certificate cert = cacert;
     	if (cacert == null) {
@@ -270,6 +203,7 @@ abstract class OCSPServletBase extends HttpServlet {
         m_log.debug( cert.getSubjectDN() + " has caid: " + result );
         return result;
     }
+
 
     private BasicOCSPResp signOCSPResponse(OCSPReq req, ArrayList responseList, X509Extensions exts, X509Certificate cacert)
             throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
@@ -466,8 +400,14 @@ abstract class OCSPServletBase extends HttpServlet {
         	m_log.debug(">service()");
         }
         if ((reqBytes == null) || (reqBytes.length == 0)) {
-            m_log.debug("No request bytes");
+            m_log.info("No request bytes from ip: "+request.getRemoteAddr());
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
+            return;
+        }
+        // Don't allow requests larger than 1 million bytes
+        if (reqBytes.length > 1000000) {
+            m_log.info("Too large request, max size is 1000000, from ip: "+request.getRemoteAddr());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Too large request");
             return;
         }
         try {
@@ -519,6 +459,7 @@ abstract class OCSPServletBase extends HttpServlet {
 					}
                 }
 
+                // Get the certificate status requests that are inside this OCSP req
                 Req[] requests = req.getRequestList();
                 if (requests.length <= 0) {
             		String errMsg = intres.getLocalizedMessage("ocsp.errornoreqentities");
@@ -529,13 +470,25 @@ abstract class OCSPServletBase extends HttpServlet {
                     }
                     throw new MalformedRequestException(errMsg);
                 }
+                int maxRequests = 100;
+                if (requests.length > maxRequests) {
+            		String errMsg = intres.getLocalizedMessage("ocsp.errortoomanyreqentities", maxRequests);
+                    m_log.error(errMsg);
+                    {
+                        // All this just so we can create an error response
+                        cacert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);
+                    }
+                    throw new MalformedRequestException(errMsg);
+                }
+                
                 if (m_log.isDebugEnabled()) {
                 	m_log.debug("The OCSP request contains " + requests.length + " simpleRequests.");
                 }
                 
                 // Add standard response extensions
-                Hashtable responseExtensions = getStandardResponseExtensions(req);
+                Hashtable responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
 
+                // Look over the status requests
                 ArrayList responseList = new ArrayList();
                 for (int i = 0; i < requests.length; i++) {
                     CertificateID certId = requests[i].getCertID();
@@ -554,7 +507,7 @@ abstract class OCSPServletBase extends HttpServlet {
                     // We have to look up the ca-certificate for each certId in the request though, as we will check
                     // for revocation on the ca-cert as well when checking for revocation on the certId. 
                     try {
-                        cacert = findCAByHash(certId, m_cacerts);
+                        cacert = OCSPUtil.findCAByHash(certId, m_cacerts);
                         if (cacert == null) {
                             // We could not find certificate for this request so get certificate for default responder
                             cacert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);
@@ -608,7 +561,7 @@ abstract class OCSPServletBase extends HttpServlet {
                             // OR
                             // we don't actually handle requests for the CA issuing the certificate asked about
                             // then we return unknown
-                            if ( (!m_nonExistingIsGood) || (findCAByHash(certId, m_cacerts) == null) ) {
+                            if ( (!m_nonExistingIsGood) || (OCSPUtil.findCAByHash(certId, m_cacerts) == null) ) {
                             	status = "unknown";
                             	certStatus = new UnknownStatus();
                             } 
