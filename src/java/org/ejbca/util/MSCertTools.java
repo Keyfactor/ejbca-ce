@@ -13,7 +13,6 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsExcep
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
 

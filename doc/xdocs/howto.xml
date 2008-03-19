@@ -412,12 +412,12 @@ NameVirtualHost *:443
   </p>
   <ul>
 	<li>The Servlet should verify that e.g. only Users can request User certificates, DCs only DC certs etc..</li>
-	<li>The enroll scripts always fetches new certificates, dispite the existence of new and valid ones..</li>
+	<li>The enroll scripts always fetches new certificates. They should use the command=status first to see if a new cert is needed.</li>
 	<li>AdminWeb cannot verify admin certificates if non-"/ejbca/" path is used in URL.</li>
-	<li>Autoenroll Servelt don't get X-Remote-User if "/ejbca/" path is used in URL.</li>
+	<li>Autoenroll Servlet doesn't get X-Remote-User if "/ejbca/" path is used in URL.</li>
 	<li>Order of Subject DNs is wrong compared with MS certs..</li>
 	<li>SSL connection to AD has not been tested.</li>
-	<li>Certificates don't have the CertificateTemplate attrib yet.. looks nices in Certificate MMC snapin..</li>
+	<li>Certificates don't have the CertificateTemplate attrib yet.. looks nicer in Certificate MMC snapin..</li>
 	<li>JavaScript "onchange" behaves strangely in IE6. Only activated when the table is clicked, not the checkbox..</li>
 	<li>Creation of EEPs is inefficient due to attempted removal of EEP before each new request.. (Debug-code)</li>
   </ul>

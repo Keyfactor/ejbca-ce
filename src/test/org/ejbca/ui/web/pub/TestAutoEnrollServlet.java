@@ -157,8 +157,10 @@ public class TestAutoEnrollServlet extends TestCase {
 			}
 		}
 		assertTrue(isExtendedKeyUsageCritical);
-		log.debug("<test01TestUserRequest");
+		assertEquals("OK", getStatus(remoteUser, "User"));
 		cleanUp("AETester", "Autoenroll-User");
+		assertEquals("NO_SUCH_USER", getStatus(remoteUser, "User"));
+		log.debug("<test01TestUserRequest");
 	}
 
 	/**
@@ -208,11 +210,11 @@ public class TestAutoEnrollServlet extends TestCase {
 	/**
 	 * Test if a SmartcardLogon-template certificate request is handled ok. 
 	 */
-	public void test04TestSmartcardLogonRequest() throws Exception {
+	/*public void test04TestSmartcardLogonRequest() throws Exception {
 		log.debug(">test04TestSmartcardLogonRequest");
 		assertFalse("The test does not exist yet. Write it.", true);
 		log.debug("<test04TestSmartcardLogonRequest");
-	}
+	}*/
 
 	/**
 	 * Post Certificate request to Servlet 
@@ -236,6 +238,7 @@ public class TestAutoEnrollServlet extends TestCase {
 		while (br.ready()) {
 			response += br.readLine();
 		}
+		assertFalse("AutoEnrollment has to be enabled for this test to work.", response.contains("Not allowed."));
 		response = response.replaceFirst("-----BEGIN PKCS7-----", "").replaceFirst("-----END PKCS7-----", "");
 		byte[] responseData = Base64.decode(response.getBytes());
 		X509Certificate returnCertificate= null;
@@ -257,6 +260,27 @@ public class TestAutoEnrollServlet extends TestCase {
 		}
 		assertNotNull("No requested certificate present in response.", returnCertificate);
 		return returnCertificate;
+	}
+
+	/**
+	 * Get status from Servlet 
+	 */
+	private String getStatus(String remoteUser, String certificateTemplate)  throws Exception {
+		URL localAutoEnrollServletURL = new URL("http://127.0.0.1:8080/ejbca/autoenroll");
+		HttpURLConnection localServletConnection = (HttpURLConnection) localAutoEnrollServletURL.openConnection();
+		localServletConnection.setRequestProperty("X-Remote-User", remoteUser);
+		localServletConnection.setRequestProperty("CertificateTemplate", certificateTemplate);
+		localServletConnection.setRequestMethod("GET");
+		localServletConnection.setDoOutput(false);
+		localServletConnection.connect();
+		InputStream is = localServletConnection.getInputStream();
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		String response = "";
+		while (br.ready()) {
+			response += br.readLine();
+		}
+		assertNotNull("No response.", response);
+		return response;
 	}
 
 	private void cleanUp(String username, String profileName) throws RemoteException{

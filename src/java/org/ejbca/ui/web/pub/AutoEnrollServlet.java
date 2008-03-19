@@ -14,9 +14,13 @@
 package org.ejbca.ui.web.pub;
 
 import java.io.IOException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Iterator;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
@@ -181,17 +185,26 @@ public class AutoEnrollServlet extends HttpServlet {
 			return;
 		}
 		log.info("Got request: "+requestData);
-		MSPKCS10RequestMessage req = new MSPKCS10RequestMessage(Base64.decode(requestData.getBytes()));
 		// The next line expects apache to forward the kerberos-authenticated user as X-Remote-User"
 		String remoteUser = request.getHeader("X-Remote-User") ;
+		String usernameShort = StringTools.strip(remoteUser.substring(0, remoteUser.indexOf("@"))).replaceAll("/", "");
 		if (remoteUser == null || "".equals(remoteUser) || "(null)".equals(remoteUser)) {
 			response.getOutputStream().println("X-Remote-User was not supplied..");
 			return;
 		}
-		String certificateTemplate = req.getMSRequestInfoTemplateName();
+		MSPKCS10RequestMessage req = null;
+		String certificateTemplate = null;
+		String command = request.getParameter("command");
+		if (command != null && "status".equalsIgnoreCase(command)) {
+			response.getOutputStream().println(returnStatus(response, internalAdmin, "Autoenrolled-" + usernameShort + "-" + request.getParameter("template")));
+			return; 
+		} else {
+			// Default command "request"
+		}
+		req = new MSPKCS10RequestMessage(Base64.decode(requestData.getBytes()));
+		certificateTemplate = req.getMSRequestInfoTemplateName();
 		int templateIndex = MSCertTools.getTemplateIndex(certificateTemplate);
 		// Create or edit a user "Autoenrolled-Username-Templatename"
-		String usernameShort = StringTools.strip(remoteUser.substring(0, remoteUser.indexOf("@"))).replaceAll("/", "");
 		String username = "Autoenrolled-" + usernameShort + "-" + certificateTemplate;
 		log.info("Got autoenroll request from " + remoteUser + " (" + username + ") for a " + certificateTemplate + "-certificate.");
 		String fetchedSubjectDN = null;
@@ -277,4 +290,38 @@ public class AutoEnrollServlet extends HttpServlet {
 		doPost(request, response);
 		log.debug("<doGet");
 	}
+
+	/**
+	 * Return "OK" if renewal isn't needed.
+	 */
+	private String returnStatus(HttpServletResponse response, Admin admin, String username) {
+		if (!getUserAdminSession().existsUser(admin, username)) {
+			return "NO_SUCH_USER";
+		}
+		Collection certificates = getCertificateStoreSession().findCertificatesByUsername(admin, username);
+		Iterator iter = certificates.iterator();
+		if (!iter.hasNext()) {
+			return "NO_CERTIFICATES";
+		}
+		while (iter.hasNext()) {
+			X509Certificate cert = (X509Certificate) iter.next();
+			try {
+				cert.checkValidity(new Date(System.currentTimeMillis() + 14 * 24 * 3600 * 1000));
+				return "OK";
+			} catch (CertificateExpiredException e) {
+				try {
+					cert.checkValidity(new Date(System.currentTimeMillis()));
+					return "EXPIRING";
+				} catch (CertificateExpiredException e1) {
+				} catch (CertificateNotYetValidException e1) {
+					return "ERROR";
+				}
+			} catch (CertificateNotYetValidException e) {
+				return "ERROR";
+			}
+		}
+		return "EXPIRED";
+		
+	}
+
 }
