@@ -75,7 +75,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.3 2008-01-18 15:08:25 nponte Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.4 2008-03-19 13:55:37 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -240,7 +240,9 @@ public class TestCreateCRLSession extends TestCase {
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
-            usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+            UserDataVO userdata = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", caid, null, "foo@anatom.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+            userdata.setPassword("foo123");
+            usersession.changeUser(admin, userdata, false);
             log.debug("Reset status to NEW");
         }
         KeyPair keys = genKeys();
@@ -283,7 +285,7 @@ public class TestCreateCRLSession extends TestCase {
         		// TODO: verify the reason code
         	}
         }
-        assertTrue(found);
+        assertTrue("Certificate with serial "+cert.getSerialNumber().toString(16)+" not revoked", found);
         
         // Unrevoke the certificate that we just revoked
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
