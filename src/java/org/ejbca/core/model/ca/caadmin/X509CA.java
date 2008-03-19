@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.92 2008-03-10 15:13:16 primelars Exp $
+ * @version $Id: X509CA.java,v 1.93 2008-03-19 14:37:37 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -373,7 +373,10 @@ public class X509CA extends CA implements Serializable {
         }   
     }    
     
-    public byte[] createRequest(Collection attributes) throws CATokenOfflineException {
+    /**
+     * @see CA#createRequest(Collection, String)
+     */
+    public byte[] createRequest(Collection attributes, String signAlg) throws CATokenOfflineException {
     	ASN1Set attrset = null;
     	if (attributes != null) {
     		log.debug("Adding attributes in the request");
@@ -395,7 +398,7 @@ public class X509CA extends CA implements Serializable {
         X509Name x509dn = CertTools.stringToBcX509Name(getSubjectDN(), converter, dnorder);
         PKCS10CertificationRequest req;
 		try {
-			req = new PKCS10CertificationRequest("SHA1WithRSA",
+			req = new PKCS10CertificationRequest(signAlg,
 					x509dn, getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attrset, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getProvider());
 	        return req.getEncoded();
 		} catch (CATokenOfflineException e) {

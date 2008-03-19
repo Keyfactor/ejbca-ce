@@ -73,7 +73,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.26 2008-02-07 16:41:14 anatom Exp $
+ * @version $Id: CA.java,v 1.27 2008-03-19 14:37:37 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -495,9 +495,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /** Creates a PKCS#10 certificate request, that can be sent to an external Root CA
      * 
      * @param attributes PKCS10 attributes to be included in the request, a Collection of DEREncodable objects, ready to put in the request. Can be null.
+     * @param signAlg the signature algorithm used by the CA
      * @return byte array with binary encoded PKCS#10 request
      */
-    public abstract byte[] createRequest(Collection attributes) throws CATokenOfflineException;
+    public abstract byte[] createRequest(Collection attributes, String signAlg) throws CATokenOfflineException;
         
     public byte[] encryptKeys(KeyPair keypair) throws Exception{
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();

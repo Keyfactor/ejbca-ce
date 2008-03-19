@@ -76,7 +76,6 @@ import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -121,7 +120,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.71 2008-02-26 15:37:14 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.72 2008-03-19 14:37:42 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -873,7 +872,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
                      kName.addObject(kSeq);
                      req.setAttributes(kName);
                      */
-                    byte[] req = ca.createRequest(null);
+                    String signAlg = "SHA1WithRSA";
+                    CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
+                    if (tinfo != null) {
+                    	signAlg = tinfo.getSignatureAlgorithm();
+                    }
+                    byte[] req = ca.createRequest(null, signAlg);
                     
                     // create PKCS10RequestMessage
                     returnval = new PKCS10RequestMessage(req);
