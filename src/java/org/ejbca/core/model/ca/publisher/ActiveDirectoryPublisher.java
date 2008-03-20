@@ -35,7 +35,7 @@ import com.novell.ldap.LDAPEntry;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.4 2007-05-29 11:27:53 jeklund Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.5 2008-03-20 10:24:22 thamwickenberg Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
@@ -238,7 +238,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *
      * @return LDAPModificationSet created...
      */
-    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person) {
+    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person, boolean overwrite) {
     	ArrayList modSet = super.getModificationSet(oldEntry, dn, false, person);
 
 		// Modify AD specific attributes
@@ -246,7 +246,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
         return modSet;
     } // getModificationSet
 
-        
+         
     
     
     // Private methods
@@ -258,7 +258,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 		ActiveDirectoryPublisher clone = new ActiveDirectoryPublisher();
 		HashMap clonedata = (HashMap) clone.saveData();
 
-		Iterator i = (data.keySet()).iterator();
+		Iterator i = (data.keySet()).iterator();;
 		while(i.hasNext()){
 			Object key = i.next();
 			clonedata.put(key, data.get(key));

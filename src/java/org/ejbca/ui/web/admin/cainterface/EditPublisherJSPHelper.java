@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.9 2007-12-21 09:02:34 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.10 2008-03-20 10:23:58 thamwickenberg Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 
@@ -107,6 +107,8 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAPUSESSL             = "checkboxldapusessl";
     public static final String CHECKBOX_LDAPCREATENONEXISTING  = "checkboxldapcreatenonexisting";
     public static final String CHECKBOX_LDAPMODIFYEXISTING     = "checkboxldapmodifyexisting";
+    public static final String CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES     = "checkboxldapmodifyexistingattributes";
+    public static final String CHECKBOX_LDAPADDNONEXISTING     = "checkboxldapaddnonexisting";
     public static final String CHECKBOX_LDAP_CREATEINTERMEDIATENODES = "checkboxldapcreateintermediatenodes";
     public static final String CHECKBOX_LDAPADDMULTIPLECERTIFICATES= "checkboxaldapddmultiplecertificates";
     public static final String CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE = "checkboxldaprevokeremovecertificate";
@@ -335,15 +337,27 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
 
                                 value = request.getParameter(CHECKBOX_LDAPCREATENONEXISTING);
                                 if(value != null)
-                                    ldappublisher.setCreateNonExisingUsers(value.equals(CHECKBOX_VALUE));
+                                    ldappublisher.setCreateNonExistingUsers(value.equals(CHECKBOX_VALUE));
                                 else
-                                    ldappublisher.setCreateNonExisingUsers(false);
+                                    ldappublisher.setCreateNonExistingUsers(false);
 
                                 value = request.getParameter(CHECKBOX_LDAPMODIFYEXISTING);
                                 if(value != null)
                                     ldappublisher.setModifyExistingUsers(value.equals(CHECKBOX_VALUE));
                                 else
                                     ldappublisher.setModifyExistingUsers(false);
+
+                                value = request.getParameter(CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES);
+                                if(value != null)
+                                    ldappublisher.setModifyExistingAttributes(value.equals(CHECKBOX_VALUE));
+                                else
+                                    ldappublisher.setModifyExistingAttributes(false);
+
+                                value = request.getParameter(CHECKBOX_LDAPADDNONEXISTING);
+                                if(value != null)
+                                    ldappublisher.setAddNonExistingAttributes(value.equals(CHECKBOX_VALUE));
+                                else
+                                    ldappublisher.setAddNonExistingAttributes(false);
 
                                 value = request.getParameter(CHECKBOX_LDAP_CREATEINTERMEDIATENODES);
                                 if(value != null)

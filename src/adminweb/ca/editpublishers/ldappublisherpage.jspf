@@ -113,7 +113,7 @@
       </td>
       <td width="50%" valign="top"> 
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPCREATENONEXISTING %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
-           <%  if(ldappublisher.getCreateNonExisingUsers())
+           <%  if(ldappublisher.getCreateNonExistingUsers())
                  out.write(" CHECKED ");
            %>>
       </td>
@@ -127,6 +127,32 @@
       <td width="50%" valign="top"> 
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTING %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(ldappublisher.getModifyExistingUsers())
+                 out.write(" CHECKED ");
+           %>>
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("MODIFYEXISTINGATTRIBUTES") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(ldappublisher.getModifyExistingAttributes())
+                 out.write(" CHECKED ");
+           %>>
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("ADDNONEXISTINGATTRIBUTES") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAPADDNONEXISTING %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(ldappublisher.getAddNonExistingAttributes())
                  out.write(" CHECKED ");
            %>>
       </td>

@@ -62,6 +62,6 @@
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/commons-httpclient.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
