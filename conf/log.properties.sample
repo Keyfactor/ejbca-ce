@@ -2,6 +2,13 @@
 # 
 # You should copy and rename this file to log.properties and customize at will.
 #
+# From EJBCA 3.6 there is a new ProtectedLogDevice.
+# This is not default yet because it is rather new. However we believe this log device
+# is far superior from the old log device, especially if you are using a clustered environment.
+# For more info of the ProtectedLogDevice, see logdevices/protectedlog.properties.sample 
+#
+# You should use it!
+#
 
 # Used log devices.
 #  The devices will be displayed in reversed order in the Admin GUI.

@@ -85,37 +85,73 @@ cli for that.
 </subsection> 
 <subsection name="Creating a SubCA signed by an external CA">
 <p>
+Some CA hierarchies have the requirement of being signed by an external Certificate Authorities and sometimes other external CA:s need to be signed by your CA.
+</p>
+<p>
 When creating a CA that is signed by an external CA, you actually create a PKCS10 certificate request
 that is sent to the external CA. When the external CA returns your CAs certificate, this is processed and
 the CA becomes activated.
-<br></br>When creating the certificate request you give the certificate chain of the CA that will sign your CA.
-This is given in PEM format, and EJBCA can be a bit picky about the format. It should be in plain PEM format without
-blank lines before or after like:
+</p>
+<p>
+In order to have your CA signed by an external CA you have to go through the following steps.
+<ol>
+<li>Go the the 'Edit Certificate Authorities' page in the Administration GUI.</li>
+<li>Create a new CA in the same way as internal CA:s. But when selecting signing CA, select 'External CA' instead. Now will the 'Certificate Profile', 'Validity', 'Subject Alternative Name' and 'Policy Id' 
+fields become gray and not editable. Fill in the Description and CRL Specific data and click on the 'Make Certificate Request' 
+button in the bottom of the page.</li>
+<li>At the next page called 'Make Certificate Request' you have to upload the external CA certificate chain that you want to sign your CA certificate with. 
+This file should be in PEM encoding. If there is more than one top CA certificate then should all their certificates be appended into one single file. 
+It should be in plain PEM format without blank lines before or after. An example is below.</li>
+<li>Next, after clicking 'Make Certificate Request' and if everything went successful, should the generated PKCS10 certificate request be displayed that you can copy and paste to the signing CA. There is also the option to download the PEM file if that approach is preferred.</li>
+<li>Now should the signing external CA sign the certificate request and return a certificate. Meanwhile will the newly created CA have a status of 'Waiting for Certificate Response' and will not appear anywhere in the system except in the 'Edit CA' page until it's activated.</li>
+<li>When the Certificate Response has arrived, it must be converted to PEM format if it isn't already so. This can be accomplished with OpenSSL among other tools with the following command if you have received a file in DER encoding (.cer ending):<br/>
+&gt;openssl x509 -inform DER -in filename.cer -outform PEM -out filename.pem</li>
+<li>To activate the new CA, you mark the waiting CA and click on 'Edit' button in the 'Edit CA' page. Go to the bottom of the page and click on 'Receive Certificate Response'. Then upload the received PEM certificate and click again on 'Receive Certificate Response'.</li>
+<li>Now if the received certificate creates a valid certificate chain with the previously uploaded top CA certificates will the status of the CA be set to 'Active'. Observe if you want to activate OCSP functionality for this new CA you have to edit it once again and mark the OCSP functionality as active.</li>
+<li>The new externally signed CA is ready to use.</li>
+</ol>
+</p>
+<p>Exmaple of a plain PEM file for uploading as a certificate chain when creating the request from a CA:
 </p>
 <source>
 -----BEGIN CERTIFICATE-----
-MIICIDCCAYmgAwIBAgIIVP8CMpl0En0wDQYJKoZIhvcNAQEFBQAwIDEOMAwGA1UE
-AxMFUVhMVkExDjAMBgNVBAoTBVFYTFZBMB4XDTA1MTAxOTA4MjYxMloXDTA2MTAx
-OTA4MzYxMlowIDEOMAwGA1UEAxMFUVhMVkExDjAMBgNVBAoTBVFYTFZBMIGfMA0G
-CSqGSIb3DQEBAQUAA4GNADCBiQKBgQCRJvog0sJIzWr2VvpI86dzGBaLazqp+dY7
-E/IleqQPRNMQIe8OjCuADNFiSfaiCC6MH4dTm6LwaxmX36eLHSU9/jH5/QZllolC
-7sttv/ay8cAtIKYCjcsjyNmFzU7BcxxhiY0CWWlemz3eXMkQLZbgR5lR8ce5m0Jg
-OZeLAoOfxwIDAQABo2MwYTAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIB
-JjAdBgNVHQ4EFgQUrpCjRSqqOYm5qOyRKHpZin+0EWkwHwYDVR0jBBgwFoAUrpCj
-RSqqOYm5qOyRKHpZin+0EWkwDQYJKoZIhvcNAQEFBQADgYEABJK+RVZiOJdB2uqs
-LHprk3VPMtUck4exh+/52WnzNaUIpALDFaKB5XKSk0OGQE3S0ltMlsdCJIU1iNff
-QcVC7vrCjlnv9sUa22YIzK4ZBuY8a0cRC/GhfpoX9o+vp1wNWVtTwOLAuNRuZJxw
-U03ZXi1b1HuLtSXrFb6d/3BQq8Y=
+MIIDSjCCAjKgAwIBAgIIEvabM2CgLZcwDQYJKoZIhvcNAQEFBQAwMzETMBEGA1UE
+AxMKV2FsdGVyIENBMTEPMA0GA1UEChMGV2FsdGVyMQswCQYDVQQGEwJTRTAeFw0w
+MzA5MjkwOTI2MzRaFw0wNDA5MjgwOTM2MzRaMDMxEzARBgNVBAMTCldhbHRlciBD
+QTExDzANBgNVBAoTBldhbHRlcjELMAkGA1UEBhMCU0UwggEgMA0GCSqGSIb3DQEB
+AQUAA4IBDQAwggEIAoIBAQC3hXksEud68WwPWWHLJQQkTCuX/K32KHPPn/uPUzab
+Cpc/FnaTmF9yEHmpFdAUr0v5ZPnxVQpcuwrDZc4YfaTLfyUHicQbkftsPAj/2hE4
+UukS2j+nQQcJEnIY0vSZOAOLU3j4bf/RlS6Jl7TPFFfWTxuQF8AruQ+YhaE52JFi
+SapGGXKQJxhsvKT91rLaWSFWNMTTLSDPaBXYEYFuFhLNclDJWf4whfxHSHHkARB/
+3Z0XlT4sFj0fmqEQ6yQb6/WqMFK+1XAIBXZO2MXe26IigWkXw1GfkIx1+fbUPrzu
+8EI2jb0TWl21j1+Mvh3APZtVj5FJNuZN9bgdbrq88hLXAgERo2QwYjAPBgNVHRMB
+Af8EBTADAQH/MA8GA1UdDwEB/wQFAwMHBgAwHQYDVR0OBBYEFNhHOtAwo8MOE/nI
+zzg9KFxCYs8YMB8GA1UdIwQYMBaAFNhHOtAwo8MOE/nIzzg9KFxCYs8YMA0GCSqG
+Sib3DQEBBQUAA4IBAQBHpvicbuJTACtpdwe6cF1nQ57FHnnYr+aAe+ZpH43R6R9d
+eMps02nFAMSs5o8sbPokrpwAtk2yYwCohEFDkZ5JPzIBkgNlNnVHNNRHQTRJ6v6Q
+F2MWUEPc1u5kxSjXEVMmZerG9oknMwpYFmkOnKF46vP3Njt/ExOeRAvCEQq2b8pz
+2QGg8/IK6Omfi7IwxtVYUpgvhdcWekbFIlxkXZiEdlHNBIV1GzzPK1VEzg5kugD/
+h6jeykrsKASx+55AkkBPt2kI+ZikVtp3SVhfZQMGY86c5QMQGlPWYNsr4ociyhfX
+I52Qby+/HNG1ijpx66Z30lUMmXTtWtL4Cu8s7UvC
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIICxzCCAa+gAwIBAgIIBfqGjbQu14swDQYJKoZIhvcNAQEFBQAwMzETMBEGA1UE
+AxMKV2FsdGVyIENBMTEPMA0GA1UEChMGV2FsdGVyMQswCQYDVQQGEwJTRTAeFw0w
+MzA5MjkwOTMzMDFaFw0wNDAxMDcwOTQzMDFaMDQxETAPBgNVBAMTCER1ZGUgQ0Ex
+MRIwEAYDVQQKEwlEdWRlIEluYy4xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEB
+AQUAA4GLADCBhwKBgQCM1hR/DYPXfKDa3oVJbppV4OcYtn2XP9W5Kc1d0+U4qLOm
+JsqIFHDWR07o1QFiPhc9z0UGtwYeE3CpQ8fG8zeur5e286PYptZIST77B9vOdQdl
+PA+dFKFIaEwdzcS7H3Lf38WTE4D1OnyRX5jsiUe+YIQRtjv/Bmem+kSR84G9TwIB
+EaNkMGIwDwYDVR0TAQH/BAUwAwEB/zAPBgNVHQ8BAf8EBQMDBwYAMB0GA1UdDgQW
+BBTDrXZGYXS9GyIUBOZrglhwNjjcnTAfBgNVHSMEGDAWgBTYRzrQMKPDDhP5yM84
+PshcQmLPGDANBgkqhkiG9w0BAQUFAAOCAQEAdmTP1qVUcAKOf+/zvb2lcLKvFwKT
+6KqDlO5NofjqCIfNgCjO2mO176cslnFIbEZQqgGIUnJ3AwfHKHj+U3kM3n5T29kF
+xiLKxIDfjsY6qC03KHeGAgxI92XZyPsO1is6Y6qUnAmiwhIp5HS6E0+xIP1shmtJ
+ZvqU8bueKUWSjx3JDzq+UNLX5pFkK0P0R90TCUEkBx1FNWqoWwb8zfAuO5zcNTEj
+5E9esLjwxJQnIVPiA2l3FfZN9yomK+q7kTZJkX2kMx7G850lPR8CneXZT6bIOfck
+Dw3PqQiroMNx2+gzC/f/wTXsF92aujyG+IZx1FIcNg/MoHXBWG7T8YrjnQ==
 -----END CERTIFICATE-----
 </source>
-<p>To process an external request in EJBCA, type the name of new CA in the 'Add' field in 
-'Edit Certificate Authorities' and press 'Process Certificate Request'. The argument is the
-certificate request exactly as created by the subCA, no blank lines etc.
-</p><p>
-When you have received the signed certificate back from the external CA, edit the CA that
-created the request and press 'Receive Certificate Response'. 
-The PEM file must have no blank lines etc.
-</p>
 <p>
 You can treat an internal CA, i.e. a CA risiding on the same EJBCA instance as another CA, as an external CA. 
 From the SubCA this works just like the normal case, but on the RootCA you must choose the exact same CA Name as
@@ -126,6 +162,19 @@ two different, non-persistens, operator cards sets for the RootCA and the SubCA.
 the PKI but with only one CA activa at a time.
 </p>
 </subsection> 
+<subsection name="Signing an External CA">
+<p>
+In some cases you might want to have one of your CA:s signing another external CA. This is done in the following way:
+<ol>
+<li>In the 'Edit CA' page, choose a CA name of the external CA you are about to sign and click on 'Process Certificate Request'.</li>
+<li>Then you are requested to upload the certificate request sent from the external CA. This should be a file in PEM-encoding.</li>
+<li>The next step is to fill in the data about the CA certificate you are about to create. This is very similar to when you are creating an internal CA but with a fewer fields. The Subject DN is taken from the request. But the signing CA, certificate profile, validity, subject alt name and policy id have to filled in manually.</li>
+<li>After clicking 'Process Certificate Request' the certificate is created and displayed in PEM format. You can also download it as a regular PEM file or as a PKCS7 PEM file.</li>
+<li>Send the processed certificate back to the external CA for activation.</li>
+<li>In the 'Edit CA' page will the newly processed CA be displayed with the status 'External'. This processed CA will only be shown in the 'Edit CA' pages and nowhere else since the system cannot use it. If you want to view the processed certificate, go to the edit page and click on the 'View CA Certificate' link in the bottom of the page.</li>
+</ol>
+</p>
+</subsection>
 <subsection name="Converting an OpenSSL CA">
 <p>
 You can convert a PEM-style Root CA key to a PKCS12 file that can be imported in EJBCA.
