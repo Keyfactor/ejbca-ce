@@ -153,9 +153,19 @@ can be changed.
 Note that the installation must be done with a user with privileges to write to APPSRV_HOME and subdirs. 
 </p><p>
 1) Set the environment variable APPSRV_HOME to where your JBoss is installed,
-example /opt/jboss-4.2.0 or C:\jboss-4.2.0.
-<br/>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
-</p><p>
+example:
+</p> 
+<source>
+APPSRV_HOME=/opt/jboss-4.2.2
+</source>
+<p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
+<br/>Due to Javas memory handling you mey need to assign more memory to ant in order to build the system without OutOfMemory errors. 
+You can do that by setting an environment variable:
+</p>
+<source>
+ANT_OPTS=-Xmx512m
+</source>
+<p>
 2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
 The default values works fine for a test installation. 
 </p><p>
@@ -178,15 +188,24 @@ For production use you should use a real database instead of the embedded one.</
 you can create CAs using DC components later on once the admin GUI is up and running.</li>
 </ul>
 </p><p>
-3) Open a console and type 'ant bootstrap'
-it will compile, jar, war, ear everything and deploy it to JBoss.
+3) Open a console and type:
+</p>
+<source>
+ant bootstrap
+</source>
+<p>it will compile, jar, war, ear everything and deploy it to JBoss.
 </p><p>
 4) Open a console (terminal) and start JBoss.
 You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
 or the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
 picking up everything and deploying the ear without errors.
 </p><p>
-5) Type 'ant install' it will generate all certificates, keys, etc needed to run with an initial CA.
+5) Type:
+</p>
+<source>
+ant install
+</source>
+<p>it will generate all certificates, keys, etc needed to run with an initial CA.
 You will find admin keys in ${ejbca.home}/p12. (do not delete those files!)
 <br/>The command 'ant install' is only run once, when the CA is first installed. It creates lots of things in the database, 
 and can not be run again (it will give an error if you try).
@@ -201,7 +220,12 @@ If you don't have root permission now, you can do it manually later after step 9
 </p><p>
 6) Stop JBoss (ctrl+c or whatever)
 </p><p>
-7) type 'ant deploy', this will deploy everything again and configure the servlet
+7) Type:
+</p>
+<source>
+ant deploy
+</source>
+<p>this will deploy everything again and configure the servlet
 container with the keystore file (this is why we needed to stop the container).
 If you want to use jboss specific service for automatic creation of the CRL:s you should enable this option in ejbca.properties,
  see the chapter about 'CRL generation'.
