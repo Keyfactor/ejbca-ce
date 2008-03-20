@@ -263,7 +263,7 @@ You must stop and start JBoss after doing this.
 </p>
 <p>
 You can use this command to install the certificate of any CA in the java truststore by giving an argument: 
-<br/>ant javatruststore -Dca.name=MyCaName
+<br/>ant javatruststore -Dca.name="My Ca Name"
 </p></subsection>
 
 <subsection name="Additional howtos">
