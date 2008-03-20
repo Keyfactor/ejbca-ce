@@ -14,7 +14,7 @@ Notable changes in no specific order:
 - LDAP publisher improvements.
 - User notification improvements.
 
-EJBCA is suitable and tested for very large installations with millions of users and certificates.
+EJBCA is suitable and tested for very large, clustered installations with millions of users and certificates.
 
 For upgrade instructions, please se UPGRADE. 
 There are database upgrades in this release so please pay attention!
