@@ -128,7 +128,7 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.28 2008-03-10 14:32:07 anatom Exp $
+ * $Id: EjbcaWS.java,v 1.29 2008-03-21 14:55:50 herrvendil Exp $
  */
 @WebService
 public class EjbcaWS implements IEjbcaWS {
@@ -951,6 +951,11 @@ public class EjbcaWS implements IEjbcaWS {
 					try{
 					  status = ejbhelper.getApprovalSession().isApproved(admin, ar.generateApprovalId(), 1);
 					  approvalSuccessfullStep1 =  status == ApprovalDataVO.STATUS_APPROVED;
+					  if(approvalSuccessfullStep1){
+						  ApprovalDataVO approvalDataVO = ejbhelper.getApprovalSession().findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
+						  String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
+						  userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
+					  }
 					  isRejectedStep1 = status == ApprovalDataVO.STATUS_REJECTED;
 					  if(   status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED
 					     || status == ApprovalDataVO.STATUS_EXPIRED){
