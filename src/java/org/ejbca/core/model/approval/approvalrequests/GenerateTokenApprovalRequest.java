@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
  * hard token generation
  * 
  * @author Philip Vendil
- * @version $Id: GenerateTokenApprovalRequest.java,v 1.2 2007-07-05 05:55:07 herrvendil Exp $
+ * @version $Id: GenerateTokenApprovalRequest.java,v 1.3 2008-03-21 14:57:23 herrvendil Exp $
  */
 public class GenerateTokenApprovalRequest extends ApprovalRequest {
 
@@ -76,7 +76,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
      * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {					
-		return new String(getApprovalType() + ";" + username + ";" + CertTools.getSubjectDN(getRequestAdminCert())+ ";" + CertTools.getIssuerDN(getRequestAdminCert())).hashCode();
+		return new String(getApprovalType() + ";" + username + ";" + CertTools.getFingerprintAsString(getRequestAdminCert())).hashCode();
 	}
 
 
@@ -119,6 +119,14 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
             dn = (String) in.readObject();
             tokenTypeLabel = (String) in.readObject();            
         }
+	}
+
+
+	/**
+	 * @return the subject dn used in the request
+	 */
+	public String getDN() {
+		return dn;
 	}
 
 }

@@ -648,6 +648,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	
     	try {
 			Collection result = approvalHome.findByApprovalId(approvalId);
+			if(result.size() == 0){
+				throw new ApprovalException("Approval request with id : " + approvalId + " doesn't exists");
+			}
 			Iterator iter = result.iterator();
 			while(iter.hasNext()){
 				ApprovalDataLocal adl = (ApprovalDataLocal) iter.next();

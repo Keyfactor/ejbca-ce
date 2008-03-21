@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ViewHardTokenDataApprovalRequest.java,v 1.1 2007-06-25 14:45:31 herrvendil Exp $
+ * @version $Id: ViewHardTokenDataApprovalRequest.java,v 1.2 2008-03-21 14:57:23 herrvendil Exp $
  */
 public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 
@@ -70,10 +70,10 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 	}
 
     /**
-     * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
+     * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + username + ";" + tokensn +";"+ CertTools.getSubjectDN(getRequestAdminCert()) + ";" + CertTools.getIssuerDN(getRequestAdminCert())).hashCode();
+		return new String(getApprovalType() + ";" + username + ";" + tokensn +";"+ CertTools.getFingerprintAsString(getRequestAdminCert())).hashCode();
 	}
 
 
