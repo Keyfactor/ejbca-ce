@@ -18,6 +18,11 @@ else
     JAVACMD=$JAVA_HOME/bin/java
 fi
 
+if [ -z "$EJBCA_HOME" ] ; then
+	EJBCA_FILE="$0" 
+	EJBCA_HOME=`echo $(dirname $(dirname $EJBCA_FILE))`
+fi
+
 # Wich command are we running?
 if [ "$1" = "batch" ] ; then 
 	class_name=org.ejbca.ui.cli.batch.BatchMakeP12
@@ -30,7 +35,7 @@ elif [ "$1" = "setup" ] ; then
 elif [ "$1" = "hardtoken" ] ; then
 	class_name=org.ejbca.ui.cli.hardtoken.hardtoken	
 elif [ "$1" = "template" ] ; then
-        CP=:${EJBCA_HOME}/lib/ext/xerces_2_3_0.jar
+	JAR_DIR=${EJBCA_HOME}/lib/batik
 	class_name=org.ejbca.ui.cli.SVGTemplatePrinter
 elif [ "$1" = "ocsp" ] ; then
 	class_name=org.ejbca.ui.cli.Ocsp
@@ -78,11 +83,6 @@ else
     exit 1
 fi
 
-if [ -z "$EJBCA_HOME" ] ; then
-	EJBCA_FILE="$0" 
-	EJBCA_HOME=`echo $(dirname $(dirname $EJBCA_FILE))`
-fi
-
 # Check that classes exist
 if [ ! -d ${EJBCA_HOME}/tmp/bin/classes ]
 then    
@@ -92,6 +92,11 @@ fi
 
 # library classpath
 CP="$EJBCA_HOME/tmp/bin/classes"$CP
+if [ -d "$JAR_DIR" ] ; then
+	for i in "${JAR_DIR}"/*.jar ; do
+		CP="$i":"$CP"
+done
+fi
 for i in "${J2EE_DIR}"/*.jar
 do
 	CP="$i":"$CP"
