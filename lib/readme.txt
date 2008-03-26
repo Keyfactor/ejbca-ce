@@ -13,9 +13,6 @@ commons-lang-2.0.jar is used throughout EJBCA.
 
 commons-cli-1.0.jar is used to create nice CLI programs.
 
-Batik-x jars are apache jars, License is Apache.
-The jars are used for creating printouts for labels etc used by the hard token interface.
-
 bc-x jars are BouncyCastle (http://www.bouncycastle.org), License is BC (BSD like).
 These jars are the cryptographic foundation in EJBCA.
 
