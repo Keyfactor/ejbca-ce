@@ -8,7 +8,8 @@ Notable changes in no specific order:
 - More WebService API commands.
 - Support for Oracle Application Server and Websphere, improvements for Weblogic.
 - Support for DB2 database.
-- Autoenroll certificates for Microsoft systems.
+- Support for delta CRLs
+- Auto-enroll certificates for Microsoft systems (see ejbca.org->Howto).
 - Improved PKCS#11 support for HSMs.
 - OCSP improvements, support for PKCS#11 HSMs on external OCSP responder.
 - External RA improvements, better configuration and SCEP improvements.
