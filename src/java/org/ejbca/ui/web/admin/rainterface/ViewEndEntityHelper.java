@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.6 2007-05-08 14:10:00 jeklund Exp $
+ * @version $Id: ViewEndEntityHelper.java,v 1.7 2008-03-26 13:06:57 anatom Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
@@ -156,15 +156,15 @@ public class ViewEndEntityHelper implements java.io.Serializable{
     			  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());
     	  }else{ 
     		  if(action  == null && request.getParameter(USER_PARAMETER) != null){    		  
-    			  username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-    			
+    			  username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");    			
     			  notauthorized = !getUserDatas(username);
-    			  userdata = userdatas[0];
-    			  currentuserindex = 0;
-
     			  nouserparameter = false;
-    			  if(userdata!=null)
-    				  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());
+    			  if ( (userdatas != null) && (userdatas.length > 0) ) {
+        			  userdata = userdatas[0];
+        			  currentuserindex = 0;
+        			  if(userdata!=null)
+        				  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());    				  
+    			  }
     		  }else{
 				  
     			  if( action != null && request.getParameter(USER_PARAMETER)!=null){
