@@ -90,7 +90,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.23 2008-03-07 17:28:28 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.24 2008-03-26 13:08:07 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -365,7 +365,11 @@ public class CertReqServlet extends HttpServlet {
             while (paramNames.hasMoreElements()) {
                 String name = paramNames.nextElement().toString();
                 String parameter = request.getParameter(name);
-                debug.print(name + ":" + parameter + "\n");
+                if (!StringUtils.equals(name, "password")) {
+                    debug.print(name + ": '" + parameter + "'\n");                	
+                } else {
+                	debug.print(name + ": <hidden>\n");
+                }
             }
             debug.takeCareOfException(e);
             debug.printDebugInfo();
