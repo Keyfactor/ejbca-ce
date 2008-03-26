@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.12 2008-02-26 15:37:14 herrvendil Exp $
+ * @version $Id: CAInfo.java,v 1.13 2008-03-26 13:22:48 anatom Exp $
  */
 public class CAInfo implements Serializable {
 
@@ -126,6 +126,7 @@ public class CAInfo implements Serializable {
     public int getRevokationReason(){ return this.revokationreason;}
     public Date getRevokationDate(){ return this.revokationdate;}    
     
+    public void setCertificateProfileId(int _certificateprofileid) { this.certificateprofileid = _certificateprofileid; }
     public int getCertificateProfileId(){ return this.certificateprofileid; }
     
     public int getCRLPeriod(){ return crlperiod;}
