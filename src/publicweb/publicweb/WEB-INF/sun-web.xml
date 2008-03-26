@@ -25,7 +25,7 @@
         <jndi-name>CertificateStoreSession</jndi-name>
     </ejb-ref>
     <ejb-ref>
-        <ejb-ref-name>ejb/RAAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
         <jndi-name>RaAdminSession</jndi-name>
     </ejb-ref>
  
