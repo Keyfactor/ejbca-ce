@@ -129,23 +129,32 @@ public class OldLogDevice implements ILogDevice, Serializable {
 		if (exception != null) {
 			comment += ", Exception: " + exception.getMessage();
 		}
-        try {
-            String uid = certificate == null ? null : certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();
-            Integer id = getAndIncrementRowCount();
-            logentryhome.create(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
-            if (logsigning) {
-                LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
-            	TableProtectSessionLocal protect = protecthome.create();
-            	protect.protect(admin, le);
-            }
-        } catch (Throwable e) {
-            // FIXME we are losing a db audit entry in this case, what do we do ?
-            String msg = intres.getLocalizedMessage("log.errormissingentry");
-            log.error(msg, e);
-            getAndIncrementRowCount();
-        	// This is now handled in LocalLogSessionBean, outside the current transaction
-            throw new RuntimeException(e);
-        }
+		boolean successfulLog = false;
+    	int tries = 0;
+    	do{
+    		try {
+    			String uid = certificate == null ? null : certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();
+    			Integer id = getAndIncrementRowCount();
+    			logentryhome.create(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
+    			if (logsigning) {
+    				LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
+    				TableProtectSessionLocal protect = protecthome.create();
+    				protect.protect(admin, le);
+    			}
+    			successfulLog = true;
+    		} catch (Throwable e) {
+    			tries++;
+    			if(tries == 3){
+        			// We are losing a db audit entry in this case.
+    				String msg = intres.getLocalizedMessage("log.errormissingentry");            	
+    				log.error(msg,e);
+    			}else{
+    				String msg = intres.getLocalizedMessage("log.warningduplicatekey");            	
+    				log.warn(msg);
+    			}
+    			
+    		}
+    	}while(!successfulLog && tries < 3);
     }
 
 	/**
