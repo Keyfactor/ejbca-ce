@@ -3,7 +3,7 @@
 
 	<property name="app.name" value="ejbca" />
     <property name="app.name.cap" value="EJBCA" />
-	<property name="app.version" value="${app.name.cap} 3.6alpha" />
+	<property name="app.version" value="${app.name.cap} 3.6beta2" />
 	
     <property name="ejbca.home" location="." />
     <property environment="env" />
@@ -161,6 +161,9 @@
     	  <include name="**/*.jar"/>
     	</fileset> 
         <fileset dir="lib/reports">
+    	  <include name="**/*.jar"/>
+    	</fileset> 
+        <fileset dir="lib/batik">
     	  <include name="**/*.jar"/>
     	</fileset> 
     	<fileset dir="lib/xmlsign" includes="xmlsec-1.3.0.jar"/>
