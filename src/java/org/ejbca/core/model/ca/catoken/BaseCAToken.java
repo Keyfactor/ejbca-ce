@@ -40,7 +40,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.28 2008-02-27 09:50:33 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.29 2008-03-26 13:01:14 anatom Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -72,6 +72,7 @@ public abstract class BaseCAToken implements ICAToken {
     protected void autoActivate() {
         if ( mKeys==null && mAuthCode!=null )
             try {
+            	log.debug("Trying to autoactivate CAToken");
                 activate(mAuthCode);
             } catch (Exception e) {
                 log.debug(e);

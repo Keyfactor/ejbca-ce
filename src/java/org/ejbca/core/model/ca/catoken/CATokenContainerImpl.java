@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.10 2008-02-27 09:52:48 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.11 2008-03-26 13:01:14 anatom Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
@@ -304,7 +304,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 * create new encryption keys, since this would make it impossible to decrypt old stuff.
 	 */
 	public void generateKeys(String authenticationCode, boolean renew) throws Exception{  
-
+		log.debug(">generateKeys");
 		CATokenInfo catokeninfo = getCATokenInfo();
 		if ( !(catokeninfo instanceof SoftCATokenInfo) ) {
 			log.error("generateKeys is only available for Soft CA tokens (PKCS12)");
@@ -356,6 +356,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		
 		// Finally reset the token so it will be re-read when we want to use it
 		this.catoken = null;
+		log.debug("<generateKeys");
 	}
 
 	/**
