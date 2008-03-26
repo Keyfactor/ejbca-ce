@@ -663,8 +663,13 @@
          
          CATokenInfo catoken = null;
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
+         // Authentication code if we should be able to activate the CA token after editing
+         String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
+         if (authenticationcode.length() == 0) {
+        	 authenticationcode = null;
+         }
+        		 
          if(catokentype == CATokenInfo.CATOKENTYPE_P12){
-           String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
            String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
            catoken = new SoftCATokenInfo();          
            catoken.setAuthenticationCode(authenticationcode);
@@ -684,6 +689,7 @@
             if(catokenpath == null)
               throw new Exception("Error in CATokenData");  
             catoken = new HardCATokenInfo();                       
+            catoken.setAuthenticationCode(authenticationcode);
             catoken.setProperties(properties);
          }
 
@@ -897,8 +903,8 @@
                    if(request.getParameter(CHECKBOX_RENEWKEYS) != null && catokentype == CATokenInfo.CATOKENTYPE_P12){
                 	   reGenerateKeys = request.getParameter(CHECKBOX_RENEWKEYS).equals(CHECKBOX_VALUE);                	   
                    }
-                   String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODERENEW);
-                   cadatahandler.renewCA(caid, null, authenticationcode, reGenerateKeys);
+                   String renewauthenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODERENEW);
+                   cadatahandler.renewCA(caid, null, renewauthenticationcode, reGenerateKeys);
                    carenewed = true;
                  }else{                   
                    includefile="renewexternal.jspf"; 

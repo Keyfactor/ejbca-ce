@@ -120,7 +120,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.72 2008-03-19 14:37:42 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.73 2008-03-26 13:03:56 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -559,6 +559,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * Not all of the CAs data can be edited after the creation, therefore will only
      * the values from CAInfo that is possible be uppdated. 
      *
+     * @param cainfo CAInfo object containing values that will be updated
      * 
      *  For values see:
      *  @see org.ejbca.core.model.ca.caadmin.CAInfo
@@ -605,6 +606,24 @@ public class CAAdminSessionBean extends BaseSessionBean {
             ca.updateCA(cainfo);
             // Store CA in database
             cadata.setCA(ca);
+            // Try to activate the CA token after we have edited the CA
+            try{
+            	CATokenContainer catoken = ca.getCAToken();
+            	CATokenInfo catokeninfo = cainfo.getCATokenInfo();
+            	String authCode = catokeninfo.getAuthenticationCode();
+                String keystorepass = getDefaultKeyStorePassIfSWAndEmpty(authCode, catokeninfo);
+                if (keystorepass != null) {
+                	catoken.activate(keystorepass );                	
+                } else {
+                	log.debug("Not trying to activate CAToken after editing, authCode == null.");
+                }
+            }catch(CATokenAuthenticationFailedException ctaf){
+            	String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");            	
+            	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctaf);
+            }catch(CATokenOfflineException ctoe){
+            	String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());            	
+            	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctoe);
+            }
 
             // If OCSP Certificate renew, publish the new one.
             if(ocsprenewcert){
@@ -1178,8 +1197,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /**
      *  Renews a existing CA certificate using the same keys as before. Data  about new CA is taken
      *  from database.
-     * 
-     *  @param certificateresponce should be set with new certificatechain if CA is signed by external
+     *
+     *  @param caid the caid of the CA that will be renewed
+     *  @param responsemessage should be a X509ResponseMessage with new CA certificate if CA is signed by external
      *         RootCA, otherwise use the null value.
      *  @param keystorepass password used when regenerating keys, can be null if regenerateKeys is false.
      *  @param regenerateKeys, if true and the CA have a softCAToken the keys are regenerated before the certrequest.
