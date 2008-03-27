@@ -47,7 +47,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.19 2008-01-03 17:32:50 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.20 2008-03-27 17:59:07 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -225,6 +225,8 @@ public abstract class CADataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public CA getCA() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
+    	// Because get methods are marked as read-only above, this method will actually not be able to upgrade
+    	// use upgradeCA above for that.
     	return readAndUpgradeCAInternal();
     }
     
