@@ -30,40 +30,7 @@
 	</target>
 
 	<!-- Configure the J2EE server with appropriate settings -->
-	<target name="j2ee:configure" depends="j2ee:web-noconfigure, j2ee:web-configure">		
-        <!-- detect jboss web version -->
-        <available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
-        <available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
-        <available file="${jboss.deploy.dir}/jbossweb-tomcat55.sar" type="dir" property="jboss.web" value="tomcat55"/>
-        <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="jboss.web" value="tomcat60"/>
-        <fail message="Could not detect JBoss Servlet container version" unless="jboss.web"/>
-        
-        <!-- configure the tomcat bundle -->
-        <!-- For JBoss 4.0.x tomcat is bundled in jbossweb-tomcat55.sar dir -->
-        <available file="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar"/>
-        <!-- For JBoss 4.2.x tomcat is bundled in jboss-web.deployer dir, i.e. new naming scheme -->
-        <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jboss-web.deployer"/>
-        <copy todir="${tomcat.dir}" overwrite="true">
-            <fileset dir="src/appserver/jboss/${jboss.web}"/>
-            <filterchain>
-            <tokenfilter>
-                <replacestring from="@keystore.file@" to="${keystore.file}"/>
-                <replacestring from="@truststore.file@" to="${truststore.file}"/>
-                <replacestring from="@httpsserver.password@" to="${httpsserver.password}"/>
-                <replacestring from="@java.trustpassword@" to="${java.trustpassword}"/>
-                <replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
-                <replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
-                <replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
-                <replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
-                <replacestring from="@httpsserver.bindaddress.pubhttp@" to="${httpsserver.bindaddress.pubhttp}"/>
-                <replacestring from="@httpsserver.bindaddress.pubhttps@" to="${httpsserver.bindaddress.pubhttps}"/>
-                <replacestring from="@httpsserver.bindaddress.privhttps@" to="${httpsserver.bindaddress.privhttps}"/>
-                <replacestring from="@definitions_away_begin@" to="${definitions_away_begin}"/>
-                <replacestring from="@definitions_away_end@" to="${definitions_away_end}"/>
-            </tokenfilter>
-            </filterchain>
-        </copy>
-        <chmod file="${tomcat.dir}/server.xml" perm="600"/>
+	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure">		
 	</target>
 
 	<target name="j2ee:deploytruststore">
@@ -95,15 +62,51 @@
 		
 		<!-- Also deploy the truststore -->
         <antcall target="j2ee:deploytruststore" />
+
+		<!-- Deploy the tomcat files -->
         <property name="definitions_away_begin" value="" />
         <property name="definitions_away_end" value="" />
+        <antcall target="deploytomcat" />
+
 	</target>
 
-    <target name="j2ee:web-noconfigure" depends="j2ee:check" if="j2ee.web-noconfigure">
-        <property name="definitions_away_begin" value="&#x3C;!--" />
-        <property name="definitions_away_end" value="-->" />
-    </target>
-
+	
+	<target name="deploytomcat">
+        <!-- detect jboss web version -->
+        <available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
+        <available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
+        <available file="${jboss.deploy.dir}/jbossweb-tomcat55.sar" type="dir" property="jboss.web" value="tomcat55"/>
+        <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="jboss.web" value="tomcat60"/>
+        <fail message="Could not detect JBoss Servlet container version" unless="jboss.web"/>
+		
+		<!-- configure the tomcat bundle -->
+		<!-- For JBoss 4.0.x tomcat is bundled in jbossweb-tomcat55.sar dir -->
+        <available file="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar"/>
+		<!-- For JBoss 4.2.x tomcat is bundled in jboss-web.deployer dir, i.e. new naming scheme -->
+        <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jboss-web.deployer"/>
+        <copy todir="${tomcat.dir}" overwrite="true">
+			<fileset dir="src/appserver/jboss/${jboss.web}"/>
+			<filterchain>
+			<tokenfilter>
+		    	<replacestring from="@keystore.file@" to="${keystore.file}"/>
+		    	<replacestring from="@truststore.file@" to="${truststore.file}"/>
+		    	<replacestring from="@httpsserver.password@" to="${httpsserver.password}"/>
+		    	<replacestring from="@java.trustpassword@" to="${java.trustpassword}"/>
+		    	<replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
+		    	<replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
+		    	<replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
+		    	<replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
+		    	<replacestring from="@httpsserver.bindaddress.pubhttp@" to="${httpsserver.bindaddress.pubhttp}"/>
+		    	<replacestring from="@httpsserver.bindaddress.pubhttps@" to="${httpsserver.bindaddress.pubhttps}"/>
+		    	<replacestring from="@httpsserver.bindaddress.privhttps@" to="${httpsserver.bindaddress.privhttps}"/>
+                <replacestring from="@definitions_away_begin@" to="${definitions_away_begin}"/>
+                <replacestring from="@definitions_away_end@" to="${definitions_away_end}"/>
+			</tokenfilter>
+			</filterchain>
+        </copy>
+		<chmod file="${tomcat.dir}/server.xml" perm="600"/>
+	</target>
+	
 	<target name="j2ee:deployBase" depends="j2ee:configure">
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
@@ -136,7 +139,14 @@
 		<chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
 	</target>
 
-	<target name="j2ee:deployocsp" depends="j2ee:configure">
+	<target name="j2ee:ocspbasewebdeploy" if="j2ee.web-noconfigure">
+		<!-- Deploys a standard http setup for JBoss, without SSL -->
+        <property name="definitions_away_begin" value="&#x3C;!--" />
+        <property name="definitions_away_end" value="-->" />
+        <antcall target="deploytomcat" />
+	</target>
+		
+	<target name="j2ee:deployocsp" depends="j2ee:ocspbasewebdeploy, j2ee:configure">
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
             	<include name="ejbca-ds.xml"/>
