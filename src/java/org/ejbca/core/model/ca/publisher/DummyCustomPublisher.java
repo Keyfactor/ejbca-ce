@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
  *  
  *
- * @version $Id: DummyCustomPublisher.java,v 1.3 2006-07-23 10:31:22 anatom Exp $
+ * @version $Id: DummyCustomPublisher.java,v 1.4 2008-03-27 08:22:10 jeklund Exp $
  */
 public class DummyCustomPublisher implements ICustomPublisher{
     		
@@ -42,9 +42,8 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
 	 */
 	public void init(Properties properties) {
-	  // This method sets up the communication with the publisher	
-		
-	  log.debug("Initializing DummyCustomPublisher");		
+	  // This method sets up the communication with the publisher
+	  log.debug("Initializing DummyCustomPublisher " + properties.getProperty(BasePublisher.DESCRIPTION, ""));
 	}
 
 	/**

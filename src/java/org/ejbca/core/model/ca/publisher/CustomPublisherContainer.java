@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * to store and retrieve custom publisher configuration to database.
  * 
  *
- * @version $Id: CustomPublisherContainer.java,v 1.4 2007-09-12 14:22:46 anatom Exp $
+ * @version $Id: CustomPublisherContainer.java,v 1.5 2008-03-27 08:22:10 jeklund Exp $
  */
 public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher custompublisher = null; 
@@ -87,6 +87,10 @@ public class CustomPublisherContainer extends BasePublisher{
 	public Properties getProperties() throws IOException{
 		Properties prop = new Properties();
 		prop.load(new ByteArrayInputStream(getPropertyData().getBytes()));
+		Object description = data.get(BasePublisher.DESCRIPTION);
+		if (description != null && description instanceof String) {
+			prop.setProperty(BasePublisher.DESCRIPTION, (String) description);
+		}
 		return prop;
 	}
   
