@@ -50,7 +50,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.12 2007-06-25 15:13:49 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.13 2008-03-27 21:29:46 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -111,9 +111,8 @@ public class CmpMessageDispatcher {
 			PKIHeader header = req.getHeader();
 			PKIBody body = req.getBody();
 			
-			int tagno = -1;
+			int tagno = body.getTagNo();
 			if (log.isDebugEnabled()) {
-				tagno = body.getTagNo();
 				log.debug("Received CMP message with pvno="+header.getPvno()+", sender="+header.getSender().toString()+", recipient="+header.getRecipient().toString());
 				log.debug("Body is of type: "+tagno);
 				log.debug(req);
@@ -149,6 +148,7 @@ public class CmpMessageDispatcher {
 				break;
 			default:
 				unknownMessageType = tagno;
+				log.info("Received an unknown message type, tagno="+tagno);
 				break;
 			}
 			if ( (handler != null) && (cmpMessage != null) ) {
