@@ -71,6 +71,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
     /** Columns in the database used in select */
     private final String LOGENTRYDATA_TABLE = "LogEntryData";
     private final String LOGENTRYDATA_COL = "id, adminType, adminData, cAId, module, time, username, certificateSNR, event";
+    private final String LOGENTRYDATA_TIMECOL = "time";
     // Different column names is an unfortunate workaround because of Oracle, you cannot have a column named 'comment' in Oracle.
     // The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
     private final String LOGENTRYDATA_COL_COMMENT_OLD = "comment";
@@ -236,7 +237,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
 			String sql = "select "+LOGENTRYDATA_COL+", "+LOGENTRYDATA_COL_COMMENT_OLD+" from "+LOGENTRYDATA_TABLE+" where ( "
 			+ query.getQueryString() + ") and (" + capriviledges + ")";
-			// Different column names is an unforturnalte workaround because of Orcale, you cannot have a column named 'comment' in Oracle.
+			// Different column names is an unfortunate workaround because of Oracle, you cannot have a column named 'comment' in Oracle.
 			// The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
 			if (!JDBCUtil.columnExists(con, LOGENTRYDATA_TABLE, LOGENTRYDATA_COL_COMMENT_OLD)) {
 				log.debug("Using oracle column name 'comment_' in LogEntryData.");
@@ -245,6 +246,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 			if (StringUtils.isNotEmpty(viewlogprivileges)) {
 				sql += " and (" + viewlogprivileges + ")";
 			}
+			sql += " order by "+LOGENTRYDATA_TIMECOL+" desc";
 			if (log.isDebugEnabled()) {
 				log.debug("Query: "+sql);
 			}

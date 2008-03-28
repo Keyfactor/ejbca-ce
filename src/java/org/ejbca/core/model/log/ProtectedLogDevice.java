@@ -442,8 +442,13 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		if (StringUtils.isNotEmpty(viewlogprivileges)) {
 			sql += " and (" + viewlogprivileges + ")";
 		}
-		log.debug("Query: "+sql);
+		// Finally order the return values
+		sql += " order by eventTime desc";
+		if (log.isDebugEnabled()) {
+			log.debug("Query: "+sql);			
+		}
 		ret = getProtectedLogSession().performQuery(sql);
+		log.debug("<query()");
 		return ret;
 	} // query
 	
