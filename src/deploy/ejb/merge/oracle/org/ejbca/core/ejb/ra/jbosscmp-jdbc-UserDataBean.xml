@@ -47,7 +47,7 @@
 <cmp-field>
   <field-name>extendedInformationData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>keyStorePassword</field-name>

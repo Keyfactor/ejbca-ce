@@ -24,5 +24,5 @@
 <cmp-field>
   <field-name>base64Crl</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>

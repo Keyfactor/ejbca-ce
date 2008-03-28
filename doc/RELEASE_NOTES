@@ -23,6 +23,10 @@ There are database upgrades in this release so please pay attention!
 Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
 EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgrade instructions.
 
+For the Oracle database we have made a switch from the deprecated type LONG to CLOB. Do not fear though,
+EJBCA 3.6 still works if you continue to use the LONG data type (i.e. does not make any changes to your database).
+If you decide to migrate, there is a migration sql script in src/upgrade/35_36/oracle-long-to-clob.sql.
+
 EJBCA 3.5.5
 -----------
 This is a minor release, fixing a few bugs and adding support for dual authentication for CATokens.
