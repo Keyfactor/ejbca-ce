@@ -13,14 +13,12 @@
 
 package org.ejbca.core.ejb.services;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -33,16 +31,10 @@ import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.ProtectedLogDevice;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
-import org.ejbca.core.model.services.ServiceExistsException;
-import org.ejbca.core.model.services.actions.NoAction;
-import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.core.model.services.workers.ProtectedLogExportWorker;
-import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
 
 
 /**
@@ -150,7 +142,7 @@ import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
  *   
  *  @jonas.bean ejb-name="ServiceTimerSession"
  *  
- *  @version $Id: ServiceTimerSessionBean.java,v 1.17 2007-12-04 14:22:33 jeklund Exp $
+ *  @version $Id: ServiceTimerSessionBean.java,v 1.18 2008-03-28 20:53:20 anatom Exp $
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
 
@@ -250,6 +242,10 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		getSessionContext().getTimerService().createTimer(nextInterval*1000, timerInfo);
 		Date nextRunDate = serviceData.getNextRunTimestamp();
 		Date currentDate = new Date();
+		// Check if the current date is after when the service should run.
+		// If a service on another cluster node has updated this timestamp already, then it will return false and
+		// this service will not run.
+		// This is a semaphor so that services in a cluster only runs on one node and don't compete with each other.
 		if(currentDate.after(nextRunDate)){
 			nextRunDate = new Date(currentDate.getTime() + nextInterval);
 			serviceData.setNextRunTimestamp(nextRunDate);
