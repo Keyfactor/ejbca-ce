@@ -3040,15 +3040,15 @@
          </cmp-field>
          <cmp-field id="CMPAttribute_155">
             <description><![CDATA[Constructed from action data as actiontype, admin, username etc.]]></description>
-            <field-name>approvalid</field-name>
+            <field-name>approvalId</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_156">
             <description><![CDATA[Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER]]></description>
-            <field-name>approvaltype</field-name>
+            <field-name>approvalType</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_157">
             <description><![CDATA[For RA specific approval requests should the related end entity profile id be specified for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE]]></description>
-            <field-name>endentityprofileid</field-name>
+            <field-name>endEntityProfileId</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_158">
             <description><![CDATA[For CA specific approval requests should the related ca id be specified for non ca request should this field be set to ApprovalDataVO.ANY_CA]]></description>
@@ -3056,11 +3056,11 @@
          </cmp-field>
          <cmp-field id="CMPAttribute_159">
             <description><![CDATA[The issuerdn of the administrator certificate that generated the request.]]></description>
-            <field-name>reqadmincertissuerdn</field-name>
+            <field-name>reqAdminCertIssuerDn</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_160">
             <description><![CDATA[The serialnumber of the administrator certificate that generated the request.]]></description>
-            <field-name>reqadmincertsn</field-name>
+            <field-name>reqAdminCertSn</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_161">
             <description><![CDATA[Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, STATUS_REJECTED, STATUS_EXPIRED]]></description>
@@ -3068,23 +3068,23 @@
          </cmp-field>
          <cmp-field id="CMPAttribute_162">
             <description><![CDATA[Stringrepresentation of data of approvals made by one or more administrators]]></description>
-            <field-name>approvaldata</field-name>
+            <field-name>approvalData</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_163">
             <description><![CDATA[Data containing information about the request displayed for the approval administrator.]]></description>
-            <field-name>requestdata</field-name>
+            <field-name>requestData</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_164">
             <description><![CDATA[Date the request for approval were added]]></description>
-            <field-name>requestdate</field-name>
+            <field-name>requestDate</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_165">
             <description><![CDATA[Date the request for action or the approvel action will expire, Long.MAX_VALUE means that the request/approval never expires]]></description>
-            <field-name>expiredate</field-name>
+            <field-name>expireDate</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_166">
             <description><![CDATA[Indicates the number of approvals that remains in order to execute the action]]></description>
-            <field-name>remainingapprovals</field-name>
+            <field-name>remainingApprovals</field-name>
          </cmp-field>
          <primkey-field>id</primkey-field>
 
@@ -3096,7 +3096,7 @@
                   <method-param>int</method-param>
                </method-params>
             </query-method>
-            <ejb-ql><![CDATA[SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalid=?1]]></ejb-ql>
+            <ejb-ql><![CDATA[SELECT OBJECT(a) from ApprovalDataBean a WHERE a.approvalId=?1]]></ejb-ql>
          </query>
          <query>
             <description><![CDATA[findByApprovalIdNonExpired]]></description>
@@ -3106,7 +3106,7 @@
                   <method-param>int</method-param>
                </method-params>
             </query-method>
-            <ejb-ql><![CDATA[SELECT OBJECT(a) from ApprovalDataBean a WHERE (a.status>-3) and a.approvalid=?1]]></ejb-ql>
+            <ejb-ql><![CDATA[SELECT OBJECT(a) from ApprovalDataBean a WHERE (a.status>-3) and a.approvalId=?1]]></ejb-ql>
          </query>
          <query>
             <description><![CDATA[findAll]]></description>
