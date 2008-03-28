@@ -30,8 +30,8 @@
             </batchtest>
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
-                	<include name="org/ejbca/core/model/Test*" />
-                	<include name="org/ejbca/core/model/approval/approvalrequests/Test*" />
+                    <include name="org/ejbca/core/model/Test*" />
+                    <include name="org/ejbca/core/model/approval/approvalrequests/Test*" />
                     <include name="org/ejbca/util/**/Test*" />
                     <include name="org/ejbca/core/model/ca/certextensions/Test*" />
                     <include name="se/anatom/ejbca/util/**/Test*" />
@@ -48,13 +48,13 @@
                     <include name="**/batch/Test*" />
                     <include name="**/log/Test*" />
                     <include name="**/keyrecovery/Test*" />
-                	<include name="**/approval/Test*" />
+                    <include name="**/approval/Test*" />
                     <include name="**/hardtoken/Test*" />
                     <include name="org/ejbca/core/ejb/ca/caadmin/Test*" />
                     <include name="**/authorization/TestAuthorization*" />
                     <include name="**/services/Test*" />
                     <exclude name="org/ejbca/core/protocol/xkms/Test*" />
-                	<exclude name="org/ejbca/core/protocol/ws/Test*" />
+                    <exclude name="org/ejbca/core/protocol/ws/Test*" />
                     <exclude name="**/ra/TestAddLotsofUsers*" />
                     <exclude name="**/sign/TestSignLotsOfCerts*" />
                 </fileset>
