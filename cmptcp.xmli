@@ -11,7 +11,7 @@
             <exclude name="**/CVS/**" />
             <include name="**/ui/tcp/**/CmpTcp*" />
             <include name="**/appserver/**/CmpTcp*" />
-            <!-- appserver specific files are built separtely-->
+            <!-- appserver specific files are built separately-->
             <classpath refid="jbossservices.classpath" />
             <classpath refid="compile.classpath" />
         </javac>
