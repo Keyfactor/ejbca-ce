@@ -26,7 +26,8 @@
 #protectionTokenReferenceType=URI
 
 # Keystores are assumed to be in JKS format. Soft keystores should NOT have
-# been generated with keyrecovery enabled.
+# been generated with keyrecovery enabled. If referencing a CA, use the short
+# name as the one specified by ca.name in ejbca.properties.
 #  Default is "AdminCA1".
 #protectionTokenReference=AdminCA1
 #protectionTokenReference=file:///home/ejbca/ejbca/keystorefile.jks
