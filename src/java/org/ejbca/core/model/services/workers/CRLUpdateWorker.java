@@ -26,26 +26,39 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * This is a replacement of the old jboss service.
  * 
  * @author Philip Vendil
- * @version $Id: CRLUpdateWorker.java,v 1.4 2007-12-21 09:02:55 anatom Exp $
+ * @version $Id: CRLUpdateWorker.java,v 1.5 2008-03-28 22:32:41 anatom Exp $
  */
 public class CRLUpdateWorker extends BaseWorker {
 
-    private static Logger log = Logger.getLogger(CRLUpdateWorker.class);	
+    private static final Logger log = Logger.getLogger(CRLUpdateWorker.class);	
 	
     private ICreateCRLSessionLocal createcrlsession = null;
-	
+
+	private static boolean running = false;
+
 	/**
 	 * Checks if there are any CRL that needs to be updated, and then does the creation.
 	 * 
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work() throws ServiceExecutionFailedException {
-	    long polltime = getNextInterval();
-	    ICreateCRLSessionLocal session = getCreateCRLSession();
-	    if (session != null) {
-	    	session.createCRLs(getAdmin(), polltime*1000);
-	    	session.createDeltaCRLs(getAdmin(), polltime*1000);
-	    }
+		// A metaphor used to not run parallel CRL generation jobs if it is slow
+		// in generating CRLs, and this job runs very often
+		if (!running) {
+			try {
+				running = true;
+			    long polltime = getNextInterval();
+			    ICreateCRLSessionLocal session = getCreateCRLSession();
+			    if (session != null) {
+			    	session.createCRLs(getAdmin(), polltime*1000);
+			    	session.createDeltaCRLs(getAdmin(), polltime*1000);
+			    }			
+			} finally {
+				running = false;
+			}			
+		} else {
+			log.info("Service "+CRLUpdateWorker.class.getName()+" is already running in this VM! Not starting work.");
+		}
 	}
 
 	
