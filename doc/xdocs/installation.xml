@@ -785,7 +785,7 @@ Log into the admin console of Websphere to deploy EJBCA.
 <li>Select ejbca.ear and 'Show me all installation options and parameters' and click next.</li>
 <li>Click next. Click next all the time unless anything else is noted here.</li>
 <li>When you get the option to select database type at Step 3 (Deploy EJB option - Database type) select 'ORACLE_V10G' for Oracle, or empty for PostgreSQL.</li>
-<li>At the next step, Step 4, select Current Backend Id, ORACLE_V10_1 for Oracle or CLOUDSCAPE_V51_1 for PostgreSQL.</li>
+<li>At the next step, Step 4, select Current Backend Id, ORACLE_V10_1 for Oracle or CLOUDSCAPE_V51_1 for PostgreSQL (if using Oracle you may not get this choice).</li>
 <li>Click next until you reach the end, or jump directly to the last step by clicking in the left meny.</li>
 <li>Click finish</li>
 <li>In order to use the cli in EJBCA you must copy the generated ejbca-ejb.jar to local lib, so we have it in the classpath for command line operations.
