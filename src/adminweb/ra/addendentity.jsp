@@ -349,7 +349,7 @@
 								request.getParameter(TEXTFIELD_RFC822NAME+i) != null && !request.getParameter(TEXTFIELD_RFC822NAME+i).equals("") ) {
 							value = request.getParameter(TEXTFIELD_RFC822NAME+i) + "@" + value;
 						} else {
-							value = null;
+							value = request.getParameter(SELECT_SUBJECTALTNAME+i); // A completely locked down value is only stored in the SELECT_SUBJECTALTNAME part 
 						}
 	             	}
 	             }
@@ -1219,10 +1219,14 @@ function checkallfields(){
             		} else {
 	            		rfc822NameArray[0] = "";
             			rfc822NameArray[1] = rfc822NameString;
-            		} %>
+            		} 
+            		boolean modifyable = profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+            		if (!(!modifyable && rfc822NameString.contains("@"))) {
+            		%>
 					<input type="text" name="<%= TEXTFIELD_RFC822NAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"
 						value="<%= rfc822NameArray[0] %>" />@
-				<%	if ( profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) { %>
+				<%	}
+            		if ( modifyable ) { %>
 					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>"
 						value="<%= rfc822NameArray[1] %>" />
 				<%	} else {

@@ -1106,13 +1106,20 @@ function checkUseInBatch(){
                 	   domain = fullname;
                    }
                  } 
-                 if (EndEntityProfile.isFieldOfType(fieldtype, DnComponents.UPN)) { %> 
-                 <input type="text" name="<%= TEXTFIELD_UPNNAME +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
-          <%     } else { %>       
-                 <input type="text" name="<%= TEXTFIELD_EMAIL +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
-          <%     }
-                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
-                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR); %>
+                 boolean modifyable = profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+                 String profilevalue = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+                 // if the field is not modifyable, and the options contains an @ sign, we assume that the complete field is actually locked down
+                 // and we should not attempt to split it in name@domain parts
+                 if (!(!modifyable && profilevalue.contains("@"))) {
+                   if (EndEntityProfile.isFieldOfType(fieldtype, DnComponents.UPN)) { %> 
+                   <input type="text" name="<%= TEXTFIELD_UPNNAME +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
+          <%       } else { %>       
+                   <input type="text" name="<%= TEXTFIELD_EMAIL +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
+          <%       }
+                 }
+                 // Only display the domain part if we have not completely locked down the email address
+                 if (!modifyable) { 
+                     String[] options = profilevalue.split(EndEntityProfile.SPLITCHAR); %>
                 <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                   <% if( options != null){
                       for(int j=0;j < options.length;j++){ %>
