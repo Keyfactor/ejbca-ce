@@ -231,9 +231,20 @@
                  fielddata = profile.getSubjectAltNameFieldsInOrder(i); 
                  value=null; 
                  if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)) {
-                   if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
-                     if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
+                   if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null) {
+                     if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE)) {
                        value = newuser.getEmail();
+                     } 
+                   } else {
+                        // If we are not using the email field, we have to gether together the email pieces
+                        String dom = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+                        String na = request.getParameter(TEXTFIELD_EMAIL+i);
+                        if( (na != null) && (!na.trim().equals("")) && (dom != null) && (!dom.trim().equals("")) ){
+                          value = na + "@" + dom;
+                        } else {
+                            value = dom;                        	 
+                        }
+                    }
                  }else{
                    if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
                      if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") 
@@ -254,12 +265,19 @@
                        subjectaltname += ", " + value;   
                    }
                  }
+                 // We have to do almost the same again they may have select drop-downs instead of textfields
                  value = request.getParameter(SELECT_SUBJECTALTNAME+i);
                  if(value !=null){
                    if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
                      if(request.getParameter(TEXTFIELD_UPNNAME+i) != null && !value.trim().equals("")){
                        value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
                      } 
+                   }
+                   if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)) {
+                	   String na = request.getParameter(TEXTFIELD_EMAIL+i); 
+                       if( (na != null) && (!na.trim().equals("")) && !value.trim().equals("")){
+                         value = na + "@" + value;
+                       } 
                    }
                    if(!value.equals("")){
                        value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
@@ -1071,30 +1089,42 @@ function checkUseInBatch(){
 	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <%
-             if( !EndEntityProfile.isFieldOfType(fieldtype, DnComponents.RFC822NAME) ){
-               if(EndEntityProfile.isFieldOfType(fieldtype, DnComponents.UPN)){ 
-                 String upnname = "";
-                 String upndomain = "";            
-                 String fullupn = userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]);
-                 if(fullupn != null && !fullupn.equals("")){
-                   upnname   = fullupn.substring(0,fullupn.indexOf('@'));
-                   upndomain = fullupn.substring(fullupn.indexOf('@')+1);
-                 } %>
-                 <input type="text" name="<%= TEXTFIELD_UPNNAME +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= upnname %>">@
-          <%     if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
+             // If we have checked the checkbox "Use entity e-mail field" in the end entity profile
+             boolean rfc822useemailfield = EndEntityProfile.isFieldOfType(fieldtype, DnComponents.RFC822NAME) && profile.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
+             if( !rfc822useemailfield ){
+               if ( (EndEntityProfile.isFieldOfType(fieldtype, DnComponents.UPN)) || (EndEntityProfile.isFieldOfType(fieldtype, DnComponents.RFC822NAME)) ) { 
+                 String name = "";
+                 String domain = "";            
+                 String fullname = userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]);
+                 if(fullname != null && !fullname.equals("")){
+                   // if we have an @ sign, we will assume it is name@domain, if we have no @ sign, 
+                   // we will assume that the name has not been entered yet.
+                   if (fullname.contains("@")) {
+                     name   = fullname.substring(0,fullname.indexOf('@'));
+                     domain = fullname.substring(fullname.indexOf('@')+1);
+                   } else {
+                	   domain = fullname;
+                   }
+                 } 
+                 if (EndEntityProfile.isFieldOfType(fieldtype, DnComponents.UPN)) { %> 
+                 <input type="text" name="<%= TEXTFIELD_UPNNAME +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
+          <%     } else { %>       
+                 <input type="text" name="<%= TEXTFIELD_EMAIL +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
+          <%     }
+                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR); %>
                 <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                   <% if( options != null){
                       for(int j=0;j < options.length;j++){ %>
-                  <option value="<%=options[j].trim()%>" <%  if(upndomain.equals(options[j].trim())) out.write(" selected "); %>> 
+                  <option value="<%=options[j].trim()%>" <%  if(domain.equals(options[j].trim())) out.write(" selected "); %>> 
                     <%=options[j].trim()%>
                   </option>                
                <%   }
                  }
                 %>
                 </select>
-             <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= upndomain %>">
+             <%  }else{ %> 
+                 <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= domain %>">
              <% }
               }else{    
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
