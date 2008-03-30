@@ -120,7 +120,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.73 2008-03-26 13:03:56 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.74 2008-03-30 16:27:37 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1108,8 +1108,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		// However, if we have the same DN, and give the same name, we simply assume that the admin actually wants
     		// to treat an internal CA as an external CA, perhaps there is different HSMs connected for root CA and sub CA?
     		log.debug("Old castatus="+oldcadata.getStatus());
-    		if ( (oldcadata.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) && (oldcadata.getCaId().intValue() == cainfo.getCAId()) && (oldcadata.getName().equals(cainfo.getName())) ) {
-    			// Yes, we have all the same DN, CAName and the old CA is waiting for a certificate response
+    		if ( ((oldcadata.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) || (oldcadata.getStatus() == SecConst.CA_ACTIVE))
+    			&& (oldcadata.getCaId().intValue() == cainfo.getCAId()) && (oldcadata.getName().equals(cainfo.getName())) ) {
+    			// Yes, we have all the same DN, CAName and the old CA is either waiting for a certificate response or is active
+    			// (new CA or active CA that we want to renew)
     			processinternalca = true;
     			log.debug("Processing an internal CA, as an external.");
     		} else {
