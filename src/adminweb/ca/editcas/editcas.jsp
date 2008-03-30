@@ -665,7 +665,7 @@
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
          // Authentication code if we should be able to activate the CA token after editing
          String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
-         if (authenticationcode.length() == 0) {
+         if ( (authenticationcode == null) || (authenticationcode.length() == 0) ) {
         	 authenticationcode = null;
          }
         		 
