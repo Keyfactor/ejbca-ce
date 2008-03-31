@@ -49,9 +49,9 @@ import com.novell.ldap.LDAPJSSESecureSocketFactory;
 import com.novell.ldap.LDAPModification;
 
 /**
- * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
+ * LdapPublisher is a class handling a publishing to various v3 LDAP catalogs.  
  *
- * @version $Id: LdapPublisher.java,v 1.35 2008-03-20 10:24:21 thamwickenberg Exp $
+ * @version $Id: LdapPublisher.java,v 1.36 2008-03-31 01:02:24 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 
@@ -61,7 +61,7 @@ public class LdapPublisher extends BasePublisher {
 
 	private static byte[] fakecrl = null;
 
-	public static final float LATEST_VERSION = 6;
+	public static final float LATEST_VERSION = 8;
 
 	public static final int TYPE_LDAPPUBLISHER = 2;
 
@@ -1353,6 +1353,10 @@ public class LdapPublisher extends BasePublisher {
 			}
 			if(data.get(DELTACRLATTRIBUTE) == null) {
 				setDeltaCRLAttribute(DEFAULT_DELTACRLATTRIBUTE); // v7
+			}
+			if(data.get(ADDNONEXISTINGATTR) == null) {
+				setModifyExistingAttributes(false); // v8
+				setAddNonExistingAttributes(true);
 			}
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}
