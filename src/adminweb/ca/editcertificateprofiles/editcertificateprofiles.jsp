@@ -52,6 +52,7 @@
   static final String TEXTFIELD_QCSSEMANTICSID         = "textfieldqcsemanticsid";
   static final String TEXTFIELD_QCSTATEMENTRANAME      = "textfieldqcstatementraname";
   static final String TEXTFIELD_QCETSIVALUELIMIT       = "textfieldqcetsivaluelimit";
+  static final String TEXTFIELD_QCETSIRETENTIONPERIOD  = "textfieldqcetsiretentionperiod";
   static final String TEXTFIELD_QCETSIVALUELIMITEXP    = "textfieldqcetsivaluelimitexp";
   static final String TEXTFIELD_QCETSIVALUELIMITCUR    = "textfieldqcetsivaluelimitcur";
   static final String TEXTFIELD_QCCUSTOMSTRINGOID      = "textfieldqccustomstringoid";
@@ -93,6 +94,7 @@
   static final String CHECKBOX_USEPKIXQCSYNTAXV2                  = "checkpkixqcsyntaxv2";
   static final String CHECKBOX_USEQCETSIQCCOMPLIANCE              = "checkqcetsiqcompliance";
   static final String CHECKBOX_USEQCETSIVALUELIMIT                = "checkqcetsivaluelimit";
+  static final String CHECKBOX_USEQCETSIRETENTIONPERIOD           = "checkqcetsiretentionperiod";
   static final String CHECKBOX_USEQCETSISIGNATUREDEVICE           = "checkqcetsisignaturedevice";
   static final String CHECKBOX_USEQCCUSTOMSTRING                  = "checkqccustomstring";
 
@@ -687,11 +689,13 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
              certificateprofiledata.setUseQCEtsiQCCompliance(false);
              certificateprofiledata.setUseQCEtsiSignatureDevice(false);
              certificateprofiledata.setUseQCEtsiValueLimit(false);
+             certificateprofiledata.setUseQCEtsiRetentionPeriod(false);
              certificateprofiledata.setQCSemanticsId("");
              certificateprofiledata.setQCStatementRAName("");
              certificateprofiledata.setQCEtsiValueLimit(0);
              certificateprofiledata.setQCEtsiValueLimitExp(0);
              certificateprofiledata.setQCEtsiValueLimitCurrency("");
+             certificateprofiledata.setQCEtsiRetentionPeriod(0);
              certificateprofiledata.setUseQCCustomString(false);
              certificateprofiledata.setQCCustomStringOid("");
              certificateprofiledata.setQCCustomStringText("");
@@ -723,6 +727,11 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                        certificateprofiledata.setQCEtsiValueLimit(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMIT)).intValue());
                        certificateprofiledata.setQCEtsiValueLimitExp(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMITEXP)).intValue());  
                        certificateprofiledata.setQCEtsiValueLimitCurrency(request.getParameter(TEXTFIELD_QCETSIVALUELIMITCUR));                                                                    
+                     }                     
+                     value = request.getParameter(CHECKBOX_USEQCETSIRETENTIONPERIOD);
+                     if(value != null) {
+                       certificateprofiledata.setUseQCEtsiRetentionPeriod(value.equals(CHECKBOX_VALUE));
+                       certificateprofiledata.setQCEtsiRetentionPeriod(new Integer(request.getParameter(TEXTFIELD_QCETSIRETENTIONPERIOD)).intValue());
                      }                     
                      value = request.getParameter(CHECKBOX_USEQCCUSTOMSTRING);
                      if(value != null) {

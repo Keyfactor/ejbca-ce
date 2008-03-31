@@ -24,6 +24,7 @@ import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
@@ -45,7 +46,7 @@ import org.ejbca.util.CertTools;
  * See rfc3280 or later for spec of this extension.      
  * 
  * @author: Tomas Gustavsson
- * @version $Id: QcStatement.java,v 1.1 2008-01-10 14:42:16 anatom Exp $
+ * @version $Id: QcStatement.java,v 1.2 2008-03-31 00:35:12 anatom Exp $
  */
 public class QcStatement extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(QcStatement.class);
@@ -118,6 +119,13 @@ public class QcStatement extends StandardCertificateExtension {
 				qcs.add(qc);
 			}
 		}
+
+		if (certProfile.getUseQCEtsiRetentionPeriod()) {
+			DERInteger years = new DERInteger( ((Integer) certProfile.getQCEtsiRetentionPeriod()) );
+          		qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_RetentionPeriod, years);
+		        qcs.add(qc);
+	        }
+        
 		// ETSI Statement claiming that the private key resides in a Signature Creation Device
 		if (certProfile.getUseQCEtsiSignatureDevice()) {
 			qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD);

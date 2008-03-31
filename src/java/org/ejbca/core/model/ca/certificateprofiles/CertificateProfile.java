@@ -38,7 +38,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.35 2008-03-26 13:02:18 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.36 2008-03-31 00:35:12 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -46,7 +46,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 26.0;
+    public static final float LATEST_VERSION = (float) 27.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -195,6 +195,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCETSIVALUELIMIT               = "qcetsivaluelimit";
     protected static final String QCETSIVALUELIMITEXP            = "qcetsivaluelimitexp";
     protected static final String QCETSIVALUELIMITCURRENCY       = "qcetsivaluelimitcurrency";
+    protected static final String USEQCETSIRETENTIONPERIOD       = "useqcetsiretentionperiod";
+    protected static final String QCETSIRETENTIONPERIOD          = "qcetsiretentionperiod";
     protected static final String USEQCETSISIGNATUREDEVICE       = "useqcetsisignaturedevice";
     protected static final String USEQCCUSTOMSTRING              = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID              = "qccustomstringoid";
@@ -323,6 +325,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setQCEtsiValueLimit(0);
       setQCEtsiValueLimitExp(0);
       setQCEtsiValueLimitCurrency(null);
+      setUseQCEtsiRetentionPeriod(false);
+      setQCEtsiRetentionPeriod(0);
       setUseQCCustomString(false);
       setQCCustomStringOid(null);
       setQCCustomStringText(null);
@@ -956,6 +960,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       else
         data.put(QCETSIVALUELIMITCURRENCY,qcetsicaluelimitcurrency);
     }
+    public boolean getUseQCEtsiRetentionPeriod(){ return ((Boolean) data.get(USEQCETSIRETENTIONPERIOD)).booleanValue(); }
+    public void setUseQCEtsiRetentionPeriod(boolean useqcetsiretentionperiod) { data.put(USEQCETSIRETENTIONPERIOD, Boolean.valueOf(useqcetsiretentionperiod));}
+    public int getQCEtsiRetentionPeriod(){return ((Integer) data.get(QCETSIRETENTIONPERIOD)).intValue();}
+    public void setQCEtsiRetentionPeriod(int qcetsiretentionperiod){data.put(QCETSIRETENTIONPERIOD, new Integer(qcetsiretentionperiod));}
     public boolean getUseQCEtsiSignatureDevice(){ return ((Boolean) data.get(USEQCETSISIGNATUREDEVICE)).booleanValue(); }
     public void setUseQCEtsiSignatureDevice(boolean useqcetsisignaturedevice) { data.put(USEQCETSISIGNATUREDEVICE, Boolean.valueOf(useqcetsisignaturedevice));}
 
@@ -1107,6 +1115,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseQCEtsiQCCompliance(false);
                 setUseQCEtsiSignatureDevice(false);
                 setUseQCEtsiValueLimit(false);
+                setUseQCEtsiRetentionPeriod(false);
+                setQCEtsiRetentionPeriod(0);
                 setQCEtsiValueLimit(0);
                 setQCEtsiValueLimitExp(0);
                 setQCEtsiValueLimitCurrency(null);
@@ -1197,6 +1207,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 	setAllowExtensionOverride(false); // v26
                 } 
 
+                if (data.get(USEQCETSIRETENTIONPERIOD) == null) {
+                	setUseQCEtsiRetentionPeriod(false); // v27
+                	setQCEtsiRetentionPeriod(0);
+                } 
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }

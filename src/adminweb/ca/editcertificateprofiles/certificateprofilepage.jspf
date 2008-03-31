@@ -152,6 +152,7 @@ function checkuseqcstatementfield(){
     document.editcertificateprofile.<%= CHECKBOX_USEPKIXQCSYNTAXV2 %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIRETENTIONPERIOD %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.disabled = false;
   }
@@ -168,6 +169,8 @@ function checkuseqcstatementfield(){
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.checked = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.checked = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIRETENTIONPERIOD %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIRETENTIONPERIOD %>.checked = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.checked = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.disabled = true;
@@ -178,6 +181,8 @@ function checkuseqcstatementfield(){
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.value = "";
   }
@@ -196,6 +201,16 @@ function checkuseetsivaluelimitfield(){
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
+  }
+}
+
+function checkusetsiretentionperiod(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEQCETSIRETENTIONPERIOD %>.checked){
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = false;
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIRETENTIONPERIOD %>.value = "";
   }
 }
 
@@ -367,6 +382,16 @@ function checkallfields(){
       }    
       if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.value==""){
          alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY", true) %>");
+         illegalfields++;
+      }
+    }
+
+    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>","<%= ejbcawebbean.getText("ONLYDECINETSIRETPERIOD") %>")){
+         illegalfields++;
+      }    
+      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIRETENTIONPERIOD%>.value==""){
+         alert("<%= ejbcawebbean.getText("ETSIRETPERIODCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
@@ -935,6 +960,29 @@ function checkallfields(){
 
       </td>
     </tr>                     
+<tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSIRETENTIONPERIOD") %> </td>
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIRETENTIONPERIOD %>" onClick="checkusetsiretentionperiod()" value="<%=CHECKBOX_VALUE %>"
+           <%
+               if(!certificateprofiledata.getUseQCStatement())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUseQCEtsiRetentionPeriod())
+                   out.write("CHECKED");
+           %>>
+
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("RETENTIONPERIODYEARS") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIRETENTIONPERIOD %>" size="5" maxlength="255"
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiRetentionPeriod())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCEtsiRetentionPeriod() + "\""); %>>
+
+      </td>
+    </tr>
 
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEQCCUSTOMSTRING") %> </td>

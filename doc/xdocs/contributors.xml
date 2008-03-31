@@ -78,6 +78,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Darren Johnson, darren.johnson(at)safenet-inc.com, split CAToken to be able to use separate JCE/JCA providers, makes SCEP work on Luna HSM with java provider.</li>
 <li>Matt Stevenson, mavricknzwork(at)yahoo.com, code for adding CRMF and SPKAC requests in WS-API.Sybase and case-sensitive columns.</li>
 <li>David Carella, dcarella(at)linagora.com, language improvements and other standard compliance suggestions.</li>
+<li>Miguel Angel Tormo Alfaro, matormo(at)edicom.es, ETSI retention period in QC certificate extension.</li>
 </ul>
     </section>
   </body>
