@@ -8,6 +8,8 @@ create index certificatedata_idx2 on CertificateData (username);
 create index certificatedata_idx3 on CertificateData (status,issuerDN);
 create index certificatedata_idx4 ON CertificateData(subjectDN); 
 create index userdata_idx1 on UserData (cAId,endEntityProfileId);
+create index userdata_idx2 on UserData (cAId,timeCreated);
+create index userdata_idx3 on UserData (cAId,timeModified);
 create index historydata_idx1 on CertReqHistoryData (username);
 create index historydata_idx2 on CertReqHistoryData (issuerDN,serialNumber);
 create index protect_idx1 on TableProtectData (dbKey,dbType);
