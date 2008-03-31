@@ -523,9 +523,9 @@
               Date enddate = null;
               Calendar querytime = Calendar.getInstance();
               if( matchwithrow4 != -1 ){
-                querytime.set(yearrow4, monthrow4, dayrow4, timerow4, 0 ,0); 
+                querytime.set(yearrow4, monthrow4, dayrow4+1, timerow4, 0 ,0); 
                 startdate = querytime.getTime();
-                querytime.set(yearrow5, monthrow5, dayrow5, timerow5, 0 ,0); 
+                querytime.set(yearrow5, monthrow5, dayrow5+1, timerow5, 0 ,0); 
                 enddate = querytime.getTime();
               }
 
@@ -727,9 +727,9 @@
               Date enddate = null;
               Calendar querytime = Calendar.getInstance();
               if( matchwithrow4 != -1 ){
-                querytime.set(yearrow4, monthrow4, dayrow4, timerow4, 0 ,0); 
+                querytime.set(yearrow4, monthrow4, dayrow4+1, timerow4, 0 ,0); 
                 startdate = querytime.getTime();
-                querytime.set(yearrow5, monthrow5, dayrow5, timerow5, 0 ,0); 
+                querytime.set(yearrow5, monthrow5, dayrow5+1, timerow5, 0 ,0); 
                 enddate = querytime.getTime();
               }
 
