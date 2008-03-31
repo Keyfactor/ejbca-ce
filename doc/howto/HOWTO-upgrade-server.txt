@@ -1,6 +1,6 @@
 This Howto was contributed by James A. Rome. This howto is not updated with the frequency of the regular
 documentation on ejbca.org, so it may get outdated. This howto is mainly written for EJBCA 3.2.x.
-You configuration and plattform probably differs from James's so don't follow this guide by the word, 
+You configuration and platform probably differs from James's so don't follow this guide by the word, 
 unless you have an identical environment.
 
 -----

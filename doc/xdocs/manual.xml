@@ -183,7 +183,9 @@ You can convert a PEM-style Root CA key to a PKCS12 file that can be imported in
 openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
 </source>
 <p>
-You can import the CA with the cli command 'bin/ejbca.sh ca importca'.
+You can import the CA with the Admin GUI or the cli. See the section 'Export and import CAs'.
+<br/>
+After importing CAs you can also import users and certificates. See the section 'Import users'. 
 </p></subsection>
 </section>
 
@@ -3769,6 +3771,17 @@ before you do an export.
 </subsection>
 </section>
 
+<section name="Import users">
+<p>
+Users from another CA can be imported with the CLI command:
+</p>
+<source>
+bin/ejbca.sh ca importcert
+</source>
+<p>
+You have to give several parameters to the command. Running the command without parameters will print instructions.
+</p>
+</section>
 <section name="Internationalization">
 <p>
 To customize EJBCA admin GUI for your languages special characters you will probably have to 

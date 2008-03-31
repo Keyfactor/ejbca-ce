@@ -2,7 +2,7 @@
 Log4j logging in JBoss
 ======================
 
-On JBoss Log4j is configured in the file JBOSS_HOME/server/Default/conf/log4j.xml.
+On JBoss Log4j is configured in the file JBOSS_HOME/server/Default/conf/jboss-log4j.xml.
 
 
 If you want to log all EJBCA messages to a separate log file, you can add the following to the log4j.xml file.
