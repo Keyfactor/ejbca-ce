@@ -316,35 +316,10 @@ Indexes for higher performance
 This is a starting point for collecting indexes to create in the database to optimize performance (and cpu and disc usage):
 (you can start messing with this when you notice some slowdown, for normal installations it's rarely needed)
 
-Indexes below are in MySQL syntax, it should be general enough though.
+Indexes are listed as a script in create-index-ejbca3.sql.
+You can run this script to boost your database performance, if you have many record.
 
-TableProtectData searches when verifying:
-create index protect_idx1 on TableProtectData (dbKey,dbType);
- 
-Selecting log entries when viewing logs:
-create index logentry_idx1 on LogEntryData (time);
-create index logentry_idx2 on LogEntryData (caid);
-create index logentry_idx3 on LogEntryData (event);
-create index logentry_idx4 on LogEntryData (username);
-
-Indexes on CRLData:	
-create index crldata_idx1 on CRLData (issuerDN,cRLNumber);
-
-Indexes on CertificateData:
-create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
-create index certificatedata_idx2 on CertificateData (username);
-create index certificatedata_idx3 on CertificateData (status,issuerDN);
-
-Indexes on UserData:
-create index userdata_idx1 on UserData (caid,endEntityprofileId);
-
-Indexes on CertReqHistoryData:
-create index historydata_idx1 on CertReqHistoryData (username);
-
-Indexes on ProtectedLogData;
-create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
-create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(10));
-create index protectedlogexportdata_idx2 on ProtectedLogExportData (exportStartTime);
+Indexes are in MySQL syntax, it should be general enough though.
 
 On external OCSP responders you should create the following two indexes:
 create index protect_idx1 on TableProtectData (dbKey,dbType);
@@ -356,9 +331,7 @@ Indexes for extra security
 In a PKI every issuerDN, serialNumber pair must be unique. That means that a CA can not issue two certificates
 with the same serialNumber. The default installation has a very, very, very small chance that that can occur.
 SerialNumber are 64 bit random numbers, so the chance of a collision should be virtually nil, unless you issue
-billions of certificates. In any case, the following index assures that even this slim chance will never occur.
+billions of certificates. In any case, the index over (issuerDN, serialNumber) on CertificateData assures that 
+even this slim chance will never occur.
 
-Note that this is the same index as for performance, except that it is also unique, so this index can be used 
-instead of the above.
-
-create unique index cert_issuer_serno on CertificateData (issuerDN, serialNumber);
+Note that this is the same index as for performance, and that it is unique.
