@@ -2697,7 +2697,7 @@ Sample Slot Initialization:
 <p>
   Key generation
 <br></br>
-$EJBCA_HOME/bin/pkcs11HSM.sh generate 4096 defaultKey 5
+$EJBCA_HOME/bin/pkcs11HSM.sh generate /opt/ETcpsdk/lib/linux-i386/libcryptoki.so 4096 defaultKey 5
 </p>
 <strong>3. If you use an external HSM, set its hostname/IP-Address as unix environment variable</strong>
 <source>
@@ -2725,9 +2725,9 @@ pin user5
 </source>
 </subsection>
 
-<subsection name="Eracom HSM using Eracom provider">
+<subsection name="Eracom HSM using Eracom JCE provider">
 <p>
-This tooken type is depreciated. Please follow "Eracom HSM with PKCS#11" instead. But this description was written with experience from a real HSM.
+This tooken type is deprecated. Please follow "Eracom HSM with PKCS#11" instead. But this description was written with experience from a real HSM.
 When writing the PKCS#11 description an emulator was used.
 </p><p>
 Follow these steps to create a CA that is using a Eracom HSM (tested with Eracom ProtectServer Orange (csa8000) external):
