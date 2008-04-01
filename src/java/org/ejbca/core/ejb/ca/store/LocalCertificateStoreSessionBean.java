@@ -171,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.38 2008-03-14 08:01:01 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.39 2008-04-01 20:23:15 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -354,8 +354,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
         debug(">storeCRL(" + cafp + ", " + number + ")");
         try {
-            //X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-            CRLDataLocal data1 = crlHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
+        	boolean deltaCRL = deltaCRLIndicator > 0;
+        	int lastNo = getLastCRLNumber(admin, issuerDN, deltaCRL);
+        	if (number <= lastNo) {
+        		// There is already a CRL with this number, or a later one stored. Don't create duplicates
+            	String msg = intres.getLocalizedMessage("store.storecrlwrongnumber", number, lastNo);            	
+                getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);        		
+        	}
+            crlHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
         	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), null);            	
             getLogSession().log(admin, issuerDN.toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
         } catch (Exception e) {
@@ -1245,7 +1251,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin    Administrator performing the operation
      * @param issuerdn the subjectDN of a CA certificate
-     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
+     * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
      * @ejb.interface-method
      */
     public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
