@@ -211,12 +211,9 @@ You will find admin keys in ${ejbca.home}/p12. (do not delete those files!)
 and can not be run again (it will give an error if you try).
 <ul>
 <li>tomcat.jks is for the servlet container (don't bother with it)</li>
+<li>truststore.jks is for the servlet container (don't bother with it)</li>
 <li>superadmin.p12 should be imported in your browser, that's your administration certificate.</li>
 </ul>
-</p><p>
-You will need administrative privileges (e.g. root) for the CA-certificate to be installed
-in Javas trust-keystore ($JAVA_HOME/jre/lib/security/cacerts, default pwd 'changeit').
-If you don't have root permission now, you can do it manually later after step 9. It's important so don't forget!
 </p><p>
 6) Stop JBoss (ctrl+c or whatever)
 </p><p>
@@ -238,33 +235,21 @@ The default password for superadmin.p12 is ejbca, and is configured in ejbca.pro
 9) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
 or http://localhost:8080/ejbca for the public pages.
 </p><p>
-If you did not have root permission and get an error during installation step 5, you can 
-install the root certificate afterwards with the following commands, WITH the right permissions:
+If you create other CAs that you want to add as acceptable CAs in the SSL server configuration, 
+or if you renew the CA certificate, you can install any CA certificate in the SSL server configuration afterwards 
+with the following command:
 </p>
 <source>
-ant javatruststore
+ant -Dca.name="My CA Name" javatruststore
 </source>
 <p>
-For example on Ubuntu you can run:
+What this does in the background is that it adds the CA certificate to p12/truststore.jks and copies this file
+to JBOSS_HOME/server/default/conf/keystore, where the SSL keystores are located.
 </p>
-<source>
-sudo ant javatruststore
-</source>
 <p>
-What this does in the background are the following commands. You do not have to run these command manually.
-</p>
-<source>
-bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
-keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
-</source>
-<p>
-where AdminCA1 is the CA name as configured in conf/ejbca.properties (default is AdminCA1).
 You must stop and start JBoss after doing this.
 </p>
-<p>
-You can use this command to install the certificate of any CA in the java truststore by giving an argument: 
-<br/>ant javatruststore -Dca.name="My Ca Name"
-</p></subsection>
+</subsection>
 
 <subsection name="Additional howtos">
 <p>
@@ -275,7 +260,7 @@ In the directory doc/howto in the distribution there are additional howtos for s
 <subsection name="Running optional tests">
 <p>
 If you want to run a thorough test of your new CA, run the automated tests with 'ant test:run'.
-To run the tests you must copy the file lib/ext/junti-1.5.8 to ANT_HOME/lib.
+To run the tests you must copy the file lib/ext/junit-1.5.8 to ANT_HOME/lib.
 </p><p>
 NOTE: After running tests with 'ant test:run', you might
 consider deleting the database since some leftovers are left in the database.
