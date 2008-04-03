@@ -4,8 +4,32 @@
   <properties>
     <title>FAQ</title>
   </properties>
-
   <faqsection title="About this FAQ">
+    <faq>
+     <question>
+      I get an error with "Java heap space" when building EJBCA (during ant bootstrap).
+      </question>
+      <answer>
+      <p>
+      The error should be something like:<br/>
+      /usr/local/ejbca_3_6_b1/compile.xmli:239: Java heap space
+      </p>
+      <p>
+      This error is because the default maximum allowed memory allocation for java is too low.
+      <br/>Do this in unixes:
+      </p>
+      <source>
+      export ANT_OPTS=-Xmx=512m
+      ant bootstrap
+      </source>
+      <p>On windows set the environment variable ANT_OPTS to -Xmx=512m, and restart your shell.
+      </p>
+      <p>That should work.
+      </p>
+      </answer>
+    
+    </faq>
+    
     <faq>
       <question>
       I get strange errors during 'ant bootstrap' or 'ant install'.
