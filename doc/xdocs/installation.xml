@@ -276,7 +276,7 @@ to test the installation.
 
 <subsection name="Weblogic">
 <p>
-EJBCA should work fine with Weblogic 9.x.
+EJBCA should work fine with Weblogic 9.x on Oracle 9 or 10 databases.
 <br/>
 Running on weblogic has some limited functionality compared to JBoss though:
 <ul>
