@@ -1769,7 +1769,7 @@ java.util.Collection IUserDataSourceSessionLocal.fetch(Admin admin, Collection u
 </section>
 <section name="Framework for Reports">
 <p>
-From EJBCA 3.5, there is a framework for reports using Jasper Reports and JFreeChart. 
+Jasper Reports and JFreeChart. 
 The reports function can be accessed from the Admin-GUI under 'Supervisor Functions->Reports'.
 <br/>
 JasperReports files can be created using the free tool
@@ -2989,8 +2989,12 @@ and update entities.</li>
 <li>'Login Password' is the password for the user above.</li>
 <li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if it is no existing object 
 when EJBCA publishes the certificate.</li>
-<li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values
+<li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values and/or added
 when an entry is updated with a new certificate.</li>
+<li> 'Overwrite Existing Attributes' When 'Modify Existing Users' is set to true this value determines whether to change values of attributes when 
+they already exist.
+<li> 'Add Nonexisting Attributes' When 'Modify Existing Users' is set to true this value determines whether to add attributes when 
+they do not already exist.
 <li>'Add multiple certificates per user' defines if we should use multiple certificate entries for each user or only one.
 Default only one certificate is added to a user entry in LDAP and if the user gets a new certificate the old one is deleted and replaced with the new one.
 If this checkbox is checked certificates are instead appended in LDAP so each user can have multiple certificate entries in LDAP.
