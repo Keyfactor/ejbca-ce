@@ -142,7 +142,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   
  *  @jonas.bean ejb-name="ServiceTimerSession"
  *  
- *  @version $Id: ServiceTimerSessionBean.java,v 1.18 2008-03-28 20:53:20 anatom Exp $
+ *  @version $Id: ServiceTimerSessionBean.java,v 1.19 2008-04-05 01:53:02 anatom Exp $
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
 
@@ -309,8 +309,15 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		Collection currentTimers = getSessionContext().getTimerService().getTimers();
 		Iterator iter = currentTimers.iterator();
 		while(iter.hasNext()){
-			Timer timer = (Timer) iter.next();			
-			timer.cancel(); 			
+			try {
+				Timer timer = (Timer) iter.next();			
+				timer.cancel(); 							
+			} catch (Exception e) {
+				// We need to catch this because Weblogic 10 throws an exception if we
+				// have not scheduled this timer, so we don't have anything to cancel.
+				// Only weblogic though...
+				log.info("Caught exception canceling timer: "+e.getMessage());
+			}
 		}
 	}
 	
@@ -338,9 +345,16 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		  Collection timers = getSessionContext().getTimerService().getTimers();
 		  Iterator iter = timers.iterator();
 		  while(iter.hasNext()){
-			  Timer next = (Timer) iter.next();
-			  if(id.equals(next.getInfo())){
-				  next.cancel();
+			  try {
+				  Timer next = (Timer) iter.next();
+				  if(id.equals(next.getInfo())){
+					  next.cancel();
+				  }
+			  } catch (Exception e) {
+				  // We need to catch this because Weblogic 10 throws an exception if we
+				  // have not scheduled this timer, so we don't have anything to cancel.
+				  // Only weblogic though...
+				  log.info("Caught exception canceling timer: "+e.getMessage());
 			  }
 		  }
 	}
