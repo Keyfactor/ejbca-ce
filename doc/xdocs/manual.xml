@@ -2992,9 +2992,9 @@ when EJBCA publishes the certificate.</li>
 <li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values and/or added
 when an entry is updated with a new certificate.</li>
 <li> 'Overwrite Existing Attributes' When 'Modify Existing Users' is set to true this value determines whether to change values of attributes when 
-they already exist.
+they already exist.</li>
 <li> 'Add Nonexisting Attributes' When 'Modify Existing Users' is set to true this value determines whether to add attributes when 
-they do not already exist.
+they do not already exist.</li>
 <li>'Add multiple certificates per user' defines if we should use multiple certificate entries for each user or only one.
 Default only one certificate is added to a user entry in LDAP and if the user gets a new certificate the old one is deleted and replaced with the new one.
 If this checkbox is checked certificates are instead appended in LDAP so each user can have multiple certificate entries in LDAP.
