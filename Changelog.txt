@@ -1,3 +1,103 @@
+3.6.0, 2008-04-06
+---
+New Feature
+    * [ECA-257] - Support for IBM Websphere
+    * [ECA-515] - Autoenroll certificates for Microsoft systems.
+    * [ECA-564] - Support for DB2 database
+    * [ECA-595] - Issuance of delta CRL
+    * [ECA-596] - Add Freshest CRL extension
+    * [ECA-597] - Support for multiple policy statements
+    * [ECA-598] - Add support for id-pkix-ocsp-nocheck extension
+    * [ECA-619] - Ability to create intermediate LDAP nodes
+    * [ECA-624] - New EJBCA WS calls for listing CAs and profiles
+    * [ECA-633] - Log signing with real signature keys and row chaining
+    * [ECA-635] - Request multiple certificates for a user
+    * [ECA-649] - Service to expire user passwords
+    * [ECA-651] - Support for Oracle application server
+    * [ECA-661] - KeyRecoverNewest command in Ejbca WS API
+    * [ECA-662] - Email notifications to admin when user enrols
+    * [ECA-665] - Plug-in mechanism for user notification recipient email
+    * [ECA-669] - ExtRA SCEP, possible to use pre-registered users and verify their passwords
+    * [ECA-673] - Add support for id-ad-caIssuers (authority information access)
+    * [ECA-679] - New EJBCA WS calls for CRL generation and CRMF requests
+    * [ECA-684] - Allow setting and overriding any extension from a CRMF request
+    * [ECA-697] - Support $UID as replacement variable in LdapSearchPublisher
+    * [ECA-703] - Possible to use 32 bit serial numbers in cert, instead of 64 bit.
+    * [ECA-721] - PKCS#11 HSM support on external OCSP responder
+    * [ECA-723] - Option in OCSP to return good status for certificates not in database
+    * [ECA-727] - Extended key usages for SCVP
+    * [ECA-737] - Allow hexencoded DERObject in custom certificate extensions.
+    * [ECA-747] - CLI command to change certificate profile of a CA
+    * [ECA-759] - Add ETSI retention period to QC extension
+
+Task
+    * [ECA-698] - Remove deprecated JBoss mbean create crl service
+    * [ECA-706] - Create instructions for setting up an Apache web server as a proxy in front of EJBCA.
+
+Improvement
+    * [ECA-477] - OCSP responder require that signed request are issued by a known CA
+    * [ECA-478] - If a signed OCSP request is received, info-log which certificate the request was signed by
+    * [ECA-485] - If requiring signed OCSP requests, the responder should return "signature required" for unsigned requests
+    * [ECA-617] - External RA SCEP module only returns RA certificate in cert reply, not CA certificate
+    * [ECA-637] - Possible to use email for search in Ldap Search Publisher
+    * [ECA-645] - Make all default values visible when creating a CA and add a default CRL expiration interval.
+    * [ECA-656] - Option to override KeyUsage with key usage from CMP request
+    * [ECA-658] - CLI possible to get CRL in PEM format
+    * [ECA-663] - Allow @ in username
+    * [ECA-671] - Handle SCEP messages where client does not properly encode plus sign in HTTP GET url
+    * [ECA-672] - SCEP pending message should have an empty content
+    * [ECA-677] - Use CRL Distribution Point On CRL
+    * [ECA-678] - Change default CA's LDAP object class to certificationAuthority-V2
+    * [ECA-683] - Improve internal code for certificate extensions
+    * [ECA-685] - Easy configuration if OCSP requires signature on requests
+    * [ECA-689] - Display a "BUILD FAILED" message during the install phase if no superadmin.p12 is created.
+    * [ECA-694] - EFS certificates support
+    * [ECA-695] - Using PrimeCardHSM on install it does not have enough time to poll readers
+    * [ECA-700] - Improve LdapPublisher with option to not update attributes
+    * [ECA-704] - better P11 support for nCipher
+    * [ECA-705] - Make UTF-8 default encoding for web
+    * [ECA-707] - Extra: make configuration of scep ra easier
+    * [ECA-708] - Generating module protected JCA keys for nCipher should be simplier.
+    * [ECA-712] - Support creation of externally signed EC CAs and handling certificate requests signed by EC key.
+    * [ECA-716] - Confirmation when reomving a CA
+    * [ECA-720] - Publish attributes postalcode and businesscategory in LDAP
+    * [ECA-725] - Improve translations
+    * [ECA-726] - Remove obsoleted extended key usages for ipsec, add ipsecIKE
+    * [ECA-731] - Increase maximum validity of SubCA profile to 25 years
+    * [ECA-738] - Checks for max request size and no of reqs in an OCSP req
+    * [ECA-741] - Update pt_PT translation
+    * [ECA-752] - Make the description of a publisher readable from custom publisher implementations
+    * [ECA-754] - For Oracle db change LONG to CLOB
+
+Bug
+    * [ECA-606] - ExtRA SCEP servlet should init directly at startup
+    * [ECA-643] - Error with weblogic and 4096 bit CA
+    * [ECA-652] - findbyApprovalIdNonExpired searches for expired instead of rejected
+    * [ECA-670] - ExtRA SCEP, GetCACertChain return wrong content type
+    * [ECA-674] - LdapSearchPublisher should not change other attributes
+    * [ECA-680] - Derby database does not work with large 4096 bit CAs
+    * [ECA-681] - Null Pointer Exception throught editUser when CANAME is invalid
+    * [ECA-686] - Overflow causing archiving of non-expired certificates when CRLPeriod is very large
+    * [ECA-690] - EJBCA uses sun internal java class
+    * [ECA-692] - Removal of CA generates database exception under DB2
+    * [ECA-699] - Generating browser certificate failed; user still in 'new' status
+    * [ECA-701] - Sorting of approvals in Admin GUI does not work.
+    * [ECA-709] - Errors in upgrade scripts for MS-SQL
+    * [ECA-710] - bin/pkcs11HSM.cmd not working
+    * [ECA-711] - EJBCA WS Cli does not handle number of arguments correctly
+    * [ECA-713] - the keys can not be used in EJBCA for some HSMs
+    * [ECA-717] - SCEP does not work with Luna SHM
+    * [ECA-724] - CertificateExpirationNotifier service not working on Weblogic-Oracle
+    * [ECA-728] - Lockdown of an enduser profile to fill out to just a CN only not possible
+    * [ECA-729] - ArrayIndexOutOfBoundsException on Approval Page
+    * [ECA-730] - SCEP to CA signed by some External CAs fail
+    * [ECA-734] - Not working on Sybase
+    * [ECA-742] - ant javatruststore does not work for CA names with space
+    * [ECA-745] - EJB REF to "ejb/RaAdminSessionLocal" has wrong case in glassfish deployment file "ejbca_3_6_b1/src/publicweb/publicweb/WEB-INF/sun-web.xml"
+    * [ECA-746] - Not possible to renew CA that does not use default keystore pwd or autoaactivation.
+    * [ECA-758] - Under some conditions it's not possible to edit rfc822name altname field for user in admin-gui
+    * [ECA-766] - Error saving CRL Service on Weblogic 10
+
 3.5.5, 2008-02-29
 ---
 New Feature

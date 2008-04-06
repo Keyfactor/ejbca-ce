@@ -21,7 +21,7 @@ For upgrade instructions, please se UPGRADE.
 There are database upgrades in this release so please pay attention!
 
 Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
-EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgrade instructions.
+EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgrade instructions in UPGRADE.
 
 For the Oracle database we have made a switch from the deprecated type LONG to CLOB. Do not fear though,
 EJBCA 3.6 still works if you continue to use the LONG data type (i.e. does not make any changes to your database).
