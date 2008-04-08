@@ -10,6 +10,7 @@
     <p>Built on the J2EE 1.3 (EJB 2.0) specification.</p>
 <ul>
 <li>Flexible, component based architecture.</li>
+<li>Using standard, high performance RDBMS for storage.</li>
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
 <li>Supports RSA key algorithm up to 4096 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
@@ -21,7 +22,7 @@
 <li>Internal log messages are localizable for different languages.</li>
 <li>Command line administration for scripts etc.</li>
 <li>Web service interface for remote administration and integration.</li>
-<li>Modular API for HSMs. Built in support for nCipher, PrimeCardHSM, Eracom (now SafeNet), SafeNet Luna, Utimaco CryptoServer and other HSMs with a good PKCS#11 library.</li>
+<li>Modular API for HSMs. Built in support for nCipher, PrimeCardHSM, Eracom (now SafeNet), SafeNet Luna, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>
 <li>Supports different architectures; all-in-one, clustered, external RA, external OCSP, etc.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
@@ -29,7 +30,7 @@
 <li>Enrollment for other applications through open APIs and tools.</li>
 <li>Enrollment generating complete OpenVPN installers for VPN users.</li>
 <li>Smart card logon certificates.</li>
-<li>E-mail notification to new users added by RA.</li>
+<li>Notification system for e-mail notification to users and administrators when a user is added or certificates expire etc.</li>
 <li>Random or manual password for initial user authentication.</li>
 <li>Hard token module for integrating with hard token issuing system (smart cards).</li>
 <li>Multiple levels of administrators with specified privileges and user groups.</li>
@@ -44,20 +45,22 @@
 <li>Supports a subset of CMP (RFC4210 and RFC4211).</li>
 <li>Supports synchronous XKMS version 2 requests.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
-<li>CRL creation and URL-based CRLDistribution Points according to RFC3280. Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
-<li>Optional multiple publishers for publishing certificates and CRLs in LDAP. Several flexible standard publishers exist to meet different demands.</li>
+<li>CRL creation and URL-based CRLDistribution Points according to RFC3280.</li> 
+<li>Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
+<li>Optional multiple publishers for publishing certificates and CRLs in LDAP or legacy databases. Several flexible standard publishers exist to meet different demands.</li>
 <li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
-<li>Component based architecture for publishing certificates and CRLs to different sources.</li>
+<li>Autoenrollment for windows clients.</li>
+<li>Component- and plug-in based architecture  for publishing certificates and CRLs to different sources.</li>
 <li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
 <li>Advanced log signing of PKI audit logs.</li>
 <li>API for an external RA, restricting in-bound traffic to CA.</li>
-<li>Optional approval mechanism for RA so several admins are required to perform an action.</li>
+<li>Optional approval mechanism so several admins are required to perform an action, a.k.a. dual-authentication.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
 <li>Possible to integrate into large java applications for optimal integration into bussiness process.</li>
-<li>Deploys easily in a clustered high availability environment.</li>
+<li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
 <li>Supports multiple application servers: JBoss, Weblogic, Glassfish, OC4J, Websphere</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL, Derby, Informix.</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, DB2, MS-SQL, Derby, Sybase, Informix.</li>
 </ul>    
 
   </section>
