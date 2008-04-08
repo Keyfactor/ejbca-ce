@@ -15,7 +15,7 @@ public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 		if (args.length < 2) {
-			String msg = "Usage: LOG resetprotected <freezeThreshold>\n" +
+			String msg = "Usage: LOG " + COMMAND_NAME + " <freezeThreshold>\n" +
 			"Verify protected log. freezeThreshold is the oldest allowed log event for any node in seconds.\n";
 			throw new IllegalAdminCommandException(msg);
 		}

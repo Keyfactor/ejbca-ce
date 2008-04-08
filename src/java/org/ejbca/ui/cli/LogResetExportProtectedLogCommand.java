@@ -20,7 +20,7 @@ public class LogResetExportProtectedLogCommand extends BaseLogAdminCommand {
 		// 4 chars should be enough to make the user think at least once..
         String randomString = ""+(seeder.nextInt(9000)+1000);
         System.out.print("\nYou are about to roll back the list of exports to the last non-deleted export.\n\n"+
-        							"The next time the export serive runs it will try to export all events since that time. "+
+        							"The next time the export service runs it will try to export all events since that time. "+
         							"This might put a big load on your system for some time.\n"+
         							"Confirm the export-reset by entering \""+randomString+"\": ");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
