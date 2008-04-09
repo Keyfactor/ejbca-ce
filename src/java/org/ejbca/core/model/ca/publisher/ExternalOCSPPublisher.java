@@ -37,7 +37,7 @@ import org.ejbca.util.JDBCUtil;
  * Publisher writing certificates to an external Database, used by external OCSP responder.
  * 
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.14 2008-03-05 10:53:26 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.15 2008-04-09 21:15:25 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
@@ -121,7 +121,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     	}
     	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
     	try {
-    		JDBCUtil.execute( "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
+    		JDBCUtil.execute( "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
     				prep, dataSource);
     		fail = false;
     	} catch (Exception e) {
@@ -132,7 +132,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     			//JDBCPreparer uprep = new UpdatePreparer(incert, status, revocationDate, revocationReason);
     			StoreCertPreparer uprep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
     			try {
-        			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=? WHERE fingerprint=?;",
+        			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=? WHERE fingerprint=?",
             				uprep, dataSource );
             		fail = false;    				
     			} catch (Exception ue) {
@@ -214,7 +214,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     	long now = System.currentTimeMillis();
     	UpdatePreparer prep = new UpdatePreparer(incert, 40, now, reason);
     	try {
-			JDBCUtil.execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
+			JDBCUtil.execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?",
 			         prep, dataSource);
 			fail = false;
 		} catch (Exception e) {
@@ -257,7 +257,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public void testConnection(Admin admin) throws PublisherConnectionException {
         try {
-        	JDBCUtil.execute("SELECT NOW();", new DoNothingPreparer(), dataSource);
+        	JDBCUtil.execute("select 1 from CertificateData", new DoNothingPreparer(), dataSource);
         } catch (Exception e) {
         	log.error("Connection test failed: ", e);
             final PublisherConnectionException pce = new PublisherConnectionException("Connection in init failed: "+e.getMessage());
