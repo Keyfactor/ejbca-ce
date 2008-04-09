@@ -21,6 +21,7 @@ create index certificatedata_idx4 ON CertificateData(subjectDN);
 create index userdata_idx1 on UserData (cAId,endEntityProfileId);
 create index userdata_idx2 on UserData (cAId,timeCreated);
 create index userdata_idx3 on UserData (cAId,timeModified);
+create index userdata_idx4 on UserData (cAId);
 
 -- Indexes on CertReqHistoryData: for viewing history
 create index historydata_idx1 on CertReqHistoryData (username);
