@@ -25,6 +25,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -33,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.7 2008-02-26 15:37:13 herrvendil Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.8 2008-04-09 21:54:22 anatom Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -42,10 +43,14 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	public static final String CERTSERNO_PARAMETER      = "certsernoparameter"; 
 	  
 	public static final String PASSWORD_AUTHENTICATIONCODE  = "passwordactivationcode";
+	
+    public static final String CHECKBOX_VALUE                = BasePublisher.TRUE;
 	  
 	public static final String BUTTON_ACTIVATE          = "buttonactivate";
 	public static final String BUTTON_MAKEOFFLINE       = "buttonmakeoffline";
 	public static final String BUTTON_CLOSE             = "buttonclose"; 
+	public static final String CHECKBOX_INCLUDEINHEALTHCHECK = "includeinhealthcheck";
+	public static final String SUBMITHS					= "submiths";
 
 
     /** Creates new LogInterfaceBean */
@@ -81,9 +86,28 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	  generalerrormessage = null;
     	  activationerrormessage = null;   
     	  activationmessage = null;
-    	 
           RequestHelper.setDefaultCharacterEncoding(request);
 
+          //See if includeinHealthCheck should be enabled.
+          if(request.getParameter(SUBMITHS) != null ) {
+        	  try{
+        		  caid = Integer.parseInt(request.getParameter(CA_PARAMETER));
+        		  cainfo = cabean.getCAInfo(caid);
+        		  status = cainfo.getCAInfo().getStatus();
+        	  } catch(AuthorizationDeniedException e){
+        		  generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";
+        		  return;
+        	  }
+        	  String value = request.getParameter(CHECKBOX_INCLUDEINHEALTHCHECK);
+        	  if(value != null) {
+        		  cainfo.getCAInfo().setincludeInHealthCheck( true );
+        	  } else {
+        		  cainfo.getCAInfo().setincludeInHealthCheck( false );
+        	  }
+        	  // persist to database
+        	  cabean.getCADataHandler().editCA(cainfo.getCAInfo());
+          }
+          
           if( request.getParameter(CA_PARAMETER) != null ){
     	    caid = Integer.parseInt(request.getParameter(CA_PARAMETER));
     	             	    
@@ -97,6 +121,8 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      	generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";
     	      	return;
     	      } 
+    	      
+    	      
     	      
     	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.
     	      if(request.getParameter(BUTTON_ACTIVATE) != null &&

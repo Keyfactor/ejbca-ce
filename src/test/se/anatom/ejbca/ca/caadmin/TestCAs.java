@@ -48,7 +48,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.28 2008-01-18 15:08:26 nponte Exp $
+ * @version $Id: TestCAs.java,v 1.29 2008-04-09 21:54:22 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -172,8 +172,8 @@ public class TestCAs extends TestCase {
                     false, // Use UTF8 subject DN by default
             		true, // Use LDAP DN order by default
             		false, // Use CRL Distribution Point on CRL
-            		false  // CRL Distribution Point on CRL critical
-            		);
+            		false,  // CRL Distribution Point on CRL critical
+            		true);
 
             cacheAdmin.createCA(admin, cainfo);
 
@@ -311,7 +311,8 @@ public class TestCAs extends TestCase {
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
-                    false  // CRL Distribution Point on CRL critical
+                    false,  // CRL Distribution Point on CRL critical
+                    true // include in Health Check
                     );
 
 
@@ -416,8 +417,9 @@ public class TestCAs extends TestCase {
                     false, // Use UTF8 subject DN by default 
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
-                    false  // CRL Distribution Point on CRL critical
-                    );
+                    false,  // CRL Distribution Point on CRL critical
+                    true // Include in healthCheck
+            );
 
             cacheAdmin.createCA(admin, cainfo);
 
@@ -518,7 +520,8 @@ public class TestCAs extends TestCase {
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
-                    false  // CRL Distribution Point on CRL critical
+                    false,  // CRL Distribution Point on CRL critical
+                    true // Include in healthCheck
                     );
 
             cacheAdmin.createCA(admin, cainfo);
@@ -610,7 +613,8 @@ public class TestCAs extends TestCase {
             		false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
-                    false  // CRL Distribution Point on CRL critical
+                    false,  // CRL Distribution Point on CRL critical
+                    true // Include in HealthCheck
                     );
 
             cacheAdmin.createCA(admin, cainfo);
@@ -705,7 +709,8 @@ public class TestCAs extends TestCase {
             		false, // Use UTF8 subject DN by default
                     false, // Use X500 DN order
                     false, // Use CRL Distribution Point on CRL
-                    false  // CRL Distribution Point on CRL critical
+                    false,  // CRL Distribution Point on CRL critical
+                    true // Include in health check
                     );
 
             cacheAdmin.createCA(admin, cainfo);

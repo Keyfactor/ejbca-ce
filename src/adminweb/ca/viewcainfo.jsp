@@ -77,6 +77,19 @@ function viewocspcert(){
       </tr>    
       <% } %>
      
+     <tr id="Row<%=(row++)%2%>">
+  	    <td width="<%=columnwidth%>">
+  	    	<%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") + ": " %>
+  	    </td>
+	    <td>
+	         <input type="checkbox" name="<%= viewcainfohelper.CHECKBOX_INCLUDEINHEALTHCHECK %>" value="<%=viewcainfohelper.CHECKBOX_VALUE %>" 
+	         <%  if(viewcainfohelper.cainfo.getCAInfo().getIncludeInHealthCheck() )
+                 out.write(" CHECKED ");
+           %>>
+          <input type="submit" name="<%= viewcainfohelper.SUBMITHS %>" value="Submit">
+        </td>
+      </tr> 
+
      <% if(viewcainfohelper.can_activate && (viewcainfohelper.status == SecConst.CA_OFFLINE || viewcainfohelper.tokenoffline)){ %> 
      <tr id="Row<%=(row++)%2%>">
   	    <td width="<%=columnwidth%>"></td>
@@ -84,6 +97,7 @@ function viewocspcert(){
  	         <%= ejbcawebbean.getText("AUTHENTICATIONCODE") + ": " %>
 	         <input type="password" name="<%= viewcainfohelper.PASSWORD_AUTHENTICATIONCODE %>" size="10" maxlength="255"  value=''>
              <input type="submit" name="<%= viewcainfohelper.BUTTON_ACTIVATE %>" value="<%= ejbcawebbean.getText("ACTIVATE") %>" onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSUREACTIVATECA",true) %>")'>
+
         </td>
       </tr> 
      <% }

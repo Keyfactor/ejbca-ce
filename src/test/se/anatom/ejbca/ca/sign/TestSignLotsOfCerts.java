@@ -63,7 +63,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  *
- * @version $Id: TestSignLotsOfCerts.java,v 1.8 2008-02-25 19:42:15 anatom Exp $
+ * @version $Id: TestSignLotsOfCerts.java,v 1.9 2008-04-09 21:54:21 anatom Exp $
  */
 public class TestSignLotsOfCerts extends TestCase {
     private static Logger log = Logger.getLogger(TestSignLotsOfCerts.class);
@@ -235,7 +235,8 @@ public class TestSignLotsOfCerts extends TestCase {
                     false, // Use UTF8 subject DN by default
             		true, // Use LDAP DN order by default
             		false, // Use CRL Distribution Point on CRL
-            		false  // CRL Distribution Point on CRL critical
+            		false,  // CRL Distribution Point on CRL critical
+            		true // Include in Health Check
             		);
 
             cacheAdmin.createCA(admin, cainfo);

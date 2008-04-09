@@ -573,7 +573,8 @@
                                                         useprintablestringsubjectdn,
                                                         useldapdnorder,
                                                         usecrldistpointoncrl,
-                                                        crldistpointoncrlcritical);
+                                                        crldistpointoncrlcritical,
+                                                        true);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -633,7 +634,8 @@
                                                         useprintablestringsubjectdn,
                                                         useldapdnorder,
                                                         usecrldistpointoncrl,
-                                                        crldistpointoncrlcritical);
+                                                        crldistpointoncrlcritical,
+                                                        true);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -881,7 +883,8 @@
                                                       useprintablestringsubjectdn,
                                                       useldapdnorder,
                                                       usecrldistpointoncrl,
-                                                      crldistpointoncrlcritical);
+                                                      crldistpointoncrlcritical,
+                                                      true);
                  
                cadatahandler.editCA((CAInfo) x509cainfo);
                  
@@ -1124,7 +1127,8 @@
                                                         useprintablestringsubjectdn,
                                                         useldapdnorder,
                                                         usecrldistpointoncrl,
-                                                        crldistpointoncrlcritical);
+                                                        crldistpointoncrlcritical,
+                                                        true);
                  try{
                    PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));

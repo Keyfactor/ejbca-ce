@@ -250,6 +250,8 @@
     <property name="healthcheck.amountfreemem" value="1" />
     <property name="healthcheck.dbquery" value="Select 1 From CertificateData" />
     <property name="healthcheck.authorizedips" value="127.0.0.1" />
+    <property name="healthcheck.maintenancefile" value="" />
+    <property name="healthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
     <property name="ocsphealthcheck.amountfreemem" value="1" />
     <property name="ocsphealthcheck.dbquery" value="Select 1 From CertificateData" />
     <property name="ocsphealthcheck.authorizedips" value="127.0.0.1"/>

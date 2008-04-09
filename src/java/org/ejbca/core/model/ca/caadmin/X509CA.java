@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.93 2008-03-19 14:37:37 anatom Exp $
+ * @version $Id: X509CA.java,v 1.94 2008-04-09 21:54:19 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -134,7 +134,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = 15;
+    public static final float LATEST_VERSION = 16;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -176,6 +176,7 @@ public class X509CA extends CA implements Serializable {
       setUseLdapDNOrder(cainfo.getUseLdapDnOrder());
       setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
       setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
+      setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
 
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
@@ -199,7 +200,7 @@ public class X509CA extends CA implements Serializable {
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder(),
-        		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical());
+        		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),getIncludeInHealthCheck());
         super.setCAInfo(info);
     }
 
@@ -887,6 +888,9 @@ public class X509CA extends CA implements Serializable {
             }
             if (data.get(CRLDISTRIBUTIONPOINTONCRLCRITICAL) == null) {
                 setCrlDistributionPointOnCrlCritical(false); // v15
+            }
+            if (data.get(INCLUDEINHEALTHCHECK) == null) {
+                setIncludeInHealthCheck(true); // v16
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));

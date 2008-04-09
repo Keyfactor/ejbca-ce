@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.16 2008-01-24 16:10:26 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.17 2008-04-09 21:54:19 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -48,6 +48,7 @@ public class X509CAInfo extends CAInfo{
   private boolean useLdapDNOrder;
   private boolean useCrlDistributionPointOnCrl;
   private boolean crlDistributionPointOnCrlCritical;
+
     
     /**
      * Constructor that should be used when creating CA and retreiving CA info.
@@ -59,7 +60,7 @@ public class X509CAInfo extends CAInfo{
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
-                    boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical) {
+                    boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -113,6 +114,7 @@ public class X509CAInfo extends CAInfo{
         this.useLdapDNOrder = useLdapDnOrder;
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
+        this.includeInHealthCheck = includeInHealthCheck;
     }
 
     /**
@@ -125,7 +127,7 @@ public class X509CAInfo extends CAInfo{
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl,
                       boolean finishuser, Collection extendedcaserviceinfos, 
                       boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
-                      boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical) {        
+                      boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -152,6 +154,7 @@ public class X509CAInfo extends CAInfo{
         this.useLdapDNOrder = useLdapDnOrder;
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
+        this.includeInHealthCheck = includeInHealthCheck;
     }  
   
   
@@ -209,5 +212,4 @@ public class X509CAInfo extends CAInfo{
   public boolean getCrlDistributionPointOnCrlCritical() {
       return this.crlDistributionPointOnCrlCritical;
   }
-
 }

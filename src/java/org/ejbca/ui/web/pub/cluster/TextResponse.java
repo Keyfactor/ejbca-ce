@@ -26,12 +26,13 @@ import org.apache.log4j.Logger;
  * Class that responds with a text string of status is OK else it responds the error message (optional).
  * 
  * The following servlet init parameters might be used:
+ * MaintenancePropertyName :  a string to return if a file with a propert=true exists, to deliberately take a node of from the cluster
  * OKMessage : the string to return when everything is ok.
  * SendServerError : (boolean) Send A 500 Server error is returned instead of errormessage
  * CustomErrorMsg : Send a static predefined errormessage instead of the on created by the healthchecker.
  * 
  * @author Philip Vendil
- * @version $Id: TextResponse.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
+ * @version $Id: TextResponse.java,v 1.3 2008-04-09 21:54:20 anatom Exp $
  *
  */
 public class TextResponse implements IHealthResponse {
@@ -39,10 +40,12 @@ public class TextResponse implements IHealthResponse {
 	private static Logger log = Logger.getLogger(TextResponse.class);
 	
 	private static final String OK_MESSAGE = "ALLOK";
+	private static final String DEFAULT_MAINTENANCE_MESSAGE = "DOWN_FOR_MAINTENANCE";
 	
 	
 	private String okMessage = null;
 	private boolean sendServerError = false;
+	private String maintenanceMessage = null;
 	private String customErrorMessage = null;
 	
 	public void init(ServletConfig config) {
@@ -51,42 +54,45 @@ public class TextResponse implements IHealthResponse {
 			okMessage = OK_MESSAGE;
 		}
 		
+		maintenanceMessage = config.getInitParameter("MaintenancePropertyName");
+		if(maintenanceMessage == null) {
+			maintenanceMessage = DEFAULT_MAINTENANCE_MESSAGE;
+		}
+		
+		
+		
 		if(config.getInitParameter("SendServerError") != null){
 		  sendServerError = config.getInitParameter("SendServerError").equalsIgnoreCase("TRUE");	
 		}
-		
 		customErrorMessage = config.getInitParameter("CustomErrorMessage");
-		
-		
+
 	}
 
 	public void respond(String status, HttpServletResponse resp) {
 		resp.setContentType("text/plain");
-		try {	
+		try {
 			Writer out = resp.getWriter();
-			if(status==null){
-				// Return "EJBCAOK" Message    	      	  				
-				out.write(okMessage);		    	  
-			}else{
+			if (status == null) {
+				// Return "EJBCAOK" Message
+				out.write(okMessage);
+			} else {
 				// Return failinfo
-				if(sendServerError){
-					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,status);
-				}else{
-				  if(customErrorMessage != null){
-					out.write(customErrorMessage); 
-				  }else{
-					out.write(status);
-				  }
+				if (sendServerError) {
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, status);
+				} else {
+					if (customErrorMessage != null) {
+						out.write(customErrorMessage);
+					} else {
+						out.write(status);
+					}
 				}
-				
 			}
 			out.flush();
 			out.close();
 		} catch (IOException e) {
-			log.error("Error writing to Servlet Response.",e);
+			log.error("Error writing to Servlet Response.", e);
 		}
-		
-		
+
 	}
 
 }

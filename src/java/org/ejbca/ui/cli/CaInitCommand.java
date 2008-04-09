@@ -44,7 +44,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.25 2008-02-04 09:05:54 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.26 2008-04-09 21:54:20 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -219,7 +219,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 false, // Use UTF8 subject DN by default
 			                                 true, // Use LDAP DN order by default
 			                                 false, // Use CRL Distribution Point on CRL
-			                                 false  // CRL Distribution Point on CRL critical
+			                                 false,  // CRL Distribution Point on CRL critical
+			                                 true // include in health check
 			                                 );
             
             getOutputStream().println("Creating CA...");

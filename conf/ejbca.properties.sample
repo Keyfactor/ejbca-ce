@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.33 2008-02-10 21:03:46 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.34 2008-04-09 21:54:23 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -175,6 +175,17 @@ ca.cmskeystorepass=foo123
 # Parameter specifying IP addresses authorized to access the healthcheck
 # servlet. Use ';' for between multiple IPs. 
 #healthcheck.authorizedips=127.0.0.1
+
+# Parameter to specify location of file containing information about maintenance
+# Use this file to specify wether to include node in healthcheck or report as down for maintenance, 
+# which will return an error message (either the property name specified below or a custom message specified in web.xml).
+#healthcheck.maintenancefile=~/maintenance.properties
+
+# Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
+# The healthcheck.maintenancefile should contain a single line like this:
+# DOWN_FOR_MAINTENANCE=true
+# Where the node will be down for maintenenace of the property is true, and not down for maintenance if the property is false.
+#healthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
 
 #------------------- ECDSA implicitlyCA settings -------------
 # Sets pre-defined EC curve parameters for the implicitlyCA facility.

@@ -65,6 +65,20 @@
                Parameter saying if a errorcode 500 should be sent in case of error.
             </description>
         </init-param>
+        <init-param>
+            <param-name>MaintenanceFile</param-name>
+            <param-value>@healthcheck.maintenancefile@</param-value>
+            <description>
+               Parameter specifying a file to configure maintenance status.
+            </description>
+        </init-param>
+        <init-param>
+            <param-name>MaintenancePropertyName</param-name>
+            <param-value>@healthcheck.maintenancepropertyname@</param-value>
+            <description>
+               Parameter to configure name of property used in MaintenanceFile, default = DOWN_FOR_MAINTENANCE
+            </description>
+        </init-param>
        <!-- 
         <init-param>
             <param-name>CustomErrorMessage</param-name>
