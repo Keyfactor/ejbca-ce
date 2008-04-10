@@ -171,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.39 2008-04-01 20:23:15 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.40 2008-04-10 18:22:51 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -439,6 +439,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		String deltaCRLSql = "select fingerprint, issuerDN, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and revocationDate>? and (status=? or (status=? and revocationReason=?))";
     		if (lastbasecrldate > 0) {
     			sql = deltaCRLSql;
+    		}
+    		if (log.isDebugEnabled()) {
+        		log.debug("Executing SQL: "+sql);    			
     		}
     		ps = con.prepareStatement(sql);
     		ps.setString(1, dn);
