@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Random;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -142,7 +143,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   
  *  @jonas.bean ejb-name="ServiceTimerSession"
  *  
- *  @version $Id: ServiceTimerSessionBean.java,v 1.19 2008-04-05 01:53:02 anatom Exp $
+ *  @version $Id: ServiceTimerSessionBean.java,v 1.20 2008-04-11 02:34:18 anatom Exp $
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
 
@@ -239,7 +240,11 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      */
 	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceData, String serviceName) {
 		boolean ret = false;
-		getSessionContext().getTimerService().createTimer(nextInterval*1000, timerInfo);
+		// Add a random delay within 30 seconds to the interval, just to make sure nodes in a cluster is
+		// not scheduled to run on the exact same second
+		Random rand = new Random();
+		int i = rand.nextInt(30000);
+		getSessionContext().getTimerService().createTimer((nextInterval*1000+i), timerInfo);
 		Date nextRunDate = serviceData.getNextRunTimestamp();
 		Date currentDate = new Date();
 		// Check if the current date is after when the service should run.
