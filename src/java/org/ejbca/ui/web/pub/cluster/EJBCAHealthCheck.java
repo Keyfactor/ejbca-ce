@@ -56,7 +56,7 @@ import org.ejbca.util.JDBCUtil;
  * * All Publishers can establish connection
  * 
  * @author Philip Vendil
- * @version $Id: EJBCAHealthCheck.java,v 1.7 2008-04-09 21:54:20 anatom Exp $
+ * @version $Id: EJBCAHealthCheck.java,v 1.8 2008-04-11 00:24:55 anatom Exp $
  */
 
 public class EJBCAHealthCheck implements IHealthCheck {
@@ -123,7 +123,7 @@ public class EJBCAHealthCheck implements IHealthCheck {
 		try {
 			String temp = maintenanceProperties.getProperty(maintenancePropertyName).toString();
 			if (temp.equalsIgnoreCase("true")) {
-				return maintenancePropertyName;
+				return "MAINT: "+maintenancePropertyName;
 			} else {
 				return "";
 			}
@@ -154,7 +154,7 @@ public class EJBCAHealthCheck implements IHealthCheck {
 	private String checkMemory(){
 		String retval = "";
         if(minfreememory >= Runtime.getRuntime().freeMemory()){
-          retval = "\nError Virtual Memory is about to run out, currently free memory :" + Runtime.getRuntime().freeMemory();	
+          retval = "\nMEM: Error Virtual Memory is about to run out, currently free memory :" + Runtime.getRuntime().freeMemory();	
         }		
 		
 		return retval;
@@ -168,7 +168,7 @@ public class EJBCAHealthCheck implements IHealthCheck {
 		  statement.execute(checkDBString);		  
 		  JDBCUtil.close(con);
 		}catch(Exception e){
-			retval = "\nError creating connection to EJBCA Database.";
+			retval = "\nDB: Error creating connection to EJBCA Database: "+e.getMessage();
 			log.error("Error creating connection to EJBCA Database.",e);
 		}
 		return retval;
@@ -182,7 +182,7 @@ public class EJBCAHealthCheck implements IHealthCheck {
 			CATokenInfo tokeninfo = cainfo.getCATokenInfo(); 
 			if((cainfo.getStatus() == SecConst.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()){
 			  if(tokeninfo.getCATokenStatus() == ICAToken.STATUS_OFFLINE){
-				retval +="\n Error CA Token is disconnected, CA Name : " + cainfo.getName();
+				retval +="\nCA: Error CA Token is disconnected, CA Name : " + cainfo.getName();
 				log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
 			  }
 			}
@@ -199,7 +199,7 @@ public class EJBCAHealthCheck implements IHealthCheck {
 				getPublisherSession().testConnection(admin,publisherId.intValue());
 			} catch (PublisherConnectionException e) {
 				String publishername = getPublisherSession().getPublisherName(admin,publisherId.intValue());
-				retval +="\n Cannot connect to publisher " + publishername;
+				retval +="\nPUBL: Cannot connect to publisher " + publishername;
 				log.error("Cannot connect to publisher " + publishername);
 			}
 		}
