@@ -30,11 +30,11 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.CertTools;
 
 /**
- * A java bean handling the athorization to ejbca.
+ * A java bean handling the authorization to ejbca.
  *
- * The main metod are isAthorized and authenticate.
+ * The main methods are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.4 2008-01-14 17:38:38 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.5 2008-04-11 23:11:34 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable {
     
@@ -188,24 +188,11 @@ public class Authorizer extends Object implements java.io.Serializable {
         try{
             certificate.checkValidity();
         }catch(Exception e){
-            throw new AuthenticationFailedException("Your certificates vality has expired.");
+            throw new AuthenticationFailedException("Your certificate vality has expired.");
         }
         
         // TODO
-        /*     // Vertify Signature
-         boolean verified = false;
-         for(int i=0; i < this.cacertificatechain.length; i++){
-         try{
-         //            log.debug("Authorizer: authenticate : Comparing : "  + CertTools.getIssuerDN(certificate) + " With " + CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]));
-          //            if(LDAPDN.equals(CertTools.getIssuerDN(certificate), CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]))){
-           certificate.verify(cacertificatechain[i].getPublicKey());
-           verified = true;
-           //            }
-            }catch(Exception e){}
-            }
-            if(!verified)
-            throw new AuthenticationFailedException("Your certificate cannot be verified by CA certificate chain.");
-            */
+        // Vertify Signature on cert?
         // Check if certificate is revoked.
         RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),certificate.getSerialNumber());
         if (revinfo == null) {
@@ -231,7 +218,11 @@ public class Authorizer extends Object implements java.io.Serializable {
             try{           
                 isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid.toString());               
                 returnval.add(caid); 
-            }catch(AuthorizationDeniedException e){}
+            }catch(AuthorizationDeniedException e){
+            	if (log.isDebugEnabled()) {
+            		log.debug("Admin not authorized to CA: "+caid);
+            	}
+            }
         }                         
         return returnval;
     }		   
@@ -253,7 +244,11 @@ public class Authorizer extends Object implements java.io.Serializable {
             try{
                 isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
                 returnval.add(profileid); 
-            }catch(AuthorizationDeniedException e){}
+            }catch(AuthorizationDeniedException e){
+            	if (log.isDebugEnabled()) {
+            		log.debug("Admin not authorized to end entity profile: "+profileid);
+            	}            	
+            }
             
         }
         
