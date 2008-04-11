@@ -46,7 +46,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.4 2007-04-10 11:09:02 jeklund Exp $
+ * @version $Id: TestPublisher.java,v 1.5 2008-04-11 19:34:19 anatom Exp $
  */
 public class TestPublisher extends TestCase {
     
@@ -519,6 +519,34 @@ public class TestPublisher extends TestCase {
 	    assertFalse("testConnection reported all ok, but commandfile does not exist!", ret);
 	    log.debug("<test12GenPurpCustPublStandardError()");
 	} // test13GenPurpCustPublConnection
+
+    public void test14ExternalOCSPPublisher() throws Exception {
+        boolean ret = false;
+
+        ret = false;
+		try {
+            CustomPublisherContainer publisher = new CustomPublisherContainer();
+            publisher.setClassPath(ExternalOCSPPublisher.class.getName());
+		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
+            publisher.setPropertyData("dataSource java:/EjbcaDS");
+            publisher.setDescription("Used in Junit Test, Remove this one");
+            pub.addPublisher(admin, "TESTEXTOCSP", publisher);
+            ret = true;
+        } catch (PublisherExistsException pee) {
+        }        
+        assertTrue("Creating External OCSP Publisher failed", ret);
+        int id = pub.getPublisherId(admin, "TESTEXTOCSP");
+        pub.testConnection(admin, id);
+        
+        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        ArrayList publishers = new ArrayList();
+        publishers.add(new Integer(pub.getPublisherId(admin, "TESTEXTOCSP")));
+        
+        ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
+        assertTrue("Error storing certificate to external ocsp publisher", ret);
+
+        pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+    }
 
 	/**
 	 * Tries to execute the argument and return true if no exception was thrown and the command returned 0.
