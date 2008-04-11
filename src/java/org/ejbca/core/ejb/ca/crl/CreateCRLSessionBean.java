@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.22 2008-04-11 00:24:41 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.23 2008-04-11 23:46:06 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -159,6 +159,23 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         logsession = logsessionhome.create();
     }
 
+	/** Same as generating a new CRL but this is in a new separate transaction.
+	 *
+     * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
+	 */
+    public void runNewTransaction(Admin admin, String issuerdn) throws CATokenOfflineException {
+    	run(admin,issuerdn);
+    }
+	/** Same as generating a new delta CRL but this is in a new separate transaction.
+	 * 
+     * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
+     */
+    public byte[] runDeltaCRLnewTransaction(Admin admin, String issuerdn)  {
+    	return runDeltaCRL(admin, issuerdn);
+    }
+
 	/**
 	 * Generates a new CRL by looking in the database for revoked certificates and generating a
 	 * CRL.
@@ -168,7 +185,6 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 	 *
 	 * @throws EJBException if a communications- or system error occurs
      * @ejb.interface-method
-     * @ejb.transaction type="RequiresNew"
 	 */
     public void run(Admin admin, String issuerdn) throws CATokenOfflineException {
         debug(">run()");
@@ -394,7 +410,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			            	   if (log.isDebugEnabled()) {
         			            	   log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);    			            		   
     			            	   }
-    			                   this.run(admin, cainfo.getSubjectDN());
+    			                   this.runNewTransaction(admin, cainfo.getSubjectDN());
     			                   createdcrls++;
     			               }
     			               
@@ -472,7 +488,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     								}    			            	   
     							}
     							if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
-    								this.runDeltaCRL(admin, cainfo.getSubjectDN());
+    								this.runDeltaCRLnewTransaction(admin, cainfo.getSubjectDN());
     								createddeltacrls++;
     							}
     						}
