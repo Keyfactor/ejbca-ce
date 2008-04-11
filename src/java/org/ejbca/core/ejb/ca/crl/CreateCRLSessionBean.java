@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.21 2008-03-28 23:35:40 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.22 2008-04-11 00:24:41 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -168,6 +168,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 	 *
 	 * @throws EJBException if a communications- or system error occurs
      * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
 	 */
     public void run(Admin admin, String issuerdn) throws CATokenOfflineException {
         debug(">run()");
