@@ -13,58 +13,53 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
-import java.sql.Connection;
-import java.sql.Statement;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.ui.web.protocol.IHealtChecker;
-import org.ejbca.util.JDBCUtil;
 
 
 
 /**
- * Ext OCSP Health Checker. 
+ * External OCSP Health Checker. 
  * 
  * Does the following system checks.
  * 
  * * Not about to run out if memory (configurable through web.xml with param "MinimumFreeMemory")
  * * Database connection can be established.
- * * All OCSPSignTokens are aktive if not set as offline.
+ * * All OCSPSignTokens are active if not set as offline.
  * 
  * @author Philip Vendil
- * @version $Id: ExtOCSPHealthCheck.java,v 1.3 2006-07-25 09:18:00 primelars Exp $
+ * @version $Id: ExtOCSPHealthCheck.java,v 1.4 2008-04-11 18:04:14 anatom Exp $
  */
 
-public class ExtOCSPHealthCheck implements IHealthCheck {
+public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	
-	private static Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
+	private static final Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
 	private static IHealtChecker healtChecker;
 
-	private int minfreememory = 0;
-	private String checkDBString = null;
 	static public void setHealtChecker(IHealtChecker hc) {
 		healtChecker = hc;
 	}
 	
 	public void init(ServletConfig config) {
-		minfreememory = Integer.parseInt(config.getInitParameter("MinimumFreeMemory")) * 1024 * 1024;
-		checkDBString = config.getInitParameter("checkDBString");
+		super.init(config);
 	}
-
 	
 	public String checkHealth(HttpServletRequest request) {
-		log.debug("Starting HealthCheck health check requested by : " + request.getRemoteAddr());
+		log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
 		String errormessage = "";
 		
+		errormessage += checkMaintenance();
+		if( !errormessage.equals("") ) { 
+			// if Down for maintenance do not perform more checks
+			return errormessage; 
+		} 
 		errormessage += checkDB();
 		if(errormessage.equals("")){
 		  errormessage += checkMemory();								
 		  errormessage += checkOCSPSignTokens();	
-	
 		}
 		
 		if(errormessage.equals("")){
@@ -75,33 +70,12 @@ public class ExtOCSPHealthCheck implements IHealthCheck {
 		return errormessage;
 	}
 	
-	private String checkMemory(){
-		String retval = "";
-        if(minfreememory >= Runtime.getRuntime().freeMemory()){
-          retval = "\nError Virtual Memory is about to run out, currently free memory :" + Runtime.getRuntime().freeMemory();	
-        }		
-		
-		return retval;
-	}
-	
-	private String checkDB(){
-		String retval = "";
-		try{	
-		  Connection con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-		  Statement statement = con.createStatement();
-		  statement.execute(checkDBString);		  
-		  JDBCUtil.close(con);
-		}catch(Exception e){
-			retval = "\nError creating connection to EJBCA Database.";
-			log.error("Error creating connection to EJBCA Database.",e);
-		}
-		return retval;
-	}
 	
 	private String checkOCSPSignTokens(){
-		if ( healtChecker!=null )
+		if ( healtChecker!=null ) {
 			return healtChecker.healtCheck();
-		else
-			return "No OCSP servlet started";
+		} else {
+			return "No OCSP token health checker set";
+		}
 	}
 }
