@@ -255,6 +255,8 @@
     <property name="ocsphealthcheck.amountfreemem" value="1" />
     <property name="ocsphealthcheck.dbquery" value="Select 1 From CertificateData" />
     <property name="ocsphealthcheck.authorizedips" value="127.0.0.1"/>
+    <property name="ocsphealthcheck.maintenancefile" value="" />
+    <property name="ocsphealthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
     <property name="mail.jndi-name" value="java:/EjbcaMail" />
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
     <property name="mail.user" value="ejbca_user" />

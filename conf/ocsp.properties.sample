@@ -170,3 +170,14 @@ ocsp.usecasigningcert=true
 # servlet. Use ';' between multiple IPs.
 # Default: 127.0.0.1  
 #ocsphealthcheck.authorizedips=127.0.0.1
+
+# Parameter to specify location of file containing information about maintenance
+# Use this file to specify wether to include node in healthcheck or report as down for maintenance, 
+# which will return an error message (either the property name specified below or a custom message specified in web.xml).
+#ocsphealthcheck.maintenancefile=~/maintenance.properties
+
+# Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
+# The healthcheck.maintenancefile should contain a single line like this:
+# DOWN_FOR_MAINTENANCE=true
+# Where the node will be down for maintenenace of the property is true, and not down for maintenance if the property is false.
+#ocsphealthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE

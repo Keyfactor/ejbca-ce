@@ -545,6 +545,8 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.amountfreemem@" value="${ocsphealthcheck.amountfreemem}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.dbquery@" value="${ocsphealthcheck.dbquery}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.authorizedips@" value="${ocsphealthcheck.authorizedips}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.maintenancefile@" value="${ocsphealthcheck.maintenancefile}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.maintenancepropertyname@" value="${ocsphealthcheck.maintenancepropertyname}"/>	
 		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/RequestAbstractTypeResponseGenerator.java" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
 		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/RequestAbstractTypeResponseGenerator.java" token="@httpserver.pubhttp@" value="${httpserver.pubhttp}"/>
 	    <replace file="${src}/xkms/wsdl/xkms.wsdl" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
