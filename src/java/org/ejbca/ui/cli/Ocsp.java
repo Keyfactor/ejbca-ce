@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.StreamCorruptedException;
 import java.math.BigInteger;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -36,7 +37,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.8 2008-03-14 13:56:28 primelars Exp $
+ * @version $Id: Ocsp.java,v 1.9 2008-04-11 12:33:09 primelars Exp $
  */
 public class Ocsp {
     final private PerformanceTest performanceTest;
@@ -60,7 +61,9 @@ public class Ocsp {
             this.vSerialNrs = new ArrayList<BigInteger>();
             try {
                 while( true )
-                    vSerialNrs.add((BigInteger)oi.readObject());
+                    try {
+                        vSerialNrs.add((BigInteger)oi.readObject());
+                    } catch( StreamCorruptedException e) {}
             } catch( EOFException e) {}
         }
         BigInteger getRandom() {
@@ -92,7 +95,7 @@ public class Ocsp {
     }
     private Ocsp(String args[]) throws Exception {
         if ( args.length<6 ) {
-            System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> <keystore file>");
+            System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<request signing keystore file>] [<request signing password>]");
            System.exit(1);
         }
         this.ocspurl = args[1];
@@ -146,10 +149,12 @@ public class Ocsp {
             } else {
                 System.out.println("Usage 1: OCSP KeyStoreFilename Password, OCSPUrl CertificateFileName CA-certificateFileName");
                 System.out.println("Usage 2: OCSP OCSPUrl CertificateFileName CA-certificateFileName");
+                System.out.println("Usage 3: OCSP stress ...");
                 System.out.println("Keystore should be a PKCS12.");
                 System.out.println("OCSPUrl is like: http://127.0.0.1:8080/ejbca/publicweb/status/ocsp or https://127.0.0.1:8443/ejbca/publicweb/status/ocsp");
                 System.out.println("OCSP response status is: GOOD="+OCSPUnidResponse.OCSP_GOOD+", REVOKED="+OCSPUnidResponse.OCSP_REVOKED+", UNKNOWN="+OCSPUnidResponse.OCSP_UNKNOWN);
                 System.out.println("OcspUrl can be set to 'null', in that case the program looks for an AIA extension containing the OCSP URI.");
+                System.out.println("Just the stress argument gives further info about the stress test.");
                 return;
             }
             
