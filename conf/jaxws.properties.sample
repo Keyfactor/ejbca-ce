@@ -1,5 +1,5 @@
 #
-# $Id: jaxws.properties.sample,v 1.1 2007-06-25 14:54:29 herrvendil Exp $
+# $Id: jaxws.properties.sample,v 1.2 2008-04-12 17:30:13 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -35,6 +35,15 @@
 # Disable authorization control on the fetchUserData call, making it possible
 # for all with a valid certificate to retrieve userData
 # Default : false
-# jaxws.noauthonfetchuserdata=false
+#jaxws.noauthonfetchuserdata=false
+
+# Used if all certificate on a ordinary token should be
+# but on hold, or if the MS logon certificate (all certs that have
+# extended key usage (SmartCard logon) should stay active.
+# Used when a temporary card is issued with ToLiMa and
+# MS doesn't work well with temporary revoked smartcards. 
+#
+# Default : false
+#jaxws.gentokens.setmslogononhold=false
 
 

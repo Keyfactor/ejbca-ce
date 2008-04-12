@@ -25,6 +25,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -128,7 +129,7 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.29 2008-03-21 14:55:50 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.30 2008-04-12 17:30:15 herrvendil Exp $
  */
 @WebService
 public class EjbcaWS implements IEjbcaWS {
@@ -1020,30 +1021,50 @@ public class EjbcaWS implements IEjbcaWS {
 				}
 
 			}
+
+
+			if(revocePreviousCards){
+				List<HardTokenDataWS> htd = getHardTokenDatas(admin,userDataWS.getUsername(), false, true);
+				Iterator htdIter = htd.iterator();
+
+				while(htdIter.hasNext()) {
+					HardTokenDataWS toRevoke = (HardTokenDataWS)htdIter.next();
+					try{
+						if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
+							if(WSConfig.isSetMSLogonOnHold()){
+								// Set all certificates on hold
+								revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+							}else{
+								// Token have extended key usage MS Logon, don't revoke it
+								Iterator revokeCerts = ejbhelper.getHardTokenSession().findCertificatesInHardToken(admin, toRevoke.getHardTokenSN()).iterator();
+
+								while(revokeCerts.hasNext()){
+									X509Certificate next = (X509Certificate) revokeCerts.next();							 
+									try{
+										if(!next.getExtendedKeyUsage().contains(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[CertificateProfile.SMARTCARDLOGON])){
+											revokeCert(CertTools.getIssuerDN(next), next.getSerialNumber().toString(16), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+										}
+									}catch(CertificateParsingException e){
+										log.error(e);
+									}
+								}
+							}
+
+
+						}else{
+							revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+						}
+					}catch(AlreadyRevokedException e){
+						// Do nothing
+					}
+				}
+			}
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
 			throw new EjbcaException(e.getMessage());
-		}
-
-		if(revocePreviousCards){
-			List<HardTokenDataWS> htd = getHardTokenDatas(admin,userDataWS.getUsername(), false, true);
-			Iterator htdIter = htd.iterator();
-			
-			while(htdIter.hasNext()) {
-				HardTokenDataWS toRevoke = (HardTokenDataWS)htdIter.next();
-				try{
-				  if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
-				     revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
-				  }else{
-				     revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-				  }
-				}catch(AlreadyRevokedException e){
-					// Do nothing
-				}
-			}
 		}
 		
 		try{

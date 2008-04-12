@@ -112,6 +112,7 @@ jaxws.approval.gethardtoken     = ${jaxws.approval.gethardtoken}
 jaxws.approval.gentokencerts    = ${jaxws.approval.gentokencerts}
 jaxws.numberofrequiredapprovals = ${jaxws.numberofrequiredapprovals}
 jaxws.noauthonfetchuserdata     = ${jaxws.noauthonfetchuserdata}
+jaxws.gentokens.setmslogononhold= ${jaxws.gentokens.setmslogononhold}
 xkms.enabled                    = ${xkms.enabled}
 xkms.keyusage.signatureisnonrep = ${xkms.keyusage.signatureisnonrep}
 xkms.request.requiresignature   = ${xkms.request.requiresignature}
@@ -555,6 +556,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${src.java}/org/ejbca/core/protocol/ws/common/WSConfig.java" token="@jaxws.approval.gentokencerts@" value="${jaxws.approval.gentokencerts}"/>
 		<replace file="${src.java}/org/ejbca/core/protocol/ws/common/WSConfig.java" token="@jaxws.numberofrequiredapprovals@" value="${jaxws.numberofrequiredapprovals}"/>		
 		<replace file="${src.java}/org/ejbca/core/protocol/ws/common/WSConfig.java" token="@jaxws.noauthonfetchuserdata@" value="${jaxws.noauthonfetchuserdata}"/>
+        <replace file="${src.java}/org/ejbca/core/protocol/ws/common/WSConfig.java" token="@jaxws.gentokens.setmslogononhold@" value="${jaxws.gentokens.setmslogononhold}"/>
 		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.request.requiresignature@" value="${xkms.request.requiresignature}"/>
 		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.request.acceptedcas@" value="${xkms.request.acceptedcas}"/>
 		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.response.alwayssign@" value="${xkms.response.alwayssign}"/>

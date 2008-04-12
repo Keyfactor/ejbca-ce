@@ -22,7 +22,7 @@ import javax.ejb.EJBException;
  * 
  * @author Philip Vendil 2007 jun 19
  *
- * @version $Id: WSConfig.java,v 1.3 2008-01-07 13:17:32 anatom Exp $
+ * @version $Id: WSConfig.java,v 1.4 2008-04-12 17:30:13 herrvendil Exp $
  */
 public class WSConfig {
 	
@@ -31,6 +31,7 @@ public class WSConfig {
     private static String APPROVAL_GENTOKENCERTIFICATES = "@jaxws.approval.gentokencerts@";
     private static String NUMBEROFREQUREDAPPROVALS      = "@jaxws.numberofrequiredapprovals@";
     private static String NOAUTHONFETCHUSERDATA         = "@jaxws.noauthonfetchuserdata@";
+    private static String SETMSLOGONONHOLD              = "@jaxws.gentokens.setmslogononhold@";
     
     private static Boolean approvalGetHardTokenData = null;
     /**
@@ -125,6 +126,29 @@ public class WSConfig {
     	}
     	
     	return noAuthOnFetchUserData.booleanValue();
+    }
+    
+    private static Boolean setMSLogonOnHold = null;
+    /**
+     * Method that returns the parameter in the property file
+     * jaxws.approval.setmslogononhold 
+     */
+    public static boolean isSetMSLogonOnHold(){
+    	if(setMSLogonOnHold == null){
+    		if(SETMSLOGONONHOLD.equalsIgnoreCase("true")){
+    			setMSLogonOnHold = new Boolean(true);	
+    		}
+    		
+    		if(SETMSLOGONONHOLD.equalsIgnoreCase("false")){
+    			setMSLogonOnHold = new Boolean(false);	
+    		}
+
+    		if(setMSLogonOnHold == null){
+    			throw new EJBException("Property parameter jaxws.setmslogononhold is missconfigured, must be either 'true' or 'false'.");
+    		}    		
+    	}
+    	
+    	return setMSLogonOnHold.booleanValue();
     }
     
 }
