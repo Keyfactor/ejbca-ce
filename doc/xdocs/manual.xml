@@ -576,6 +576,54 @@ Cisco VPN client is probably the worst SCEP implementation we have come across.
 <br/>The conclusion is that RA enrolment does not work with Cisco VPN client.
 </p>
 </subsubsection>
+
+<subsubsection name="AutoSscep">
+<p>EJBCA has been tested successfully with <a href="http://autosscep.spe.net/">AutoSscep</a> for enrollment against the CA. 
+</p>
+<p>Instructions:
+<ol>
+<li>Download and build AutoSscep (make).</li>
+<li>Create a configuration file, ejbca.conf, as the example below.</li>
+<li>Create a user in EJBCA with username (common name) and DN exactly as entered in the configuration file.</li>
+<li>run 'autosscep ejbca.conf'.</li>
+</ol>
+Sample configuration file, ejbca.conf:
+</p>
+<source>
+Verbose = "yes"
+Debug = "no"
+
+CADir="/home/autosscep/"
+CertDir="/home/autosscep/"
+KeyDir="/home/autosscep/"
+
+[CA]
+DN="C=SE, O=EJBCA Sample, CN=AdminCA1"
+URL="http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe"
+CertFile="AdminCA1.cacert.pem"
+EncCertFile="AdminCA1.cacert.pem"
+[/CA]
+
+[Certificate]
+CertFile="mycert"
+KeyFile="mykey"
+CADN="C=SE, O=EJBCA Sample, CN=AdminCA1"
+
+# Create a user with username "router4711" and password "foo123" in EJBCA
+# to automatically enroll
+# Note you need to add a user with exactly these fields in the DN in EJBCA
+Email = "mymail@mydomain"
+Country="SE"
+State="BS"
+Location="Stockholm"
+Organization="PrimeKey"
+CommonName="router4711"
+
+ChallengePassword="foo123"
+[/Certificate]
+</source>
+</subsubsection>
+
 <subsubsection name="Cisco PIX/3000">
 <p>
 Cisco PIX is working as of EJBCA 3.1.3.
