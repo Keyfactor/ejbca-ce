@@ -577,7 +577,8 @@ However, to locate the RA encryption certificate, only KeyEncipherment can be se
 </subsubsection>
 
 <subsubsection name="AutoSscep">
-<p>EJBCA has been tested successfully with <a href="http://autosscep.spe.net/">AutoSscep</a> for enrollment against the CA. 
+<p>EJBCA has been tested successfully with <a href="http://autosscep.spe.net/">AutoSscep</a> for enrollment against the CA and the 
+External RA SCEP service. 
 </p>
 <p>Instructions:
 <ol>
@@ -620,6 +621,22 @@ CommonName="router4711"
 
 ChallengePassword="foo123"
 [/Certificate]
+</source>
+<p>
+AutoSscep also handles enrolling against an RA, where the RA first sends a PENDING response which the request is beeing processed.
+After processing (by the CA) you simply run the AutoSscep client again to pick up the generated certificate.
+<br/>
+In order to enroll against the External RA SCEP Server in EJBCA i only had to change the CA part of the configuration file to 
+use the SCEP RA servers certificate for signing and encrypting the messages instead of the CAs, and to use the URL to the RA. 
+The SCEP RA certificate is the end entity certificate issued to the External RA SCEP server (the keystore is usually called scepraserver.p12).
+</p>
+<source>
+[CA]
+DN="C=SE, O=EJBCA Sample, CN=AdminCA1"
+URL="http://localhost:8080/scepraserver/scep/pkiclient.exe"
+CertFile="scepra.pem"
+EncCertFile="scepra.pem"
+[/CA]
 </source>
 </subsubsection>
 
