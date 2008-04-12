@@ -572,8 +572,7 @@ To enroll using the Cisco VPN client use:
 When using an External RA to enroll with the Cisco VPN client, the RA certificate must have 
 KeyUsage SigitalSignature and KeyEncipherment for the client to accept the CA certificates.
 However, to locate the RA encryption certificate, only KeyEncipherment can be set, which makes things quite complicated.<br/>
-Cisco VPN client is probably the worst SCEP implementation we have come across.
-<br/>The conclusion is that RA enrolment does not work with Cisco VPN client.
+<br/>The conclusion is that RA enrollment does not work with Cisco VPN client.
 </p>
 </subsubsection>
 
