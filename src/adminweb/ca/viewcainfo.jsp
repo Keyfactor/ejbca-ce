@@ -78,8 +78,8 @@ function viewocspcert(){
       <% } %>
      
      <tr id="Row<%=(row++)%2%>">
-  	    <td width="<%=columnwidth%>">
-  	    	<%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") + ": " %>
+  	    <td align="right" width="<%=columnwidth%>">
+  	    	<%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") %>
   	    </td>
 	    <td>
 	         <input type="checkbox" name="<%= viewcainfohelper.CHECKBOX_INCLUDEINHEALTHCHECK %>" value="<%=viewcainfohelper.CHECKBOX_VALUE %>" 
