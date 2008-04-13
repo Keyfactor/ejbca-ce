@@ -14,14 +14,12 @@ package org.ejbca.ui.cli;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
@@ -64,12 +62,14 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.ejbca.ui.cli.util.ConsolePasswordReader;
+import org.ejbca.ui.cli.util.PasswordReader;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
 /**
- * @version $Id: KeyStoreContainer.java,v 1.29 2008-03-03 13:25:28 anatom Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.30 2008-04-13 04:18:16 anatom Exp $
  */
 public abstract class KeyStoreContainer {
 
@@ -299,17 +299,10 @@ class KeyStoreContainerJCE extends KeyStoreContainer {
                                   final byte storeID[],
                                   final PasswordReader _passwordReader) throws NoSuchAlgorithmException, CertificateException, IOException{
         super( _keyStore, _providerName, _ecryptProviderName );
-        this.passwordReader = _passwordReader!=null ? _passwordReader : new DefaultPasswordReader();
+        this.passwordReader = _passwordReader!=null ? _passwordReader : new ConsolePasswordReader();
         load(storeID);
     }
-    public interface PasswordReader {
-        char[] readPassword() throws IOException;
-    }
-    private class DefaultPasswordReader implements PasswordReader {
-        public char[] readPassword() throws IOException {
-            return new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
-        }
-    }
+    
     static KeyStoreContainer getIt(final String keyStoreType,
                                    final String providerClassName,
                                    final String encryptProviderClassName,
