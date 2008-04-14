@@ -26,8 +26,21 @@
       </p>
       <p>That should work.
       </p>
-      </answer>
+      </answer>    
+    </faq>
     
+        <faq>
+     <question>
+      SHA256 certs fails integrity check in IE
+      </question>
+      <answer>
+      <p>
+      Internet Explorer (at least IE6) does not support SHA256. 
+      </p>
+      <p>
+      You can have an AdminCA using SHA1 and CAs for other purposes using SHA256.
+      </p>
+      </answer>
     </faq>
     
     <faq>
@@ -189,6 +202,7 @@ you can get nice logging with only the things you are interested in logged to th
 </p>
       </answer>
     </faq>
+    
     <faq>
       <question>I want to add my own static pages under http://hostname:8080/ejbca/ ?</question>
       <answer>
@@ -197,6 +211,7 @@ you can get nice logging with only the things you are interested in logged to th
         </p>
       </answer>
     </faq>
+    
     <faq>
       <question>I get an error message when accessing the admin-GUI, "Could not establish an encrypted connection because your certificate was rejected ... Error code: -12224"?</question>
       <answer>
@@ -254,32 +269,7 @@ keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_H
         </p>
       </answer>
     </faq>
-    <faq>
-      <question>After upgrading the version of Java, the Admin GUI no longer works.
-      Or, the installation seems to work fine, superadmin.p12 is created but ssl connections
-      are refused without error messages in JBoss..</question>
-      <answer>
-        <p>
-Tomcat needs the CA-certificate relating to the server certificate in 
-a java trust-store. If you are running an older version of EJBCA (less than 3.5) it uses the Java system trust-store.
-This is imported when running 'ant install' and when
-you upgraded java, you have a new, empty truststore.
-Import the CA-certificate in JAVA_HOME/jre/lib/security/cacerts again, 
-or copy the old truststore from the earlier JAVA_HOME.
-You can manually import it by exporting the ca-certificate:
-</p>
-<source>
-bin/ejbca.sh ca getrootcert caname root.der -der
-</source>
-<p>
-and importing it in cacerts:
-</p><source>
-keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts
-</source>
-<p>Note: this is not needed when running EJBCA >=3.5, in that case follow the question "I get an error message when accessing the admin-GUI, "Could not establish an encrypted connection because your certificate was rejected ... Error code: -12224"?"
-</p>
-      </answer>
-    </faq>
+    
     <faq>
       <question>When running 'ant install' or creating JKS or PKCS12 files you can't use longer 
 password than 7 characters. Anything longer gives an error?</question>
@@ -291,14 +281,14 @@ password than 7 characters. Anything longer gives an error?</question>
 		Further information on this can be found in the Sun documentation on the JCE.
         </p>
         <p>
+        Java 1.6.0<br/>
+        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6.0
+        <br/><a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>
+        </p>
+        <p>
         Java 1.5.0<br/>
         Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 5.0
         <br/><a href="http://java.sun.com/j2se/1.5.0/download.jsp">http://java.sun.com/j2se/1.5.0/download.jsp</a>
-        </p>
-        <p>
-        Java 1.4.2<br/>
-        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 1.4.2
-        <br/><a href="http://java.sun.com/j2se/1.4.2/download.html">http://java.sun.com/j2se/1.4.2/download.html</a>
         </p>
       </answer>
     </faq>
