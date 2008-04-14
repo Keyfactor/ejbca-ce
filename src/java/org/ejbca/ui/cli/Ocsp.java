@@ -37,7 +37,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.9 2008-04-11 12:33:09 primelars Exp $
+ * @version $Id: Ocsp.java,v 1.10 2008-04-14 12:03:02 primelars Exp $
  */
 public class Ocsp {
     final private PerformanceTest performanceTest;
@@ -65,6 +65,7 @@ public class Ocsp {
                         vSerialNrs.add((BigInteger)oi.readObject());
                     } catch( StreamCorruptedException e) {}
             } catch( EOFException e) {}
+            System.out.println("Number of certificates in list: "+this.vSerialNrs.size());
         }
         BigInteger getRandom() {
             return vSerialNrs.get(performanceTest.getRandom().nextInt(vSerialNrs.size()));
