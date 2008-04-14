@@ -27,7 +27,7 @@ import javax.crypto.Cipher;
 
 /**
  * 
- * @version $Id: KeyStoreContainerTest.java,v 1.7 2008-04-14 17:05:10 primelars Exp $
+ * @version $Id: KeyStoreContainerTest.java,v 1.8 2008-04-14 18:38:11 primelars Exp $
  *
  */
 class KeyStoreContainerTest {
@@ -42,16 +42,16 @@ class KeyStoreContainerTest {
         this.keyPair = kp;
         this.providerName = pn;
     }
-    private void doIt(int i) throws Exception {
-        signTest(i);
-        cryptTest(i);
+    private void doIt() throws Exception {
+        signTest();
+        cryptTest();
         nrOfTests++;
-        final float nanoNumber = (float)nrOfTests*1000000000;
+        final long nanoNumber = nrOfTests*(long)1000000000;
         System.out.print(alias+" key statistics. Signings per second: ");
-        System.out.print(Float.toString(nanoNumber/totalSignTime)+" Decryptions per second: ");
-        System.out.println(Float.toString(nanoNumber/totalDecryptTime));
+        System.out.print(""+(nanoNumber+totalSignTime/2)/totalSignTime+" Decryptions per second: ");
+        System.out.println(""+(nanoNumber+totalDecryptTime/2)/totalDecryptTime);
     }
-    private void cryptTest(int i) throws Exception {
+    private void cryptTest() throws Exception {
         final String testS = "   01 0123456789   02 0123456789   03 0123456789   04 0123456789   05 0123456789   06 0123456789   07 0123456789   08 0123456789   09 0123456789   10 0123456789   11 0123456789   12 0123456789   13 0123456789   14 0123456789   15 0123456789   16 0123456789   17 0123456789   18 0123456789   19 0123456789   20 0123456789   21 0123456789   22 0123456789   23 0123456789   24 0123456789   25 0123456789   26 0123456789   27 0123456789   28 0123456789   29 0123456789   30 0123456789   31 0123456789   32 0123456789   33 0123456789   34 0123456789   35 0123456789   36 0123456789   37 0123456789";
         final int modulusLength = ((RSAKey)this.keyPair.getPublic()).getModulus().bitLength();
         final int byteLength = (modulusLength+7)/8-11;
@@ -82,7 +82,7 @@ class KeyStoreContainerTest {
             System.out.println("Decoded: \""+new String(decoded)+'\"');
         }
     }
-    private void signTest(int i) throws Exception {
+    private void signTest() throws Exception {
         final String sigAlgName = "SHA1withRSA";
         final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
         final byte signBA[]; {
@@ -100,7 +100,6 @@ class KeyStoreContainerTest {
             boolean result = signature.verify(signBA);
             System.out.println("Signature test of key "+this.alias+
                                ": signature length " + signBA.length +
-                               "; test nr " + i +
                                "; first byte " + Integer.toHexString(0xff&signBA[0]) +
                                "; verifying " + result);
         }
@@ -152,7 +151,7 @@ class KeyStoreContainerTest {
                 if ( tests==null || nrOfTests==-5 )
                     tests = getTests(keyStore);
                 for( int j = 0; j<tests.length; j++ )
-                    tests[j].doIt(i);
+                    tests[j].doIt();
             } catch( Throwable t ) {
                 tests = null;
                 t.printStackTrace(System.err);
