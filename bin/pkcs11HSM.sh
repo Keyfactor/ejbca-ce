@@ -29,6 +29,7 @@ fi
 
 CLASSES=$EJBCA_HOME/lib/bcprov-jdk15.jar
 CLASSES=$CLASSES:$EJBCA_HOME/lib/bcmail-jdk15.jar
+CLASSES=$CLASSES:$EJBCA_HOME/lib/jline-0.9.94.jar
 CLASSES=$CLASSES:$EJBCA_HOME/lib/log4j.jar
 CLASSES=$CLASSES:$EJBCA_HOME/lib/commons-lang-2.0.jar
 CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
