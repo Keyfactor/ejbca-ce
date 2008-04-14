@@ -90,7 +90,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.24 2008-03-26 13:08:07 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.25 2008-04-14 16:55:23 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -223,13 +223,16 @@ public class CertReqServlet extends HttpServlet {
             boolean loadkeys = (data.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
 
             int endEntityProfileId = data.getEndEntityProfileId();
+            int certificateProfileId = data.getCertificateProfileId();
             EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(administrator, endEntityProfileId);
             boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
             // Set a new certificate profile, if we have requested one specific
             if (StringUtils.isNotEmpty(certprofile)) {
             	boolean clearpwd = StringUtils.isNotEmpty(data.getPassword());
             	int id = storesession.getCertificateProfileId(administrator, certprofile);
-            	if (id > 0) {
+            	// Change the value if there exists a certprofile with the requested name, and it is not the same as 
+            	// the one already registered to be used by default
+            	if ( (id > 0) && (id != certificateProfileId) ) {
             		// Check if it is in allowed profiles in the entity profile
             		Collection c = endEntityProfile.getAvailableCertificateProfileIds();
             		if (c.contains(String.valueOf(id))) {
