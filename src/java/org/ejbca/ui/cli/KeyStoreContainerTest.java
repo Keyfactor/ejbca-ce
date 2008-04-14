@@ -27,13 +27,16 @@ import javax.crypto.Cipher;
 
 /**
  * 
- * @version $Id: KeyStoreContainerTest.java,v 1.6 2007-05-11 07:49:55 anatom Exp $
+ * @version $Id: KeyStoreContainerTest.java,v 1.7 2008-04-14 17:05:10 primelars Exp $
  *
  */
 class KeyStoreContainerTest {
     final private String alias;
     final private KeyPair keyPair;
     final private String providerName;
+    long totalSignTime = 0;
+    long totalDecryptTime = 0;
+    int nrOfTests = 0;
     private KeyStoreContainerTest(String a, KeyPair kp, String pn) {
         this.alias = a;
         this.keyPair = kp;
@@ -42,6 +45,11 @@ class KeyStoreContainerTest {
     private void doIt(int i) throws Exception {
         signTest(i);
         cryptTest(i);
+        nrOfTests++;
+        final float nanoNumber = (float)nrOfTests*1000000000;
+        System.out.print(alias+" key statistics. Signings per second: ");
+        System.out.print(Float.toString(nanoNumber/totalSignTime)+" Decryptions per second: ");
+        System.out.println(Float.toString(nanoNumber/totalDecryptTime));
     }
     private void cryptTest(int i) throws Exception {
         final String testS = "   01 0123456789   02 0123456789   03 0123456789   04 0123456789   05 0123456789   06 0123456789   07 0123456789   08 0123456789   09 0123456789   10 0123456789   11 0123456789   12 0123456789   13 0123456789   14 0123456789   15 0123456789   16 0123456789   17 0123456789   18 0123456789   19 0123456789   20 0123456789   21 0123456789   22 0123456789   23 0123456789   24 0123456789   25 0123456789   26 0123456789   27 0123456789   28 0123456789   29 0123456789   30 0123456789   31 0123456789   32 0123456789   33 0123456789   34 0123456789   35 0123456789   36 0123456789   37 0123456789";
@@ -60,7 +68,9 @@ class KeyStoreContainerTest {
             final Cipher cipher = Cipher.getInstance(pkcs1Padding, this.providerName);
             System.out.print("; decryption provider: "+cipher.getProvider());
             cipher.init(Cipher.DECRYPT_MODE, this.keyPair.getPrivate());
+            final long startTime = System.nanoTime();
             decoded = cipher.doFinal(encoded);
+            totalDecryptTime += System.nanoTime()-startTime;
         }
         final boolean isSame = Arrays.equals(original, decoded);
         System.out.print("; modulus length: "+modulusLength+"; byte length "+byteLength);
@@ -79,7 +89,9 @@ class KeyStoreContainerTest {
             Signature signature = Signature.getInstance(sigAlgName, this.providerName);
             signature.initSign( this.keyPair.getPrivate() );
             signature.update( signInput );
+            final long startTime = System.nanoTime();
             signBA = signature.sign();
+            totalSignTime += System.nanoTime()-startTime;
         }
         {
             Signature signature = Signature.getInstance(sigAlgName);
