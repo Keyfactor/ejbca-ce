@@ -30,33 +30,33 @@ public class LogResetProtectedLogCommand extends BaseLogAdminCommand  {
 		try {
 			properties.load(new FileInputStream(args[2]));
 		} catch (FileNotFoundException e1) {
-	        System.out.print("Connot find "+args[2]+"\n");
+			getOutputStream().print("Connot find "+args[2]+"\n");
 	        return;
 		} catch (IOException e1) {
-	        System.out.print("Connot load "+args[2]+"\n");
+			getOutputStream().print("Connot load "+args[2]+"\n");
 	        return;
 		}
 		// 4 chars should be enough to make the user think at least once..
         String randomString = ""+(seeder.nextInt(9000)+1000);
-        System.out.print("\nYOU ARE ABOUT TO DELETE THE PROTECTED LOG!\n\n"+
+        getOutputStream().print("\nYOU ARE ABOUT TO DELETE THE PROTECTED LOG!\n\n"+
         							"This should only be used for recovery when everything else fails.\n"+
         							"Confirm the delete by entering \""+randomString+"\": ");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
            if (!randomString.equals(br.readLine().trim())) {
-               System.out.println("\nNot correct. Exiting.\n");
+        	   getOutputStream().println("\nNot correct. Exiting.\n");
         	   return;
            }
         } catch (IOException e) {
-           System.out.println("IO error: "+e.getMessage());
+        	getOutputStream().println("IO error: "+e.getMessage());
            return;
         }
-        System.out.print("\nForcing the protected log to a consistent state...\n");
+        getOutputStream().print("\nForcing the protected log to a consistent state...\n");
         try {
 			if (getProtectedLogSession().resetEntireLog(export, properties)) {
-		        System.out.print("SUCCESS!\n");
+				getOutputStream().print("SUCCESS!\n");
 			} else {
-		        System.out.print("FAILED!\n");
+				getOutputStream().print("FAILED!\n");
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();

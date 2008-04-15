@@ -27,7 +27,7 @@ import org.ejbca.util.FileTools;
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
- * @version $Id: CaImportCACommand.java,v 1.5 2007-08-15 16:04:22 anatom Exp $
+ * @version $Id: CaImportCACommand.java,v 1.6 2008-04-15 01:11:27 anatom Exp $
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
     /**
@@ -70,7 +70,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 if (args.length > 4) {
                 	encryptionAlias = args[4];
                 }
-                System.out.print("Enter keystore password: ");
+                getOutputStream().print("Enter keystore password: ");
                 String kspwd = new BufferedReader(new InputStreamReader(System.in)).readLine();
                 // Read old keystore file in the beginning so we know it's good
                 byte[] keystorebytes = null;

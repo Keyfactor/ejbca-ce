@@ -20,20 +20,20 @@ public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 			throw new IllegalAdminCommandException(msg);
 		}
 		long freezeThreshold = Long.parseLong(args[1]) * 1000;
-        System.out.print("Starting verification..\n");
+		getOutputStream().print("Starting verification..\n");
         ProtectedLogActions protectedLogActions = new ProtectedLogActions(null);
         try {
 			ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);
 			if (protectedLogEventIdentifier == null) {
-		        System.out.print("Log verification OK!\n");
+				getOutputStream().print("Log verification OK!\n");
 		        return;
 			}
-	        System.out.print("Failed to verify nodeGUID=" + protectedLogEventIdentifier.getNodeGUID() + " counter=" + protectedLogEventIdentifier.getCounter() + "\n");
+			getOutputStream().print("Failed to verify nodeGUID=" + protectedLogEventIdentifier.getNodeGUID() + " counter=" + protectedLogEventIdentifier.getCounter() + "\n");
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-        System.out.print("Log verification FAILED!\n");
+		getOutputStream().print("Log verification FAILED!\n");
 	}
 }

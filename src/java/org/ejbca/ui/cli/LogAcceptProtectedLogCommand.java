@@ -39,25 +39,25 @@ public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
 		boolean all = "frozen".equalsIgnoreCase(args[1]);
 		// 4 chars should be enough to make the user think at least once..
         String randomString = ""+(seeder.nextInt(9000)+1000);
-        System.out.print("\nYOU ARE ABOUT TO SIGN UNVERIFIABLE LOG EVENTS IN THE PROTECTED LOG!\n\n"+
+        getOutputStream().print("\nYOU ARE ABOUT TO SIGN UNVERIFIABLE LOG EVENTS IN THE PROTECTED LOG!\n\n"+
         							"This should only be used when log protection is first enabled or when recovering from a crash.\n"+
         							"Confirm this by entering \""+randomString+"\": ");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
            if (!randomString.equals(br.readLine().trim())) {
-               System.out.println("\nNot correct. Exiting.\n");
+        	   getOutputStream().println("\nNot correct. Exiting.\n");
         	   return;
            }
         } catch (IOException e) {
-           System.out.println("IO error: "+e.getMessage());
+        	getOutputStream().println("IO error: "+e.getMessage());
            return;
         }
-        System.out.print("\nSigning...\n");
+        getOutputStream().print("\nSigning...\n");
         try {
 			if (getProtectedLogSession().signAllUnsignedChains(all)) {
-		        System.out.print("SUCCESS!\n");
+				getOutputStream().print("SUCCESS!\n");
 			} else {
-		        System.out.print("FAILED!\n");
+				getOutputStream().print("FAILED!\n");
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
