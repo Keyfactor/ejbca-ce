@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.28 2008-03-03 11:37:21 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.29 2008-04-16 15:28:34 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -98,9 +98,10 @@ public class HSMKeyTool {
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 6 )
-                    System.err.println(commandString + sKeyStore + " [<# of tests>]");
+                    System.err.println(commandString + sKeyStore + " [<# of tests or threads>] [alias for stress test] [type of stress test]");
                 else
-                    KeyStoreContainerTest.test(args[2], args[3], args[4], args[5], args.length>6 ? Integer.parseInt(args[6].trim()) : 1);
+                    KeyStoreContainerTest.test(args[2], args[3], args[4], args[5],
+                                               args.length>6 ? Integer.parseInt(args[6].trim()) : 1, args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null);
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
                 if ( args.length < 7 )
