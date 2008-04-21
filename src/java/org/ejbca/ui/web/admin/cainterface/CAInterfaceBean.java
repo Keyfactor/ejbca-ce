@@ -71,7 +71,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.7 2007-12-21 09:02:34 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.8 2008-04-21 13:36:41 thamwickenberg Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -81,44 +81,49 @@ public class CAInterfaceBean implements java.io.Serializable {
     }
 
     // Public methods
-    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
+    public void initialize(Admin administrator, EjbcaWebBean ejbcawebbean) throws  Exception{
 
-      if(!initialized){
-        administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
-        ServiceLocator locator = ServiceLocator.getInstance();
-        ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-        certificatesession = certificatesessionhome.create();
-        
-        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-        caadminsession = caadminsessionhome.create();
-        
-        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-        authorizationsession = authorizationsessionhome.create();
-        
-        IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-        adminsession = adminsessionhome.create();
-
-        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-        raadminsession = raadminsessionhome.create();               
-        
-		ISignSessionLocalHome home = (ISignSessionLocalHome)locator.getLocalHome(ISignSessionLocalHome.COMP_NAME );
-	    signsession = home.create();
-	    
-	    IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome)locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-	    hardtokensession = hardtokensessionhome.create();               
-	    
-	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
-	    publishersession = publishersessionhome.create();               
-	    
-	    
-        this.informationmemory = ejbcawebbean.getInformationMemory();
+        if(!initialized){
+        	this.administrator = administrator;
+          ServiceLocator locator = ServiceLocator.getInstance();
+          ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+          certificatesession = certificatesessionhome.create();
           
-        certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, informationmemory);
-        cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, ejbcawebbean);
-        publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, 
-        		                                        caadminsession, certificatesession,  informationmemory);
-        initialized =true;
+          ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+          caadminsession = caadminsessionhome.create();
+          
+          IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+          authorizationsession = authorizationsessionhome.create();
+          
+          IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+          adminsession = adminsessionhome.create();
+
+          IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
+          raadminsession = raadminsessionhome.create();               
+          
+  		ISignSessionLocalHome home = (ISignSessionLocalHome)locator.getLocalHome(ISignSessionLocalHome.COMP_NAME );
+  	    signsession = home.create();
+  	    
+  	    IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome)locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
+  	    hardtokensession = hardtokensessionhome.create();               
+  	    
+  	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
+  	    publishersession = publishersessionhome.create();               
+  	    
+  	    
+          this.informationmemory = ejbcawebbean.getInformationMemory();
+            
+          certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, informationmemory);
+          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, ejbcawebbean);
+          publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, 
+          		                                        caadminsession, certificatesession,  informationmemory);
+          initialized =true;
+        }
       }
+    
+    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
+    	Admin tempadmin = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+    	initialize(tempadmin, ejbcawebbean);
     }
 
     public CertificateView[] getCACertificates(int caid) {

@@ -24,6 +24,10 @@
 
   final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
+  
+  final String CA_ACTIVATION_LINK		=  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
+  												+ "/caactivation.jsf";
+  
   final String CA_CERTIFICATEPROFILELINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/editcertificateprofiles/editcertificateprofiles.jsp";  
   final String RA_EDITUSERDATASOURCESLINK =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/edituserdatasources/edituserdatasources.jsp";
@@ -109,6 +113,8 @@
      <%=ejbcawebbean.getText("CAFUNCTIONS") %>
      <br>
      &nbsp;&nbsp;<A href='<%= CA_LINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("BASICFUNCTIONS") %></a>
+     <br>
+     &nbsp;&nbsp;<A href='<%= CA_ACTIVATION_LINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("CAACTIVATION") %></a>
      <br>
 <%    }
    }catch(AuthorizationDeniedException e){} 

@@ -364,6 +364,11 @@
         <servlet-name>org.apache.jasper.jspc.ca.cafunctions_jsp</servlet-name>
         <url-pattern>/ca/cafunctions.jsp</url-pattern>
     </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>org.apache.jasper.jspc.ca.caactivation_jsp</servlet-name>
+        <url-pattern>/ca/caactivation.jsp</url-pattern>
+    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>org.apache.jasper.jspc.ca.viewcainfo_jsp</servlet-name>
