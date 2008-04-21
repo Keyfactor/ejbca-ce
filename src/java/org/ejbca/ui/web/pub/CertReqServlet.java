@@ -55,6 +55,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -90,7 +91,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.25 2008-04-14 16:55:23 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.26 2008-04-21 10:21:48 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -349,7 +350,7 @@ public class CertReqServlet extends HttpServlet {
             debug.printMessage("Please supply a correctly signed request.");
             debug.printDebugInfo();
             return;
-        } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
+        } catch (ArrayIndexOutOfBoundsException ae) {
             log.debug("Empty or invalid request received.");
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
@@ -362,20 +363,29 @@ public class CertReqServlet extends HttpServlet {
             debug.printDebugInfo();
             return;
         } catch (Exception e) {
-            log.debug("Unknown error occured: ", e);
-            debug.print("Parameter name and values:\n");
-            Enumeration paramNames = request.getParameterNames();
-            while (paramNames.hasMoreElements()) {
-                String name = paramNames.nextElement().toString();
-                String parameter = request.getParameter(name);
-                if (!StringUtils.equals(name, "password")) {
-                    debug.print(name + ": '" + parameter + "'\n");                	
-                } else {
-                	debug.print(name + ": <hidden>\n");
-                }
-            }
-            debug.takeCareOfException(e);
-            debug.printDebugInfo();
+        	Throwable e1 = e.getCause();
+        	if (e1 instanceof CATokenOfflineException) {
+	            // this is already logged as an error, so no need to log it one more time
+	            debug.printMessage("CA token is off line: "+e1.getMessage());
+	            debug.printMessage("Contact your administrator.");
+	            debug.printDebugInfo();
+	            return;				
+			} else {
+	            log.debug("Unknown error occured: ", e);
+	            debug.print("Parameter name and values:\n");
+	            Enumeration paramNames = request.getParameterNames();
+	            while (paramNames.hasMoreElements()) {
+	                String name = paramNames.nextElement().toString();
+	                String parameter = request.getParameter(name);
+	                if (!StringUtils.equals(name, "password")) {
+	                    debug.print(name + ": '" + parameter + "'\n");                	
+	                } else {
+	                	debug.print(name + ": <hidden>\n");
+	                }
+	            }
+	            debug.takeCareOfException(e);
+	            debug.printDebugInfo();
+			}
         }
     }
 

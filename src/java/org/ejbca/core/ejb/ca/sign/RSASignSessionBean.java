@@ -175,7 +175,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.50 2008-03-12 12:20:02 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.51 2008-04-21 10:21:50 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1535,6 +1535,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IllegalKeyException ke) {
             throw ke;
         } catch (CATokenOfflineException ctoe) {
+        	// This method should actually throw CATokenOfflineException instead of wrpping this in an EJBException
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new EJBException(msg, ctoe);

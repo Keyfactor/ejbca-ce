@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.94 2008-04-09 21:54:19 anatom Exp $
+ * @version $Id: X509CA.java,v 1.95 2008-04-21 10:21:47 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -416,8 +416,10 @@ public class X509CA extends CA implements Serializable {
                                            Date notAfter,
                                            CertificateProfile certProfile,
                                            X509Extensions extensions) throws Exception{
-                                               
-    	    	
+    	// Before we start, check if the CA is off-line, we don't have to waste time
+    	// one the stuff below of we are off-line. The line below will throw CATokenOfflineException of CA is offline
+        getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+
         final String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
         X509Certificate cacert = (X509Certificate)getCACertificate();
         String dn = subject.getDN();        
@@ -426,7 +428,7 @@ public class X509CA extends CA implements Serializable {
         if (certProfile.getType() == CertificateProfile.TYPE_ROOTCA) {
         	isRootCA = true;
         }
-        // Set back startdate ten minutes to avoid some problems with unsynchronized clocks.
+        // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
         Date now = new Date((new Date()).getTime() - 10 * 60 * 1000);
         Date firstDate = null;
         Date lastDate = null;
