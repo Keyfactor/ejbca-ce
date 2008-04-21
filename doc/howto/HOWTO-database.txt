@@ -19,7 +19,7 @@ up your server default configuration.
 
 If all is well the automatic deployment script of EJBCA will configure all that for
 you and you will be up and running in 30 seconds.
-Configuration is done in ejbca.properties.
+Configuration is done in conf/database.properties.
 
 In a production environment you should use something else than the default Hypersonic database that comes 
 with JBoss for the reasons:
@@ -29,7 +29,7 @@ numer of certificates is issued, it will become an issue after a while.
 released we can not create scripts that updates the database if some tables changed. This will make 
 upgrades much much harder.
 
-If you will be running a huuuge system you will probably need to run some analisis tools to perfect indexes
+If you will be running a huuuge system you will probably need to run some analysis tools to perfect indexes
 etc in the database, at least in the long run. Examples of such tools are:
 http://sourceforge.net/projects/mysqa/
 
@@ -38,9 +38,9 @@ NOW ON TO THE HOWTO!
 Troubleshooting database problems:
 ---------------------------------
 * Have you (ejbca automatically does it) configured a <database-ds.xml> in JBOSS_HOME/server/default/deploy?
-  Configuration is done in ejbca.properties.
+  Configuration is done in conf/database.properties.
 * Do you have the correct username/password configured in <database-ds.xml>?
-  Configuration is done in ejbca.properties.
+  Configuration is done in conf/database.properties.
 * Is the JDBC driver installed in JBOSS_HOME/server/default/lib?
 * Does you database accept incoming connection from the network, not only localhost or vice versa?
 * Do you have a firewall blocking connections to the database?
@@ -52,11 +52,11 @@ Configuring EJBCA
 
 0. Use 'ant clean' to clean up your repository if not already done.
 
-1. Edit 'ejbca.properties' and follow the instructions to change the default values.
+1. Edit 'conf/database.properties' and follow the instructions to change the default values.
    Specify the 'datasource.jndi-name' to the one you chose.
    For example: 'EjbcaDS'
 
-   There is a ejbca.properties.sample that is heavily commented.
+   There is a database.properties.sample that is heavily commented.
 
 2. Use 'ant deploy', it will configure automatically all deployment descriptors such
    as ejb-jar.xml, jbosscmp-jdbc.xml, according to the database/jndi-name you chose before.
@@ -90,7 +90,7 @@ definition file in JBoss, so you don't have to do anything with that.
 
 1. Install and setup the database your database.
 
-2. Create a database for EJBCA (that is obviouslly the one you defined in ejbca.properties)
+2. Create a database for EJBCA (that is obviously the one you defined in conf/database.properties)
 Check your database documentation for more info (I know it is boring).
 
 Typically for postgres: 'createdb ejbca "database for ejbca"' will create
@@ -117,15 +117,10 @@ MySQL specifics
 ---------------
 EJBCA have been tested with MySQL 3, 4 and 5.
 
-JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
+JDBC driver: mysql-connector-java-5.0.x.jar.
+(use the latest mysql connection you can get for your mysql version)
 
 Download JDBC driver for mySQL from http://www.mysql.com/
-
-If you use JDBC-driver 3.1.x you may have to add "?useServerPrepStmts=false" to the database connect url in 
-ejbca.properties, i.e.:
-#database.url=jdbc:mysql://127.0.0.1:3306/ejbca?useServerPrepStmts=false
-You will need this if you get errors with "Incorrect arguments to mysql_stmt_execute" when doing install of EJBCA.
-This problem seems to affect the combination of MySQL 4.x with Connector/J 3.1.x.
 
 Sometimes there can be problems with MySQL related to case sensitivity of database tables.
 If you run into this see:
@@ -154,6 +149,11 @@ After the .sql file is generated you have to run:
 mysql> flush privileges;
 Restart jboss
 
+If you use JDBC-driver 3.1.x you may have to add "?useServerPrepStmts=false" to the database connect url in 
+conf/database.properties, i.e.:
+#database.url=jdbc:mysql://127.0.0.1:3306/ejbca?useServerPrepStmts=false
+You will need this if you get errors with "Incorrect arguments to mysql_stmt_execute" when doing install of EJBCA.
+This problem seems to affect the combination of MySQL 4.x with Connector/J 3.1.x.
 
 PostgreSQL specifics
 --------------------
@@ -238,7 +238,7 @@ Informix specifics
 EJBCA have been tested Informix Dynamic Server 9.21.HC4
 JDBC Driver: IBM Informix JDBC Driver for IBM Informix Dynamic Server 3.00.JC3
 
-The default mapping in JBoss, InformixDB, does not work for Informix 9.2, so you should use Informix92 in ejbca.properties and do the following:
+The default mapping in JBoss, InformixDB, does not work for Informix 9.2, so you should use Informix92 in conf/database.properties and do the following:
 Add the mappings from doc/howto/informix-jbossmappings.txt to JBOSS_HOME/server/default/conf/standardjbosscmp-jdbc.xml.
 
 Some Informix database modifications need to be done to be able to insert
