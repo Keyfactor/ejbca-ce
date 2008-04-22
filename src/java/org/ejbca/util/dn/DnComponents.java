@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.11 2008-02-26 17:04:05 jeklund Exp $
+ * @version $Id: DnComponents.java,v 1.12 2008-04-22 12:21:26 jeklund Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -346,6 +346,8 @@ public class DnComponents {
                     throw new IOException();
                 String[] splits = null;
                 int lines = 0;
+                ArrayList dnids = new ArrayList();
+                ArrayList profileids = new ArrayList();
                 while ((line = in.readLine()) != null) {
                 	if (!line.startsWith("#")) { // # is a comment line
                         splits = StringUtils.split(line, ';');
@@ -357,6 +359,16 @@ public class DnComponents {
                             Integer profileid = new Integer(splits[4]); 
                             String errstr = splits[5]; 
                             String langstr = splits[6];
+                            if (dnids.contains(dnid)) {
+                            	log.error("Duplicated DN Id " + dnid + " detected in mapping file.");
+                            } else {
+                            	dnids.add(dnid);
+                            }
+                            if (profileids.contains(profileid)) {
+                            	log.error("Duplicated Profile Id " + profileid + " detected in mapping file.");
+                            } else {
+                            	profileids.add(profileid);
+                            }
                             // Fill maps
                             dnNameIdMap.put(dnname, dnid);
                             profileNameIdMap.put(profilename, profileid);
