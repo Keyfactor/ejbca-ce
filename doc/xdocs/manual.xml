@@ -2634,7 +2634,11 @@ If the file is called "single.jks" then the key is created like this:
 
 <subsection name="AEP Keyper">
 <p>
-This HSM needs a configuration file when generating the keys. It could look like this:
+The documement xxxxxxKeyperP11.pdf (xxxxxx is six digits) describes how the HSM is installed.
+As default there is only one slot - 0.
+</p>
+<p>
+The HSM needs a configuration file when generating the keys. It could look like this:
 </p>
 <source>
 name=Keyper
@@ -2646,6 +2650,15 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
   CKA_TOKEN = true
 }
 </source>
+</subsection>
+
+<subsection name="ARX CoSign">
+<p>
+This HSM only works on Windows. The installation is done with an installer and the setup with a GUI.
+</p><p>
+All generated keys will be on slot 1. The PIN code used when activating the keys could be anything since the authentication is made when login on to the user that runs EJBCA.
+The shared library is called C:\windows\system32\sadaptor.dll 
+</p>
 </subsection>
 
 <subsection name="SafeNet Luna SA HSM">
