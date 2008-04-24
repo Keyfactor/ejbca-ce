@@ -27,9 +27,9 @@ import org.ejbca.util.StringTools;
 
 
 /**
- * Holds nonsensitive information about a X509CA.
+ * Holds non-sensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.17 2008-04-09 21:54:19 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.18 2008-04-24 13:59:50 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -51,7 +51,7 @@ public class X509CAInfo extends CAInfo{
 
     
     /**
-     * Constructor that should be used when creating CA and retreiving CA info.
+     * Constructor that should be used when creating CA and retrieving CA info.
      */
     public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
@@ -70,7 +70,7 @@ public class X509CAInfo extends CAInfo{
         this.expiretime = expiretime;
         this.catype = catype;
         this.signedby = signedby;
-        // Due to a bug in Glassfish, we need to make sure all certificates in this 
+        // Due to a bug in Glassfish v1, we need to make sure all certificates in this 
         // Array i of SUNs own provider
 		try {
 			if (certificatechain != null) {
