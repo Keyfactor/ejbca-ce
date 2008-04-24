@@ -217,7 +217,7 @@
 		<fail message="Missing tools.jar in ${java.home}/lib. Please use a java JDK" unless="jdk.present"/>
 		<java classname="@{classname}" fork="true">
 	    	<classpath path="@{classpath}:${java.home}/../lib/tools.jar"/>
-	    	<jvmarg line="${j2ee.debug.jvm.opts}"/>
+	    	<jvmarg line="${j2ee.debug.jvm.opts} -XX:MaxPermSize=192m -Xms128m -Xmx512m"/>
 	    	<args/>
 		</java>
         </sequential>
