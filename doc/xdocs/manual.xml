@@ -2185,7 +2185,8 @@ You can check the status of a CryptoServer LAN device, for example the emulator 
 ./csadm Device=TCP:3001@172.16.175.128 GetState
 </source>
 </subsection>
-<subsection name="nCipher nShield">
+
+<subsection name="nCipher nShield/netHSM">
 <p>
 This subsection describes how the nShield card from nCipher is used.
 </p><p>
@@ -2371,6 +2372,12 @@ The following environment variables should be set for this user:
 <li>NFAST_HOME (/opt/nfast)</li>
 </ul>
 </p>
+
+<p>
+<strong>Below is divided in 3,4,5 a and 3,4,5 b. A is for using nCipher with PKCS#11 and b using JCA/JCE. 
+Select one and ignore the other. In new setups we recommend PKCS#11.</strong>
+</p>
+
 <strong>Step 3a. Create PKCS#11 keys that should be used on the nShield card</strong>
 <p>
 Start a new window and login as the same user (jboss user).
@@ -2630,6 +2637,73 @@ length of the file is 40 byte.
 If the file is called "single.jks" then the key is created like this:
 </p>
 <source>/opt/nfast/bin/generatekey -g -csingle -b jcecsp alias=default keystore=single.jks type=RSA pubexp=3 size=2048 keystorepass=single</source>
+</subsection>
+
+<subsection name="nCipher netHSM load balancing">
+<p>If you load the same security world into two netHSMs it will work with load balancing.
+After setting up the first netHSM, do the following on the second:
+<ul>
+<li>Use the panel of the second netHSM to configure the rfs</li>
+<li>Use the panel of the second netHSM to load the security world</li>
+<li>Use the panel of the second netHSM to configure clients</li>
+<li>on each client run: /opt/nfast/bin/nethsmenroll -p</li> 
+</ul>
+</p>
+<p>
+With load balancing you need to run JBoss under 'preload'.
+To run you need to load the keys in both HSM using an operator card. For this you have to select for which HSM you want to load the keys first 
+and provide the passphrase for the card in each HSM. Here is the starting sequence of JBoss to illustrate what happens exactly:
+</p>
+<source>
+ejbca@subcallb:/usr/local/ejbca> /opt/nfast/bin/preload -c llbadminsubcafi ../jboss/bin/run.sh
+Loading cardsets:
+llbadminsubcafi on modules 1, 2
+
+Loading `llbadminsubcafi':
+ Module 1 slot 0: `llbadminsubcafi' #2 (`llbadminsubcafi')
+ Module 2 slot 0: `llbadminsubcafi' #1 (`llbadminsubcafi')
+Use which module [1 2]: 1 
+
+ Module 1 slot 0:- passphrase supplied - reading card
+ Module 1: completed.
+ Module 2 slot 0:- passphrase supplied - reading card
+Card reading complete.
+
+Stored Cardset: llbadminsubcafi (aad9...) on module #1
+Stored Cardset: llbadminsubcafi (aad9...) on module #2
+Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-005c1a08a37fc7d4127e20e8c4e290b56ff9816a (051d...) on module #1
+Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-005c1a08a37fc7d4127e20e8c4e290b56ff9816a (051d...) on module #2
+Loaded pkcs11 ucaad9344776882ed9d750142ea966c469f808dc68-005c1a08a37fc7d4127e20e8c4e290b56ff9816a key (RSAPrivate) on modules 1, 2
+Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-1c4d6a403b7a5df39aa091ed3fafb85afe01d071 (4996...) on module #1
+Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-1c4d6a403b7a5df39aa091ed3fafb85afe01d071 (4996...) on module #2
+Loaded pkcs11 ucaad9344776882ed9d750142ea966c469f808dc68-1c4d6a403b7a5df39aa091ed3fafb85afe01d071 key (RSAPrivate) on modules 1, 2
+Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-6c8c4fcb2c76d5cd18bcc49550ae2c0d5bd93268 (453a...) on module #1
+Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-6c8c4fcb2c76d5cd18bcc49550ae2c0d5bd93268 (453a...) on module #2
+Loaded pkcs11 ucaad9344776882ed9d750142ea966c469f808dc68-6c8c4fcb2c76d5cd18bcc49550ae2c0d5bd93268 key (RSAPrivate) on modules 1, 2
+Executing ../jboss/bin/run.sh
+=========================================================================
+</source>
+<p>Sample PKCS#11 configuration file for generating the CA keys.</p>
+<source>
+name=NFastJava
+library=/opt/nfast/toolkits/pkcs11/libcknfast.so
+slotListIndex=1
+attributes(generate,CKO_PRIVATE_KEY,*) = {
+  CKA_PRIVATE = true
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_TOKEN = true
+}
+</source> 
+<p>Sample catoken.properties for generating the initial AdminCA on the netHSM, or entering in the admin-GUI when creating a new CA.</p>
+<source>
+defaultKey defaultKey
+certSignKey defaultSign
+crlSignKey defaultSign
+testKey testKey
+sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
+slotListIndex 1
+</source>
 </subsection>
 
 <subsection name="AEP Keyper">
