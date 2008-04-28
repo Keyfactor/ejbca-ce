@@ -62,7 +62,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private CADataHandler cadatahandler;
 	private CAInterfaceBean caBean;
 	private String authenticationcode;
-	private List<CAWrapper> caInfoList;
+	private List caInfoList;
 	private Admin administrator;
 	private ICertificateStoreSessionLocal      certificatesession;
 	private ICAAdminSessionLocal               caadminsession;
@@ -145,9 +145,10 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		while ( it.hasNext() ) {
 			Integer caid = (Integer) it.next();
 			boolean inList = false;
-			Iterator <CAWrapper> tempIt = caInfoList.iterator();
+			Iterator tempIt = caInfoList.iterator();
 			while (tempIt.hasNext()) {
-				if (tempIt.next().getID() == caid.intValue() ) {
+				CAWrapper wrapper = (CAWrapper)tempIt.next();
+				if (wrapper.getID() == caid.intValue() ) {
 					inList = true;
 				}
 			}
@@ -193,8 +194,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		activationMessages=new ArrayList();
 		activationMessages.add("Results:");
 		log.debug(">apply");
-		List<CAWrapper> list = caInfoList;
-		for (CAWrapper wrapper : list) {
+		List list = caInfoList;
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+			CAWrapper wrapper = (CAWrapper) iterator.next();
 			try {
 				String option = wrapper.getActivateOption();
 				if (option.equals(CAActivationMBean.ACTIVATE)) {
@@ -213,8 +215,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 				}
 			} catch (Exception e) {
 				log.error(e);
-			}
-			
+			}			
 		}
 		log.debug("<apply");
 	}
@@ -239,14 +240,14 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	
 	public List getHasMessages() {
 		log.debug(">getHasMessages");
-		List<CAWrapper> list = caInfoList;
-		List<CAWrapper> hasMessages = new ArrayList();
-		for (CAWrapper wrapper : list) {
-
-				String option = wrapper.getActivateOption();
-				if (!wrapper.getCAActivationMessage().equals(""))  {
-					hasMessages.add(wrapper);
-				}
+		List list = caInfoList;
+		List hasMessages = new ArrayList();
+		for (Iterator iterator = hasMessages.iterator(); iterator.hasNext();) {
+			CAWrapper wrapper = (CAWrapper) iterator.next();
+			String option = wrapper.getActivateOption();
+			if (!wrapper.getCAActivationMessage().equals(""))  {
+				hasMessages.add(wrapper);
+			}			
 		}
 		log.debug("<getHasMessages");
 		return hasMessages;
