@@ -204,6 +204,8 @@ public class AutoEnrollServlet extends HttpServlet {
 		req = new MSPKCS10RequestMessage(Base64.decode(requestData.getBytes()));
 		certificateTemplate = req.getMSRequestInfoTemplateName();
 		int templateIndex = MSCertTools.getTemplateIndex(certificateTemplate);
+		/* TODO: Lookup requesting entity in AD here to verify that only Machines request Machine Certificates etc.. Also check permissions
+						like who is allowed to enroll for what if possible. */
 		// Create or edit a user "Autoenrolled-Username-Templatename"
 		String username = "Autoenrolled-" + usernameShort + "-" + certificateTemplate;
 		log.info("Got autoenroll request from " + remoteUser + " (" + username + ") for a " + certificateTemplate + "-certificate.");

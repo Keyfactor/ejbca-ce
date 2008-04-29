@@ -411,7 +411,7 @@ NameVirtualHost *:443
   Known issues
   </p>
   <ul>
-	<li>The Servlet should verify that e.g. only Users can request User certificates, DCs only DC certs etc..</li>
+	<li><b>SECURITY:</b> The Servlet should verify that e.g. only Users can request User certificates, DCs only DC certs etc.. and other permissions if possible.</li>
 	<li>The enroll scripts always fetches new certificates. They should use the command=status first to see if a new cert is needed.</li>
 	<li>AdminWeb cannot verify admin certificates if non-"/ejbca/" path is used in URL.</li>
 	<li>Autoenroll Servlet doesn't get X-Remote-User if "/ejbca/" path is used in URL.</li>
