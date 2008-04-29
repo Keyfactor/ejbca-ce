@@ -561,7 +561,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         	String msg = intres.getLocalizedMessage("ra.errorreadprofiles");    	  
             error(msg, e);
         }
-        debug(">getEndEntityProfileIdToNameMap");
+        debug("<getEndEntityProfileIdToNameMap");
         return returnval;
       } // getEndEntityProfileIdToNameMap
 
