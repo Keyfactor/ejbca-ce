@@ -1,12 +1,20 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
+JAVACMD=`which java`
+# Check that JAVA_HOME is set
+if [ ! -n "$JAVA_HOME" ]; then
+    if [ ! -n "$JAVACMD" ]
+    then
+        echo "You must set JAVA_HOME before running the EJBCA cli."
+        exit 1
+    fi
+else
+    JAVACMD=$JAVA_HOME/bin/java
+fi
 
 if [ -z $EJBCA_HOME ]; then
-        echo "Fatal error: EJBCA_HOME is not set"
+        echo "Environment variable EJBCA_HOME must be set"
         exit 1
 fi
 
-if [ -z $JAVA_HOME ]; then
-        echo "Fatal error: JAVA_HOME is not set"
-fi
-
-"$JAVA_HOME/bin/java" -cp $EJBCA_HOME/lib/LunaJCASP.jar:$EJBCA_HOME/tmp/bin/classes org.ejbca.ui.cli.LunaKeyTool "$@"
+"$JAVACMD" -cp $EJBCA_HOME/lib/LunaJCASP.jar:$EJBCA_HOME/tmp/bin/classes org.ejbca.ui.cli.LunaKeyTool "$@"
