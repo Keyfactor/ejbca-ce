@@ -8,7 +8,7 @@ rem Create a key via a netHSM device rem
 rem Example:
 rem
 if "%JAVA_HOME%" == "" (
-    echo You must set JAVA_HOME before running the EJBCA cli.
+    echo You must set JAVA_HOME before running the nCipher cli.
     goto end
 )
 
