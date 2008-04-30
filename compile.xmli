@@ -613,7 +613,6 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <!-- jboss configuration -->
             <copy todir="${ejbdd.src}/merge" overwrite="@{overwrite}" failonerror="false">
                 <fileset dir="${ejbdd.src}/merge/${database.name}" includes="**/*.xml" />
-                <fileset dir="${ejbdd.src}/merge/appsrv/" includes="**/*.xml" />
             </copy>
         </sequential>
     </macrodef>
