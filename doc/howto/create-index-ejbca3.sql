@@ -23,6 +23,7 @@ create index userdata_idx2 on UserData (cAId,timeCreated);
 create index userdata_idx3 on UserData (cAId,timeModified);
 create index userdata_idx4 on UserData (cAId);
 create index userdata_idx5 on UserData (username);
+create index userdata_idx6 on UserData (username, cAId);
 
 -- Indexes on CertReqHistoryData: for viewing history
 create index historydata_idx1 on CertReqHistoryData (username);
