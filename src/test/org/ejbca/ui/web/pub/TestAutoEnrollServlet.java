@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.pub;
 
 import java.io.BufferedReader;
@@ -30,6 +42,9 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
+/**
+ * @version $Id$
+ */
 public class TestAutoEnrollServlet extends TestCase {
 
 	private static Logger log = Logger.getLogger(TestAutoEnrollServlet.class);

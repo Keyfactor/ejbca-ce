@@ -61,6 +61,8 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * Parses a posted request and returns a correct certificate depending on the type.
  * 
  * This Servlet assumes that it is protected by an Kerberos verifying proxy and is insecure to use without.
+ * 
+ * @version $Id$
  */
 public class AutoEnrollServlet extends HttpServlet {
 
