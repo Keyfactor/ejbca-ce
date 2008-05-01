@@ -34,7 +34,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.3 2007-08-24 06:53:57 herrvendil Exp $
+ * @version $Id$
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	

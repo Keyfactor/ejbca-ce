@@ -31,7 +31,7 @@ import org.ejbca.core.model.log.Admin;
  * to store and retrieve custom user data source configuration to database.
  * 
  *
- * @version $Id: CustomUserDataSourceContainer.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
+ * @version $Id$
  */
 public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	private ICustomUserDataSource customuserdatasource = null; 

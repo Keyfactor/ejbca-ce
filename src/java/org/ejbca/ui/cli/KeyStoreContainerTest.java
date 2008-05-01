@@ -33,7 +33,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
  * 
- * @version $Id: KeyStoreContainerTest.java,v 1.9 2008-04-16 15:28:34 primelars Exp $
+ * @version $Id$
  *
  */
 class KeyStoreContainerTest {

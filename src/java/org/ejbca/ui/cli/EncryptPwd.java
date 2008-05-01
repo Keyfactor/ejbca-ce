@@ -22,7 +22,7 @@ import org.ejbca.util.StringTools;
 /**
  * Implements the password encryption mechanism
  *
- * @version $Id: EncryptPwd.java,v 1.2 2007-08-12 16:50:03 anatom Exp $
+ * @version $Id$
  */
 public class EncryptPwd extends BaseCommand {
     /**

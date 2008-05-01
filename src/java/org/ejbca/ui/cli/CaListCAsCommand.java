@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 /**
  * Lists the names of all available CAs.
  *
- * @version $Id: CaListCAsCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class CaListCAsCommand extends BaseCaAdminCommand {
     /**

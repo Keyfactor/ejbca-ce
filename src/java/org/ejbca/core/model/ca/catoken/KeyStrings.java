@@ -32,7 +32,7 @@ import org.ejbca.core.model.SecConst;
  *  
  *   The returned values are supposed to be used to get keys for different aliases from a keystore.
  * 
- * @version $Id: KeyStrings.java,v 1.5 2007-07-25 08:56:46 anatom Exp $
+ * @version $Id$
 */
 public class KeyStrings {
     

@@ -57,7 +57,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * requires setup of the CMP with a tcp listener on port 5547
  * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
- * @version $Id: CrmfRATcpRequestTest.java,v 1.8 2008-01-11 13:15:20 anatom Exp $
+ * @version $Id$
  */
 public class CrmfRATcpRequestTest extends CmpTestCase {
 	

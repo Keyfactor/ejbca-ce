@@ -28,7 +28,7 @@ import org.ejbca.util.query.Query;
 
 /**
  * Interface used by EJBCA external log devices such as Log4j.
- * @version $Id: ILogDevice.java,v 1.4 2008-01-04 08:55:19 jeklund Exp $
+ * @version $Id$
  */
 public interface ILogDevice extends Serializable {
 

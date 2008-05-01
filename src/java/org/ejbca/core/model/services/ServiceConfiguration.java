@@ -29,7 +29,7 @@ import org.ejbca.core.model.services.workers.EmailSendingWorker;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ServiceConfiguration.java,v 1.6 2007-12-04 14:22:50 jeklund Exp $
+ * @version $Id$
  */
 public class ServiceConfiguration extends UpgradeableDataHashMap implements Serializable, Cloneable {
 

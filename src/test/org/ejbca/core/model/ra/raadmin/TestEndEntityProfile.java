@@ -29,7 +29,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests the end entity profile entity bean.
  *
- * @version $Id: TestEndEntityProfile.java,v 1.2 2008-01-03 12:52:37 anatom Exp $
+ * @version $Id$
  */
 public class TestEndEntityProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestEndEntityProfile.class);

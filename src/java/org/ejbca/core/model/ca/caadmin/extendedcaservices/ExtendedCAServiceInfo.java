@@ -22,7 +22,7 @@ import java.io.Serializable;
  * These classes are used to retrive general information about the service
  * and alse used to send parameters to the service when creating it.  
  *
- * @version $Id: ExtendedCAServiceInfo.java,v 1.4 2006-12-27 11:13:55 anatom Exp $
+ * @version $Id$
  */
 public abstract class ExtendedCAServiceInfo  implements Serializable {    
        	  

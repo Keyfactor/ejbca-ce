@@ -20,7 +20,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseAction.java,v 1.4 2006-11-02 08:03:25 anatom Exp $
+ * @version $Id$
  */
 public abstract class BaseAction extends BaseServiceComponent implements IAction{
 

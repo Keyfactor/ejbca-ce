@@ -27,7 +27,7 @@ import org.ejbca.core.model.SecConst;
  * requestdata, requestdate, expiredate, remainingapprovals
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataVO.java,v 1.7 2008-02-26 15:37:12 herrvendil Exp $
+ * @version $Id$
  */
 
 public class ApprovalDataVO implements Serializable { 	

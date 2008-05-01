@@ -41,7 +41,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * The variable ${RANDOM} will be replaced by a random value of length set in 'randomPrefixLength'. 
  * 
  * @author tomas
- * @version $Id: UsernameGenerator.java,v 1.3 2006-09-25 12:54:59 anatom Exp $
+ * @version $Id$
  */
 public class UsernameGenerator {
 

@@ -17,7 +17,7 @@ package org.ejbca.ui.cli;
 /**
  * Implements the setup command line interface
  *
- * @version $Id: setup.java,v 1.3 2006-03-19 09:44:36 anatom Exp $
+ * @version $Id$
  */
 public class setup {
     /**

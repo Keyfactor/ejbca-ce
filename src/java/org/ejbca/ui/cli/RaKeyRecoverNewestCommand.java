@@ -23,7 +23,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaKeyRecoverNewestCommand.java,v 1.5 2006-11-02 08:03:22 anatom Exp $
+ * @version $Id$
  */
 public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     /**

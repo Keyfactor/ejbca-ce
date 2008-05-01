@@ -17,7 +17,7 @@ package org.ejbca.core.model.approval;
  * managing approvals
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalException.java,v 1.1 2006-07-29 11:26:35 herrvendil Exp $
+ * @version $Id$
  */
 public class ApprovalException extends Exception {
 

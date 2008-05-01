@@ -50,7 +50,7 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 /**
  * Helper methods to get EJB session interfaces.
  * 
- * @version $Id: EjbRemoteHelper.java,v 1.2 2008-03-10 14:32:05 anatom Exp $
+ * @version $Id$
  */
 public class EjbRemoteHelper {
 

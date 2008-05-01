@@ -48,7 +48,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.10 2008-01-03 12:52:41 anatom Exp $
+ * @version $Id$
  */
 public class ApplyBean implements java.io.Serializable {
     /**

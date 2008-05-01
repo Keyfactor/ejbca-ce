@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * List users with status NEW in the database.
  *
- * @version $Id: RaListNewUsersCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
+ * @version $Id$
  *
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */

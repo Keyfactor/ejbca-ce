@@ -59,7 +59,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.14 2008-01-23 11:07:25 jeklund Exp $
+ * @version $Id$
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"

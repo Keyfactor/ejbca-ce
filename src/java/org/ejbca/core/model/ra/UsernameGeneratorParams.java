@@ -21,7 +21,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 /** Parameters used in UsernameGenerator
  * 
  * @author tomas
- * @version $Id: UsernameGeneratorParams.java,v 1.2 2006-09-25 12:54:59 anatom Exp $
+ * @version $Id$
  * @see UsernameGenerator
  */
 public class UsernameGeneratorParams {

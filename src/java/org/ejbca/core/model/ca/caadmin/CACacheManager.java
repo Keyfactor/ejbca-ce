@@ -23,7 +23,7 @@ import org.ejbca.core.ejb.ca.caadmin.CADataBean;
 /**
  * Class managing a cache of CAs. It is not really a cache, just an object registry.
  * 
- * @version $Id: CACacheManager.java,v 1.2 2007-01-16 11:43:26 anatom Exp $
+ * @version $Id$
  * 
  */
 public class CACacheManager {

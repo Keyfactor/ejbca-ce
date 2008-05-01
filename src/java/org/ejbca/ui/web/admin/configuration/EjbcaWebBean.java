@@ -58,7 +58,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.17 2008-03-30 03:39:15 anatom Exp $
+ * @version $Id$
  */
 public class EjbcaWebBean implements java.io.Serializable {
 

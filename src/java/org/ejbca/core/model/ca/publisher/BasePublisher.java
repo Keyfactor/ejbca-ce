@@ -28,7 +28,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * of publishers in the system.
  *  
  *
- * @version $Id: BasePublisher.java,v 1.5 2007-09-12 14:22:46 anatom Exp $
+ * @version $Id$
  */
 public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

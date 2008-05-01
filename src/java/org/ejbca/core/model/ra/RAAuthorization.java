@@ -28,7 +28,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
  * 
- * @version $Id: RAAuthorization.java,v 1.3 2008-03-14 08:01:00 anatom Exp $
+ * @version $Id$
  */
 public class RAAuthorization implements Serializable {
     

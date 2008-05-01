@@ -77,7 +77,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.8 2007-12-06 16:39:10 anatom Exp $
+ * @version $Id$
  */
 
 public class NotificationParamGen {

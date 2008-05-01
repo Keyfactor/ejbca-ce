@@ -26,7 +26,7 @@ import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
  * trough the authorization tree and rmi lookups. 
  *
  * @author  TomSelleck
- * @version $Id: AuthorizationProxy.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class AuthorizationProxy implements Serializable {
 

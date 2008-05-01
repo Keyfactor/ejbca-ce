@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
  * CustomErrorMsg : Send a static predefined errormessage instead of the on created by the healthchecker.
  * 
  * @author Philip Vendil
- * @version $Id: TextResponse.java,v 1.3 2008-04-09 21:54:20 anatom Exp $
+ * @version $Id$
  *
  */
 public class TextResponse implements IHealthResponse {

@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Implements the EJBCA RA WS command line interface
  *
- * @version $Id: ejbcawsracli.java,v 1.4 2008-03-10 14:49:25 anatom Exp $
+ * @version $Id$
  */
 public class ejbcawsracli  {
     /**

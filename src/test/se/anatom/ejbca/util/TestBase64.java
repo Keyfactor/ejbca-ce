@@ -18,7 +18,7 @@ import org.ejbca.util.CertTools;
 /** Tests base64 encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestBase64.java,v 1.2 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id$
  */
 public class TestBase64 extends TestCase {
     private static final Logger log = Logger.getLogger(TestBase64.class);

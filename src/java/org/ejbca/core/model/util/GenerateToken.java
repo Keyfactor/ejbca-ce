@@ -16,7 +16,7 @@ import org.ejbca.util.KeyTools;
  * Generating tokens can often depend on the ejb services (local interfaces), for example for key recovery.
  * 
  * @author Tomas Gustavsson
- * @version $Id: GenerateToken.java,v 1.2 2008-03-07 17:28:26 anatom Exp $
+ * @version $Id$
  */
 public class GenerateToken {
     private static final Logger log = Logger.getLogger(GenerateToken.class);

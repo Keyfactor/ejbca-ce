@@ -36,7 +36,7 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /**
- * @version $Id: TestCertificateRetrival.java,v 1.8 2006-08-06 12:38:09 anatom Exp $
+ * @version $Id$
  */
 public class TestCertificateRetrival extends TestCase {
 

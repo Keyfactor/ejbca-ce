@@ -29,7 +29,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Adds a user to the database.
  *
- * @version $Id: EditUserCommand.java,v 1.3 2007-11-22 12:01:10 anatom Exp $
+ * @version $Id$
  */
 public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

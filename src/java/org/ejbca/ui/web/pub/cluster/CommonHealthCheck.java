@@ -31,7 +31,7 @@ import org.ejbca.util.JDBCUtil;
 /** Base class for health checkers with functionality that is common to at least
  * both EJBCA and External OCSP.
  * 
- * @version $Id: CommonHealthCheck.java,v 1.2 2008-04-11 18:04:14 anatom Exp $
+ * @version $Id$
  */
 public abstract class CommonHealthCheck implements IHealthCheck {
 	private static final Logger log = Logger.getLogger(CommonHealthCheck.class);

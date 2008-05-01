@@ -52,7 +52,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.28 2008-01-03 12:52:41 anatom Exp $
+ * @version $Id$
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 

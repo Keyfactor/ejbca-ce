@@ -32,7 +32,7 @@ import org.ejbca.util.Base64;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataUtil.java,v 1.3 2006-08-09 07:29:48 herrvendil Exp $
+ * @version $Id$
  */
 
 public class ApprovalDataUtil  { 

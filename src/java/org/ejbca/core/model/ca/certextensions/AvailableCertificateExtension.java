@@ -21,7 +21,7 @@ package org.ejbca.core.model.ca.certextensions;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: AvailableCertificateExtension.java,v 1.1 2007-01-09 16:47:19 herrvendil Exp $
+ * @version $Id$
  */
 
 public class AvailableCertificateExtension {

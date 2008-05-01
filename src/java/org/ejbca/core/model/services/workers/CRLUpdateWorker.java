@@ -26,7 +26,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * This is a replacement of the old jboss service.
  * 
  * @author Philip Vendil
- * @version $Id: CRLUpdateWorker.java,v 1.5 2008-03-28 22:32:41 anatom Exp $
+ * @version $Id$
  */
 public class CRLUpdateWorker extends BaseWorker {
 

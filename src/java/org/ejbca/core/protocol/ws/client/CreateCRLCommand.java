@@ -31,7 +31,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given users certificate and set's it status to REVOKED
  *
- * @version $Id: CreateCRLCommand.java,v 1.1 2008-03-10 14:49:24 anatom Exp $
+ * @version $Id$
  */
 public class CreateCRLCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

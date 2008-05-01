@@ -17,7 +17,7 @@ package org.ejbca.core.model.authorization;
  * A class containing constats used when configuring Basic Access Rule Set 
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSet.java,v 1.3 2007-04-13 06:06:49 herrvendil Exp $
+ * @version $Id$
  */
 public class BasicAccessRuleSet implements java.io.Serializable {
 

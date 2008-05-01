@@ -89,7 +89,7 @@ import org.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.5 2007-01-03 14:34:11 anatom Exp $
+ * @version $Id$
  */
 public class DemoCertReqServlet extends HttpServlet {
 

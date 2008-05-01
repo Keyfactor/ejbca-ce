@@ -33,7 +33,7 @@ import org.ejbca.util.StringTools;
  * statement.
  *
  * @author tomselleck
- * @version $Id: Query.java,v 1.5 2007-02-02 09:36:28 anatom Exp $
+ * @version $Id$
  */
 public class Query implements java.io.Serializable {
 	

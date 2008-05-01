@@ -30,7 +30,7 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  * A class handling the certificate type data. It saves and retrieves them currently from a database.
  *
  * @author  TomSelleck
- * @version $Id: CertificateProfileDataHandler.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id$
  */
 public class CertificateProfileDataHandler implements Serializable {
 

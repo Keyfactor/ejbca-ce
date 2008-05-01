@@ -22,7 +22,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Sets the base url of the web interface
  *
- * @version $Id: SetupSetBaseURLCommand.java,v 1.4 2007-01-03 14:49:35 anatom Exp $
+ * @version $Id$
  */
 public class SetupSetBaseURLCommand extends BaseAdminCommand {
     /**

@@ -16,7 +16,7 @@ package org.ejbca.util.passgen;
 /**
  * IPasswordGenerator is an interface used to generate passwords used by end entities in EJBCA
  *
- * @version $Id: IPasswordGenerator.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public interface IPasswordGenerator {
     

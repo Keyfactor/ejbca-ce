@@ -46,7 +46,7 @@ import org.w3._2002._03.xkms_.ReissueResultType;
 /**
  * Performes KRSS reissue calls to an web service.
  *
- * @version $Id: ReissueCommand.java,v 1.1 2007-01-07 00:31:51 herrvendil Exp $
+ * @version $Id$
  * @author Philip Vendil
  */
 public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{

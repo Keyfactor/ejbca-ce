@@ -30,7 +30,7 @@ import org.ejbca.util.CertTools;
 /**
  * Revokes a given certificate
  *
- * @version $Id: RevokeCertCommand.java,v 1.4 2007-08-17 14:45:38 jeklund Exp $
+ * @version $Id$
  */
 public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

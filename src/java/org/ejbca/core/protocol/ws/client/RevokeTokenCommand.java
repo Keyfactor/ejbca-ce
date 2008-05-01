@@ -25,7 +25,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given tokens certificate
  *
- * @version $Id: RevokeTokenCommand.java,v 1.4 2007-08-17 14:45:38 jeklund Exp $
+ * @version $Id$
  */
 public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

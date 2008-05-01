@@ -40,7 +40,7 @@ import org.ejbca.util.StringTools;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.29 2008-03-26 13:01:14 anatom Exp $
+ * @version $Id$
  */
 public abstract class BaseCAToken implements ICAToken {
 

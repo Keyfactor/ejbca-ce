@@ -23,7 +23,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
 /**
  * CACertificateProfile is a class defining the fixed characteristics of a CA certificate profile.
  *
- * @version $Id: CACertificateProfile.java,v 1.5 2008-03-12 14:34:00 anatom Exp $
+ * @version $Id$
  */
 public class CACertificateProfile extends CertificateProfile{
 

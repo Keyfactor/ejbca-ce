@@ -18,7 +18,7 @@ package org.ejbca.ui.web.admin.services.servicetypes;
  * 
  * @author Philip Vendil, Tomas Gustavsson
  *
- * @version $Id: UserPasswordExpireWorkerType.java,v 1.2 2007-11-11 08:15:51 anatom Exp $
+ * @version $Id$
  */
 public class UserPasswordExpireWorkerType extends BaseEmailNotifyingWorkerType {
 

@@ -31,7 +31,7 @@ import org.ejbca.util.CertTools;
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.7 2007-12-21 09:02:33 anatom Exp $
+ * @version $Id$
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**

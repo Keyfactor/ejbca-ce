@@ -30,7 +30,7 @@ import org.ejbca.util.KeyTools;
  * Class containing constans common for unit tests.
  * 
  * @author Philip Vendil
- * $Id: Constants.java,v 1.1 2006-12-22 09:29:14 herrvendil Exp $
+ * $Id$
  */
 public class Constants {
 	

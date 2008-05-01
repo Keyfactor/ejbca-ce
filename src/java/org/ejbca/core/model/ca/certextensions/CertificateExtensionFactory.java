@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: CertificateExtensionFactory.java,v 1.5 2008-01-10 14:42:17 anatom Exp $
+ * @version $Id$
  */
 
 public class CertificateExtensionFactory {

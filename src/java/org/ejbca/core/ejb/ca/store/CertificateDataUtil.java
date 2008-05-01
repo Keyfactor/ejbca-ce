@@ -45,7 +45,7 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.13 2007-12-07 15:07:25 anatom Exp $
+ * @version $Id$
  *
  */
 public class CertificateDataUtil {

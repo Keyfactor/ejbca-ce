@@ -45,7 +45,7 @@ import org.ejbca.util.CertTools;
  * See rfc3280 or later for spec of this extension.      
  * 
  * @author: Tomas Gustavsson
- * @version $Id: AuthorityKeyIdentifier.java,v 1.1 2008-01-10 14:42:15 anatom Exp $
+ * @version $Id$
  */
 public class AuthorityKeyIdentifier extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(AuthorityInformationAccess.class);

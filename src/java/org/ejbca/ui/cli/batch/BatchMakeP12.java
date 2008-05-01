@@ -68,7 +68,7 @@ import org.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.12 2007-05-15 21:00:16 jeklund Exp $
+ * @version $Id$
  */
 public class BatchMakeP12 {
     /**

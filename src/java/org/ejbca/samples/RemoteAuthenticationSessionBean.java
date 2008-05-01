@@ -64,7 +64,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * @ejb.interface
  *   generate="none"
  *   
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.3 2007-12-04 14:21:46 jeklund Exp $
+ * @version $Id$
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";

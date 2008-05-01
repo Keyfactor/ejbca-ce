@@ -95,7 +95,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * (use entity profile KeyId3 as template for KeyId4)
  * 
  * @author Tomas Gustavsson
- * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.5 2008-01-11 13:15:20 anatom Exp $
+ * @version $Id$
  */
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	

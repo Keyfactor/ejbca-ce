@@ -12,7 +12,7 @@ import org.ejbca.util.Base64PutHashMap;
 /** Tests Base64 HashMap XML encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestHashMap.java,v 1.7 2007-07-26 07:40:35 anatom Exp $
+ * @version $Id$
  */
 public class TestHashMap extends TestCase {
     //private static final Logger log = Logger.getLogger(TestHashMap.class);

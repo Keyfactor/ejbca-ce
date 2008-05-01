@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
 /**
  * Finds a certificates in the database
  *
- * @version $Id: FindCertsCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id$
  */
 public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

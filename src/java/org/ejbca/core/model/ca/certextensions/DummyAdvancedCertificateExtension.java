@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: DummyAdvancedCertificateExtension.java,v 1.2 2008-01-10 14:42:17 anatom Exp $
+ * @version $Id$
  */
 
 public class DummyAdvancedCertificateExtension extends CertificateExtension {

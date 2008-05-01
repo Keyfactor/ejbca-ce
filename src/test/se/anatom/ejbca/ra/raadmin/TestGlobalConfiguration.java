@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * Tests the global configuration entity bean.
  *
- * @version $Id: TestGlobalConfiguration.java,v 1.2 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id$
  */
 public class TestGlobalConfiguration extends TestCase {
     private static Logger log = Logger.getLogger(TestGlobalConfiguration.class);

@@ -38,7 +38,7 @@ import org.ejbca.util.FileTools;
  * This was the only way I could find to implement the desired functionality.
  * 
  * @author tomas
- * @version $Id: SigningDailyRollingFileAppender.java,v 1.2 2006-08-14 08:46:16 anatom Exp $
+ * @version $Id$
  */
 public class SigningDailyRollingFileAppender extends FileAppender {
 

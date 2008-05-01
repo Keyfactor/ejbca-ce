@@ -57,7 +57,7 @@ import org.ejbca.ui.web.RequestHelper;
  * </p>
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.2 2006-02-09 10:05:37 anatom Exp $
+ * @version $Id$
  */
 public class RemoteVerifyServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);

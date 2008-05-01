@@ -21,7 +21,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: IInterval.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id$
  */
 public interface IInterval {
 	

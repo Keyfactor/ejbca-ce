@@ -24,7 +24,7 @@ import org.ejbca.core.model.authorization.AccessRule;
  * If needed it can easily be replaced with an int pk and programatic logic to handle 
  * constraints. From the database view the pk is just an int.
  * 
- * @version $Id: AccessRulesPK.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id$
  */
 
 public final class AccessRulesPK implements java.io.Serializable {

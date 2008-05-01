@@ -30,7 +30,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * it isn't back compatible with the old version.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenIssuer.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id$
  */
 public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializable, Cloneable {
 

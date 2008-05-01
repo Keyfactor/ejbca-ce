@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.10 2008-01-31 12:28:31 anatom Exp $
+ * @version $Id$
  */
 public class CmpResponseMessage implements IResponseMessage {
 	

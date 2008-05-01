@@ -36,7 +36,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * See rfc3280 or later for spec of this extension.
  * 
  * @author: Tomas Gustavsson
- * @version $Id: SubjectDirectoryAttributes.java,v 1.2 2008-01-11 13:44:48 anatom Exp $
+ * @version $Id$
  */
 public class SubjectDirectoryAttributes extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);

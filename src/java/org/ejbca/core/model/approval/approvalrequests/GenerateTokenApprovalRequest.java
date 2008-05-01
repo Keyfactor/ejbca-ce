@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
  * hard token generation
  * 
  * @author Philip Vendil
- * @version $Id: GenerateTokenApprovalRequest.java,v 1.3 2008-03-21 14:57:23 herrvendil Exp $
+ * @version $Id$
  */
 public class GenerateTokenApprovalRequest extends ApprovalRequest {
 

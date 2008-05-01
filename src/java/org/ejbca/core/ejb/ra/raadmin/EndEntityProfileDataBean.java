@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.4 2006-11-10 09:29:34 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"

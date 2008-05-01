@@ -26,7 +26,7 @@ import javax.ejb.CreateException;
  * property String should be one of the property constants.
  * value (String) the value of the property.
  *
- * @version $Id: BasePropertyEntityBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean
  *	 generate="false"

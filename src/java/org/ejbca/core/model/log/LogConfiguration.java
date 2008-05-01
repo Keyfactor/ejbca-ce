@@ -21,7 +21,7 @@ import java.util.HashMap;
  * Class containing the log configuration data. Tells which events should be logged and if internal
  * log database and/or external logging device should be used.
  *
- * @version $Id: LogConfiguration.java,v 1.3 2007-12-04 14:21:48 jeklund Exp $
+ * @version $Id$
  */
 public class LogConfiguration implements Serializable {
     

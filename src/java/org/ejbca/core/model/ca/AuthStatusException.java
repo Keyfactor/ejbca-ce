@@ -21,7 +21,7 @@ import org.ejbca.core.EjbcaException;
  * Authentication error due to wrong status of user object. To authenticate a user the user must
  * have status new, failed or inprocess.
  *
- * @version $Id: AuthStatusException.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class AuthStatusException extends EjbcaException {
     /**

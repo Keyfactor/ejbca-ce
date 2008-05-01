@@ -67,7 +67,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.10 2008-01-31 12:28:32 anatom Exp $
+ * @version $Id$
  */
 public class CmpMessageHelper {
 	private static Logger log = Logger.getLogger(CmpMessageHelper.class);

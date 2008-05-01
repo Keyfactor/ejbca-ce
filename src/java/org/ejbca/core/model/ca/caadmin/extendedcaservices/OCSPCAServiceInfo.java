@@ -23,7 +23,7 @@ import java.util.List;
  * is neesed
  * 
  * 
- * @version $Id: OCSPCAServiceInfo.java,v 1.3 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id$
  */
 public class OCSPCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        

@@ -30,7 +30,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRenewCA.java,v 1.3 2007-07-26 09:12:12 anatom Exp $
+ * @version $Id$
  */
 public class TestRenewCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);

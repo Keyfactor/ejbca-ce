@@ -12,7 +12,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** To run you must have the file tmp/bin/junit/jndi.properties
  * 
- * @version $Id: TestEjbcaWS.java,v 1.15 2008-03-10 14:31:56 anatom Exp $
+ * @version $Id$
  */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
 	

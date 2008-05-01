@@ -38,7 +38,7 @@ import org.ejbca.core.model.InternalResources;
  * 
  * Therefore, minimum 4 octets value is 00800000 and maximum value is 7FFFFFFF."
  * 
- * @version $Id: SernoGenerator.java,v 1.7 2008-02-06 12:31:13 anatom Exp $
+ * @version $Id$
  */
 public class SernoGenerator implements ISernoGenerator {
 	/** Log4j instance */

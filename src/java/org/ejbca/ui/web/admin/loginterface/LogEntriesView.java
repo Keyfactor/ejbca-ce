@@ -27,7 +27,7 @@ import org.ejbca.ui.web.admin.rainterface.SortBy;
 /**
  * A class representing a set of log entry view representations.
  * @author  TomSelleck
- * @version $Id: LogEntriesView.java,v 1.4 2007-12-04 18:43:35 jeklund Exp $
+ * @version $Id$
  */
 public class LogEntriesView implements java.io.Serializable {
  

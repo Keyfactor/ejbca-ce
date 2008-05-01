@@ -17,7 +17,7 @@ package org.ejbca.core.model.ca.catoken;
  * Value class containing information about an available hard catoken registered to the CATokenManager.
  * 
  * @author herrvendil
- * @version $Id: AvailableCAToken.java,v 1.1 2007-07-26 11:09:36 anatom Exp $
+ * @version $Id$
  */
 public class AvailableCAToken {
 	

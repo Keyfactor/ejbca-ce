@@ -20,7 +20,7 @@ import java.util.Hashtable;
  * Class containing the complete result from an authenticateUser request.
  *
  * @author Original code by Peter Neemeth
- * @version $Id: AuthResult.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id$
  */
 public class AuthResult {
     /** Constants for grant and reject */

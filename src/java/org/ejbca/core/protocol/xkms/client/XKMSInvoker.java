@@ -87,7 +87,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Philip Vendil 2006 dec 19
  *
- * @version $Id: XKMSInvoker.java,v 1.2 2007-01-05 05:32:54 herrvendil Exp $
+ * @version $Id$
  */
 
 public class XKMSInvoker {

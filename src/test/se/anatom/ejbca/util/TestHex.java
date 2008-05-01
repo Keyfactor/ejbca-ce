@@ -18,7 +18,7 @@ import org.ejbca.util.CertTools;
 /** Tests base64 encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestHex.java,v 1.1 2006-01-21 12:20:56 anatom Exp $
+ * @version $Id$
  */
 public class TestHex extends TestCase {
     private static final Logger log = Logger.getLogger(TestHex.class);

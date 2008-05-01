@@ -31,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
  * A singleton holding configuration information about the CMP TCP service
  * 
  * @author tomas
- * @version $Id: CmpTcpConfiguration.java,v 1.2 2007-01-16 11:44:29 anatom Exp $
+ * @version $Id$
  */
 public class CmpTcpConfiguration {
 

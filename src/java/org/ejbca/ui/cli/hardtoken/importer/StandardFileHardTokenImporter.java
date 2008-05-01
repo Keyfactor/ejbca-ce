@@ -40,7 +40,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
  * 
  * @author Philip Vendil 2007 apr 23
  *
- * @version $Id: StandardFileHardTokenImporter.java,v 1.3 2007-05-07 11:58:55 herrvendil Exp $
+ * @version $Id$
  */
 
 public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {

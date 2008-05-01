@@ -42,7 +42,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Tomas Gustavsson based on code by Philip Vendil
  *
- * @version: $Id: UserPasswordExpireWorker.java,v 1.2 2007-12-06 14:08:10 anatom Exp $
+ * @version: $Id$
  */
 public class UserPasswordExpireWorker extends EmailSendingWorker {
 

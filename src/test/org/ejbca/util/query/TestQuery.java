@@ -22,7 +22,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestQuery.java,v 1.1 2007-05-04 09:06:38 anatom Exp $
+ * @version $Id$
  */
 public class TestQuery extends TestCase {
     private static Logger log = Logger.getLogger(TestQuery.class);

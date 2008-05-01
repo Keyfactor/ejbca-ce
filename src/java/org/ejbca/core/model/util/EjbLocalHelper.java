@@ -27,7 +27,7 @@ import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
 /**
  * Helper methods to get EJB session interfaces.
  * 
- * @version $Id: EjbLocalHelper.java,v 1.1 2008-03-07 17:28:26 anatom Exp $
+ * @version $Id$
  */
 public class EjbLocalHelper {
 

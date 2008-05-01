@@ -23,7 +23,7 @@ import javax.faces.model.SelectItem;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: SortableSelectItem.java,v 1.2 2006-11-02 08:03:23 anatom Exp $
+ * @version $Id$
  */
 
 public class SortableSelectItem extends SelectItem implements Comparable{

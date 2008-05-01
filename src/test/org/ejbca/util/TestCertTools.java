@@ -47,7 +47,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.8 2007-10-04 13:23:54 anatom Exp $
+ * @version $Id$
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);

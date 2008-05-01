@@ -35,7 +35,7 @@ import com.novell.ldap.LDAPEntry;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.5 2008-03-20 10:24:22 thamwickenberg Exp $
+ * @version $Id$
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	

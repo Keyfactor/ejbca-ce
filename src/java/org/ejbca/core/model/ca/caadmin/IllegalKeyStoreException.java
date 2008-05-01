@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
 /**
  * Error due to malformed key store. The cause of failure can be related to illegal key length etc.
  *
- * @version $Id: IllegalKeyStoreException.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class IllegalKeyStoreException extends EjbcaException {
     /**

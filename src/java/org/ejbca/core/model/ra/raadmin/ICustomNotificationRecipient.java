@@ -20,7 +20,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * user notifications.
  * 
  * @author Tomas Gustavsson
- * @version $Id: ICustomNotificationRecipient.java,v 1.1 2007-12-06 17:19:10 anatom Exp $
+ * @version $Id$
  */
 public interface ICustomNotificationRecipient {
 

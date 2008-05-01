@@ -34,7 +34,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * See rfc3280 or later for spec of this extension.      
  * 
  * @author: Tomas Gustavsson
- * @version $Id: SubjectKeyIdentifier.java,v 1.1 2008-01-10 14:42:15 anatom Exp $
+ * @version $Id$
  */
 public class SubjectKeyIdentifier extends StandardCertificateExtension {
 

@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.29 2008-04-16 15:28:34 primelars Exp $
+ * @version $Id$
  *
  */
 public class HSMKeyTool {

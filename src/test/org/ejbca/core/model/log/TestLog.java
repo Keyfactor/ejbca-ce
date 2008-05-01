@@ -39,7 +39,7 @@ import org.ejbca.util.query.Query;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.1 2008-01-02 15:13:42 jeklund Exp $
+ * @version $Id$
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);

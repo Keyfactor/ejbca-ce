@@ -31,7 +31,7 @@ import org.ejbca.ui.web.protocol.IHealtChecker;
  * * All OCSPSignTokens are active if not set as offline.
  * 
  * @author Philip Vendil
- * @version $Id: ExtOCSPHealthCheck.java,v 1.4 2008-04-11 18:04:14 anatom Exp $
+ * @version $Id$
  */
 
 public class ExtOCSPHealthCheck extends CommonHealthCheck {

@@ -47,7 +47,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.20 2008-03-27 17:59:07 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"

@@ -17,7 +17,7 @@ package org.ejbca.core.model.approval;
  * that have expired in the approval database
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequestExpiredException.java,v 1.1 2006-07-29 11:26:35 herrvendil Exp $
+ * @version $Id$
  */
 public class ApprovalRequestExpiredException extends Exception {
 

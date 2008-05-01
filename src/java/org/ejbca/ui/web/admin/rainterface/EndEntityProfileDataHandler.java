@@ -27,7 +27,7 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @version $Id: EndEntityProfileDataHandler.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id$
  */
 public class EndEntityProfileDataHandler implements java.io.Serializable {
 

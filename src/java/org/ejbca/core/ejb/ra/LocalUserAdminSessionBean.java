@@ -99,7 +99,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.63 2008-03-31 17:24:40 anatom Exp $
+ * @version $Id$
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"

@@ -26,7 +26,7 @@ import org.ejbca.util.Base64;
 /**
  * Utility class to gather a few functions
  *
- * @version $Id: RequestMessageUtils.java,v 1.1 2007-03-28 12:23:34 anatom Exp $
+ * @version $Id$
  */
 public class RequestMessageUtils {
     /**

@@ -33,7 +33,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.5 2006-12-22 09:29:59 herrvendil Exp $
+ * @version $Id$
  */
 public class TestAddLotsofUsers extends TestCase {
     private static Logger log = Logger.getLogger(TestAddLotsofUsers.class);

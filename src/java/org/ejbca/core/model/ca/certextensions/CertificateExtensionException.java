@@ -20,7 +20,7 @@ package org.ejbca.core.model.ca.certextensions;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: CertificateExtensionException.java,v 1.1 2008-01-10 14:42:17 anatom Exp $
+ * @version $Id$
  */
 
 public class CertificateExtensionException extends Exception {

@@ -63,7 +63,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  *
- * @version $Id: TestSignLotsOfCerts.java,v 1.9 2008-04-09 21:54:21 anatom Exp $
+ * @version $Id$
  */
 public class TestSignLotsOfCerts extends TestCase {
     private static Logger log = Logger.getLogger(TestSignLotsOfCerts.class);

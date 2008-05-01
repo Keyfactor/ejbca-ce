@@ -38,7 +38,7 @@ import org.ejbca.ui.cli.hardtoken.importer.IHardTokenImporter;
  * for authorization purposes. 
  * 
  * The -force flag indicates that rows that already exists in the data will be overwritten.
- * @version $Id: ImportDataCommand.java,v 1.1 2007-04-24 13:03:22 herrvendil Exp $
+ * @version $Id$
  */
 public class ImportDataCommand extends BaseAdminCommand {
     /**

@@ -28,7 +28,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
  *
  * @author Jon Barber (jon.barber@acm.org)
- * @version $Id: FailInfo.java,v 1.5 2006-11-02 17:03:21 anatom Exp $
+ * @version $Id$
  */
 
 public class FailInfo implements Serializable {

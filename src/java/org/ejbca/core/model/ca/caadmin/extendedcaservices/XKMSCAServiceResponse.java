@@ -20,7 +20,7 @@ import org.w3c.dom.Document;
 /**
  * Class used when delevering XKMS service response from a CA.  
  *
- * @version $Id: XKMSCAServiceResponse.java,v 1.1 2006-12-22 09:20:46 herrvendil Exp $
+ * @version $Id$
  */
 public class XKMSCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
                  

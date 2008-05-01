@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.7 2008-03-26 13:06:57 anatom Exp $
+ * @version $Id$
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{

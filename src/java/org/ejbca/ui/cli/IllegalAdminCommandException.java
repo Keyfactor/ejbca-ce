@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Exception throws when illegal parameters are issued for an Admin Command (IadminCommand)
  *
- * @version $Id: IllegalAdminCommandException.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class IllegalAdminCommandException extends org.ejbca.core.EjbcaException {
     /**

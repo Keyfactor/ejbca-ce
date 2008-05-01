@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Class used when requesting CMS related services from a CA.  
  *
- * @version $Id: CmsCAServiceRequest.java,v 1.3 2007-04-13 06:12:10 herrvendil Exp $
+ * @version $Id$
  */
 public class CmsCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     

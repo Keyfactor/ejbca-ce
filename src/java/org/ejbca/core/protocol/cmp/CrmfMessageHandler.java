@@ -70,7 +70,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.21 2007-07-24 10:51:39 anatom Exp $
+ * @version $Id$
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	

@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: LogMatch.java,v 1.2 2006-08-09 07:29:48 herrvendil Exp $
+ * @version $Id$
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.TimeMatch

@@ -73,7 +73,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  * query="SELECT OBJECT(a) from TableProtectDataBean a WHERE a.dbType=?1 AND a.dbKey=?2"
  *
 
- * @version $Id: TableProtectDataBean.java,v 1.5 2006-11-10 09:29:11 anatom Exp $
+ * @version $Id$
  */
 public abstract class TableProtectDataBean extends BaseEntityBean {
 

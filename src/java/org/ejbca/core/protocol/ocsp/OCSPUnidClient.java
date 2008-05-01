@@ -72,7 +72,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.13 2008-03-14 13:56:42 primelars Exp $
+ * @version $Id$
  *
  */
 public class OCSPUnidClient {

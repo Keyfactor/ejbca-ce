@@ -23,7 +23,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaFindUserCommand.java,v 1.3 2006-06-03 18:10:46 anatom Exp $
+ * @version $Id$
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
     /**

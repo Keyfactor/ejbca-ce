@@ -19,7 +19,7 @@ import java.util.Date;
 /**
  * Holds information about a CRL but not he CRL itself.
  *
- * @version $Id: CRLInfo.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id$
  */
 public class CRLInfo implements Serializable {
     

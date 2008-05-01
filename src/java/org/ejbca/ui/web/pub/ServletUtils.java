@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
  * A class containing some helpful functions used in more than one servlet, avoiding code duplication.
  * 
  * @author tomasg
- * @version $Id: ServletUtils.java,v 1.2 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id$
  */
 public class ServletUtils {
 

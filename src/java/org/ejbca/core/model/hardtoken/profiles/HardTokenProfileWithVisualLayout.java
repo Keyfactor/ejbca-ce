@@ -31,7 +31,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfileWithVisualLayout.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id$
  */
 public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileWithPINEnvelope implements IVisualLayoutSettings{
 		

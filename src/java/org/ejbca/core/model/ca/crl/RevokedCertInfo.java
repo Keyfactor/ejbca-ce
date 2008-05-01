@@ -20,7 +20,7 @@ import java.util.Date;
  * Holds information about a revoked certificate. The information kept here is the
  * information that goes into a CRLEntry.
  *
- * @version $Id: RevokedCertInfo.java,v 1.3 2007-09-19 12:42:20 anatom Exp $
+ * @version $Id$
  **/
 public class RevokedCertInfo extends java.lang.Object implements java.io.Serializable {
     

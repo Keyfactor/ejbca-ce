@@ -31,7 +31,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.9 2007-11-18 11:09:08 anatom Exp $
+ * @version $Id$
  */
 public interface IRequestMessage extends Serializable {
     /**

@@ -63,7 +63,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 2006 dec 30
  *
- * @version $Id: XKMSUtil.java,v 1.2 2007-02-02 09:37:48 anatom Exp $
+ * @version $Id$
  */
 
 public class XKMSUtil {

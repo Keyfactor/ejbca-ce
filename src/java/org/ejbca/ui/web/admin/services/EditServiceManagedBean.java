@@ -46,7 +46,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: EditServiceManagedBean.java,v 1.7 2007-11-11 08:16:43 anatom Exp $
+ * @version $Id$
  */
 public class EditServiceManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);

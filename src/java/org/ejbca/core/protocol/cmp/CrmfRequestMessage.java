@@ -71,7 +71,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.18 2008-01-31 12:28:32 anatom Exp $
+ * @version $Id$
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	

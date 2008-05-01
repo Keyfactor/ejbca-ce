@@ -25,7 +25,7 @@ import org.ejbca.util.CertTools;
  * 
  * @author Philip Vendil
  *
- * $Id: CertificateHelper.java,v 1.3 2007-08-22 12:07:41 herrvendil Exp $
+ * $Id$
  */
 public class CertificateHelper {
 

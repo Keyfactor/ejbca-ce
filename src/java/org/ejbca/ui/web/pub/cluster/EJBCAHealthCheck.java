@@ -47,7 +47,7 @@ import org.ejbca.core.model.log.Admin;
  * * All Publishers can establish connection
  * 
  * @author Philip Vendil
- * @version $Id: EJBCAHealthCheck.java,v 1.9 2008-04-11 18:04:14 anatom Exp $
+ * @version $Id$
  */
 
 public class EJBCAHealthCheck extends CommonHealthCheck {

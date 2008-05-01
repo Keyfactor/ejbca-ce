@@ -36,7 +36,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: StressTestCommand.java,v 1.12 2008-03-10 15:13:17 primelars Exp $
+ * @version $Id$
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 

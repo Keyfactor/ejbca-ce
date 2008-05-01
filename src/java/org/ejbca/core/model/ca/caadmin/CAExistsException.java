@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
  * An exception thrown when someone tries to change or create a CA that doesn't already exits
  *
  * @author  Philip Vendil
- * @version $Id: CAExistsException.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class CAExistsException extends EjbcaException {
     

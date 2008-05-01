@@ -61,7 +61,7 @@ import org.w3._2002._03.xkms_.ValidityIntervalType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.5 2007-12-21 09:02:50 anatom Exp $
+ * @version $Id$
  */
 
 public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseGenerator{

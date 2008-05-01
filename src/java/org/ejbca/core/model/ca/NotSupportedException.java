@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
 /**
  * Error due to some part of the request is not supported.
  *
- * @version $Id: NotSupportedException.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class NotSupportedException extends EjbcaException {
     /**

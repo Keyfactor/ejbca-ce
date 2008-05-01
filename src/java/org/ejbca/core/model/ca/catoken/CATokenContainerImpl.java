@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.11 2008-03-26 13:01:14 anatom Exp $
+ * @version $Id$
  */
 public class CATokenContainerImpl extends CATokenContainer {
 

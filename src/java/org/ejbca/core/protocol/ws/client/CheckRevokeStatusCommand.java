@@ -28,7 +28,7 @@ import org.ejbca.util.CertTools;
 /**
  * Revokes a given certificate
  *
- * @version $Id: CheckRevokeStatusCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id$
  */
 public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

@@ -20,7 +20,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * TurkishEIDHardToken is a class defining data stored in database for a Turkish EID token.
  *
- * @version $Id: TurkishEIDHardToken.java,v 1.3 2007-04-13 06:15:20 herrvendil Exp $
+ * @version $Id$
  */
 public class TurkishEIDHardToken extends HardToken {
     // Public Constants

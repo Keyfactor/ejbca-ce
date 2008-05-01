@@ -19,7 +19,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * This was the only way I could find to implement the desired functionality.
  * 
  * @author tomas
- * @version $Id: ScriptrunningDailyRollingFileAppender.java,v 1.2 2006-12-04 12:44:38 anatom Exp $
+ * @version $Id$
  */
 public class ScriptrunningDailyRollingFileAppender extends FileAppender {
 

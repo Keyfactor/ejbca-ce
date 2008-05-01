@@ -19,7 +19,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 /**
  * Deletes a user from the database.
  *
- * @version $Id: RaDelUserCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
     /**

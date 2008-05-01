@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * Interface contating methods that need to be implementet in order 
  * to have a custom publisher. All Custom publishers must implement this interface.
  * 
- * @version $Id: ICustomPublisher.java,v 1.2 2006-07-21 15:28:25 anatom Exp $
+ * @version $Id$
  */
 
 public interface ICustomPublisher {

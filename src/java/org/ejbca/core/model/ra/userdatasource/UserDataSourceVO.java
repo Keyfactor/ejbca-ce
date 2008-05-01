@@ -28,7 +28,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  *  
  * @author Philip Vendil
- * @version $Id: UserDataSourceVO.java,v 1.3 2007-04-13 06:16:51 herrvendil Exp $
+ * @version $Id$
  */
 
 public class UserDataSourceVO implements Serializable {    

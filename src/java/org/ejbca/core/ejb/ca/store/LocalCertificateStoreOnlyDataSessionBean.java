@@ -81,7 +81,7 @@ import org.ejbca.util.CertTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.9 2006-12-10 16:19:59 anatom Exp $
+ * @version $Id$
  */
 public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
 

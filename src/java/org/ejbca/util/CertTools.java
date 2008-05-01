@@ -99,7 +99,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.54 2008-03-14 16:55:36 anatom Exp $
+ * @version $Id$
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);

@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
  * Is throw when connection to a user data source have failed i some way.
  *
  * @author  Philip Vendil
- * @version $Id: UserDataSourceConnectionException.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id$
  */
 public class UserDataSourceConnectionException extends EjbcaException {
     

@@ -26,7 +26,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Request a keystore given a pkcs12
  *
- * @version $Id: PKCS12ReqCommand.java,v 1.5 2008-02-14 12:53:25 jeklund Exp $
+ * @version $Id$
  */
 public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

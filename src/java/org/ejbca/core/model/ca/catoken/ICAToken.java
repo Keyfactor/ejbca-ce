@@ -25,7 +25,7 @@ import java.util.Properties;
  *  All CAToken plug-ins must implement this interface.
  * 
  * 
- * @version $Id: ICAToken.java,v 1.4 2008-02-27 09:50:33 anatom Exp $
+ * @version $Id$
  */
 public interface ICAToken {
 

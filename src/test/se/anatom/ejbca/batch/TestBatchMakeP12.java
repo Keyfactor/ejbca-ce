@@ -34,7 +34,7 @@ import org.ejbca.ui.cli.batch.BatchMakeP12;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.4 2007-06-05 13:32:57 anatom Exp $
+ * @version $Id$
  */
 
 public class TestBatchMakeP12 extends TestCase {

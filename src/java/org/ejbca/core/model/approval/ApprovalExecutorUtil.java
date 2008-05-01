@@ -62,7 +62,7 @@ ApprovalExecutorUtil.requireApproval checks all the rules and returns true or fa
 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalExecutorUtil.java,v 1.10 2006-09-29 13:46:21 anatom Exp $
+ * @version $Id$
  */
 public class ApprovalExecutorUtil {
       

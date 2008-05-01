@@ -22,7 +22,7 @@ import java.io.Serializable;
 /**
  * A class that represents a group of users and their access rules.
  *
- * @version $Id: AdminGroup.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class AdminGroup implements Serializable, Comparable {
                                

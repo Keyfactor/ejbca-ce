@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * HardTokenProfileWithReceipt is a basic class that should be inherited by all types
  * of hardtokenprofiles that should have receipt functionality.
  * 
- * @version $Id: HardTokenProfileWithReceipt.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id$
  */
 public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVisualLayout implements IReceiptSettings{
 		

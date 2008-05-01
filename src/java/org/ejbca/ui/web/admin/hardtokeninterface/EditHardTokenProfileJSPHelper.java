@@ -50,7 +50,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.6 2007-08-24 06:53:55 herrvendil Exp $
+ * @version $Id$
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	

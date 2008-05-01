@@ -56,7 +56,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test must be run in normal mode (default mode)
  * 
  * @author tomas
- * @version $Id: CrmfRequestTest.java,v 1.18 2008-01-14 15:37:11 anatom Exp $
+ * @version $Id$
  *
  */
 public class CrmfRequestTest extends CmpTestCase {

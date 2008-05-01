@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.ws.objects;
 import org.ejbca.util.Base64;
 
 /**
- * @version $Id: CertificateResponse.java,v 1.2 2008-01-07 13:07:27 anatom Exp $
+ * @version $Id$
  */
 public class CertificateResponse  {
 	

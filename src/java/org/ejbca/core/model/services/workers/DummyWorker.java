@@ -23,7 +23,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *  
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: DummyWorker.java,v 1.2 2006-10-26 11:01:24 herrvendil Exp $
+ * @version $Id$
  */
 public class DummyWorker extends BaseWorker {
 

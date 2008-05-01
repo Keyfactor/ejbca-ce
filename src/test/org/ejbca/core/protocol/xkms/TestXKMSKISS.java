@@ -75,7 +75,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSKISS.java,v 1.5 2007-11-20 08:45:52 anatom Exp $
+ * @version $Id$
  */
 
 public class TestXKMSKISS extends TestCase {

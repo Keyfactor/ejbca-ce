@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.12 2008-01-14 14:04:13 anatom Exp $
+ * @version $Id$
  */
 public class UserDataVO implements Serializable {
 

@@ -23,7 +23,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * A class representing a admins personal preferenses.
  *
  * @author  Philip Vendil
- * @version $Id: AdminPreference.java,v 1.2 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id$
  */
 public class AdminPreference extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     

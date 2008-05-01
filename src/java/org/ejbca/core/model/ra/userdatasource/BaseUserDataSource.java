@@ -32,7 +32,7 @@ import org.ejbca.core.model.log.Admin;
  * Contains data like description, applicable CAs and modifyable fields.
  *  
  *
- * @version $Id: BaseUserDataSource.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
+ * @version $Id$
  */
 public abstract class BaseUserDataSource extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

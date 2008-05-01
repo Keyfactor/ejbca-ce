@@ -46,7 +46,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.5 2008-04-11 19:34:19 anatom Exp $
+ * @version $Id$
  */
 public class TestPublisher extends TestCase {
     

@@ -48,7 +48,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the CertTools class.
  *
- * @version $Id: TestCmsCAService.java,v 1.2 2007-04-13 06:23:08 herrvendil Exp $
+ * @version $Id$
  */
 public class TestCmsCAService extends TestCase {
 	private static Logger log = Logger.getLogger(TestCmsCAService.class);

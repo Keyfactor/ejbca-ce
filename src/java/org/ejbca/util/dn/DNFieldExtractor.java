@@ -27,7 +27,7 @@ import org.ietf.ldap.LDAPDN;
  * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.7 2007-01-16 11:46:13 anatom Exp $
+ * @version $Id$
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(DNFieldExtractor.class);

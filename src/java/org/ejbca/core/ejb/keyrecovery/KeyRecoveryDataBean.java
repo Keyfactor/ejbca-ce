@@ -36,7 +36,7 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.5 2006-11-10 09:29:11 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean
  *   description="Stores key recovery data"

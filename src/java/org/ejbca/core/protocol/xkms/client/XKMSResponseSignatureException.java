@@ -20,7 +20,7 @@ package org.ejbca.core.protocol.xkms.client;
  * 
  * @author Philip Vendil 2006 dec 20
  *
- * @version $Id: XKMSResponseSignatureException.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id$
  */
 
 public class XKMSResponseSignatureException extends Exception {

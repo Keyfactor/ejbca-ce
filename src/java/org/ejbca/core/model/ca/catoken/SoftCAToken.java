@@ -30,7 +30,7 @@ import org.ejbca.util.Base64;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.19 2008-02-27 09:50:33 anatom Exp $
+ * @version $Id$
  */
 public class SoftCAToken extends BaseCAToken {
 

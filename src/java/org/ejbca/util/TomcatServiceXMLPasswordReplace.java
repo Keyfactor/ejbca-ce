@@ -21,7 +21,7 @@ import java.io.FileWriter;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: TomcatServiceXMLPasswordReplace.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id$
  */
 public class TomcatServiceXMLPasswordReplace {
     /**

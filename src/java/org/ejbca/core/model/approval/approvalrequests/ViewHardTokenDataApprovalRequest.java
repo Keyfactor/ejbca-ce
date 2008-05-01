@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ViewHardTokenDataApprovalRequest.java,v 1.2 2008-03-21 14:57:23 herrvendil Exp $
+ * @version $Id$
  */
 public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 

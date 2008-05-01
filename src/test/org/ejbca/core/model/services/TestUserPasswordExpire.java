@@ -41,7 +41,7 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserPasswordExpire.java,v 1.1 2007-11-11 07:58:00 anatom Exp $
+ * @version $Id$
  */
 public class TestUserPasswordExpire extends TestCase {
 

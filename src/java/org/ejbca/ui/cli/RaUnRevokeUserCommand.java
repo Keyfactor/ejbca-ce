@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaUnRevokeUserCommand.java,v 1.5 2007-08-17 14:45:38 jeklund Exp $
+ * @version $Id$
  */
 public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
     /**

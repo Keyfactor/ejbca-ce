@@ -41,7 +41,7 @@ import org.ejbca.util.JDBCUtil;
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.12 2006-12-13 10:35:30 anatom Exp $
+ * @version $Id$
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {

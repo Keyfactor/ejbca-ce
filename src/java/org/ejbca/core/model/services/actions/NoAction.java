@@ -22,7 +22,7 @@ import org.ejbca.core.model.services.BaseAction;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: NoAction.java,v 1.1 2006-10-14 05:01:47 herrvendil Exp $
+ * @version $Id$
  */
 public class NoAction extends BaseAction {
 	

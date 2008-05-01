@@ -39,7 +39,7 @@ import org.ejbca.util.CertTools;
 /**
  * Adds a user to the database.
  *
- * @version $Id: GenerateNewUserCommand.java,v 1.3 2008-01-03 16:15:30 anatom Exp $
+ * @version $Id$
  */
 public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.7 2007-04-13 06:06:27 herrvendil Exp $
+ * @version $Id$
  */
 public class AvailableAccessRules {
         

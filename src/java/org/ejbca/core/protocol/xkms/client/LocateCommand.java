@@ -51,7 +51,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 /**
  * Performes KISS calls to an web service.
  *
- * @version $Id: LocateCommand.java,v 1.3 2007-08-01 15:18:53 jeklund Exp $
+ * @version $Id$
  * @author Philip Vendil
  */
 public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{

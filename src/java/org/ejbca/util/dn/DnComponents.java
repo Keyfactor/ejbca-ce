@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.12 2008-04-22 12:21:26 jeklund Exp $
+ * @version $Id$
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);

@@ -31,7 +31,7 @@ import org.ejbca.core.model.InternalResources;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silven
- * @version $Id: NFastCAToken.java,v 1.19 2008-02-27 09:50:33 anatom Exp $
+ * @version $Id$
  */
 public class NFastCAToken extends BaseCAToken {
 

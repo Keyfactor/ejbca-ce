@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * to have a hard token profile contain a reciept that may contain policy and 
  * the users hand signature.
  * 
- * @version $Id: IReceiptSettings.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id$
  */
 
 public interface IReceiptSettings {

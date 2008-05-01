@@ -48,7 +48,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.10 2007-12-04 18:43:36 jeklund Exp $
+ * @version $Id$
  */
 public class LogInterfaceBean implements java.io.Serializable {
 

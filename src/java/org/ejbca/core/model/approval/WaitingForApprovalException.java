@@ -16,7 +16,7 @@ package org.ejbca.core.model.approval;
  * Excception thrown from actions that stop to wait for approvals
  * 
  * @author Philip Vendil
- * @version $Id: WaitingForApprovalException.java,v 1.2 2007-07-05 05:55:08 herrvendil Exp $
+ * @version $Id$
  */
 public class WaitingForApprovalException extends Exception {
 

@@ -21,7 +21,7 @@ import java.util.Map;
  * it encodes them to form "B64:<base64 encoded string>". It only encodes objects of type String.
  * 
  * @author tomasg
- * @version $Id: Base64PutHashMap.java,v 1.4 2006-07-28 07:14:15 anatom Exp $
+ * @version $Id$
  */
 public class Base64PutHashMap extends HashMap {
     public Base64PutHashMap() {

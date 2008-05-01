@@ -91,7 +91,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.26 2008-04-21 10:21:48 anatom Exp $
+ * @version $Id$
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);

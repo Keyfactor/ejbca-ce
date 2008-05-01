@@ -38,7 +38,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.10 2008-01-10 14:42:16 anatom Exp $
+ * @version $Id$
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);

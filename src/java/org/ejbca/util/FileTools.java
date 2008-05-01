@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle some common file operations.
  *
- * @version $Id: FileTools.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id$
  */
 public class FileTools {
     private static Logger log = Logger.getLogger(FileTools.class);

@@ -25,7 +25,7 @@ import org.ejbca.util.CertTools;
 /**
  * Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.3 2006-12-15 15:07:10 anatom Exp $
+ * @version $Id$
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
     /**

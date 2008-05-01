@@ -63,7 +63,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.24 2008-01-30 12:31:59 anatom Exp $
+ * @version $Id$
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -77,7 +77,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.24 2008-01-30 12:31:59 anatom Exp $
+ * @version $Id$
  */
 public class StartServicesServlet extends HttpServlet {
 

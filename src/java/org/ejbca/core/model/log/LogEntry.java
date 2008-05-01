@@ -34,7 +34,7 @@ import org.ejbca.core.model.protect.TableVerifyResult;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.13 2007-12-04 14:21:53 jeklund Exp $
+ * @version $Id$
  */
 public class LogEntry implements Serializable, Protectable {
 

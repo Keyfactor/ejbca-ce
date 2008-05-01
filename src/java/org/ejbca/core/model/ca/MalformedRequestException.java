@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
 /**
  * Error due to malformed request. The cause of failure can be related to ASN.1 issues etc.
  *
- * @version $Id: MalformedRequestException.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class MalformedRequestException extends EjbcaException {
     /**

@@ -26,7 +26,7 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseWorker.java,v 1.7 2007-11-11 07:55:49 anatom Exp $
+ * @version $Id$
  */
 public abstract class BaseWorker extends BaseServiceComponent implements IWorker {
 

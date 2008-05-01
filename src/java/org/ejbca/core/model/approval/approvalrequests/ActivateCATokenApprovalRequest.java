@@ -44,7 +44,7 @@ import org.ejbca.core.model.log.Admin;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ActivateCATokenApprovalRequest.java,v 1.1 2008-02-26 15:37:14 herrvendil Exp $
+ * @version $Id$
  */
 public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 

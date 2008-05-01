@@ -73,7 +73,7 @@ import org.ejbca.core.model.log.Admin;
  *  auth="Container"
  *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServlet.java,v 1.10 2007-01-09 12:47:44 anatom Exp $
+ * @version  $Id$
  */
 public class OCSPServlet extends OCSPServletBase {
 

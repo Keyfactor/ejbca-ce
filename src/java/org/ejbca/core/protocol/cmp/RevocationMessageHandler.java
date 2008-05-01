@@ -58,7 +58,7 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: RevocationMessageHandler.java,v 1.5 2007-08-17 14:45:46 jeklund Exp $
+ * @version $Id$
  */
 public class RevocationMessageHandler implements ICmpMessageHandler {
 	

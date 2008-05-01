@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
  * An exception thrown when someone tries to add a certificate profile that already exits
  *
  * @author  Philip Vendil
- * @version $Id: CertificateProfileExistsException.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id$
  */
 public class CertificateProfileExistsException extends EjbcaException {
     

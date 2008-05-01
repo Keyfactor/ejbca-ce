@@ -22,7 +22,7 @@ import org.w3c.dom.Document;
  * Class used when requesting XMKS related services from a CA.  
  *
  * @author Philip Vendil
- * @version $Id: XKMSCAServiceRequest.java,v 1.1 2006-12-22 09:20:46 herrvendil Exp $
+ * @version $Id$
  */
 public class XKMSCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     

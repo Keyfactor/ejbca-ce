@@ -37,7 +37,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: RevokeResponseGenerator.java,v 1.5 2007-08-17 14:45:43 jeklund Exp $
+ * @version $Id$
  */
 
 public class RevokeResponseGenerator extends

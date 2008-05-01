@@ -20,7 +20,7 @@ import org.ejbca.core.model.services.ActionInfo;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: MailActionInfo.java,v 1.3 2007-12-04 14:22:32 jeklund Exp $
+ * @version $Id$
  */
 public class MailActionInfo implements ActionInfo {
 	

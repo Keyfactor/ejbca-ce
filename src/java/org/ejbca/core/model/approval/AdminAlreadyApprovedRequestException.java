@@ -17,7 +17,7 @@ package org.ejbca.core.model.approval;
  * an action 
  * 
  * @author Philip Vendil
- * @version $Id: AdminAlreadyApprovedRequestException.java,v 1.1 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id$
  */
 public class AdminAlreadyApprovedRequestException extends Exception {
 

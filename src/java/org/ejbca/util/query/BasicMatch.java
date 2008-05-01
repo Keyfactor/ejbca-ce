@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * LogMatch. Main function is getQueryString which is abstract and must be overloaded.
  *
  * @author tomselleck
- * @version $Id: BasicMatch.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id$
  *
  * @see org.ejbca.util.query.UserMatch
  * @see org.ejbca.util.query.TimeMatch

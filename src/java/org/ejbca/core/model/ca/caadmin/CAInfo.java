@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.14 2008-04-09 21:54:19 anatom Exp $
+ * @version $Id$
  */
 public class CAInfo implements Serializable {
 

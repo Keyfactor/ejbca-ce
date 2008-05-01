@@ -18,7 +18,7 @@ import org.ejbca.util.CertTools;
 /**
  * Test to externalize an approval
  * @author Philip Vendil
- * $Id: TestApproval.java,v 1.1 2007-07-31 13:31:45 jeklund Exp $
+ * $Id$
  */
 
 public class TestApproval extends TestCase {

@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
  * Is thrown when error occured when searching or retriving userdata 
  *
  * @author  Philip Vendil
- * @version $Id: UserDataSourceException.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id$
  */
 public class UserDataSourceException extends EjbcaException {
     

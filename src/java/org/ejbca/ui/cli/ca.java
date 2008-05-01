@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Implements the CA command line interface
  *
- * @version $Id: ca.java,v 1.4 2008-03-26 13:22:49 anatom Exp $
+ * @version $Id$
  */
 public class ca extends BaseCommand {
     /**

@@ -26,7 +26,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Class used to represent the view of an approval
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalView.java,v 1.2 2006-09-05 09:23:28 anatom Exp $
+ * @version $Id$
  */
 public class ApprovalView {
 	

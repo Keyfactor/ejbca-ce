@@ -42,7 +42,7 @@ import org.ejbca.util.dn.DnComponents;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.10 2008-01-04 13:27:23 anatom Exp $
+ * @version $Id$
  */
 public class TestUserData extends TestCase {
 

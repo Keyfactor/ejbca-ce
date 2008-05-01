@@ -59,7 +59,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.12 2008-02-15 15:06:12 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"

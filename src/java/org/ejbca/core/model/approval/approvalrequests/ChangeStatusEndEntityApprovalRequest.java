@@ -42,7 +42,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.6 2006-08-13 14:56:36 herrvendil Exp $
+ * @version $Id$
  */
 public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 

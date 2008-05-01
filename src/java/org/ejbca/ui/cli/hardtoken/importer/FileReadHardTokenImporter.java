@@ -29,7 +29,7 @@ import org.ejbca.core.model.hardtoken.HardTokenData;
  * 
  * @author Philip Vendil 2007 apr 23
  *
- * @version $Id: FileReadHardTokenImporter.java,v 1.1 2007-04-24 13:03:21 herrvendil Exp $
+ * @version $Id$
  */
 
 public abstract class FileReadHardTokenImporter implements IHardTokenImporter {

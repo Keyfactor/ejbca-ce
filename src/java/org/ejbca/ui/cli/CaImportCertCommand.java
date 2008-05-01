@@ -34,7 +34,7 @@ import org.ejbca.util.FileTools;
  * Imports a certificate file in the database.
  *
  * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
- * @version $Id: CaImportCertCommand.java,v 1.5 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id$
  */
 public class CaImportCertCommand extends BaseCaAdminCommand {
 	/**

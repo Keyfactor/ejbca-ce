@@ -31,7 +31,7 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * @author tomas
- * @version $Id: GeneralCmpMessage.java,v 1.4 2007-01-16 11:44:30 anatom Exp $
+ * @version $Id$
  */
 public class GeneralCmpMessage extends BaseCmpMessage {
 

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
-* @version $Id: EndUserCertificateProfile.java,v 1.4 2008-03-14 17:00:16 anatom Exp $
+* @version $Id$
   */
 public class EndUserCertificateProfile extends CertificateProfile{
 

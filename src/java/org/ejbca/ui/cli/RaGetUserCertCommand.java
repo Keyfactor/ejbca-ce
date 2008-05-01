@@ -25,7 +25,7 @@ import org.ejbca.util.CertTools;
 /**
  * Output all certificates to stdout for a specific user.
  *
- * @version $Id: RaGetUserCertCommand.java,v 1.1 2007-06-18 12:16:22 jbagnert Exp $
+ * @version $Id$
  */
 public class RaGetUserCertCommand extends BaseRaAdminCommand {
     /**

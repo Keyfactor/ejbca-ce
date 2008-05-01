@@ -27,7 +27,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
  * Class used to manage the list of approvaldatas resulted in the query.
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataVOViewList.java,v 1.3 2007-03-09 17:35:46 anatom Exp $
+ * @version $Id$
  */
 
 public class ApprovalDataVOViewList extends AbstractList implements java.io.Serializable {

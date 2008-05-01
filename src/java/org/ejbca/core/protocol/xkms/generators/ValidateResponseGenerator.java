@@ -28,7 +28,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ValidateResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id$
  */
 
 public class ValidateResponseGenerator extends

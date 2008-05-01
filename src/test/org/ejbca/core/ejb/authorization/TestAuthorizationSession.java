@@ -31,7 +31,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthorizationSession.java,v 1.2 2008-01-23 11:07:25 jeklund Exp $
+ * @version $Id$
  */
 public class TestAuthorizationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthorizationSession.class);

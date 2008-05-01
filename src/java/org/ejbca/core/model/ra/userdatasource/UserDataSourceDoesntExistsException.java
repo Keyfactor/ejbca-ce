@@ -23,7 +23,7 @@ package org.ejbca.core.model.ra.userdatasource;
  * An exception thrown when someone tries to remove or change a userdata source that doesn't exits
  *
  * @author  Philip Vendil
- * @version $Id: UserDataSourceDoesntExistsException.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id$
  */
 public class UserDataSourceDoesntExistsException extends java.lang.Exception {
     

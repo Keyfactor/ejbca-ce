@@ -16,7 +16,7 @@ package org.ejbca.appserver.jboss;
 
 /** A Jboss service that has a lot of configuration options for CMP operations
  * 
- * version $Id: CmpTcpServiceMBean.java,v 1.2 2006-10-22 09:04:49 anatom Exp $
+ * version $Id$
 */
 public interface CmpTcpServiceMBean extends org.jboss.system.ServiceMBean
 {   

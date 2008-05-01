@@ -33,7 +33,7 @@ import org.ejbca.core.protocol.ScepRequestMessage;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.4 2007-03-28 12:23:34 anatom Exp $
+ * @version  $Id$
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);

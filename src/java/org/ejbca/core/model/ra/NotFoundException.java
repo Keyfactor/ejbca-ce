@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
  * Thrown when an objekt cannot be found in the database and the error is not critical so we want
  * to inform the client in a nice way.
  *
- * @version $Id: NotFoundException.java,v 1.2 2006-09-20 15:44:58 anatom Exp $
+ * @version $Id$
  */
 public class NotFoundException extends EjbcaException {
     /**

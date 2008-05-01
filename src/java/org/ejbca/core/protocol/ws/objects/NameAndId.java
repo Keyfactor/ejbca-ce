@@ -17,7 +17,7 @@ import java.io.Serializable;
 /** Value object holding a Name and Id pair, for example for a CA or a end entity- or certificate profile.
  * 
  * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
- * @version $Id: NameAndId.java,v 1.1 2008-01-07 13:13:41 anatom Exp $
+ * @version $Id$
  */
 public class NameAndId implements Serializable{
 

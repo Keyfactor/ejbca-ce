@@ -17,7 +17,7 @@ import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 
 /**
- * @version $Id: HardTokenConstants.java,v 1.2 2008-01-07 13:17:32 anatom Exp $
+ * @version $Id$
  */
 public interface HardTokenConstants {
 	public static final int TOKENTYPE_SWEDISHEID = SwedishEIDProfile.TYPE_SWEDISHEID;

@@ -25,7 +25,7 @@ import org.bouncycastle.ocsp.OCSPReq;
 /**
  * Class used when requesting OCSP related services from a CA.  
  *
- * @version $Id: OCSPCAServiceRequest.java,v 1.3 2006-12-20 17:15:48 anatom Exp $
+ * @version $Id$
  */
 public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     

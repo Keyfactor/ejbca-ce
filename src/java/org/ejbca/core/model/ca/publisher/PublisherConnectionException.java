@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
  * Is throw when connection to a publisher have failed i some way.
  *
  * @author  Philip Vendil
- * @version $Id: PublisherConnectionException.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id$
  */
 public class PublisherConnectionException extends EjbcaException {
     

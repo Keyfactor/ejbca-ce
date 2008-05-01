@@ -17,7 +17,7 @@ package org.ejbca.util.passgen;
  * AllPrintablePasswordGenerator is a class generating random passwords containing all printable 
  * english characters.
  *
- * @version $Id: AllPrintableCharPasswordGenerator.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class AllPrintableCharPasswordGenerator extends BasePasswordGenerator{
     

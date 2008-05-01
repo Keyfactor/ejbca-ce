@@ -25,7 +25,7 @@ import org.ejbca.core.model.InternalResources;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: CATokenManager.java,v 1.5 2008-03-11 14:00:40 anatom Exp $
+ * @version $Id$
  * 
  */
 public class CATokenManager {

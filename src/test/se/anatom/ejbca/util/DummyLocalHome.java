@@ -9,7 +9,7 @@ import javax.ejb.RemoveException;
 
 /**
  * @author tomasg
- * @version $Id: DummyLocalHome.java,v 1.2 2006-06-20 13:06:43 anatom Exp $
+ * @version $Id$
  */
 public class DummyLocalHome implements EJBLocalHome{
     private HashMap map;

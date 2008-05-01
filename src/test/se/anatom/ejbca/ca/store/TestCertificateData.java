@@ -48,7 +48,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.9 2006-10-31 08:24:53 anatom Exp $
+ * @version $Id$
  */
 public class TestCertificateData extends TestCase {
 

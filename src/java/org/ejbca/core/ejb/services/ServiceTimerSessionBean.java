@@ -143,7 +143,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   
  *  @jonas.bean ejb-name="ServiceTimerSession"
  *  
- *  @version $Id: ServiceTimerSessionBean.java,v 1.20 2008-04-11 02:34:18 anatom Exp $
+ *  @version $Id$
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
 

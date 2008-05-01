@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
  *  
  *
- * @version $Id: DummyCustomPublisher.java,v 1.4 2008-03-27 08:22:10 jeklund Exp $
+ * @version $Id$
  */
 public class DummyCustomPublisher implements ICustomPublisher{
     		

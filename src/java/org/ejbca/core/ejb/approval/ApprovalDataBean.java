@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.11 2008-03-14 12:38:30 anatom Exp $   
+ * @version $Id$   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 

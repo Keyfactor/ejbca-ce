@@ -63,7 +63,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.18 2008-03-10 12:32:14 anatom Exp $
+ * @version $Id$
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);

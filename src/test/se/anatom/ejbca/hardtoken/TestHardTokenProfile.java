@@ -35,7 +35,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the hard token profile entity bean.
  *
- * @version $Id: TestHardTokenProfile.java,v 1.4 2006-11-14 08:42:08 anatom Exp $
+ * @version $Id$
  */
 public class TestHardTokenProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestHardTokenProfile.class);

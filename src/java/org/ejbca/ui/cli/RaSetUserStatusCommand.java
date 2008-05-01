@@ -20,7 +20,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
  * Changes status for a user in the database, status is defined in
  * org.ejbca.core.ejb.ra.UserDataLocal.
  *
- * @version $Id: RaSetUserStatusCommand.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id$
  *
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */

@@ -20,7 +20,7 @@ import org.ejbca.core.model.SecConst;
  *  EIDHardToken is a class defining data stored in database for a EID token.
  *  
  *  OBSERVE This class should only be used for backward compability with EJBCA 2.0 
- * @version $Id: EIDHardToken.java,v 1.3 2007-04-13 06:15:20 herrvendil Exp $
+ * @version $Id$
  */
 public class EIDHardToken extends HardToken {
     // Public Constants

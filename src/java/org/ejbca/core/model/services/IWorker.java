@@ -23,7 +23,7 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: IWorker.java,v 1.3 2006-10-14 05:01:46 herrvendil Exp $
+ * @version $Id$
  */
 public interface IWorker {
 

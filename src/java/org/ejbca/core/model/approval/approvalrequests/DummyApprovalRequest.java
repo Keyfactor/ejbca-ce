@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: DummyApprovalRequest.java,v 1.4 2007-06-25 14:45:31 herrvendil Exp $
+ * @version $Id$
  */
 
 public class DummyApprovalRequest extends ApprovalRequest { 

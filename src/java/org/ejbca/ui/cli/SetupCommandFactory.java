@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for General Setup Commands.
  *
- * @version $Id: SetupCommandFactory.java,v 1.3 2006-03-19 09:44:36 anatom Exp $
+ * @version $Id$
  */
 public class SetupCommandFactory {
     /**

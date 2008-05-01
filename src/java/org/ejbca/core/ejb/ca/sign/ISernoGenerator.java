@@ -20,7 +20,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Interface for a serial number generator.
  *
- * @version $Id: ISernoGenerator.java,v 1.2 2008-02-06 12:31:13 anatom Exp $
+ * @version $Id$
  */
 public interface ISernoGenerator {
     /**

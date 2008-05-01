@@ -33,7 +33,7 @@ import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.8 2008-03-11 14:00:37 anatom Exp $
+ * @version $Id$
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
 

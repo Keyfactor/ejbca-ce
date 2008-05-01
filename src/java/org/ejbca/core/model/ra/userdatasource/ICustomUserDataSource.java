@@ -26,7 +26,7 @@ import org.ejbca.core.model.log.Admin;
  * Interface contating methods that need to be implementet in order 
  * to have a custom user data source. All Custom user data sources must implement this interface.
  * 
- * @version $Id: ICustomUserDataSource.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
+ * @version $Id$
  */
 
 public interface ICustomUserDataSource {

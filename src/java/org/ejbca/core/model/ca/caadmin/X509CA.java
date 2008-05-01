@@ -124,7 +124,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.95 2008-04-21 10:21:47 anatom Exp $
+ * @version $Id$
  */
 public class X509CA extends CA implements Serializable {
 

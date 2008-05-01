@@ -25,7 +25,7 @@ import java.util.List;
  * 
  * @author Philip Vendil
  *
- * $Id: HardTokenDataWS.java,v 1.3 2007-04-13 06:22:37 herrvendil Exp $
+ * $Id$
  */
 public class HardTokenDataWS {
 

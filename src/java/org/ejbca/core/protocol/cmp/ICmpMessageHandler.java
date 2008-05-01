@@ -18,7 +18,7 @@ import org.ejbca.core.protocol.IResponseMessage;
 /**
  * Interface for message handler handling a specific CMP message
  * @author tomas
- * @version $Id: ICmpMessageHandler.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id$
  */
 public interface ICmpMessageHandler {
 	

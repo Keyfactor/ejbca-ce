@@ -18,7 +18,7 @@ package org.ejbca.util.passgen;
  * DigitPasswordGenerator is a class generating random passwords containing 6-8 char 
  * digit passwords. 
  *
- * @version $Id: DigitPasswordGenerator.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class DigitPasswordGenerator extends BasePasswordGenerator{
     

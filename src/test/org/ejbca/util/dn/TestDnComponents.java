@@ -22,7 +22,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnComponents.java,v 1.3 2008-03-14 14:09:08 anatom Exp $
+ * @version $Id$
  */
 public class TestDnComponents extends TestCase {
     private static Logger log = Logger.getLogger(TestDnComponents.class);

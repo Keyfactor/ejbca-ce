@@ -109,7 +109,7 @@ import org.ejbca.util.StringTools;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.4 2006-12-04 15:04:59 anatom Exp $
+ * @version $Id$
  * 
  * @web.servlet name = "AdminCertReq"
  *              display-name = "AdminCertReqServlet"

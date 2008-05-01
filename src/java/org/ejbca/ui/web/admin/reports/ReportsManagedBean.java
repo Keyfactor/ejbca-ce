@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 /** Managed bean to be called from reports JSF pages
  * 
  * @author Original issuedCertificatesList method by MUNTEANU Olimpiu Andrei of Linagora
- * @version $Id: ReportsManagedBean.java,v 1.3 2007-06-20 12:33:12 anatom Exp $
+ * @version $Id$
  */
 public class ReportsManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(ReportsManagedBean.class);

@@ -51,7 +51,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 /**
  * Performes KRSS registre calls to an web service.
  *
- * @version $Id: RegisterCommand.java,v 1.3 2007-08-01 15:18:53 jeklund Exp $
+ * @version $Id$
  * @author Philip Vendil
  */
 public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand{

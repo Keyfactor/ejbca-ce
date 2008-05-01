@@ -34,7 +34,7 @@ import org.ejbca.core.ejb.ServiceLocatorException;
  * stress conditions, or simply exhaust database resources, so it is better to have some
  * warning than nothing at all.
  *
- * @version $Id: JDBCUtil.java,v 1.2 2006-08-06 12:37:01 anatom Exp $
+ * @version $Id$
  */
 public class JDBCUtil {
 

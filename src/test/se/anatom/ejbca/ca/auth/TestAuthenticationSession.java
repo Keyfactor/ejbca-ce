@@ -47,7 +47,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.13 2006-10-31 08:24:54 anatom Exp $
+ * @version $Id$
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);

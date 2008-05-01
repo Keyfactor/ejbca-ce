@@ -23,7 +23,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceType.java,v 1.3 2006-10-26 11:02:17 herrvendil Exp $
+ * @version $Id$
  */
 public abstract class ServiceType implements Serializable{
 	

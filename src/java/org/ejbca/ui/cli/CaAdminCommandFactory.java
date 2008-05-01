@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for CA Admin Commands.
  *
- * @version $Id: CaAdminCommandFactory.java,v 1.4 2008-03-26 13:22:49 anatom Exp $
+ * @version $Id$
  */
 public class CaAdminCommandFactory {
     /**

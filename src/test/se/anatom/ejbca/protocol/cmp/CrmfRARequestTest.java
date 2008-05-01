@@ -54,7 +54,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test requires:
  * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
- * @version $Id: CrmfRARequestTest.java,v 1.12 2008-01-11 13:15:20 anatom Exp $
+ * @version $Id$
  */
 public class CrmfRARequestTest extends CmpTestCase {
 	

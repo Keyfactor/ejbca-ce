@@ -21,7 +21,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseInterval.java,v 1.3 2006-10-26 11:01:01 herrvendil Exp $
+ * @version $Id$
  */
 public abstract class BaseInterval  extends BaseServiceComponent implements IInterval{
 

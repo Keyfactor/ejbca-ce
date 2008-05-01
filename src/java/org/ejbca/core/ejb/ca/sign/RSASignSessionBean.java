@@ -175,7 +175,7 @@ import org.ejbca.util.KeyTools;
  *   pattern = "verify*"
  *   read-only = "true"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.51 2008-04-21 10:21:50 anatom Exp $
+ *   @version $Id$
  */
 public class RSASignSessionBean extends BaseSessionBean {
 

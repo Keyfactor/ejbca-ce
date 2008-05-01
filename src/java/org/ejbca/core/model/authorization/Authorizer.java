@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
  *
  * The main methods are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.5 2008-04-11 23:11:34 anatom Exp $
+ * @version $Id$
  */
 public class Authorizer extends Object implements java.io.Serializable {
     

@@ -20,7 +20,7 @@ import org.ejbca.core.model.ca.caadmin.CA;
 /** 
  * ExtendedCAService base class.
  * 
- * @version $Id: ExtendedCAService.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public abstract class ExtendedCAService extends UpgradeableDataHashMap implements java.io.Serializable{
     

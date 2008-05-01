@@ -30,7 +30,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: RegisterResponseGenerator.java,v 1.1 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id$
  */
 
 public class RegisterResponseGenerator extends

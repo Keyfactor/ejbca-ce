@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * See rfc3280 or later for spec of this extension.
  * 
  * @author: Tomas Gustavsson
- * @version $Id: CertificatePolicies.java,v 1.1 2008-01-10 14:42:16 anatom Exp $
+ * @version $Id$
  */
 public class CertificatePolicies extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(CertificatePolicies.class);

@@ -55,7 +55,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.4 2007-12-04 14:21:44 jeklund Exp $
+ * @version $Id$
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */

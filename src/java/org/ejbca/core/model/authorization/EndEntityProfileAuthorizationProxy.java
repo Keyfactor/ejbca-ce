@@ -32,7 +32,7 @@ import org.ejbca.core.model.log.LogConstants;
  * trough the authorization tree and rmi lookups. It's use should only be within short time to avoid desyncronisation.
  *
  * @author  TomSelleck
- * @version $Id: EndEntityProfileAuthorizationProxy.java,v 1.2 2007-12-04 14:23:03 jeklund Exp $
+ * @version $Id$
  */
 public class EndEntityProfileAuthorizationProxy implements Serializable {
 

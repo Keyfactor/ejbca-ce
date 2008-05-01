@@ -73,7 +73,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.29 2008-04-09 21:54:19 anatom Exp $
+ * @version $Id$
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 

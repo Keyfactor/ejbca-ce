@@ -72,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.12 2008-03-14 12:38:27 anatom Exp $
+ * @version $Id$
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 

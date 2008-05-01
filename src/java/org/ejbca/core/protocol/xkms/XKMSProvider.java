@@ -109,7 +109,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author Philip Vendil 2006 dec 18
  *
- * @version $Id: XKMSProvider.java,v 1.5 2007-11-20 08:44:48 anatom Exp $
+ * @version $Id$
  */
 
 @ServiceMode(value=Service.Mode.PAYLOAD)

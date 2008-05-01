@@ -19,7 +19,7 @@ package org.ejbca.core.model.approval;
  * 
  * @author Philip Vendil
  *
- * @version $Id: ApprovalDataText.java,v 1.2 2006-08-10 10:09:05 anatom Exp $
+ * @version $Id$
  */
 public class ApprovalDataText {
 	String header;

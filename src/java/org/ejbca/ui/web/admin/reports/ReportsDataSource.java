@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  * to read the MySQL database directly (it shouldn't do that)
  * 
  * @author  Original author is MUNTEANU Olimpiu Andrei of Linagora
- * @version $Id: ReportsDataSource.java,v 1.3 2007-12-06 12:33:33 anatom Exp $
+ * @version $Id$
  */
 public class ReportsDataSource implements JRDataSource {
 

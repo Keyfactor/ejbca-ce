@@ -52,7 +52,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests Delta CRLs.
  *
- * @version $Id: TestDeltaCRL.java,v 1.4 2008-01-14 14:03:31 anatom Exp $
+ * @version $Id$
  */
 public class TestDeltaCRL extends TestCase {
 

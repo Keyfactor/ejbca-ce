@@ -92,7 +92,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silv�n
- * @version $Id: CardCertReqServlet.java,v 1.14 2007-07-31 13:31:50 jeklund Exp $
+ * @version $Id$
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);

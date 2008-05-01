@@ -17,7 +17,7 @@ package org.ejbca.util.query;
  * An exception thrown if Query strucure is illegal.
  *
  * @author Philip Vendil
- * @version $Id: IllegalQueryException.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id$
  */
 public class IllegalQueryException extends java.lang.Exception {
     /**

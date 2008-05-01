@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * to have a hard token profile contain Visual Layout, either as a label
  * or used with cardprinter.
  * 
- * @version $Id: IVisualLayoutSettings.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id$
  */
 
 public interface IVisualLayoutSettings {

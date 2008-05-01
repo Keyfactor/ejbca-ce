@@ -24,7 +24,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * define the data the token is supposed contain.
  *
  * @author TomSelleck
- * @version $Id: HardToken.java,v 1.2 2007-04-13 06:15:20 herrvendil Exp $
+ * @version $Id$
  */
 public abstract class HardToken extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

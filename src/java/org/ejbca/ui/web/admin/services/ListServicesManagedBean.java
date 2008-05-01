@@ -36,7 +36,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ListServicesManagedBean.java,v 1.5 2007-12-04 14:21:47 jeklund Exp $
+ * @version $Id$
  */
 public class ListServicesManagedBean extends BaseManagedBean {
 	

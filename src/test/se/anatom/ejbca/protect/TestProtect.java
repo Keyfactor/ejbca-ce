@@ -42,7 +42,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestProtect.java,v 1.3 2007-12-04 14:22:38 jeklund Exp $
+ * @version $Id$
  */
 public class TestProtect extends TestCase {
     private static Logger log = Logger.getLogger(TestProtect.class);

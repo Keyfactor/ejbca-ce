@@ -18,7 +18,7 @@ import java.io.PrintStream;
 /**
  * Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.3 2007-01-03 14:49:35 anatom Exp $
+ * @version $Id$
  */
 public abstract class BaseAdminCommand extends BaseCommand implements IAdminCommand {
     /**

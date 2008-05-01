@@ -46,7 +46,7 @@ import org.w3._2002._03.xkms_.RecoverResultType;
 /**
  * Performes KRSS recover calls to an web service.
  *
- * @version $Id: RecoverCommand.java,v 1.1 2007-01-07 00:31:51 herrvendil Exp $
+ * @version $Id$
  * @author Philip Vendil
  */
 public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{

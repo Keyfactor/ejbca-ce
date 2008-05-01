@@ -19,7 +19,7 @@ import javax.mail.Session;
  * {@link http://developer.java.sun.com/developer/restricted/patterns/ServiceLocator.html}
  *
  * It is used to look up JNDI related resources such as EJB homes, datasources, ...
- * @version $Id: ServiceLocator.java,v 1.2 2006-10-02 07:54:37 anatom Exp $
+ * @version $Id$
  */
 public class ServiceLocator {
 

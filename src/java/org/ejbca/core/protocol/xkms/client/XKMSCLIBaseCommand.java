@@ -41,7 +41,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * Checks the property file and creates a webservice connection.
  *  
  * @author Philip Vendil
- * $Id: XKMSCLIBaseCommand.java,v 1.3 2007-05-22 12:42:54 anatom Exp $
+ * $Id$
  */
 
 public abstract class XKMSCLIBaseCommand {

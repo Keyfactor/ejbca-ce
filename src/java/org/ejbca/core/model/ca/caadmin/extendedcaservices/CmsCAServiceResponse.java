@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Class used when delevering CMS service response from a CA.  
  *
- * @version $Id: CmsCAServiceResponse.java,v 1.2 2006-12-28 13:51:15 anatom Exp $
+ * @version $Id$
  */
 public class CmsCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
                  

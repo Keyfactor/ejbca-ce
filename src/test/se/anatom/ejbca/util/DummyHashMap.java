@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 /**
  * @author tomasg
- * @version $Id: DummyHashMap.java,v 1.2 2006-06-20 13:06:43 anatom Exp $
+ * @version $Id$
  */
 public class DummyHashMap extends HashMap {
     public Object get(Object key) {

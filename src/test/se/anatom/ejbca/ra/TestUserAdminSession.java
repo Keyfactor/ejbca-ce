@@ -34,7 +34,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserAdminSession.java,v 1.5 2007-02-23 15:43:30 anatom Exp $
+ * @version $Id$
  */
 public class TestUserAdminSession extends TestCase {
 

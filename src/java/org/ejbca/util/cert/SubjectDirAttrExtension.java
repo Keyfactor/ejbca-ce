@@ -39,7 +39,7 @@ import org.ejbca.util.CertTools;
  * A class for reading values from SubjectDirectoryAttributes extension.
  *
  * @author  Tomas Gustavsson
- * @version $Id: SubjectDirAttrExtension.java,v 1.5 2006-12-29 08:09:14 anatom Exp $
+ * @version $Id$
  */
 public class SubjectDirAttrExtension extends CertTools {
 

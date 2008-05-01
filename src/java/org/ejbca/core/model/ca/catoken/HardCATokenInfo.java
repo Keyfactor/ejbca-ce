@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Holds properties of a HardCAToken.
  *
- * @version $Id: HardCATokenInfo.java,v 1.2 2007-07-25 08:56:45 anatom Exp $
+ * @version $Id$
  */
 public class HardCATokenInfo extends CATokenInfo implements Serializable {    
     

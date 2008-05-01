@@ -18,7 +18,7 @@ package org.ejbca.core;
  * non-crititcal application exceptions thay may be possible to handle: <code> try { . . . } catch
  * (EjbcaException e) { error("Error: blahblah", e); ... }</code>
  *
- * @version $Id: EjbcaException.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id$
  */
 public class EjbcaException extends Exception {
     /**

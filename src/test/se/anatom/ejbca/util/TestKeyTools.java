@@ -35,7 +35,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestKeyTools.java,v 1.3 2006-10-31 08:24:53 anatom Exp $
+ * @version $Id$
  */
 public class TestKeyTools extends TestCase {
 

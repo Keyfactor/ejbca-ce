@@ -25,7 +25,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
  * Set the clear text password for a user in the database.  Clear text passwords are used for batch
  * generation of keystores (pkcs12/pem).
  *
- * @version $Id: RaSetSubjDirAttrCommand.java,v 1.1 2006-06-03 18:10:46 anatom Exp $
+ * @version $Id$
  */
 public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
     /**

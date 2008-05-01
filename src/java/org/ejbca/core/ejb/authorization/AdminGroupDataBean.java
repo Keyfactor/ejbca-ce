@@ -40,7 +40,7 @@ import org.ejbca.core.model.authorization.AdminGroup;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.6 2006-11-10 11:22:18 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"

@@ -31,7 +31,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given users certificate and set's it status to REVOKED
  *
- * @version $Id: RevokeUserCommand.java,v 1.4 2007-08-17 14:45:38 jeklund Exp $
+ * @version $Id$
  */
 public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

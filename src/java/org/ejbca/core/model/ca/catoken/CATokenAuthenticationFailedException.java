@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
  * An exception thrown when authentication to HardCATokens fail.
  *
  * @author  Philip Vendil
- * @version $Id: CATokenAuthenticationFailedException.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id$
  */
 public class CATokenAuthenticationFailedException extends EjbcaException {
     

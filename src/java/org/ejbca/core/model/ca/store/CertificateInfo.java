@@ -27,7 +27,7 @@ import org.ejbca.core.model.protect.Protectable;
 /**
  * Holds information about a certificate but not the certiifcate itself.
  *
- * @version $Id: CertificateInfo.java,v 1.2 2006-08-06 12:37:01 anatom Exp $
+ * @version $Id$
  */
 public class CertificateInfo implements Serializable, Protectable {
 

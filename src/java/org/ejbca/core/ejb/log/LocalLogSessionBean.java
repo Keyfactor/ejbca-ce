@@ -156,7 +156,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.26 2008-02-04 15:32:33 anatom Exp $
+ * @version $Id$
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 

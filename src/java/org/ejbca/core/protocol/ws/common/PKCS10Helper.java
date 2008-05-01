@@ -21,7 +21,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
  * 
  * @author Philip Vendil
  *
- * @version $Id: PKCS10Helper.java,v 1.2 2008-01-07 13:17:32 anatom Exp $
+ * @version $Id$
  */
 public class PKCS10Helper {
 

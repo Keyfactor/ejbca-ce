@@ -25,7 +25,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * CertReqHistory Entity Bean. See constructor for details of its fields.
  * 
  * @author Philip Vendil
- * @version $Id: CertReqHistory.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id$
  * @see org.ejbca.core.ejb.ca.store.CertReqHistoryDataBean  
  */
 

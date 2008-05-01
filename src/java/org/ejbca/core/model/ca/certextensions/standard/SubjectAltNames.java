@@ -31,7 +31,7 @@ import org.ejbca.util.CertTools;
  * See rfc3280 or later for spec of this extension.
  * 
  * @author: Tomas Gustavsson
- * @version $Id: SubjectAltNames.java,v 1.2 2008-01-11 13:44:49 anatom Exp $
+ * @version $Id$
  */
 public class SubjectAltNames extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(SubjectAltNames.class);

@@ -34,7 +34,7 @@ import org.ejbca.util.query.Query;
  * Managed bean in the actionapprovallist page.
  * 
  * @author Philip Vendil
- * @version $Id: ListApproveActionSessionBean.java,v 1.2 2006-09-05 09:23:28 anatom Exp $
+ * @version $Id$
  */
 public class ListApproveActionSessionBean extends BaseManagedBean{
 	//private static final Logger log = Logger.getLogger(ListApproveActionSessionBean.class);

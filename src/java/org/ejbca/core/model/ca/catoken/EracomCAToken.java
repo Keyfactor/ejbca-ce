@@ -29,7 +29,7 @@ import org.ejbca.core.model.InternalResources;
  * The Eracom HSM is special in such way as the provider is ERACOM.<slot id>.
  * 
  * @author AdNovum Informatik AG
- * @version $Id: EracomCAToken.java,v 1.9 2008-02-27 09:50:33 anatom Exp $
+ * @version $Id$
  */
 public class EracomCAToken extends BaseCAToken {
 

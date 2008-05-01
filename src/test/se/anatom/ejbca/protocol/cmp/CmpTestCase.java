@@ -100,7 +100,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Helper class for CMP Junit tests
  * @author tomas
- * @version $Id: CmpTestCase.java,v 1.8 2008-01-14 13:34:56 anatom Exp $
+ * @version $Id$
  *
  */
 public class CmpTestCase extends TestCase {

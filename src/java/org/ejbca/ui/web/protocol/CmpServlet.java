@@ -40,7 +40,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.18 2007-01-03 14:34:12 anatom Exp $
+ * @version $Id$
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"

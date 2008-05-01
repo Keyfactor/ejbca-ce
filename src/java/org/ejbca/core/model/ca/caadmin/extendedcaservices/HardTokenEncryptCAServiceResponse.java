@@ -19,7 +19,7 @@ import java.io.Serializable;
 /**
  * Class used when delevering hard token encrypt service response from a CA.  
  *
- * @version $Id: HardTokenEncryptCAServiceResponse.java,v 1.1 2007-04-13 06:09:17 herrvendil Exp $
+ * @version $Id$
  */
 public class HardTokenEncryptCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              

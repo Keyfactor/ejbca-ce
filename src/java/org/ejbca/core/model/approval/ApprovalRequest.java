@@ -43,7 +43,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.10 2007-08-03 10:10:01 herrvendil Exp $
+ * @version $Id$
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 

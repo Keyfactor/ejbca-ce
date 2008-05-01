@@ -35,7 +35,7 @@ import org.w3._2002._03.xkms_.RevokeRequestType;
  * 
  * @author Philip Vendil 2007 jan 1
  *
- * @version $Id: GeneralizedKRSSMessageHelper.java,v 1.1 2007-01-05 05:32:52 herrvendil Exp $
+ * @version $Id$
  */
 
 public class GeneralizedKRSSMessageHelper {

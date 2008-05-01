@@ -66,7 +66,7 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.8 2007-03-29 15:02:58 anatom Exp $
+ * @version $Id$
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
     /**

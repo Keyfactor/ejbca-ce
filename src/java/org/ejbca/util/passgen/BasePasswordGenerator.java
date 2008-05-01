@@ -19,7 +19,7 @@ import java.util.Random;
  * Inheriting classes should overload the constants USEDCHARS, MIN_CHARS
  * and MAX_CHARS.
  *
- * @version $Id: BasePasswordGenerator.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public abstract class BasePasswordGenerator implements IPasswordGenerator{
 

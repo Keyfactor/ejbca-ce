@@ -28,7 +28,7 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
  * Fnr ::= IA5String
  * 
  * @author tomas
- * @version $Id: FnrFromUnidExtension.java,v 1.3 2006-07-30 17:04:32 anatom Exp $
+ * @version $Id$
  *
  */
 public class FnrFromUnidExtension extends ASN1Encodable {

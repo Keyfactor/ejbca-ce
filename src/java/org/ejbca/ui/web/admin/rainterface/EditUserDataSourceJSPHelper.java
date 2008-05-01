@@ -41,7 +41,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * Contains help methods used to parse a edit user data source jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditUserDataSourceJSPHelper.java,v 1.3 2007-04-13 06:22:04 herrvendil Exp $
+ * @version $Id$
  */
 public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 

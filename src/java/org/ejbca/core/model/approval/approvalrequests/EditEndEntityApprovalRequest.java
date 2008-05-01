@@ -46,7 +46,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: EditEndEntityApprovalRequest.java,v 1.6 2007-08-03 10:10:00 herrvendil Exp $
+ * @version $Id$
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest {
 

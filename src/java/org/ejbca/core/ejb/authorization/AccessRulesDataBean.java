@@ -62,7 +62,7 @@ import org.ejbca.core.model.authorization.AccessRule;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.authorization.AccessRulesDataLocal"
  *
- * @version $Id: AccessRulesDataBean.java,v 1.4 2006-11-10 09:28:50 anatom Exp $
+ * @version $Id$
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {

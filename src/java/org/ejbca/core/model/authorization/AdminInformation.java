@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
  * A class used to send user information to the authorization tree. It can contain types of information, a X509Certificate or a
  * special user type when certificates cannot be retrieved. Special usertype constants is specified in AdminEntity class.
  *
- * @version $Id: AdminInformation.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class AdminInformation implements java.io.Serializable {
 

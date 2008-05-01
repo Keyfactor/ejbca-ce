@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * A class representing a set of users
  * @author  philip
- * @version $Id: UsersView.java,v 1.3 2007-06-20 11:22:12 anatom Exp $
+ * @version $Id$
  */
 public class UsersView implements java.io.Serializable {
         

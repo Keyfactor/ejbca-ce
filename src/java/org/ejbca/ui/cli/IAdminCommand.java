@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Interface for Commands used for admin cmdline GUI
  *
- * @version $Id: IAdminCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public interface IAdminCommand {
     /**

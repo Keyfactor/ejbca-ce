@@ -75,7 +75,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.4 2008-03-19 13:55:37 anatom Exp $
+ * @version $Id$
  */
 public class TestCreateCRLSession extends TestCase {
 

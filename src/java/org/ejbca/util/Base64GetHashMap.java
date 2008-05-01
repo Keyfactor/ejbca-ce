@@ -22,7 +22,7 @@ import java.util.Map;
  * It only tries to decode objects of type String.
  *  
  * @author tomasg
- * @version $Id: Base64GetHashMap.java,v 1.4 2006-07-28 07:14:15 anatom Exp $
+ * @version $Id$
  */
 public class Base64GetHashMap extends HashMap {
     public Base64GetHashMap() {

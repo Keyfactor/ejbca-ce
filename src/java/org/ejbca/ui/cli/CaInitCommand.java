@@ -44,7 +44,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.26 2008-04-09 21:54:20 anatom Exp $
+ * @version $Id$
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 

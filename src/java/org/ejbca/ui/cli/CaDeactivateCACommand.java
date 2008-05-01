@@ -23,7 +23,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 /**
  * Makes the specified HSM CA offline.
  *
- * @version $Id: CaDeactivateCACommand.java,v 1.3 2007-07-25 15:12:45 anatom Exp $
+ * @version $Id$
  */
 public class CaDeactivateCACommand extends BaseCaAdminCommand {
     /**

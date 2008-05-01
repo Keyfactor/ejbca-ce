@@ -28,7 +28,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
  * 
  * @author Philip Vendil 2007 jan 7
  *
- * @version $Id: TestCertificateExtensionManager.java,v 1.2 2008-01-10 14:42:16 anatom Exp $
+ * @version $Id$
  */
 
 public class TestCertificateExtensionManager extends TestCase {

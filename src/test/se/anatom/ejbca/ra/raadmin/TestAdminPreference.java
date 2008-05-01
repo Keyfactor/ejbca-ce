@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 /**
  * Tests the admin preference entity bean.
  *
- * @version $Id: TestAdminPreference.java,v 1.6 2007-11-15 14:52:54 anatom Exp $
+ * @version $Id$
  */
 public class TestAdminPreference extends TestCase {
     private static Logger log = Logger.getLogger(TestAdminPreference.class);

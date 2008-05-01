@@ -1,7 +1,7 @@
 package org.ejbca.core.model.log;
 
 /**
- * @version $Id: LogConstants.java,v 1.4 2007-12-04 14:21:54 jeklund Exp $
+ * @version $Id$
  */
 public interface LogConstants {
 

@@ -60,7 +60,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * After run have been executed should it be easy to run primecard locally to just issue the first card.
  * 
  * @author Philip Vendil
- * @version $Id: InitializeHardTokenIssuing.java,v 1.3 2007-01-03 14:49:35 anatom Exp $
+ * @version $Id$
  *
  */
 public class InitializeHardTokenIssuing extends BaseAdminCommand {

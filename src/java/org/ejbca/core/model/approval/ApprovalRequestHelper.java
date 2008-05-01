@@ -32,7 +32,7 @@ import org.ejbca.core.model.log.Admin;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequestHelper.java,v 1.1 2007-08-03 10:10:01 herrvendil Exp $
+ * @version $Id$
  */
 
 public class ApprovalRequestHelper { 

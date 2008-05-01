@@ -25,7 +25,7 @@ import org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote;
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.5 2007-12-21 09:02:33 anatom Exp $
+ * @version $Id$
  */
 public class Upgrade extends BaseCommand {
 

@@ -27,7 +27,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfile.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id$
  */
 public abstract class HardTokenProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values

@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Factory for XKMS CLI Commands.
  *
- * @version $Id: XKMSCLICommandFactory.java,v 1.2 2007-01-07 00:31:51 herrvendil Exp $
+ * @version $Id$
  * @author Philip Vendil
  */
 public class XKMSCLICommandFactory {

@@ -23,7 +23,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: CustomIntervalType.java,v 1.3 2006-10-26 11:02:17 herrvendil Exp $
+ * @version $Id$
  */
 public class CustomIntervalType extends IntervalType {
 	

@@ -28,7 +28,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * I supposed to illustrat how to implement a custom userdata soruce to EJBCA.
  *  
  *
- * @version $Id: DummyCustomUserDataSource.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
+ * @version $Id$
  */
 public class DummyCustomUserDataSource implements ICustomUserDataSource{
     		

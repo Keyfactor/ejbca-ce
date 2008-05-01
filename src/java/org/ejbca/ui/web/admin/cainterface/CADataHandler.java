@@ -59,7 +59,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.12 2008-02-26 15:37:13 herrvendil Exp $
+ * @version $Id$
  */
 public class CADataHandler implements Serializable {
     private static final Logger log = Logger.getLogger(CADataHandler.class);

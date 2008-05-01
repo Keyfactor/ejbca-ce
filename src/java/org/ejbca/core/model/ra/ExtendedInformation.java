@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.15 2008-01-03 12:52:41 anatom Exp $
+ * @version $Id$
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);

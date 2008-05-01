@@ -24,7 +24,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
  * init should call setOID and setCriticalFlag from the super class.
  * Implementing class must have a default constructor, calling super constructor.
  * 
- * @version $Id: StandardCertificateExtension.java,v 1.1 2008-01-10 14:42:15 anatom Exp $
+ * @version $Id$
  */
 public abstract class StandardCertificateExtension extends CertificateExtension {
 	

@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaExportProfilesCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
     /**

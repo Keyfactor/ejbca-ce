@@ -27,7 +27,7 @@ import org.ejbca.util.FileTools;
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
- * @version $Id: CaImportCACommand.java,v 1.6 2008-04-15 01:11:27 anatom Exp $
+ * @version $Id$
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
     /**

@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 /**
  * Base for Session Beans providing common features, new Session Beans should extend this.
  *
- * @version $Id: BaseSessionBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id$
  */
 public class BaseSessionBean implements SessionBean {
 

@@ -18,7 +18,7 @@ package org.ejbca.core.model.approval;
  * administrator should be notified of.
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequestExecutionException.java,v 1.1 2006-07-29 11:26:35 herrvendil Exp $
+ * @version $Id$
  */
 public class ApprovalRequestExecutionException extends Exception {
 

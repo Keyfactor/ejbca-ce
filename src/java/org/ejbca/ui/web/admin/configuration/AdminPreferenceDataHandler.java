@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: AdminPreferenceDataHandler.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id$
  */
 public class AdminPreferenceDataHandler implements java.io.Serializable {
 

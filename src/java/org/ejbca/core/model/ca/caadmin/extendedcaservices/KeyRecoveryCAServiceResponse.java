@@ -20,7 +20,7 @@ import java.security.KeyPair;
 /**
  * Class used when delevering key recovery service response from a CA.  
  *
- * @version $Id: KeyRecoveryCAServiceResponse.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              

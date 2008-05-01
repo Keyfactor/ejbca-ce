@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /** Class to execute a file full of sql commands. Useful for running update scripts.
- * @version $Id: SqlExecutor.java,v 1.2 2006-01-31 19:52:49 anatom Exp $
+ * @version $Id$
  */
 public class SqlExecutor {
     static Logger log = Logger.getLogger(SqlExecutor.class);

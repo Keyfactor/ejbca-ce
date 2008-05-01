@@ -29,7 +29,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests the Hard Token Issuer entity bean.
  *
- * @version $Id: TestHardTokenIssuer.java,v 1.2 2006-01-17 20:33:58 anatom Exp $
+ * @version $Id$
  */
 public class TestHardTokenIssuer extends TestCase {
     private static Logger log = Logger.getLogger(TestHardTokenIssuer.class);

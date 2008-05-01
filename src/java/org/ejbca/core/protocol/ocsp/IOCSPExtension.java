@@ -24,7 +24,7 @@ import org.bouncycastle.ocsp.CertificateStatus;
 /** Interface that must be implemented by OCSP extensions that are added to the OCSPServlet
  * 
  * @author tomas
- * @version $Id: IOCSPExtension.java,v 1.3 2006-02-08 07:31:47 anatom Exp $
+ * @version $Id$
  * @see org.ejbca.ui.web.protocol.OCSPServlet
  *
  */

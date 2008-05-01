@@ -27,7 +27,7 @@ import org.ejbca.core.model.log.Admin;
  * Changes the certificate profile of a CA.
  *
  * @author Lars
- * @version $Id: CaChangeCertProfileCommand.java,v 1.1 2008-03-26 13:22:49 anatom Exp $
+ * @version $Id$
  */
 public class CaChangeCertProfileCommand extends BaseAdminCommand {
 	/**

@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.8 2008-03-14 14:16:34 anatom Exp $
+ * @version $Id$
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);

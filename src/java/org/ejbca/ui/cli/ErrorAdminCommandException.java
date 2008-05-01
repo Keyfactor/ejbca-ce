@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Exception throws when an error occurs in an Admin Command (IadminCommand)
  *
- * @version $Id: ErrorAdminCommandException.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class ErrorAdminCommandException extends org.ejbca.core.EjbcaException {
     /**

@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * 
  * @author tomas
- * @version $Id: TableVerifyResult.java,v 1.3 2008-03-17 12:10:13 jeklund Exp $
+ * @version $Id$
  */
 public class TableVerifyResult implements Serializable {
 

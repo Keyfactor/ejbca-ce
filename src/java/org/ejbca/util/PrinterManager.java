@@ -35,7 +35,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2006 sep 20
  *
- * @version $Id: PrinterManager.java,v 1.5 2007-11-22 15:07:42 anatom Exp $
+ * @version $Id$
  */
 public class PrinterManager {
 	

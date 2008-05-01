@@ -21,7 +21,7 @@ import java.util.Properties;
 
 /** This class is used as CAToken for virtual CAs that does not have a keystore, such as external SubCAs.
  * 
- * @version $Id: NullCAToken.java,v 1.5 2008-02-27 09:50:33 anatom Exp $
+ * @version $Id$
  */
 public class NullCAToken extends BaseCAToken {
 

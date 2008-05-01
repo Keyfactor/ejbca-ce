@@ -22,7 +22,7 @@ package org.ejbca.core.ejb.authorization;
  * If needed it can easily be replaced with an int pk and programatic logic to handle 
  * constraints. From the database view the pk is just an int.
  * 
- * @version $Id: AdminEntityPK.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id$
  */
 public final class AdminEntityPK implements java.io.Serializable {
 

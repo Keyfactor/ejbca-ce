@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.ws.objects;
 import org.ejbca.util.query.BasicMatch;
 
 /**
- * @version $Id: UserMatch.java,v 1.3 2008-01-07 13:07:27 anatom Exp $
+ * @version $Id$
  */
 public class UserMatch {
 

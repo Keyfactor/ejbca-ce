@@ -43,7 +43,7 @@ import org.bouncycastle.util.encoders.Hex;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.7 2007-10-04 13:23:54 anatom Exp $
+ * @version $Id$
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);

@@ -23,7 +23,7 @@ package org.ejbca.core.model.authorization;
  * An exception thrown when someone tries to add a admingroup that already exits
  *
  * @author  Philip Vendil
- * @version $Id: AdminGroupExistsException.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class AdminGroupExistsException extends java.lang.Exception {
 

@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
  * Data contained in the class is preferbly
  *
  * @author TomSelleck
- * @version $Id: Admin.java,v 1.5 2007-06-25 14:45:32 herrvendil Exp $
+ * @version $Id$
  */
 public class Admin implements Serializable {
 

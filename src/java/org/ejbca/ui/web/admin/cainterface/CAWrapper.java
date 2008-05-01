@@ -29,7 +29,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 /** Web bean for displaying CA status in a dataTable
  * 
  * @author Tham Wickenberg
- * @version $Id: CAWrapper.java,v 1.1 2008-04-21 13:36:42 thamwickenberg Exp $
+ * @version $Id$
  */ 
 public class CAWrapper implements Serializable {
 	

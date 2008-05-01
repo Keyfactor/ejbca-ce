@@ -81,7 +81,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: KRSSResponseGenerator.java,v 1.5 2007-08-01 19:58:08 jeklund Exp $
+ * @version $Id$
  */
 
 public class KRSSResponseGenerator extends

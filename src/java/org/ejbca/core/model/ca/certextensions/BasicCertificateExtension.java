@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: BasicCertificateExtension.java,v 1.6 2008-03-18 08:23:16 jeklund Exp $
+ * @version $Id$
  */
 
 public class BasicCertificateExtension extends CertificateExtension {

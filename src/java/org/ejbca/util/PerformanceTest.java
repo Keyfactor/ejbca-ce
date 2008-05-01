@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
- * @version $Id: PerformanceTest.java,v 1.4 2008-03-10 15:13:17 primelars Exp $
+ * @version $Id$
  */
 public class PerformanceTest {
 

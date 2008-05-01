@@ -44,7 +44,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.7 2006-12-13 10:35:30 anatom Exp $
+ * @version $Id$
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"

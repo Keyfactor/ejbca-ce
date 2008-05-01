@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.5 2006-11-10 09:28:51 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"

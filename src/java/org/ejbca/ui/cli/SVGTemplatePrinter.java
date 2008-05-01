@@ -31,7 +31,7 @@ import org.ejbca.util.PrinterManager;
  * @author philip
  *
  * Class used as a help tool when creating hard token visual layout templates
- * @version $Id: SVGTemplatePrinter.java,v 1.5 2006-11-02 08:03:22 anatom Exp $
+ * @version $Id$
  */
 public class SVGTemplatePrinter {
 

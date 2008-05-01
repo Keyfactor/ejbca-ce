@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
  * Main function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: TimeMatch.java,v 1.4 2008-03-31 17:24:38 anatom Exp $
+ * @version $Id$
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.UserMatch

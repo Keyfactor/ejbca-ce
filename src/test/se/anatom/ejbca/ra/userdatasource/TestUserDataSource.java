@@ -36,7 +36,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests User Data Sources.
  *
- * @version $Id: TestUserDataSource.java,v 1.1 2006-07-20 17:50:18 herrvendil Exp $
+ * @version $Id$
  */
 public class TestUserDataSource extends TestCase {
         

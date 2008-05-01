@@ -16,7 +16,7 @@ import java.io.IOException;
 
 /** Interface for reading passwords from the console or from other sources
  * 
- * @version $Id: PasswordReader.java,v 1.1 2008-04-13 04:18:13 anatom Exp $
+ * @version $Id$
  */
 public interface PasswordReader {
     char[] readPassword() throws IOException;

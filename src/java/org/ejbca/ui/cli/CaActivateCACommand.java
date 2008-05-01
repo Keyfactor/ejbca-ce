@@ -28,7 +28,7 @@ import org.ejbca.core.model.ca.catoken.ICAToken;
 /**
  * Activates the specified HSM CA.
  *
- * @version $Id: CaActivateCACommand.java,v 1.7 2008-02-26 15:37:13 herrvendil Exp $
+ * @version $Id$
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
     /**

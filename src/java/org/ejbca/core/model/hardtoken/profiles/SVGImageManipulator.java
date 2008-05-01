@@ -62,7 +62,7 @@ import org.w3c.dom.svg.SVGTextElement;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.7 2006-12-02 11:17:34 anatom Exp $
+ * @version $Id$
  */
 public class SVGImageManipulator {
 	/**

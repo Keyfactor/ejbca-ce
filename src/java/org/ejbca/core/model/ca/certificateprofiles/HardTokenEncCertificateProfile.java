@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * HardTokenEncCertificateProfile is a class defining the fixed characteristics of a hard token authentication certificate.
  *
- * @version $Id: HardTokenEncCertificateProfile.java,v 1.3 2006-05-28 14:21:08 anatom Exp $
+ * @version $Id$
  */
 public class HardTokenEncCertificateProfile extends CertificateProfile{
 

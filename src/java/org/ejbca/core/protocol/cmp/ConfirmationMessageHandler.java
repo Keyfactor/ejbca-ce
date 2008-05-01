@@ -36,7 +36,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: ConfirmationMessageHandler.java,v 1.5 2006-11-02 17:03:01 anatom Exp $
+ * @version $Id$
  */
 public class ConfirmationMessageHandler implements ICmpMessageHandler {
 	

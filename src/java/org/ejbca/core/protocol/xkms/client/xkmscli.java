@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Implements the EJBCA RA WS command line interface
  *
- * @version $Id: xkmscli.java,v 1.3 2007-10-19 10:52:30 jeklund Exp $
+ * @version $Id$
  */
 public class xkmscli  {
     /**

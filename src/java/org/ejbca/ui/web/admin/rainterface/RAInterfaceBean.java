@@ -70,7 +70,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.17 2007-08-17 14:45:44 jeklund Exp $
+ * @version $Id$
  */
 public class RAInterfaceBean implements java.io.Serializable {
     

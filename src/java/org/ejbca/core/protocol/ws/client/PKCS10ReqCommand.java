@@ -31,7 +31,7 @@ import org.ejbca.util.CertTools;
 /**
  * Request a certificate given a pkcs10
  *
- * @version $Id: PKCS10ReqCommand.java,v 1.3 2007-08-22 12:07:40 herrvendil Exp $
+ * @version $Id$
  */
 public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

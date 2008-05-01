@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds non-sensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.18 2008-04-24 13:59:50 anatom Exp $
+ * @version $Id$
  */
 public class X509CAInfo extends CAInfo{
    

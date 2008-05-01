@@ -23,7 +23,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.5 2007-08-27 11:38:33 anatom Exp $
+ * @version $Id$
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						

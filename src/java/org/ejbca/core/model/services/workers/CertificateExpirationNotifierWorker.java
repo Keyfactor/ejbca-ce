@@ -42,7 +42,7 @@ import org.ejbca.util.NotificationParamGen;
  * 
  * @author Philip Vendil
  *
- * @version: $Id: CertificateExpirationNotifierWorker.java,v 1.14 2008-03-12 14:01:47 anatom Exp $
+ * @version: $Id$
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 

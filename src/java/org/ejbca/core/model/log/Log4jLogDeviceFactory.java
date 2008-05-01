@@ -19,7 +19,7 @@ import java.util.Properties;
 /**
  * Factory for Log4j log device.
  *
- * @version $Id: Log4jLogDeviceFactory.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id$
  */
 public class Log4jLogDeviceFactory {
     /**

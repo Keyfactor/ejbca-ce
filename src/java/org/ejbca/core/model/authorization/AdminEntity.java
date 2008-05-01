@@ -30,7 +30,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.3 2007-01-03 14:34:10 anatom Exp $
+ * @version $Id$
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).

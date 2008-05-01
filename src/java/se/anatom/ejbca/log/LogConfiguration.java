@@ -25,7 +25,7 @@ import org.ejbca.core.model.log.LogConstants;
  * Class containing the log configuration data. Tells which events should be logged and if internal
  * log database and/or external logging device should be used.
  *
- * @version $Id: LogConfiguration.java,v 1.13 2007-12-04 14:22:46 jeklund Exp $
+ * @version $Id$
  */
 public class LogConfiguration implements Serializable {
     private static final long serialVersionUID = -6349974447455748715L;

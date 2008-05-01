@@ -24,7 +24,7 @@ import org.bouncycastle.ocsp.BasicOCSPResp;
 /**
  * Class used when delevering OCSP service response from a CA.  
  *
- * @version $Id: OCSPCAServiceResponse.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class OCSPCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              

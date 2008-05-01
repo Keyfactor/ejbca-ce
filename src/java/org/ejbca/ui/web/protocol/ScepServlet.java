@@ -64,7 +64,7 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.10 2008-01-14 15:10:11 anatom Exp $
+ * @version $Id$
  */
 public class ScepServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(ScepServlet.class);

@@ -21,7 +21,7 @@ import java.security.cert.CertificateException;
 import org.ejbca.util.Base64;
 
 /**
- * @version $Id: KeyStore.java,v 1.4 2008-01-07 13:07:27 anatom Exp $
+ * @version $Id$
  */
 public class KeyStore extends TokenCertificateResponseWS {
 	

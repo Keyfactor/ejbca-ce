@@ -70,7 +70,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSSig.java,v 1.4 2007-11-20 08:45:52 anatom Exp $
+ * @version $Id$
  */
 
 public class TestXKMSSig extends TestCase {

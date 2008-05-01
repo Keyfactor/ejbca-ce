@@ -37,7 +37,7 @@ import org.ejbca.util.CertTools;
  * Approvals is sorted by dates.
  * 
  * @author Philip Vendil
- * @version $Id: Approval.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id$
  */
 
 public class Approval implements Comparable, Externalizable { 

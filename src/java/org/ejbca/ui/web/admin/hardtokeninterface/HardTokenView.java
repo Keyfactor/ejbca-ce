@@ -25,7 +25,7 @@ import org.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a hard token in the ra database.
  *
- * @version $Id: HardTokenView.java,v 1.2 2007-04-13 06:21:32 herrvendil Exp $
+ * @version $Id$
  */
 public class HardTokenView implements java.io.Serializable, Cloneable {
     // Public constants.

@@ -21,7 +21,7 @@ import org.ejbca.core.EjbcaException;
  * the call is instructed not to remove more than one.
  *
  * @author  Philip Vendil
- * @version $Id: MultipleMatchException.java,v 1.1 2007-04-13 06:16:51 herrvendil Exp $
+ * @version $Id$
  */
 public class MultipleMatchException extends EjbcaException {
     

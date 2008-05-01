@@ -23,7 +23,7 @@ import java.util.Iterator;
  * A class used as a help class for displaying and configuring basic access rules
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSetEncoder.java,v 1.4 2007-04-13 06:06:49 herrvendil Exp $
+ * @version $Id$
  */
 public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 

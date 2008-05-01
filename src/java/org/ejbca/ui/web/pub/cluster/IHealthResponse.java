@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
  * Inteface used to generate apporiate responses to different LoadBalancers HTTP requests.
  * 
  * @author Philip Vendil
- * @version $Id: IHealthResponse.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
+ * @version $Id$
  */
 public interface IHealthResponse {
 	

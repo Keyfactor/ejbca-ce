@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 /** Shamelessly ripped from generated XDoclet source, because I don't want to generate util classes.
  * 
  * @author XDoclet.sf.net
- * @version $Id: GUIDGenerator.java,v 1.1 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id$
  */
 public class GUIDGenerator {
 	private static final Logger log = Logger.getLogger(GUIDGenerator.class);

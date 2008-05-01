@@ -19,7 +19,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Implements the hardtoken command line interface
  *
- * @version $Id: hardtoken.java,v 1.1 2007-04-24 13:03:22 herrvendil Exp $
+ * @version $Id$
  */
 public class hardtoken {
     /**

@@ -53,7 +53,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.12 2008-02-18 14:50:54 jeklund Exp $
+ * @version $Id$
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);

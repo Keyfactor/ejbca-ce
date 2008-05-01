@@ -37,7 +37,7 @@ import org.ejbca.util.CertTools;
  * A class for reading values from QC-statement extension.
  *
  * @author  Tomas Gustavsson
- * @version $Id: QCStatementExtension.java,v 1.3 2008-01-10 14:42:18 anatom Exp $
+ * @version $Id$
  */
 public class QCStatementExtension extends CertTools {
 

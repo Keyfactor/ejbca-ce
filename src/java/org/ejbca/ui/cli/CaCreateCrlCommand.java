@@ -18,7 +18,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Issues a new CRL from the CA.
  *
- * @version $Id: CaCreateCrlCommand.java,v 1.2 2007-12-21 09:02:33 anatom Exp $
+ * @version $Id$
  */
 public class CaCreateCrlCommand extends BaseCaAdminCommand {
     /**

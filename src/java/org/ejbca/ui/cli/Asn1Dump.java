@@ -27,7 +27,7 @@ import org.ejbca.util.CertTools;
 /**
  * Implements the CA command line interface
  *
- * @version $Id: Asn1Dump.java,v 1.1 2006-05-28 14:51:20 anatom Exp $
+ * @version $Id$
  */
 public class Asn1Dump extends BaseCommand {
 	

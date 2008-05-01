@@ -117,7 +117,7 @@ import org.ejbca.util.KeyTools;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.40 2008-03-07 13:58:56 anatom Exp $
+ * @version  $Id$
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 

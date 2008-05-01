@@ -59,7 +59,7 @@ import org.ejbca.util.KeyTools;
  * </li>
  * </ul>
  *
- * @version $Id: HttpGetCert.java,v 1.2 2006-10-31 08:21:29 anatom Exp $
+ * @version $Id$
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);

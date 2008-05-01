@@ -72,7 +72,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.13 2008-03-10 14:32:08 anatom Exp $
+ * $Id$
  */
 public interface IEjbcaWS {
 	

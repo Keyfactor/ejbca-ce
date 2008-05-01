@@ -27,7 +27,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: PeriodicalIntervalType.java,v 1.3 2007-11-11 07:57:42 anatom Exp $
+ * @version $Id$
  */
 public class PeriodicalIntervalType extends IntervalType {
 	

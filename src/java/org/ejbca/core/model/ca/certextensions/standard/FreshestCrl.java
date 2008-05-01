@@ -41,7 +41,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * See rfc3280 or later for spec of this extension.      
  * 
  * @author: Tomas Gustavsson
- * @version $Id: FreshestCrl.java,v 1.1 2008-01-10 14:42:16 anatom Exp $
+ * @version $Id$
  */
 public class FreshestCrl extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(FreshestCrl.class);

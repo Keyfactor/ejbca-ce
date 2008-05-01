@@ -26,7 +26,7 @@ import org.ejbca.core.model.authorization.AdminInformation;
  * 
  * @author Philip Vendil 2007 jun 24
  *
- * @version $Id: ApprovedActionAdmin.java,v 1.2 2007-07-26 09:39:23 anatom Exp $
+ * @version $Id$
  */
 
 public class ApprovedActionAdmin extends Admin {

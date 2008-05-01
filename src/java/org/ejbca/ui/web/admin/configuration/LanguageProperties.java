@@ -23,7 +23,7 @@ import org.ejbca.util.CertTools;
 
 /** Properties bag that handles "double type encoding".
  * 
- * @version $Id: LanguageProperties.java,v 1.2 2008-01-24 16:10:27 anatom Exp $
+ * @version $Id$
  */
 public class LanguageProperties extends java.util.Properties {  
     private static Logger log = Logger.getLogger(LanguageProperties.class);

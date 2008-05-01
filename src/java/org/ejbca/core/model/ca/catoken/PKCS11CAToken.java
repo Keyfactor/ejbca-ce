@@ -24,7 +24,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.17 2008-02-27 09:50:33 anatom Exp $
+ * @version $Id$
  */
 public class PKCS11CAToken extends BaseCAToken {
 

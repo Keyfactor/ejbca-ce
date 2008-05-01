@@ -47,7 +47,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: KISSResponseGenerator.java,v 1.4 2007-01-07 19:44:14 herrvendil Exp $
+ * @version $Id$
  */
 
 public class KISSResponseGenerator extends

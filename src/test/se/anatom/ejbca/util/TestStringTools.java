@@ -23,7 +23,7 @@ import org.ejbca.util.StringTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.9 2006-08-02 11:23:21 anatom Exp $
+ * @version $Id$
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);

@@ -31,7 +31,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Finds a user in the database
  *
- * @version $Id: FindUserCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id$
  */
 public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

@@ -28,7 +28,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * Interface contating methods that need to be implementet in order 
  * to have a hard token profile contain PIN Envelope settings.
  * 
- * @version $Id: IPINEnvelopeSettings.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id$
  */
 
 public interface IPINEnvelopeSettings {

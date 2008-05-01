@@ -22,7 +22,7 @@ import java.util.List;
  * Class used mostly when creating service. Also used when info about the services 
  * is neesed
  * 
- * @version $Id: CmsCAServiceInfo.java,v 1.1 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id$
  */
 public class CmsCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        

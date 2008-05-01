@@ -68,7 +68,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * You need a CMP tcp listener configured on port 5547.
  * 
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java,v 1.14 2008-01-11 13:15:20 anatom Exp $
+ * @version $Id$
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	

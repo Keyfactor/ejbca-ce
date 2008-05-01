@@ -30,7 +30,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
  * A class for reading values from CRL extensions.
  *
  * @author  Tomas Gustavsson
- * @version $Id: CrlExtensions.java,v 1.2 2006-07-28 07:14:16 anatom Exp $
+ * @version $Id$
  */
 public class CrlExtensions {
     private static Logger log = Logger.getLogger(CrlExtensions.class);

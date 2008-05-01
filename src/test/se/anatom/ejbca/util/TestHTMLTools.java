@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestHTMLTools.java,v 1.1 2008-02-27 13:14:26 anatom Exp $
+ * @version $Id$
  */
 public class TestHTMLTools extends TestCase {
     private static Logger log = Logger.getLogger(TestHTMLTools.class);

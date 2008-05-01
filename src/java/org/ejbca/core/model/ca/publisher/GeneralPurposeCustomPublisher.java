@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 /**
  * This class is used for publishing to user defined script or command.
  *
- * @version $Id: GeneralPurposeCustomPublisher.java,v 1.7 2007-04-10 11:09:05 jeklund Exp $
+ * @version $Id$
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher{
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);

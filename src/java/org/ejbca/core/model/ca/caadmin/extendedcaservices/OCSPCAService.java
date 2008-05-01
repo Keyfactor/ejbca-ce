@@ -45,7 +45,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.18 2008-01-24 16:10:26 anatom Exp $
+ * @version $Id$
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 

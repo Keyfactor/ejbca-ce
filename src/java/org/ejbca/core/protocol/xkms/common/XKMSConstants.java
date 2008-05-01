@@ -21,7 +21,7 @@ import javax.xml.namespace.QName;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: XKMSConstants.java,v 1.2 2007-01-07 00:31:53 herrvendil Exp $
+ * @version $Id$
  */
 
 public class XKMSConstants {		

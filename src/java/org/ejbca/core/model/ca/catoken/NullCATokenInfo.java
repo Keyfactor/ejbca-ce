@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a null CAToken. Used by processed external CAs not having any keys.
  *
- * @version $Id: NullCATokenInfo.java,v 1.2 2007-07-25 08:56:45 anatom Exp $
+ * @version $Id$
  */
 public class NullCATokenInfo extends CATokenInfo implements Serializable {    
        

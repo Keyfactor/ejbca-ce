@@ -28,7 +28,7 @@ import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 /**
  * Tests generation of serial numbers.
  *
- * @version $Id: TestSernoGenerator.java,v 1.3 2008-02-06 12:31:07 anatom Exp $
+ * @version $Id$
  */
 public class TestSernoGenerator extends TestCase {
     private static Logger log = Logger.getLogger(TestSernoGenerator.class);

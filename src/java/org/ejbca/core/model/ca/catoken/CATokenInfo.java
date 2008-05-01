@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: CATokenInfo.java,v 1.6 2007-07-26 11:09:36 anatom Exp $
+ * @version $Id$
  */
 public abstract class CATokenInfo extends CATokenConstants implements Serializable {
 

@@ -34,7 +34,7 @@ import org.ejbca.ui.web.RequestHelper;
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
- * $Id: EjbcaJSFHelper.java,v 1.6 2007-08-22 07:20:59 herrvendil Exp $
+ * $Id$
  */
 
 public class EjbcaJSFHelper  {

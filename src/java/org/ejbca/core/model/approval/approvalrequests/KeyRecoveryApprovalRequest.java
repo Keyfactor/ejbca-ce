@@ -46,7 +46,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: KeyRecoveryApprovalRequest.java,v 1.2 2006-09-29 13:46:21 anatom Exp $
+ * @version $Id$
  */
 public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 

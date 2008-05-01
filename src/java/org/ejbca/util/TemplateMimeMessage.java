@@ -38,7 +38,7 @@ import javax.mail.internet.MimeMessage;
  *
  * </code>
  * 
- * @version $Id: TemplateMimeMessage.java,v 1.4 2006-11-02 08:03:23 anatom Exp $
+ * @version $Id$
  */
 public class TemplateMimeMessage extends MimeMessage {
 

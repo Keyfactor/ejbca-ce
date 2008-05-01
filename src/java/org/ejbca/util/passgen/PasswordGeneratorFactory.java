@@ -16,7 +16,7 @@ package org.ejbca.util.passgen;
 /**
  * Factory class creating PasswordGenerators.
  *
- * @version $Id: PasswordGeneratorFactory.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class PasswordGeneratorFactory {
     

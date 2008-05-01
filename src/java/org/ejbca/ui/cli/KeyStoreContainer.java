@@ -69,7 +69,7 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
 /**
- * @version $Id: KeyStoreContainer.java,v 1.30 2008-04-13 04:18:16 anatom Exp $
+ * @version $Id$
  */
 public abstract class KeyStoreContainer {
 

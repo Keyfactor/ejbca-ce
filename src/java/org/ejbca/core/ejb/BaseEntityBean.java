@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Base class for entity beans implementing required methods and helpers.
  *
- * @version $Id: BaseEntityBean.java,v 1.2 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id$
  */
 public class BaseEntityBean implements EntityBean {
 

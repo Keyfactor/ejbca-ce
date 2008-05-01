@@ -35,7 +35,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Helper class to verify PBE of CMP messages, also extracts owf, mac Oids and iteration count.
  * @author tomas
- * @version $Id: CmpPbeVerifyer.java,v 1.4 2006-12-13 11:23:51 anatom Exp $
+ * @version $Id$
  */
 public class CmpPbeVerifyer {
 	private static Logger log = Logger.getLogger(CmpPbeVerifyer.class);

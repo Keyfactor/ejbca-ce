@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
  * 
  * @author Philip Vendil 2006 sep 19
  *
- * @version $Id: BatchToolProperties.java,v 1.4 2006-12-13 09:49:04 anatom Exp $
+ * @version $Id$
  */
 public class BatchToolProperties {
 	

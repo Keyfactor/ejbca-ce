@@ -27,7 +27,7 @@ import org.ejbca.core.model.log.Admin;
  * A class used to improve performance by proxying end entity profileid to profilename mappings by minimizing the number of needed lockups over rmi.
  * 
  * @author  TomSelleck
- * @version $Id: EndEntityProfileNameProxy.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id$
  */
 public class EndEntityProfileNameProxy implements java.io.Serializable {
     

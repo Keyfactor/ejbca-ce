@@ -37,7 +37,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.10 2008-04-14 12:03:02 primelars Exp $
+ * @version $Id$
  */
 public class Ocsp {
     final private PerformanceTest performanceTest;

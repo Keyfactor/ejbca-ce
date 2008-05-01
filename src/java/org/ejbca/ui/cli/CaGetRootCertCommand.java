@@ -23,7 +23,7 @@ import org.ejbca.util.CertTools;
 /**
  * Export root CA certificate.
  *
- * @version $Id: CaGetRootCertCommand.java,v 1.2 2007-11-21 10:30:38 anatom Exp $
+ * @version $Id$
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
     /**

@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.10 2008-03-20 10:23:58 thamwickenberg Exp $
+ * @version $Id$
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 

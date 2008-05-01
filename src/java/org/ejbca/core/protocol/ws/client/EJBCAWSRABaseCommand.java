@@ -23,7 +23,7 @@ import org.ejbca.util.CertTools;
  * Checks the property file and creates a webservice connection.
  *  
  * @author Philip Vendil
- * $Id: EJBCAWSRABaseCommand.java,v 1.3 2007-12-29 07:59:34 primelars Exp $
+ * $Id$
  */
 
 public abstract class EJBCAWSRABaseCommand {

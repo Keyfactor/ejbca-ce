@@ -43,7 +43,7 @@ import org.ejbca.core.model.ra.NotFoundException;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.5 2007-10-03 13:52:52 anatom Exp $
+ * @version $Id$
  */
 public interface IResponseMessage extends Serializable {
 

@@ -19,7 +19,7 @@ import java.io.Serializable;
  * Class used to present comparable data with red text for rows that doesn't match.
  * 
  * @author Philip Vendil
- * @version $Id: TextComparisonView.java,v 1.2 2006-09-05 09:23:28 anatom Exp $
+ * @version $Id$
  */
 public class TextComparisonView implements Serializable {
 	

@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.3 2006-09-22 13:05:11 herrvendil Exp $
+ * @version $Id$
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	

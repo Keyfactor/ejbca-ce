@@ -37,7 +37,7 @@ import org.ejbca.util.JDBCUtil;
  * Publisher writing certificates to an external Database, used by external OCSP responder.
  * 
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.15 2008-04-09 21:15:25 anatom Exp $
+ * @version $Id$
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {

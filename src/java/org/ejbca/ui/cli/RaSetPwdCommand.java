@@ -21,7 +21,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Set the (hashed) password for a user in the database.
  *
- * @version $Id: RaSetPwdCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id$
  */
 public class RaSetPwdCommand extends BaseRaAdminCommand {
     /**

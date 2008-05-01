@@ -23,7 +23,7 @@ package org.ejbca.ui.web.admin.rainterface;
  * A class specifying which field to sort the userdata by. 
  *
  * @author  Philip Vendil
- * @version $Id: SortBy.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id$
  */
 public class SortBy implements java.io.Serializable {
     // Public constants

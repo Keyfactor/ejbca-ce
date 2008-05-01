@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * to store and retrieve custom publisher configuration to database.
  * 
  *
- * @version $Id: CustomPublisherContainer.java,v 1.5 2008-03-27 08:22:10 jeklund Exp $
+ * @version $Id$
  */
 public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher custompublisher = null; 

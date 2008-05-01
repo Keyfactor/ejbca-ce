@@ -21,7 +21,7 @@ import java.util.Iterator;
  * client certificate has access rights to a resource or not. isAthorized metod is the one to use.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTree.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class AccessTree implements Serializable {
     /** Creates a new instance of AccessTree */

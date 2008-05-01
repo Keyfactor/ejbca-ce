@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id$
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);

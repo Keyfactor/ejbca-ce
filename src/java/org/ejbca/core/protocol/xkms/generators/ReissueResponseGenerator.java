@@ -34,7 +34,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: ReissueResponseGenerator.java,v 1.2 2007-01-07 19:44:14 herrvendil Exp $
+ * @version $Id$
  */
 
 public class ReissueResponseGenerator extends

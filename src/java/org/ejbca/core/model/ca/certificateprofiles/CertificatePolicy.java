@@ -27,7 +27,7 @@ import org.bouncycastle.asn1.x509.PolicyQualifierId;
  * can be created with the same oid, for different qualifiers
  * 
  * @author Nuno Ponte of MultiCert
- * @version $Id: CertificatePolicy.java,v 1.3 2007-11-14 06:05:25 anatom Exp $
+ * @version $Id$
  */
 public class CertificatePolicy implements Serializable, Cloneable {
 

@@ -40,7 +40,7 @@ import org.ejbca.util.query.Query;
  * Seesion scoped bean for displaying information about an approval request.
  * 
  * @author Philip Vendil
- * @version $Id: ApproveActionSessionBean.java,v 1.4 2007-07-31 13:31:51 jeklund Exp $
+ * @version $Id$
  */
 public class ApproveActionSessionBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(ApproveActionSessionBean.class);

@@ -45,7 +45,7 @@ import org.ejbca.ui.web.admin.rainterface.CertificateView;
  * The arguments are supplied as member variables instead. <br>
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.9 2007-10-02 11:48:24 anatom Exp $
+ * @version $Id$
  */
 public class CertificateFinderBean {
 	

@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * such as different notification actions (apart from email) etc.
  * 
  * @author tomas
- * @version $Id: UserNotification.java,v 1.6 2007-12-06 17:19:09 anatom Exp $
+ * @version $Id$
  */
 public class UserNotification extends HashMap implements Serializable, Cloneable {
 

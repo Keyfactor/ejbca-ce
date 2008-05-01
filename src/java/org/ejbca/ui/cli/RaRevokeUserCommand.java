@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.6 2007-08-17 14:45:38 jeklund Exp $
+ * @version $Id$
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**

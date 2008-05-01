@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
  * The building component of the AccessTree. All nodes consist of these objects.
  *
  * @author  Philip Vendil
- * @version $Id: AccessTreeNode.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id$
  */
 public class AccessTreeNode implements Serializable{
 

@@ -28,7 +28,7 @@ import org.ejbca.util.Base64;
  * 
  * @author Philip Vendil
  *
- * @version $Id: KeyStoreHelper.java,v 1.2 2008-01-07 13:17:32 anatom Exp $
+ * @version $Id$
  */
 public class KeyStoreHelper {
 

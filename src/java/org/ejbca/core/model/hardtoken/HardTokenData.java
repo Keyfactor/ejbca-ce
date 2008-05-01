@@ -25,7 +25,7 @@ import org.ejbca.util.StringTools;
  *  server and clients.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenData.java,v 1.2 2007-05-07 11:56:50 herrvendil Exp $
+ * @version $Id$
  */
 
 public class HardTokenData implements java.io.Serializable {

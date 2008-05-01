@@ -171,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.40 2008-04-10 18:22:51 anatom Exp $
+ * @version $Id$
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {

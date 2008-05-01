@@ -19,7 +19,7 @@ import java.util.Collection;
  * any format defined by the implementing class.
  * 
  * @author tomas
- * @version $Id: ILogExporter.java,v 1.2 2006-12-29 11:21:14 anatom Exp $
+ * @version $Id$
  */
 public interface ILogExporter {
 

@@ -20,7 +20,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Base for RA commands, contains comom functions for RA operations
  *
- * @version $Id: BaseRaAdminCommand.java,v 1.3 2007-01-03 14:49:35 anatom Exp $
+ * @version $Id$
  */
 public abstract class BaseRaAdminCommand extends BaseAdminCommand {
 

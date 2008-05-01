@@ -61,7 +61,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSEnc.java,v 1.3 2007-02-02 09:37:47 anatom Exp $
+ * @version $Id$
  */
 
 public class TestXKMSEnc extends TestCase {

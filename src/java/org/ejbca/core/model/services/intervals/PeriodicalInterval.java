@@ -25,7 +25,7 @@ import org.ejbca.core.model.services.BaseInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: PeriodicalInterval.java,v 1.4 2006-12-13 10:35:10 anatom Exp $
+ * @version $Id$
  */
 public class PeriodicalInterval extends BaseInterval {
 	

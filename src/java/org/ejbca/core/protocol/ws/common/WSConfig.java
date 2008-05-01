@@ -22,7 +22,7 @@ import javax.ejb.EJBException;
  * 
  * @author Philip Vendil 2007 jun 19
  *
- * @version $Id: WSConfig.java,v 1.4 2008-04-12 17:30:13 herrvendil Exp $
+ * @version $Id$
  */
 public class WSConfig {
 	

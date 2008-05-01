@@ -43,7 +43,7 @@ import org.w3c.dom.Document;
  *  The service have it's own certificate used for signing and encryption 
  * 
  * @author Philip Vendil
- * @version $Id: XKMSCAService.java,v 1.5 2008-01-24 16:10:26 anatom Exp $
+ * @version $Id$
  */
 public class XKMSCAService extends ExtendedCAService implements java.io.Serializable{
 

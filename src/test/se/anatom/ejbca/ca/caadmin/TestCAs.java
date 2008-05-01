@@ -48,7 +48,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.29 2008-04-09 21:54:22 anatom Exp $
+ * @version $Id$
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);

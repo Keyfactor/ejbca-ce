@@ -23,7 +23,7 @@ import org.ejbca.core.model.services.BaseAction;
  * Shows which methods that are necessary to implement a action
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: DummyAction.java,v 1.2 2006-10-06 07:52:51 anatom Exp $
+ * @version $Id$
  */
 public class DummyAction extends BaseAction {
 	

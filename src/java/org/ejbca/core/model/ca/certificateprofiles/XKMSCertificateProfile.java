@@ -18,7 +18,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
  * XKMSCertificateProfile is a class defining the fixed characteristics of an CAs xkms certificate type
  *
  * @author Philip Vendil
- * @version $Id: XKMSCertificateProfile.java,v 1.2 2006-12-27 11:13:57 anatom Exp $
+ * @version $Id$
  */
 public class XKMSCertificateProfile extends CertificateProfile{
 

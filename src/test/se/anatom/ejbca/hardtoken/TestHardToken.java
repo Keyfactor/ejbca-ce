@@ -41,7 +41,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the hard token related entity beans.
  *
- * @version $Id: TestHardToken.java,v 1.7 2007-04-13 06:23:55 herrvendil Exp $
+ * @version $Id$
  */
 public class TestHardToken extends TestCase {
     private static Logger log = Logger.getLogger(TestHardToken.class);

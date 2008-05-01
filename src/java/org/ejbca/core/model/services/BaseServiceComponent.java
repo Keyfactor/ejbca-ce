@@ -31,7 +31,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseServiceComponent.java,v 1.1 2006-10-26 11:01:01 herrvendil Exp $
+ * @version $Id$
  */
 
 public abstract class BaseServiceComponent {

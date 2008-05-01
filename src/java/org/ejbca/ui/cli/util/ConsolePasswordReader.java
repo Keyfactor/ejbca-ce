@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
  * 2. JLine console library password reading
  * 3 Clear text (System.in)
  * 
- * @version $Id: ConsolePasswordReader.java,v 1.1 2008-04-13 04:18:12 anatom Exp $
+ * @version $Id$
  */
 public class ConsolePasswordReader implements PasswordReader {
 	public char[] readPassword() throws IOException {

@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Implements the RA command line interface
  *
- * @version $Id: ra.java,v 1.4 2007-06-18 12:16:22 jbagnert Exp $
+ * @version $Id$
  */
 public class ra extends BaseCommand {
     /**

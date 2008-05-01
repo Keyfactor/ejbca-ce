@@ -29,7 +29,7 @@ import org.ejbca.core.model.log.LogEntry;
  * A class that looks up the which modules a administrator have right to view.
  * This is done by looking up an administrators privileges in the tree and returning a string to be used in SQL-queries.
  * 
- * @version $Id: LogAuthorization.java,v 1.3 2008-03-14 08:00:59 anatom Exp $
+ * @version $Id$
  */
 public class LogAuthorization implements Serializable {
     

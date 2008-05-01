@@ -26,7 +26,7 @@ package org.ejbca.core.model.hardtoken;
  * 
  *
  * @author  TomSelleck
- * @version $Id: HardTokenIssuerData.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id$
  */
 public class HardTokenIssuerData implements java.io.Serializable, Comparable {
   

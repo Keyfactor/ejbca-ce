@@ -26,7 +26,7 @@ import org.ejbca.util.CertTools;
 /**
  * Retrieves the latest CRL from the CA.
  *
- * @version $Id: CaGetCrlCommand.java,v 1.3 2007-12-21 09:02:33 anatom Exp $
+ * @version $Id$
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
     /**

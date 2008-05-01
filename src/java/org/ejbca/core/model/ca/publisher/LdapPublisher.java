@@ -51,7 +51,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalogs.  
  *
- * @version $Id: LdapPublisher.java,v 1.36 2008-03-31 01:02:24 anatom Exp $
+ * @version $Id$
  */
 public class LdapPublisher extends BasePublisher {
 

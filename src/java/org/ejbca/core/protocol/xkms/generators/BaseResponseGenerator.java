@@ -46,7 +46,7 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseResponseGenerator.java,v 1.3 2007-01-07 19:44:14 herrvendil Exp $
+ * @version $Id$
  */
 
 public abstract class BaseResponseGenerator {

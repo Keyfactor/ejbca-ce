@@ -20,7 +20,7 @@ import java.security.NoSuchProviderException;
 /**
  * 
  * @author tomas
- * @version $Id: Protectable.java,v 1.1 2006-08-05 09:59:38 anatom Exp $
+ * @version $Id$
  */
 public interface Protectable {
 

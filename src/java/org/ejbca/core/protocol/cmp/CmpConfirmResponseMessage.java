@@ -39,7 +39,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpConfirmResponseMessage.java,v 1.7 2007-10-04 08:08:12 anatom Exp $
+ * @version $Id$
  */
 public class CmpConfirmResponseMessage extends BaseCmpMessage implements IResponseMessage {
 

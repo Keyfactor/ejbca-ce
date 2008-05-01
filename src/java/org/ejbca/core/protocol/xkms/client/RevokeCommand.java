@@ -34,7 +34,7 @@ import org.w3._2002._03.xkms_.RevokeResultType;
 /**
  * Performes KRSS revoke calls to an web service.
  *
- * @version $Id: RevokeCommand.java,v 1.2 2007-07-31 13:32:02 jeklund Exp $
+ * @version $Id$
  * @author Philip Vendil
  */
 public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{

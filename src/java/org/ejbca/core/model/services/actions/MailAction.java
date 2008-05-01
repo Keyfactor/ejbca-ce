@@ -34,7 +34,7 @@ import org.ejbca.core.model.services.BaseAction;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: MailAction.java,v 1.7 2007-12-04 14:22:32 jeklund Exp $
+ * @version $Id$
  */
 public class MailAction extends BaseAction {
 	

@@ -79,7 +79,7 @@ import org.ejbca.util.CertTools;
  *   generate="none"
  *
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.5 2007-12-04 14:21:46 jeklund Exp $
+ * @version $Id$
  * 
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {

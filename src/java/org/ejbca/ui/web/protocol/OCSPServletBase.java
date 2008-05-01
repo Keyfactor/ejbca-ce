@@ -120,7 +120,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.37 2008-03-19 13:41:19 anatom Exp $
+ * @version  $Id$
  */
 abstract class OCSPServletBase extends HttpServlet {
 

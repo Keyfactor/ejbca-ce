@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * HardTokenProfileWithPINEnvelope is a basic class that should be inherited by all types
  * of hardtokenprofiles that should have PIN envelope functionality.
  * 
- * @version $Id: HardTokenProfileWithPINEnvelope.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id$
  */
 public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile implements IPINEnvelopeSettings{
 		

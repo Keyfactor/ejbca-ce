@@ -32,7 +32,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests the end entity profile entity bean profile checks only
  *
- * @version $Id: TestUserFullfillEndEntityProfile.java,v 1.2 2008-01-03 12:52:37 anatom Exp $
+ * @version $Id$
  */
 public class TestUserFullfillEndEntityProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestUserFullfillEndEntityProfile.class);

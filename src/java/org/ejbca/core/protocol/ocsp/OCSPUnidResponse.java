@@ -23,7 +23,7 @@ import org.bouncycastle.ocsp.UnknownStatus;
 /** Class holding data returned by the OCSPUnidExtension
  * 
  * @author tomas
- * @version $Id: OCSPUnidResponse.java,v 1.8 2007-01-29 11:02:48 anatom Exp $
+ * @version $Id$
  *
  */
 public class OCSPUnidResponse {

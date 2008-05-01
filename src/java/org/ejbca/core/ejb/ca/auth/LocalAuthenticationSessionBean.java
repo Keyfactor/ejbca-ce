@@ -50,7 +50,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.13 2008-03-14 12:38:28 anatom Exp $
+ * @version $Id$
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"

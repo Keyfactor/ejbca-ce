@@ -29,7 +29,7 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @author Philip Vendil 2006 dec 17
  *
- * @version $Id: XKMSConfig.java,v 1.3 2007-02-02 09:36:56 anatom Exp $
+ * @version $Id$
  */
 
 public class XKMSConfig {

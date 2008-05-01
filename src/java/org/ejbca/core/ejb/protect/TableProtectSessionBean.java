@@ -100,7 +100,7 @@ import org.ejbca.util.StringTools;
  *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
  *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionRemote"
  *
- * @version $Id: TableProtectSessionBean.java,v 1.7 2007-07-19 11:39:16 anatom Exp $
+ * @version $Id$
  */
 public class TableProtectSessionBean extends BaseSessionBean {
 

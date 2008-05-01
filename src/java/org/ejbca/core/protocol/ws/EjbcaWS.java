@@ -129,7 +129,7 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.30 2008-04-12 17:30:15 herrvendil Exp $
+ * $Id$
  */
 @WebService
 public class EjbcaWS implements IEjbcaWS {

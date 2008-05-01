@@ -28,7 +28,7 @@ import org.ejbca.core.model.log.Admin;
  * and by removing the need to retrieving the profile for each card processed 
  * the network load will decrease dramatically.
  *
- * @version $Id: HardTokenProfileProxy.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id$
  */
 public class HardTokenProfileProxy {
 

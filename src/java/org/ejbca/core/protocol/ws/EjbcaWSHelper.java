@@ -55,7 +55,7 @@ import org.ejbca.util.query.Query;
 /** Helper class for other classes that wants to call remote EJBs.
  * Methods for fetching ejb session bean interfaces.
  * 
- * @version $Id: EjbcaWSHelper.java,v 1.3 2008-03-07 17:28:27 anatom Exp $
+ * @version $Id$
  */
 public class EjbcaWSHelper extends EjbRemoteHelper {
 

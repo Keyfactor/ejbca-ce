@@ -44,7 +44,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * A very simple error message, no protection
  * @author tomas
- * @version $Id: CmpErrorResponseMessage.java,v 1.5 2007-10-04 08:08:12 anatom Exp $
+ * @version $Id$
  */
 public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponseMessage {
 

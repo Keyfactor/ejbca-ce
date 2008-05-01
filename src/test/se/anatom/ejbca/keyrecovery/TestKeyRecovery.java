@@ -41,7 +41,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests the key recovery modules.
  *
- * @version $Id: TestKeyRecovery.java,v 1.6 2006-10-31 08:24:55 anatom Exp $
+ * @version $Id$
  */
 public class TestKeyRecovery extends TestCase {
     private static Logger log = Logger.getLogger(TestKeyRecovery.class);

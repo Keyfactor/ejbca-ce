@@ -35,7 +35,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Protocol messages.
  *
- * @version $Id: TestMessages.java,v 1.7 2006-09-29 11:55:13 anatom Exp $
+ * @version $Id$
  */
 public class TestMessages extends TestCase {
 

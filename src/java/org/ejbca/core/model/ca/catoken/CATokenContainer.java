@@ -23,7 +23,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * 
- * @version $Id: CATokenContainer.java,v 1.4 2008-02-25 15:55:18 anatom Exp $
+ * @version $Id$
  */
 public abstract class CATokenContainer extends UpgradeableDataHashMap implements java.io.Serializable{
 

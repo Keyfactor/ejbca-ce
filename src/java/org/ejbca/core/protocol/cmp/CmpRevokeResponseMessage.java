@@ -46,7 +46,7 @@ import com.novosec.pkix.asn1.cmp.RevRepContent;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpRevokeResponseMessage.java,v 1.5 2007-10-04 08:08:12 anatom Exp $
+ * @version $Id$
  */
 public class CmpRevokeResponseMessage extends BaseCmpMessage implements IResponseMessage {
 

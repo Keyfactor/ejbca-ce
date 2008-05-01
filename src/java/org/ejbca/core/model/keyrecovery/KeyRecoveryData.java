@@ -26,7 +26,7 @@ import org.ejbca.util.StringTools;
  * between server and clients.
  *
  * @author TomSelleck
- * @version $Id: KeyRecoveryData.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id$
  */
 public class KeyRecoveryData implements java.io.Serializable {
 

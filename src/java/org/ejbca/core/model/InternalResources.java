@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.8 2007-10-15 09:32:25 anatom Exp $
+ * @version $Id$
  */
 public class InternalResources implements Serializable {
 	

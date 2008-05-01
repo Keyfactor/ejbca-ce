@@ -27,7 +27,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRemoveCA.java,v 1.8 2007-08-18 20:01:16 anatom Exp $
+ * @version $Id$
  */
 public class TestRemoveCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);

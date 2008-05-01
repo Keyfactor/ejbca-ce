@@ -42,7 +42,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.8 2008-03-14 16:55:37 anatom Exp $
+ * @version $Id$
  */
 public class CertificateView implements java.io.Serializable {
 

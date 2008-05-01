@@ -46,7 +46,7 @@ import org.ejbca.util.CertTools;
  * See rfc3280 or later for spec of this extension.      
  * 
  * @author: Tomas Gustavsson
- * @version $Id: QcStatement.java,v 1.2 2008-03-31 00:35:12 anatom Exp $
+ * @version $Id$
  */
 public class QcStatement extends StandardCertificateExtension {
     private static Logger log = Logger.getLogger(QcStatement.class);

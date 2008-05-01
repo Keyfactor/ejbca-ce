@@ -9,7 +9,7 @@ package org.ejbca.core.ejb;
  * in throwing a checked exception that the user won't really be
  * able to handle.
  * 
- * @version $Id: ServiceLocatorException.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id$
  */
 public class ServiceLocatorException extends RuntimeException {
 

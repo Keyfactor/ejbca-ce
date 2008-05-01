@@ -24,7 +24,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
  * Base class for CAServiceInfo used by extended services that does signing 
  * 
  * 
- * @version $Id: BaseSigningCAServiceInfo.java,v 1.1 2006-12-27 11:13:55 anatom Exp $
+ * @version $Id$
  */
 public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
        

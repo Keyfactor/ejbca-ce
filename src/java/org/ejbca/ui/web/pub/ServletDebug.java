@@ -24,7 +24,7 @@ import org.ejbca.ui.web.RequestHelper;
 
 /**
  * Prints debug info back to browser client
- * @version $Id: ServletDebug.java,v 1.4 2007-08-03 10:00:32 anatom Exp $
+ * @version $Id$
  */
 public class ServletDebug {
     private final ByteArrayOutputStream buffer;

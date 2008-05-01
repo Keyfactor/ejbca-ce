@@ -23,7 +23,7 @@ import java.util.List;
  * is neesed
  * 
  * @author Philip Vendil
- * @version $Id: XKMSCAServiceInfo.java,v 1.2 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id$
  */
 public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
                   

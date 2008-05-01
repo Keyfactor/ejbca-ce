@@ -43,7 +43,7 @@ import org.ejbca.util.CertTools;
  * to the url defined in web.xml.
  *
  * @author Philip Vendil
- * @version $Id: HealthCheckServlet.java,v 1.7 2006-12-13 10:36:04 anatom Exp $
+ * @version $Id$
  */
 public class HealthCheckServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(HealthCheckServlet.class);

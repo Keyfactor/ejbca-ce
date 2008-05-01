@@ -20,7 +20,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * SwedishEIDHardToken is a class defining data stored in database for a Swedish EID token.
  *
- * @version $Id: SwedishEIDHardToken.java,v 1.4 2007-04-13 06:15:20 herrvendil Exp $
+ * @version $Id$
  */
 public class SwedishEIDHardToken extends HardToken {
     /**

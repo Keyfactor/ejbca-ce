@@ -19,7 +19,7 @@ package org.ejbca.core.model;
  * 
  * @author Philip Vendil 2006 sep 25
  *
- * @version $Id: InternalResourcesTestClass.java,v 1.2 2006-10-23 16:25:11 anatom Exp $
+ * @version $Id$
  */
 public class InternalResourcesTestClass extends InternalResources {
 
