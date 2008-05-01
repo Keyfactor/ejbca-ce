@@ -105,7 +105,7 @@ public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
     
     // Initialize dnComponents
-    static {
+    static { 
         DnComponents.getDnObjects();
     }
     public static final String EMAIL = "rfc822name";
