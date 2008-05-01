@@ -7,7 +7,7 @@ You need to drop your jdbc driver in ${appserver.home}/server/default/lib
 
 Customize at will as this is mainly for development.
 
-$Id: ejbca-ds.xml,v 1.5 2007-04-26 07:00:01 anatom Exp $
+$Id$
 
  -->
 

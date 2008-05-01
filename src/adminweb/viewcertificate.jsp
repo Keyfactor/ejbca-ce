@@ -1,4 +1,4 @@
-<!-- Version: $Id: viewcertificate.jsp,v 1.4 2002/08/28 12:22:25 herrvendil Exp $ -->
+<!-- Version: $Id$ -->
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 

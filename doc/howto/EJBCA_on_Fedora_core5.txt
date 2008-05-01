@@ -1,6 +1,6 @@
 EJBCA on Fedora core 5, simple howto
 =====================================
-$Id: EJBCA_on_Fedora_core5.txt,v 1.1 2006-04-11 11:08:11 anatom Exp $
+$Id$
 EJBCA version: 3.1.x/3.2.x
 Contributed by: Yovko Ilchev Yovkov, yyovkov(at)yyovkov.net 
 
