@@ -19,6 +19,17 @@ After this you must do:
 - ant clean
 - ant deploy
 
+From EJBCA 3.6.x to EJBCA 3.6.x
+-------------------------------
+See release notes for details between certain versions. 
+Normally upgrades within a major release are plug-in upgrades.
+
+Simply copy conf/*.properties from the earlier installation.
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
+
+Also note the possibility to use 'ejbca-custom' directory in EJBCA 3.5.x, see User's Guide.
+
 From EJBCA 3.5.x to EJBCA 3.6.x
 -------------------------------
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.

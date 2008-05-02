@@ -1,3 +1,16 @@
+3.6.1, 2008-05-02
+---
+Improvement
+    * [ECA-554] - nCipherHSM asks for password which is shown in plain text
+
+Task
+    * [ECA-771] - Update french translation
+
+Bug
+    * [ECA-540] - Exception if you try to issue a certificate from public web with a CA that is offline
+    * [ECA-779] - Cannot enroll with end entities created with CAs with approval setting active
+    * [ECA-780] - Index collision in profilemappings.properties.
+    
 3.6.0, 2008-04-06
 ---
 New Feature
@@ -98,6 +111,31 @@ Bug
     * [ECA-758] - Under some conditions it's not possible to edit rfc822name altname field for user in admin-gui
     * [ECA-766] - Error saving CRL Service on Weblogic 10
 
+3.5.6, 2008-05-02 
+---
+New Feature
+    * [ECA-768] - Create mechanism for Health Check to report nodes as Down for maintenance
+    * [ECA-769] - Activation Page. Create an easy access page for activating many CA's. The current function in the admin-GUI requires a lot of clicking to activate many CA's. Combine with one page access to configure monitoring of CA's
+
+Improvement
+    * [ECA-756] - CRLUpdateWorkers may run in same vm in parallel if too slow
+    * [ECA-773] - Add distingushable string to health check return to know which test failed
+    * [ECA-774] - Make CRL generation be in one transaction for each CA
+    * [ECA-775] - Introduce a random add-on to the service interval
+    * [ECA-778] - change genTokenCertificates WS call behaivor to not temporary revoke ceritificates for MS logon
+    * [ECA-784] - Improve lunahsm shell script
+
+Bug
+    * [ECA-743] - GenerateToken And ViewHardTokenData approvalIds was not calculated correctly
+    * [ECA-744] - Wrong DN was used in non-admin generate spacecard pages.
+    * [ECA-751] - DemoCertReqServlet gets reference to old template file
+    * [ECA-753] - CMP only working with DEBUG log enabled
+    * [ECA-755] - Listing log entries does not show the latest when limiting on too many rows
+    * [ECA-763] - Listing end entities query displays wrong values
+    * [ECA-764] - Under some circumstances two CRLs with the same CRLNumber is stored in the db
+    * [ECA-772] - External OCSP publisher does not work on oracle DB
+    * [ECA-777] - External OCSP health check not working
+    
 3.5.5, 2008-02-29
 ---
 New Feature

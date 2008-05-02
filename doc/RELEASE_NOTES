@@ -1,3 +1,14 @@
+EJBCA 3.6.1
+-----------
+This is a minor release with a few new features, from EJBCA 3.5.6, and some minor fixes.
+Apart form the fixes from EJBCA 3.5.6 nCipherHSM.sh now hides the password the user enters and
+an index collision in profilemappings.properties is fixed. Also an error when enrolling with approvals 
+activated was fixed.
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.6.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.6.0
 -----------
 This is a major release with many new interesting features and framework improvements.
@@ -26,6 +37,19 @@ EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgra
 For the Oracle database we have made a switch from the deprecated type LONG to CLOB. Do not fear though,
 EJBCA 3.6 still works if you continue to use the LONG data type (i.e. does not make any changes to your database).
 If you decide to migrate, there is a migration sql script in src/upgrade/35_36/oracle-long-to-clob.sql.
+
+EJBCA 3.5.6
+-----------
+This is a minor release, fixing a few bugs and adding a new activation page to the admin-GUI.
+ - New activation page to effectively be able to activate many CAs quickly
+ - Possibility to exclude CAs from monitoring by the HealthCheckServlet
+ - Improve generation of CRL with the CRL worker
+ - Fix bugs listing many log or user entries
+ - Fix WS issues and a few other issues affecting hard token administration
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
 
 EJBCA 3.5.5
 -----------
