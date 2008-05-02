@@ -19,10 +19,10 @@
   </section>
   <section name="Latest News">
     <note>
-    EJBCA 3.6.0 is now available for <a
+    EJBCA 3.6.1 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     <br/>
-    SHA1 checksum: 3632f9266c02adeb015c5161ac5114e5d1f913c3 
+    SHA1 checksum: ac2def7c4072f357eccae9ab5c953b39c87585b7 
     <br/><br/>
     External RA API 3.6.0 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
