@@ -85,7 +85,7 @@ When a soft key has been created it should be stored in the directory defined by
 The password for each key must be the same and should be equal to the ocsp.keys.keyPassword property of ejbca.properties.
 
 A PKCS#11 certificate is created like this:
-$EJBCA_HOME/bin/pkcs11HSM.sh generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 ocsp i1
+$EJBCA_HOME/bin/pkcs11HSM.sh generate ./sunpkcs11.cfg 2048 ocsp
 $EJBCA_HOME/bin/pkcs11HSM.sh certreq /opt/nfast/toolkits/pkcs11/libcknfast.so i1 ocsp
 The certificate for the key is then fetched from the enrollment page of EJBCA with the certificate request that was stored in the ocsp.pem
 when the "certreq" command was executed. You then have to manually create a certificate chain file. The OCSP signer certificate should be
@@ -93,6 +93,8 @@ first in this file and the root CA certificate should be last.
 If the chain file is called chain.pem then the certificate chain is installed in the HSM like this:
 $EJBCA_HOME/bin/pkcs11HSM.sh installcert /opt/nfast/toolkits/pkcs11/libcknfast.so i1 chain.pem
 You must then define all ocsp.p11.* properties.
+Please read http://ejbca.org/manual.html#Generic%20PKCS#11%20provider%20(EJBCA%203.5) for information on the configuration file for the generate command.
+Do also try to find your HSM in http://ejbca.org/manual.html#Hardware%20Security%20Modules%20(HSM). Please note the only PKCS#11 HSMs are supported.
 
 
 Card keys are created on the card with the "create CA Token on card" tool see the HOWTO-CATokenOnCard.txt of PrimeCard.

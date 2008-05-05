@@ -2039,7 +2039,7 @@ EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
 </p><p>
 EJBCA 3.5 and later has an implementation for a generic PKCS#11 provider, tested with Utimaco and nCipher.
 </p><p>
-EJBCA 3.6 adds tested support for AEP KeyPer and ARX CoSign.
+EJBCA 3.6 adds tested support for AEP KeyPer and ARX CoSign and Bull TrustWay.
 </p><p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
@@ -2088,7 +2088,7 @@ You have to check if that support is available.
 <subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
 The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
-tested with Utimaco Cryptoserver and nCipher nShield/netHSM and Eracom and AEP Keyper and ARX CoSign.
+tested with Utimaco Cryptoserver and nCipher nShield/netHSM and Eracom and AEP Keyper and ARX CoSign and Bull TrustWay.
 </p><p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
 <ul>
@@ -2733,6 +2733,44 @@ This HSM only works on Windows. The installation is done with an installer and t
 All generated keys will be on slot 1. The PIN code used when activating the keys could be anything since the authentication is made when login on to the user that runs EJBCA.
 The shared library is called C:\windows\system32\sadaptor.dll 
 </p>
+</subsection>
+
+<subsection name="Bull Trustway">
+<p>
+Do the installation of the card according to Install_and_Use_cc2000.pdf. When the card is "installed" it is ready to use with EJBCA. Only one slot (slot index 0) is available. The slot is not protected by any PIN so an undefined 'pin' (empty) property may be used in the configuration.
+</p><p>
+The configuration file must look like this:
+</p>
+<source>
+name=TrustWay
+library=../../bullInstall/linux/libgpkcs11cc2000.so
+slotListIndex=0
+attributes(generate,CKO_PRIVATE_KEY,*) = {
+  CKA_TOKEN = true
+}
+</source>
+<p>
+When starting EJBCA, libcc2000_tok.so and libgpkcs11cc2000.so must be in the library path. An example:
+</p>
+<source>
+lars@maud:~/work/test/ca$ ls -al ../../bullInstall/linux
+total 412
+dr-xr-xr-x 4 lars lars   4096 28 nov 14.28 .
+drwxr-xr-x 4 lars lars   4096 20 apr 21.05 ..
+dr-xr-xr-x 6 lars lars   4096 20 apr 21.38 CardAdmin_java
+-r-xr-xr-x 1 lars lars  35804 28 nov 14.15 cc2000_lx24.tgz
+-r-xr-xr-x 1 lars lars  74955 28 nov 14.15 cc2000_src.tgz
+-r-xr-xr-x 1 lars lars     14 28 nov 14.15 cc2000S_release
+-r-xr-xr-x 1 lars lars    633 28 nov 14.15 desinstall
+-r-xr-xr-x 1 lars lars    171 28 nov 14.15 gpkcs11cc2000.rc
+dr-xr-xr-x 2 lars lars   4096 28 nov 14.28 include
+-r-xr-xr-x 1 lars lars   7209 28 nov 14.15 install
+-r-xr-xr-x 1 lars lars 101788 28 nov 14.15 libcc2000_tok.so
+-r-xr-xr-x 1 lars lars 146820 28 nov 14.15 libgpkcs11cc2000.so
+-r-xr-xr-x 1 lars lars   3843 28 nov 14.15 LisezMoi.txt
+-r-xr-xr-x 1 lars lars   3410 28 nov 14.15 ReadMe.txt
+lars@maud:~/work/test/ca$ LD_LIBRARY_PATH=../../bullInstall/linux ../../java/jboss/bin/run.sh
+</source>
 </subsection>
 
 <subsection name="SafeNet Luna SA HSM">
