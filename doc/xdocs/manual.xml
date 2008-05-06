@@ -2739,7 +2739,7 @@ The shared library is called C:\windows\system32\sadaptor.dll
 <p>
 Do the installation of the card according to Install_and_Use_cc2000.pdf. When the card is "installed" it is ready to use with EJBCA. Only one slot (slot index 0) is available. The slot is not protected by any PIN so an undefined 'pin' (empty) property may be used in the configuration.
 </p><p>
-The configuration file must look like this:
+The configuration file used when generating a key with 'pkcs11HSM.sh' must look like this:
 </p>
 <source>
 name=TrustWay
