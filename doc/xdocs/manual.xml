@@ -2750,7 +2750,7 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
 }
 </source>
 <p>
-When starting EJBCA, libcc2000_tok.so and libgpkcs11cc2000.so must be in the library path. An example:
+When using 'pkcs11HSM.sh' and starting EJBCA, libcc2000_tok.so and libgpkcs11cc2000.so must be in the library path. Examples:
 </p>
 <source>
 lars@maud:~/work/test/ca$ ls -al ../../bullInstall/linux
@@ -2770,6 +2770,9 @@ dr-xr-xr-x 2 lars lars   4096 28 nov 14.28 include
 -r-xr-xr-x 1 lars lars   3843 28 nov 14.15 LisezMoi.txt
 -r-xr-xr-x 1 lars lars   3410 28 nov 14.15 ReadMe.txt
 lars@maud:~/work/test/ca$ LD_LIBRARY_PATH=../../bullInstall/linux ../../java/jboss/bin/run.sh
+</source>
+<source>
+lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/bin/pkcs11HSM.sh generate trustWay.cfg 2048 defaultkey
 </source>
 </subsection>
 
