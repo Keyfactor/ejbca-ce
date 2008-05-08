@@ -35,6 +35,7 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.query.BasicMatch;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
@@ -73,6 +74,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 return new Command[]{
                                      new EditUserCommand(ejbcaWS, caName, endEntityProfileName, certificateProfileName, jobData, true),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData),
+                                     new FindUserCommand(ejbcaWS, jobData),
                                      new ListCertsCommand(ejbcaWS, jobData),
                                      new RevokeCertCommand(ejbcaWS, jobData),
                                      new EditUserCommand(ejbcaWS, caName, endEntityProfileName, certificateProfileName, jobData, false),
@@ -85,7 +87,10 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
     class JobData {
         String userName;
         String passWord;
-        X509Certificate userCertToBeRevoked;
+        X509Certificate userCertsToBeRevoked[];
+        String getDN() {
+            return "CN="+userName;
+        }
     }
     private class Pkcs10RequestCommand implements Command {
         final private EjbcaWS ejbcaWS;
@@ -120,6 +125,37 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             return "Relative time spent signing certificates";
         }
     }
+    private class FindUserCommand implements Command {
+        final private EjbcaWS ejbcaWS;
+        final private JobData jobData;
+        FindUserCommand(EjbcaWS _ejbcaWS, JobData _jobData) throws Exception {
+            this.jobData = _jobData;
+            this.ejbcaWS = _ejbcaWS;
+        }
+        public boolean doIt() throws Exception {
+            final org.ejbca.core.protocol.ws.client.gen.UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
+            match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
+            match.setMatchvalue(jobData.getDN());
+            match.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_DN);
+            final List<UserDataVOWS> result = ejbcaWS.findUser(match);
+            if (result.size()<1) {
+                performanceTest.getLog().error("No users found for DN \""+jobData.getDN()+"\"");
+                return false;
+            }
+            final Iterator<UserDataVOWS> i = result.iterator();
+            while ( i.hasNext() ) {
+                final String userName = i.next().getUsername();
+                if( !userName.equals(jobData.userName) ) {
+                    performanceTest.getLog().error("wrong user name \""+userName+"\" for certificate with DN \""+jobData.getDN()+"\"");
+                    return false;
+                }
+            }
+            return true;
+        }
+        public String getJobTimeDescription() {
+            return "Relative time spent looking for user";
+        }
+    }
     private class ListCertsCommand implements Command {
         final private EjbcaWS ejbcaWS;
         final private JobData jobData;
@@ -130,13 +166,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         public boolean doIt() throws Exception {
             final List<Certificate> result = this.ejbcaWS.findCerts(jobData.userName, true);
             final Iterator<Certificate> i = result.iterator();
-            if ( !i.hasNext() ) {
+            jobData.userCertsToBeRevoked = new X509Certificate[result.size()];
+            for( int j=0; i.hasNext(); j++ )
+                jobData.userCertsToBeRevoked[j] = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(Base64.decode(i.next().getCertificateData())));
+            if ( jobData.userCertsToBeRevoked.length < 1 ) {
                 performanceTest.getLog().error("no cert found for user "+jobData.userName);
                 return false;
             }
-            jobData.userCertToBeRevoked = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(Base64.decode(i.next().getCertificateData())));
-            if ( i.hasNext() )
-                performanceTest.getLog().error("more then one cert generated for user "+jobData.userName);
 
             return true;
         }
@@ -152,13 +188,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
-            this.ejbcaWS.revokeCert(jobData.userCertToBeRevoked.getIssuerDN().getName(),
-                                    jobData.userCertToBeRevoked.getSerialNumber().toString(16),
-                                    REVOKATION_REASON_UNSPECIFIED);
+            for (int i=0; i<jobData.userCertsToBeRevoked.length; i++)
+                this.ejbcaWS.revokeCert(jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+                                        jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
+                                        REVOKATION_REASON_UNSPECIFIED);
             return true;
         }
         public String getJobTimeDescription() {
-            return "Relative time spent revoking certificate.";
+            return "Relative time spent revoking certificates.";
         }
     }
     private class EditUserCommand implements Command {
@@ -185,7 +222,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 jobData.passWord = "foo123";
                 jobData.userName = "WSTESTUSER"+performanceTest.getRandom().nextInt();
             }
-            this.user.setSubjectDN("CN="+jobData.userName);
+            this.user.setSubjectDN(jobData.getDN());
             this.user.setUsername(jobData.userName);
             this.user.setPassword(jobData.passWord);
             this.ejbcaWS.editUser(user);
