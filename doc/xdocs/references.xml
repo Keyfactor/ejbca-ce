@@ -10,6 +10,7 @@
 	<subsection name="RFCs">
 	<p>
 	<ul>
+		<li> <a href="http://www.ietf.org/rfc/rfc5280.txt">RFC 5280</a> - Certificate and CRL profile, replaces RFC 3280</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc3280.html">RFC 3280</a> - Certificate and CRL profile</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2253.html">RFC 2253</a> - DN string representation</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2560.html">RFC 2560</a> - OCSP</li>
