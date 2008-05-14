@@ -56,7 +56,7 @@
         </anakia>
         
         <copy todir="${docs.dest}">
-        	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif"/>
+        	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
         	<fileset dir="${docs.src}" includes="sensornet/**/*"/>
         </copy>
     </target>
