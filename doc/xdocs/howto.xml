@@ -1127,6 +1127,23 @@ Windows Registry Editor Version 5.00
   </ul>
   </subsection>
   </section>  
+
+  <section name="EJBCA with GemSAFE Toolbox">
+    <p>
+    This is a very thorough guide with screen-shots of how to setup EJBCA 3.6.0
+    with GemSAFE Toolbox in a windows environment for smartcard logon, email signing,
+    email encryption and SSL services.
+    </p>
+    <p>
+    The guide is divided into three PDF-files:
+    <ul>
+    <li><a href="gemsafe/EJBCA_with_GemSAFE_Toolbox_Part1_workstation_logon.pdf">Smartcard Logon</a></li>
+    <li><a href="gemsafe/EJBCA_with_GemSAFE_Toolbox_Part2_sign_and_encrypt_email.pdf">Sign and enrypt email</a></li>
+    <li><a href="gemsafe/EJBCA_with_GemSAFE_Toolbox_Part3_SSL.pdf">SSL services</a></li>
+	</ul>
+	</p>
+  </section>
+  
 </body>
 </document>
 
