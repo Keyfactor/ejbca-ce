@@ -455,18 +455,24 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     protected void loadPrivateKeys(Admin adm) throws Exception {
         mSignEntity.clear();
         loadFromP11HSM(adm);
-        File dir = new File(mKeystoreDirectoryName);
-        if ( dir==null || dir.isDirectory()==false )
+        final File dir = mKeystoreDirectoryName!=null ? new File(mKeystoreDirectoryName) : null;
+        if ( dir==null || !dir.isDirectory() ) {
+            if ( mSignEntity.size()>0 )
+                return;
             throw new ServletException(dir.getCanonicalPath() + " is not a directory.");
-        File files[] = dir.listFiles();
-        if ( files==null || files.length==0 )
+        }
+        final File files[] = dir.listFiles();
+        if ( files==null || files.length<1 ) {
+            if ( mSignEntity.size()>0 )
+                return;
             throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());
+        }
         for ( int i=0; i<files.length; i++ ) {
             final String fileName = files[i].getCanonicalPath();
             if ( !loadFromSWKeyStore(adm, fileName) )
                 loadFromKeyCards(adm, fileName);
         }
-        if ( mSignEntity.size()==0 )
+        if ( mSignEntity.size()<1 )
             throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
     }
     private class SigningEntity {
