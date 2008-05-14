@@ -64,6 +64,10 @@ import org.ejbca.core.model.log.LogConstants;
  *
  * @ejb.transaction type="Required"
  *
+ * @jboss.method-attributes
+ *   pattern = "load*"
+ *   read-only = "true"
+ *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   

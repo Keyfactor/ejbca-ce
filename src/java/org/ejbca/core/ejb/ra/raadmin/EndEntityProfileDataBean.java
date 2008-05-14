@@ -62,7 +62,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * local-extends="javax.ejb.EJBLocalObject"
  * local-class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocal"
  *
-* @ejb.finder
+ * @ejb.finder
  *   description="findByProfileName"
  *   signature="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocal findByProfileName(java.lang.String name)"
  *   query="SELECT OBJECT(a) from EndEntityProfileDataBean a WHERE a.profileName=?1"
@@ -71,6 +71,11 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  *   description="findAll"
  *   signature="java.util.Collection findAll()"
  *   query="SELECT OBJECT(a) from EndEntityProfileDataBean a"
+ *
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
  */
 public abstract class EndEntityProfileDataBean extends BaseEntityBean implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(EndEntityProfileDataBean.class);

@@ -69,6 +69,10 @@ import java.util.HashMap;
  *
  * @ejb.transaction type="Required"
  *
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *   
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  */
