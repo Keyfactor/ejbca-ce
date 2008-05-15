@@ -2114,6 +2114,8 @@ The second uses a configuration file.
 The contents of the file is specified in the PKCS#11 wrapper documentation from Sun.
 Often it is enough to use the default but with some HSM it necessary to define some PKCS#11
 attributes for the generated key.
+</p><p>
+All keys to be used has to be generated before the application server is started.
 </p>
 </subsection>
 
