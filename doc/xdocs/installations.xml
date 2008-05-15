@@ -81,10 +81,11 @@
 	<subsection name="ZhuHai Local Taxation Bureau">
 	<p>
 	<ul>
+	<li>Organization: <a href="http://www.gdzh-l-tax.gov.cn/EasyTaxWeb/">ZhuHai Local Taxation Bureau</a></li>
 	<li>Location: ZhuHai city, GuangDong province, China</li>
     <li>Trade of Industry: Govermental authority (Taxation)</li>
     <li>Solution: Operational since 2003. Use EJBCA as user database for Websphere. Login to application with forms and XML-signatures created using smart cards with certificates from EJBCA.</li>
-    <li>Count of Users: Up to 25000 in the first phase</li>
+    <li>Count of Users: Up to 25000 in the first phase. Another 25000 users was added in the second phase 2008.</li>
     </ul>
 	</p>
 	</subsection>

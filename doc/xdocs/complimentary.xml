@@ -5,7 +5,7 @@
   </properties>
 
   <body>
-<section name="Complimentary software">
+<section name="Complimentary free software">
 <p>
 To build a succesfull PKI you can benefit from a lot of tools available. Here are listed some tools and packages that 
 can be used together with PKI to even further improve your PKI experience.
@@ -74,6 +74,45 @@ can be used together with PKI to even further improve your PKI experience.
     </p>
 </subsection>
 
+</section>
+
+<section name="Complimentary proprietary software">
+    <p>
+    EJBCA can also be used with numerous products from the non-free world. To be listed here, the software
+    should work flawlessly with EJBCA and the vendor should:
+    </p>
+    <ul>
+    <li>provide free and open documentation on how to use the product with EJBCA</li>
+    <li>continuously update the documentation</li>
+    <li>promote EJBCA</li>
+    </ul>
+    <p>
+    </p>
+<subsection name="GemSAFE Toolbox">
+    <p>
+    GemSAFE toolbox and tokens are developed by Gemalto. Using this product an
+    organization can setup a secure platform for online banking, transaction,
+    identity verification and data exchange. It has been adapted by lots of
+    well known companies and organizations for instant, Cisco, Airbus, BMW,
+    China Construction Bank, Industrial Commercial bank of China (ICBC) and etc.
+    </p>
+    <p>
+    Some of the GemSAFE features:
+    <ul>
+    <li>Email signature and encryption</li>
+    <li>Smartcard logon</li>
+    <li>Strong authentication with SSL</li>
+    <li>Document signature and encryption</li>
+    <li>VB macro signature</li>
+    <li>Support 16 languages</li>
+    <li>Works with MS Outlook, Thunder Bird, Lotus Note, IE, Netscape, FireFox and more</li>
+    </ul>
+    </p>
+    <p>
+	GameSAFE was successfully used together with EJBCA for the ZhuHai Local
+	Taxation Bureau project, listed in the <a href="installations.html">reference installations</a> section.
+    </p>
+</subsection>
 </section>
 
   </body>
