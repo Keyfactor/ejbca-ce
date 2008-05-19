@@ -4050,12 +4050,12 @@ In order to add a language you should do the following:
 language.<i>languagecode</i>.properties. In case of chinese it should be 'zh', and place 
 it in the src/adminweb/languages directory.
 </li>
-<li>Edit conf/ejbca.properties (create with conf/ejbca.properties.sample as template if you don't have one).
+<li>Edit conf/web.properties (create with conf/web.properties.sample as template if you don't have one).
 Change 'web.availablelanguages' and add your language code to the value. i.e:
 &lt;env-entry-value>EN,FR,IT&lt;/env-entry-value>
 </li>
-<li>You may have to change the default page encoding in 'web.contentencoding' to for example UTF-8
-instead of the default ISO-8859-1.
+<li>You may have to change the default page encoding in 'web.contentencoding' to for example ISO-8859-1
+instead of the default UTF-8.
 </li>
 <li>Clean and re-deploy ejbca with 'ant clean' followed by 'ant deploy'. 
 Restart JBoss and your browser after this.
