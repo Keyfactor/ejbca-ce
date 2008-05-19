@@ -91,6 +91,15 @@ import org.ejbca.util.CertTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.approval.ApprovalDataLocal"
  *
+ * @ejb.ejb-external-ref
+ *   description="The key recovery bean"
+ *   view-type="local"
+ *   ref-name="ejb/KeyRecoverySessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
+ *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
+ *   link="LogSession"
+ *
  * @ejb.finder
  *   description="findByApprovalId"
  *   signature="Collection findByApprovalId(int approvalid)"
