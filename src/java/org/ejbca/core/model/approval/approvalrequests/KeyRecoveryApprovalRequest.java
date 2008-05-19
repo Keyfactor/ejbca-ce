@@ -15,6 +15,7 @@ package org.ejbca.core.model.approval.approvalrequests;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.rmi.RemoteException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -23,11 +24,12 @@ import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -82,10 +84,10 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		log.debug("Executing mark for recovery for user:" + username);
 		try{
-			ServiceLocator locator = ServiceLocator.getInstance();
-			IKeyRecoverySessionLocalHome keyrechome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
-			IKeyRecoverySessionLocal keyrecsession = keyrechome.create();	
-
+		    Context ctx = new javax.naming.InitialContext();
+		    IKeyRecoverySessionHome keyrechome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class);
+		    IKeyRecoverySessionRemote keyrecsession = keyrechome.create();
+			
 			if(recoverNewestCert){
 				keyrecsession.markNewestAsRecoverable(getRequestAdmin(), username, getEndEntityProfileId());
 			}else{
@@ -101,6 +103,10 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
+		} catch (NamingException e) {
+			throw new EJBException(e);
+		} catch (RemoteException e) {
+			throw new EJBException(e);
 		} 
 
 	}
