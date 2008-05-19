@@ -52,6 +52,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
@@ -266,7 +267,7 @@ public abstract class KeyStoreContainer {
         final PKCS10CertificationRequest certReq =
             new PKCS10CertificationRequest( "SHA1withRSA",
                                             new X509Name("CN="+alias),
-                                            publicKey, null,
+                                            publicKey, new DERSet(),
                                             privateKey,
                                             keyStore.getProvider().getName() );
         if ( !certReq.verify() )
