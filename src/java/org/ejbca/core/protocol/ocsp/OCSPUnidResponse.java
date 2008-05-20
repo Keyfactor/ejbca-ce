@@ -76,11 +76,11 @@ public class OCSPUnidResponse {
     /**
      * You did not specify a URI in the call, and there is not one embedded in the certificate.
      */
-    public static final int ERROR_NO_OCSP_URI = 5;
+    public static final int ERROR_NO_OCSP_URI = 7;
     /**
      * The nonce in the response did not match the nonce sent in the request.
      */
-    public static final int ERROR_INVALID_NONCE = 6;
+    public static final int ERROR_INVALID_NONCE = 8;
 
 	/*
 	 * Private vaiables
