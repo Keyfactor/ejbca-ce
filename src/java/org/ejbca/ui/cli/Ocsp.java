@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.ejbca.core.protocol.ocsp.OCSPUnidClient;
 import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.util.CertTools;
@@ -132,6 +133,7 @@ public class Ocsp {
             final String ocspurl;
             final String certfilename;
             final String cacertfilename;
+            boolean signRequest = false;
             if ( args.length>0 && args[0].equals("stress") ) {
                 new Ocsp(args);
                 return;
@@ -141,6 +143,7 @@ public class Ocsp {
                 ocspurl = args[2].equals("null") ? null : args[2];
                 certfilename = args[3];
                 cacertfilename = args[4];            	
+                signRequest = true;
             } else if (args.length == 3) {
                 ksfilename = null;
                 kspwd = null;
@@ -159,7 +162,7 @@ public class Ocsp {
                 return;
             }
             
-            OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspurl, false, true);
+            OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspurl, signRequest, true);
             OCSPUnidResponse response = client.lookup(getCertFromPemFile(certfilename),
                                                       getCertFromPemFile(cacertfilename));
             if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
@@ -169,9 +172,25 @@ public class Ocsp {
             if (response.getHttpReturnCode() != 200) {
             	System.out.println("Http return code is: "+response.getHttpReturnCode());
             }
-            System.out.println("OCSP return value is: "+response.getStatus());
-            if (response.getFnr() != null) {
-                System.out.println("Returned Fnr is: "+response.getFnr());            	
+            if (response.getResponseStatus() == 0) {
+                System.out.print("OCSP return value is: "+response.getStatus()+" (");
+                switch (response.getStatus()) {
+	                case OCSPUnidResponse.OCSP_GOOD: System.out.println("good)"); break;
+	                case OCSPUnidResponse.OCSP_REVOKED: System.out.println("revoked)"); break;
+	                case OCSPUnidResponse.OCSP_UNKNOWN: System.out.println("unknown)"); break;
+                }
+                if (response.getFnr() != null) {
+                    System.out.println("Returned Fnr is: "+response.getFnr());            	
+                }            	
+            } else {
+            	System.out.print("OCSP response status is: "+response.getResponseStatus()+" (");
+            	switch (response.getResponseStatus()) {
+            		case OCSPRespGenerator.MALFORMED_REQUEST: System.out.println("malformed request)"); break;
+            		case OCSPRespGenerator.INTERNAL_ERROR: System.out.println("internal error"); break;
+            		case OCSPRespGenerator.TRY_LATER: System.out.println("try later)"); break;
+            		case OCSPRespGenerator.SIG_REQUIRED: System.out.println("signature required)"); break;
+            		case OCSPRespGenerator.UNAUTHORIZED: System.out.println("unauthorized)"); break;
+            	}
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
