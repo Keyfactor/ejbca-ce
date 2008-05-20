@@ -13,10 +13,12 @@
  
 package org.ejbca.ui.cli;
 
+import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.StreamCorruptedException;
@@ -58,13 +60,31 @@ public class Ocsp {
     private class SerialNrs {
         final private List<BigInteger> vSerialNrs;
         private SerialNrs(String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
-            final ObjectInput oi = new ObjectInputStream(new FileInputStream(fileName));
+            final InputStream is = new BufferedInputStream(new FileInputStream(fileName));
+            is.mark(1);
             this.vSerialNrs = new ArrayList<BigInteger>();
             try {
-                while( true )
+                ObjectInput oi = null;
+                while( true ) {
+                    for ( int i=100; oi==null && i>0; i--) {
+                        is.reset();
+                        try {
+                            is.mark(i);
+                            oi = new ObjectInputStream(is);
+                        } catch( StreamCorruptedException e) {
+                            is.reset();
+                            is.read();
+                        }
+                    }
+                    if ( oi==null )
+                        break;
                     try {
+                        is.mark(100);
                         vSerialNrs.add((BigInteger)oi.readObject());
-                    } catch( StreamCorruptedException e) {}
+                    } catch( StreamCorruptedException e ) {
+                        oi=null;
+                    }
+                }
             } catch( EOFException e) {}
             System.out.println("Number of certificates in list: "+this.vSerialNrs.size());
         }
