@@ -79,6 +79,8 @@ administrator, who can be found on the sourceforge project page.
 <li>Matt Stevenson, mavricknzwork(at)yahoo.com, code for adding CRMF and SPKAC requests in WS-API.Sybase and case-sensitive columns.</li>
 <li>David Carella, dcarella(at)linagora.com, language improvements and other standard compliance suggestions.</li>
 <li>Miguel Angel Tormo Alfaro, matormo(at)edicom.es, ETSI retention period in QC certificate extension.</li>
+<li>Damir Farazetdinov, fdamirv(at)mail.ru, Found bug with duplicate error codes in OCSPUnidClient.</li>
+<li>Liam Kian Shin, kianshin.lim(at)gemalto.com, Howto for using GEMSafe with EJBCA.</li>
 </ul>
     </section>
   </body>
