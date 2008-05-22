@@ -13,11 +13,13 @@
  
 package org.ejbca.ui.cli;
 
+import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.util.CertTools;
 
 /**
  * Lists the names of all available CAs.
@@ -53,10 +55,19 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
                 CAInfo ca = casession.getCAInfo(administrator,caid);
+                Collection certs = ca.getCertificateChain();
+                Iterator ci = certs.iterator();
+                Certificate cacert = null;
+                if (ci.hasNext()) {
+                    cacert = (Certificate)ci.next();                	
+                }
                 getOutputStream().println();
                 getOutputStream().println("CA Name: "+ca.getName());
                 getOutputStream().println("Id: "+ca.getCAId());
-                getOutputStream().println("DN: "+ca.getSubjectDN());
+                if (cacert != null) {
+                    getOutputStream().println("Issuer DN: "+CertTools.getIssuerDN(cacert));                	
+                }
+                getOutputStream().println("Subject DN: "+ca.getSubjectDN());
                 getOutputStream().println("Type: "+ca.getCAType());
                 getOutputStream().println("Expire time: "+ca.getExpireTime());
                 getOutputStream().println("Signed by: "+ca.getSignedBy());
