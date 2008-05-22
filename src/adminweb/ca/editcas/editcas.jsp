@@ -1050,8 +1050,8 @@
                                  
             byte[] reqbytes = ostr.toByteArray();
             IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(reqbytes);
-            
-             if (certreq != null) {               
+
+             if (certreq != null) {    
                cabean.saveRequestData(reqbytes);                                
                processedsubjectdn = certreq.getRequestDN();
                processrequest = true;
@@ -1069,7 +1069,6 @@
         if(request.getParameter(BUTTON_CANCEL) == null){
          // Create and process CA                          
          caname = request.getParameter(HIDDEN_CANAME);
-          
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
@@ -1174,7 +1173,8 @@
                                                         true);
                  try{
                    byte[] req = cabean.getRequestData(); 
-                   java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
+                   IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(req);
+                   java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, certreq);
                    cabean.saveProcessedCertificate(result);
                    filemode = CERTGENMODE;   
                    includefile="displayresult.jspf";

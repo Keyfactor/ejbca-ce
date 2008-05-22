@@ -61,7 +61,7 @@ public class RequestMessageUtils {
 	public static IRequestMessage parseRequestMessage(byte[] request) {
 		IRequestMessage ret = null;
 		try {
-			PKCS10RequestMessage certreq = genPKCS10RequestMessageFromPEM(request);			
+			ret = genPKCS10RequestMessageFromPEM(request);			
 		} catch (IllegalArgumentException e) {
 			log.info("Can not parse PKCS10 request: ", e);
 			// TODO: try to create a CVC request message instead
