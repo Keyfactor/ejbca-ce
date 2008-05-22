@@ -418,6 +418,16 @@ public class EjbcaWS implements IEjbcaWS {
 			java.security.cert.Certificate iscert = new CardVerifiableCertificate(certObject); 
 			ArrayList<Certificate> retval = new ArrayList<Certificate>();
 			retval.add(new Certificate((java.security.cert.Certificate)iscert));
+			// Get the certificate chain
+			if (user != null) {
+				int caid = user.getCAId();
+				Collection certs = ejbhelper.getSignSession().getCertificateChain(admin, caid);
+				Iterator iter = certs.iterator();
+				while (iter.hasNext()) {
+					java.security.cert.Certificate cert = (java.security.cert.Certificate)iter.next();
+					retval.add(new Certificate(cert));
+				}
+			}
 			return retval;
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);

@@ -268,7 +268,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      *
      * @param admin Information about the administrator or admin preforming the event.
      * @param caid  is the issuerdn.hashCode()
-     * @return The certificate chain, never null.
+     * @return Collection of Certificate, the certificate chain, never null.
      * @ejb.permission unchecked="true"
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"

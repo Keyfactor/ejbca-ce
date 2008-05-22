@@ -99,6 +99,7 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -140,7 +141,7 @@ public class CommonEjbcaWSTest extends TestCase {
     	return "AdminCA1";
     }
     protected String getCVCCAName() {
-    	return "WSTESTCVCA";
+    	return "WSTESTDVCA";
     }
     
 	protected void setUpAdmin() throws Exception {
@@ -1623,7 +1624,22 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertEquals("CN=10001,O=Test,C=SE", CertTools.getSubjectDN(cvcert));
 		PublicKey pk = cvcert.getPublicKey();
 		assertEquals("CVC", pk.getFormat());
-
+		// Verify that we have the complete chain
+		assertEquals(3, certenv.size());
+		Certificate wsdvcert = certenv.get(1);
+		Certificate wscvcacert = certenv.get(2);
+		b64cert = wsdvcert.getCertificateData();
+		parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
+		CVCertificate dvcert = (CVCertificate)parsedObject;
+		b64cert = wscvcacert.getCertificateData();
+		parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
+		CVCertificate cvcacert = (CVCertificate)parsedObject;
+		assertEquals(AuthorizationRoleEnum.DV_D, dvcert.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole());
+		assertEquals(AuthorizationRoleEnum.CVCA, cvcacert.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole());
+		cvcert.verify(dvcert.getCertificateBody().getPublicKey());
+		CardVerifiableCertificate dvjavacert = new CardVerifiableCertificate(dvcert);
+		dvjavacert.verify(cvcacert.getCertificateBody().getPublicKey());
+		
 		//
 		// Second test that we try to get a new certificate for this user without outer (renewal) signature. This should fail.
 		// 
@@ -1679,6 +1695,8 @@ public class CommonEjbcaWSTest extends TestCase {
 		// Finally clean up by removing the CVC CA
         try {
         	String dn = CertTools.stringToBCDNString("CN=00001,O=WSCVCA,C=SE");
+            getCAAdminSession().removeCA(intAdmin, dn.hashCode());
+        	dn = CertTools.stringToBCDNString("CN=00001,O=WSDVCA,C=SE");
             getCAAdminSession().removeCA(intAdmin, dn.hashCode());
         } catch (Exception e) {
         	e.printStackTrace();
@@ -1756,6 +1774,8 @@ public class CommonEjbcaWSTest extends TestCase {
         String rootcadn = "CN=00001,O=WSCVCA,C=SE";
     	String rootcaname = "WSTESTCVCA";
 
+    	java.security.cert.Certificate cvcacert = null;
+    	int cvcaid = rootcadn.hashCode();
         try {
             getAuthSession().initialize(intAdmin, rootcadn.hashCode());
 
@@ -1780,7 +1800,47 @@ public class CommonEjbcaWSTest extends TestCase {
             getCAAdminSession().createCA(intAdmin, cvccainfo);
 
             CAInfo info = getCAAdminSession().getCAInfo(intAdmin, rootcaname);
+            cvcaid = info.getCAId();
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+            Collection col = info.getCertificateChain();
+            assertEquals(1, col.size());
+            Iterator iter = col.iterator();
+            cvcacert = (java.security.cert.Certificate)iter.next();
+        } catch (CAExistsException pee) {
+        	pee.printStackTrace();
+        }    	
+
+        try {
+            String dvcadn = "CN=00001,O=WSDVCA,C=SE";
+        	String dvcaname = "WSTESTDVCA";
+
+        	CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(),
+        			SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
+        			null, // Expiretime 
+        			CAInfo.CATYPE_CVC, cvcaid,
+        			null, catokeninfo, "JUnit WS CVC DV CA", 
+        			-1, null,
+        			24, // CRLPeriod
+        			0, // CRLIssueInterval
+        			10, // CRLOverlapTime
+        			10, // Delta CRL period
+        			new ArrayList(), // CRL publishers
+        			true, // Finish User
+        			extendedcaservices,
+        			new ArrayList(), // Approvals Settings
+        			1, // Number of Req approvals
+        			true // Include in health check
+        	);
+
+        	getCAAdminSession().createCA(intAdmin, cvcdvinfo);
+
+        	CAInfo info = getCAAdminSession().getCAInfo(intAdmin, dvcaname);
+        	assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+            Collection col = info.getCertificateChain();
+            assertEquals(2, col.size());
+            Iterator iter = col.iterator();
+            java.security.cert.Certificate dvcacert = (java.security.cert.Certificate)iter.next();
+            dvcacert.verify(cvcacert.getPublicKey());
         } catch (CAExistsException pee) {
         	pee.printStackTrace();
         }    	

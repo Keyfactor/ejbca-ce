@@ -321,8 +321,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
       this.requestcertchain.addAll(requestcertificatechain);
     }
 
-    /* Returns a collection of CA-certificates, with this CAs cert i position 0, or null
-     * if no CA-certificates exist.
+    /** Returns a collection of CA-certificates, with this CAs cert i position 0, or null
+     * if no CA-certificates exist. The root CA certificate will thus be in the last position.
+     * @return Collection of Certificate
      */
 	public Collection getCertificateChain(){
 	  if(certificatechain == null){
