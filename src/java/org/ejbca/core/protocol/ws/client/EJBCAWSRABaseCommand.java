@@ -1,6 +1,7 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,8 +15,6 @@ import javax.xml.namespace.QName;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-
-
 import org.ejbca.util.CertTools;
 
 /**
@@ -88,9 +87,17 @@ public abstract class EJBCAWSRABaseCommand {
 		if(ejbcaraws == null){
 			CertTools.installBCProvider();
 						
+			File f = new File(getKeyStorePath());
+			if (!f.exists()) {
+				throw new IOException("Truststore '"+getKeyStorePath()+"' does not exist");
+			}
 			System.setProperty("javax.net.ssl.trustStore",getKeyStorePath());
 			System.setProperty("javax.net.ssl.trustStorePassword",getKeyStorePassword());
 			
+			f = new File(getKeyStorePath());
+			if (!f.exists()) {
+				throw new IOException("Keystore '"+getKeyStorePath()+"' does not exist");
+			}
 			System.setProperty("javax.net.ssl.keyStore",getKeyStorePath());
 			System.setProperty("javax.net.ssl.keyStorePassword",getKeyStorePassword());      
         }
