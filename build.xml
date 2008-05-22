@@ -490,7 +490,7 @@
         	    <section name="OCSPUnidClient">
         	      <attribute name="Implementation-Title" value="OCSPUnidClient"/>
         	      <attribute name="Implementation-Version" value="${app.version} ${TODAY}"/> 
-        	      <attribute name="Implementation-Vendor" value="PrimeKey Solutions."/>
+        	      <attribute name="Implementation-Vendor" value="PrimeKey Solutions AB."/>
         	    </section>
                 <attribute name="Class-Path" value="${jar.ocspclientclasspath}" />
                 <attribute name="Main-Class" value="org.ejbca.ui.cli.Ocsp" />
@@ -509,6 +509,7 @@
         <copy todir="${ocsp-dist.dir}/lib">
             <fileset dir="${lib}">
             	<include name="bcprov*.jar"/>
+            	<include name="cert-cvc*.jar"/>
             	<include name="log4j*.jar" />
             	<include name="commons-lang-*.jar" />
             </fileset>
