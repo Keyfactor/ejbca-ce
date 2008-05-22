@@ -16,7 +16,7 @@
  *
  * Created on den 3 nov 2002, 12:06
  */
-package org.ejbca.core.model;
+package org.ejbca.ui.web.pub;
 
 
 import java.security.cert.X509Certificate;
@@ -36,6 +36,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -71,12 +72,7 @@ public class ApplyBean implements java.io.Serializable {
     public void initialize(HttpServletRequest request)
         throws Exception {
         if (!initialized) {
-            if (request.getAttribute("javax.servlet.request.X509Certificate") != null) {
-                administrator = new Admin(((X509Certificate[]) request.getAttribute(
-                            "javax.servlet.request.X509Certificate"))[0]);
-            } else {
-                administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-            }
+        	administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
 
             InitialContext jndicontext = new InitialContext();
             Object obj1 = jndicontext.lookup(IUserAdminSessionHome.JNDI_NAME);

@@ -143,7 +143,7 @@ public class SecConst extends Object {
     /**
      * Default key lengths. Users are allowed to choose from these key lengths when
      * lookup of available bit lengths fails. 
-     * @see org.ejbca.core.model.ApplyBean
+     * @see org.ejbca.ui.web.pub.ApplyBean
      */
     public static final int[] DEFAULT_KEY_LENGTHS = new int[] {512, 1024, 2048};
 
