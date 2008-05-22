@@ -13,7 +13,9 @@
 
 package se.anatom.ejbca.ca.caadmin;
 
+import java.math.BigInteger;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
@@ -43,6 +46,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CertTools;
 
 /**
@@ -739,4 +743,185 @@ public class TestCAs extends TestCase {
         assertTrue("Creating RSA CA reverse failed", ret);
         log.debug("<test08AddRSACAReverseDN()");
     }
+    
+    public void test09AddCVCCA() throws Exception {
+        log.debug(">test09AddCVCCA()");
+        boolean ret = false;
+        Context context = getInitialContext();
+        IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
+        IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
+        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+        catokeninfo.setSignKeySpec("1024");
+        catokeninfo.setEncKeySpec("1024");
+        catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+        catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        // No CA Services.
+        ArrayList extendedcaservices = new ArrayList();
+
+        String rootcadn = "CN=00001,O=TESTCVCA,C=SE";
+    	String rootcaname = "TESTCVCA";
+        String dvddn = "CN=00001,O=TESTDV-D,C=SE";
+    	String dvdcaname = "TESTDV-D";
+        String dvfdn = "CN=00001,O=TESTDV-F,C=FI";
+    	String dvfcaname = "TESTDV-F";
+
+        try {
+            authorizationsession.initialize(admin, rootcadn.hashCode());
+
+            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(),
+            		SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, 
+                    null, // Expiretime 
+                    CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED,
+                    null, catokeninfo, "JUnit CVC CA", 
+                    -1, null,
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(), // CRL publishers
+                    true, // Finish User
+                    extendedcaservices,
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    true // Include in health check
+                    );
+            
+            cacheAdmin.createCA(admin, cvccainfo);
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, rootcaname);
+            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+
+            Certificate cert = (Certificate)info.getCertificateChain().iterator().next();
+            assertEquals("CVC", cert.getType());
+            assertEquals(CertTools.getSubjectDN(cert), rootcadn);
+            assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+            assertEquals(info.getSubjectDN(), rootcadn);
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof RSAPublicKey) {
+            	RSAPublicKey rsapk = (RSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "RSA");
+				BigInteger modulus = rsapk.getModulus(); 
+				int len = modulus.bitLength();
+				assertEquals(1024, len);
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
+            assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+            // Check role
+            CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+            assertEquals("CVCA", role);
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        try {
+            authorizationsession.initialize(admin, dvddn.hashCode());
+
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(),
+            		SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
+                    null, // Expiretime 
+                    CAInfo.CATYPE_CVC, rootcadn.hashCode(),
+                    null, catokeninfo, "JUnit CVC CA", 
+                    -1, null,
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(), // CRL publishers
+                    true, // Finish User
+                    extendedcaservices,
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    true // Include in health check
+                    );
+            
+            cacheAdmin.createCA(admin, cvccainfo);
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, dvdcaname);
+            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+
+            Certificate cert = (Certificate)info.getCertificateChain().iterator().next();
+            assertEquals("CVC", cert.getType());
+            assertEquals(CertTools.getSubjectDN(cert), dvddn);
+            assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+            assertEquals(info.getSubjectDN(), dvddn);
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof RSAPublicKey) {
+            	RSAPublicKey rsapk = (RSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "RSA");
+				BigInteger modulus = rsapk.getModulus(); 
+				int len = modulus.bitLength();
+				assertEquals(1024, len);
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
+            assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+            // Check role
+            CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+            assertEquals("DV_D", role);
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        try {
+            authorizationsession.initialize(admin, dvfdn.hashCode());
+
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(),
+            		SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
+                    null, // Expiretime 
+                    CAInfo.CATYPE_CVC, rootcadn.hashCode(),
+                    null, catokeninfo, "JUnit CVC CA", 
+                    -1, null,
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(), // CRL publishers
+                    true, // Finish User
+                    extendedcaservices,
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    true // Include in health check
+                    );
+            
+            cacheAdmin.createCA(admin, cvccainfo);
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, dvfcaname);
+            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+
+            Certificate cert = (Certificate)info.getCertificateChain().iterator().next();
+            assertEquals("CVC", cert.getType());
+            assertEquals(CertTools.getSubjectDN(cert), dvfdn);
+            assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+            assertEquals(info.getSubjectDN(), dvfdn);
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof RSAPublicKey) {
+            	RSAPublicKey rsapk = (RSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "RSA");
+				BigInteger modulus = rsapk.getModulus(); 
+				int len = modulus.bitLength();
+				assertEquals(1024, len);
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
+            assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+            // Check role
+            CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+            assertEquals("DV_F", role);
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        assertTrue("Creating CVC CAs failed", ret);
+        log.debug("<test09AddCVCCA()");
+    }
+
 }

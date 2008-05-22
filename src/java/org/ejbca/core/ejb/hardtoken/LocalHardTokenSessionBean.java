@@ -72,7 +72,6 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
@@ -1379,8 +1378,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.interface-method view-type="both"
         * @ejb.transaction type="Required"
        */
-    public void addHardTokenCertificateMapping(Admin admin, String tokensn, X509Certificate certificate){
-        String certificatesn = certificate.getSerialNumber().toString(16);
+    public void addHardTokenCertificateMapping(Admin admin, String tokensn, Certificate certificate){
+        String certificatesn = CertTools.getSerialNumber(certificate).toString(16);
         debug(">addHardTokenCertificateMapping(certificatesn : "+ certificatesn  +", tokensn : " + tokensn + ")");
         int caid = CertTools.getIssuerDN(certificate).hashCode();
         String fp = CertTools.getFingerprintAsString(certificate);
@@ -1421,8 +1420,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        * @ejb.transaction type="Required"
        */
-    public void removeHardTokenCertificateMapping(Admin admin, X509Certificate certificate){
-       String certificatesn = certificate.getSerialNumber().toString(16);
+    public void removeHardTokenCertificateMapping(Admin admin, Certificate certificate){
+       String certificatesn = CertTools.getSerialNumber(certificate).toString(16);
        debug(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
 	   int caid = CertTools.getIssuerDN(certificate).hashCode();
       try{

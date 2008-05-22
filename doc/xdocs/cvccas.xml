@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>CVC CAs</title>
+  </properties>
+
+<body>
+  <section name="Features">
+    <p>
+    Using EJBCA you can set up a complete infrastructure for CVC CAs with:
+    <ul>
+      <li>Country CVCCA</li>
+      <li>Domestic DVs (document verifier)</li>
+      <li>Foreign DVs</li>
+      <li>Inspection systems (IS)</li>
+    </ul> 
+    </p>
+    You can also set up a Country Signing CA, which is a regular X.509 CA. 
+    <p>
+    Using the complimentary project <a href="http://www.signserver.org/">SignServer</a> you can set up a clustered Document Signer.
+    </p> 
+    <p>
+    Currently EJBCA supports RSA keys in CV certificates with the follwing algorithms:
+    <ul>
+      <li>SHA1WithRSA - id-TA-RSA-v1-5-SHA-1</li>
+      <li>SHA256WithRSA - id-TA-RSA-v1-5-SHA-256</li>
+      <li>SHA256WithRSAAndMGF1 - id-TA-RSA-PSS-SHA-256</li>
+    </ul>
+    </p>
+  </section>
+  
+  <section name="Creating CVC CAs and DVs">
+  <p>When creating a CVC CA there are three CA Reference fields in the standard. In EJBCA these are mapped to a DN structure to
+  have common handling in EJBCA. The mapping is:
+  <ul>
+    <li>Country = C</li>
+    <li>Mnemonic = O</li>
+    <li>Sequence = CN</li>
+  </ul>
+  For example when creating a country CVCA you select type CVC in the create CA page and enter a 'Subject DN' like: C=SE,O=EJBCA,CN=00001.
+  For the CVCA you select 'Signed by=Self Signed' and 'Certificate Profile=ROOTCA'.
+  </p>
+  <p>To create a DV you select 'Signed by=Name of CVCCA' and 'Certificate Profile=SUBCA'.</p>
+  </section>
+  
+  <section name="EAC roles">
+  <p>
+  <ul>
+  <li>When issuing a CV certificate using a Root CA profile the EAC role will be CVCA.</li>
+  <li>When issuing a CV certificate using a Sub CA profile the EAC role will be DV-D if the country is the same as the country of the CVCA and DV-f if the country is not the same as the CVCA.</li>
+  <li>When issuing a CV certificate using an End Entity profile the EAC role will be IS.</li>
+  </ul>
+  </p>
+  </section>
+  
+  <section name="EAC access rights">
+  <p>
+  The EAC access rights for all issued CV certificates will be read access DG3 and DG4.
+  </p>
+  </section>
+  
+  <section name="Foreign DVs">
+  <p>
+  You can sign foreign DVs by receiving and processing a CV certificate request. In the 'Edit Certificate Authorities' page enter a name for the 
+  foreign DV and click 'Process Certificate Request'.
+  </p>
+  <p>You can create a DV to be signed by a foreign CVCA by creating a new CA and selecting 'Signed By=External CA'.
+  You need the CVCA certificate of the foreign CVCA to create the request to be sent.
+  </p> 
+  </section>
+  
+  <section name="Inspection Systems">
+  <p>
+  The best interface for enrolling IS's is the Web service API. There is a method cvcRequest that implements initial issuance and automatic renewal 
+  of IS cvc requests.
+  </p>
+  <p>
+  Enrollment processing logic using WS API is:
+  <ul>
+    <li>A new IS with no old certificate issued must be pre-registered, be in status NEW and use a password.</li>
+    <li>An IS with status REVOKED or HISTORICAL can not be enrolled.</li>
+    <li>If the request is an authenticated request and the IS have an old valid (in time) certificate (in the EJBCA database) that can verify the outer signature, a new IS certificate is automatically allowed to be enrolled.</li>
+    <li>If the authenticated request can not be verified using an old valid certificate (in the EJBCA database) the user must be in status NEW and use a password.</li>
+  </ul>
+  The complete certificate chain is always returned, with the IS certificate in the first position, DV certificate in the second and CVCA certificate last.
+  </p>
+  <p>
+  Revocation of an IS prohibits further issuance of certificates to that IS using the WS API.
+  </p>
+  <p>
+  There is a simple command line client for testing which is under dist/ejbcawscli/cvcwscli.sh. This can be used to make requests and to parse, print and verify requests and certificates.
+  </p>
+  </section>
+  
+  <section name="Importing CAs">
+  <p>For test purposes you may receive a private key and a CV certificate for the CVCA trust point used by the passport manufacturer when creating 
+  specimen passports. To test your process and inspection systems you can import a CVCA (with soft keystore) in EJBCA if you have a PKCS#8 private key and a CV certificate iwth the public key.
+  </p>
+  <p>bin/ejbca.sh ca importcvca
+  </p>
+  <p>
+  Example import command using the given CV Certificate:
+  </p>
+  <source>
+bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvcert C=SE,O=IMPCA1,CN=10001
+  </source>
+  <p>
+  Example import command using the same private/public keys but generating a new certificate:
+  </p>
+  <source>
+bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvcert C=SE,O=IMPCA1,CN=10001 SHA1WithRSA 365
+  </source>
+  </section>
+  
+</body>
+</document>
+

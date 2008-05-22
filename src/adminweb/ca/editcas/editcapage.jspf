@@ -28,7 +28,6 @@
  
   row = 0;
   CAInfo cainfo = null;
-  X509CAInfo x509cainfo = null;
   
   String catokentext = null;
   CATokenInfo catokeninfo = null;
@@ -71,13 +70,12 @@
 
     waitingresponse = cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
 
-    x509cainfo = (X509CAInfo) cainfo;
   }
 
   OCSPCAServiceInfo ocspcainfo = null; 
   java.security.cert.X509Certificate ocspcert = null; 
   if(editca && !isexternal){
-    Iterator iter = x509cainfo.getExtendedCAServiceInfos().iterator();       
+    Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();       
     while(iter.hasNext()){
       ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
       if(serviceinfo instanceof OCSPCAServiceInfo){
@@ -91,7 +89,7 @@
   XKMSCAServiceInfo xkmscainfo = null; 
   java.security.cert.X509Certificate xkmscert = null; 
   if(editca && !isexternal){
-    Iterator iter = x509cainfo.getExtendedCAServiceInfos().iterator();       
+    Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();       
     while(iter.hasNext()){
       ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
       if(serviceinfo instanceof XKMSCAServiceInfo){
@@ -105,7 +103,7 @@
   CmsCAServiceInfo cmscainfo = null; 
   java.security.cert.X509Certificate cmscert = null; 
   if(editca && !isexternal){
-    Iterator iter = x509cainfo.getExtendedCAServiceInfos().iterator();       
+    Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();       
     while(iter.hasNext()){
       ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
       if(serviceinfo instanceof CmsCAServiceInfo){
@@ -166,44 +164,52 @@ function fillCertProfileField(){
 }
 
   <% if(!processrequest){ %>
-function isExternal(){
-   var makebutton      =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
-   var createbutton    =  document.ca.<%= BUTTON_CREATE %>; 
-   var validityfield   =  document.ca.<%=TEXTFIELD_VALIDITY%>;
-   var certproffield   =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
+function isExternalX509(){
    var subjectaltname  =  document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>;
    var policyidfield   =  document.ca.<%=TEXTFIELD_POLICYID%>;
    var activateocsp    =  document.ca.<%=CHECKBOX_ACTIVATEOCSPSERVICE%>;
    var activatexkms    =  document.ca.<%=CHECKBOX_ACTIVATEXKMSSERVICE%>;
    var activatecms     =  document.ca.<%=CHECKBOX_ACTIVATECMSSERVICE%>;
    
+   if (subjectaltname != null) {	
+	   subjectaltname.disabled = false; 
+	   policyidfield.disabled = false; 
+	   activateocsp.disabled = false;
+	   activatexkms.disabled = false;
+	   activatecms.disabled = false;
+	   activateocsp.checked = true;   
+	   activatexkms.checked = false;   
+	   activatecms.checked = false;   
+	
+	   if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
+	      subjectaltname.disabled = true; 
+	      policyidfield.disabled = true;   
+	      activateocsp.disabled = true;
+	      activateocsp.checked = false;
+	      activatexkms.disabled = true;
+	      activatexkms.checked = false;    
+	      activatecms.disabled = true;
+	      activatecms.checked = false;    
+	   } 
+   }
+}
+
+function isExternalGeneric(){
+   var makebutton      =  document.ca.<%= BUTTON_MAKEREQUEST %>; 
+   var createbutton    =  document.ca.<%= BUTTON_CREATE %>; 
+   var validityfield   =  document.ca.<%=TEXTFIELD_VALIDITY%>;
+   var certproffield   =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
 
    makebutton.disabled = true;
    createbutton.disabled = false; 
    validityfield.disabled = false; 
    certproffield.disabled = false; 
-   subjectaltname.disabled = false; 
-   policyidfield.disabled = false; 
-   activateocsp.disabled = false;
-   activatexkms.disabled = false;
-   activatecms.disabled = false;
-   activateocsp.checked = true;   
-   activatexkms.checked = false;   
-   activatecms.checked = false;   
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       makebutton.disabled = false;   
       createbutton.disabled = true;
       validityfield.disabled = true; 
       certproffield.disabled = true; 
-      subjectaltname.disabled = true; 
-      policyidfield.disabled = true;   
-      activateocsp.disabled = true;
-      activateocsp.checked = false;
-      activatexkms.disabled = true;
-      activatexkms.checked = false;    
-      activatecms.disabled = true;
-      activatecms.checked = false;    
    } 
 }
 
@@ -350,7 +356,8 @@ function checkallfields(){
       illegalfields++;
    if(!checkfieldforipaddess("document.ca.<%=TEXTFIELD_POLICYID%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + ejbcawebbean.getText("POLICYID")%>"))
       illegalfields++;
-      <% } %>
+      <% } 
+      } %>
       <% if(!processrequest){ %>
     if(!checkfieldfordecimalnumbers("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINCRLPERIOD") %>"))
       illegalfields++;
@@ -364,8 +371,7 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("DELTACRLPERIOD")%>");
       illegalfields++;
     }
-    <%  } 
-      }  %> 
+    <%  } %> 
      return illegalfields == 0;  
    } 
 -->
@@ -404,12 +410,16 @@ function checkallfields(){
    <% if(!processrequest){ %>
     <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
       <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATYPE %>'>
+      <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
       <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
           <%= ejbcawebbean.getText("TYPEOFCA") %>
         </td>
         <td width="50%" valign="top"> 
-           X509
+            <select name="<%=SELECT_CATYPE %>" size="1" onchange="document.changecatype.submit()"'>                
+                 <option value="<%=CAInfo.CATYPE_X509%>" <%if(catype == CAInfo.CATYPE_X509) out.write("selected");%>>X509</option>
+                 <option value="<%=CAInfo.CATYPE_CVC%>" <%if(catype == CAInfo.CATYPE_CVC) out.write("selected");%>>CVC</option>  
+	        </select> 
         </td>
       </tr>
     </form>
@@ -427,6 +437,7 @@ function checkallfields(){
     <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
        <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATOKENTYPE %>'>
        <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
+       <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<%=catype %>'>
        <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">          
             <%= ejbcawebbean.getText("CATOKENTYPE") %>
@@ -500,7 +511,7 @@ function checkallfields(){
                 }else
                   out.write((String) caidtonamemap.get(new Integer(cainfo.getSignedBy())));
               }else{%>
-        <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternal()">
+        <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternalX509(); isExternalGeneric()">
                 <option value="<%= CAInfo.SELFSIGNED%>" selected><%= ejbcawebbean.getText("SELFSIGNED") %></option>  
                 <option value="<%= CAInfo.SIGNEDBYEXTERNALCA%>"><%= ejbcawebbean.getText("EXTERNALCA") %></option>  
                 <% Iterator iter = casigners.keySet().iterator();
@@ -567,8 +578,9 @@ function checkallfields(){
         &nbsp;
       </td>
     </tr>
+    
    <% if(catype == CAInfo.CATYPE_X509){ 
-        
+	     X509CAInfo x509cainfo = (X509CAInfo) cainfo;
         %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -706,66 +718,6 @@ function checkallfields(){
              }%>> 
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLPERIOD") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getCRLPeriod());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + x509cainfo.getCRLPeriod()+ "'");
-                          } else { out.write(" value='24'"); }%>>
-           <% } %> 
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getCRLIssueInterval());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + x509cainfo.getCRLIssueInterval()+ "'");
-                          } else { out.write(" value='0'"); }%>>
-           <% } %> 
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLOVERLAPTIME") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getCRLOverlapTime());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + x509cainfo.getCRLOverlapTime()+ "'");
-                          } else { out.write(" value='10'"); }%>>
-           <% } %> 
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DELTACRLPERIOD") %> <br/>
-        <%= ejbcawebbean.getText("NODELTACRLTIP") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getDeltaCRLPeriod());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + x509cainfo.getDeltaCRLPeriod()+ "'");
-                          } else { out.write(" value='0'"); }%>>
-           <% } %> 
-      </td>
-    </tr>       
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
@@ -774,7 +726,7 @@ function checkallfields(){
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
            <%   Collection usedpublishers = null;
-                if(editca) usedpublishers = x509cainfo.getCRLPublishers(); 
+                if(editca) usedpublishers = cainfo.getCRLPublishers(); 
                 Iterator iter = publisheridtonamemap.keySet().iterator(); 
                 while(iter.hasNext()){
                   Integer next = (Integer) iter.next(); %>
@@ -901,7 +853,74 @@ function checkallfields(){
          <% } %>
       </td>
     </tr>    
-    <% } %>    
+    <% } %>        
+   <%  } 
+    } // if(catype == CAInfo.CATYPE_X509){
+   %>
+    
+   <%
+    if(!processrequest && !isexternal){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CRLPERIOD") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + cainfo.getCRLPeriod());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
+            <% if(editca) { out.write(" value='" + cainfo.getCRLPeriod()+ "'");
+                          } else { out.write(" value='24'"); }%>>
+           <% } %> 
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + cainfo.getCRLIssueInterval());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
+            <% if(editca) { out.write(" value='" + cainfo.getCRLIssueInterval()+ "'");
+                          } else { out.write(" value='0'"); }%>>
+           <% } %> 
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CRLOVERLAPTIME") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + cainfo.getCRLOverlapTime());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
+            <% if(editca) { out.write(" value='" + cainfo.getCRLOverlapTime()+ "'");
+                          } else { out.write(" value='10'"); }%>>
+           <% } %> 
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("DELTACRLPERIOD") %> <br/>
+        <%= ejbcawebbean.getText("NODELTACRLTIP") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + cainfo.getDeltaCRLPeriod());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
+            <% if(editca) { out.write(" value='" + cainfo.getDeltaCRLPeriod()+ "'");
+                          } else { out.write(" value='0'"); }%>>
+           <% } %> 
+      </td>
+    </tr>
+
     <tr id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("APPROVALSETTINGS") %> 
@@ -912,7 +931,7 @@ function checkallfields(){
                 for(int i=0;i< CAInfo.AVAILABLE_APPROVALSETTINGS.length;i++){
                    %>
            <option  value="<%= CAInfo.AVAILABLE_APPROVALSETTINGS[i] %>" 
-              <%    if(editca && x509cainfo.isApprovalRequired(CAInfo.AVAILABLE_APPROVALSETTINGS[i]))
+              <%    if(editca && cainfo.isApprovalRequired(CAInfo.AVAILABLE_APPROVALSETTINGS[i]))
                       out.write(" selected ");
                   %>>
               <%= ejbcawebbean.getText(CAInfo.AVAILABLE_APPROVALSETTINGS_TEXTS[i]) %>         
@@ -930,7 +949,7 @@ function checkallfields(){
            <%  for(int i=1;i<= 4;i++){
                    %>
            <option  value="<%= i %>" 
-              <%    if(editca && x509cainfo.getNumOfReqApprovals() == i)
+              <%    if(editca && cainfo.getNumOfReqApprovals() == i)
                       out.write(" selected ");
                   %>>
               <%= i %>         
@@ -945,12 +964,13 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_FINISHUSER %>" value="<%=CHECKBOX_VALUE %>" 
-            <% if((editca && x509cainfo.getFinishUser()) || !editca)
+            <% if((editca && cainfo.getFinishUser()) || !editca)
                  out.write("CHECKED");%>>         
       </td>
     </tr>
-   <%  } 
-    }
+    
+    <% } // if(!processrequest && !isexternal)
+    
     if(editca && !waitingresponse){%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 

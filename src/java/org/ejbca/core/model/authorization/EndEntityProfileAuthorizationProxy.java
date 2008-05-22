@@ -26,6 +26,7 @@ import org.ejbca.core.ejb.log.ILogSessionHome;
 import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.util.CertTools;
 
 /**
  * A class used to improve performance by proxying a users end entity profile authorization minimizing the need of traversing
@@ -99,7 +100,7 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
             // TODO Fix
             return true;
         }
-        adm = new String(admin.getAdminInformation().getX509Certificate().getSignature());
+        adm = new String(CertTools.getSignature(admin.getAdminInformation().getX509Certificate()));
         resource = adm + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
         // Check if name is in hashmap
         returnval = (Boolean) profileauthstore.get(resource);

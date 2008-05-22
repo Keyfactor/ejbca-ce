@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +50,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -374,8 +374,8 @@ public class RAInterfaceBean implements java.io.Serializable {
         while(iter.hasNext()){
            UserDataVO user = null;
            try{
-             X509Certificate next = (X509Certificate) iter.next();  
-             user = adminsession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), next.getIssuerDN().toString());
+             Certificate next = (Certificate) iter.next();  
+             user = adminsession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));
              if(user != null){
                userlist.add(user);
              }
@@ -574,8 +574,8 @@ public class RAInterfaceBean implements java.io.Serializable {
     		certificates = new CertificateView[certs.size()];
     		for(int i=0; i< certificates.length; i++){
     			RevokedInfoView revokedinfo = null;
-    			X509Certificate cert = (X509Certificate) j.next();
-    			RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
+    			Certificate cert = (Certificate) j.next();
+    			RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
     			if(revinfo != null) {
     				revokedinfo = new RevokedInfoView(revinfo);
     			}
@@ -597,9 +597,9 @@ public class RAInterfaceBean implements java.io.Serializable {
        Iterator i = certs.iterator();
        // Extract and revoke collection
        while ( i.hasNext() ) {
-    	   X509Certificate cert = (X509Certificate) i.next();
+    	   Certificate cert = (Certificate)i.next();
            try {
-        	   adminsession.revokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username, reason);
+        	   adminsession.revokeCert(administrator, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, reason);
         	// Ignore errors if some were successful 
            } catch (ApprovalException e) {
         	   lastAppException = e;
@@ -633,8 +633,8 @@ public class RAInterfaceBean implements java.io.Serializable {
       if(!certs.isEmpty()){
         Iterator j = certs.iterator();
         while(j.hasNext()){
-          X509Certificate cert = (X509Certificate) j.next();        
-          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());          
+          Certificate cert = (Certificate)j.next();        
+          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));          
           if(revinfo == null || revinfo.getReason()== RevokedCertInfo.NOT_REVOKED)
             allrevoked = false;
         }
@@ -652,16 +652,16 @@ public class RAInterfaceBean implements java.io.Serializable {
     public void loadCertificates(BigInteger serno, String issuerdn) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
 	  try{	
 		  authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + issuerdn.hashCode());        
-		  X509Certificate cert = (X509Certificate) certificatesession.findCertificateByIssuerAndSerno(administrator, issuerdn, serno);
+		  Certificate cert = certificatesession.findCertificateByIssuerAndSerno(administrator, issuerdn, serno);
 		  
 		  if(cert != null){
 			  RevokedInfoView revokedinfo = null;
-			  String username = certificatesession.findUsernameByCertSerno(administrator,serno, cert.getIssuerDN().toString());
+			  String username = certificatesession.findUsernameByCertSerno(administrator,serno, CertTools.getIssuerDN(cert));
 			  if(this.adminsession.findUser(administrator, username) != null){
 				  int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
 				  this.endEntityAuthorization(administrator,endentityprofileid,AvailableAccessRules.VIEW_RIGHTS,true);
 			  }
-			  RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
+			  RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
 			  if(revinfo != null)
 				  revokedinfo = new RevokedInfoView(revinfo);
 			  
@@ -737,7 +737,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
 
 
-    public boolean keyRecoveryPossible(X509Certificate cert, String username) throws Exception{
+    public boolean keyRecoveryPossible(Certificate cert, String username) throws Exception{
       boolean returnval = true;
       
       try{
@@ -758,7 +758,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       return returnval && keyrecoverysession.existsKeys(administrator, cert) && !keyrecoverysession.isUserMarked(administrator,username);
     }
 
-    public void markForRecovery(String username, X509Certificate cert) throws Exception{
+    public void markForRecovery(String username, Certificate cert) throws Exception{
       boolean authorized = true;
       int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){

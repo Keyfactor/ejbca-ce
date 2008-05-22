@@ -245,12 +245,11 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
         // Exctract fields to store with the certificate.
         X509Certificate tmpcert;
 
-        tmpcert = (X509Certificate) incert;
-        String fingerprint = CertTools.getFingerprintAsString(tmpcert);
+        String fingerprint = CertTools.getFingerprintAsString(incert);
         setFingerprint(fingerprint);
-        setIssuerDN(CertTools.getIssuerDN(tmpcert));
-        log.debug("Creating certreqhistory data, serial=" + tmpcert.getSerialNumber().toString() + ", issuer=" + getIssuerDN());
-        setSerialNumber(tmpcert.getSerialNumber().toString());
+        setIssuerDN(CertTools.getIssuerDN(incert));
+        log.debug("Creating certreqhistory data, serial=" + CertTools.getSerialNumber(incert).toString(16) + ", issuer=" + getIssuerDN());
+        setSerialNumber(CertTools.getSerialNumber(incert).toString());
         setTimestamp(new Date().getTime());
                 	
     	setUsername(useradmindata.getUsername());

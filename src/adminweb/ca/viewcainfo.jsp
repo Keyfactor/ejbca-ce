@@ -72,7 +72,13 @@ function viewocspcert(){
      <% for(int i=0; i < viewcainfohelper.cainfo.getCAInfoData().length; i++){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %></td>
-	<td>&nbsp;&nbsp;<%= viewcainfohelper.cainfo.getCAInfoData()[i] %>
+	<td>&nbsp;&nbsp;
+		<% String datatext = viewcainfohelper.cainfo.getCAInfoData()[i];
+		   if (datatext == null) {
+			   datatext = "";
+		   }
+		%>
+		<%=datatext%>
         </td>
       </tr>    
       <% } %>

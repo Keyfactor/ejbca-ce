@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,7 @@ import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -233,7 +235,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	synchronized public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+	synchronized public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 		// Is first LogEvent? Write Initiating Log Event
 		if (isFirstLogEvent) {
 			isFirstLogEvent = false;
@@ -252,7 +254,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * 
 	 * Chains each new log-event together with last processed and any new event found in database.
 	 */
-	private void logInternal(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+	private void logInternal(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 		// Convert exception to something loggable
 		if (exception != null) {
 			comment += ", Exception: " + exception.getMessage(); 
@@ -360,8 +362,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			String certificateSerialNumber = null;
 			String certificateIssuerDN = null; 
 			if (certificate != null) {
-				certificateSerialNumber = certificate.getSerialNumber().toString(16);
-				certificateIssuerDN = certificate.getIssuerDN().toString(); 
+				certificateSerialNumber = CertTools.getSerialNumber(certificate).toString(16);
+				certificateIssuerDN = CertTools.getIssuerDN(certificate); 
 			}
 			ProtectedLogEventRow protectedLogEventRow = new ProtectedLogEventRow(
 					admininfo.getAdminType(), admininfo.getAdminData(), caid, module, time.getTime(), username, certificateSerialNumber, 
@@ -389,13 +391,13 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * At this point we can no longer rely on beans to exist. We do our best to log as much as possible, unprotected.
 	 * The admin has to manually "accept" these log-events on another node or when the server is back up using the CLI.
 	 */
-	private void logInternalOnShutDown(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+	private void logInternalOnShutDown(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 		ProtectedLogToken protectedLogToken = new ProtectedLogToken();
 		String certificateSerialNumber = null;
 		String certificateIssuerDN = null; 
 		if (certificate != null) {
-			certificateSerialNumber = certificate.getSerialNumber().toString(16);
-			certificateIssuerDN = certificate.getIssuerDN().toString(); 
+			certificateSerialNumber = CertTools.getSerialNumber(certificate).toString(16);
+			certificateIssuerDN = CertTools.getIssuerDN(certificate); 
 		}
 		ProtectedLogEventIdentifier[] linkedInEventIdentifiers = new ProtectedLogEventIdentifier[1];
 		linkedInEventIdentifiers[0] = new ProtectedLogEventIdentifier(nodeGUID, counter-1);

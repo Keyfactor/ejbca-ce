@@ -29,6 +29,7 @@ public class CAInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final int CATYPE_X509 = 1;  
+	public static final int CATYPE_CVC = 2;  
     
     /** 
      * Constants indicating that the CA is selfsigned.

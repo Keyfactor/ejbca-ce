@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -134,7 +135,8 @@ public class ApprovalDataVOView  implements Serializable{
 	    }
 	    
 	    if(data.getApprovalRequest().getRequestAdmin().getAdminType() == Admin.TYPE_CLIENTCERT_USER){
-		  String dn = data.getApprovalRequest().getRequestAdminCert().getSubjectDN().toString();
+	      Certificate cert = data.getApprovalRequest().getRequestAdminCert();
+		  String dn = CertTools.getSubjectDN(cert);
 		  String o =  CertTools.getPartFromDN(dn, "O");
 		  if(o==null){
 			o="";

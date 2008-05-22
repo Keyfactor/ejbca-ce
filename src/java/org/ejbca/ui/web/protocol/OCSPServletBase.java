@@ -424,10 +424,10 @@ abstract class OCSPServletBase extends HttpServlet {
                     StringBuffer certInfo = new StringBuffer();
                     Iterator iter = m_cacerts.iterator();
                     while (iter.hasNext()) {
-                        X509Certificate cert = (X509Certificate) iter.next();
-                        certInfo.append(cert.getSubjectDN().getName());
+                        Certificate cert = (Certificate) iter.next();
+                        certInfo.append(CertTools.getSubjectDN(cert));
                         certInfo.append(',');
-                        certInfo.append(cert.getSerialNumber().toString(16));
+                        certInfo.append(CertTools.getSerialNumber(cert).toString(16));
                         certInfo.append('\n');
                     }
                     m_log.debug("Found the following CA certificates : \n"

@@ -187,7 +187,7 @@ public class TestCertificateData extends TestCase {
         log.debug("List certs for foo: " + certfps.size());
         Iterator iter = certfps.iterator();
         while (iter.hasNext()) {
-            X509Certificate cert = (X509Certificate) iter.next();
+            Certificate cert = (Certificate) iter.next();
             String fp = CertTools.getFingerprintAsString(cert);
             log.debug("revoking cert with fp="+fp);
             // Revoke all foos certificates, note that revokeCertificate will not change status of certificates that are already revoked
@@ -216,7 +216,7 @@ public class TestCertificateData extends TestCase {
         // Verify that cert are revoked
         Iterator iter = certfps.iterator();
         while (iter.hasNext()) {
-            X509Certificate cert = (X509Certificate) iter.next();
+            Certificate cert = (Certificate) iter.next();
             String fp = CertTools.getFingerprintAsString(cert);
             CertificateInfo rev = store.getCertificateInfo(admin, fp);
             log.info("revocationdate (after rev)=" + rev.getRevocationDate());
@@ -260,8 +260,8 @@ public class TestCertificateData extends TestCase {
         Collection certs = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSubjectDN(cert), CertTools.getIssuerDN(cert));
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
-            X509Certificate xcert = (X509Certificate) iter.next();
-            log.debug(CertTools.getSubjectDN(xcert) + " - " + xcert.getSerialNumber().toString());
+            Certificate xcert = (Certificate) iter.next();
+            log.debug(CertTools.getSubjectDN(xcert) + " - " + CertTools.getSerialNumber(xcert).toString());
             //log.debug(certs[i].toString());
         }
         log.debug("<test05FindAgain()");
@@ -302,8 +302,8 @@ public class TestCertificateData extends TestCase {
         Iterator iter = certs.iterator();
 
         while (iter.hasNext()) {
-            X509Certificate cert = (X509Certificate) iter.next();
-            Date retDate = cert.getNotAfter();
+            Certificate cert = (Certificate) iter.next();
+            Date retDate = CertTools.getNotAfter(cert);
             log.debug(retDate);
             assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
         }

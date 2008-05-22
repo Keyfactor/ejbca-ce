@@ -8,6 +8,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -188,21 +189,21 @@ public class OCSPUtil {
     	// Set, as a try, the signer to be the first certificate, so we have a name to log...
     	String signer = null;
     	if (certs.length > 0) {
-    		signer = certs[0].getSubjectDN().getName();
+    		signer = CertTools.getSubjectDN(certs[0]);
     	}
         // We must find a cert to verify the signature with...
     	boolean verifyOK = false;
     	for (int i = 0; i < certs.length; i++) {
     		if (req.verify(certs[i].getPublicKey(), "BC") == true) {
     			signercert = certs[i];
-    			signer = signercert.getSubjectDN().getName();
-    			String signerissuer = signercert.getIssuerDN().getName();
+        		signer = CertTools.getSubjectDN(signercert);
+    			String signerissuer = CertTools.getIssuerDN(signercert);
     			String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
     			m_log.info(infoMsg);
     			verifyOK = true;
     			// Also check that the signer certificate can be verified by one of the CA-certificates
     			// that we answer for
-    			X509Certificate signerca = findCertificateBySubject(certs[i].getIssuerDN().getName(), cacerts);
+    			Certificate signerca = findCertificateBySubject(CertTools.getIssuerDN(certs[i]), cacerts);
     			if (signerca != null) {
     				try {
     					signercert.verify(signerca.getPublicKey());
@@ -232,7 +233,7 @@ public class OCSPUtil {
      * 
      * @param subjectDN the subjectDN to search for in the collection of certificate
      * @param certs Collection of X509Certificate to search in
-     * @return X509Certificate from the certs Collection
+     * @return Certificate from the certs Collection
      */
     public static X509Certificate findCertificateBySubject(String subjectDN, Collection certs) {
         if (certs == null || null == subjectDN) {
@@ -247,15 +248,22 @@ public class OCSPUtil {
         String dn = CertTools.stringToBCDNString(subjectDN);
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
-            X509Certificate cacert = (X509Certificate) iter.next();
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Comparing the following certificates:\n"
-                        + " CA certificate DN: " + cacert.getSubjectDN()
-                        + "\n Subject DN: " + dn);
-            }
-            if (dn.equalsIgnoreCase(CertTools.stringToBCDNString(cacert.getSubjectDN().getName()))) {
-                return cacert;
-            }
+            Certificate cacert = (Certificate) iter.next();
+            // OCSP only supports X509 certificates
+        	if (cacert instanceof X509Certificate) {
+                if (m_log.isDebugEnabled()) {
+                    m_log.debug("Comparing the following certificates:\n"
+                            + " CA certificate DN: " + CertTools.getSubjectDN(cacert)
+                            + "\n Subject DN: " + dn);
+                }
+                if (dn.equalsIgnoreCase(CertTools.getSubjectDN(cacert))) {
+                    return (X509Certificate)cacert;
+                }        		
+        	} else {
+        		if (m_log.isDebugEnabled()) {
+            		m_log.debug("Certificate not an X509 Certificate. Issuer '"+CertTools.getSubjectDN(cacert)+"'");        			
+        		}
+        	}
         }
 		String iMsg = intres.getLocalizedMessage("ocsp.nomatchingcacert", subjectDN);
         m_log.info(iMsg);
@@ -280,35 +288,43 @@ public class OCSPUtil {
         }
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
-            X509Certificate cacert = (X509Certificate) iter.next();
-            try {
-                CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, cacert.getSerialNumber());
-                if (m_log.isDebugEnabled()) {
-                    m_log.debug("Comparing the following certificate hashes:\n"
-                            + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
-                            + " CA certificate\n"
-                            + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
-                            + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
-                            + " CA certificate hashes\n"
-                            + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                            + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
-                            + " OCSP certificate hashes\n"
-                            + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
-                            + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
-                }
-                if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
-                        && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
+            Certificate cert = (Certificate) iter.next();
+            // OCSP only supports X509 certificates
+        	if (cert instanceof X509Certificate) {
+                X509Certificate cacert = (X509Certificate) cert;
+                try {
+                    CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, CertTools.getSerialNumber(cacert));
                     if (m_log.isDebugEnabled()) {
-                        m_log.debug("Found matching CA-cert with:\n"
+                        m_log.debug("Comparing the following certificate hashes:\n"
+                                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
+                                + " CA certificate\n"
+                                + "      CA SubjectDN: '" + CertTools.getSubjectDN(cacert) + "'\n"
+                                + "      SerialNumber: '" + CertTools.getSerialNumber(cacert).toString(16) + "'\n"
+                                + " CA certificate hashes\n"
                                 + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                                + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
+                                + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
+                                + " OCSP certificate hashes\n"
+                                + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+                                + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
                     }
-                    return cacert;
-                }
-            } catch (OCSPException e) {
-        		String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
-                m_log.error(errMsg, e);
-            }
+                    if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
+                            && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
+                        if (m_log.isDebugEnabled()) {
+                            m_log.debug("Found matching CA-cert with:\n"
+                                    + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+                                    + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
+                        }
+                        return cacert;
+                    }
+                } catch (OCSPException e) {
+            		String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
+                    m_log.error(errMsg, e);
+                }        		
+        	} else {
+        		if (m_log.isDebugEnabled()) {
+            		m_log.debug("Certificate not an X509 Certificate. Issuer '"+CertTools.getSubjectDN(cert)+"'");        			
+        		}
+        	}
         }
         if (m_log.isDebugEnabled()) {
             m_log.debug("Did not find matching CA-cert for:\n"

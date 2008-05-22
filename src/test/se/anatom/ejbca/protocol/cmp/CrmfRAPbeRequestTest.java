@@ -126,7 +126,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert = CertTools.getCertfromByteArray(cert.getEncoded());            	
+                cacert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());            	
             }
         } else {
             log.error("NO CACERT for caid " + caid);

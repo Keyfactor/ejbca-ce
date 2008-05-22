@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.common;
 
-import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -46,8 +44,7 @@ public class CertificateHelper {
 	 * Method that builds a certificate from the data in the WS response.
 	 */
 	public static java.security.cert.Certificate getCertificate(byte[] certificateData) throws CertificateException{
-        CertificateFactory cf = CertTools.getCertificateFactory();
-        java.security.cert.Certificate retval =  cf.generateCertificate(new ByteArrayInputStream(Base64.decode(certificateData)));
+        java.security.cert.Certificate retval = CertTools.getCertfromByteArray(Base64.decode(certificateData)); 
         return retval; 
 	}
 	

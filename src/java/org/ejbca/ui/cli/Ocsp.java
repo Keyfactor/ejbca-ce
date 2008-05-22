@@ -23,8 +23,8 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.StreamCorruptedException;
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +45,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 public class Ocsp {
     final private PerformanceTest performanceTest;
     final private String ocspurl;
-    final private X509Certificate cacert;
+    final private Certificate cacert;
     final private SerialNrs serialNrs;
     final private String keyStoreFileName;
     final private String keyStorePassword;
@@ -136,7 +136,7 @@ public class Ocsp {
         this.performanceTest = new PerformanceTest();
         this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
     }
-    private static X509Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
+    private static Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
         byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
                                                  "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
         return CertTools.getCertfromByteArray(bytes);

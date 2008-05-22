@@ -6,7 +6,7 @@
   if(filemode == CERTGENMODE){
     resultstring = cabean.getProcessedCertificateAsString();
   }else{
-    resultstring = cabean.getPKCS10RequestDataAsString();
+    resultstring = cabean.getRequestDataAsString();
   }
 
   String pemlink =  globalconfiguration.getCaPath() + "/editcas/cacertreq?cmd=certreq";

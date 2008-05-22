@@ -14,7 +14,7 @@
 package org.ejbca.core.model.authorization;
 
 import java.io.Serializable;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.regex.Pattern;
 
 import org.ejbca.util.CertTools;
@@ -92,8 +92,8 @@ public class AdminEntity implements Serializable, Comparable {
         }
       }
       else{
-        X509Certificate certificate = admininformation.getX509Certificate();
-        String certstring = certificate.getSubjectDN().toString();
+        Certificate certificate = admininformation.getX509Certificate();
+        String certstring = CertTools.getSubjectDN(certificate).toString();
         int admincaid =  CertTools.getIssuerDN(certificate).hashCode();  //  certificate.getIssuerDN().toString().hashCode();
         
         //String serialnumber = certificate.getSerialNumber().toString(16);
@@ -114,13 +114,13 @@ public class AdminEntity implements Serializable, Comparable {
                 case TYPE_EQUALCASE:
                 case TYPE_EQUALCASEINS:
                     try{
-                      returnvalue = (new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber());
+                      returnvalue = (new java.math.BigInteger(matchvalue,16)).equals(CertTools.getSerialNumber(certificate));
                     }catch(java.lang.NumberFormatException nfe){}
                     break;
                 case TYPE_NOT_EQUALCASE:
                 case TYPE_NOT_EQUALCASEINS:
                     try{
-                      returnvalue = !(new java.math.BigInteger(matchvalue,16)).equals(certificate.getSerialNumber());
+                      returnvalue = !(new java.math.BigInteger(matchvalue,16)).equals(CertTools.getSerialNumber(certificate));
                     }catch(java.lang.NumberFormatException nfe){}
                     break;
                 default:

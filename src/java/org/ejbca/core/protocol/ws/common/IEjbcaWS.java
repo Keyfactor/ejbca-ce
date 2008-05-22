@@ -150,7 +150,10 @@ public interface IEjbcaWS {
 	/** Generate a certificate for a user, works the same as pkcs10Request
 	 * 
 	 * @see #pkcs10Request(String, String, String, String, String)
+	 * @param username the unique username
+	 * @param password the password sent with editUser call
 	 * @param crmf the CRMF request message (only the public key is used.)
+	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
 	 */
 	public abstract CertificateResponse crmfRequest(String username, String password,
 			String crmf, String hardTokenSN, String responseType)
@@ -160,13 +163,29 @@ public interface IEjbcaWS {
 	/** Generate a certificate for a user, works the same as pkcs10Request
 	 * 
 	 * @see #pkcs10Request(String, String, String, String, String)
+	 * @param username the unique username
+	 * @param password the password sent with editUser call
 	 * @param spkac the SPKAC (netscape) request message (only the public key is used.)
+	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
 	 */
 	public abstract CertificateResponse spkacRequest(String username, String password,
 			String spkac, String hardTokenSN, String responseType)
 			throws AuthorizationDeniedException, NotFoundException,
 			EjbcaException;
 
+	/** Generate a CV certificate for a user, uses the same authorizations as editUser and pkcs10Request
+	 * responseType is always CertificateHelper.RESPONSETYPE_CERTIFICATE.
+	 * 
+	 * @see #editUser
+	 * @see #pkcs10Request
+	 * @param userdata the user data for editing/adding a user
+	 * @param cvcreq the CVC request message
+	 * @return the full certificate chain for the IS, with IS certificate in pos 0, DV in 1, CVCA in 2.
+	 */
+	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
+	throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+	EjbcaException, ApprovalException, WaitingForApprovalException;
+	
 	/**
 	 * Method to use to generate a certificate for a user. The method must be preceded by
 	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users.

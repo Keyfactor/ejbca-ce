@@ -308,7 +308,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public byte[] createPKCS7(Admin admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
-        Integer caid = new Integer(CertTools.getIssuerDN((X509Certificate) cert).hashCode());
+        Integer caid = new Integer(CertTools.getIssuerDN(cert).hashCode());
         return createPKCS7(caid.intValue(), cert, includeChain);
     } // createPKCS7
 
@@ -342,7 +342,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      */
     private byte[] createPKCS7(int caId, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
-        debug(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN((X509Certificate) cert) + ")");
+        debug(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
         byte[] returnval = null;
         // get CA
         CADataLocal cadata = null;
@@ -362,9 +362,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
 
         // Check that CA hasn't expired.
-        X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+        Certificate cacert = ca.getCACertificate();
         try {
-            cacert.checkValidity();
+            CertTools.checkValidity(cacert, new Date());
         } catch (CertificateExpiredException e) {
             // Signers Certificate has expired.
             cadata.setStatus(SecConst.CA_EXPIRED);
@@ -562,7 +562,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         X509Certificate cert = (X509Certificate) incert;
         try {
             // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
-            X509Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
+            Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
             bccert.verify(cert.getPublicKey());
         } catch (Exception e) {
         	log.debug("Exception verify POPO: ", e);
@@ -683,7 +683,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getJCEProvider());
+                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getJCEProvider());
             }
             // Verify the request
             if (req.verify() == false) {
@@ -840,7 +840,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
+                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
             }
             // Verify the request
             if (req.verify() == false) {
@@ -918,7 +918,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
+                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
             }
             // Verify the request
             if (req.verify() == false) {
@@ -988,9 +988,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
             // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+            Certificate cacert = ca.getCACertificate();
             try {
-                cacert.checkValidity();
+                CertTools.checkValidity(cacert, new Date());
             } catch (CertificateExpiredException cee) {
                 // Signers Certificate has expired.
                 cadata.setStatus(SecConst.CA_EXPIRED);
@@ -1005,7 +1005,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
+                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
             }
             //Create the response message with all nonces and checks etc
             ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT), catoken.getProvider());
@@ -1068,7 +1068,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             	if (serno != null) {
             		debug("Got a serialNumber: "+serno.toString(16));
                     ICertificateStoreSessionLocal certificateStore = storeHome.create();
-            		X509Certificate cert = (X509Certificate)certificateStore.findCertificateByIssuerAndSerno(admin, dn, serno);
+            		Certificate cert = certificateStore.findCertificateByIssuerAndSerno(admin, dn, serno);
             		if (cert != null) {
             			dn = CertTools.getSubjectDN(cert);
             		}
@@ -1110,8 +1110,8 @@ public class RSASignSessionBean extends BaseSessionBean {
         	}
         	
         	// Check that CA hasn't expired.
-        	X509Certificate cacert = (X509Certificate) ca.getCACertificate();
-        	cacert.checkValidity();
+        	Certificate cacert = ca.getCACertificate();
+        	CertTools.checkValidity(cacert, new Date());
         } catch (CertificateExpiredException cee) {
             // Signers Certificate has expired.
             cadata.setStatus(SecConst.CA_EXPIRED);
@@ -1135,13 +1135,13 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param caid Id of the CA which CRL should be created.
      * @param certs collection of RevokedCertInfo object.
      * @param basecrlnumber the CRL number of the Case CRL to generate a deltaCRL, -1 to generate a full CRL
-     * @return The newly created CRL in DER encoded byte form or null, use CerlTools.getCRLfromByteArray to convert to X509CRL.
+     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
      * @throws CATokenOfflineException 
      * @ejb.interface-method view-type="both"
      */
     public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
         debug(">createCRL()");
-        byte[] crlBytes;
+        byte[] crlBytes = null;
         CADataLocal cadata = null;
         try {
             // get CA
@@ -1166,9 +1166,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
             // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+            Certificate cacert = ca.getCACertificate();
             try {
-                cacert.checkValidity();
+                CertTools.checkValidity(cacert, new Date());
             } catch (CertificateExpiredException e) {
                 // Signers Certificate has expired.
                 cadata.setStatus(SecConst.CA_EXPIRED);
@@ -1193,20 +1193,21 @@ public class RSASignSessionBean extends BaseSessionBean {
             } else {
             	crl = (X509CRL) ca.generateCRL(certs, number);
             }
-            
-            String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(number), cadata.getName(), cadata.getSubjectDN());
-            getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
+            if (crl != null) {
+                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(number), cadata.getName(), cadata.getSubjectDN());
+                getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
 
-            // Store CRL in the database
-            String fingerprint = CertTools.getFingerprintAsString(cacert);
-            log.debug("Storing CRL in certificate store.");
-            certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
-            // Store crl in ca CRL publishers.
-            log.debug("Storing CRL in publishers");
-            IPublisherSessionLocal pub = publishHome.create();
-            pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
+                // Store CRL in the database
+                String fingerprint = CertTools.getFingerprintAsString(cacert);
+                log.debug("Storing CRL in certificate store.");
+                certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
+                // Store crl in ca CRL publishers.
+                log.debug("Storing CRL in publishers");
+                IPublisherSessionLocal pub = publishHome.create();
+                pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
 
-            crlBytes = crl.getEncoded();
+                crlBytes = crl.getEncoded();            	
+            }
         } catch (CATokenOfflineException ctoe) {
             String cadn = null;
             if (cadata != null) {
@@ -1240,12 +1241,12 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             Iterator certificates = certificatechain.iterator();
             while (certificates.hasNext()) {
-                X509Certificate cert = (X509Certificate) certificates.next();
+                Certificate cert = (Certificate)certificates.next();
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 // Calculate the certtype
                 boolean isSelfSigned = CertTools.isSelfSigned(cert);
                 int type = CertificateDataBean.CERTTYPE_ENDENTITY;
-                if (cert.getBasicConstraints() > -1)  {
+                if (CertTools.isCA(cert))  {
                 	// this is a CA
                 	if (isSelfSigned) {
                 		type = CertificateDataBean.CERTTYPE_ROOTCA;
@@ -1370,8 +1371,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch(IllegalKeyStoreException e){
                 throw new EJBException(e);
             }
-            // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
 
             if (ca.getStatus() != SecConst.CA_ACTIVE) {
             	String msg = intres.getLocalizedMessage("signsession.canotactive", cadata.getSubjectDN());
@@ -1379,8 +1378,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new EJBException(msg);
             }
 
+            // Check that CA hasn't expired.
+            Certificate cacert = ca.getCACertificate();
             try {
-                cacert.checkValidity();
+                CertTools.checkValidity(cacert, new Date());
             } catch (CertificateExpiredException cee) {
                 // Signers Certificate has expired.
                 cadata.setStatus(SecConst.CA_EXPIRED);
@@ -1489,16 +1490,15 @@ public class RSASignSessionBean extends BaseSessionBean {
                 int retrycounter = 0;
                 boolean stored = false;
                 Exception storeEx = null; // this will not be null if stored == false after the below passage
-                X509Certificate cert = null;
+                Certificate cert = null;
                 String cafingerprint = null;
+                String serialNo = "unknown";
                 while (!stored && retrycounter < 5) {
-                    cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions);
-
+                    cert = ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions);
+                    serialNo = CertTools.getSerialNumber(cert).toString(16);
                     // Store certificate in the database
                     Certificate cacert = ca.getCACertificate();
-                    if (cacert instanceof X509Certificate) {
-                        cafingerprint = CertTools.getFingerprintAsString((X509Certificate)cacert);
-                    }
+                    cafingerprint = CertTools.getFingerprintAsString(cacert);
                     try {
                         certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
                         stored = true;
@@ -1506,7 +1506,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
                     	// get a CreateException here if we would happen to generate a certificate with the same serialNumber
                     	// as one already existing certificate.
-                    	log.info("Can not store certificate with serNo ("+cert.getSerialNumber().toString(16)+"), will retry (retrycounter="+retrycounter+") with a new certificate with new serialNo: "+e.getMessage());
+                    	log.info("Can not store certificate with serNo ("+serialNo+"), will retry (retrycounter="+retrycounter+") with a new certificate with new serialNo: "+e.getMessage());
                     	storeEx = e;
                     }
                     retrycounter++;
@@ -1518,7 +1518,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 
                 getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
                 if (log.isDebugEnabled()) {
-                    debug("Generated certificate with SerialNumber '" + cert.getSerialNumber().toString(16) + "' for user '" + data.getUsername() + "'.");
+                    debug("Generated certificate with SerialNumber '" + serialNo + "' for user '" + data.getUsername() + "'.");
                     debug(cert.toString());                	
                 }
 

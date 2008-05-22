@@ -13,6 +13,7 @@
  
 package org.ejbca.core.protocol.xkms.client;
 
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -74,7 +75,7 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             }  
   
             String certEncoding = getCertEncoding(args[ARG_CERTENCODING]);            
-            X509Certificate orgCert = getCert(args[ARG_CERT],certEncoding);
+            Certificate orgCert = getCert(args[ARG_CERT],certEncoding);
             String revokationCode = args[ARG_REVOKATIONCODE];
                                                             
             String reqId = genId();
@@ -88,7 +89,7 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             KeyInfoType keyInfoType = sigFactory.createKeyInfoType();
             keyInfoType.getContent().add(sigFactory.createX509Data(x509DataType));
             
-            String keyBindingId = "_" + orgCert.getSerialNumber().toString();
+            String keyBindingId = "_" + CertTools.getSerialNumber(orgCert).toString();
             KeyBindingType keyBindingType = xKMSObjectFactory.createKeyBindingType();                
             keyBindingType.setKeyInfo(keyInfoType);
             keyBindingType.setId(keyBindingId);
@@ -101,10 +102,10 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 
             
             if (revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS) && revokeResultType.getResultMinor() == null) {
-            	getPrintStream().println("Certificate " + orgCert.getSerialNumber().toString(16) + " issued by " +
+            	getPrintStream().println("Certificate " + CertTools.getSerialNumber(orgCert).toString(16) + " issued by " +
             			CertTools.getIssuerDN(orgCert) + " revoked successfully.");
             } else if (revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS) && revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_INCOMPLETE)) {
-            	getPrintStream().println("Certificate " + orgCert.getSerialNumber().toString(16) + " issued by " +
+            	getPrintStream().println("Certificate " + CertTools.getSerialNumber(orgCert).toString(16) + " issued by " +
             			CertTools.getIssuerDN(orgCert) + " successfully sent for approval.");
             } else {
             	displayRequestErrors(revokeResultType);
@@ -114,8 +115,8 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         }
     }
 
-    private X509Certificate getCert(String filename, String certEncoding) {		
-		X509Certificate retval = null;
+    private Certificate getCert(String filename, String certEncoding) {		
+		Certificate retval = null;
 		
 		if(certEncoding.equals(ENCODING_PEM)){			
 			try {

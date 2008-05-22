@@ -27,10 +27,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.xml.bind.JAXBElement;
+
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.P12toPEM;
+import org.w3._2000._09.xmldsig_.X509DataType;
 import org.w3._2002._03.xkms_.KeyBindingType;
 import org.w3._2002._03.xkms_.StatusType;
 import org.w3._2002._03.xkms_.UnverifiedKeyBindingType;
@@ -417,7 +420,24 @@ public abstract class XKMSCLIBaseCommand {
 		}
 	}
 
-	
+	protected List getCertsFromKeyBinding(KeyBindingType keyBinding) throws CertificateException {
+		ArrayList retval = new ArrayList();
+		
+		JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBinding.getKeyInfo().getContent().get(0);		
+		Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+		while(iter2.hasNext()){
+			JAXBElement next = (JAXBElement) iter2.next();					
+			if(next.getName().getLocalPart().equals("X509Certificate")){
+			  byte[] encoded = (byte[]) next.getValue();
+			  Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+			  retval.add(nextCert);
+			}
+		}	
+		
+		return retval;
+	}
+
+
 	protected abstract void usage();
 
 }

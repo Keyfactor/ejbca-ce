@@ -11,7 +11,13 @@
     A number of HOWTO documents are available in the <strong>doc/howto</strong> directory in the source distribution.
     </p>
     </section>
-    
+  
+  <section name="Using CVC CAs for EU EAC ePassports">
+  <p>
+  Usage of EJBCA for a complete PKI for CVC CAs are explained in this <a href="cvccas.html">document</a>.
+  </p>
+  </section>
+   
   <section name="SensorNet PKI">
     <p>
     This excellent HOWTO on PKI in general, LDAP, email and server setup has been kindly contributed by SensorNet. Please read this notice!

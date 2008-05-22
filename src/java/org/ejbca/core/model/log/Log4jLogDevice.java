@@ -14,7 +14,7 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -28,6 +28,7 @@ import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -102,7 +103,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-    public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+    public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 
     	String user = intres.getLocalizedMessage("log.nouserinvolved");
     	String cert = intres.getLocalizedMessage("log.nocertinvolved");
@@ -113,7 +114,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         }
 
         if (certificate != null) {
-            cert = certificate.getSerialNumber().toString(16) + ", issuer: " + certificate.getIssuerDN().toString();
+        	cert = CertTools.getSerialNumber(certificate).toString(16) + ", issuer: " + CertTools.getIssuerDN(certificate);        		
         }
 
         if (admininfo.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {

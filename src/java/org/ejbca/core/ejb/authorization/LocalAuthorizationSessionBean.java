@@ -1035,8 +1035,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            debug("<existsCAInAdminGroupss()");
-            return count > 0;
+            boolean exists = count > 0;
+            debug("<existsCAInAdminGroups(): "+exists);
+            return exists;
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {
@@ -1066,9 +1067,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            debug("<existsCAInAccessRules()");
-            return count > 0;
-
+            boolean exists = count > 0;
+            debug("<existsCAInAccessRules(): "+exists);
+            return exists;
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {

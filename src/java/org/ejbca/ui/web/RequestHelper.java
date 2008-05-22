@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 
@@ -43,15 +44,15 @@ import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
 
 /**
- * Helper class for hadnling certificate request from browsers or general PKCS#10
+ * Helper class for handling certificate request from browsers or general PKCS#10
  * 
  * @version $Id$
  */
@@ -61,13 +62,9 @@ public class RequestHelper {
     private ServletDebug debug;
     private static final Pattern CLASSID = Pattern.compile("\\$CLASSID");
 
-	public static final  String BEGIN_CERTIFICATE_REQUEST  = "-----BEGIN CERTIFICATE REQUEST-----";
-	public static final  String END_CERTIFICATE_REQUEST     = "-----END CERTIFICATE REQUEST-----";
 	public static final  String BEGIN_CERTIFICATE_REQUEST_WITH_NL = "-----BEGIN CERTIFICATE REQUEST-----\n";
 	public static final  String END_CERTIFICATE_REQUEST_WITH_NL    = "\n-----END CERTIFICATE REQUEST-----\n";
 
-	public static final  String BEGIN_CERTIFICATE                = "-----BEGIN CERTIFICATE-----";
-	public static final  String END_CERTIFICATE                    = "-----END CERTIFICATE-----";    
 	public static final  String BEGIN_CERTIFICATE_WITH_NL = "-----BEGIN CERTIFICATE-----\n";
 	public static final  String END_CERTIFICATE_WITH_NL    = "\n-----END CERTIFICATE-----\n";
     public static final  String BEGIN_CRL_WITH_NL = "-----BEGIN X509 CRL-----\n";
@@ -163,8 +160,8 @@ public class RequestHelper {
     public byte[] pkcs10CertRequest(ISignSessionLocal signsession, byte[] b64Encoded,
         String username, String password, int resulttype, boolean doSplitLines) throws Exception {
         byte[] result = null;	
-        X509Certificate cert=null;
-		PKCS10RequestMessage req = genPKCS10RequestMessageFromPEM(b64Encoded);
+        Certificate cert=null;
+		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessageFromPEM(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
         IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(X509ResponseMessage.class.getName()));
@@ -463,30 +460,6 @@ public class RequestHelper {
         log.debug("Sent " + bytes.length + " bytes to client");
     } // sendBinaryBytes
     
-    public static PKCS10RequestMessage genPKCS10RequestMessageFromPEM(byte[] b64Encoded){ 
-	  byte[] buffer = null;
-	  try {
-		// A real PKCS10 PEM request
-		String beginKey = BEGIN_CERTIFICATE_REQUEST;
-		String endKey = END_CERTIFICATE_REQUEST;
-		buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-      } catch (IOException e) {	 	
-		try {
-			// Keytool PKCS10 PEM request
-			String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-			String endKey = "-----END NEW CERTIFICATE REQUEST-----";
-			buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-		} catch (IOException ioe) {
-			// IE PKCS10 Base64 coded request
-			buffer = Base64.decode(b64Encoded);
-        }
-      } 
-	  if (buffer == null) {
-		return null;
-	  }	  
-	  return new PKCS10RequestMessage(buffer);
-    } // PKCS10RequestMessage
-
     /** Returns the default content encoding used in JSPs. Reads the env-entry contentEncoding from web.xml.
      * 
      * @return The content encoding set in the webs env-entry java:comp/env/contentEncoding, or ISO-8859-1 (default), never returns null.

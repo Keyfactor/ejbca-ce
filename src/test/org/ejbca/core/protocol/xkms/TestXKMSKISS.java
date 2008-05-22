@@ -16,6 +16,7 @@ package org.ejbca.core.protocol.xkms;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
@@ -478,12 +479,12 @@ public class TestXKMSKISS extends TestCase {
 				JAXBElement next = (JAXBElement) iter2.next();					
 				assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
 				byte[] encoded = (byte[]) next.getValue();
-				X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-				assertTrue(CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(dn2)));
+				Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+				assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn2)));
 			}
     		
     	}  
-    	// Test with returnwith values, first check that certificate chain is returning
+    	// Test with return with values, first check that certificate chain is returning
     	locateRequestType = xKMSObjectFactory.createLocateRequestType();
     	locateRequestType.setId("132"); 
         queryKeyBindingType = xKMSObjectFactory.createQueryKeyBindingType();
@@ -510,9 +511,9 @@ public class TestXKMSKISS extends TestCase {
 				JAXBElement next = (JAXBElement) iter2.next();					
 				assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
 				byte[] encoded = (byte[]) next.getValue();
-				X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-				assertTrue(CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(dn2)) ||
-						   CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(issuerdn)));
+				Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+				assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn2)) ||
+						   CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(issuerdn)));
 			}
     		
     	} 
@@ -545,9 +546,9 @@ public class TestXKMSKISS extends TestCase {
 				JAXBElement next = (JAXBElement) iter2.next();					
 				assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
 				byte[] encoded = (byte[]) next.getValue();
-				X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-				assertTrue(CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(dn2)) ||
-						   CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(issuerdn)));
+				Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+				assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn2)) ||
+						   CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(issuerdn)));
 			}
     		
     	} 
@@ -617,9 +618,9 @@ public class TestXKMSKISS extends TestCase {
 				}
 				if(next.getName().getLocalPart().equals("X509Certificate")){
 					byte[] encoded = (byte[]) next.getValue();
-					X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-					assertTrue(CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(dn2)) ||
-							   CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(issuerdn)));
+					Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+					assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn2)) ||
+							   CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(issuerdn)));
 				}
 			}    	
     	}
@@ -748,8 +749,8 @@ public class TestXKMSKISS extends TestCase {
 				JAXBElement next = (JAXBElement) iter2.next();					
 				assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
 				byte[] encoded = (byte[]) next.getValue();
-				X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-				assertTrue(CertTools.stringToBCDNString(nextCert.getSubjectDN().toString()).equals(CertTools.stringToBCDNString(dn2)));
+				Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+				assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn2)));
 			}    		
     	}
         

@@ -174,7 +174,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		// Check if certificate and user is an RA Admin
     		userdn = CertTools.getSubjectDN(certificates[0]);
     		log.debug("Verifying authorization of '"+userdn);    		
-    		adminsession.checkIfCertificateBelongToAdmin(administrator, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());        
+    		adminsession.checkIfCertificateBelongToAdmin(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));        
     		logsession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
     	}
 

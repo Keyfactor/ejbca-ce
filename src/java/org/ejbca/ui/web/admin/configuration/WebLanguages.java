@@ -83,7 +83,7 @@ public class WebLanguages implements java.io.Serializable {
     }
 
 
-    /** The main method that looks up the template text in the users prefered language. */
+    /** The main method that looks up the template text in the users preferred language. */
     public  String getText(String template){
       String returnvalue = null;
       try{

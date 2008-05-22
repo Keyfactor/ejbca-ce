@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,10 +27,12 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CACacheManager;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.CVCCA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.caadmin.X509CA;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
+import org.ejbca.util.CertTools;
 
 
 
@@ -267,6 +270,9 @@ public abstract class CADataBean extends BaseEntityBean {
                 case CAInfo.CATYPE_X509:
                     ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
                     break;
+                case CAInfo.CATYPE_CVC:
+                    ca = new CVCCA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
+                    break;
             }
             boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
             // Compare old version with current version and save the data if there has been a change
@@ -328,9 +334,10 @@ public abstract class CADataBean extends BaseEntityBean {
     		setStatus(status);        
     		
     		
-    		if(ca instanceof X509CA && ca.getCertificateChain().size() != 0){
-    			setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter().getTime());  
-    			ca.setExpireTime(((X509Certificate) ca.getCACertificate()).getNotAfter()); 
+    		if (ca.getCertificateChain().size() != 0) {
+    			Certificate cacert = ca.getCACertificate();
+    			setExpireTime(CertTools.getNotAfter(cacert).getTime());  
+    			ca.setExpireTime(CertTools.getNotAfter(cacert)); 
     		}  
     		
     		setCA(ca);        

@@ -384,7 +384,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		return false;
 	}
 
-	public void setKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
+	public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
 	}
 
 	public int getErrorNo() {

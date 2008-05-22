@@ -13,6 +13,7 @@
 
 package org.ejbca.util.cert;
 
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,56 +74,58 @@ public class SubjectDirAttrExtension extends CertTools {
 	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
 	 * @throws java.lang.Exception
 	 */
-	public static String getSubjectDirectoryAttributes(X509Certificate certificate) throws Exception {
+	public static String getSubjectDirectoryAttributes(Certificate certificate) throws Exception {
 		log.debug("Search for SubjectAltName");
-        DERObject obj = CertTools.getExtensionValue(certificate, X509Extensions.SubjectDirectoryAttributes.getId());
-        if (obj == null) {
-            return null;
-        }
-        ASN1Sequence seq = (ASN1Sequence)obj;
-        
         String result = "";
-        String prefix = "";
-		SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
-        for (int i = 0; i < seq.size(); i++) {
-        	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
-        	if (!StringUtils.isEmpty(result)) {
-        		prefix = ", ";
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_dateOfBirth)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
-        		DERGeneralizedTime time = DERGeneralizedTime.getInstance(set.getObjectAt(0));
-        		Date date = time.getDate();
-        		String dateStr = dateF.format(date);
-        		result += prefix + "dateOfBirth="+dateStr; 
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_placeOfBirth)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one placeOfBirth
-        		String pb = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "placeOfBirth="+pb;        			
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_gender)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one gender
-        		String g = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "gender="+g;        			
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_countryOfCitizenship)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one citizenship
-        		String g = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "countryOfCitizenship="+g;        			
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_countryOfResidence)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one residence
-        		String g = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "countryOfResidence="+g;        			
-        	}
+        if (certificate instanceof X509Certificate) {
+			X509Certificate x509cert = (X509Certificate) certificate;
+	        DERObject obj = CertTools.getExtensionValue(x509cert, X509Extensions.SubjectDirectoryAttributes.getId());
+	        if (obj == null) {
+	            return null;
+	        }
+	        ASN1Sequence seq = (ASN1Sequence)obj;
+	        
+	        String prefix = "";
+			SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
+	        for (int i = 0; i < seq.size(); i++) {
+	        	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
+	        	if (!StringUtils.isEmpty(result)) {
+	        		prefix = ", ";
+	        	}
+	        	if (attr.getAttrType().getId().equals(id_pda_dateOfBirth)) {
+	        		ASN1Set set = attr.getAttrValues();
+	        		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
+	        		DERGeneralizedTime time = DERGeneralizedTime.getInstance(set.getObjectAt(0));
+	        		Date date = time.getDate();
+	        		String dateStr = dateF.format(date);
+	        		result += prefix + "dateOfBirth="+dateStr; 
+	        	}
+	        	if (attr.getAttrType().getId().equals(id_pda_placeOfBirth)) {
+	        		ASN1Set set = attr.getAttrValues();
+	        		// same here only one placeOfBirth
+	        		String pb = ((DERString)set.getObjectAt(0)).getString();
+	        		result += prefix + "placeOfBirth="+pb;        			
+	        	}
+	        	if (attr.getAttrType().getId().equals(id_pda_gender)) {
+	        		ASN1Set set = attr.getAttrValues();
+	        		// same here only one gender
+	        		String g = ((DERString)set.getObjectAt(0)).getString();
+	        		result += prefix + "gender="+g;        			
+	        	}
+	        	if (attr.getAttrType().getId().equals(id_pda_countryOfCitizenship)) {
+	        		ASN1Set set = attr.getAttrValues();
+	        		// same here only one citizenship
+	        		String g = ((DERString)set.getObjectAt(0)).getString();
+	        		result += prefix + "countryOfCitizenship="+g;        			
+	        	}
+	        	if (attr.getAttrType().getId().equals(id_pda_countryOfResidence)) {
+	        		ASN1Set set = attr.getAttrValues();
+	        		// same here only one residence
+	        		String g = ((DERString)set.getObjectAt(0)).getString();
+	        		result += prefix + "countryOfResidence="+g;        			
+	        	}
+	        }
         }
-
         if (StringUtils.isEmpty(result)) {
             return null;
         }

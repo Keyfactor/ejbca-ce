@@ -1,14 +1,6 @@
 package org.ejbca.core.protocol.ws; 
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import org.ejbca.core.model.authorization.AdminEntity;
-import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** To run you must have the file tmp/bin/junit/jndi.properties
  * 
@@ -137,6 +129,9 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     	test25CreateCRL(true);  
     }
 
+    public void test26CVCRequest() throws Exception {
+    	test26CVCRequest(true);  
+    }
     
     public void test99cleanUpAdmins() throws Exception {
     	super.test99cleanUpAdmins();

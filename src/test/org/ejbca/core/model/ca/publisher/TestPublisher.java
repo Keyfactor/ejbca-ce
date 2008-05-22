@@ -16,7 +16,7 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -30,13 +30,6 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
-import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
-import org.ejbca.core.model.ca.publisher.LdapPublisher;
-import org.ejbca.core.model.ca.publisher.PublisherException;
-import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -270,7 +263,7 @@ public class TestPublisher extends TestCase {
      */
     public void test07StoreCertToDummy() throws Exception {
         log.debug(">test07StoreCertToDummy()");
-        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList publishers = new ArrayList();
         publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
         
@@ -296,27 +289,6 @@ public class TestPublisher extends TestCase {
     }
     
     
-    /**
-     * removes all publishers
-     *
-     * @throws Exception error
-     */
-    public void test09removePublishers() throws Exception {
-        log.debug(">test09removePublishers()");
-        boolean ret = false;
-        try {
-            pub.removePublisher(admin, "TESTLDAP");
-            pub.removePublisher(admin, "TESTAD");
-            pub.removePublisher(admin, "TESTNEWDUMMYCUSTOM");
-            pub.removePublisher(admin, "TESTCLONEDUMMYCUSTOM");
-            ret = true;
-        } catch (Exception pee) {
-        }
-        assertTrue("Removing Publisher failed", ret);
-        
-        log.debug("<test09removePublishers()");
-    }
-
 	/**
 	 * Test normal operation of GeneralPurposeCustomPublisher.
 	 *
@@ -533,12 +505,13 @@ public class TestPublisher extends TestCase {
             pub.addPublisher(admin, "TESTEXTOCSP", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
+        	log.error(pee);
         }        
         assertTrue("Creating External OCSP Publisher failed", ret);
         int id = pub.getPublisherId(admin, "TESTEXTOCSP");
         pub.testConnection(admin, id);
         
-        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList publishers = new ArrayList();
         publishers.add(new Integer(pub.getPublisherId(admin, "TESTEXTOCSP")));
         
@@ -547,6 +520,35 @@ public class TestPublisher extends TestCase {
 
         pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
     }
+
+    /**
+     * removes all publishers
+     *
+     * @throws Exception error
+     */
+    public void test99removePublishers() throws Exception {
+        log.debug(">test09removePublishers()");
+        boolean ret = true;
+        try {
+            pub.removePublisher(admin, "TESTLDAP");            
+        } catch (Exception pee) {ret = false;}
+        try {
+            pub.removePublisher(admin, "TESTAD");
+        } catch (Exception pee) {ret = false;}
+        try {
+            pub.removePublisher(admin, "TESTNEWDUMMYCUSTOM");
+        } catch (Exception pee) {ret = false;}
+        try {
+            pub.removePublisher(admin, "TESTCLONEDUMMYCUSTOM");
+        } catch (Exception pee) {ret = false;}
+        try {
+            pub.removePublisher(admin, "TESTEXTOCSP");            
+        } catch (Exception pee) {ret = false;}
+        assertTrue("Removing Publisher failed", ret);
+        
+        log.debug("<test09removePublishers()");
+    }
+
 
 	/**
 	 * Tries to execute the argument and return true if no exception was thrown and the command returned 0.

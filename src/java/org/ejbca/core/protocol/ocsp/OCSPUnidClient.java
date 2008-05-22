@@ -150,12 +150,12 @@ public class OCSPUnidClient {
 	 * @param getfnr if we should ask for a Unid-Fnr mapping or only query the OCSP server
 	 * @return OCSPUnidResponse conatining the response and the fnr, can contain and an error code and the fnr can be null, never returns null.
 	 */
-	public OCSPUnidResponse lookup(X509Certificate cert, X509Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
+	public OCSPUnidResponse lookup(Certificate cert, Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
         // See if we must try to get the ocsprul from the cert
         if (httpReqPath == null) {
             httpReqPath = CertTools.getAuthorityInformationAccessOcspUrl(cert);
         }
-        return lookup( cert.getSerialNumber(), cacert );
+        return lookup( CertTools.getSerialNumber(cert), cacert );
     }
     /**
      * @param serialNr serial number of the certificate to verify
@@ -166,7 +166,7 @@ public class OCSPUnidClient {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public OCSPUnidResponse lookup(BigInteger serialNr, X509Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
+    public OCSPUnidResponse lookup(BigInteger serialNr, Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
         if (httpReqPath == null) {
             // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
             OCSPUnidResponse ret = new OCSPUnidResponse();
@@ -174,7 +174,7 @@ public class OCSPUnidClient {
             return ret;
         }
         final OCSPReqGenerator gen = new OCSPReqGenerator();
-        final CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, cacert, serialNr);
+        final CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, (X509Certificate)cacert, serialNr);
 //        System.out.println("Generating CertificateId:\n"
 //                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
 //                + " CA certificate\n"
@@ -201,7 +201,7 @@ public class OCSPUnidClient {
     // Private helper methods
     //
     
-    private OCSPUnidResponse sendOCSPPost(byte[] ocspPackage, X509Certificate cacert, byte[] nonce) throws IOException, OCSPException, GeneralSecurityException {
+    private OCSPUnidResponse sendOCSPPost(byte[] ocspPackage, Certificate cacert, byte[] nonce) throws IOException, OCSPException, GeneralSecurityException {
         // POST the OCSP request
         URL url = new URL(httpReqPath);
         HttpURLConnection con = (HttpURLConnection)getUrlConnection(url);

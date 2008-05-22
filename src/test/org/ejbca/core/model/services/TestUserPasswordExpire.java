@@ -168,13 +168,13 @@ public class TestUserPasswordExpire extends TestCase {
 
         // Change the service to expire user after 5 seconds instead of after 5 hours
 		workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
-        // Include a dummy CA so we can see that the questy works with checking several CAs
+        // Include a dummy CA so we can see that the query works with checking several CAs
 		workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caid)+";45");
 		config.setWorkerProperties(workerprop);
         servicesession.changeService(admin, "TestUserPasswordService", config);
         
         // The service will run...
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         
         // Now the user will be expired
         data = usersession.findUser(admin,username);

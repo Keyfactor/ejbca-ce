@@ -165,4 +165,33 @@ public class TestRemoveCA extends TestCase {
         log.debug("<test06removeRSACAReverse()");
     }
 
+    public void test07removeCVCCA() throws Exception {
+        log.debug(">test07removeCVCCA()");
+        boolean ret = false;
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=00001,O=TESTCVCA,C=SE");
+            cacheAdmin.removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=00001,O=TESTDV-D,C=SE");
+            cacheAdmin.removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=00001,O=TESTDV-F,C=FI");
+            cacheAdmin.removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+        assertTrue("Removing CVC CA failed", ret);
+
+        log.debug("<test07removeCVCCA()");
+    }
+
 }

@@ -147,7 +147,7 @@ public abstract class BaseCAToken implements ICAToken {
     	if (cert != null) {
     		pubk = cert.getPublicKey();
     	} else {
-            log.error("Can not read public key certificate  with alias '"+alias+"' from keystore, got null. If the key of the certificate was generated after the latest application server start then restart the application server.");
+            log.error("Can not read public key certificate with alias '"+alias+"' from keystore, got null. If the key of the certificate was generated after the latest application server start then restart the application server.");
     		if (log.isDebugEnabled()) {
     			Enumeration en = keyStore.aliases();
     			while (en.hasMoreElements()) {

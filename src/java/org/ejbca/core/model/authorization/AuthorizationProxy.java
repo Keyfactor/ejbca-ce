@@ -19,6 +19,7 @@ import java.util.HashMap;
 import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
+import org.ejbca.util.CertTools;
 
 
 /**
@@ -56,7 +57,7 @@ public class AuthorizationProxy implements Serializable {
         adm = admin.getSpecialUser();
       }
       else
-        adm = admin.getX509Certificate().getSerialNumber().hashCode();
+        adm = CertTools.getSerialNumber(admin.getX509Certificate()).hashCode();
       int tmp = adm ^ resource.hashCode();
         // Check if name is in hashmap
       returnval = (Boolean) authstore.get(new Integer(tmp));

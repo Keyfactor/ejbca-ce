@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.loginterface;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
@@ -73,7 +72,7 @@ public class SubjectDNProxy implements java.io.Serializable {
         else
           result = certificatesessionremote.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr, 16));
         if(result != null){
-          returnval = CertTools.getSubjectDN((X509Certificate) result);
+          returnval = CertTools.getSubjectDN(result);
           subjectdnstore.put(admindata,returnval);
         }
       }

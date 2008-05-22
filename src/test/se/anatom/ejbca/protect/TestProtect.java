@@ -13,7 +13,7 @@
 
 package se.anatom.ejbca.protect;
 
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -192,7 +192,7 @@ public class TestProtect extends TestCase {
         ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
                 ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = storehome.create();
-        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
         String endEntityFp = CertTools.getFingerprintAsString(cert);
         if (store.findCertificateByFingerprint(admin, endEntityFp) == null) {
             store.storeCertificate(admin
@@ -233,7 +233,7 @@ public class TestProtect extends TestCase {
         ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
                 ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = storehome.create();
-        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
         String endEntityFp = CertTools.getFingerprintAsString(cert);
         if (store.findCertificateByFingerprint(admin, endEntityFp) == null) {
             store.storeCertificate(admin

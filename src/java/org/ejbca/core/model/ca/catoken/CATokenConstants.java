@@ -8,7 +8,7 @@ public class CATokenConstants {
     public static final String SIGALG_SHA1_WITH_ECDSA        = "SHA1withECDSA";   
     public static final String SIGALG_SHA256_WITH_ECDSA        = "SHA256withECDSA";   
     public static final String SIGALG_SHA256_WITH_RSA_AND_MGF1 = "SHA256WithRSAAndMGF1";
-    
+    public static final String SIGALG_SHA1_WITH_RSA_AND_MGF1 = "SHA1WithRSAAndMGF1"; // Not possible to select in Admin-GUI    
 	/** This differs between java 1.5 and java 1.4 */    
     public static final String[] AVAILABLE_SIGALGS = {SIGALG_SHA1_WITH_RSA, SIGALG_SHA256_WITH_RSA, SIGALG_MD5_WITH_RSA, SIGALG_SHA256_WITH_RSA_AND_MGF1, SIGALG_SHA1_WITH_ECDSA, SIGALG_SHA256_WITH_ECDSA};
     

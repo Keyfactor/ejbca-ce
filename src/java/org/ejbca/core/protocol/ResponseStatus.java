@@ -12,10 +12,7 @@
  *************************************************************************/
  
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/ResponseStatus.java,v 1.2 2007-07-31 13:31:54 jeklund Exp $
- * $Revision: 1.2 $
- * $Date: 2007-07-31 13:31:54 $
- *
+ * @version $Id$
  */
 package org.ejbca.core.protocol;
 

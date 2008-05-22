@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -24,11 +25,11 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.cvc.CVCertificateBody;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.QCStatementExtension;
@@ -69,18 +70,8 @@ public class CertificateView implements java.io.Serializable {
                                     "SCVPSERVER", "SCVPCLIENT"};
 
 
-   private static final int SUBALTNAME_OTHERNAME     = 0;
-   private static final int SUBALTNAME_RFC822NAME    = 1;
-   private static final int SUBALTNAME_DNSNAME       = 2;
-   private static final int SUBALTNAME_X400ADDRESS   = 3;
-   private static final int SUBALTNAME_DIRECTORYNAME = 4;
-   private static final int SUBALTNAME_EDIPARTYNAME  = 5;   
-   private static final int SUBALTNAME_URI           = 6;
-   private static final int SUBALTNAME_IPADDRESS     = 7;   
-   private static final int SUBALTNAME_REGISTREDID   = 8;
-
     /** Creates a new instance of CertificateView */
-    public CertificateView(X509Certificate certificate, RevokedInfoView revokedinfo, String username) {
+    public CertificateView(Certificate certificate, RevokedInfoView revokedinfo, String username) {
       this.certificate=certificate;
       this.revokedinfo= revokedinfo;
       this.username=username;
@@ -102,19 +93,24 @@ public class CertificateView implements java.io.Serializable {
     // Public methods
     /** Method that returns the version number of the X509 certificate. */
     public String getVersion() {
-      return Integer.toString(certificate.getVersion());
+        if (certificate instanceof X509Certificate) {
+        	X509Certificate x509cert = (X509Certificate)certificate;
+            return Integer.toString(x509cert.getVersion());
+        } else {
+        	return Integer.valueOf(CVCertificateBody.CVC_VERSION).toString();
+        }
     }
 
     public String getType() {
-      return "X509";
+      return certificate.getType();
     }
 
     public String getSerialNumber() {
-      return certificate.getSerialNumber().toString(16).toUpperCase();
+      return CertTools.getSerialNumber(certificate).toString(16).toUpperCase();
     }
 
     public BigInteger getSerialNumberBigInt() {
-      return certificate.getSerialNumber();
+      return CertTools.getSerialNumber(certificate);
     }
 
     public String getIssuerDN() {
@@ -134,17 +130,17 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public Date getValidFrom() {
-      return certificate.getNotBefore();
+      return CertTools.getNotBefore(certificate);
     }
 
     public Date getValidTo() {
-      return certificate.getNotAfter();
+      return CertTools.getNotAfter(certificate);
     }
 
     public boolean checkValidity(){
       boolean valid = true;
       try{
-        certificate.checkValidity();
+        CertTools.checkValidity(certificate, new Date());
       }
       catch( CertificateExpiredException e){
         valid=false;
@@ -159,7 +155,7 @@ public class CertificateView implements java.io.Serializable {
     public boolean checkValidity(Date date)  {
       boolean valid = true;
       try{
-        certificate.checkValidity(date);
+        CertTools.checkValidity(certificate, date);
       }
       catch( CertificateExpiredException e){
         valid=false;
@@ -184,27 +180,30 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public String getSignatureAlgoritm() {
-      return certificate.getSigAlgName();
+      return CertTools.getSignatureAlgorithm(certificate);
     }
 
     /** Method that returns if key is allowed for given usage. Usage must be one of this class key usage constants. */
     public boolean getKeyUsage(int usage) {
-      boolean returnval = false;
-      if(certificate.getKeyUsage() != null)
-        returnval= certificate.getKeyUsage()[usage];
-
-      return returnval;
+    	boolean returnval = false;
+    	if (certificate instanceof X509Certificate) {
+    		X509Certificate x509cert = (X509Certificate)certificate;
+    		if(x509cert.getKeyUsage() != null)
+    			returnval= x509cert.getKeyUsage()[usage];
+    	} else {
+    		returnval = false;
+    	}
+    	return returnval;
     }
 
-    public boolean[] getAllKeyUsage(){
-      return certificate.getKeyUsage();
-    }
-    
     public String[] getExtendedKeyUsageAsTexts(){
       java.util.List extendedkeyusage = null;  
-      try{  
-        extendedkeyusage = certificate.getExtendedKeyUsage();  
-      }catch(java.security.cert.CertificateParsingException e){}  
+      if (certificate instanceof X509Certificate) {
+    	  X509Certificate x509cert = (X509Certificate)certificate;
+          try {  
+              extendedkeyusage = x509cert.getExtendedKeyUsage();  
+            } catch (java.security.cert.CertificateParsingException e) {}  
+      }
       if(extendedkeyusage == null)    
         extendedkeyusage = new java.util.ArrayList();
       
@@ -218,11 +217,22 @@ public class CertificateView implements java.io.Serializable {
 
     public String getBasicConstraints(EjbcaWebBean ejbcawebbean) {
     	String retval = ejbcawebbean.getText("ENDENTITY");
-    	if(certificate.getBasicConstraints() != -1){                	
-       	    if(certificate.getBasicConstraints() == Integer.MAX_VALUE){
-                retval = ejbcawebbean.getText("CANOLIMIT");
-       	    }else{
-               retval = ejbcawebbean.getText("CAPATHLENGTH") + " : " + certificate.getBasicConstraints();                    	 
+    	if(CertTools.isCA(certificate)){                	
+            retval = ejbcawebbean.getText("CANOLIMIT");
+            if (certificate instanceof X509Certificate) {
+            	X509Certificate x509cert = (X509Certificate)certificate;
+           	    if(x509cert.getBasicConstraints() == Integer.MAX_VALUE){
+                    retval = ejbcawebbean.getText("CANOLIMIT");
+           	    }else{
+                   retval = ejbcawebbean.getText("CAPATHLENGTH") + " : " + x509cert.getBasicConstraints();                    	 
+                }            	
+            } else if (certificate.getType().equals("CVC")) {
+            	CardVerifiableCertificate cvccert = (CardVerifiableCertificate)certificate;
+            	try {
+            		retval = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+				} catch (NoSuchFieldException e) {
+					retval = "ERROR";
+				}
             }
        }
     	
@@ -230,7 +240,7 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public String getSignature() {
-      return (new java.math.BigInteger(certificate.getSignature())).toString(16);
+      return (new java.math.BigInteger(CertTools.getSignature(certificate))).toString(16);
     }
 
     public String getSHA1Fingerprint(){
@@ -279,7 +289,7 @@ public class CertificateView implements java.io.Serializable {
       return this.username;
     }
 
-    public X509Certificate getCertificate(){
+    public Certificate getCertificate(){
       return certificate;
     }
     
@@ -295,80 +305,15 @@ public class CertificateView implements java.io.Serializable {
     }
     
     public String getSubjectAltName() {
-      if(subjectaltnamestring == null){      	
-        try {
-          if(certificate.getSubjectAlternativeNames() != null){
-			subjectaltnamestring = "";
-			
-			String separator = "";
-          	String guid = null;
-          	try{              	  
-          		guid = CertTools.getGuidAltName(certificate); 
-          	}catch(IOException e){
-          		subjectaltnamestring = e.getMessage();
-          	}  
-          	if(guid != null){
-          		subjectaltnamestring += separator + "GUID=" + guid;
-          		separator = ", ";
-          	}
-          	String upn = null;
-          	try{              	  
-          		upn = CertTools.getUPNAltName(certificate);
-          	}catch(IOException e){
-          		subjectaltnamestring = e.getMessage();	
-          	}  
-          	if(upn != null){               
-          		subjectaltnamestring += separator + "UPN=" + upn;
-          		separator = ", ";
-          	}
-			
-			Iterator iter = certificate.getSubjectAlternativeNames().iterator();
-			while(iter.hasNext()){				
-              List next = (List) iter.next(); 
-              int OID = ((Integer) next.get(0)).intValue();
-              
-              switch(OID){
-              	case SUBALTNAME_OTHERNAME:
-              	  // Already taken care of                                                                 
-              	  break;
-              	case SUBALTNAME_RFC822NAME: 
-				  subjectaltnamestring += separator + "RFC822NAME=" + (String) next.get(1);
-				  separator = ", ";
-              	  break;
-              	case SUBALTNAME_DNSNAME:
-				  subjectaltnamestring += separator + "DNSNAME=" + (String) next.get(1);
-				  separator = ", ";
-              	  break;
-              	case SUBALTNAME_X400ADDRESS:
-              	  //TODO Implement X400ADDRESS
-              	  break;
-				case SUBALTNAME_EDIPARTYNAME:
-				  //TODO Implement EDIPARTYNAME
-				  break;              	                	  
-                case SUBALTNAME_DIRECTORYNAME:
-                  //TODO Implement EDIPARTYNAME
-                  break;                                      
-				case SUBALTNAME_URI:
-		          if(!subjectaltnamestring.equals(""))
-					 subjectaltnamestring += ", ";
-				  subjectaltnamestring += separator + "URI=" + (String) next.get(1);
-				  separator = ", ";
-				  break;
-				case SUBALTNAME_IPADDRESS:
-				  subjectaltnamestring += separator + "IPADDRESS=" + (String) next.get(1);
-				  separator = ", ";
-				  break;
-				case SUBALTNAME_REGISTREDID:
-                  //TODO implement REGISTREDID
-				  break;
-              }
-
-			}			
-          }	
-		} catch (CertificateParsingException e) {
-			subjectaltnamestring = e.getMessage();		
-		}                  
-      }        
+    	if(subjectaltnamestring == null){  
+    		try {
+    			subjectaltnamestring = CertTools.getSubjectAlternativeName(certificate);
+    		} catch (CertificateParsingException e) {
+    			subjectaltnamestring = e.getMessage();		
+    		} catch (IOException e) {
+    			subjectaltnamestring = e.getMessage();		
+			}                  
+    	}        
 
       return subjectaltnamestring; 	
     }
@@ -383,7 +328,7 @@ public class CertificateView implements java.io.Serializable {
 		return ret;
     }
     // Private fields
-    private X509Certificate  certificate;
+    private Certificate  certificate;
     private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
     private RevokedInfoView  revokedinfo;
     private String           username;

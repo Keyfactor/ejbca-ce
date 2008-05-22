@@ -13,7 +13,7 @@
 
 package se.anatom.ejbca.hardtoken;
 
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 
 import javax.naming.Context;
@@ -205,12 +205,12 @@ public class TestHardToken extends TestCase {
     public void test03FindHardTokenByCertificate() throws Exception {
         log.debug(">test03FindHardTokenByCertificate()");
 
-        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.  
         if(certStore.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null){
           certStore.storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),CertificateDataBean.CERT_ACTIVE,CertificateDataBean.CERTTYPE_ENDENTITY);
         }
-        String tokensn = cacheAdmin.findHardTokenByCertificateSNIssuerDN(admin, cert.getSerialNumber(), cert.getIssuerDN().toString());        
+        String tokensn = cacheAdmin.findHardTokenByCertificateSNIssuerDN(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));        
 
         assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
 

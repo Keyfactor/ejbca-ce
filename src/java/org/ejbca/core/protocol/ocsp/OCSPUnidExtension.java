@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ocsp;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
@@ -63,7 +64,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
     
     private String dataSourceJndi;
     private Hashtable trustedCerts = new Hashtable();
-    private X509Certificate cacert = null;
+    private Certificate cacert = null;
     private int errCode = OCSPUnidExtension.ERROR_NO_ERROR;
     
 	/** Called after construction
@@ -103,8 +104,8 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 try {
                     byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
                             "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-                    X509Certificate cert = CertTools.getCertfromByteArray(bytes);
-                    String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
+                    Certificate cert = CertTools.getCertfromByteArray(bytes);
+                    String key = CertTools.getIssuerDN(cert)+";"+CertTools.getSerialNumber(cert).toString(16);
                     trustedCerts.put(key,cert);
                 } catch (CertificateException e) {
             		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());

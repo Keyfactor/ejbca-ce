@@ -1,9 +1,9 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
-               org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, org.ejbca.core.EjbcaException,
-               org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
+    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.caadmin.CVCCAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
+               org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
+               org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
                org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy " %>
 
@@ -161,6 +161,7 @@
                                             cabean.initialize(request, ejbcawebbean); 
 
   CADataHandler cadatahandler     = cabean.getCADataHandler(); 
+
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcas/editcas.jsp";
   String action = "";
 
@@ -242,6 +243,7 @@
            caid = Integer.parseInt(request.getParameter(SELECT_CAS));
            if(caid != 0){             
              editca = true;
+             catype = cadatahandler.getCAInfo(caid).getCAInfo().getCAType();
              includefile="editcapage.jspf";              
            }
          } 
@@ -376,8 +378,45 @@
          if(request.getParameter(TEXTFIELD_VALIDITY) != null)
            validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));  
 
-         if(catoken != null && catype != 0 && subjectdn != null && caname != null 
-            && signedby != 0  ){
+         if(catoken != null && catype != 0 && subjectdn != null && caname != null && signedby != 0  ){
+
+        	 // CRL periods and publishers is common for all types of CAs
+             int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
+             int crlIssueInterval = 0;
+             String crlissueint = request.getParameter(TEXTFIELD_CRLISSUEINTERVAL);
+             if (crlissueint != null && !crlissueint.trim().equals(""))
+                 crlIssueInterval = Integer.parseInt(crlissueint);
+             int crlOverlapTime = 10;
+             String crloverlapint = request.getParameter(TEXTFIELD_CRLOVERLAPTIME);
+             if (crloverlapint != null && !crloverlapint.trim().equals(""))
+           	  crlOverlapTime = Integer.parseInt(crloverlapint);
+             int deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));              
+             String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
+             ArrayList crlpublishers = new ArrayList(); 
+             if(values != null){
+               for(int i=0; i < values.length; i++){
+                  crlpublishers.add(new Integer(values[i]));
+               }
+             }
+             values = request.getParameterValues(SELECT_APPROVALSETTINGS);
+             ArrayList approvalsettings = new ArrayList(); 
+             if(values != null){
+               for(int i=0; i < values.length; i++){
+            	   approvalsettings.add(new Integer(values[i]));
+               }
+             }
+             String value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
+             int numofreqapprovals = 1;
+             if(value != null){
+            	 numofreqapprovals = Integer.parseInt(value);
+             }
+             boolean finishuser = false;
+             value = request.getParameter(CHECKBOX_FINISHUSER);
+             if(value != null)
+               finishuser = value.equals(CHECKBOX_VALUE);         
+
+
+             
            if(catype == CAInfo.CATYPE_X509){
               // Create a X509 CA
               String subjectaltname = request.getParameter(TEXTFIELD_SUBJECTALTNAME);             
@@ -409,19 +448,9 @@
             	  policies.addAll(certprof.getCertificatePolicies());
               }
 
-              int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
-              int crlIssueInterval = 0;
-              String crlissueint = request.getParameter(TEXTFIELD_CRLISSUEINTERVAL);
-              if (crlissueint != null && !crlissueint.trim().equals(""))
-                  crlIssueInterval = Integer.parseInt(crlissueint);
-              int crlOverlapTime = 10;
-              String crloverlapint = request.getParameter(TEXTFIELD_CRLOVERLAPTIME);
-              if (crloverlapint != null && !crloverlapint.trim().equals(""))
-            	  crlOverlapTime = Integer.parseInt(crloverlapint);
-              int deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));              
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
-              String value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
+              value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
               if(value != null){
                  useauthoritykeyidentifier = value.equals(CHECKBOX_VALUE);                 
                  value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL); 
@@ -454,11 +483,6 @@
                  cadefinedfreshestcrl = request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL);
              }
              
-             boolean finishuser = false;
-             value = request.getParameter(CHECKBOX_FINISHUSER);
-             if(value != null)
-               finishuser = value.equals(CHECKBOX_VALUE);         
-
              boolean useutf8policytext = false;
              value = request.getParameter(CHECKBOX_USEUTF8POLICYTEXT);
              if(value != null) {
@@ -483,28 +507,6 @@
              value = request.getParameter(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL);
              if(value != null) {
                  crldistpointoncrlcritical = value.equals(CHECKBOX_VALUE);                             
-             }
-
-             String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
-             ArrayList crlpublishers = new ArrayList(); 
-             if(values != null){
-               for(int i=0; i < values.length; i++){
-                  crlpublishers.add(new Integer(values[i]));
-               }
-             }
-             
-             values = request.getParameterValues(SELECT_APPROVALSETTINGS);
-             ArrayList approvalsettings = new ArrayList(); 
-             if(values != null){
-               for(int i=0; i < values.length; i++){
-            	   approvalsettings.add(new Integer(values[i]));
-               }
-             }
-             
-             value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
-             int numofreqapprovals = 1;
-             if(value != null){
-            	 numofreqapprovals = Integer.parseInt(value);
              }
 
              int ocspactive = ExtendedCAServiceInfo.STATUS_INACTIVE;
@@ -584,7 +586,8 @@
                  }
                  includefile="choosecapage.jspf"; 
                }
-               if(request.getParameter(BUTTON_MAKEREQUEST) != null){
+               
+         if(request.getParameter(BUTTON_MAKEREQUEST) != null){
                  caid = CertTools.stringToBCDNString(subjectdn).hashCode();  
 		 // Create and OSCP CA Service.
 		 ArrayList extendedcaservices = new ArrayList();
@@ -641,7 +644,47 @@
                  includefile="recievefile.jspf"; 
                }
              }                          
-           } 
+           } // if(catype == CAInfo.CATYPE_X509)
+        	   
+           if(catype == CAInfo.CATYPE_CVC) {
+               if(crlperiod != 0 && !illegaldnoraltname){
+          		 // A CVC CA does not have any of the external services OCSP, XKMS, CMS
+          		 ArrayList extendedcaservices = new ArrayList();
+
+                 if(request.getParameter(BUTTON_MAKEREQUEST) != null){
+                     caid = CertTools.stringToBCDNString(subjectdn).hashCode();
+                     signedby = CAInfo.SIGNEDBYEXTERNALCA;
+                 }
+
+                 // Create the CAInfo to be used for either generating the whole CA or making a request
+                 CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
+                         certprofileid, validity, 
+                         null, catype, signedby,
+                         null, catoken, description, -1, null,
+                         crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+                         finishuser, extendedcaservices,
+                         approvalsettings,
+                         numofreqapprovals,
+                         true);
+
+          		if(request.getParameter(BUTTON_CREATE) != null){           
+                     try{
+                       cadatahandler.createCA(cvccainfo);
+                     }catch(CAExistsException caee){
+                        caexists = true; 
+                     }catch(CATokenAuthenticationFailedException catfe){
+                        catokenauthfailed = true;
+                     }
+                     includefile="choosecapage.jspf"; 
+                   }
+                   
+             if(request.getParameter(BUTTON_MAKEREQUEST) != null){
+                     cabean.saveRequestInfo(cvccainfo);                
+                     filemode = MAKEREQUESTMODE;
+                     includefile="recievefile.jspf"; 
+                   }
+                 }                          
+            } // if(catype == CAInfo.CATYPE_CVC)
          } 
        } 
        if(request.getParameter(BUTTON_CANCEL) != null){
@@ -943,10 +986,9 @@
            try{
              CAInfo cainfo = cabean.getRequestInfo();              
              cadatahandler.createCA(cainfo);                           
-             PKCS10CertificationRequest certreq = null;
              try{ 
-               certreq=cadatahandler.makeRequest(caid, certchain, true);
-               cabean.savePKCS10RequestData(certreq);     
+               byte[] certreq=cadatahandler.makeRequest(caid, certchain, true);
+               cabean.saveRequestData(certreq);     
                filemode = CERTREQGENMODE;
                includefile = "displayresult.jspf";
              }catch(CATokenOfflineException e){  
@@ -1005,12 +1047,13 @@
               opstr.print(temp + "\n");                
             }  
             opstr.close();                
-                                         
-            PKCS10RequestMessage certreq = org.ejbca.ui.web.RequestHelper.genPKCS10RequestMessageFromPEM(ostr.toByteArray());
+                                 
+            byte[] reqbytes = ostr.toByteArray();
+            IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(reqbytes);
             
              if (certreq != null) {               
-               cabean.savePKCS10RequestData(certreq.getCertificationRequest());                                
-               processedsubjectdn = certreq.getCertificationRequest().getCertificationRequestInfo().getSubject().toString();
+               cabean.saveRequestData(reqbytes);                                
+               processedsubjectdn = certreq.getRequestDN();
                processrequest = true;
                includefile="editcapage.jspf";
              }
@@ -1019,7 +1062,7 @@
            errorrecievingfile = true; 
          } 
        }else{
-         cabean.savePKCS10RequestData((PKCS10CertificationRequest) null);  
+         cabean.saveRequestData(null);  
        }
       }
       if( action.equals(ACTION_PROCESSREQUEST2)){        
@@ -1130,7 +1173,7 @@
                                                         crldistpointoncrlcritical,
                                                         true);
                  try{
-                   PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
+                   byte[] req = cabean.getRequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
                    cabean.saveProcessedCertificate(result);
                    filemode = CERTGENMODE;   
@@ -1149,8 +1192,8 @@
         if(!buttoncancel){
           try{
            Collection certchain = CertTools.getCertsFromPEM(file);                       
-           PKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, false);
-           cabean.savePKCS10RequestData(certreq);   
+           byte[] certreq = cadatahandler.makeRequest(caid, certchain, false);
+           cabean.saveRequestData(certreq);   
                
            filemode = CERTREQGENMODE;
            includefile = "displayresult.jspf";
@@ -1185,11 +1228,17 @@
         }        
       }
       if( action.equals(ACTION_CHOOSE_CATYPE)){
-        // Currently not need        
+    	  // Change the CA type we are
+    	  catype = Integer.parseInt(request.getParameter(SELECT_CATYPE));
+          caname = request.getParameter(HIDDEN_CANAME);   
+          editca = false;
+          includefile="editcapage.jspf";              
       }
       if( action.equals(ACTION_CHOOSE_CATOKENTYPE)){
         
-        catokenpath = request.getParameter(SELECT_CATOKEN);   
+        catokenpath = request.getParameter(SELECT_CATOKEN);  
+        String foo = request.getParameter(HIDDEN_CATYPE);
+        catype = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
         caname = request.getParameter(HIDDEN_CANAME);   
         if(catokenpath.equals(SoftCAToken.class.getName())){
           catokentype = CATokenInfo.CATOKENTYPE_P12;

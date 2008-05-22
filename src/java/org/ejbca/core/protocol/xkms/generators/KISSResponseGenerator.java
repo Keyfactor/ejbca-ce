@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.xkms.generators;
 
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -103,9 +104,9 @@ public class KISSResponseGenerator extends
 						byte[] encoded = (byte[]) next.getValue();
 
 						try {
-							X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-							if(nextCert.getBasicConstraints() == -1){
-								queryCert = nextCert;
+							Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+							if (!CertTools.isCA(nextCert)) {
+								queryCert = (X509Certificate)nextCert;								
 							}
 						} catch (CertificateException e) {
 							log.error(intres.getLocalizedMessage("xkms.errordecodingcert"),e);

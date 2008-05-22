@@ -20,7 +20,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -372,7 +371,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		keystore.load(null,null);
 
 		// Assume that the same hash algorithm is used for signing that was used to sign this CA cert
-		String signatureAlgorithm = CertTools.getSignatureAlgorithm((X509Certificate) caSignatureCertChain[0]);
+		String signatureAlgorithm = CertTools.getSignatureAlgorithm(caSignatureCertChain[0]);
 		String keyAlg = null;
 		if ( publickey instanceof RSAPublicKey ) {
 			keyAlg  = CATokenInfo.KEYALGORITHM_RSA;
@@ -402,7 +401,10 @@ public class CATokenContainerImpl extends CATokenContainer {
 			publickey = (ECPublicKey) publickey;
 			log.debug("ECName="+keyspec);
 		}
-		keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS, privatekey, null, caSignatureCertChain);       
+		Certificate[] certchain = new Certificate[1];
+		certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, privatekey, publickey, signatureAlgorithm, true);
+		
+		keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS, privatekey, null, certchain);       
 		data.put(SIGNKEYSPEC, keyspec);
 		data.put(SIGNKEYALGORITHM, keyAlg);
 		data.put(SIGNATUREALGORITHM, signatureAlgorithm);
@@ -425,7 +427,6 @@ public class CATokenContainerImpl extends CATokenContainer {
 			enckeys = new KeyPair(publicEncryptionKey, privateEncryptionKey);
 		}
 		// generate dummy certificate
-		Certificate[] certchain = new Certificate[1];
 		certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), encryptionSignatureAlgorithm, true);
 		keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);              
 

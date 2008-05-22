@@ -317,7 +317,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         // Strip dangerous chars
         username = StringTools.strip(username);
 
-        X509Certificate cert = (X509Certificate) incert;
+        Certificate cert = incert;
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(cert);            
         CertificateDataLocal data1 = null;
@@ -327,7 +327,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         data1.setStatus(status);
         data1.setType(type);
         String msg = intres.getLocalizedMessage("store.storecert");            	
-        getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
+        getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         if (protect) {
         	CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason());
         	TableProtectSessionLocal protect = protecthome.create();
@@ -765,9 +765,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * Finds certificate(s) for a given usernaem.
      *
-     * @param admin    Administrator performing the operation
-     * @param username the usernaem of the certificate(s) that will be retrieved
-     * @return Collection of Certificates (in no specified order) or null if none found.
+     * @param admin Administrator performing the operation
+     * @param username the username of the certificate(s) that will be retrieved
+     * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
      * @ejb.interface-method
      */
     public Collection findCertificatesByUsername(Admin admin, String username) {
@@ -777,6 +777,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             // Strip dangerous chars
             username = StringTools.strip(username);
 
+            // This method on the entity bean does the ordering in the database
             Collection coll = certHome.findByUsername(username);
             ArrayList ret = new ArrayList();
 
@@ -916,7 +917,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             if (!certs.isEmpty()) {
                 Iterator j = certs.iterator();
                 while (j.hasNext()) {
-        	        setRevokeStatus(admin, (X509Certificate) j.next(), publishers, reason);
+        	        setRevokeStatus(admin, (Certificate) j.next(), publishers, reason);
                 }
             }
         } catch (FinderException e) {
@@ -939,9 +940,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
         debug(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
-        X509Certificate certificate = null;
+        Certificate certificate = null;
         try {
-            certificate = (X509Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
+            certificate = (Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
 	        setRevokeStatus(admin, certificate, publishers, reason);
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("store.errorfindcertserno", serno.toString(16));            	
@@ -960,85 +961,82 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
      * @throws FinderException 
      */
-    private void setRevokeStatus(Admin admin, X509Certificate certificate, Collection publishers, int reason) throws FinderException {
+    private void setRevokeStatus(Admin admin, Certificate certificate, Collection publishers, int reason) throws FinderException {
     	if (certificate == null) {
     		return;
     	}
-        debug(">setRevokeStatus(X509Certificate),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber().toString(16));
+    	debug(">setRevokeStatus(Certificate),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumber(certificate).toString(16));
 
-        if (certificate != null) {        	
-            CertificateDataPK revpk = new CertificateDataPK();
-            revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
-            CertificateDataLocal rev = certHome.findByPrimaryKey(revpk); 
-            String username = rev.getUsername();
-            String serialNo = certificate.getSerialNumber().toString(16); // for logging
-            if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
-            		&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
-            	  rev.setStatus(CertificateDataBean.CERT_REVOKED);
-            	  rev.setRevocationDate(new Date());
-            	  rev.setRevocationReason(reason);            	  
-            	  String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
-            	  getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
-            	  // Revoke in all related publishers
-            	  if (publishers != null) {
-            		  getPublisherSession().revokeCertificate(admin, publishers, certificate, username, reason);
-            	  }            	  
-            } else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
-            		&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
-            	// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
-            	rev.setStatus(CertificateDataBean.CERT_ACTIVE);
-            	rev.setRevocationDate(null);
-            	rev.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
-            	// Republish the certificate if possible
-            	// If it is not possible, only log error but continue the operation of not revoking the certificate
-            	try {
-            		CertReqHistory certreqhist = getCertReqHistory(admin, certificate.getSerialNumber(), certificate.getIssuerDN().getName());
-            		if(certreqhist == null){
-            			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Must not be republished.");
-            		}
-            		UserDataVO userdata = certreqhist.getUserDataVO();
-            		if ( userdata == null ){
-            			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there ane no UserData in History.");
-            		}
-            		CertificateProfile certprofile = getCertificateProfile(admin, userdata.getCertificateProfileId());
-            		if(certprofile == null){
-            			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, can't find certificate profile.");  
-            		}
-            		CertificateInfo certinfo = getCertificateInfo(admin, CertTools.getFingerprintAsString(certificate));
-            		if(certprofile.getPublisherList().size() <= 0){
-            			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no publishers defined.");
-            		}
-            		boolean published = publishersession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
-            				certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certreqhist.getUserDataVO().getExtendedinformation());
-            		if ( !published ) {
-            			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
-            		}                	  
-            		String msg = intres.getLocalizedMessage("store.republishunrevokedcert", new Integer(reason));            	
-            		getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
-            	} catch (Exception ex) {
-            		// We catch the exception thrown above, to log the message, but it is only informational, so we dont re-throw anything
-            		getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
-            	}
-            } else {
-        		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, new Integer(rev.getStatus()), new Integer(reason));            	
-            	getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
-            }
-            // Update database protection
-            if (protect) {
-        		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason());
-            	TableProtectSessionLocal protect;
-            	try {
-            		protect = protecthome.create();
-            		protect.protect(admin, entry);            	
-            	} catch (CreateException e) {
-                	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
-            		error(msg, e);
-            	}
-            }
+    	CertificateDataPK revpk = new CertificateDataPK();
+    	revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
+    	CertificateDataLocal rev = certHome.findByPrimaryKey(revpk); 
+    	String username = rev.getUsername();
+    	String serialNo = CertTools.getSerialNumber(certificate).toString(16); // for logging
+    	if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
+    			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
+    		rev.setStatus(CertificateDataBean.CERT_REVOKED);
+    		rev.setRevocationDate(new Date());
+    		rev.setRevocationReason(reason);            	  
+    		String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
+    		getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
+    		// Revoke in all related publishers
+    		if (publishers != null) {
+    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, reason);
+    		}            	  
+    	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
+    			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
+    		// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
+    		rev.setStatus(CertificateDataBean.CERT_ACTIVE);
+    		rev.setRevocationDate(null);
+    		rev.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
+    		// Republish the certificate if possible
+    		// If it is not possible, only log error but continue the operation of not revoking the certificate
+    		try {
+    			CertReqHistory certreqhist = getCertReqHistory(admin, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
+    			if(certreqhist == null){
+    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Must not be republished.");
+    			}
+    			UserDataVO userdata = certreqhist.getUserDataVO();
+    			if ( userdata == null ){
+    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there ane no UserData in History.");
+    			}
+    			CertificateProfile certprofile = getCertificateProfile(admin, userdata.getCertificateProfileId());
+    			if(certprofile == null){
+    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, can't find certificate profile.");  
+    			}
+    			CertificateInfo certinfo = getCertificateInfo(admin, CertTools.getFingerprintAsString(certificate));
+    			if(certprofile.getPublisherList().size() <= 0){
+    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no publishers defined.");
+    			}
+    			boolean published = publishersession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
+    					certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certreqhist.getUserDataVO().getExtendedinformation());
+    			if ( !published ) {
+    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
+    			}                	  
+    			String msg = intres.getLocalizedMessage("store.republishunrevokedcert", new Integer(reason));            	
+    			getLogSession().log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
+    		} catch (Exception ex) {
+    			// We catch the exception thrown above, to log the message, but it is only informational, so we dont re-throw anything
+    			getLogSession().log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
+    		}
+    	} else {
+    		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, new Integer(rev.getStatus()), new Integer(reason));            	
+    		getLogSession().log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
+    	}
+    	// Update database protection
+    	if (protect) {
+    		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason());
+    		TableProtectSessionLocal protect;
+    		try {
+    			protect = protecthome.create();
+    			protect.protect(admin, entry);            	
+    		} catch (CreateException e) {
+    			String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
+    			error(msg, e);
+    		}
+    	}
 
-        }
-        
-        debug("<setRevokeStatus(),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber().toString(16));
+    	debug("<setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumber(certificate).toString(16));
     } // setRevokeStatus
 
     /**
@@ -1051,7 +1049,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason) {
         if (cert instanceof X509Certificate) {
-            setRevokeStatus(admin, ((X509Certificate) cert).getIssuerDN().toString(), ((X509Certificate) cert).getSerialNumber(), publishers, reason);
+            setRevokeStatus(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert), publishers, reason);
         }
     } //revokeCertificate
 
@@ -1122,7 +1120,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public boolean checkIfAllRevoked(Admin admin, String username) {
         boolean returnval = true;
-        X509Certificate certificate = null;
+        Certificate certificate = null;
         // Strip dangerous chars
         username = StringTools.strip(username);
         try {
@@ -1132,7 +1130,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 Iterator j = certs.iterator();
                 while (j.hasNext()) {
                     CertificateDataPK revpk = new CertificateDataPK();
-                    certificate = (X509Certificate) j.next();
+                    certificate = (Certificate) j.next();
                     revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
                     CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
                     if (protect) {
@@ -1234,6 +1232,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (FinderException e) {
             	if (deltaCRL && (crlnumber == 0)) {
             		log.debug("No delta CRL exists for CA with dn '"+issuerdn+"'");
+            	} else if (crlnumber == 0) {
+            		log.debug("No CRL exists for CA with dn '"+issuerdn+"'");
             	} else {
                 	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
                     log.error(msg, e);            		
@@ -1294,14 +1294,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Method used to add a CertReqHistory to database
      * 
      * @param admin calling the methods
-     * @param certificate the certificate to store (Only X509Certificate used for now)
+     * @param cert the certificate to store (Only X509Certificate used for now)
      * @param useradmindata the user information used when issuing the certificate.
      * @ejb.transaction type="Required"
      * @ejb.interface-method     
      */
-    public void addCertReqHistoryData(Admin admin, Certificate certificate, UserDataVO useradmindata){
-    	X509Certificate cert = (X509Certificate) certificate;
-        debug(">addCertReqHistData(" + cert.getSerialNumber() + ", " + cert.getIssuerDN() + ", " + useradmindata.getUsername() + ")");
+    public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata){
+        debug(">addCertReqHistData(" + CertTools.getSerialNumber(cert).toString(16) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
         try {
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
@@ -1867,12 +1866,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             Collection result = certprofilehome.findAll();
             Iterator i = result.iterator();
             while (i.hasNext() && !exists) {
-            	CertificateProfile certProfile = ((CertificateProfileDataLocal) i.next()).getCertificateProfile(); 
+            	CertificateProfileDataLocal cd = (CertificateProfileDataLocal) i.next();
+            	CertificateProfile certProfile = cd.getCertificateProfile(); 
             	if(certProfile.getType() == CertificateProfile.TYPE_ENDENTITY){
             		availablecas = certProfile.getAvailableCAs().iterator();
             		while (availablecas.hasNext()) {
             			if (((Integer) availablecas.next()).intValue() == caid ) {
             				exists = true;
+            				debug("CA exists in certificate profile "+cd.getCertificateProfileName());
             				break;
             			}
             		}

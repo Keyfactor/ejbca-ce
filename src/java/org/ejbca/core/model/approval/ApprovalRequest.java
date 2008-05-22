@@ -17,6 +17,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -290,7 +291,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	/**
 	 * Returns the certificate of the request admin.
 	 */
-	public X509Certificate getRequestAdminCert() {			      
+	public Certificate getRequestAdminCert() {			      
       return requestAdmin.getAdminInformation().getX509Certificate();
 	}
 

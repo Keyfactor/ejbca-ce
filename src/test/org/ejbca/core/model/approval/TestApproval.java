@@ -2,7 +2,7 @@ package org.ejbca.core.model.approval;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -10,8 +10,6 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import org.ejbca.core.model.approval.Approval;
-import org.ejbca.core.model.approval.ApprovalDataUtil;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -47,7 +45,7 @@ public class TestApproval extends TestCase {
 	}
 
 	public void testWriteExternal() throws Exception {
-		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
+		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
 		ArrayList approvals = new ArrayList();
 		
 		Approval ap = new Approval("test");
@@ -74,7 +72,7 @@ public class TestApproval extends TestCase {
     	
     	Approval rap = (Approval) readapprovals.iterator().next();
     	assertTrue(rap.getAdminCertIssuerDN().equals(CertTools.getIssuerDN(testcert)));
-    	assertTrue(rap.getAdminCertSerialNumber().equals(testcert.getSerialNumber()));
+    	assertTrue(rap.getAdminCertSerialNumber().equals(CertTools.getSerialNumber(testcert)));
     	assertTrue(rap.getUsername().equals("USERNAME"));
     	assertTrue(rap.isApproved());
     	assertTrue(rap.getComment().equals("test"));

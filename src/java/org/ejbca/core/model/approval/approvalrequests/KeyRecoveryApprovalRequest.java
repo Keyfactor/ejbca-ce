@@ -15,16 +15,14 @@ package org.ejbca.core.model.approval.approvalrequests;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.rmi.RemoteException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -42,7 +40,7 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /**
- * Approval Request created when an adminsitrator wants
+ * Approval Request created when an administrator wants
  * to recovery a end entities keyset
  *  
  * 
@@ -59,7 +57,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	private static final int LATEST_VERSION = 1;
 		
 	private String username;
-	private X509Certificate cert;
+	private Certificate cert;
 	
 	
 	private boolean recoverNewestCert = false; 
@@ -67,12 +65,12 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	
 	
 	/**
-	 * Constuctor used in externaliziation only
+	 * Constructor used in externalization only
 	 */
 	public KeyRecoveryApprovalRequest() {}
 
 
-	public KeyRecoveryApprovalRequest(X509Certificate cert, String username, boolean recoverNewestCert, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE,
 				numOfReqApprovals, cAId, endEntityProfileId);
 		this.username = username;
@@ -123,9 +121,9 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	public List getNewRequestDataAsText(Admin admin) {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("CERTSERIALNUMBER",cert.getSerialNumber().toString(16),true,false));
-		retval.add(new ApprovalDataText("SUBJECTDN",cert.getSubjectDN().toString(),true,false));
-		retval.add(new ApprovalDataText("ISSUERDN",cert.getIssuerDN().toString(),true,false));
+		retval.add(new ApprovalDataText("CERTSERIALNUMBER",CertTools.getSerialNumber(cert).toString(16),true,false));
+		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.getSubjectDN(cert).toString(),true,false));
+		retval.add(new ApprovalDataText("ISSUERDN",CertTools.getIssuerDN(cert).toString(),true,false));
 		return retval;
 	}
 	

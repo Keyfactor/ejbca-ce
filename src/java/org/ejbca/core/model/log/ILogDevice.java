@@ -14,7 +14,7 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
@@ -46,7 +46,7 @@ public interface ILogDevice extends Serializable {
      * @param comment comment of the event.
      * @param exception the exception that has occurred (can be null)
      */
-    public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception);
+    public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
     
     /**
      * Method to export log records according to a customized query on the log db data. The parameter query should be a legal Query object.

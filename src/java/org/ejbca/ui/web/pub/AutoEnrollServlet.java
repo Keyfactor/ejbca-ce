@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.pub;
 
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -260,7 +261,7 @@ public class AutoEnrollServlet extends HttpServlet {
 		} catch (Exception e) {
 			log.error("Could not add user "+username, e);
 		}
-		X509Certificate cert=null;
+		Certificate cert=null;
 		debugInfo += "Request: " + requestData + "\n";
 		req.setUsername(username);
 		req.setPassword(password);

@@ -6,7 +6,7 @@
  */
 package se.anatom.ejbca.util;
 
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 
 import junit.framework.TestCase;
 
@@ -44,12 +44,12 @@ public class TestHex extends TestCase {
 		byte[] certBytes = Base64.decode(testcert_oneline.getBytes());
 		assertNotNull(certBytes);
 		// This should be a cert
-		X509Certificate cert = CertTools.getCertfromByteArray(certBytes);
+		Certificate cert = CertTools.getCertfromByteArray(certBytes);
 		assertNotNull(cert);
 		byte[] hexBytes = Hex.decode(hexCert.getBytes());
 		assertEquals(new String(Base64.encode(certBytes)),new String(Base64.encode(hexBytes)));
-		X509Certificate cert1 = CertTools.getCertfromByteArray(hexBytes);
-		assertEquals(cert.getSubjectDN().toString(), cert1.getSubjectDN().toString());
+		Certificate cert1 = CertTools.getCertfromByteArray(hexBytes);
+		assertEquals(CertTools.getSubjectDN(cert), CertTools.getSubjectDN(cert1));
 		byte[] hexBytes2 = Hex.encode(cert1.getEncoded());
 		assertEquals(new String(hexBytes2), hexCert);
 		

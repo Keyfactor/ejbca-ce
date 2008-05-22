@@ -186,7 +186,7 @@ public class ProtocolScepHttpTest extends TestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert = CertTools.getCertfromByteArray(cert.getEncoded());            	
+                cacert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());            	
             }
         } else {
             log.error("NO CACERT for caid " + caid);
@@ -327,7 +327,7 @@ public class ProtocolScepHttpTest extends TestCase {
         byte[] respBytes = baos.toByteArray();
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
-        X509Certificate cert = CertTools.getCertfromByteArray(respBytes);
+        X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(respBytes);
         // Check that we got the right cert back
         assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         log.debug(">test07ScepGetCACert()");

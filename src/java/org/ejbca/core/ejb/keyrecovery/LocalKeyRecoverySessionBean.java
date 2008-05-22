@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.keyrecovery;
 
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -23,6 +24,8 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -35,8 +38,6 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
@@ -266,7 +267,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @throws ApprovalException 
      * @throws WaitingForApprovalException 
      */
-    private void checkIfApprovalRequired(Admin admin, X509Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) throws ApprovalException, WaitingForApprovalException{    	
+    private void checkIfApprovalRequired(Admin admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) throws ApprovalException, WaitingForApprovalException{    	
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
     	
         // Check if approvals is required.
@@ -334,7 +335,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public boolean addKeyRecoveryData(Admin admin, X509Certificate certificate, String username,
+    public boolean addKeyRecoveryData(Admin admin, Certificate certificate, String username,
                                       KeyPair keypair) {
         debug(">addKeyRecoveryData(user: " + username + ")");
 
@@ -346,14 +347,14 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) signsession.extendedService(admin, caid,
                     new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
 
-            keyrecoverydatahome.create(certificate.getSerialNumber(),
+            keyrecoverydatahome.create(CertTools.getSerialNumber(certificate),
                     CertTools.getIssuerDN(certificate), username, response.getKeyData());
-            String msg = intres.getLocalizedMessage("keyrecovery.addeddata", certificate.getSerialNumber().toString(16), CertTools.getIssuerDN(certificate));            	
+            String msg = intres.getLocalizedMessage("keyrecovery.addeddata", CertTools.getSerialNumber(certificate).toString(16), CertTools.getIssuerDN(certificate));            	
             logsession.log(admin, certificate, LogConstants.MODULE_KEYRECOVERY, new java.util.Date(), username,
                     certificate, LogConstants.EVENT_INFO_KEYRECOVERY, msg);
             returnval = true;
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", certificate.getSerialNumber().toString(16), CertTools.getIssuerDN(certificate));            	
+            String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16), CertTools.getIssuerDN(certificate));            	
             logsession.log(admin, certificate, LogConstants.MODULE_KEYRECOVERY, new java.util.Date(),
                     username, certificate, LogConstants.EVENT_ERROR_KEYRECOVERY, msg);
         }
@@ -421,10 +422,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void removeKeyRecoveryData(Admin admin, X509Certificate certificate) {
-        debug(">removeKeyRecoveryData(certificate: " + certificate.getSerialNumber().toString() +
-                ")");
-        final String hexSerial = certificate.getSerialNumber().toString(16);
+    public void removeKeyRecoveryData(Admin admin, Certificate certificate) {
+        final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
+        debug(">removeKeyRecoveryData(certificate: " + CertTools.getSerialNumber(certificate).toString(16) +")");
         final String dn = CertTools.getIssuerDN(certificate);
         try {
             String username = null;
@@ -640,8 +640,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public boolean markAsRecoverable(Admin admin, X509Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
-        final String hexSerial = certificate.getSerialNumber().toString(16);
+    public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
+        final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
         final String dn = CertTools.getIssuerDN(certificate);        
         debug(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
         boolean returnval = false;
@@ -752,11 +752,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public boolean existsKeys(Admin admin, X509Certificate certificate) {
+    public boolean existsKeys(Admin admin, Certificate certificate) {
         debug(">existsKeys()");
 
         boolean returnval = false;
-        final String hexSerial = certificate.getSerialNumber().toString(16);
+        final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
         final String dn = CertTools.getIssuerDN(certificate);
         try {
             KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));

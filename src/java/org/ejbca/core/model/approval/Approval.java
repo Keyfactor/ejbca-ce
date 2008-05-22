@@ -17,9 +17,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.Date;
-
 
 import org.ejbca.util.CertTools;
 
@@ -123,9 +122,9 @@ public class Approval implements Comparable, Externalizable {
 	 * 
 	 * 
 	 */
-	public void setApprovalCertificateAndUsername(boolean approved, X509Certificate approvalAdminCert, String username) {
+	public void setApprovalCertificateAndUsername(boolean approved, Certificate approvalAdminCert, String username) {
 		this.approved = approved;
-		this.adminCertSerialNumber = approvalAdminCert.getSerialNumber().toString(16);
+		this.adminCertSerialNumber = CertTools.getSerialNumber(approvalAdminCert).toString(16);
 		this.adminCertIssuerDN = CertTools.getIssuerDN(approvalAdminCert);
 		this.username = username;
 	}

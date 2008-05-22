@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.approval;
 
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -448,9 +449,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		} 
 		
 		// Check that the approvers username doesn't exists among the existing usernames.
-    	X509Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
+    	Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
     	ApprovalDataVO data = adl.getApprovalDataVO();
-		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,approvingCert.getSerialNumber(),CertTools.getIssuerDN(approvingCert));
+		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,CertTools.getSerialNumber(approvingCert),CertTools.getIssuerDN(approvingCert));
 		
         // Check that the approver isn't the same as requested the action.
 		if(data.getReqadmincertissuerdn() != null){
@@ -548,8 +549,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		} 
 		
 		// Check that the approvers username doesn't exists among the existing usernames.
-    	X509Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
-		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,approvingCert.getSerialNumber(),CertTools.getIssuerDN(approvingCert));
+    	Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
+		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,CertTools.getSerialNumber(approvingCert),CertTools.getIssuerDN(approvingCert));
 		ApprovalDataVO data = adl.getApprovalDataVO();
 		
 		if(data.getReqadmincertissuerdn() != null){
@@ -961,12 +962,12 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         	String approvalAdminsEmail = null;
             String fromAddress = null;
         	// Find the email address of the requesting administrator.
-        	X509Certificate requestAdminCert = approvalRequest.getRequestAdminCert();
+        	Certificate requestAdminCert = approvalRequest.getRequestAdminCert();
         	String requestAdminDN = null;
         	String requestAdminUsername = null;
         	if(requestAdminCert != null){
         	  requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
-        	  requestAdminUsername = getCertificateStoreSession().findUsernameByCertSerno(sendAdmin,requestAdminCert.getSerialNumber(),CertTools.getIssuerDN(requestAdminCert));
+        	  requestAdminUsername = getCertificateStoreSession().findUsernameByCertSerno(sendAdmin,CertTools.getSerialNumber(requestAdminCert),CertTools.getIssuerDN(requestAdminCert));
               UserDataVO requestAdminData = getUserAdminSession().findUser(sendAdmin, requestAdminUsername);        	
               if (requestAdminData == null || requestAdminData.getEmail() == null || requestAdminData.getEmail().equals("")) {
                	getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogConstants.EVENT_ERROR_NOTIFICATION, "Error sending notification to administrator requesting approval. Set a correct email to the administrator");

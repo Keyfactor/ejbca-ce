@@ -25,6 +25,8 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
@@ -56,6 +58,7 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -98,6 +101,7 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
@@ -114,7 +118,15 @@ import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
-import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.cvc.AlgorithmUtil;
+import org.ejbca.cvc.CVCAuthenticatedRequest;
+import org.ejbca.cvc.CVCObject;
+import org.ejbca.cvc.CVCPublicKey;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -139,7 +151,10 @@ public class EjbcaWS implements IEjbcaWS {
 	/** The maximum number of rows returned in array responses. */
 	private static final int MAXNUMBEROFROWS = 100;
 	
-	private static final Logger log = Logger.getLogger(EjbcaWS.class);				
+	private static final Logger log = Logger.getLogger(EjbcaWS.class);	
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#editUser(org.ejbca.core.protocol.ws.objects.UserDataVOWS)
 	 */	
@@ -298,7 +313,141 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 	/**
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#cvcRequest
+	 */
+	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
+			throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+			EjbcaException, ApprovalException, WaitingForApprovalException {
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
+		Admin admin = ejbhelper.getAdmin(wsContext);
+		
+		// Check if user is revoked
+		try {
+			UserDataVO user;
+			user = ejbhelper.getUserAdminSession().findUser(admin, username);
+			// See if this user already exists.
+			// We allow renewal of certificates for IS's that are not revoked
+			// In that case look for it's last old certificate and try to authenticate the request using an outer signature.
+			// If this verification is correct, set status to NEW and continue process the request.
+			if (user != null) {
+				int status = user.getStatus();
+				// If user is revoked, we can not proceed
+				if ( (status == UserDataConstants.STATUS_REVOKED) || (status == UserDataConstants.STATUS_HISTORICAL) ) {
+					throw new AuthorizationDeniedException("User '"+username+"' is revoked.");
+				}
+				Collection certs = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin, username);
+				// certs contains certificates ordered with last expire date first. Last expire date should be last issued cert
+				if (certs != null) {
+					log.debug("Found "+certs.size()+" old certificates for user "+username);
+					// We will only use the latest cert
+					Iterator iterator = certs.iterator(); 
+					// We have to iterate over available user certificates, because we don't know which on signed the old one
+					// and cv certificates have very coarse grained validity periods so we can't really know which one is the latest one
+					// if 2 certificates are issued the same day.
+					CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(cvcreq.getBytes()));
+					if (parsedObject instanceof CVCAuthenticatedRequest) {
+						CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
+						CVCPublicKey cvcKey = authreq.getRequest().getCertificateBody().getPublicKey();
+			            String algorithm = AlgorithmUtil.getAlgorithmName(cvcKey.getObjectIdentifier());
+			            log.debug("Received request has a public key with algorithm: "+algorithm);
+						String holderRef = authreq.getRequest().getCertificateBody().getHolderReference().getValue();
+						while (iterator.hasNext()) {
+							java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
+							try {
+								// Only allow renewal if the old certificate is valid
+								try {
+									CertTools.checkValidity(cert, new Date());
+									log.debug("Trying to verify the outer signature with a valid certificate");
+									authreq.verify(cert.getPublicKey());
+									// Verification succeeded, lets set user status to new, the password as passed in and proceed
+									ejbhelper.getUserAdminSession().setPassword(admin, username, password);
+									ejbhelper.getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+									// If we managed to verify the certificate we will break out of the loop
+									log.debug("Verified outer signature");
+									// Check to see that the inner signature does not also verify using the old certificate
+									// because that means the same keys were used, and that is not allowed according to the EU policy
+									CVCertificate innerreq = authreq.getRequest();
+									CardVerifiableCertificate innercert = new CardVerifiableCertificate(innerreq);
+									try {
+										innercert.verify(cert.getPublicKey());										
+										String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef);            	
+										log.info(msg);
+										throw new AuthorizationDeniedException(msg);
+									} catch (SignatureException e) {
+									}
+									
+									break;																		
+								} catch (CertificateNotYetValidException e) {
+									log.debug("Certificate we try to verify outer signature with is not yet valid");
+								} catch (CertificateExpiredException e) {									
+									log.debug("Certificate we try to verify outer signature with has expired");
+								}
+							} catch (InvalidKeyException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
+								log.info(msg, e);
+							} catch (CertificateException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
+								log.info(msg, e);
+							} catch (NoSuchAlgorithmException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
+								log.info(msg, e);
+							} catch (NoSuchProviderException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
+								log.info(msg, e);
+							} catch (SignatureException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
+								log.info(msg, e);
+							}
+							// if verification failed, continue processing as usual, using the sent in username/password hoping the
+							// status is NEW and password is correct.
+						}
+					}
+					// If it is not an authenticated request, with an outer signature, continue processing as usual, 
+					// using the sent in username/password hoping the status is NEW and password is correct. 
+				}
+				// If there are no old certificate, continue processing as usual, using the sent in username/password hoping the
+				// status is NEW and password is correct.
+			}
+			// If there are no old user, continue processing as usual... it will fail
+			
+			// Finally generate the certificate (assuming status is NEW and password is correct
+			byte[] response = processCertReq(username, password, cvcreq, REQTYPE_CVC, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+			CertificateResponse ret = new CertificateResponse(CertificateHelper.RESPONSETYPE_CERTIFICATE, response);
+			byte[] b64cert = ret.getData();
+			CVCertificate certObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
+			java.security.cert.Certificate iscert = new CardVerifiableCertificate(certObject); 
+			ArrayList<Certificate> retval = new ArrayList<Certificate>();
+			retval.add(new Certificate((java.security.cert.Certificate)iscert));
+			return retval;
+		} catch (RemoteException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (ServiceLocatorException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (FinderException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (ParseException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (ConstructionException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (NoSuchFieldException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CertificateEncodingException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+		    throw new EjbcaException(e.getMessage());
+		}		
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Request(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public CertificateResponse pkcs10Request(String username, String password,
 			String pkcs10, String hardTokenSN, String responseType)
@@ -308,10 +457,11 @@ public class EjbcaWS implements IEjbcaWS {
 		return new CertificateResponse(responseType, processCertReq(username, password,
 			                           pkcs10, REQTYPE_PKCS10, hardTokenSN, responseType));
 	}
-	
+
 	private static final int REQTYPE_PKCS10 = 1;
 	private static final int REQTYPE_CRMF = 2;
 	private static final int REQTYPE_SPKAC = 3;
+	private static final int REQTYPE_CVC = 4;
 	
 	private byte[] processCertReq(String username, String password,
 			String req, int reqType, String hardTokenSN, String responseType) throws AuthorizationDeniedException, NotFoundException, EjbcaException{
@@ -333,12 +483,12 @@ public class EjbcaWS implements IEjbcaWS {
 
 			// Check tokentype
 			if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
-				throw new EjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10 requests");
+				throw new EjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 			}
 
 			PublicKey pubKey = null;
 			if (reqType == REQTYPE_PKCS10) {				
-				PKCS10RequestMessage pkcs10req=RequestHelper.genPKCS10RequestMessageFromPEM(req.getBytes());
+				PKCS10RequestMessage pkcs10req=RequestMessageUtils.genPKCS10RequestMessageFromPEM(req.getBytes());
 				pubKey = pkcs10req.getRequestPublicKey();
 			}
 			if (reqType == REQTYPE_SPKAC) {
@@ -374,6 +524,28 @@ public class EjbcaWS implements IEjbcaWS {
 				KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
 				pubKey = keyFact.generatePublic(keySpec);
 			}
+			if (reqType == REQTYPE_CVC) {
+				CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(req.getBytes()));
+				// We will handle both the case if the request is an authenticated request, i.e. with an outer signature
+				// and when the request is missing the (optional) outer signature.
+				CVCertificate cvccert = null;
+				if (parsedObject instanceof CVCAuthenticatedRequest) {
+					CVCAuthenticatedRequest cvcreq = (CVCAuthenticatedRequest)parsedObject;
+					cvccert = cvcreq.getRequest();
+				} else {
+					cvccert = (CVCertificate)parsedObject;
+				}
+				pubKey = cvccert.getCertificateBody().getPublicKey();
+				// Verify POP on the inner request
+				CardVerifiableCertificate cert = new CardVerifiableCertificate(cvccert);
+				try {
+					cert.verify(pubKey);
+				} catch (CertificateException e) {
+					log.debug("POPO verification Failed");
+					throw new SignRequestSignatureException("Invalid inner signature in CVCRequest, popo-verification failed.");
+				}
+				log.debug("POPO verification successful");
+			}
 			if (pubKey != null) {
 				retval = getCertResponseFromPublicKey(admin, pubKey, username, password, hardTokenSN, responseType, ejbhelper);
 			}
@@ -381,40 +553,52 @@ public class EjbcaWS implements IEjbcaWS {
 			throw ade;
 		
 		} catch (InvalidKeyException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (AuthStatusException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (AuthLoginException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (CADoesntExistsException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (SignatureException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
 		} catch (InvalidKeySpecException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (NoSuchAlgorithmException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (NoSuchProviderException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
 		} catch (CertificateEncodingException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
 		} catch (CreateException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());		
 		} catch (IOException e) {
-			log.error("EJBCA WebService error, pkcs10Req : ",e);
+			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
 		} catch (FinderException e) {
 			new NotFoundException(e.getMessage());
+		} catch (ParseException e) {
+			// CVC error
+			log.error("EJBCA WebService error, processCertReq : ",e);
+			throw new EjbcaException(e.getMessage());			
+		} catch (ConstructionException e) {
+			// CVC error
+			log.error("EJBCA WebService error, processCertReq : ",e);
+			throw new EjbcaException(e.getMessage());			
+		} catch (NoSuchFieldException e) {
+			// CVC error
+			log.error("EJBCA WebService error, processCertReq : ",e);
+			throw new EjbcaException(e.getMessage());			
 		}
 
 		return retval;
@@ -687,15 +871,15 @@ public class EjbcaWS implements IEjbcaWS {
 			while(iter.hasNext()){
 				X509Certificate next = (X509Certificate) iter.next();
 				if(username == null){
-					username = ejbhelper.getCertStoreSession().findUsernameByCertSerno(admin,next.getSerialNumber(),next.getIssuerDN().toString());
+					username = ejbhelper.getCertStoreSession().findUsernameByCertSerno(admin,CertTools.getSerialNumber(next),CertTools.getIssuerDN(next));
 				}
 				
 				// check that admin is authorized to CA
-				int caid = CertTools.stringToBCDNString(next.getIssuerDN().toString()).hashCode();		
+				int caid = CertTools.getIssuerDN(next).hashCode();		
 				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 				if(reason == RevokedCertInfo.NOT_REVOKED){
 					String issuerDN = CertTools.getIssuerDN(next);
-					BigInteger serno = next.getSerialNumber();
+					BigInteger serno = CertTools.getSerialNumber(next);
 
 					CertificateInfo certInfo = ejbhelper.getCertStoreSession().getCertificateInfo(admin, CertTools.getCertFingerprintAsString(next.getEncoded()));
 					if(certInfo.getRevocationReason()== RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD){
@@ -716,7 +900,7 @@ public class EjbcaWS implements IEjbcaWS {
 					}
 				}else{
 					try {
-						ejbhelper.getUserAdminSession().revokeCert(admin,next.getSerialNumber(),next.getIssuerDN().toString(),username,reason);
+						ejbhelper.getUserAdminSession().revokeCert(admin,CertTools.getSerialNumber(next),CertTools.getIssuerDN(next),username,reason);
 						success = true;
 					} catch (WaitingForApprovalException e) {
 						lastWaitingForApprovalException = e;
@@ -1008,7 +1192,7 @@ public class EjbcaWS implements IEjbcaWS {
 					while(iter.hasNext()){
 						java.security.cert.X509Certificate nextCert = (java.security.cert.X509Certificate) iter.next();
 						try {
-							usersess.revokeCert(admin, nextCert.getSerialNumber(), nextCert.getIssuerDN().toString(), currentHardToken.getUsername(), RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
+							usersess.revokeCert(admin, CertTools.getSerialNumber(nextCert), CertTools.getIssuerDN(nextCert), currentHardToken.getUsername(), RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
 						} catch (AlreadyRevokedException e) {
 							// Ignore previously revoked certificates
 						} catch (FinderException e) {
@@ -1042,7 +1226,7 @@ public class EjbcaWS implements IEjbcaWS {
 									X509Certificate next = (X509Certificate) revokeCerts.next();							 
 									try{
 										if(!next.getExtendedKeyUsage().contains(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[CertificateProfile.SMARTCARDLOGON])){
-											revokeCert(CertTools.getIssuerDN(next), next.getSerialNumber().toString(16), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+											revokeCert(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next).toString(16), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
 										}
 									}catch(CertificateParsingException e){
 										log.error(e);

@@ -155,9 +155,6 @@ public class TestCmsCAService extends TestCase {
         SignerInformationStore infoStore = csd.getSignerInfos();
         Collection signers = infoStore.getSigners();
         Iterator iter = signers.iterator();
-//        FileOutputStream fos = new FileOutputStream("/home/tomas/p7.der");
-//        fos.write(doc);
-//        fos.close();
         if (iter.hasNext()) {
         	SignerInformation si = (SignerInformation)iter.next();
         	assertNotNull(si);

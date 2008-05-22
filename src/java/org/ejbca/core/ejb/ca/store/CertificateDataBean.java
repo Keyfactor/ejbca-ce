@@ -100,7 +100,7 @@ import org.ejbca.util.CertTools;
  *
  * @ejb.finder description="findByUsername"
  * signature="Collection findByUsername(java.lang.String username)"
- * query="SELECT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1 ORDER BY a.expireDate DESC"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
@@ -387,7 +387,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public Certificate getCertificate() {
-        X509Certificate cert = null;
+        Certificate cert = null;
         try {
             cert = CertTools.getCertfromByteArray(Base64.decode(getBase64Cert().getBytes()));
         } catch (CertificateException ce) {
@@ -408,12 +408,11 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             String b64Cert = new String(Base64.encode(incert.getEncoded()));
             setBase64Cert(b64Cert);
 
-            X509Certificate tmpcert = (X509Certificate) incert;
-            String fp = CertTools.getFingerprintAsString(tmpcert);
+            String fp = CertTools.getFingerprintAsString(incert);
             setFingerprint(fp);
-            setSubjectDN(CertTools.getSubjectDN(tmpcert));
-            setIssuerDN(CertTools.getIssuerDN(tmpcert));
-            setSerialNumber(tmpcert.getSerialNumber().toString());
+            setSubjectDN(CertTools.getSubjectDN(incert));
+            setIssuerDN(CertTools.getIssuerDN(incert));
+            setSerialNumber(CertTools.getSerialNumber(incert).toString());
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
         }
@@ -491,22 +490,21 @@ public abstract class CertificateDataBean extends BaseEntityBean {
         try {
             String b64Cert = new String(Base64.encode(incert.getEncoded()));
             setBase64Cert(b64Cert);
-            tmpcert = (X509Certificate) incert;
 
-            String fp = CertTools.getFingerprintAsString(tmpcert);
+            String fp = CertTools.getFingerprintAsString(incert);
             setFingerprint(fp);
 
             // Make sure names are always looking the same
-            setSubjectDN(CertTools.getSubjectDN(tmpcert));
-            setIssuerDN(CertTools.getIssuerDN(tmpcert));
+            setSubjectDN(CertTools.getSubjectDN(incert));
+            setIssuerDN(CertTools.getIssuerDN(incert));
             log.debug("Creating certdata, subject=" + getSubjectDN() + ", issuer=" + getIssuerDN());
-            setSerialNumber(tmpcert.getSerialNumber().toString());
+            setSerialNumber(CertTools.getSerialNumber(incert).toString());
 
             // Default values for status and type
             setStatus(CERT_UNASSIGNED);
             setType(SecConst.USER_INVALID);
             setCaFingerprint(null);
-            setExpireDate(tmpcert.getNotAfter());
+            setExpireDate(CertTools.getNotAfter(incert));
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         } catch (CertificateEncodingException cee) {

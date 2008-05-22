@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
 
@@ -25,8 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
@@ -146,12 +143,8 @@ public class CACertReqServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_CERTREQ)) {
             try {
                 
-            	PKCS10CertificationRequest pkcs10request = cabean.getPKCS10RequestData();
-				ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-				DEROutputStream dOut = new DEROutputStream(bOut);
-				dOut.writeObject(pkcs10request);
-				dOut.close();								          
-				byte[] b64certreq = org.ejbca.util.Base64.encode(bOut.toByteArray());
+            	byte[] request = cabean.getRequestData();
+				byte[] b64certreq = org.ejbca.util.Base64.encode(request);
 				String out = "-----BEGIN CERTIFICATE REQUEST-----\n";
 				out += new String(b64certreq);
 				out += "\n-----END CERTIFICATE REQUEST-----\n";

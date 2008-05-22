@@ -20,6 +20,7 @@ import java.util.Iterator;
 
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
@@ -56,18 +57,27 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    public static final int CRLPERIOD               = 10;
    public static final int CRLISSUEINTERVAL        = 11;
    public static final int CRLOVERLAPTIME          = 12;
-   public static final int CRLPUBLISHERS           = 13;
-   public static final int DELTACRLPERIOD          = 14;
+   public static final int DELTACRLPERIOD          = 13;
+   public static final int CRLPUBLISHERS           = 14;
    
    private static final int OCSPSPACER             = 15;
    
    public static final int OCSP                    = 16;
   
     
+   /** A info text strings must contain:
+    * NAME, SUBJECTDN, SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRLPERIOD, CRLISSUEINTERVAL, CRLOVERLAPTIME, DELTACRLPERIOD
+    * It must also have "" in pos nr 4 (CASPACER) 
+    * It must also have "" in pos nr 9 (CRLSPACER) 
+    */
    public static String[] X509CA_CAINFODATATEXTS = {"NAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
                                                     "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
                                                     "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "DELTACRLPERIOD", "CRLPUBLISHERS", "", "OCSPSERVICE"};
-   
+
+   public static String[] CVCCA_CAINFODATATEXTS = {"NAME","SUBJECTDN","","CATYPE","",
+       "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
+       "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "DELTACRLPERIOD"};
+
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;
    
@@ -77,21 +87,69 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
     public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, HashMap publishersidtonamemap){
       this.cainfo = cainfo;  
         
-      if(cainfo instanceof X509CAInfo){
-        cainfodatatexts = new String[X509CA_CAINFODATATEXTS.length];
-        cainfodata = new String[X509CA_CAINFODATATEXTS.length];  
+      if (cainfo instanceof X509CAInfo) {
+        setupGeneralInfo(X509CA_CAINFODATATEXTS, cainfo, ejbcawebbean);
+
+        cainfodata[SUBJECTALTNAME] = ((X509CAInfo) cainfo).getSubjectAltName();
+
+		cainfodata[CRLPUBLISHERS] = "";
+        Iterator iter = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
+        if(iter.hasNext())
+		  cainfodata[CRLPUBLISHERS] = (String) publishersidtonamemap.get(iter.next()); 
+        else
+		cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
         
-        for(int i=0; i < X509CA_CAINFODATATEXTS.length; i++){
-          if(X509CA_CAINFODATATEXTS[i].equals(""))
+        while(iter.hasNext())
+			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " +
+			                                               (String) publishersidtonamemap.get(iter.next());
+        
+		cainfodata[OCSPSPACER]          = "&nbsp;"; // blank line
+		
+		boolean active = false;		
+		iter = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
+		while(iter.hasNext()){
+	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
+	      if(next instanceof OCSPCAServiceInfo){
+	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+	      	if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null)
+	      	  ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);		  
+	      }
+		}
+		
+		if(active){
+	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE") + 
+                             "<br>" + "&nbsp;<a style='cursor:hand;' onClick='viewocspcert()'><u>" +
+			                 ejbcawebbean.getText("VIEWOCSPCERTIFICATE") + 
+			                 "</u></a>";	
+		}else{
+		  cainfodata[OCSP] = ejbcawebbean.getText("INACTIVE");	
+		}
+       
+        
+      } else if (cainfo instanceof CVCCAInfo) {
+          setupGeneralInfo(CVCCA_CAINFODATATEXTS, cainfo, ejbcawebbean);          
+      }
+   }
+
+	private void setupGeneralInfo(String[] strings, CAInfo cainfo, EjbcaWebBean ejbcawebbean) {
+		cainfodatatexts = new String[strings.length];
+        cainfodata = new String[strings.length];  
+        
+        for(int i=0; i < strings.length; i++){
+          if(strings[i].equals(""))
               cainfodatatexts[i]="&nbsp;";
           else
-              cainfodatatexts[i] = ejbcawebbean.getText(X509CA_CAINFODATATEXTS[i]);
+              cainfodatatexts[i] = ejbcawebbean.getText(strings[i]);
         }
         
         cainfodata[SUBJECTDN]  = cainfo.getSubjectDN();
-        cainfodata[SUBJECTALTNAME] = ((X509CAInfo) cainfo).getSubjectAltName();
         cainfodata[NAME]       = cainfo.getName();
-        cainfodata[CATYPE]     = ejbcawebbean.getText("X509");
+        int catype = cainfo.getCAType();
+        if (catype == CAInfo.CATYPE_CVC) {
+            cainfodata[CATYPE]     = ejbcawebbean.getText("CVCCA");        	
+        } else {
+            cainfodata[CATYPE]     = ejbcawebbean.getText("X509");        	
+        }
         cainfodata[CASPACER]          = "&nbsp;"; // blank line
         if(cainfo.getExpireTime() == null)
 		  cainfodata[EXPIRETIME] = "";
@@ -138,52 +196,16 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         	cainfodata[CATOKEN_STATUS]     = tokentext +", " + ejbcawebbean.getText("OFFLINE");
         	break;
         }
-
         
         cainfodata[DESCRIPTION] = cainfo.getDescription();
         
 		cainfodata[CRLSPACER]          = "&nbsp;"; // blank line
 
-        cainfodata[CRLPERIOD] = Integer.toString(((X509CAInfo) cainfo).getCRLPeriod());
-        cainfodata[CRLISSUEINTERVAL] = Integer.toString(((X509CAInfo) cainfo).getCRLIssueInterval());
-        cainfodata[CRLOVERLAPTIME] = Integer.toString(((X509CAInfo) cainfo).getCRLOverlapTime());
-        
-		cainfodata[CRLPUBLISHERS] = "";
-        Iterator iter = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
-        if(iter.hasNext())
-		  cainfodata[CRLPUBLISHERS] = (String) publishersidtonamemap.get(iter.next()); 
-        else
-		cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
-        
-        while(iter.hasNext())
-			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " +
-			                                               (String) publishersidtonamemap.get(iter.next());
-        
-		cainfodata[OCSPSPACER]          = "&nbsp;"; // blank line
-		
-		boolean active = false;		
-		iter = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
-		while(iter.hasNext()){
-	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
-	      if(next instanceof OCSPCAServiceInfo){
-	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-	      	if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null)
-	      	  ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);		  
-	      }
-		}
-		
-		if(active){
-	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE") + 
-                             "<br>" + "&nbsp;<a style='cursor:hand;' onClick='viewocspcert()'><u>" +
-			                 ejbcawebbean.getText("VIEWOCSPCERTIFICATE") + 
-			                 "</u></a>";	
-		}else{
-		  cainfodata[OCSP] = ejbcawebbean.getText("INACTIVE");	
-		}
-       
-        
-      }
-   }
+        cainfodata[CRLPERIOD] = Integer.toString(cainfo.getCRLPeriod());
+        cainfodata[CRLISSUEINTERVAL] = Integer.toString(cainfo.getCRLIssueInterval());
+        cainfodata[CRLOVERLAPTIME] = Integer.toString(cainfo.getCRLOverlapTime());
+        cainfodata[DELTACRLPERIOD] = Integer.toString(cainfo.getDeltaCRLPeriod());
+	}
 
    public String[] getCAInfoData(){ return cainfodata;}
    public String[] getCAInfoDataText(){ return cainfodatatexts;} 

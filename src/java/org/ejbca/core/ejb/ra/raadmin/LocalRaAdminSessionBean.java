@@ -702,10 +702,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         Collection result = profiledatahome.findAll();
         Iterator i = result.iterator();
         while(i.hasNext() && !exists){
-          availablecas = ((EndEntityProfileDataLocal) i.next()).getProfile().getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+        	EndEntityProfileDataLocal ep = (EndEntityProfileDataLocal) i.next();
+          availablecas = ep.getProfile().getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
           for(int j=0; j < availablecas.length; j++){
             if(Integer.parseInt(availablecas[j]) == caid){
               exists=true;
+              debug("CA exists in entity profile "+ep.getProfileName());
               break;
             }
           }

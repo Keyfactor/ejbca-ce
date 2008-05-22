@@ -21,7 +21,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -99,7 +98,7 @@ public interface IRequestMessage extends Serializable {
 	 * Gets any requested extensions, if the request message type is able to contain request extensions
 	 * and if there are any. Requested extensions are (currently) in the form of X509Extensions.
 	 * 
-	 * @return X509Extensions
+	 * @return X509Extensions or null
 	 */
 	public X509Extensions getRequestExtensions();
 
@@ -161,17 +160,17 @@ public interface IRequestMessage extends Serializable {
      *
      * @see #requireKeyInfo()
      */
-    public void setKeyInfo(X509Certificate cert, PrivateKey key, String provider);
+    public void setKeyInfo(Certificate cert, PrivateKey key, String provider);
 
     /**
-     * Returns an error number after an error has occured processing the request
+     * Returns an error number after an error has occurred processing the request
      *
      * @return class specific error number
      */
     public int getErrorNo();
 
     /**
-     * Returns an error message after an error has occured processing the request
+     * Returns an error message after an error has occurred processing the request
      *
      * @return class specific error message
      */

@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -172,10 +171,9 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public PKCS10CertificationRequest  makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-  	
-	  PKCS10RequestMessage result = (PKCS10RequestMessage) caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting);
-	  return result.getCertificationRequest();    
+  public byte[] makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+	  byte[] result = caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting);
+	  return result;    
   }	    
 
   /**

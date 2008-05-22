@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -65,7 +66,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -486,8 +487,8 @@ public class CardCertReqServlet extends HttpServlet {
     private byte[] pkcs10CertRequest(Admin administrator, ISignSessionRemote signsession, byte[] b64Encoded,
         String username, String password) throws Exception {
         byte[] result = null;	
-        X509Certificate cert=null;
-		PKCS10RequestMessage req = RequestHelper.genPKCS10RequestMessageFromPEM(b64Encoded);
+        Certificate cert=null;
+		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessageFromPEM(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
         IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));

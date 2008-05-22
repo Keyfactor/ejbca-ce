@@ -188,7 +188,7 @@ public class TestKeyTools extends TestCase {
 
     public void test03CreateP12() throws Exception {
         log.debug(">test03CreateP12()");
-        X509Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        Certificate cert = CertTools.getCertfromByteArray(certbytes);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey pk = keyFactory.generatePrivate(pkKeySpec);

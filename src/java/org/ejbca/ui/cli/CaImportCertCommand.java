@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli;
 
 import java.io.File;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -114,7 +115,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getOutputStream().println();
 	}
 	
-	protected X509Certificate loadcert(String filename) throws Exception {
+	protected Certificate loadcert(String filename) throws Exception {
 		File certfile = new File(filename);
 		if (!certfile.exists()) {
 			throw new Exception(filename + " is not a file.");
@@ -123,7 +124,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			byte[] bytes = FileTools.getBytesFromPEM(
 					FileTools.readFiletoBuffer(filename),
 					"-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-			X509Certificate cert = CertTools.getCertfromByteArray(bytes);
+			Certificate cert = CertTools.getCertfromByteArray(bytes);
 			return cert;
 		} catch (java.io.IOException ioe) {
 			throw new Exception("Error reading " + filename + ": " + ioe.toString());
@@ -156,12 +157,12 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				throw new Exception("Invalid certificate status.");
 			}
 			
-			X509Certificate certificate = loadcert(args[5]);
+			Certificate certificate = loadcert(args[5]);
 			String fingerprint = CertTools.getFingerprintAsString(certificate);
 			if (getCertificateStoreSession().findCertificateByFingerprint(administrator, fingerprint) != null) {
-				throw new Exception("Certificate number '" + certificate.getSerialNumber().toString() + "' is already present.");
+				throw new Exception("Certificate number '" + CertTools.getSerialNumber(certificate).toString(16) + "' is already present.");
 			}
-			if (certificate.getNotAfter().compareTo(new java.util.Date()) < 0) {
+			if (CertTools.getNotAfter(certificate).compareTo(new java.util.Date()) < 0) {
 				status = CertificateDataBean.CERT_EXPIRED;
 			}
 			
@@ -204,7 +205,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			getOutputStream().println("Trying to add user:");
 			getOutputStream().println("Username: " + username);
 			getOutputStream().println("Password (hashed only): " + password);
-			getOutputStream().println("DN: " + certificate.getSubjectDN());
+			getOutputStream().println("DN: " + CertTools.getSubjectDN(certificate));
 			getOutputStream().println("CA Name: " + args[3]);
 			getOutputStream().println("Certificate Profile: " + getCertificateStoreSession().getCertificateProfileName(administrator, certificateprofileid));
 			getOutputStream().println("End Entity Profile: " +
@@ -220,7 +221,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			if (userdata == null) {
 				getAdminSession().addUser(administrator,
 						username, password,
-						certificate.getSubjectDN().getName(),
+						CertTools.getSubjectDN(certificate),
 						subjectAltName, email,
 						false,
 						endentityprofileid,
@@ -240,7 +241,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			else {
 				getAdminSession().changeUser(administrator,
 						username, password,
-						certificate.getSubjectDN().getName(),
+						CertTools.getSubjectDN(certificate),
 						subjectAltName, email,
 						false,
 						endentityprofileid,
@@ -260,7 +261,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 					fingerprint,
 					status, type);
 			
-			getOutputStream().println("Certificate number '" + certificate.getSerialNumber().toString() + "' has been added.");
+			getOutputStream().println("Certificate number '" + CertTools.getSerialNumber(certificate).toString(16) + "' has been added.");
 		}
 		catch (Exception e) {
 			getOutputStream().println("Error: " + e.getMessage());

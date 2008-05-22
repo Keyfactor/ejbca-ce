@@ -19,6 +19,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -83,11 +84,11 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			admin = new Admin(certificates[0]);
 			// Check that user have the administrator flag set.
 			if(!allowNonAdmins){
-				ejbhelper.getUserAdminSession().checkIfCertificateBelongToAdmin(admin, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());
+				ejbhelper.getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
 				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
 			}
 
-			RevokedCertInfo revokeResult =  ejbhelper.getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.stringToBCDNString(certificates[0].getIssuerDN().toString()), certificates[0].getSerialNumber());
+			RevokedCertInfo revokeResult =  ejbhelper.getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
 			if(revokeResult == null || revokeResult.getReason() != RevokedCertInfo.NOT_REVOKED){
 				throw new AuthorizationDeniedException("Error administrator certificate doesn't exist or is revoked.");
 			}
@@ -122,7 +123,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 		Admin admin = new Admin(certificates[0]);
 		try{
-			ejbhelper.getUserAdminSession().checkIfCertificateBelongToAdmin(admin, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());
+			ejbhelper.getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
 			retval = true;
 		}catch(AuthorizationDeniedException e){
@@ -397,17 +398,17 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	 * @throws CreateException 
 	 * @throws ClassCastException 
 	 */
-	protected Collection<X509Certificate> returnOnlyValidCertificates(Admin admin, Collection<X509Certificate> certs) throws CreateException, NamingException, RemoteException {
-     ArrayList<X509Certificate> retval = new ArrayList<X509Certificate>();
+	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) throws CreateException, NamingException, RemoteException {
+     ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
      EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-     Iterator<X509Certificate> iter = certs.iterator();
+     Iterator<java.security.cert.Certificate> iter = certs.iterator();
      while(iter.hasNext()){
-  	   X509Certificate next = iter.next();
+    	 java.security.cert.Certificate next = iter.next();
   	   
-  	   RevokedCertInfo info = ejbhelper.getCertStoreSession().isRevoked(admin,next.getIssuerDN().toString(),next.getSerialNumber());
+  	   RevokedCertInfo info = ejbhelper.getCertStoreSession().isRevoked(admin,CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
   	   if(info.getReason() == RevokedCertInfo.NOT_REVOKED){
   		   try{
-  			   next.checkValidity();
+  			   CertTools.checkValidity(next, new Date());
   			   retval.add(next);
   		   }catch(CertificateExpiredException e){    			   
   		   }catch (CertificateNotYetValidException e) {    			   
@@ -418,20 +419,19 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
      return retval;
 	}
 	
-	protected Collection<X509Certificate> returnOnlyAuthorizedCertificates(Admin admin, Collection<X509Certificate> certs) throws RemoteException, CreateException {
-		ArrayList<X509Certificate> retval = new ArrayList<X509Certificate>();
+	protected Collection<java.security.cert.Certificate> returnOnlyAuthorizedCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) throws RemoteException, CreateException {
+		ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-		Iterator<X509Certificate> iter = certs.iterator();
+		Iterator<java.security.cert.Certificate> iter = certs.iterator();
 		while(iter.hasNext()){
-			X509Certificate next = iter.next();
-			
+			java.security.cert.Certificate next = iter.next();
 			try{
 				// check that admin is autorized to CA
-				int caid = CertTools.stringToBCDNString(next.getIssuerDN().toString()).hashCode();		
+				int caid = CertTools.getIssuerDN(next).hashCode();		
 				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 				retval.add(next);
 			}catch(AuthorizationDeniedException ade){
-				log.debug("findCerts : not authorized to certificate " + next.getSerialNumber().toString(16));
+				log.debug("findCerts : not authorized to certificate " + CertTools.getSerialNumber(next).toString(16));
 			}
 		}
 		

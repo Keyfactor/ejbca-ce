@@ -2,13 +2,10 @@ package org.ejbca.core.model.approval;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 
 import junit.framework.TestCase;
 
-import org.ejbca.core.model.approval.ApprovalDataUtil;
-import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
@@ -35,7 +32,7 @@ public class TestApprovalRequest extends TestCase {
             + "QUOBOvc=").getBytes());
 	
 	public void testWriteExternal() throws Exception {
-		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
+		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
 		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert),null,1,2, false);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -49,7 +46,7 @@ public class TestApprovalRequest extends TestCase {
     	assertTrue(readrequest.getApprovalType() == ApprovalDataVO.APPROVALTYPE_DUMMY);
     	assertTrue(readrequest.getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_SIMPLE);
     	assertTrue(readrequest.getRequestSignature() == null);
-    	assertTrue(readrequest.getRequestAdminCert().getSerialNumber().equals(testcert.getSerialNumber()));
+    	assertTrue(CertTools.getSerialNumber(readrequest.getRequestAdminCert()).equals(CertTools.getSerialNumber(testcert)));
     	assertTrue(readrequest.getCAId() == 1);
     	assertTrue(readrequest.getEndEntityProfileId() == 2);
     	assertTrue(!readrequest.isExecutable());
@@ -57,7 +54,7 @@ public class TestApprovalRequest extends TestCase {
 	}
 
 	public void testGenerateApprovalId() throws Exception {
-		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
+		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
 		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert),null,1,2, false);
 		
     	int id1 = ar.generateApprovalId();

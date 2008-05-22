@@ -1860,9 +1860,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            debug("<checkForCAId()");
-            return count > 0;
-
+            boolean exists = count > 0;
+            debug("<checkForCAId(): "+exists);
+            return exists;
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {

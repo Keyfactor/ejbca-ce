@@ -12,10 +12,7 @@
  *************************************************************************/
  
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.5 2006-11-02 17:03:21 anatom Exp $
- * $Revision: 1.5 $
- * $Date: 2006-11-02 17:03:21 $
- *
+ * @version $Id$
  */
 package org.ejbca.core.protocol;
 

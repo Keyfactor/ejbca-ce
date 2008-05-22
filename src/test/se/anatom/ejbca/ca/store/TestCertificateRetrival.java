@@ -14,7 +14,7 @@
 package se.anatom.ejbca.ca.store;
 
 import java.math.BigInteger;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -97,17 +97,12 @@ public class TestCertificateRetrival extends TestCase {
             Iterator iter = certs.iterator();
 
             while (iter.hasNext()) {
-                Object obj = iter.next();
-                if (obj instanceof X509Certificate) {
-                    m_log.debug("***** X509Certificate");
-                    m_log.debug("   SubjectDN : "
-                            + ((X509Certificate) obj).getSubjectDN());
-                    m_log.debug("   IssuerDN  : "
-                            + ((X509Certificate) obj).getIssuerDN());
-                    //System.out.println(((X509Certificate) obj).getIssuerDN().getName()+";"+((X509Certificate) obj).getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString((X509Certificate) obj));
-                } else {
-                    m_log.warn("Object in collection is not a X509Certificate.");
-                }
+                Certificate obj = (Certificate)iter.next();
+                m_log.debug("***** Certificate");
+                m_log.debug("   SubjectDN : "
+                		+ CertTools.getSubjectDN(obj));
+                m_log.debug("   IssuerDN  : "
+                		+ CertTools.getIssuerDN(obj));
             }
         } else {
             m_log.warn("Certificate collection is empty or NULL.");
@@ -138,7 +133,7 @@ public class TestCertificateRetrival extends TestCase {
         m_storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
                 ICertificateStoreSessionHome.class);
         ICertificateStoreSessionRemote store = m_storehome.create();
-        X509Certificate cert;
+        Certificate cert;
         Admin adm = new Admin(Admin.TYPE_INTERNALUSER);
         m_certs = new HashSet();
         m_certfps = new HashSet();
@@ -217,12 +212,12 @@ public class TestCertificateRetrival extends TestCase {
         boolean found = false;
         while (iter.hasNext()) {
             Object obj = iter.next();
-            if (!(obj instanceof X509Certificate)) {
-                assertTrue("method 'findCertificatesByType' does not return X509Certificate objects.\n"
+            if (!(obj instanceof Certificate)) {
+                assertTrue("method 'findCertificatesByType' does not return Certificate objects.\n"
                         + "Class of returned object '" + obj.getClass().getName() + "'"
                         , false);
             }
-            X509Certificate cert = (X509Certificate)obj;
+            Certificate cert = (Certificate)obj;
             String fp = CertTools.getFingerprintAsString(cert);
             if (fp.equals(subCaFp)) {
                 found = true;
@@ -252,12 +247,12 @@ public class TestCertificateRetrival extends TestCase {
         boolean found = false;
         while (iter.hasNext()) {
             Object obj = iter.next();
-            if (!(obj instanceof X509Certificate)) {
-                assertTrue("method 'findCertificatesByType' does not return X509Certificate objects.\n"
+            if (!(obj instanceof Certificate)) {
+                assertTrue("method 'findCertificatesByType' does not return Certificate objects.\n"
                         + "Class of returned object '" + obj.getClass().getName() + "'"
                         , false);
             }
-            X509Certificate cert = (X509Certificate)obj;
+            Certificate cert = (Certificate)obj;
             String fp = CertTools.getFingerprintAsString(cert);
             if (fp.equals(endEntityFp)) {
                 found = true;
@@ -288,12 +283,12 @@ public class TestCertificateRetrival extends TestCase {
         boolean found = false;
         while (iter.hasNext()) {
             Object obj = iter.next();
-            if (!(obj instanceof X509Certificate)) {
-                assertTrue("method 'findCertificatesByType' does not return X509Certificate objects.\n"
+            if (!(obj instanceof Certificate)) {
+                assertTrue("method 'findCertificatesByType' does not return Certificate objects.\n"
                         + "Class of returned object '" + obj.getClass().getName() + "'"
                         , false);
             }
-            X509Certificate cert = (X509Certificate)obj;
+            Certificate cert = (Certificate)obj;
             String fp = CertTools.getFingerprintAsString(cert);
             if (fp.equals(rootCaFp)) {
                 found = true;
@@ -311,9 +306,9 @@ public class TestCertificateRetrival extends TestCase {
     public void test05CertificatesByIssuerAndSernos() throws Exception {
         m_log.debug(">test05CertificatesByIssuerAndSernos()");
         ICertificateStoreSessionRemote store = m_storehome.create();
-        X509Certificate rootcacert;
-        X509Certificate subcacert;
-        X509Certificate cert;
+        Certificate rootcacert;
+        Certificate subcacert;
+        Certificate cert;
         Vector sernos;
         Collection certfps;
 
@@ -322,10 +317,10 @@ public class TestCertificateRetrival extends TestCase {
         cert = CertTools.getCertfromByteArray(testcert);
 
         sernos = new Vector();
-        sernos.add(subcacert.getSerialNumber());
-        sernos.add(rootcacert.getSerialNumber());
+        sernos.add(CertTools.getSerialNumber(subcacert));
+        sernos.add(CertTools.getSerialNumber(rootcacert));
         certfps = store.findCertificatesByIssuerAndSernos(admin
-                , rootcacert.getSubjectDN().getName()
+                , CertTools.getSubjectDN(rootcacert)
                 , sernos);
         assertNotNull("failed to list certs", certfps);
         // we expect two certificates cause the rootca certificate is
@@ -335,15 +330,15 @@ public class TestCertificateRetrival extends TestCase {
         assertTrue("failed to list certs", certfps.size() == 2);
 
         sernos = new Vector();
-        sernos.add(cert.getSerialNumber());
+        sernos.add(CertTools.getSerialNumber(cert));
         certfps = store.findCertificatesByIssuerAndSernos(admin
-                , subcacert.getSubjectDN().getName()
+                , CertTools.getSubjectDN(subcacert)
                 , sernos);
         assertNotNull("failed to list certs", certfps);
         dumpCertificates(certfps);
         assertTrue("failed to list certs", certfps.size() == 1);
         assertTrue("Unable to find test certificate."
-                , m_certfps.contains(CertTools.getFingerprintAsString((X509Certificate)certfps.iterator().next())));
+                , m_certfps.contains(CertTools.getFingerprintAsString((Certificate)certfps.iterator().next())));
         m_log.debug("<test05CertificatesByIssuerAndSernos()");
     }
 
@@ -378,18 +373,18 @@ public class TestCertificateRetrival extends TestCase {
         m_log.debug(">test07FindCACertificatesWithIssuer()");
 
         ICertificateStoreSessionRemote store = m_storehome.create();
-        X509Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
+        Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
 
         // List all certificates to see
         Collection certfps = store.findCertificatesByType(admin
                 , CertificateDataBean.CERTTYPE_SUBCA
-                , rootcacert.getSubjectDN().getName());
+                , CertTools.getSubjectDN(rootcacert));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 1);
         Iterator iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
-            X509Certificate cert = (X509Certificate) iter.next();
+            Certificate cert = (Certificate) iter.next();
             if (subCaFp.equals(CertTools.getFingerprintAsString(cert))) {
                 found = true;
             }
@@ -406,21 +401,21 @@ public class TestCertificateRetrival extends TestCase {
         m_log.debug(">test08LoadRevocationInfo()");
 
         ArrayList revstats = new ArrayList();
-        X509Certificate rootcacert;
-        X509Certificate subcacert;
+        Certificate rootcacert;
+        Certificate subcacert;
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         ArrayList sernos = new ArrayList();
         rootcacert = CertTools.getCertfromByteArray(testrootcert);
         subcacert = CertTools.getCertfromByteArray(testcacert);
-        sernos.add(rootcacert.getSerialNumber());
-        sernos.add(subcacert.getSerialNumber());
+        sernos.add(CertTools.getSerialNumber(rootcacert));
+        sernos.add(CertTools.getSerialNumber(subcacert));
 
         Iterator iter = sernos.iterator();
         while (iter.hasNext()) {
         	BigInteger bi = (BigInteger)iter.next();
             RevokedCertInfo rev = store.isRevoked(admin
-                    , rootcacert.getSubjectDN().getName()
+                    , CertTools.getSubjectDN(rootcacert)
                     , bi);
             revstats.add(rev);
         }

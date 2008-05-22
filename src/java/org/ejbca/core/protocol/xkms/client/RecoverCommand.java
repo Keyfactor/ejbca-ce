@@ -87,7 +87,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             }  
   
             String certEncoding = getCertEncoding(args[ARG_CERTENCODING]);            
-            X509Certificate orgCert = getCert(args[ARG_CERT],certEncoding);
+            Certificate orgCert = getCert(args[ARG_CERT],certEncoding);
             String password = args[ARG_PASSWORD];
                                                 
             String encoding = useEncoding(args[ARG_ENCODING]);
@@ -110,7 +110,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             KeyInfoType keyInfoType = sigFactory.createKeyInfoType();
             keyInfoType.getContent().add(sigFactory.createX509Data(x509DataType));
             
-            String keyBindingId = "_" + orgCert.getSerialNumber().toString();
+            String keyBindingId = "_" + CertTools.getSerialNumber(orgCert).toString();
             KeyBindingType keyBindingType = xKMSObjectFactory.createKeyBindingType();                
             keyBindingType.setKeyInfo(keyInfoType);
             keyBindingType.setId(keyBindingId);
@@ -150,8 +150,8 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         }
     }
 
-    private X509Certificate getCert(String filename, String certEncoding) {		
-		X509Certificate retval = null;
+    private Certificate getCert(String filename, String certEncoding) {		
+		Certificate retval = null;
 		
 		if(certEncoding.equals(ENCODING_PEM)){			
 			try {
@@ -242,23 +242,6 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(userCert), "CN");
         if (alias == null) alias = "myKey";
 		return alias;
-	}
-
-	private List getCertsFromKeyBinding(KeyBindingType keyBinding) throws CertificateException {
-		ArrayList retval = new ArrayList();
-		
-		JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBinding.getKeyInfo().getContent().get(0);		
-		Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
-		while(iter2.hasNext()){
-			JAXBElement next = (JAXBElement) iter2.next();					
-			if(next.getName().getLocalPart().equals("X509Certificate")){
-			  byte[] encoded = (byte[]) next.getValue();
-			  X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-			  retval.add(nextCert);
-			}
-		}	
-		
-		return retval;
 	}
 
 	private void displayRequestErrors(RecoverResultType recoverResultType) {

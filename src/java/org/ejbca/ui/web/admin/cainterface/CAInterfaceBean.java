@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -30,8 +29,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
@@ -137,10 +134,10 @@ public class CAInterfaceBean implements java.io.Serializable {
       while(iter.hasNext()){
         Certificate next = (Certificate) iter.next();  
         RevokedInfoView revokedinfo = null;
-        RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN((X509Certificate) next), ((X509Certificate) next).getSerialNumber());
+        RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
         if(revinfo != null && revinfo.getReason() != RevokedCertInfo.NOT_REVOKED)
           revokedinfo = new RevokedInfoView(revinfo);
-        returnval[i] = new CertificateView((X509Certificate) next, revokedinfo,null);
+        returnval[i] = new CertificateView(next, revokedinfo,null);
         i++;
       }
 
@@ -294,25 +291,20 @@ public class CAInterfaceBean implements java.io.Serializable {
     	return this.cainfo;
     }
     
-	public void savePKCS10RequestData(PKCS10CertificationRequest request){
+	public void saveRequestData(byte[] request){
 		this.request = request;
 	}
     
-	public PKCS10CertificationRequest getPKCS10RequestData(){
+	public byte[] getRequestData(){
 		return this.request;
 	}    
 	
-	public String getPKCS10RequestDataAsString() throws Exception{
+	public String getRequestDataAsString() throws Exception{
 	  String returnval = null;	
 	  if(request != null ){
 	  						  				  
- 	    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-	    DEROutputStream dOut = new DEROutputStream(bOut);
-	    dOut.writeObject(request);
-	    dOut.close();
-	      	  
 	    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
-	                   + new String(Base64.encode(bOut.toByteArray()))
+	                   + new String(Base64.encode(request))
                        + RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;  
 	    
 	  }      
@@ -415,7 +407,8 @@ public class CAInterfaceBean implements java.io.Serializable {
     private Admin                              administrator;
     private InformationMemory                  informationmemory;
     private CAInfo                                      cainfo;
-    transient private PKCS10CertificationRequest       request;
+    /** The certification request in binary format */
+    transient private byte[]       request;
     private Certificate	                             processedcert;
     private CertificateProfile                 tempCertProfile = null;
 }

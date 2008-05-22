@@ -175,7 +175,7 @@ public class KeyTools {
      *
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, X509Certificate cacert) 
+    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Certificate cacert) 
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
 
@@ -201,7 +201,7 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection cacerts)
+    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Collection cacerts)
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null)
@@ -224,7 +224,7 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain) 
+    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Certificate[] cachain) 
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         log.debug(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
 
@@ -237,7 +237,7 @@ public class KeyTools {
             len += cachain.length;
         }
         Certificate[] chain = new Certificate[len];
-        // To not get a ClassCastException we need to genereate a real new certificate with BC
+        // To not get a ClassCastException we need to generate a real new certificate with BC
         CertificateFactory cf = CertTools.getCertificateFactory();
         chain[0] = cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
 

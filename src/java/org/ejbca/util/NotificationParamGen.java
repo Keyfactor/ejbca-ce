@@ -199,7 +199,7 @@ public class NotificationParamGen {
 	  paramPut("approvalAdmin.C", dnfields.getField(DNFieldExtractor.C, 0));
 	  
 	  if(expiringCert != null){
-		  paramPut("expiringCert.CERTSERIAL",expiringCert.getSerialNumber().toString(16));
+		  paramPut("expiringCert.CERTSERIAL",CertTools.getSerialNumber(expiringCert).toString(16));
 		  String dateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(expiringCert.getNotAfter());
 		  paramPut("expiringCert.EXPIREDATE",dateString);
           paramPut("expiringCert.CERTSUBJECTDN",expiringCert.getSubjectDN().toString());

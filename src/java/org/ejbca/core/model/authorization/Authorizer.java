@@ -194,7 +194,7 @@ public class Authorizer extends Object implements java.io.Serializable {
         // TODO
         // Vertify Signature on cert?
         // Check if certificate is revoked.
-        RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),certificate.getSerialNumber());
+        RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
         if (revinfo == null) {
             // Certificate missing
             throw new AuthenticationFailedException("Your certificate cannot be found in database.");

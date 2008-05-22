@@ -16,9 +16,9 @@ package org.ejbca.core.protocol.xkms.client;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.cert.CRLException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -207,7 +207,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 					String filename = "";
 					if(next2.getName().getLocalPart().equals("X509Certificate")){
 						byte[] encoded = (byte[]) next2.getValue();
-						X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+						Certificate nextCert = CertTools.getCertfromByteArray(encoded);
 						getPrintStream().println("  Found certificate with DN " + CertTools.getSubjectDN(nextCert) + " issued by " + CertTools.getIssuerDN(nextCert));
 
 						if(pEMEncoding){

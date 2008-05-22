@@ -21,7 +21,7 @@ package org.ejbca.core.model.log;
 
 
 import java.io.Serializable;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminInformation;
@@ -72,11 +72,11 @@ public class Admin implements Serializable {
 
     protected int type = -1;
     protected String data;
-    protected X509Certificate certificate;
+    protected Certificate certificate;
 
     // Public Constructors
-    public Admin(X509Certificate certificate) {
-        this(TYPE_CLIENTCERT_USER, certificate.getSerialNumber().toString(16) + ", " + CertTools.getIssuerDN(certificate));
+    public Admin(Certificate certificate) {
+        this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumber(certificate).toString(16) + ", " + CertTools.getIssuerDN(certificate));
         this.certificate = certificate;
     }
 
@@ -110,7 +110,7 @@ public class Admin implements Serializable {
     }
 
     /**
-     * Method thar returns the caid of the CA, the admin belongs to.
+     * Method that returns the caid of the CA, the admin belongs to.
      * Doesn't work properly for public web and special users so use with care.
      */
 

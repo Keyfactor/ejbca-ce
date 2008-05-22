@@ -179,16 +179,23 @@ public class ProtocolOcspHttpTest extends TestCase {
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         usersession = userhome.create();
 
-        unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes);
+        unknowncacert = (X509Certificate)CertTools.getCertfromByteArray(unknowncacertBytes);
 
     }
 
     protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
         Collection caids = casession.getAvailableCAs(admin);
         Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
+        caid = 0;
+        while (iter.hasNext() && (caid == 0)) {
+            int id = ((Integer) iter.next()).intValue();
+            CAInfo cainfo = casession.getCAInfo(admin, id);
+            // OCSP can only be used with X509 certificates
+            if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
+            	caid = id;
+            }
+        } 
+        if (caid == 0) {
             assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }
     }

@@ -34,8 +34,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,7 +42,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -93,12 +90,6 @@ import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
@@ -110,9 +101,7 @@ import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.dn.DnComponents;
@@ -133,9 +122,10 @@ public class X509CA extends CA implements Serializable {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    // Default Values
+    /** Version of this class, if this is increased the upgrade() method will be called automatically */
     public static final float LATEST_VERSION = 16;
 
+    /** key ID used for identifier of key used for key recovery encryption */
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
     
@@ -378,7 +368,7 @@ public class X509CA extends CA implements Serializable {
      * @see CA#createRequest(Collection, String)
      */
     public byte[] createRequest(Collection attributes, String signAlg) throws CATokenOfflineException {
-    	ASN1Set attrset = null;
+    	ASN1Set attrset = new DERSet();
     	if (attributes != null) {
     		log.debug("Adding attributes in the request");
     		Iterator iter = attributes.iterator();
@@ -428,107 +418,16 @@ public class X509CA extends CA implements Serializable {
         if (certProfile.getType() == CertificateProfile.TYPE_ROOTCA) {
         	isRootCA = true;
         }
-        // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
-        Date now = new Date((new Date()).getTime() - 10 * 60 * 1000);
-        Date firstDate = null;
-        Date lastDate = null;
-		Date startTimeDate = null; 
-		Date endTimeDate = null; 
-        // Extract requested start and endtime from end endtity profile / user data
-        ExtendedInformation ei = subject.getExtendedinformation();
-        if ( ei != null ) {
-            String eiStartTime = ei.getCustomData(EndEntityProfile.STARTTIME);
-	        String eiEndTime = ei.getCustomData(EndEntityProfile.ENDTIME);
-        	if ( eiStartTime != null ) {
-        		if ( eiStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-        			String[] startTimeArray = eiStartTime.split(":");
-        			long relative = (Long.parseLong(startTimeArray[0])*24*60 + Long.parseLong(startTimeArray[1])*60 +
-        					Long.parseLong(startTimeArray[2])) * 60 * 1000;
-        			startTimeDate = new Date(now.getTime() + relative);
-        		} else {
-        			try {
-        				startTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiStartTime);
-        			} catch (ParseException e) {
-        				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiStartTime));
-        			}
-        		}
-    			if ( startTimeDate != null && startTimeDate.before(now)) {
-                	startTimeDate = now;
-    			}
-	        }
-	        if ( eiEndTime != null ) {
-        		if ( eiEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-        			String[] endTimeArray = eiEndTime.split(":");
-        			long relative = (Long.parseLong(endTimeArray[0])*24*60 + Long.parseLong(endTimeArray[1])*60 +
-        					Long.parseLong(endTimeArray[2])) * 60 * 1000;
-        			endTimeDate = new Date(now.getTime() + relative);
-        		} else {
-        			try {
-        				endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiEndTime);
-        			} catch (ParseException e) {
-        				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiEndTime));
-        			}
-        		}
-	        }
-        }
-        // Find out what start and end time to actually use..
-        if (certProfile.getAllowValidityOverride()) {
-            // Prio 1 is infomation supplied in Extended information object. This allows RA-users to set the time-span.
-            firstDate = startTimeDate;
-            lastDate = endTimeDate;
-            // Prio 2 is the information supplied in the arguments
-            if (firstDate == null) {
-            	firstDate = notBefore;
-            }
-            if (lastDate == null) {
-            	lastDate = notAfter;
-            }    	
-        }
-        // Prio 3 is default values
-        if (firstDate == null) {
-        	firstDate = now;
-        }
-        long val = certProfile.getValidity();        
-        Date certProfileLastDate = new Date(firstDate.getTime() + ( val * 24 * 60 * 60 * 1000));
-        if (lastDate == null) {
-        	lastDate = certProfileLastDate;
-        }
-        // Limit validity: Do not allow last date to be before first date
-        if (!lastDate.after(firstDate)) {
-			log.error(intres.getLocalizedMessage("signsession.errorinvalidcausality",firstDate,lastDate));
-        	Date tmp = lastDate;
-        	lastDate = firstDate;
-        	firstDate = tmp;
-        }
-		// Limit validity: We do not allow a certificate to be valid before the current date, i.e. not backdated start dates
-    	if (firstDate.before(now)) {
-			log.error(intres.getLocalizedMessage("signsession.errorbeforecurrentdate",firstDate,subject.getUsername()));
-    		firstDate = now;
-    		// Update valid length from the profile since the starting point has changed
-			certProfileLastDate = new Date(firstDate.getTime() + ( val * 24 * 60 * 60 * 1000));
-    		// Update lastDate if we use maximum validity
-    		if (lastDate.equals(certProfileLastDate)) {
-    			lastDate = certProfileLastDate;
-    		}
-    	}
-		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
-    	if (lastDate.after(certProfileLastDate)) {
-    		log.error(intres.getLocalizedMessage("signsession.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
-    		lastDate = certProfileLastDate;
-    	}
-		// Limit validity: We do not allow a certificate to be valid after the the validity of the CA (unless it's RootCA during renewal)
-        if (cacert != null && lastDate.after(cacert.getNotAfter()) && !isRootCA) {
-        	log.info(intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString(), cacert.getNotAfter()));
-            lastDate = cacert.getNotAfter();
-        }            
+        // Get certificate validity time notBefore and notAfter
+        CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
         
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized by the
         // serno generator.
         BigInteger serno = SernoGenerator.instance().getSerno();
         certgen.setSerialNumber(serno);
-        certgen.setNotBefore(firstDate);
-        certgen.setNotAfter(lastDate);
+        certgen.setNotBefore(val.getNotBefore());
+        certgen.setNotAfter(val.getNotAfter());
         certgen.setSignatureAlgorithm(sigAlg);
 
         // Make DNs
@@ -900,7 +799,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     /**
-     * Method to upgrade new (or existing externacaservices)
+     * Method to upgrade new (or existing external caservices)
      * This method needs to be called outside the regular upgrade
      * since the CA isn't instansiated in the regular upgrade.
      *
@@ -970,45 +869,7 @@ public class X509CA extends CA implements Serializable {
     	}
     	return retval;
     }
-	
-	/** 
-	 * Method used to perform an extended service.
-	 */
-    public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) 
-      throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
-          log.debug(">extendedService()");
-          if(request instanceof OCSPCAServiceRequest) {
-        	  OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
-              boolean useCACert = ocspServiceReq.useCACert();
-              try {
-                  if (useCACert) {
-                	  ocspServiceReq.setPrivKey(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-                	  ocspServiceReq.setPrivKeyProvider(getCAToken().getProvider());
-                	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
-                	  List chain = Arrays.asList(signerChain);
-                	  ocspServiceReq.setCertificateChain(chain);
-                      // Super class handles signing with the OCSP signing certificate
-                      log.debug("<extendedService(super with ca cert)");
-                      return super.extendedService(ocspServiceReq);                      
-                  } else {
-                      // Super class handles signing with the OCSP signing certificate
-                      log.debug("<extendedService(super no ca cert)");
-                      return super.extendedService(request);                      
-                  }
-              } catch (IllegalKeyStoreException ike) {
-            	  throw new ExtendedCAServiceRequestException(ike);
-              } catch (CATokenOfflineException ctoe) {
-            	  throw new ExtendedCAServiceRequestException(ctoe);
-              } catch (IllegalArgumentException e) {
-            	  log.error("IllegalArgumentException: ", e);
-            	  throw new IllegalExtendedCAServiceRequestException(e);
-              }
-          } else {
-              log.debug("<extendedService(super)");
-              return super.extendedService(request);
-          }
-    }
-    
+	    
     public byte[] encryptKeys(KeyPair keypair) throws IOException, CATokenOfflineException{    
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream os = new ObjectOutputStream(baos);

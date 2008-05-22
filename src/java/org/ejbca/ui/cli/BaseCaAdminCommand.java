@@ -27,6 +27,7 @@ import java.util.Collection;
 import javax.naming.Context;
 
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
@@ -84,7 +85,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         debug(">makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
 
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), null, rsaKeys.getPrivate());
+                CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), new DERSet(), rsaKeys.getPrivate());
 
         /* We don't use these uneccesary attributes
         DERConstructedSequence kName = new DERConstructedSequence();

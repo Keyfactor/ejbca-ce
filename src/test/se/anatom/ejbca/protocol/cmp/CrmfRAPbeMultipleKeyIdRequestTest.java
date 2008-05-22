@@ -141,7 +141,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert1 = CertTools.getCertfromByteArray(cert.getEncoded());            	
+                cacert1 = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());            	
             }
         } else {
             log.error("NO CACERT for CmpCA1: " + caid1);
@@ -154,7 +154,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert2 = CertTools.getCertfromByteArray(cert.getEncoded());            	
+                cacert2 = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());            	
             }
         } else {
             log.error("NO CACERT for CmpCA2: " + caid2);

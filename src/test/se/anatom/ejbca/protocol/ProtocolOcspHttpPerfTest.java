@@ -62,8 +62,8 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     private static final String myOcspIp = "192.168.1.111";
     private static final String httpReqPath = "http://"+myOcspIp+":8080/ejbca";
     private static final String resourceOcsp = "publicweb/status/ocsp";
-    private static X509Certificate cacert = null;
-    private static X509Certificate tomastest = null;
+    private static Certificate cacert = null;
+    private static Certificate tomastest = null;
     
     // For getting random serial numbers
     private static String sernofile = "/home/tomas/sernos.txt";
@@ -168,8 +168,8 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
-        final X509Certificate ocspTestCert = getTestCert();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        final Certificate ocspTestCert = getTestCert();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, (X509Certificate)cacert, CertTools.getSerialNumber(ocspTestCert)));
         OCSPReq req = null;
         if (dosigning) {
             gen.setRequestorName(certChain[0].getSubjectX500Principal());
@@ -182,7 +182,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
         SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
         
         CertificateID certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), CertTools.getSerialNumber(ocspTestCert));
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
         log.debug("<test02OcspGood()");
@@ -249,7 +249,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
 			        OCSPReqGenerator gen = new OCSPReqGenerator();
 			        //final X509Certificate ocspTestCert = getTestCert();
 			        BigInteger serno = getSerno();
-			        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, serno));
+			        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, (X509Certificate)cacert, serno));
 			        OCSPReq req = null;
 			        if (dosigning) {
 			            gen.setRequestorName(certChain[0].getSubjectX500Principal());
@@ -281,7 +281,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     	}
     }
     
-    private X509Certificate getTestCert( ) {
+    private Certificate getTestCert( ) {
     	return tomastest;
     }
 

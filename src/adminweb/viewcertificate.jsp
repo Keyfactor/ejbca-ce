@@ -365,11 +365,15 @@ function confirmrepublish(){
 	<td> <%= certificatedata.getType() + " " + ejbcawebbean.getText("VER") + certificatedata.getVersion() %>
         </td>
       </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMBER") %></td>
-	 <td><%= certificatedata.getSerialNumber() %> 
-         </td>
-       </tr>
+      
+     <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
+	       <tr id="Row<%=(row++)%2%>">
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMBER") %></td>
+		 <td><%= certificatedata.getSerialNumber() %> 
+	         </td>
+	       </tr>
+     <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
+       
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("ISSUERDN") %></td>
 	 <td><%= certificatedata.getIssuerDN()%> 
@@ -390,22 +394,26 @@ function confirmrepublish(){
 	 <td><%= certificatedata.getSubjectDN() %> 
          </td>
        </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBALTNAME") %></td>
-	 <td><% if(certificatedata.getSubjectAltName() == null)
-                  out.write(ejbcawebbean.getText("NONE"));
-                else
-                  out.write(certificatedata.getSubjectAltName());%> 
-         </td>
-       </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBDIRATTR") %></td>
-	 <td><% if(certificatedata.getSubjectDirAttr() == null)
-                  out.write(ejbcawebbean.getText("NONE"));
-                else
-                  out.write(certificatedata.getSubjectDirAttr());%> 
-         </td>
-       </tr>
+       
+      <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
+	       <tr id="Row<%=(row++)%2%>">
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBALTNAME") %></td>
+		 <td><% if(certificatedata.getSubjectAltName() == null)
+	                  out.write(ejbcawebbean.getText("NONE"));
+	                else
+	                  out.write(certificatedata.getSubjectAltName());%> 
+	         </td>
+	       </tr>
+	       <tr id="Row<%=(row++)%2%>">
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBDIRATTR") %></td>
+		 <td><% if(certificatedata.getSubjectDirAttr() == null)
+	                  out.write(ejbcawebbean.getText("NONE"));
+	                else
+	                  out.write(certificatedata.getSubjectDirAttr());%> 
+	         </td>
+	       </tr>
+     <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
+       
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("PUBLICKEY") %></td>
 	 <td><%= certificatedata.getPublicKeyAlgorithm() %> <% if(certificatedata.getPublicKeyLength() != null){
@@ -418,92 +426,96 @@ function confirmrepublish(){
 	 <td><%=  certificatedata.getBasicConstraints(ejbcawebbean)  %>
          </td>
        </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("KEYUSAGE") %></td>
-	 <td><% boolean first= true;
-                boolean none = true;
-                if(certificatedata.getKeyUsage(CertificateView.DIGITALSIGNATURE)){
-                  out.write(ejbcawebbean.getText("DIGITALSIGNATURE"));
-                  first=false;
-                  none =false;
-                }
-                if(certificatedata.getKeyUsage(CertificateView.NONREPUDIATION)){
-                  if(!first) out.write(", "); 
-                  first=false;
-                  none =false;
-                  out.write(ejbcawebbean.getText("NONREPUDIATION"));
-                }
-                if(certificatedata.getKeyUsage(CertificateView.KEYENCIPHERMENT)){
-                  if(!first) out.write(", "); 
-                  first=false;
-                  none =false;
-                  out.write(ejbcawebbean.getText("KEYENCIPHERMENT"));
-                }
-                if(certificatedata.getKeyUsage(CertificateView.DATAENCIPHERMENT)){
-                  if(!first) out.write(", "); 
-                  first=false;
-                  none =false;
-                  out.write(ejbcawebbean.getText("DATAENCIPHERMENT"));
-                }
-                if(certificatedata.getKeyUsage(CertificateView.KEYAGREEMENT)){
-                  if(!first) out.write(", "); 
-                  first=false;
-                  none =false;
-                  out.write(ejbcawebbean.getText("KEYAGREEMENT"));
-                }
-                if(certificatedata.getKeyUsage(CertificateView.KEYCERTSIGN)){
-                  if(!first) out.write(", "); 
-                  first=false;               
-                  none =false;
-                  out.write(ejbcawebbean.getText("KEYCERTSIGN"));
-                }
-                if(certificatedata.getKeyUsage(CertificateView.CRLSIGN)){
-                  if(!first) out.write(", "); 
-                  first=false;
-                  none =false;
-                  out.write(ejbcawebbean.getText("CRLSIGN"));
-                }
-                if(certificatedata.getKeyUsage(CertificateView.ENCIPHERONLY)){
-                  if(!first) out.write(", "); 
-                  first=false;
-                  none =false;
-                  out.write(ejbcawebbean.getText("ENCIPHERONLY"));
-                }
-                if(certificatedata.getKeyUsage(CertificateView.DECIPHERONLY)){
-                  if(!first) out.write(", "); 
-                  first=false;
-                  none =false;
-                  out.write(ejbcawebbean.getText("DECIPHERONLY"));
-               }
-               if(none){
-                  out.write(ejbcawebbean.getText("NOKEYUSAGESPECIFIED"));          
-              }
-%>
-         </td>
-       </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %></td>
-	 <td><% String[] extendedkeyusage = certificatedata.getExtendedKeyUsageAsTexts();
-                for(int i=0; i<extendedkeyusage.length; i++){
-                  if(i>0)
-                    out.write(", ");
-                  out.write( ejbcawebbean.getText(extendedkeyusage[i]));
-                }                
-                if(extendedkeyusage == null || extendedkeyusage.length == 0)
-                  out.write(ejbcawebbean.getText("NOEXTENDEDKEYUSAGESPECIFIED"));                       
-%>
-         </td>
-       </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("QUALIFIEDCERTSTATEMENT") %></td>
-	 <td><% if (certificatedata.hasQcStatement()) {
-		 out.write(ejbcawebbean.getText("YES"));
-	 } else {
-		 out.write(ejbcawebbean.getText("NO"));
-	 }
-%>
-         </td>
-       </tr>
+       
+     <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
+	       <tr id="Row<%=(row++)%2%>">
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("KEYUSAGE") %></td>
+		 <td><% boolean first= true;
+	                boolean none = true;
+	                if(certificatedata.getKeyUsage(CertificateView.DIGITALSIGNATURE)){
+	                  out.write(ejbcawebbean.getText("DIGITALSIGNATURE"));
+	                  first=false;
+	                  none =false;
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.NONREPUDIATION)){
+	                  if(!first) out.write(", "); 
+	                  first=false;
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("NONREPUDIATION"));
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.KEYENCIPHERMENT)){
+	                  if(!first) out.write(", "); 
+	                  first=false;
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("KEYENCIPHERMENT"));
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.DATAENCIPHERMENT)){
+	                  if(!first) out.write(", "); 
+	                  first=false;
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("DATAENCIPHERMENT"));
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.KEYAGREEMENT)){
+	                  if(!first) out.write(", "); 
+	                  first=false;
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("KEYAGREEMENT"));
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.KEYCERTSIGN)){
+	                  if(!first) out.write(", "); 
+	                  first=false;               
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("KEYCERTSIGN"));
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.CRLSIGN)){
+	                  if(!first) out.write(", "); 
+	                  first=false;
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("CRLSIGN"));
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.ENCIPHERONLY)){
+	                  if(!first) out.write(", "); 
+	                  first=false;
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("ENCIPHERONLY"));
+	                }
+	                if(certificatedata.getKeyUsage(CertificateView.DECIPHERONLY)){
+	                  if(!first) out.write(", "); 
+	                  first=false;
+	                  none =false;
+	                  out.write(ejbcawebbean.getText("DECIPHERONLY"));
+	               }
+	               if(none){
+	                  out.write(ejbcawebbean.getText("NOKEYUSAGESPECIFIED"));          
+	              }
+	%>
+	         </td>
+	       </tr>
+	       <tr id="Row<%=(row++)%2%>">
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %></td>
+		 <td><% String[] extendedkeyusage = certificatedata.getExtendedKeyUsageAsTexts();
+	                for(int i=0; i<extendedkeyusage.length; i++){
+	                  if(i>0)
+	                    out.write(", ");
+	                  out.write( ejbcawebbean.getText(extendedkeyusage[i]));
+	                }                
+	                if(extendedkeyusage == null || extendedkeyusage.length == 0)
+	                  out.write(ejbcawebbean.getText("NOEXTENDEDKEYUSAGESPECIFIED"));                       
+	%>
+	         </td>
+	       </tr>
+	       <tr id="Row<%=(row++)%2%>">
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("QUALIFIEDCERTSTATEMENT") %></td>
+		 <td><% if (certificatedata.hasQcStatement()) {
+			 out.write(ejbcawebbean.getText("YES"));
+		 } else {
+			 out.write(ejbcawebbean.getText("NO"));
+		 }
+	%>
+	         </td>
+	       </tr>
+     <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
+       
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SIGNATUREALGORITHM") %></td>
 	 <td> <%= certificatedata.getSignatureAlgoritm() %>

@@ -24,7 +24,7 @@
 			</c:when>
 			<c:otherwise>
 				<c:set var="issuercert" value="${chain[0]}" />
-				<c:set var="issuerdn" value="${issuercert.subjectDN.name}" />
+				<c:set var="issuerdn" value="${issuercert.subjectDN}" />
 
 				<h3>In PEM format:</h3>
 				<c:forEach var="pemcert" items="${chain}" varStatus="status">
@@ -33,11 +33,11 @@
 						<c:param name="issuer" value="${issuerdn}" />
 						<c:param name="level" value="${status.count - 1}" />
 					</c:url>
-					<p><a href="${pem}">${pemcert.subjectDN.name}</a>,
+					<p><a href="${pem}">${pemcert.subjectDN}</a>,
 	
 					<c:url var="pem_ocsp" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="ocspcert" />
-						<c:param name="issuer" value="${pemcert.subjectDN.name}" />
+						<c:param name="issuer" value="${pemcert.subjectDN}" />
 					</c:url>
 					<a href="${pem_ocsp}">OCSPResponder certificate</a></p>
 				</c:forEach>
@@ -49,11 +49,11 @@
 						<c:param name="issuer" value="${issuerdn}" />
 						<c:param name="level" value="${status.count - 1}" />
 					</c:url>
-					<p><a href="${ns}">${nscert.subjectDN.name}</a>,
+					<p><a href="${ns}">${nscert.subjectDN}</a>,
 	
 					<c:url var="ns_ocsp" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="nsocspcert" />
-						<c:param name="issuer" value="${nscert.subjectDN.name}" />
+						<c:param name="issuer" value="${nscert.subjectDN}" />
 					</c:url>
 					<a href="${ns_ocsp}">OCSPResponder certificate</a></p>
 				</c:forEach>
@@ -65,11 +65,11 @@
 						<c:param name="issuer" value="${issuerdn}" />
 						<c:param name="level" value="${status.count - 1}" />
 					</c:url>
-					<p><a href="${ie}">${iecert.subjectDN.name}</a>,
+					<p><a href="${ie}">${iecert.subjectDN}</a>,
 	
 					<c:url var="ie_ocsp" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="ieocspcert" />
-						<c:param name="issuer" value="${iecert.subjectDN.name}" />
+						<c:param name="issuer" value="${iecert.subjectDN}" />
 					</c:url>
 					<a href="${ie_ocsp}">OCSPResponder certificate</a></p>
 				</c:forEach>

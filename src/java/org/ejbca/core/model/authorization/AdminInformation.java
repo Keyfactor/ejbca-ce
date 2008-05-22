@@ -19,7 +19,7 @@
 
 package org.ejbca.core.model.authorization;
 
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 
 /**
  * A class used to send user information to the authorization tree. It can contain types of information, a X509Certificate or a
@@ -31,7 +31,7 @@ public class AdminInformation implements java.io.Serializable {
 
     // Public Methods
     /** Creates a new instance of AdminInformation */
-    public AdminInformation(X509Certificate certificate){
+    public AdminInformation(Certificate certificate){
       this.certificate=certificate;
       this.specialuser=0;      
     }
@@ -55,7 +55,7 @@ public class AdminInformation implements java.io.Serializable {
       return this.admingroup != null;	
     }
 
-    public X509Certificate getX509Certificate() {
+    public Certificate getX509Certificate() {
       return this.certificate;
     }
 
@@ -68,7 +68,7 @@ public class AdminInformation implements java.io.Serializable {
     }
 
     // Private fields
-    private X509Certificate certificate;
+    private Certificate certificate;
     private int specialuser = 0;
     private AdminGroup admingroup = null;
 }

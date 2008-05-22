@@ -22,7 +22,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -440,7 +439,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
      *
      * @see #requireKeyInfo()
      */
-    public void setKeyInfo(X509Certificate cert, PrivateKey key, String Provider) {
+    public void setKeyInfo(Certificate cert, PrivateKey key, String Provider) {
     }
 
     /**

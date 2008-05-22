@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.log;
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -340,7 +340,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment) {
+    public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment) {
         doLog(admin, caid, module, time, username, certificate, event, comment, null);
     } // log
 
@@ -350,7 +350,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public void log(Admin admin, X509Certificate caid, int module, Date time, String username, X509Certificate certificate, int event, String comment) {
+    public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment) {
         log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment);
     } // log
 
@@ -364,7 +364,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      *
      */
-    public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+    public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
         doLog(admin, caid, module, time, username, certificate, event, comment, exception);
     }
 
@@ -374,7 +374,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public void log(Admin admin, X509Certificate caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+    public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
         log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
     } // log
 
@@ -383,7 +383,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * 
      * @ejb.transaction type="Supports"
      */
-    private void doLog(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception ex) {
+    private void doLog(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception ex) {
         try {
 	        boolean authorized = true;
 	        if(event == LogConstants.EVENT_INFO_CUSTOMLOG || event == LogConstants.EVENT_ERROR_CUSTOMLOG){
@@ -408,7 +408,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      *
      * @ejb.transaction type="RequiresNew"
      */
-    private void doSyncronizedLog(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception ex) {
+    private void doSyncronizedLog(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception ex) {
         final LogConfiguration config = loadLogConfiguration(caid);
         Iterator i = logdevices.iterator();
         while (i.hasNext()) {

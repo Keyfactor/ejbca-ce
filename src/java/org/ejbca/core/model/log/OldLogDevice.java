@@ -1,7 +1,7 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,6 +33,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotAc
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.protect.TableVerifyResult;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -126,7 +127,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
     /**
      * Log everything in the database using the log entity bean
      */
-	public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
+	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 		if (exception != null) {
 			comment += ", Exception: " + exception.getMessage();
 		}
@@ -134,7 +135,10 @@ public class OldLogDevice implements ILogDevice, Serializable {
     	int tries = 0;
     	do{
     		try {
-    			String uid = certificate == null ? null : certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();
+    			String uid = null;
+    			if (certificate != null) {
+    				uid = CertTools.getSerialNumber(certificate).toString(16) + "," + CertTools.getIssuerDN(certificate);        		
+    			}
     			Integer id = getAndIncrementRowCount();
     			logentryhome.create(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
     			if (logsigning) {

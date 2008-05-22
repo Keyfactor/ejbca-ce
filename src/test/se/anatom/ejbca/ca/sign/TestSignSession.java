@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -62,6 +64,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -157,11 +160,14 @@ public class TestSignSession extends TestCase {
     private static int ecdsacaid = 0;
     private static int ecdsaimplicitlycacaid = 0;
     private static int rsamgf1cacaid = 0;
+    private static int cvccaid = 0;
+    
     X509Certificate rsacacert = null;
     X509Certificate rsarevcacert = null;
     X509Certificate ecdsacacert = null;
     X509Certificate ecdsaimplicitlycacacert = null;
     X509Certificate rsamgf1cacacert = null;
+    Certificate cvccacert = null;
     private Admin admin;
 
     /**
@@ -215,6 +221,11 @@ public class TestSignSession extends TestCase {
         if (rsamgf1cacaid == 0){
             assertTrue("No active RSA MGF1 CA! Must have at least one active CA to run tests!", false);
         }
+        CAInfo infocvcca = casession.getCAInfo(admin, "TESTDV-D");
+        cvccaid = infocvcca.getCAId();
+        if (cvccaid == 0){
+            assertTrue("No active CVC CA! Must have at least one active CA to run tests!", false);
+        }
         Collection coll = inforsa.getCertificateChain();
         Object[] objs = coll.toArray();
         rsacacert = (X509Certificate)objs[0]; 
@@ -230,6 +241,9 @@ public class TestSignSession extends TestCase {
         coll = inforsamgf1ca.getCertificateChain();
         objs = coll.toArray();
         rsamgf1cacacert = (X509Certificate)objs[0]; 
+        coll = infocvcca.getCertificateChain();
+        objs = coll.toArray();
+        cvccacert = (Certificate)objs[0]; 
         
         obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
@@ -400,7 +414,7 @@ public class TestSignSession extends TestCase {
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), rsakeys.getPublic(), null,
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), rsakeys.getPublic(), new DERSet(),
                 rsakeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -422,7 +436,7 @@ public class TestSignSession extends TestCase {
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("<test03TestBCPKCS10()");
@@ -444,7 +458,7 @@ public class TestSignSession extends TestCase {
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("<test04TestKeytoolPKCS10()");
@@ -466,7 +480,7 @@ public class TestSignSession extends TestCase {
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         log.debug("<test05TestIEPKCS10()");
@@ -537,8 +551,8 @@ public class TestSignSession extends TestCase {
             p10.setPassword("foo123");
             IResponseMessage resp = remote.createCertificate(admin,
                     p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-            log.info("cert with DN '"+cert.getSubjectDN().getName()+"' should not be issued?");
+            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            log.info("cert with DN '"+CertTools.getSubjectDN(cert)+"' should not be issued?");
         } catch (Exception e) {
             // RSASignSession should throw an IllegalKeyException here.
             assertTrue("Expected IllegalKeyException: " + e.toString(),
@@ -907,7 +921,7 @@ public class TestSignSession extends TestCase {
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), ecdsakeys.getPublic(), null,
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), ecdsakeys.getPublic(), new DERSet(),
                 ecdsakeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -928,7 +942,7 @@ public class TestSignSession extends TestCase {
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -995,7 +1009,7 @@ public class TestSignSession extends TestCase {
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsa"), ecdsakeys.getPublic(), null,
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsa"), ecdsakeys.getPublic(), new DERSet(),
                 ecdsakeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -1016,7 +1030,7 @@ public class TestSignSession extends TestCase {
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1082,7 +1096,7 @@ public class TestSignSession extends TestCase {
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsaimpca"), ecdsakeys.getPublic(), null,
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsaimpca"), ecdsakeys.getPublic(), new DERSet(),
                 ecdsakeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -1103,7 +1117,7 @@ public class TestSignSession extends TestCase {
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1143,7 +1157,7 @@ public class TestSignSession extends TestCase {
     	}
         X509Certificate retcert = (X509Certificate) remote.createCertificate(admin, "foorsamgf1ca", "foo123", selfcert);
         // RSA with MGF1 is not supported by sun, so we must transfer this (serialized) cert to a BC cert
-        X509Certificate cert = CertTools.getCertfromByteArray(retcert.getEncoded());
+        X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(retcert.getEncoded());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
 //        FileOutputStream fos = new FileOutputStream("/tmp/testcert.crt");
@@ -1182,7 +1196,7 @@ public class TestSignSession extends TestCase {
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest(CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foorsamgf1ca"), rsakeys.getPublic(), null,
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foorsamgf1ca"), rsakeys.getPublic(), new DERSet(),
                 rsakeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -1203,7 +1217,7 @@ public class TestSignSession extends TestCase {
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
         //X509Certificate cert = CertTools.getCertfromByteArray(retcert.getEncoded());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1326,6 +1340,38 @@ public class TestSignSession extends TestCase {
         log.debug("<test20MultiRequests()");
     }
 
+    public void test21CVCertificate() throws Exception {
+        log.debug(">test21CVCertificate()");
+
+        UserDataVO user = new UserDataVO("cvc", "C=SE,O=RPS,CN=10001", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        usersession.addUser(admin, user, false);
+        usersession.setUserStatus(admin, "cvc", UserDataConstants.STATUS_NEW);
+        usersession.setPassword(admin, "cvc", "foo123");
+        log.debug("Reset status of 'cvc' to NEW");
+        // user that we know exists...
+        Certificate cert = (Certificate) remote.createCertificate(admin, "cvc", "foo123", rsakeys.getPublic());
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert=" + cert.toString());
+        // Normal DN order
+        assertEquals(CertTools.getSubjectDN(cert), "CN=10001,O=RPS,C=SE");
+        assertEquals("CVC", cert.getType());
+        assertEquals(CertTools.getIssuerDN(cert), CertTools.getSubjectDN(cvccacert));
+        try {
+            cert.verify(cvccacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        //FileOutputStream fos = new FileOutputStream("testcert.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        //System.out.println(cert.toString());
+        // Check role
+        CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+        String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+        assertEquals("IS", role);
+        log.debug("<test21CVCertificate()");
+    }
+
     /**
      * creates new user
      *
@@ -1339,12 +1385,22 @@ public class TestSignSession extends TestCase {
             rasession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
         } catch (Exception e) { /* ignore */ }
         // delete users that we know...
-        usersession.deleteUser(admin, "foo");
-        log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
-        usersession.deleteUser(admin, "fooecdsa");
-        log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
-        usersession.deleteUser(admin, "fooecdsaimpca");
-        log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
+        try {        	
+        	usersession.deleteUser(admin, "foo");
+        	log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+        	usersession.deleteUser(admin, "fooecdsa");
+        	log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+        	usersession.deleteUser(admin, "fooecdsaimpca");
+        	log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+        	usersession.deleteUser(admin, "cvc");
+        	log.debug("deleted user: cvc, foo123, C=SE,O=RPS,CN=10001");
+        } catch (Exception e) { /* ignore */ }
 
         log.debug("<test99CleanUp()");
     }

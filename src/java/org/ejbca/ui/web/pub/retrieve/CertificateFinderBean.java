@@ -15,7 +15,9 @@ package org.ejbca.ui.web.pub.retrieve;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -123,7 +125,17 @@ public class CertificateFinderBean {
 		if (log.isDebugEnabled()) {
 			log.debug(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
 		}
-		return mInitialized ? mSignSession.getCertificateChain(mAdmin, mCurrentCA) : null;
+		if (!mInitialized) {
+			return null;
+		}
+		// Make a collection of CertificateWrapper instead of the real certificate
+		ArrayList ret = new ArrayList();
+		Collection certs = mSignSession.getCertificateChain(mAdmin, mCurrentCA);
+		for (Iterator it = certs.iterator(); it.hasNext();) {
+			Certificate cert = (Certificate)it.next();
+			ret.add(new CertificateWrapper(cert));
+		}
+		return ret;
 	}
 	
 	/**

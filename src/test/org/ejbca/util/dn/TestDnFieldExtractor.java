@@ -51,7 +51,7 @@ public class TestDnFieldExtractor extends TestCase {
      * @throws Exception error
      */
     public void test01CheckDnFields() throws Exception {
-    	String comp = DnComponents.getDnExtractorFieldFromDnId(28);
+    	String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
     	String dn = "cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
@@ -86,9 +86,9 @@ public class TestDnFieldExtractor extends TestCase {
     	assertFalse(illegal);
     	other = extractor.existsOther();
     	assertTrue(other);
-    	num = extractor.getNumberOfFields(28);
+    	num = extractor.getNumberOfFields(34);
     	assertEquals(1, num);
-    	String field = extractor.getField(28,0);
+    	String field = extractor.getField(34,0);
     	assertEquals("qualifier", field);
     	field = extractor.getField(DNFieldExtractor.CN,0);
     	assertEquals("Tomas Gustavsson", field);

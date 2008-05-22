@@ -55,6 +55,7 @@ public class UserDataVO implements Serializable {
     private String subjectAltName;
     private String subjectEmail;
     private String password;
+    /** Status of user, from UserDataConstants.STATUS_XX */
     private int status;
     /** Type of user, from SecConst */
     private int type;

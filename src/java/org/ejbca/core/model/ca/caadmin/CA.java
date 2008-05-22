@@ -22,11 +22,14 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.EJBException;
 
@@ -332,7 +335,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 		while(iter.hasNext()){
 		  String b64Cert = (String) iter.next();
 		  try{
-			this.certificatechain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
+			  Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
+			  if (cert != null) {
+				  this.certificatechain.add(cert);				  
+			  } else {
+				  throw new IllegalArgumentException("Can not create certificate object from: "+b64Cert);
+			  }
 		  }catch(Exception e){
 			 throw new EJBException(e);   
 		  }
@@ -580,7 +588,30 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	  throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
           ExtendedCAServiceResponse returnval = null; 
           if(request instanceof OCSPCAServiceRequest) {
-              returnval = getExtendedCAService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE).extendedService(request);            
+        	  OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
+              boolean useCACert = ocspServiceReq.useCACert();
+              try {
+                  if (useCACert) {
+                	  ocspServiceReq.setPrivKey(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                	  ocspServiceReq.setPrivKeyProvider(getCAToken().getProvider());
+                	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+                	  List chain = Arrays.asList(signerChain);
+                	  ocspServiceReq.setCertificateChain(chain);
+                      // Super class handles signing with the OCSP signing certificate
+                      log.debug("extendedService, with ca cert)");
+                  } else {
+                      // Super class handles signing with the OCSP signing certificate
+                      log.debug("extendedService, no ca cert)");
+                  }
+              } catch (IllegalKeyStoreException ike) {
+            	  throw new ExtendedCAServiceRequestException(ike);
+              } catch (CATokenOfflineException ctoe) {
+            	  throw new ExtendedCAServiceRequestException(ctoe);
+              } catch (IllegalArgumentException e) {
+            	  log.error("IllegalArgumentException: ", e);
+            	  throw new IllegalExtendedCAServiceRequestException(e);
+              }
+              returnval = getExtendedCAService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE).extendedService(ocspServiceReq);            
           }
           if(request instanceof XKMSCAServiceRequest) {
               returnval = getExtendedCAService(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE).extendedService(request);            

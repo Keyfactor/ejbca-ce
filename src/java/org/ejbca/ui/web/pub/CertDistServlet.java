@@ -20,7 +20,6 @@ import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -234,16 +233,16 @@ public class CertDistServlet extends HttpServlet {
                     long maxdate = 0;
                     for (int i=0;i<certs.length;i++) {
                         if (i == 0) {
-                            maxdate = ((X509Certificate)certs[i]).getNotBefore().getTime();
+                            maxdate = CertTools.getNotBefore((Certificate)certs[i]).getTime();
                             latestcertno = 0;
                         }
-                        else if ( ((X509Certificate)certs[i]).getNotBefore().getTime() > maxdate ) {
-                            maxdate = ((X509Certificate)certs[i]).getNotBefore().getTime();
+                        else if ( CertTools.getNotBefore((Certificate)certs[i]).getTime() > maxdate ) {
+                            maxdate = CertTools.getNotBefore(((Certificate)certs[i])).getTime();
                             latestcertno = i;
                         }
                     }
                     if (latestcertno > -1) {
-                        byte[] cert = ((X509Certificate)certs[latestcertno]).getEncoded();
+                        byte[] cert = ((Certificate)certs[latestcertno]).getEncoded();
                         String filename = CertTools.getPartFromDN(dn,"CN")+".cer";
                         // We must remove cache headers for IE
                         ServletUtils.removeCacheHeaders(res);
@@ -267,11 +266,11 @@ public class CertDistServlet extends HttpServlet {
                     PrintWriter pout = new PrintWriter(res.getOutputStream());
                     printHtmlHeader("Certificates for "+dn, pout);
                     for (int i=0;i<certs.length;i++) {
-                        Date notBefore = ((X509Certificate)certs[i]).getNotBefore();
-                        Date notAfter = ((X509Certificate)certs[i]).getNotAfter();
-                        String subject = CertTools.getSubjectDN((X509Certificate)certs[i]);
-                        String issuer = CertTools.getIssuerDN((X509Certificate)certs[i]);
-                        BigInteger serno = ((X509Certificate)certs[i]).getSerialNumber();
+                        Date notBefore = CertTools.getNotBefore((Certificate)certs[i]);
+                        Date notAfter = CertTools.getNotAfter((Certificate)certs[i]);
+                        String subject = CertTools.getSubjectDN((Certificate)certs[i]);
+                        String issuer = CertTools.getIssuerDN((Certificate)certs[i]);
+                        BigInteger serno = CertTools.getSerialNumber((Certificate)certs[i]);
                         pout.println("<pre>Subject:"+subject);
                         pout.println("Issuer:"+issuer);
                         pout.println("NotBefore:"+notBefore.toString());
@@ -318,7 +317,7 @@ public class CertDistServlet extends HttpServlet {
                     log.debug("No CA certificate of level "+level+" exist.");
                     return;
                 }
-                X509Certificate cacert = (X509Certificate)chain[level];
+                Certificate cacert = (Certificate)chain[level];
                 String filename=CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
                 if (filename == null)
                     filename = "ca";
@@ -382,13 +381,13 @@ public class CertDistServlet extends HttpServlet {
                     int id = issuerdn.hashCode();
                     cainfo = casession.getCAInfo(administrator, id);
                 }
-                X509Certificate ocspcert = null;
+                Certificate ocspcert = null;
                 Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
                 while(iter.hasNext()){
                   ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
                   if(next instanceof OCSPCAServiceInfo){
                     if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null)
-                      ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);          
+                      ocspcert = (Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);          
                   }
                 }
                 // If no cert, send back a NOT_FOUND response

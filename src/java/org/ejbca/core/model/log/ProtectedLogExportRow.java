@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -112,7 +113,7 @@ public class ProtectedLogExportRow {
     public byte[] getPreviosExportHash() { return previousExportHash; }
     public String getCurrentHashAlgorithm() { return currentHashAlgorithm; }
     public byte[] getSignatureCertificateAsByteArray() { return signatureCertificate; }
-    public X509Certificate getSignatureCertificate() {
+    public Certificate getSignatureCertificate() {
     	try {
     		return CertTools.getCertfromByteArray(signatureCertificate);
     	} catch (CertificateException e) {

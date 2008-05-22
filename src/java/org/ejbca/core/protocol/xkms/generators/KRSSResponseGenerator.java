@@ -123,7 +123,7 @@ public class KRSSResponseGenerator extends
 							byte[] encoded = (byte[]) next.getValue();
 
 							try {
-								X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+								X509Certificate nextCert = (X509Certificate)CertTools.getCertfromByteArray(encoded);
 								if(nextCert.getBasicConstraints() == -1){
 									retval = nextCert;
 								}

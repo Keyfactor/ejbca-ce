@@ -300,9 +300,9 @@ public class CACertServlet extends HttpServlet {
                     log.error("No CA certificate of level "+level+"exist.");
                     return;
                 }
-                X509Certificate cacert = (X509Certificate)chain[level];
+                Certificate cacert = (Certificate)chain[level];
                 byte[] enccert = cacert.getEncoded();
-            	String strippedCACN = CertTools.getPartFromDN(cacert.getSubjectX500Principal().getName(), "CN").replaceAll("\\W", "");
+            	String strippedCACN = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN").replaceAll("\\W", "");
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {

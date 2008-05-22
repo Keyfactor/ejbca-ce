@@ -23,8 +23,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -158,7 +158,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /** preferred digest algorithm to use in replies, if applicable */
     private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_MD5;
 
-	private transient X509Certificate signercert;
+	private transient Certificate signercert;
 
     /**
      * Constructs a new SCEP/PKCS7 message handler object.
@@ -221,9 +221,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                         //Create Certificate used for debugging
                         try {
 							signercert = CertTools.getCertfromByteArray(requestKeyInfo);
-							log.debug("requestKeyInfo is SubjectDN: " + signercert.getSubjectDN().toString() +
-									", Serial=" + signercert.getSerialNumber().toString(16) +
-									"; IssuerDN: "+ signercert.getIssuerDN().toString());
+							if (log.isDebugEnabled()) {
+								log.debug("requestKeyInfo is SubjectDN: " + CertTools.getSubjectDN(signercert) +
+										", Serial=" + CertTools.getSerialNumber(signercert).toString(16) +
+										"; IssuerDN: "+ CertTools.getIssuerDN(signercert).toString());								
+							}
 						} catch (CertificateException e) {
 							log.error("Error parsing requestKeyInfo : ", e);
 						}
@@ -620,7 +622,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      *
      * @see #requireKeyInfo()
      */
-    public void setKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
+    public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
         // We don't need the public key 
         // this.cert = cert;
         this.privateKey = key;
@@ -696,7 +698,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * 
      * @return The certificate used for signing or null if it doesn't exist or not been initialized.
      */
-    public X509Certificate getSignerCert(){
+    public Certificate getSignerCert(){
     	return signercert;
     }
     

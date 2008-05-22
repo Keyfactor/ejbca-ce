@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -97,7 +98,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         final private JobData jobData;
         final private PKCS10CertificationRequest pkcs10;
         Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
-            this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
+            this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
             this.jobData = _jobData;
             this.ejbcaWS = _ejbcaWS;
         }
@@ -115,7 +116,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
             if ( commonName.equals(jobData.userName) ) {
                 performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
-                performanceTest.getLog().result(cert.getSerialNumber());
+                performanceTest.getLog().result(CertTools.getSerialNumber(cert));
                 return true;
             }
             performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");

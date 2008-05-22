@@ -121,7 +121,7 @@ public class SecConst extends Object {
     public static final int MAXIMUM_QUERY_ROWCOUNT = 500; 
     
     
-    /** Constans used to indicate status of a CA. */
+    /** Constants used to indicate status of a CA. */
     public static final int CA_ACTIVE = 1;
     public static final int CA_WAITING_CERTIFICATE_RESPONSE = 2;
     public static final int CA_EXPIRED = 3;

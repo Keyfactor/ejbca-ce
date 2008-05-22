@@ -580,7 +580,7 @@ public class CmpTestCase extends TestCase {
 		assertNotNull(struct);
 		assertEquals(CertTools.stringToBCDNString(struct.getSubject().toString()), CertTools.stringToBCDNString(userDN));
 		assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.stringToBCDNString(cacert.getSubjectDN().getName()));
-		return CertTools.getCertfromByteArray(struct.getEncoded());
+		return (X509Certificate)CertTools.getCertfromByteArray(struct.getEncoded());
     }
 
     protected void checkCmpPKIConfirmMessage(String userDN, X509Certificate cacert, byte[] retMsg) throws IOException {

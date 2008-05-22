@@ -207,23 +207,6 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 
 
 
-	private List getCertsFromKeyBinding(KeyBindingType keyBinding) throws CertificateException {
-		ArrayList retval = new ArrayList();
-		
-		JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBinding.getKeyInfo().getContent().get(0);		
-		Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
-		while(iter2.hasNext()){
-			JAXBElement next = (JAXBElement) iter2.next();					
-			if(next.getName().getLocalPart().equals("X509Certificate")){
-			  byte[] encoded = (byte[]) next.getValue();
-			  X509Certificate nextCert = CertTools.getCertfromByteArray(encoded);
-			  retval.add(nextCert);
-			}
-		}	
-		
-		return retval;
-	}
-
 	private void displayRequestErrors(ReissueResultType reissueResultType) {
 		if(reissueResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOMATCH)){
 			getPrintStream().println("Error no user could be found for the given certiifcate.");

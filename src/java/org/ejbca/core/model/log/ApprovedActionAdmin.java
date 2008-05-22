@@ -13,7 +13,8 @@
 
 package org.ejbca.core.model.log;
 
-import java.security.cert.X509Certificate;
+
+import java.security.cert.Certificate;
 
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminInformation;
@@ -31,7 +32,7 @@ import org.ejbca.core.model.authorization.AdminInformation;
 
 public class ApprovedActionAdmin extends Admin {
 	
-	public ApprovedActionAdmin(X509Certificate certificate){
+	public ApprovedActionAdmin(Certificate certificate){
 		super(certificate);
 		this.type = TYPE_CLIENTCERT_USER;
 	}

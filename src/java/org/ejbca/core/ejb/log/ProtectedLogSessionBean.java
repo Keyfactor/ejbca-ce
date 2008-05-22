@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -1045,7 +1046,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Supports"
 	 */
-	public boolean verifySignature(byte[] data, byte[] signature, X509Certificate certificate, long timeOfSigning) {
+	public boolean verifySignature(byte[] data, byte[] signature, Certificate certificate, long timeOfSigning) {
 		log.debug(">verifySignature");
 		boolean verified = false;
 		if (signature == null || data == null) {
@@ -1056,7 +1057,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		}
 		try {
 			// Verify signature of data
-			Signature signer = Signature.getInstance(certificate.getSigAlgName(), "BC");
+			Signature signer = Signature.getInstance(CertTools.getSignatureAlgorithm(certificate), "BC");
 			signer.initVerify(certificate.getPublicKey());
 			signer.update(data);
 			verified = signer.verify(signature);
@@ -1072,7 +1073,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Supports"
 	 */
-	public boolean verifyCertificate(X509Certificate certificate, long timeOfUse) {
+	public boolean verifyCertificate(Certificate certificate, long timeOfUse) {
 		log.debug("<verifyCertificate");
 		boolean verified = false;
 		try {
@@ -1081,14 +1082,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				// We checked the signature last time, so it's ok.
 			} else {
 				//int caid = CertTools.getIssuerDN(certificate).hashCode();
-				int caid = certificate.getIssuerDN().getName().hashCode();
+				int caid = CertTools.getIssuerDN(certificate).hashCode();
 				CAInfo caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caid);
 				CertTools.verify(certificate, caInfo.getCertificateChain());
 			}
 			// Verify that the certificate is valid
-			certificate.checkValidity(new Date(timeOfUse));
+			CertTools.checkValidity(certificate, new Date(timeOfUse));
 			// Verify that the cert wasn't revoked
-			RevokedCertInfo revinfo = getCertificateStoreSession().isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate), certificate.getSerialNumber());
+			RevokedCertInfo revinfo = getCertificateStoreSession().isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
 			if (revinfo == null) {
 				return false;	// Certificate missing
 			} else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED && revinfo.getRevocationDate().getTime() <= timeOfUse) {

@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.beans.Beans;
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -108,7 +109,7 @@ import org.ejbca.util.StringTools;
  * </dl>
  * 
  *
- * @author Ville Skyttä
+ * @author Ville Skyttï¿½
  * @version $Id$
  * 
  * @web.servlet name = "AdminCertReq"
@@ -284,7 +285,7 @@ public class AdminCertReqServlet extends HttpServlet {
             p10.setPassword(password);
             ISignSessionLocal ss = getSignSession();
             IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
-            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             pkcs7 = ss.createPKCS7(admin, cert, true);
         } catch (ClassNotFoundException e) {
             // Class not found

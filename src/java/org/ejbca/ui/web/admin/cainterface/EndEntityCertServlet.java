@@ -15,7 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -136,7 +136,7 @@ public class EndEntityCertServlet extends HttpServlet {
 
 				CertificateView certview = rabean.getCertificate(0);
 				
-				X509Certificate cert = certview.getCertificate();
+				Certificate cert = certview.getCertificate();
 				byte[] enccert = cert.getEncoded();
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
