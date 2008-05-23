@@ -48,7 +48,14 @@ public abstract class CATokenContainer extends UpgradeableDataHashMap implements
     *  Returns information about this CAToken.
     */
     public abstract CATokenInfo getCATokenInfo();  
-    
+
+    /**
+     *  Returns the type of CA token, from CATokenConstants.
+     *  @return integer one of CATokenConstants.CATOKENTYPE_XXX
+     *  @see CATokenConstants.CATOKENTYPE_XXX
+     */
+     public abstract int getCATokenType();  
+
    /**
     * Updates the CAToken data saved in database.
     */

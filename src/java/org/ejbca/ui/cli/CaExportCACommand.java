@@ -17,6 +17,9 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 
+import org.ejbca.ui.cli.util.ConsolePasswordReader;
+import org.ejbca.ui.cli.util.PasswordReader;
+
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
@@ -42,9 +45,10 @@ public class CaExportCACommand extends BaseCaAdminCommand {
     	String signatureKeyAlias = "SignatureKeyAlias";
     	String encryptionKeyAlias = "EncryptionKeyAlias";
         if (args.length < 3) {
-           String msg = "Usage: CA exportca <CA name> <pkcs12 file> [<signature_key_alias>] [<encryption_key_alias>]\n" +
+           String msg = "Usage: CA exportca <CA name> <pkcs12/pkcs8 file> [<signature_key_alias>] [<encryption_key_alias>]\n" +
            				"Default values for signature_key_alias is \"" + signatureKeyAlias + "\" and encryption_key_alias" +
-           				" is \"" + encryptionKeyAlias + "\".";
+           				" is \"" + encryptionKeyAlias + "\".\n" +
+           				"X.509 CAs are exported as PKCS#12 files while for CVC CAs only the private certificate signing key is exported as a PKCS#8 key.";
            throw new IllegalAdminCommandException(msg);
         }
         try {
@@ -56,8 +60,9 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             if ( args.length > 4 ) {
             	encryptionKeyAlias = args[4];
             }
+            PasswordReader reader = new ConsolePasswordReader();
             getOutputStream().print("Enter keystore password: ");
-            String kspwd = new BufferedReader(new InputStreamReader(System.in)).readLine();
+            String kspwd = new String(reader.readPassword());
             
             byte[] keyStoreBytes = getCAAdminSessionRemote().exportCAKeyStore(administrator, caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
             FileOutputStream fos = new FileOutputStream(p12file);

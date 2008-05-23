@@ -176,6 +176,19 @@ public class CATokenContainerImpl extends CATokenContainer {
 		return info;
 	}
 
+	/**
+	 *  Returns the type of CA token, from CATokenConstants.
+	 *  @return integer one of CATokenConstants.CATOKENTYPE_XXX, or 0 if we don't know the type
+	 *  @see CATokenConstants.CATOKENTYPE_XXX
+	 */
+	public int getCATokenType() {
+		int ret = 0;
+		if (data.get(CATOKENTYPE) != null) {
+        	ret = (Integer)(data.get(CATOKENTYPE));
+		}
+		return ret;
+	}
+
 	/** 
 	 * Updates the hardcatoken configuration
 	 */

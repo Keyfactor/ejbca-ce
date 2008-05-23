@@ -13,6 +13,7 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -88,12 +89,17 @@ public class CAExportServlet extends HttpServlet {
     		byte[] keystorebytes = null;
         	ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
         	ICAAdminSessionLocal caadminsession = home.create();
+        	CAInfo cainfo = caadminsession.getCAInfo(ejbcawebbean.getAdminObject(), caname);
+        	String ext = "p12"; // Default for X.509 CAs
+        	if (cainfo.getCAType() == CAInfo.CATYPE_CVC) {
+        		ext = "pkcs8";
+        	}
 			keystorebytes = caadminsession.exportCAKeyStore(ejbcawebbean.getAdminObject(), caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             ServletUtils.removeCacheHeaders(res);	// We must remove cache headers for IE
         	res.setContentType("application/octet-stream");
         	res.setHeader("Cache-Control", "no-cache");
         	res.setContentLength(keystorebytes.length);
-        	res.setHeader("Content-Disposition", "attachment;filename=\"" + caname + ".p12\"");
+        	res.setHeader("Content-Disposition", "attachment;filename=\"" + caname + "."+ext+"\"");
 	        res.getOutputStream().write(keystorebytes);
   		} catch(Exception e) {
 	        res.setContentType("text/plain");

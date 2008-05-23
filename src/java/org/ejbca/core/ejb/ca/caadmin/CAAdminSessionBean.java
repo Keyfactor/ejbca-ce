@@ -1815,7 +1815,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @param privateSignatureKeyAlias the alias for the private signature key in the keystore.
      * @param privateEncryptionKeyAlias the alias for the private encryption key in teh keystore
      * 
-     * @return A byte array of the CAs p12.
+     * @return A byte array of the CAs p12 in case of X509 CA and pkcs8 private certificate signing key in case of CVC CA.
      * 
      * @ejb.interface-method
      */
@@ -1825,7 +1825,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try {
 	    	CA thisCa = cadatahome.findByName(caname).getCA();
 			// Make sure we are not trying to export a hard or invalid token
-	    	if ( thisCa.getCAType() != CATokenInfo.CATOKENTYPE_P12 ) {
+	    	CATokenContainer thisCAToken = thisCa.getCAToken();
+	    	int tokentype = thisCAToken.getCATokenType();
+	    	if ( tokentype != CATokenInfo.CATOKENTYPE_P12 ) {
 	    		throw new Exception("Cannot export anything but a soft token.");
 	    	}
 	    	// Check authorization
@@ -1833,14 +1835,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
 				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
 			}
             // Fetch keys
-	    	CATokenContainer thisCAToken = thisCa.getCAToken();
 	    	// This is a way of verifying the passowrd. If activate fails, we will get an exception and the export will not proceed
 	    	thisCAToken.activate(keystorepass);
-	    	
-	    	// Proceed with the export
-            KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-            keystore.load(null, keystorepass.toCharArray());
-            
+	    	            
             PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
 	    	PublicKey p12PublicEncryptionKey = thisCAToken.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
             PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
@@ -1848,35 +1845,50 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	    	if ( !p12PrivateCertSignKey.equals(p12PrivateCRLSignKey) ) {
 	    		throw new Exception("Assertion of equal signature keys failed.");
 	    	}
-	    	// Load keys into keystore
-	    	Certificate[] certificateChainSignature = (Certificate[]) thisCa.getCertificateChain().toArray(new Certificate[0]);
-	    	Certificate[] certificateChainEncryption = new Certificate[1];
-	    	//certificateChainSignature[0].getSigAlgName(), 
-            // generate dummy certificate for encryption key.
-	    	certificateChainEncryption[0] = CertTools.genSelfCertForPurpose("CN=dummy2", 36500, null, p12PrivateEncryptionKey, p12PublicEncryptionKey,
-	    			thisCAToken.getCATokenInfo().getEncryptionAlgorithm(), true, X509KeyUsage.keyEncipherment);
-	    	log.debug("Exporting with sigAlgorithm "+CertTools.getSignatureAlgorithm(certificateChainSignature[0])+"encAlgorithm="+thisCAToken.getCATokenInfo().getEncryptionAlgorithm());
-            if ( keystore.isKeyEntry(privateSignatureKeyAlias) ) {
-	    		throw new Exception("Key \"" + privateSignatureKeyAlias + "\"already exists in keystore.");
-            }
-            if ( keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
-	    		throw new Exception("Key \"" + privateEncryptionKeyAlias + "\"already exists in keystore.");
-            }
+	    	// Proceed with the export
+	    	byte[] ret = null;
+	    	String format = null;
+	    	if (thisCa.getCAType() == CAInfo.CATYPE_CVC) {
+	    		log.debug("Exporting private key with algorithm: "+p12PrivateCertSignKey.getAlgorithm()+" of format: "+p12PrivateCertSignKey.getFormat());
+	    		format = p12PrivateCertSignKey.getFormat();
+	    		ret = p12PrivateCertSignKey.getEncoded();
+	    	} else {
+	    		log.debug("Exporting PKCS12 keystore");
+	    		format = "PKCS12";
+	            KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+	            keystore.load(null, keystorepass.toCharArray());
+		    	// Load keys into keystore
+		    	Certificate[] certificateChainSignature = (Certificate[]) thisCa.getCertificateChain().toArray(new Certificate[0]);
+		    	Certificate[] certificateChainEncryption = new Certificate[1];
+		    	//certificateChainSignature[0].getSigAlgName(), 
+	            // generate dummy certificate for encryption key.
+		    	certificateChainEncryption[0] = CertTools.genSelfCertForPurpose("CN=dummy2", 36500, null, p12PrivateEncryptionKey, p12PublicEncryptionKey,
+		    			thisCAToken.getCATokenInfo().getEncryptionAlgorithm(), true, X509KeyUsage.keyEncipherment);
+		    	log.debug("Exporting with sigAlgorithm "+CertTools.getSignatureAlgorithm(certificateChainSignature[0])+"encAlgorithm="+thisCAToken.getCATokenInfo().getEncryptionAlgorithm());
+	            if ( keystore.isKeyEntry(privateSignatureKeyAlias) ) {
+		    		throw new Exception("Key \"" + privateSignatureKeyAlias + "\"already exists in keystore.");
+	            }
+	            if ( keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
+		    		throw new Exception("Key \"" + privateEncryptionKeyAlias + "\"already exists in keystore.");
+	            }
 
-            keystore.setKeyEntry(privateSignatureKeyAlias, p12PrivateCertSignKey, privkeypass.toCharArray(), certificateChainSignature);
-            keystore.setKeyEntry(privateEncryptionKeyAlias, p12PrivateEncryptionKey, privkeypass.toCharArray(), certificateChainEncryption);
-            // Return keystore as byte array and clean up
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            keystore.store(baos, keystorepass.toCharArray());
-            if ( keystore.isKeyEntry(privateSignatureKeyAlias) ) {
-            	keystore.deleteEntry(privateSignatureKeyAlias);
-            }
-            if ( keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
-            	keystore.deleteEntry(privateEncryptionKeyAlias);
-            }
-        	String msg = intres.getLocalizedMessage("caadmin.exportedca", caname, "PKCS12");
+	            keystore.setKeyEntry(privateSignatureKeyAlias, p12PrivateCertSignKey, privkeypass.toCharArray(), certificateChainSignature);
+	            keystore.setKeyEntry(privateEncryptionKeyAlias, p12PrivateEncryptionKey, privkeypass.toCharArray(), certificateChainEncryption);
+	            // Return keystore as byte array and clean up
+	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            keystore.store(baos, keystorepass.toCharArray());
+	            if ( keystore.isKeyEntry(privateSignatureKeyAlias) ) {
+	            	keystore.deleteEntry(privateSignatureKeyAlias);
+	            }
+	            if ( keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
+	            	keystore.deleteEntry(privateEncryptionKeyAlias);
+	            }
+	    		ret = baos.toByteArray();	    		
+	    	}
+        	String msg = intres.getLocalizedMessage("caadmin.exportedca", caname, format);
 	        getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEXPORTED, msg);
-    		return baos.toByteArray();
+	        log.debug("<exportCAKeyStore");               
+	    	return ret;
 	    } catch(Exception e){
         	String msg = intres.getLocalizedMessage("caadmin.errorexportca", caname, "PKCS12", e.getMessage());
 	        getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEXPORTED, msg, e);
