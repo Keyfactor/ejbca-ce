@@ -978,17 +978,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				cachain.addAll(ca.getRequestCertificateChain());
 
     				ca.setCertificateChain(createCertChain(cachain));
-    				// Set statuses.
-    				cadata.setStatus(SecConst.CA_ACTIVE);
 
     				// Publish CA Cert
     		        ArrayList cacertcol = new ArrayList();
     		        cacertcol.add(cacert);
     				getSignSession().publishCACertificate(admin, cacertcol, ca.getCRLPublishers());
-
-    				if(ca instanceof X509CA){
-    					cadata.setExpireTime(CertTools.getNotAfter(cacert).getTime());
-    				}
 
     				// activate External CA Services
     				Iterator iter = ca.getExternalCAServiceTypes().iterator();
@@ -1017,10 +1011,17 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				        throw new EJBException(fe);
     				    }
     				}
+
+    				// Set expire time
+    				ca.setExpireTime(CertTools.getNotAfter(cacert));
+    				cadata.setExpireTime(CertTools.getNotAfter(cacert).getTime());    				
                     // Save CA
     				cadata.setCA(ca);
-                    //  create initial CRL
-                    this.getCRLCreateSession().run(admin,ca.getSubjectDN());
+    				// Finally! Set status to activate CA
+    				cadata.setStatus(SecConst.CA_ACTIVE);
+
+    				// Create initial CRL
+                    this.getCRLCreateSession().run(admin,ca.getSubjectDN());                    
     			}else{
     	    		String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", new Integer(caid));            	
     				// Cannot create certificate request for internal CA
@@ -2014,7 +2015,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		if(cadata.getStatus() == SecConst.CA_OFFLINE || cATokenDisconnected){
         		try {
     				cadata.getCA().getCAToken().activate(authorizationcode);
-    				cadata.setStatus(SecConst.CA_ACTIVE);
+    				// If the CA was off-line, this is activation of the CA, if only the token was disconnected we only connect the token
+    				// If CA is waiting for certificate response we can not change this status just by activating the token.
+    				if (cadata.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
+        				cadata.setStatus(SecConst.CA_ACTIVE);    					
+    				}
     				// Invalidate CA cache to refresh information
     				CACacheManager.instance().removeCA(cadata.getCaId().intValue());
             		String msg = intres.getLocalizedMessage("caadmin.catokenactivated", cadata.getName());            	

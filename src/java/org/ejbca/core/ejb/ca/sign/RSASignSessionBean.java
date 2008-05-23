@@ -1159,7 +1159,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch (java.io.UnsupportedEncodingException uee) {
                 throw new EJBException(uee);
             }
-            if (ca.getStatus() != SecConst.CA_ACTIVE) {
+            if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
                 String msg = intres.getLocalizedMessage("signsession.canotactive", cadata.getSubjectDN());
                 getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new CATokenOfflineException(msg);

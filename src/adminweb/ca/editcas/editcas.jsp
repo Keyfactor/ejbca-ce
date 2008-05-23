@@ -929,19 +929,20 @@
                                                       crldistpointoncrlcritical,
                                                       true);
                  
-               cadatahandler.editCA((CAInfo) x509cainfo);
-                 
+               // BUTTON_RECEIVEREQUEST when action is EDIT_CA is actually when you receive a certificate from an external CA as a response from an external CA 
+               if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){  
+             	  // Receive certificate response does not save any CA edits before receiving the response, because we need to CA token active
+                   filemode = RECIEVERESPONSEMODE;
+                   includefile="recievefile.jspf"; 
+               } else {
+                   cadatahandler.editCA((CAInfo) x509cainfo);            	   
+               }
 
-               
                if(request.getParameter(BUTTON_SAVE) != null){
                   // Do nothing More
-
                   includefile="choosecapage.jspf"; 
                }
-               if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){                  
-                  filemode = RECIEVERESPONSEMODE;
-                  includefile="recievefile.jspf"; 
-               }
+               
                if(request.getParameter(BUTTON_RENEWCA) != null){
                  int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
                  if(signedby != CAInfo.SIGNEDBYEXTERNALCA){

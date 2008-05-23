@@ -127,9 +127,8 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.
     	      if(request.getParameter(BUTTON_ACTIVATE) != null &&
     	      	 can_activate &&
-				 ((status == SecConst.CA_OFFLINE) ||
-				   (status == SecConst.CA_ACTIVE && 
-				   (cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == ICAToken.STATUS_OFFLINE))){
+				 ( (status == SecConst.CA_OFFLINE) ||
+				   ((status == SecConst.CA_ACTIVE || status == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE)) )) {
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
     	         try {
@@ -148,7 +147,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	         		 activationmessage = "CAACTIVATIONSENTAPPROVAL";
 	         	 }
     	      }
-    	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.
+    	      // If Make off-line button is pressed, the admin is authorized and the current status is active then de-activate.
     	      if(request.getParameter(BUTTON_MAKEOFFLINE) != null &&
     	      	 can_activate &&
 				 status == SecConst.CA_ACTIVE){

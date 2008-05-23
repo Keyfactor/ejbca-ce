@@ -598,7 +598,7 @@ public class X509CA extends CA implements Serializable {
             	}        		
         	}
         }
-        log.debug(">X509CA: generate certificate, CA "+ this.getCAId() + " for DN: " + subject.getDN());
+        log.debug("X509CA: generated certificate, CA "+ this.getCAId() + " for DN: " + subject.getDN());
       return cert;                                                                                        
     }
 
