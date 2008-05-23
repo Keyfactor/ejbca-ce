@@ -1474,15 +1474,14 @@ public class RSASignSessionBean extends BaseSessionBean {
                 int keyLength = KeyTools.getKeyLength(pk);
                 if (keyLength == -1) {
                 	String text = intres.getLocalizedMessage("signsession.unsupportedkeytype", pk.getClass().getName()); 
-                    getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, text);
+                    getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
                     throw new IllegalKeyException(text);
                 }
                 log.debug("Keylength = " + keyLength); 
                 if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
                         || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
                 	String text = intres.getLocalizedMessage("signsession.illegalkeylength", new Integer(keyLength)); 
-                    getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, text);
-                    log.error(text);
+                    getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
                     throw new IllegalKeyException(text);
                 }
 

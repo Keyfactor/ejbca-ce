@@ -565,8 +565,13 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (InvalidKeyException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
+		} catch (IllegalKeyException e) {
+			// Don't log a bad error for this (user's key length too small)
+			log.debug("EJBCA WebService error, pkcs12Req : ",e);
+		    throw new EjbcaException(e.getMessage());
 		} catch (AuthStatusException e) {
-			log.error("EJBCA WebService error, processCertReq : ",e);
+			// Don't log a bad error for this (user wrong status)
+			log.debug("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (AuthLoginException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
@@ -703,13 +708,15 @@ public class EjbcaWS implements IEjbcaWS {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
 			    throw new EjbcaException(e.getMessage());
 			} catch (AuthStatusException e) {
-				log.error("EJBCA WebService error, pkcs12Req : ",e);
+				// Don't log a bad error for this (user wrong status)
+				log.debug("EJBCA WebService error, pkcs12Req : ",e);
 			    throw new EjbcaException(e.getMessage());
 			} catch (AuthLoginException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
 			    throw new EjbcaException(e.getMessage());
 			} catch (IllegalKeyException e) {
-				log.error("EJBCA WebService error, pkcs12Req : ",e);
+				// Don't log a bad error for this (user's key length too small)
+				log.debug("EJBCA WebService error, pkcs12Req : ",e);
 			    throw new EjbcaException(e.getMessage());
 			} catch (CADoesntExistsException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
