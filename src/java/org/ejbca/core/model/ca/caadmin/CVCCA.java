@@ -213,6 +213,8 @@ public class CVCCA extends CA implements Serializable {
 
         // Generate the CVC certificate using Keijos library
         String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
+        log.debug("Creating CV certificate with algorithm "+sigAlg+", public key algorithm from CVC request must match this algorithm.");
+        log.debug("CARef: "+caRef.getValue()+"; holderRef: "+holderRef.getValue());
         CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
         		sigAlg, caRef, holderRef, authRole, val.getNotBefore(), val.getNotAfter(), getCAToken().getProvider());
 

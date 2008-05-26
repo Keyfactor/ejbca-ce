@@ -51,11 +51,12 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	private static final int ARG_PASSWORD           = 2;
 	private static final int ARG_SUBJECTDN          = 3;
 	private static final int ARG_CA                 = 4;
-	private static final int ARG_ENDENTITYPROFILE   = 5;
-	private static final int ARG_CERTIFICATEPROFILE = 6;
-	private static final int ARG_GENREQ             = 7;
-	private static final int ARG_REQFILENAME        = 8;
-	private static final int ARG_CERTFILENAME       = 9;
+	private static final int ARG_SIGNALG            = 5;
+	private static final int ARG_ENDENTITYPROFILE   = 6;
+	private static final int ARG_CERTIFICATEPROFILE = 7;
+	private static final int ARG_GENREQ             = 8;
+	private static final int ARG_REQFILENAME        = 9;
+	private static final int ARG_CERTFILENAME       = 10;
 
 	/**
 	 * Creates a new instance of CvcRequestCommand
@@ -75,7 +76,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {   
-			if(args.length < 10 || args.length > 10){
+			if(args.length < 11 || args.length > 11){
 				getPrintStream().println("Number of argument: "+args.length);
 				usage();
 				System.exit(-1);
@@ -91,7 +92,8 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			userdata.setCertificateProfileName(args[ARG_CERTIFICATEPROFILE]);
 			userdata.setTokenType("USERGENERATED");
 			userdata.setStatus(UserDataConstants.STATUS_NEW);
-            boolean genrequest = args[ARG_GENREQ].equalsIgnoreCase("true");
+			String signatureAlg = args[ARG_SIGNALG];
+			boolean genrequest = args[ARG_GENREQ].equalsIgnoreCase("true");
 			String reqfilename = args[ARG_REQFILENAME];
 			String certfilename = args[ARG_CERTFILENAME];
 
@@ -99,6 +101,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			getPrintStream().println("Username: "+userdata.getUsername());
 			getPrintStream().println("Subject name: "+userdata.getSubjectDN());
 			getPrintStream().println("CA Name: "+userdata.getCaName());                        
+			getPrintStream().println("Signature algorithm: "+signatureAlg);                        
 			getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
 			getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
 
@@ -118,9 +121,8 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					CAReferenceField caRef = new CAReferenceField(country,mnemonic,sequence);
 					// We are making a self signed request, so holder ref is same as ca ref
 					HolderReferenceField holderRef = new HolderReferenceField(caRef.getCountry(), caRef.getMnemonic(), caRef.getSequence());
-					String algorithmName = "SHA1withRSA";
-					CVCertificate request = CertificateGenerator.createRequest(keyPair, algorithmName, caRef, holderRef);
-					CVCAuthenticatedRequest authRequest = CertificateGenerator.createAuthenticatedRequest(request, keyPair, algorithmName, caRef);
+					CVCertificate request = CertificateGenerator.createRequest(keyPair, signatureAlg, caRef, holderRef);
+					CVCAuthenticatedRequest authRequest = CertificateGenerator.createAuthenticatedRequest(request, keyPair, signatureAlg, caRef);
 					byte[] der = authRequest.getDEREncoded();
 					cvcreq = new String(Base64.encode(der));
 					// Print the generated request to file
@@ -170,7 +172,8 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 	protected void usage() {
 		getPrintStream().println("Command used to make a CVC request. If user does not exist a new will be created and if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <caname> <endentityprofilename> <certificateprofilename> <genreq=true|false> <reqfilename> <certfilename>\n\n");
+		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <caname> <signatureAlg> <endentityprofilename> <certificateprofilename> <genreq=true|false> <reqfilename> <certfilename>\n\n");
+		getPrintStream().println("SignatureAlg can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1");
 		getPrintStream().println("DN is of form \"C=SE, O=RPS, CN=00001\".");
 		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <reqfilename>, and the private key to <reqfilename>.pkcs8.");
 		getPrintStream().println("If genreq is false <reqfilename> is a request that is read and sent to the CA.");

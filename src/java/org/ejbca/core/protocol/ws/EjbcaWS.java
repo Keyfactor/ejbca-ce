@@ -360,6 +360,8 @@ public class EjbcaWS implements IEjbcaWS {
 									log.debug("Trying to verify the outer signature with a valid certificate");
 									authreq.verify(cert.getPublicKey());
 									// Verification succeeded, lets set user status to new, the password as passed in and proceed
+									String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
+									log.info(msg);
 									ejbhelper.getUserAdminSession().setPassword(admin, username, password);
 									ejbhelper.getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
 									// If we managed to verify the certificate we will break out of the loop
@@ -370,7 +372,7 @@ public class EjbcaWS implements IEjbcaWS {
 									CardVerifiableCertificate innercert = new CardVerifiableCertificate(innerreq);
 									try {
 										innercert.verify(cert.getPublicKey());										
-										String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef);            	
+										msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef);            	
 										log.info(msg);
 										throw new AuthorizationDeniedException(msg);
 									} catch (SignatureException e) {
@@ -384,19 +386,19 @@ public class EjbcaWS implements IEjbcaWS {
 								}
 							} catch (InvalidKeyException e) {
 								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.info(msg, e);
+								log.debug(msg, e);
 							} catch (CertificateException e) {
 								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.info(msg, e);
+								log.debug(msg, e);
 							} catch (NoSuchAlgorithmException e) {
 								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.info(msg, e);
+								log.debug(msg, e);
 							} catch (NoSuchProviderException e) {
 								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.info(msg, e);
+								log.debug(msg, e);
 							} catch (SignatureException e) {
 								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.info(msg, e);
+								log.debug(msg, e);
 							}
 							// if verification failed, continue processing as usual, using the sent in username/password hoping the
 							// status is NEW and password is correct.
