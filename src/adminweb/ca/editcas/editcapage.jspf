@@ -720,27 +720,6 @@ function checkallfields(){
     </tr>
 
     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
-      </td>
-      <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
-           <%   Collection usedpublishers = null;
-                if(editca) usedpublishers = cainfo.getCRLPublishers(); 
-                Iterator iter = publisheridtonamemap.keySet().iterator(); 
-                while(iter.hasNext()){
-                  Integer next = (Integer) iter.next(); %>
-           <option  value="<%= next %>" 
-              <%    if(editca && usedpublishers.contains(next))
-                      out.write(" selected ");
-                  %>>
-              <%= publisheridtonamemap.get(next) %>         
-           </option>  
-              <% } %>
-        </select>
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
@@ -860,6 +839,27 @@ function checkallfields(){
     
    <%
     if(!processrequest && !isexternal){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
+           <%   Collection usedpublishers = null;
+                if(editca) usedpublishers = cainfo.getCRLPublishers(); 
+                Iterator iter = publisheridtonamemap.keySet().iterator(); 
+                while(iter.hasNext()){
+                  Integer next = (Integer) iter.next(); %>
+           <option  value="<%= next %>" 
+              <%    if(editca && usedpublishers.contains(next))
+                      out.write(" selected ");
+                  %>>
+              <%= publisheridtonamemap.get(next) %>         
+           </option>  
+              <% } %>
+        </select>
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLPERIOD") %>

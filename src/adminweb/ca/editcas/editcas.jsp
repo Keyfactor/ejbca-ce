@@ -525,37 +525,38 @@
                 cmsactive = ExtendedCAServiceInfo.STATUS_ACTIVE; 
              
              if(crlperiod != 0 && !illegaldnoraltname){
-               if(request.getParameter(BUTTON_CREATE) != null){           
+            	 
+             if(request.getParameter(BUTTON_CREATE) != null){           
       
-		 // Create and active OSCP CA Service.
-		 ArrayList extendedcaservices = new ArrayList();
-		 String keySpec = signkeyspec;
-		 String keyAlg = signkeytype;
-		 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
-			 // Never use larger keys than 2048 bit RSA for OCSP, CMS and XKMS signing
-			 int len = Integer.parseInt(keySpec);
-			 if (len > 2048) {
-				 keySpec = "2048";				 
-			 }
-		 }
-		 extendedcaservices.add(
-		             new OCSPCAServiceInfo(ocspactive,
-						  "CN=OCSPSignerCertificate, " + subjectdn,
-			     		  "",
-			     		  keySpec,
-						  keyAlg));
-		 extendedcaservices.add(
-	             new XKMSCAServiceInfo(xkmsactive,
-					  "CN=XKMSCertificate, " + subjectdn,
-		     		  "",
-		     		  keySpec,
-					  keyAlg));
-		 extendedcaservices.add(
-	             new CmsCAServiceInfo(cmsactive,
-					  "CN=CMSCertificate, " + subjectdn,
-		     		  "",
-		     		  keySpec,
-					  keyAlg));
+				 // Create and active OSCP CA Service.
+				 ArrayList extendedcaservices = new ArrayList();
+				 String keySpec = signkeyspec;
+				 String keyAlg = signkeytype;
+				 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+					 // Never use larger keys than 2048 bit RSA for OCSP, CMS and XKMS signing
+					 int len = Integer.parseInt(keySpec);
+					 if (len > 2048) {
+						 keySpec = "2048";				 
+					 }
+				 }
+				 extendedcaservices.add(
+				             new OCSPCAServiceInfo(ocspactive,
+								  "CN=OCSPSignerCertificate, " + subjectdn,
+					     		  "",
+					     		  keySpec,
+								  keyAlg));
+				 extendedcaservices.add(
+			             new XKMSCAServiceInfo(xkmsactive,
+							  "CN=XKMSCertificate, " + subjectdn,
+				     		  "",
+				     		  keySpec,
+							  keyAlg));
+				 extendedcaservices.add(
+			             new CmsCAServiceInfo(cmsactive,
+							  "CN=CMSCertificate, " + subjectdn,
+				     		  "",
+				     		  keySpec,
+							  keyAlg));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
@@ -589,35 +590,35 @@
                
          if(request.getParameter(BUTTON_MAKEREQUEST) != null){
                  caid = CertTools.stringToBCDNString(subjectdn).hashCode();  
-		 // Create and OSCP CA Service.
-		 ArrayList extendedcaservices = new ArrayList();
-		 String keySpec = signkeyspec;
-		 String keyAlg = signkeytype;
-		 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
-			 // Never use larger keys than 2048 bit RSA for OCSP, CMS and XKMS signing
-			 int len = Integer.parseInt(keySpec);
-			 if (len > 2048) {
-				 keySpec = "2048";				 
-			 }
-		 }
-		 extendedcaservices.add(
-		             new OCSPCAServiceInfo(ocspactive,
-						  "CN=OCSPSignerCertificate, " + subjectdn,
-			     		          "",
-						  keySpec,
-						  keyAlg));
-		 extendedcaservices.add(
-	             new XKMSCAServiceInfo(xkmsactive,
-					  "CN=XKMSCertificate, " + subjectdn,
-		     		          "",
-					  keySpec,
-					  keyAlg));
-		 extendedcaservices.add(
-	             new CmsCAServiceInfo(cmsactive,
-					  "CN=CMSCertificate, " + subjectdn,
-		     		          "",
-					  keySpec,
-					  keyAlg));
+				 // Create and OSCP CA Service.
+				 ArrayList extendedcaservices = new ArrayList();
+				 String keySpec = signkeyspec;
+				 String keyAlg = signkeytype;
+				 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+					 // Never use larger keys than 2048 bit RSA for OCSP, CMS and XKMS signing
+					 int len = Integer.parseInt(keySpec);
+					 if (len > 2048) {
+						 keySpec = "2048";				 
+					 }
+				 }
+				 extendedcaservices.add(
+				             new OCSPCAServiceInfo(ocspactive,
+								  "CN=OCSPSignerCertificate, " + subjectdn,
+					     		          "",
+								  keySpec,
+								  keyAlg));
+				 extendedcaservices.add(
+			             new XKMSCAServiceInfo(xkmsactive,
+							  "CN=XKMSCertificate, " + subjectdn,
+				     		          "",
+							  keySpec,
+							  keyAlg));
+				 extendedcaservices.add(
+			             new CmsCAServiceInfo(cmsactive,
+							  "CN=CMSCertificate, " + subjectdn,
+				     		          "",
+							  keySpec,
+							  keyAlg));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
@@ -750,25 +751,53 @@
             
 
          if(caid != 0  && catype !=0 ){
-           if(catype == CAInfo.CATYPE_X509){
-              // Edit X509 CA data              
-              
-              int crlperiod = 0;
-              int crlIssueInterval = 0;
-              int crlOverlapTime = 0;
-              int deltacrlperiod = 0;
-              if(request.getParameter(TEXTFIELD_CRLPERIOD) != null){
-                crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
-                crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
-                crlOverlapTime = Integer.parseInt(request.getParameter(TEXTFIELD_CRLOVERLAPTIME));
+        	 
+        	 // First common info for both X509 CAs and CVC CAs
+        	CAInfo cainfo = null;
+            int crlperiod = 0;
+            int crlIssueInterval = 0;
+            int crlOverlapTime = 0;
+            int deltacrlperiod = 0;
+            if(request.getParameter(TEXTFIELD_CRLPERIOD) != null){
+              crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
+              crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
+              crlOverlapTime = Integer.parseInt(request.getParameter(TEXTFIELD_CRLOVERLAPTIME));
+            }
+            if(request.getParameter(TEXTFIELD_DELTACRLPERIOD) != null){
+                deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));
+            }
+            boolean finishuser = false;
+            String value = request.getParameter(CHECKBOX_FINISHUSER);
+            if(value != null)
+              finishuser = value.equals(CHECKBOX_VALUE);         
+            String[] values = request.getParameterValues(SELECT_APPROVALSETTINGS);
+            ArrayList approvalsettings = new ArrayList(); 
+            if(values != null){
+              for(int i=0; i < values.length; i++){
+           	   approvalsettings.add(new Integer(values[i]));
               }
-              if(request.getParameter(TEXTFIELD_DELTACRLPERIOD) != null){
-                  deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));
-              }
-              
+            }
+            
+            value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
+            int numofreqapprovals = 1;
+            if(value != null){
+           	 numofreqapprovals = Integer.parseInt(value);
+            }
+            
+            values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
+            ArrayList crlpublishers = new ArrayList(); 
+            if(values != null){
+                for(int i=0; i < values.length; i++){
+                   crlpublishers.add(new Integer(values[i]));
+                }
+             }
+             
+            // Info specific for X509 CA
+            if(catype == CAInfo.CATYPE_X509){
+                                          
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
-              String value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
+              value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
               if(value != null){
                  useauthoritykeyidentifier = value.equals(CHECKBOX_VALUE);                 
                  value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL); 
@@ -803,11 +832,6 @@
 			 	cadefinedfreshestcrl = request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL);
 			 }
               
-             boolean finishuser = false;
-             value = request.getParameter(CHECKBOX_FINISHUSER);
-             if(value != null)
-               finishuser = value.equals(CHECKBOX_VALUE);         
-
              boolean  useutf8policytext = false;
              value = request.getParameter(CHECKBOX_USEUTF8POLICYTEXT);
              if(value != null) {
@@ -835,28 +859,6 @@
                  crldistpointoncrlcritical = value.equals(CHECKBOX_VALUE);
              }
 
-             String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
-             ArrayList crlpublishers = new ArrayList(); 
-             if(values != null){
-                 for(int i=0; i < values.length; i++){
-                    crlpublishers.add(new Integer(values[i]));
-                 }
-              }
-             
-             values = request.getParameterValues(SELECT_APPROVALSETTINGS);
-             ArrayList approvalsettings = new ArrayList(); 
-             if(values != null){
-               for(int i=0; i < values.length; i++){
-            	   approvalsettings.add(new Integer(values[i]));
-               }
-             }
-             
-             value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
-             int numofreqapprovals = 1;
-             if(value != null){
-            	 numofreqapprovals = Integer.parseInt(value);
-             }
-              
               // Create extended CA Service updatedata.
               int active = ExtendedCAServiceInfo.STATUS_INACTIVE;
               value = request.getParameter(CHECKBOX_ACTIVATEOCSPSERVICE);
@@ -900,7 +902,7 @@
                  includefile="choosecapage.jspf"; 
                }
 
-	      ArrayList extendedcaservices = new ArrayList();
+	      	  ArrayList extendedcaservices = new ArrayList();
               extendedcaservices.add(
 		             new OCSPCAServiceInfo(active, renew));    
               extendedcaservices.add(
@@ -908,8 +910,7 @@
               extendedcaservices.add(
   		             new CmsCAServiceInfo(cmsactive, cmsrenew)); 
 
-             if(crlperiod != 0){
-               X509CAInfo x509cainfo = new X509CAInfo(caid, validity,
+               cainfo = new X509CAInfo(caid, validity,
                                                       catoken, description, 
                                                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                                                       useauthoritykeyidentifier, 
@@ -928,14 +929,31 @@
                                                       usecrldistpointoncrl,
                                                       crldistpointoncrlcritical,
                                                       true);
-                 
+             } // if(catype == CAInfo.CATYPE_X509)
+            	 
+             // Info specific for CVC CA
+             if(catype == CAInfo.CATYPE_CVC) {
+                 // Edit CVC CA data                            
+					// A CVC CA does not have any of the external services OCSP, XKMS, CMS
+            		ArrayList extendedcaservices = new ArrayList();
+
+                   // Create the CAInfo to be used for either generating the whole CA or making a request
+                   cainfo = new CVCCAInfo(caid, validity, 
+                           catoken, description,
+                           crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+                           finishuser, extendedcaservices,
+                           approvalsettings,
+                           numofreqapprovals,
+                           true);
+             } // if(catype == CAInfo.CATYPE_CVC)
+            	 
                // BUTTON_RECEIVEREQUEST when action is EDIT_CA is actually when you receive a certificate from an external CA as a response from an external CA 
                if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){  
              	  // Receive certificate response does not save any CA edits before receiving the response, because we need to CA token active
                    filemode = RECIEVERESPONSEMODE;
                    includefile="recievefile.jspf"; 
                } else {
-                   cadatahandler.editCA((CAInfo) x509cainfo);            	   
+                   cadatahandler.editCA(cainfo);            	   
                }
 
                if(request.getParameter(BUTTON_SAVE) != null){
@@ -958,8 +976,6 @@
                  }  
                }
                 
-
-             }  
              if(request.getParameter(BUTTON_REVOKECA) != null){
                  int revokereason = Integer.parseInt(request.getParameter(SELECT_REVOKEREASONS));
                  cadatahandler.revokeCA(caid, revokereason);                   
@@ -970,7 +986,6 @@
                  capublished = true;             
                  includefile="choosecapage.jspf"; 
              }
-           } 
          } 
        } 
        if(request.getParameter(BUTTON_CANCEL) != null){
