@@ -1015,11 +1015,15 @@ function checkallfields(){
       </td>
     </tr>
         <% } %>   
-       <% if(!editca && !processrequest){ %>
+       <% if(!processrequest){ 
+            String disabledStr = "disabled";
+            if (editca) {
+              disabledStr = "";
+            } %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             
-        <input type="submit" disabled name="<%= BUTTON_MAKEREQUEST %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("MAKEREQUEST") %>" >
+        <input type="submit" <%=disabledStr%> name="<%= BUTTON_MAKEREQUEST %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("MAKEREQUEST") %>" >
       </td>
     </tr>
         <% } %>   

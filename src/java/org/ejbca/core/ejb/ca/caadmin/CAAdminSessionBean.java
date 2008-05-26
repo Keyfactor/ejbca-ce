@@ -883,31 +883,28 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try{
             cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
+            String caname = ca.getName();
             
             try{
-                // if issuer is insystem CA or selfsigned, then generate new certificate.
-                if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA){
-                    ca.setRequestCertificateChain(createCertChain(cachain));
-                    String signAlg = "SHA1WithRSA"; // Defaulf algorithm
-                    CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
-                    if (tinfo != null) {
-                    	signAlg = tinfo.getSignatureAlgorithm();
-                    }
-                    returnval = ca.createRequest(null, signAlg);
-                    
-                    // Set statuses.
-                    if(setstatustowaiting){
-                        cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
-                        ca.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
-                    }
-                    
-                    cadata.setCA(ca);
-                }else{
-                    // Cannot create certificate request for internal CA
-            		String msg = intres.getLocalizedMessage("caadmin.errorcertreqinternalca", new Integer(caid));            	
-                    getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg);
-                    throw new EJBException(new EjbcaException(msg));
-                }
+            	// Generate new certificate request.
+            	ca.setRequestCertificateChain(createCertChain(cachain));
+            	String signAlg = "SHA1WithRSA"; // Defaulf algorithm
+            	CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
+            	if (tinfo != null) {
+            		signAlg = tinfo.getSignatureAlgorithm();
+            	}
+            	returnval = ca.createRequest(null, signAlg);
+
+            	// Set statuses if it should be set.
+            	if(setstatustowaiting){
+            		cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+            		ca.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+            	}
+
+            	cadata.setCA(ca);
+            	// Log information about the event
+            	String msg = intres.getLocalizedMessage("caadmin.certreqcreated", caname, new Integer(caid));            	
+            	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
             }catch(CATokenOfflineException e) {                
         		String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));            	
                 getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
@@ -2350,40 +2347,51 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	if(calist.size() == 0){
     		// only one root cert, no certchain
     		returnval.add(rootcert);
-    	}else{
-    		try {
-    			HashSet trustancors = new HashSet();
-    	    	TrustAnchor trustanchor = null;
-    			trustanchor = new TrustAnchor((X509Certificate)rootcert, null);
-    			trustancors.add(trustanchor);
+    	} else {
+    		// We need a bit special handling for CV certificates because those can not be handled using a PKIX CertPathValidator
+    		Certificate test = (Certificate)calist.get(0);
+    		if (test.getType().equals("CVC")) {
+    			if (calist.size() == 1) {
+    				returnval.add(test);
+    			} else {
+    				throw new CertPathValidatorException("CVC certificate chain can not be of length longer than two.");
+    			}
+    		} else {
+    			// Normal X509 certificates
+        		try {
+        			HashSet trustancors = new HashSet();
+        	    	TrustAnchor trustanchor = null;
+        			trustanchor = new TrustAnchor((X509Certificate)rootcert, null);
+        			trustancors.add(trustanchor);
 
-    			// Create the parameters for the validator
-    			PKIXParameters params = new PKIXParameters(trustancors);
+        			// Create the parameters for the validator
+        			PKIXParameters params = new PKIXParameters(trustancors);
 
-    			// Disable CRL checking since we are not supplying any CRLs
-    			params.setRevocationEnabled(false);
-    			params.setDate( new Date() );
+        			// Disable CRL checking since we are not supplying any CRLs
+        			params.setRevocationEnabled(false);
+        			params.setDate( new Date() );
 
-    			// Create the validator and validate the path
-    			CertPathValidator certPathValidator
-    			= CertPathValidator.getInstance(CertPathValidator.getDefaultType(), "BC");
-    			CertificateFactory fact = CertTools.getCertificateFactory();
-    			CertPath certpath = fact.generateCertPath(calist);
+        			// Create the validator and validate the path
+        			CertPathValidator certPathValidator
+        			= CertPathValidator.getInstance(CertPathValidator.getDefaultType(), "BC");
+        			CertificateFactory fact = CertTools.getCertificateFactory();
+        			CertPath certpath = fact.generateCertPath(calist);
 
-    			CertPathValidatorResult result = certPathValidator.validate(certpath, params);
+        			CertPathValidatorResult result = certPathValidator.validate(certpath, params);
 
-    			// Get the certificates validate in the path
-    			PKIXCertPathValidatorResult pkixResult = (PKIXCertPathValidatorResult)result;
-    			returnval.addAll(certpath.getCertificates());
+        			// Get the certificates validate in the path
+        			PKIXCertPathValidatorResult pkixResult = (PKIXCertPathValidatorResult)result;
+        			returnval.addAll(certpath.getCertificates());
 
-    			// Get the CA used to validate this path
-    			TrustAnchor ta = pkixResult.getTrustAnchor();
-    			X509Certificate cert = ta.getTrustedCert();
-    			returnval.add(cert);
-    		} catch (CertPathValidatorException e) {
-    			throw e;
-    		}  catch(Exception e){
-    			throw new EJBException(e);
+        			// Get the CA used to validate this path
+        			TrustAnchor ta = pkixResult.getTrustAnchor();
+        			X509Certificate cert = ta.getTrustedCert();
+        			returnval.add(cert);
+        		} catch (CertPathValidatorException e) {
+        			throw e;
+        		}  catch(Exception e){
+        			throw new EJBException(e);
+        		}			
     		}
     	}
     	return returnval;

@@ -5,7 +5,7 @@
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy " %>
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy" %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -699,6 +699,7 @@
           request.getParameter(BUTTON_RENEWCA)  != null ||
           request.getParameter(BUTTON_REVOKECA)  != null ||
           request.getParameter(BUTTON_PUBLISHCA) != null ||
+          request.getParameter(BUTTON_MAKEREQUEST) != null ||
           request.getParameter(BUTTON_REVOKERENEWOCSPCERTIFICATE) != null ||
           request.getParameter(BUTTON_REVOKERENEWCMSCERTIFICATE) != null ||
           request.getParameter(BUTTON_REVOKERENEWXKMSCERTIFICATE) != null){
@@ -986,8 +987,25 @@
                  capublished = true;             
                  includefile="choosecapage.jspf"; 
              }
+             // Make Request Button Pushed down, this will create a certificate request but not do anything
+             // else with the CA. For creatgin cross-certificate requests of similar.
+             if(request.getParameter(BUTTON_MAKEREQUEST) != null){
+               try{
+                 caid = Integer.parseInt(request.getParameter(HIDDEN_CAID));
+                 caname = request.getParameter(HIDDEN_CANAME);
+                 Collection certchain = cabean.getCAInfo(caid).getCertificateChain();
+                 byte[] certreq = cadatahandler.makeRequest(caid, certchain, false);
+                 cabean.saveRequestData(certreq);     
+                 filemode = CERTREQGENMODE;
+                 includefile = "displayresult.jspf";
+               } catch(Exception e){   
+                 includefile="choosecapage.jspf";
+                 errorrecievingfile = true; 
+               } 
+             }             
          } 
-       } 
+       }
+      
        if(request.getParameter(BUTTON_CANCEL) != null){
          // Don't save changes.
          includefile="choosecapage.jspf"; 
