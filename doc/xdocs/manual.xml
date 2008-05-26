@@ -33,6 +33,28 @@ bin/ejbca.sh ra adduser
 etc etc
 </source>
 </subsection>
+<subsection name="Backup and restore of EJBCA">
+<p>
+To backup an EJBCA installation you need to:
+<ul>
+<li>Backup the database</li>
+<li>Backup all $EJBCA_HOME/conf/**</li>
+<li>Backup all $EJBCA_HOME/p12/**</li>
+</ul>
+
+To restore:
+<ul>
+<li>Restore database</li>
+<lI>Unzip new EJBCA</lI>
+<li>Restore conf and p12</li>
+<li>Run "ant deploy" to configure JBoss and deploy EJBCA. If you are using another application server, consult the Installation doc for deployment.</li>
+</ul>
+</p>
+<p>
+If you are using soft keystores for the CAs this is all that is needed. If you are using an HSM you need to backup your keys in the 
+HSM as well. How this backup and restore is done depends on the HSM you are using. Consult the documentation for your HSM.
+</p>
+</subsection>
 <subsection name="SSL certificate expire">
 <p>
 The SSL certificate used for SSL in JBoss (SSL is used for the admin-GUI) is stored in APPSRV_HOME/server/default/conf/keystore.jks.
