@@ -109,8 +109,11 @@ can be used together with PKI to even further improve your PKI experience.
     </ul>
     </p>
     <p>
-	GameSAFE was successfully used together with EJBCA for the ZhuHai Local
+	GemSAFE was successfully used together with EJBCA for the ZhuHai Local
 	Taxation Bureau project, listed in the <a href="installations.html">reference installations</a> section.
+    </p>
+    <p>
+    There is a howto for using GemSAFE with EJBCA in the <a href="howto.html">Howto</a> section.
     </p>
 </subsection>
 </section>
