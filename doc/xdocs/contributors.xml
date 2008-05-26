@@ -81,6 +81,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Miguel Angel Tormo Alfaro, matormo(at)edicom.es, ETSI retention period in QC certificate extension.</li>
 <li>Damir Farazetdinov, fdamirv(at)mail.ru, Found bug with duplicate error codes in OCSPUnidClient.</li>
 <li>Liam Kian Shin, kianshin.lim(at)gemalto.com, Howto for using GEMSafe with EJBCA.</li>
+<li>Koichi Sugimoto, ko-sugimoto(at)users.sf.net, initial patch for creating certificate request from any CA.</li>
 </ul>
     </section>
   </body>
