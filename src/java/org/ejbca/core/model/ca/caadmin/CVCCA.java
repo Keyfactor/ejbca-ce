@@ -40,6 +40,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCertificate;
@@ -211,12 +212,20 @@ public class CVCCA extends CA implements Serializable {
             }
         }
 
+        AccessRightEnum accessRights = AccessRightEnum.READ_ACCESS_NONE;
+        int rights = certProfile.getCVCAccessRights();
+        switch (rights) {
+	        case CertificateProfile.CVC_ACCESS_DG3: accessRights = AccessRightEnum.READ_ACCESS_DG3; break;
+	        case CertificateProfile.CVC_ACCESS_DG4: accessRights = AccessRightEnum.READ_ACCESS_DG4; break;
+	        case CertificateProfile.CVC_ACCESS_DG3DG4: accessRights = AccessRightEnum.READ_ACCESS_DG3_AND_DG4; break;
+	        case CertificateProfile.CVC_ACCESS_NONE: accessRights = AccessRightEnum.READ_ACCESS_NONE; break;
+        }
         // Generate the CVC certificate using Keijos library
         String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
         log.debug("Creating CV certificate with algorithm "+sigAlg+", public key algorithm from CVC request must match this algorithm.");
         log.debug("CARef: "+caRef.getValue()+"; holderRef: "+holderRef.getValue());
         CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
-        		sigAlg, caRef, holderRef, authRole, val.getNotBefore(), val.getNotAfter(), getCAToken().getProvider());
+        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), getCAToken().getProvider());
 
         if (log.isDebugEnabled()) {
             log.debug("Certificate: "+cvc.toString());

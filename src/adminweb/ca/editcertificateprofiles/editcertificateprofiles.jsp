@@ -101,6 +101,7 @@
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
   static final String SELECT_EXTENDEDKEYUSAGE                     = "selectextendedkeyusage";
+  static final String SELECT_CVCACCESSRIGHTS                      = "selectcvcaccessrights";
   static final String SELECT_TYPE                                 = "selecttype";
   static final String SELECT_AVAILABLECAS                         = "selectavailablecas";
   static final String SELECT_AVAILABLEPUBLISHERS                  = "selectavailablepublishers";
@@ -496,6 +497,13 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                 certificateprofiledata.setExtendedKeyUsageCritical(false); 
                 certificateprofiledata.setExtendedKeyUsage(new ArrayList());        
               }
+
+              value = request.getParameter(SELECT_CVCACCESSRIGHTS);
+              int ar  = CertificateProfile.CVC_ACCESS_DG3DG4;
+              if(value != null){
+                ar = Integer.parseInt(value);
+              }
+              certificateprofiledata.setCVCAccessRights(ar);    
 
               value = request.getParameter(SELECT_TYPE);
               int type  = CertificateProfile.TYPE_ENDENTITY;

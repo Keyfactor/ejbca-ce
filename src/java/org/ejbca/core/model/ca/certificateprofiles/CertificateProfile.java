@@ -46,7 +46,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 27.0;
+    public static final float LATEST_VERSION = (float) 28.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -112,6 +112,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int TYPE_ROOTCA     = CertificateDataBean.CERTTYPE_ROOTCA;
     public static final int NUMBER_OF_TYPES = 3;
 
+    /** Determines the access rights in CV Certificates. CV Certificates is used by EU EAC ePassports and
+     * is issued by a CVC CA. DG3 is access to fingerprints and DG4 access to iris.
+     */
+    public static final int CVC_ACCESS_NONE = 0;
+    public static final int CVC_ACCESS_DG3 = 1;
+    public static final int CVC_ACCESS_DG4 = 2;
+    public static final int CVC_ACCESS_DG3DG4 = 3;
+    
     /** Supported certificate versions. */
     public static final String VERSION_X509V3 = "X509v3";
     public static final String CERTIFICATEPROFILENAME =  "CUSTOM";
@@ -202,6 +210,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCCUSTOMSTRINGOID              = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT             = "qccustomstringtext";
     protected static final String USESUBJECTDIRATTRIBUTES        = "usesubjectdirattributes";
+    protected static final String CVCACCESSRIGHTS                = "cvcaccessrights";
 
     /** Constants holding the use properties for certificate extensions */
     protected static final HashMap useStandardCertificateExtensions = new HashMap();
@@ -336,6 +345,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setUseCRLDistributionPointOnCRL(false);
       setUseOcspNoCheck(false);
       setUseFreshestCRL(false);
+      
+      // Default to have access to fingerprint and iris
+      setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
       
       setUsedCertificateExtensions(new ArrayList());
       
@@ -987,6 +999,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseSubjectDirAttributes(){ return ((Boolean) data.get(USESUBJECTDIRATTRIBUTES)).booleanValue(); }
     public void setUseSubjectDirAttributes(boolean use) { data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(use));}
 
+    public int getCVCAccessRights(){ return ((Integer) data.get(CVCACCESSRIGHTS)).intValue(); }
+    public void setCVCAccessRights(int access) { data.put(CVCACCESSRIGHTS, Integer.valueOf(access));}
+
     /**
      * Method returning a list of (Integers) of ids of
      * used CUSTOM certificate extensions. I.e. those custom certificate extensions selected for 
@@ -1210,6 +1225,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 if (data.get(USEQCETSIRETENTIONPERIOD) == null) {
                 	setUseQCEtsiRetentionPeriod(false); // v27
                 	setQCEtsiRetentionPeriod(0);
+                }
+                
+                if (data.get(CVCACCESSRIGHTS) == null) {
+                	setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4); // v28
                 } 
             }
             data.put(VERSION, new Float(LATEST_VERSION));

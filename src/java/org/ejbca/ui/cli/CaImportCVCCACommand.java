@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCertificate;
@@ -103,7 +104,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	            Calendar notAfter = Calendar.getInstance();
 	            notAfter.add(Calendar.DAY_OF_MONTH, valdays);
 	            CVCertificate cvc = CertificateGenerator.createCertificate(pubKey, privKey, 
-	            		sigAlg, caRef, holderRef, authRole, notBefore, notAfter.getTime(), "BC");
+	            		sigAlg, caRef, holderRef, authRole, AccessRightEnum.READ_ACCESS_DG3_AND_DG4, notBefore, notAfter.getTime(), "BC");
 	            cacert = new CardVerifiableCertificate(cvc);
 	        } else {
 	        	getOutputStream().println("Using passed in self signed certificate.");

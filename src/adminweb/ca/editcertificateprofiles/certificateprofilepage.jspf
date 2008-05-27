@@ -1089,6 +1089,32 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("CVCACCESSRIGHTS") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_CVCACCESSRIGHTS%>" size="1" >
+           <%  int ar = certificateprofiledata.getCVCAccessRights(); %>
+           <option  value="<%=CertificateProfile.CVC_ACCESS_NONE%>" 
+                 <% if (ar == CertificateProfile.CVC_ACCESS_NONE ) out.write(" selected "); %>> 
+                <%= ejbcawebbean.getText("CVCACCESSNONE") %>
+           </option>
+           <option  value="<%=CertificateProfile.CVC_ACCESS_DG3%>" 
+                 <% if (ar == CertificateProfile.CVC_ACCESS_DG3 ) out.write(" selected "); %>> 
+                <%= ejbcawebbean.getText("CVCACCESSDG3") %>
+           </option>
+           <option  value="<%=CertificateProfile.CVC_ACCESS_DG4%>" 
+                 <% if (ar == CertificateProfile.CVC_ACCESS_DG4 ) out.write(" selected "); %>> 
+                <%= ejbcawebbean.getText("CVCACCESSDG4") %>
+           </option>
+           <option  value="<%=CertificateProfile.CVC_ACCESS_DG3DG4%>" 
+                 <% if (ar == CertificateProfile.CVC_ACCESS_DG3DG4 ) out.write(" selected "); %>> 
+                <%= ejbcawebbean.getText("CVCACCESSDG3DG4") %>
+           </option>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEMSTEMPLATE") %> 
       </td>
