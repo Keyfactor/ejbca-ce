@@ -508,7 +508,7 @@
         -->
 
         <cmp-resource>
-            <jndi-name>jdbc/EjbcaDS</jndi-name>
+            <jndi-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</jndi-name>
 
         </cmp-resource>
 

@@ -481,13 +481,17 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		-->
 		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false">
 		    <fileset dir="${deploy.src}/${appserver.type}/">
-		        <!-- Sun and oracle uses some xml files -->
+		        <!-- Oracle uses some xml files -->
 		        <include name="*.xml"/>
 		        <!-- Websphere uses xmi, xml, properties and backends -->
 		        <include name="*.xmi"/>
 		        <include name="ejb-jar.xml"/>
 		        <include name="*.properties"/>
 		        <include name="backends/**/*"/>
+		    </fileset> 
+		    <fileset dir="${deploy.src}/sun/">
+		        <!-- Glassfish/sun uses some xml files, appserver is called glassfish, but the directory is sun... -->
+		        <include name="sun-ejb*.xml"/>
 		    </fileset> 
 			<filterchain>
 			<tokenfilter>			    
