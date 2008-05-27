@@ -98,7 +98,7 @@ import org.ejbca.util.CertTools;
  *   type="Session"
  *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
  *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
- *   link="LogSession"
+ *   link="KeyRecoverySession"
  *
  * @ejb.finder
  *   description="findByApprovalId"
