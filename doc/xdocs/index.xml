@@ -126,6 +126,10 @@ If you want to contribute to EJBCA, please see <i><a href="donations.html">Contr
     EJBCA 3.5 contains generic PKCS#11 interface to HSMs, supporting among others the Utimaco CryptoServer. 
     This development was sponsored by <a href="http://www.utimaco.com/">Utimaco</a>.
     </p>
+    <p>
+    EJBCA 3.7 contains support for CVC CAs used for EU EAC ePassports. 
+    This development was sponsored and contributed by the <a href="http://www.polisen.se//">National Swedish Police Board</a>.
+    </p>
 </section>
 </body>
 </document>

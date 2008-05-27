@@ -82,6 +82,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Damir Farazetdinov, fdamirv(at)mail.ru, Found bug with duplicate error codes in OCSPUnidClient.</li>
 <li>Liam Kian Shin, kianshin.lim(at)gemalto.com, Howto for using GEMSafe with EJBCA.</li>
 <li>Koichi Sugimoto, ko-sugimoto(at)users.sf.net, initial patch for creating certificate request from any CA.</li>
+<li>Keijo Kurkinen, National Swedish Police Board, keijo.kurkinen(at)innograte.com, Cert-CVC library for handling CV certificates for EU EAC ePassports.</li>
 </ul>
     </section>
   </body>
