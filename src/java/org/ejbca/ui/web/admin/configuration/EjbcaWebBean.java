@@ -93,6 +93,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     private WebLanguages                   adminsweblanguage;
     private String                         usercommonname = "";
     private String                         certificatefingerprint;
+    /** Certificates for administrator logging into admin-GUI */
     private X509Certificate[]              certificates;
     private InformationMemory              informationmemory;
     private boolean                        initialized=false;
