@@ -211,7 +211,6 @@ public abstract class CADataBean extends BaseEntityBean {
 
     /** 
      * Method that upgrades a CA, if needed.
-     * @return CA
      * @throws java.io.UnsupportedEncodingException
      * @throws IllegalKeyStoreException 
      * @ejb.interface-method
