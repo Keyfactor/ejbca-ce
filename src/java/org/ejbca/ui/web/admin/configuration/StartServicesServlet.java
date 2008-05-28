@@ -38,8 +38,12 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceSessionLocal;
 import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
@@ -361,6 +365,26 @@ public class StartServicesServlet extends HttpServlet {
         	casession = casessionhome.create();
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
         	casession.initializeAndUpgradeCAs(admin);
+        } catch (Exception e) {
+        	log.error("Error creating CAAdminSession: ", e);
+        }
+        // Load Certificate profiles at startup to upgrade them if needed
+        log.debug(">init loading CertificateProfile to check for upgrades");
+        try {
+        	ICertificateStoreSessionLocalHome certsessionhome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+        	ICertificateStoreSessionLocal certsession = certsessionhome.create();
+        	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
+        	certsession.initializeAndUpgradeProfiles(admin);
+        } catch (Exception e) {
+        	log.error("Error creating CAAdminSession: ", e);
+        }
+        // Load EndEntity profiles at startup to upgrade them if needed
+        log.debug(">init loading EndEntityProfile to check for upgrades");
+        try {
+        	IRaAdminSessionLocalHome rasessionhome = (IRaAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
+        	IRaAdminSessionLocal rasession = rasessionhome.create();
+        	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
+        	rasession.initializeAndUpgradeProfiles(admin);
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }

@@ -1385,6 +1385,31 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	return retval;
     }
     
+    /**
+     * A method designed to be called at startuptime to (possibly) upgrade certificate profiles.
+     * This method will read all Certificate Profiles and as a side-effect upgrade them if the version if changed for upgrade.
+     * Can have a side-effect of upgrading a profile, therefore the Required transaction setting.
+     * 
+     * @param admin administrator calling the method
+     * 
+     * @ejb.transaction type="Required"
+     * @ejb.interface-method
+     */
+    public void initializeAndUpgradeProfiles(Admin admin) {
+    	try {
+    		Collection result = certprofilehome.findAll();
+    		Iterator iter = result.iterator();
+    		while(iter.hasNext()){
+    			CertificateProfileDataLocal pdata = (CertificateProfileDataLocal)iter.next();
+    			String name = pdata.getCertificateProfileName();
+    			pdata.upgradeProfile();
+    			log.info("Loaded certificate profile: "+name);
+    		}
+    	} catch (FinderException e) {
+    		log.error("FinderException trying to load profiles: ", e);
+    	}
+    }
+
     
     /**
      * Adds a certificate profile to the database.

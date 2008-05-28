@@ -19,6 +19,7 @@ import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
+import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 
@@ -119,10 +120,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
      * @ejb.interface-method
      */
     public EndEntityProfile getProfile() {
-        EndEntityProfile returnval = new EndEntityProfile();
-        returnval.loadData(getData());
-
-        return returnval;
+    	return readAndUpgradeProfileInternal();
     }
 
     /**
@@ -133,6 +131,34 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
      */
     public void setProfile(EndEntityProfile profile) {
         setData((HashMap) profile.saveData());
+    }
+
+    /** 
+     * Method that upgrades a EndEntity Profile, if needed.
+     * @ejb.interface-method
+     */
+    public void upgradeProfile() {
+    	readAndUpgradeProfileInternal();
+    }
+
+    /** We have an internal method for this read operation with a side-effect. 
+     * This is because getCertificateProfile() is a read-only method, so the possible side-effect of upgrade will not happen,
+     * and therefore this internal method can be called from another non-read-only method, upgradeProfile().
+     * @return CertificateProfile
+     */
+    private EndEntityProfile readAndUpgradeProfileInternal() {
+        EndEntityProfile returnval = new EndEntityProfile();
+        HashMap data = getData();
+        // If EndEntityProfile-data is upgraded we want to save the new data, so we must get the old version before loading the data 
+        // and perhaps upgrading
+        float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
+        // Load the profile data, this will potentially upgrade the CertificateProfile
+        returnval.loadData(data);
+        if (Float.compare(oldversion, returnval.getVersion()) != 0) {
+        	// Save new data versions differ
+        	setProfile(returnval);
+        }
+        return returnval;
     }
 
     //

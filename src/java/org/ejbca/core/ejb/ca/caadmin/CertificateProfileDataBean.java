@@ -15,6 +15,8 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
+import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
@@ -117,24 +119,7 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public CertificateProfile getCertificateProfile() {
-        CertificateProfile returnval = null;
-
-        switch (((Integer) (getData().get(CertificateProfile.TYPE))).intValue()) {
-            case CertificateProfile.TYPE_ROOTCA:
-                returnval = new RootCACertificateProfile();
-
-                break;
-            case CertificateProfile.TYPE_SUBCA:
-                returnval = new CACertificateProfile();
-                break;
-            case CertificateProfile.TYPE_ENDENTITY:
-            default :
-                returnval = new EndUserCertificateProfile();
-        }
-
-        returnval.loadData(getData());
-
-        return returnval;
+    	return readAndUpgradeProfileInternal();
     }
 
     /**
@@ -146,6 +131,45 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
         setData((HashMap) profile.saveData());
     }
 
+    /** 
+     * Method that upgrades a Certificate Profile, if needed.
+     * @ejb.interface-method
+     */
+    public void upgradeProfile() {
+    	readAndUpgradeProfileInternal();
+    }
+
+    /** We have an internal method for this read operation with a side-effect. 
+     * This is because getCertificateProfile() is a read-only method, so the possible side-effect of upgrade will not happen,
+     * and therefore this internal method can be called from another non-read-only method, upgradeProfile().
+     * @return CertificateProfile
+     */
+    private CertificateProfile readAndUpgradeProfileInternal() {
+        CertificateProfile returnval = null;
+        switch (((Integer) (getData().get(CertificateProfile.TYPE))).intValue()) {
+            case CertificateProfile.TYPE_ROOTCA:
+                returnval = new RootCACertificateProfile();
+                break;
+            case CertificateProfile.TYPE_SUBCA:
+                returnval = new CACertificateProfile();
+                break;
+            case CertificateProfile.TYPE_ENDENTITY:
+            default :
+                returnval = new EndUserCertificateProfile();
+        }
+        HashMap data = getData();
+        // If CertificateProfile-data is upgraded we want to save the new data, so we must get the old version before loading the data 
+        // and perhaps upgrading
+        float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
+        // Load the profile data, this will potentially upgrade the CertificateProfile
+        returnval.loadData(data);
+        if (Float.compare(oldversion, returnval.getVersion()) != 0) {
+        	// Save new data versions differ
+        	setCertificateProfile(returnval);
+        }
+        return returnval;
+    }
+    
     //
     // Fields required by Container
     //

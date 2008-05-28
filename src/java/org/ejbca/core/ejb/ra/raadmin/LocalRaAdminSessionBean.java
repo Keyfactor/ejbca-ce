@@ -340,6 +340,31 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         debug("<saveDefaultAdminPreference()");
     } // saveDefaultAdminPreference
 
+    /**
+     * A method designed to be called at startuptime to (possibly) upgrade end entity profiles.
+     * This method will read all End Entity Profiles and as a side-effect upgrade them if the version if changed for upgrade.
+     * Can have a side-effect of upgrading a profile, therefore the Required transaction setting.
+     * 
+     * @param admin administrator calling the method
+     * 
+     * @ejb.transaction type="Required"
+     * @ejb.interface-method
+     */
+    public void initializeAndUpgradeProfiles(Admin admin) {
+    	try {
+    		Collection result = profiledatahome.findAll();
+    		Iterator iter = result.iterator();
+    		while(iter.hasNext()){
+    			EndEntityProfileDataLocal pdata = (EndEntityProfileDataLocal)iter.next();
+    			String name = pdata.getProfileName();
+    			pdata.upgradeProfile();
+    			log.info("Loaded end entity profile: "+name);
+    		}
+    	} catch (FinderException e) {
+    		log.error("FinderException trying to load profiles: ", e);
+    	}
+    }
+    
 	/**
 	  * Adds a profile to the database.
 	  *
