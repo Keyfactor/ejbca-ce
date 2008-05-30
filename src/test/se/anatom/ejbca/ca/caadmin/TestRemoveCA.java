@@ -21,6 +21,8 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 
@@ -34,6 +36,9 @@ public class TestRemoveCA extends TestCase {
 
     private ICAAdminSessionRemote cacheAdmin;
     private static ICAAdminSessionHome cacheHome;
+
+    private static ICertificateStoreSessionRemote cacheStore;
+    private static ICertificateStoreSessionHome cacheStoreHome;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -58,6 +63,15 @@ public class TestRemoveCA extends TestCase {
             }
 
             cacheAdmin = cacheHome.create();
+        }
+
+        if (cacheStore == null) {
+            if (cacheStoreHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
+                cacheStoreHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+            }
+            cacheStore = cacheStoreHome.create();
         }
 
         log.debug("<setUp()");
@@ -191,6 +205,11 @@ public class TestRemoveCA extends TestCase {
         }
         assertTrue("Removing CVC CA failed", ret);
 
+        try {
+            cacheStore.removeCertificateProfile(admin, "TESTCVCDV");
+        } catch (Exception e) {
+        	log.info("Remove profile failed: ", e);
+        }
         log.debug("<test07removeCVCCA()");
     }
 

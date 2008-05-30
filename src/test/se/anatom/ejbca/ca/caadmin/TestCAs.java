@@ -33,6 +33,9 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionSession;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -44,8 +47,11 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CertTools;
 
@@ -58,9 +64,10 @@ public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
 
     private static ICAAdminSessionRemote cacheAdmin;
-
-
     private static ICAAdminSessionHome cacheHome;
+
+    private static ICertificateStoreSessionRemote cacheStore;
+    private static ICertificateStoreSessionHome cacheStoreHome;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -80,13 +87,22 @@ public class TestCAs extends TestCase {
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("CAAdminSession");
+                Object obj1 = jndiContext.lookup(ICAAdminSessionHome.JNDI_NAME);
                 cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
             }
 
             cacheAdmin = cacheHome.create();
         }
-        
+
+        if (cacheStore == null) {
+            if (cacheStoreHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
+                cacheStoreHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+            }
+            cacheStore = cacheStoreHome.create();
+        }
+
         CertTools.installBCProvider();
 
         log.debug("<setUp()");
@@ -767,6 +783,9 @@ public class TestCAs extends TestCase {
         String dvfdn = "CN=00001,O=TESTDV-F,C=FI";
     	String dvfcaname = "TESTDV-F";
 
+    	CAInfo dvdcainfo = null; // to be used for renewal
+    	
+    	// Create a root CVCA
         try {
             authorizationsession.initialize(admin, rootcadn.hashCode());
 
@@ -806,7 +825,7 @@ public class TestCAs extends TestCase {
 				int len = modulus.bitLength();
 				assertEquals(1024, len);
 			} else {
-				assertTrue("Public key is not EC", false);
+				assertTrue("Public key is not RSA", false);
 			}
             assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
             // Check role
@@ -818,11 +837,17 @@ public class TestCAs extends TestCase {
             log.info("CA exists.");
         }
 
+        // Create a Sub DV domestic
         try {
             authorizationsession.initialize(admin, dvddn.hashCode());
+            // Create a Certificate profile
+            CertificateProfile profile = new CACertificateProfile();
+            profile.setType(CertificateProfile.TYPE_SUBCA);
+            cacheStore.addCertificateProfile(admin, "TESTCVCDV", profile);
+            int profileid = cacheStore.getCertificateProfileId(admin, "TESTCVCDV");
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(),
-            		SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
+            		profileid, 3650, 
                     null, // Expiretime 
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(),
                     null, catokeninfo, "JUnit CVC CA", 
@@ -841,14 +866,14 @@ public class TestCAs extends TestCase {
             
             cacheAdmin.createCA(admin, cvccainfo);
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, dvdcaname);
-            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+            dvdcainfo = cacheAdmin.getCAInfo(admin, dvdcaname);
+            assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
 
-            Certificate cert = (Certificate)info.getCertificateChain().iterator().next();
+            Certificate cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
             assertEquals("CVC", cert.getType());
             assertEquals(CertTools.getSubjectDN(cert), dvddn);
             assertEquals(CertTools.getIssuerDN(cert), rootcadn);
-            assertEquals(info.getSubjectDN(), dvddn);
+            assertEquals(dvdcainfo.getSubjectDN(), dvddn);
             PublicKey pk = cert.getPublicKey();
             if (pk instanceof RSAPublicKey) {
             	RSAPublicKey rsapk = (RSAPublicKey) pk;
@@ -857,18 +882,21 @@ public class TestCAs extends TestCase {
 				int len = modulus.bitLength();
 				assertEquals(1024, len);
 			} else {
-				assertTrue("Public key is not EC", false);
+				assertTrue("Public key is not RSA", false);
 			}
             assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
             assertEquals("DV_D", role);
+            String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
+            assertEquals("READ_ACCESS_DG3_AND_DG4", accessRights);
             ret = true;
         } catch (CAExistsException pee) {
             log.info("CA exists.");
         }
 
+        // Create a Sub DV foreign
         try {
             authorizationsession.initialize(admin, dvfdn.hashCode());
 
@@ -908,7 +936,7 @@ public class TestCAs extends TestCase {
 				int len = modulus.bitLength();
 				assertEquals(1024, len);
 			} else {
-				assertTrue("Public key is not EC", false);
+				assertTrue("Public key is not RSA", false);
 			}
             assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
             // Check role
@@ -919,8 +947,33 @@ public class TestCAs extends TestCase {
         } catch (CAExistsException pee) {
             log.info("CA exists.");
         }
-
         assertTrue("Creating CVC CAs failed", ret);
+
+        // Test to renew a CVC CA using a different access right
+        CertificateProfile profile = cacheStore.getCertificateProfile(admin, "TESTCVCDV");
+        profile.setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3);
+        cacheStore.changeCertificateProfile(admin, "TESTCVCDV", profile);
+
+        int caid = dvdcainfo.getCAId();
+        cacheAdmin.renewCA(admin, caid, null, null, false);
+        dvdcainfo = cacheAdmin.getCAInfo(admin, dvdcaname);
+        assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
+        Certificate cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
+        assertEquals("CVC", cert.getType());
+        assertEquals(CertTools.getSubjectDN(cert), dvddn);
+        assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+        assertEquals(dvdcainfo.getSubjectDN(), dvddn);
+        // It's not possible to check the time for renewal of a CVC CA since the resolution of validity is only days.
+        // The only way is to generate a certificate with different access rights in it
+        CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+        String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+        assertEquals("DV_D", role);
+        String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
+        assertEquals("READ_ACCESS_DG3", accessRights);
+
+
+        // Clean up by removing the certificate profile
+        
         log.debug("<test09AddCVCCA()");
     }
 
