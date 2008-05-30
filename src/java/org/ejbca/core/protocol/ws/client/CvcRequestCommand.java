@@ -52,11 +52,12 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	private static final int ARG_SUBJECTDN          = 3;
 	private static final int ARG_CA                 = 4;
 	private static final int ARG_SIGNALG            = 5;
-	private static final int ARG_ENDENTITYPROFILE   = 6;
-	private static final int ARG_CERTIFICATEPROFILE = 7;
-	private static final int ARG_GENREQ             = 8;
-	private static final int ARG_REQFILENAME        = 9;
-	private static final int ARG_CERTFILENAME       = 10;
+	private static final int ARG_KEYSPEC            = 6;
+	private static final int ARG_ENDENTITYPROFILE   = 7;
+	private static final int ARG_CERTIFICATEPROFILE = 8;
+	private static final int ARG_GENREQ             = 9;
+	private static final int ARG_REQFILENAME        = 10;
+	private static final int ARG_CERTFILENAME       = 11;
 
 	/**
 	 * Creates a new instance of CvcRequestCommand
@@ -76,7 +77,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {   
-			if(args.length < 11 || args.length > 11){
+			if(args.length < 12 || args.length > 12){
 				getPrintStream().println("Number of argument: "+args.length);
 				usage();
 				System.exit(-1);
@@ -93,6 +94,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			userdata.setTokenType("USERGENERATED");
 			userdata.setStatus(UserDataConstants.STATUS_NEW);
 			String signatureAlg = args[ARG_SIGNALG];
+			String keySpec = args[ARG_KEYSPEC];
 			boolean genrequest = args[ARG_GENREQ].equalsIgnoreCase("true");
 			String reqfilename = args[ARG_REQFILENAME];
 			String certfilename = args[ARG_CERTFILENAME];
@@ -112,7 +114,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					// Generate a request for 1024 bit RSA keys
 					CertTools.installBCProvider();
 					KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "BC");
-					keyGen.initialize(1024, new SecureRandom());
+					keyGen.initialize(Integer.valueOf(keySpec), new SecureRandom());
 					KeyPair keyPair = keyGen.generateKeyPair();
 					String dn = userdata.getSubjectDN();
 					String country = CertTools.getPartFromDN(dn, "C");
@@ -133,7 +135,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					fos = new FileOutputStream(reqfilename+".pkcs8");
 					fos.write(keyPair.getPrivate().getEncoded());
 					fos.close();					
-					getPrintStream().println("Wrote private key in "+keyPair.getPrivate().getFormat()+" format to to: "+reqfilename+".priv");
+					getPrintStream().println("Wrote private key in "+keyPair.getPrivate().getFormat()+" format to to: "+reqfilename+".pkcs8");
 				} else {
 					// Read request from file
 					getPrintStream().println("Reading request from filename: "+reqfilename);
@@ -172,7 +174,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 	protected void usage() {
 		getPrintStream().println("Command used to make a CVC request. If user does not exist a new will be created and if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <caname> <signatureAlg> <endentityprofilename> <certificateprofilename> <genreq=true|false> <reqfilename> <certfilename>\n\n");
+		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <caname> <signatureAlg> <keyspec (1024/2048)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <reqfilename> <certfilename>\n\n");
 		getPrintStream().println("SignatureAlg can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1");
 		getPrintStream().println("DN is of form \"C=SE, O=RPS, CN=00001\".");
 		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <reqfilename>, and the private key to <reqfilename>.pkcs8.");

@@ -1457,8 +1457,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                     }
                 }
 
-                // Sign Session bean is only able to issue certificates with a end entity type certificate profile.
-                if (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) {
+                // Sign Session bean is only able to issue certificates with a End Entity or SubCA type certificate profile.
+                if ( (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) && (certProfile.getType() != CertificateProfile.TYPE_SUBCA) ) {
                 	String msg = intres.getLocalizedMessage("signsession.errorcertprofiletype", new Integer(certProfile.getType()));
                     getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                     throw new EJBException(msg);

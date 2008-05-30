@@ -999,7 +999,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseSubjectDirAttributes(){ return ((Boolean) data.get(USESUBJECTDIRATTRIBUTES)).booleanValue(); }
     public void setUseSubjectDirAttributes(boolean use) { data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(use));}
 
-    public int getCVCAccessRights(){ return ((Integer) data.get(CVCACCESSRIGHTS)).intValue(); }
+    public int getCVCAccessRights(){ 
+    	if(data.get(CVCACCESSRIGHTS) == null){
+    		return CertificateProfile.CVC_ACCESS_NONE;
+    	}
+    	return ((Integer) data.get(CVCACCESSRIGHTS)).intValue(); 
+    }
     public void setCVCAccessRights(int access) { data.put(CVCACCESSRIGHTS, Integer.valueOf(access));}
 
     /**

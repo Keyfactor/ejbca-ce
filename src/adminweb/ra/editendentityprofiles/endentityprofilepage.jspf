@@ -3,7 +3,8 @@
   if(profiledata == null){
     profiledata = ejbcarabean.getEndEntityProfile(profile);
   }
-   TreeMap certificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
+   TreeMap eecertificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
+   TreeMap subcacertificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedSubCACertificateProfileNames();
    boolean used = false;
 
    String[] tokentexts = RAInterfaceBean.tokentexts;
@@ -742,10 +743,13 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_DEFAULTCERTPROFILE %>" size="1" >
-            <% Iterator iter = certificateprofilenames.keySet().iterator();
+            <% TreeMap allp =  new TreeMap();
+               allp.putAll(eecertificateprofilenames);
+               allp.putAll(subcacertificateprofilenames);
+               Iterator iter = allp.keySet().iterator();
                while(iter.hasNext()){
                  String nextprofilename = (String) iter.next();
-                 int certprofid = ((Integer) certificateprofilenames.get(nextprofilename)).intValue();%>
+                 int certprofid = ((Integer) allp.get(nextprofilename)).intValue();%>
            <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTCERTPROFILE ,0) != null)
                           if(profiledata.getValue(EndEntityProfile.DEFAULTCERTPROFILE ,0).equals(Integer.toString(certprofid)))
                             out.write(" selected "); %>
@@ -765,10 +769,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="70%"> 
         <select name="<%=SELECT_AVAILABLECERTPROFILES %>" size="7" multiple >
             <% String[] availablecertprofs = profiledata.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-               iter = certificateprofilenames.keySet().iterator();
+               // allp was created above for SELECT_DEFAULTCERTPROFILE
+               iter = allp.keySet().iterator();
                while(iter.hasNext()){
                  String nextprofilename = (String) iter.next();
-                 int certprofid = ((Integer) certificateprofilenames.get(nextprofilename)).intValue(); %>
+                 int certprofid = ((Integer) allp.get(nextprofilename)).intValue(); %>
            <option <% for(int j=0;j< availablecertprofs.length;j++){
                          if(availablecertprofs[j].equals(Integer.toString(certprofid)))
                             out.write(" selected "); 
