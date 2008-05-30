@@ -33,7 +33,6 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionSession;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -51,8 +50,12 @@ import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.cvc.AccessRightEnum;
+import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.cvc.CVCAuthenticatedRequest;
+import org.ejbca.cvc.CVCObject;
+import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.CertificateParser;
 import org.ejbca.util.CertTools;
 
 /**
@@ -212,6 +215,12 @@ public class TestCAs extends TestCase {
 			}
             assertTrue("CA is not valid for the specified duration.",cert.getNotAfter().after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && cert.getNotAfter().before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
             ret = true;
+            
+            // Test to generate a certificate request from the CA
+            Collection cachain = info.getCertificateChain();
+            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), cachain, false);
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TEST", msg.getRequestDN());
         } catch (CAExistsException pee) {
             log.info("CA exists.");
         }
@@ -784,6 +793,7 @@ public class TestCAs extends TestCase {
     	String dvfcaname = "TESTDV-F";
 
     	CAInfo dvdcainfo = null; // to be used for renewal
+    	CAInfo cvcainfo = null; // to be used for making request
     	
     	// Create a root CVCA
         try {
@@ -809,14 +819,14 @@ public class TestCAs extends TestCase {
             
             cacheAdmin.createCA(admin, cvccainfo);
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, rootcaname);
-            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+            cvcainfo = cacheAdmin.getCAInfo(admin, rootcaname);
+            assertEquals(CAInfo.CATYPE_CVC, cvcainfo.getCAType());
 
-            Certificate cert = (Certificate)info.getCertificateChain().iterator().next();
+            Certificate cert = (Certificate)cvcainfo.getCertificateChain().iterator().next();
             assertEquals("CVC", cert.getType());
             assertEquals(CertTools.getSubjectDN(cert), rootcadn);
             assertEquals(CertTools.getIssuerDN(cert), rootcadn);
-            assertEquals(info.getSubjectDN(), rootcadn);
+            assertEquals(cvcainfo.getSubjectDN(), rootcadn);
             PublicKey pk = cert.getPublicKey();
             if (pk instanceof RSAPublicKey) {
             	RSAPublicKey rsapk = (RSAPublicKey) pk;
@@ -972,8 +982,21 @@ public class TestCAs extends TestCase {
         assertEquals("READ_ACCESS_DG3", accessRights);
 
 
-        // Clean up by removing the certificate profile
-        
+        // Make a certificate request from a CVCA
+        Collection cachain = cvcainfo.getCertificateChain();
+        byte[] request = cacheAdmin.makeRequest(admin, cvcainfo.getCAId(), cachain, false);
+		Certificate req = CertTools.getCertfromByteArray(request);
+		CardVerifiableCertificate cardcert = (CardVerifiableCertificate)req;
+		CVCertificate reqcert = cardcert.getCVCertificate();
+
+        // Make a certificate request from a DV
+        cachain = dvdcainfo.getCertificateChain();
+        byte[] authrequest = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false);
+        CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
+        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
+        assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getValue());
+
+
         log.debug("<test09AddCVCCA()");
     }
 
