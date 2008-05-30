@@ -173,15 +173,17 @@ public class EjbcaWS implements IEjbcaWS {
 			  log.debug("User " + userdata.getUsername() + " exists, update the userdata." );
 			  ejbhelper.getUserAdminSession().changeUser(admin,userdatavo,userdata.getClearPwd());
 		  }else{
-			  log.debug(" New User " + userdata.getUsername() + ", adding userdata." );
+			  log.debug("New User " + userdata.getUsername() + ", adding userdata." );
 			  ejbhelper.getUserAdminSession().addUser(admin,userdatavo,userdata.getClearPwd());
 		  }
 		}catch(UserDoesntFullfillEndEntityProfile e){
+			log.debug("UserDoesntFullfillEndEntityProfile: "+e.getMessage());
 			throw e;
 	    } catch (ClassCastException e) {
 	    	log.error("EJBCA WebService error, editUser : ", e);
 			throw new EjbcaException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
+			log.info("AuthorizationDeniedException: "+e.getMessage());
 			throw e;
 		} catch (CreateException e) {
 	    	log.error("EJBCA WebService error, editUser : ", e);
@@ -318,6 +320,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 			throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 			EjbcaException, ApprovalException, WaitingForApprovalException {
+		log.debug(">cvcRequest");
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);
 		
@@ -409,8 +412,10 @@ public class EjbcaWS implements IEjbcaWS {
 				}
 				// If there are no old certificate, continue processing as usual, using the sent in username/password hoping the
 				// status is NEW and password is correct.
+			} else {
+				// If there are no old user, continue processing as usual... it will fail
+				log.debug("No existing user exists with username: "+username);
 			}
-			// If there are no old user, continue processing as usual... it will fail
 			
 			// Finally generate the certificate (assuming status is NEW and password is correct
 			byte[] response = processCertReq(username, password, cvcreq, REQTYPE_CVC, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
@@ -430,6 +435,7 @@ public class EjbcaWS implements IEjbcaWS {
 					retval.add(new Certificate(cert));
 				}
 			}
+			log.debug("<cvcRequest");
 			return retval;
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);

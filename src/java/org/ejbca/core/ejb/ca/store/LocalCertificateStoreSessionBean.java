@@ -1791,6 +1791,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public int getCertificateProfileId(Admin admin, String certificateprofilename) {
+    	log.debug(">getCertificateProfileId: "+certificateprofilename);
         int returnval = 0;
 
         if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
@@ -1818,8 +1819,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             Integer id = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getId();
             returnval = id.intValue();
         } catch (FinderException e) {
+        	log.debug("No certificate profile found with name: "+certificateprofilename);
         }
-
+    	log.debug("<getCertificateProfileId: "+certificateprofilename);
         return returnval;
     } // getCertificateProfileId
 
@@ -1831,8 +1833,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public String getCertificateProfileName(Admin admin, int id) {
+    	log.debug(">getCertificateProfileName: "+id);
         String returnval = null;
-
         // Is id a fixed profile
         if (id < SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
             switch (id) {
@@ -1862,18 +1864,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     break;
                 default:
                     returnval = EndUserCertificateProfile.CERTIFICATEPROFILENAME;
-
-
             }
         } else {
             try {
                 returnval = (certprofilehome.findByPrimaryKey(new Integer(id))).getCertificateProfileName();
             } catch (FinderException e) {
+            	log.debug("No certificate profile found with id: "+id);
             }
         }
-
+    	log.debug("<getCertificateProfileName: "+id);
         return returnval;
-
     } // getCertificateProfileName
 
     /**

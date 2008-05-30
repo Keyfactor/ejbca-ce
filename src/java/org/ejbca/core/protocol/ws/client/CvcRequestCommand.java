@@ -56,8 +56,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	private static final int ARG_ENDENTITYPROFILE   = 7;
 	private static final int ARG_CERTIFICATEPROFILE = 8;
 	private static final int ARG_GENREQ             = 9;
-	private static final int ARG_REQFILENAME        = 10;
-	private static final int ARG_CERTFILENAME       = 11;
+	private static final int ARG_BASEFILENAME        = 10;
 
 	/**
 	 * Creates a new instance of CvcRequestCommand
@@ -77,7 +76,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {   
-			if(args.length < 12 || args.length > 12){
+			if(args.length < 11 || args.length > 11){
 				getPrintStream().println("Number of argument: "+args.length);
 				usage();
 				System.exit(-1);
@@ -96,21 +95,21 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			String signatureAlg = args[ARG_SIGNALG];
 			String keySpec = args[ARG_KEYSPEC];
 			boolean genrequest = args[ARG_GENREQ].equalsIgnoreCase("true");
-			String reqfilename = args[ARG_REQFILENAME];
-			String certfilename = args[ARG_CERTFILENAME];
+			String basefilename = args[ARG_BASEFILENAME];
 
 			getPrintStream().println("Trying to add user:");
 			getPrintStream().println("Username: "+userdata.getUsername());
 			getPrintStream().println("Subject name: "+userdata.getSubjectDN());
 			getPrintStream().println("CA Name: "+userdata.getCaName());                        
 			getPrintStream().println("Signature algorithm: "+signatureAlg);                        
+			getPrintStream().println("Key spec: "+keySpec);                        
 			getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
 			getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
 
 			try{
 				String cvcreq = null;
 				if (genrequest) {
-					getPrintStream().println("Generating a new request to filename: "+reqfilename);
+					getPrintStream().println("Generating a new request with base filename: "+basefilename);
 					// Generate a request for 1024 bit RSA keys
 					CertTools.installBCProvider();
 					KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "BC");
@@ -128,18 +127,18 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					byte[] der = authRequest.getDEREncoded();
 					cvcreq = new String(Base64.encode(der));
 					// Print the generated request to file
-					FileOutputStream fos = new FileOutputStream(reqfilename);
+					FileOutputStream fos = new FileOutputStream(basefilename+".req");
 					fos.write(der);
 					fos.close();					
-					getPrintStream().println("Wrote binary request to: "+reqfilename);
-					fos = new FileOutputStream(reqfilename+".pkcs8");
+					getPrintStream().println("Wrote binary request to: "+basefilename+".req");
+					fos = new FileOutputStream(basefilename+".pkcs8");
 					fos.write(keyPair.getPrivate().getEncoded());
 					fos.close();					
-					getPrintStream().println("Wrote private key in "+keyPair.getPrivate().getFormat()+" format to to: "+reqfilename+".pkcs8");
+					getPrintStream().println("Wrote private key in "+keyPair.getPrivate().getFormat()+" format to to: "+basefilename+".pkcs8");
 				} else {
 					// Read request from file
-					getPrintStream().println("Reading request from filename: "+reqfilename);
-					byte[] der = FileTools.readFiletoBuffer(reqfilename);
+					getPrintStream().println("Reading request from filename: "+basefilename+".req");
+					byte[] der = FileTools.readFiletoBuffer(basefilename+".req");
 					cvcreq = new String(Base64.encode(der));
 				}
 				
@@ -156,11 +155,11 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				byte[] b64cert = cert.getCertificateData();
 				CVCObject parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
 				CVCertificate cvcert = (CVCertificate)parsedObject;
-				FileOutputStream fos = new FileOutputStream(certfilename);
+				FileOutputStream fos = new FileOutputStream(basefilename+".cvcert");
 				fos.write(cvcert.getDEREncoded());
 				fos.close();
-				getPrintStream().println("Wrote binary certificate to: "+certfilename);
-				getPrintStream().println("You can look at the certificate with the command cvcwscli.sh cvcprint "+certfilename);
+				getPrintStream().println("Wrote binary certificate to: "+basefilename+".cvcert");
+				getPrintStream().println("You can look at the certificate with the command cvcwscli.sh cvcprint "+basefilename+".cvcert");
 			}catch(AuthorizationDeniedException_Exception e){
 				getPrintStream().println("Error : " + e.getMessage());
 			}catch(UserDoesntFullfillEndEntityProfile_Exception e){
@@ -174,12 +173,12 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 	protected void usage() {
 		getPrintStream().println("Command used to make a CVC request. If user does not exist a new will be created and if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <caname> <signatureAlg> <keyspec (1024/2048)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <reqfilename> <certfilename>\n\n");
+		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <caname> <signatureAlg> <keyspec (1024/2048)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <basefilename>\n\n");
 		getPrintStream().println("SignatureAlg can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1");
 		getPrintStream().println("DN is of form \"C=SE, O=RPS, CN=00001\".");
-		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <reqfilename>, and the private key to <reqfilename>.pkcs8.");
-		getPrintStream().println("If genreq is false <reqfilename> is a request that is read and sent to the CA.");
-		getPrintStream().println("The issued certificate is written to <certfilename>");
+		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <basefilename>.req, and the private key to <basefilename>.pkcs8.");
+		getPrintStream().println("If genreq is false a request is read from <reqfilename>.req and sent to the CA.");
+		getPrintStream().println("The issued certificate is written to <basefilename>.cvcert");
 	}
 
 

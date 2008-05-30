@@ -634,9 +634,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
               returnval = (profiledatahome.findByProfileName(profilename)).getProfile();
           }
         }catch(FinderException e){
+    		log.debug("Did not find end entity profile with name: "+profilename);
             // Ignore so we'll return null
         }
-        debug("<getEndEntityProfile(profilename)");
+    	if (log.isDebugEnabled()) {
+            debug("<getEndEntityProfile("+profilename+")");    		
+    	}
         return returnval;
     } // getEndEntityProfile
 
@@ -649,20 +652,23 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      */
     public int getEndEntityProfileId(Admin admin, String profilename){
     	if (log.isDebugEnabled()) {
-            debug(">getEndEntityProfileId("+profilename+")");    		
+    		debug(">getEndEntityProfileId("+profilename+")");    		
     	}
-      int returnval = 0;
-      if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME))
-        return SecConst.EMPTY_ENDENTITYPROFILE;
-      try{
-        Integer id = (profiledatahome.findByProfileName(profilename)).getId();
-        returnval = id.intValue();
-      }catch(FinderException e){
-          // Ignore so we'll return 0
-      }
-      debug(">getEndEntityProfileId(profilename)");    		
-      return returnval;
-    } // getEndEntityrofileId
+    	int returnval = 0;
+    	if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME))
+    		return SecConst.EMPTY_ENDENTITYPROFILE;
+    	try{
+    		Integer id = (profiledatahome.findByProfileName(profilename)).getId();
+    		returnval = id.intValue();
+    	}catch(FinderException e){
+    		log.debug("Did not find end entity profile with name: "+profilename);
+    		// Ignore so we'll return 0
+    	}
+    	if (log.isDebugEnabled()) {
+    		debug("<getEndEntityProfileId("+profilename+")");    		
+    	}
+    	return returnval;
+    } // getEndEntityProfileId
 
      /**
      * Returns a end entity profiles name given it's id.
@@ -677,7 +683,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         return EMPTY_ENDENTITYPROFILENAME;
       try{
         returnval = (profiledatahome.findByPrimaryKey(Integer.valueOf(id))).getProfileName();
-      }catch(FinderException e){}
+      }catch(FinderException e){
+    	  log.debug("Did not find end entity profile with id: "+id);
+      }
 
       return returnval;
     } // getEndEntityProfileName
