@@ -836,28 +836,32 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             
             // Do the work of decreasing the counter
         	ExtendedInformation ei = data1.getExtendedInformation();
-        	String counterstr = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
-        	if (StringUtils.isNotEmpty(counterstr)) {
-        		try {
-        			counter = Integer.valueOf(counterstr);
-        			log.debug("Found a counter with value "+counter);
-        			// decrease the counter, if we get to 0 we must set status to generated
-        			counter--;
-        			if (counter >= 0) {
-        				ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(counter));
-                		data1.setExtendedInformation(ei);
-                		data1.setTimeModified((new java.util.Date()).getTime());
-                		String msg = intres.getLocalizedMessage("ra.decreasedentityrequestcounter", username, counter);            	
-                		logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-        			} else {
-        				log.debug("Counter value was already 0, not decreased in db.");
-        			}
-        		} catch (NumberFormatException e) {
-        			String msg = intres.getLocalizedMessage("ra.errorrequestcounterinvalid", username, counterstr, e.getMessage());            	        		
-        			log.error(msg, e);
-        		}        		
+        	if (ei != null) {
+        		String counterstr = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        		if (StringUtils.isNotEmpty(counterstr)) {
+        			try {
+        				counter = Integer.valueOf(counterstr);
+        				log.debug("Found a counter with value "+counter);
+        				// decrease the counter, if we get to 0 we must set status to generated
+        				counter--;
+        				if (counter >= 0) {
+        					ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(counter));
+        					data1.setExtendedInformation(ei);
+        					data1.setTimeModified((new java.util.Date()).getTime());
+        					String msg = intres.getLocalizedMessage("ra.decreasedentityrequestcounter", username, counter);            	
+        					logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+        				} else {
+        					log.debug("Counter value was already 0, not decreased in db.");
+        				}
+        			} catch (NumberFormatException e) {
+        				String msg = intres.getLocalizedMessage("ra.errorrequestcounterinvalid", username, counterstr, e.getMessage());            	        		
+        				log.error(msg, e);
+        			}        		
+        		} else {
+        			log.debug("No (optional) request counter exists for end entity: "+username);
+        		}
         	} else {
-        		log.debug("No (optional) request counter exists for end entity: "+username);
+        		debug("No extended information exists for user: "+data1.getUsername());
         	}
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
@@ -2061,20 +2065,24 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     		log.debug("Can not fetch entity profile with id "+epid);
     	}
     	ExtendedInformation ei = data1.getExtendedInformation();
-    	String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
-    	debug("Old counter is: "+counter+", new counter will be: "+value);
-    	// If this end entity profile does not use ALLOWEDREQUESTS, this value will be set to null
-    	// We only re-set this value if the COUNTER was used in the first place, if never used, we will not fiddle with it
-    	if (counter != null) {
-    		if ( (!onlyRemoveNoUpdate) || (onlyRemoveNoUpdate && (value==null)) ) {
-        		ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
-        		data1.setExtendedInformation(ei);    			
-        		debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
+    	if (ei != null) {
+    		String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+    		debug("Old counter is: "+counter+", new counter will be: "+value);
+    		// If this end entity profile does not use ALLOWEDREQUESTS, this value will be set to null
+    		// We only re-set this value if the COUNTER was used in the first place, if never used, we will not fiddle with it
+    		if (counter != null) {
+    			if ( (!onlyRemoveNoUpdate) || (onlyRemoveNoUpdate && (value==null)) ) {
+    				ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
+    				data1.setExtendedInformation(ei);    			
+    				debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
+    			} else {
+    				debug("No re-setting counter because we should only remove");
+    			}
     		} else {
-    			debug("No re-setting counter because we should only remove");
+    			debug("Request counter not used, not re-setting it.");
     		}
     	} else {
-    		debug("Request counter not used, not re-setting it.");
+    		debug("No extended information exists for user: "+data1.getUsername());
     	}
     	if (log.isDebugEnabled()) {
         	debug("<resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
