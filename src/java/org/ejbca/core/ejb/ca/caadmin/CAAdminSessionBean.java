@@ -1239,7 +1239,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			if(ca.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA){
     				if(ca.getSignedBy() == CAInfo.SELFSIGNED){
     					// create selfsigned certificate
-    					UserDataVO cainfodata = new UserDataVO("nobody",  ca.getSubjectDN(), ca.getSubjectDN().hashCode(), ((X509CA) ca).getSubjectAltName(), null,
+    					String subjectAltName = null;
+    					if (ca instanceof X509CA) {
+							X509CA x509ca = (X509CA) ca;
+							subjectAltName = x509ca.getSubjectAltName();
+						}
+    					UserDataVO cainfodata = new UserDataVO("nobody",  ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null,
     							0, 0, 0, ca.getCertificateProfileId(), null, null, 0, 0 ,null);
 
     					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
@@ -1257,7 +1262,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
     						//Check that the signer is valid
     						checkSignerValidity(admin, signcadata);
     						// Create cacertificate
-    						UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), ((X509CA) ca).getSubjectAltName(), null,
+        					String subjectAltName = null;
+        					if (ca instanceof X509CA) {
+    							X509CA x509ca = (X509CA) ca;
+    							subjectAltName = x509ca.getSubjectAltName();
+    						}
+    						UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null,
     								0,0,0, ca.getCertificateProfileId(), null, null, 0,0, null);
 
     						CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
