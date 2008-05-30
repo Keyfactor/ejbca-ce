@@ -630,10 +630,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 }
             }catch(CATokenAuthenticationFailedException ctaf){
             	String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");            	
-            	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctaf);
+            	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, ctaf);
             }catch(CATokenOfflineException ctoe){
             	String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());            	
-            	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctoe);
+            	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, ctoe);
             }
 
             // If OCSP Certificate renew, publish the new one.
@@ -858,9 +858,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
     /**
-     *  Creates a certificate request that should be sent to External Root CA for process before
-     *  activation of CA.
+     *  Creates a certificate request that should be sent to External Root CA for processing.
      *
+     *  @param admin the administrator performing the action
+     *  @caid id of the CA that should create the request 
      *  @param rootcertificates A Collection of rootcertificates.
      *  @param setstatustowaiting should be set true when creating new CAs and false for renewing old CAs
      *  @return request message in binary format, can be a PKCS10 or CVC request
@@ -868,6 +869,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public byte[] makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    	debug(">makeRequest: "+caid);
         byte[] returnval = null;
         // Check authorization
         try{
@@ -893,8 +895,27 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	if (tinfo != null) {
             		signAlg = tinfo.getSignatureAlgorithm();
             	}
-            	returnval = ca.createRequest(null, signAlg);
+            	returnval = ca.createRequest(null, signAlg);            	
 
+            	// If this is a CVC CA and it is a SubCA (DV) then we
+            	// should actually get the request signed (an outer signature) 
+            	// by the CVCA in order for other member states to accept our request
+            	int signedbyid = ca.getSignedBy();
+            	if (ca instanceof CVCCA) {
+                	if ( (signedbyid > CAInfo.SPECIALCAIDBORDER) || (signedbyid < 0) ) {
+                		// We should not try to sign the request by a CA which does not exist
+                		// No outer signature for Root CAs. No outer signature for SignedBy External
+                    	// TODO: make a configurable "request signed by" to select more generally so it can be used to sign requests
+                		//       for CAs signed by External CA as well
+                        CADataLocal signedbydata = this.cadatahome.findByPrimaryKey(new Integer(signedbyid));
+                        CA signedbyCA = signedbydata.getCA();
+                        log.debug("Signing request from '"+caname+"' by '"+signedbyCA.getName()+"'.");
+                    	returnval = signedbyCA.signRequest(returnval, signAlg);
+                	} else {
+                		log.debug("Not signing request by any other CA because signed by caid is: "+signedbyid);
+                	}            		
+            	}
+            	
             	// Set statuses if it should be set.
             	if(setstatustowaiting){
             		cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
@@ -922,7 +943,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         
 		String msg = intres.getLocalizedMessage("caadmin.certreqcreated", new Integer(caid));            	
         getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
-        
+    	debug("<makeRequest: "+caid);
         return returnval;
     } // makeRequest
 

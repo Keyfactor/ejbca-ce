@@ -948,20 +948,19 @@
                            true);
              } // if(catype == CAInfo.CATYPE_CVC)
             	 
-               // BUTTON_RECEIVEREQUEST when action is EDIT_CA is actually when you receive a certificate from an external CA as a response from an external CA 
-               if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){  
-             	  // Receive certificate response does not save any CA edits before receiving the response, because we need to CA token active
-                   filemode = RECIEVERESPONSEMODE;
-                   includefile="recievefile.jspf"; 
-               } else {
-                   cadatahandler.editCA(cainfo);            	   
-               }
-
                if(request.getParameter(BUTTON_SAVE) != null){
-                  // Do nothing More
+                  // Save the CA info but do nothing More
+                  cadatahandler.editCA(cainfo);            	   
                   includefile="choosecapage.jspf"; 
                }
+          	   // For all other actions we do not save any CA edits before doing what we do, because we need to CA token active
                
+               // BUTTON_RECEIVEREQUEST when action is EDIT_CA is actually when you receive a certificate from an external CA as a response from an external CA 
+               if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){  
+                   filemode = RECIEVERESPONSEMODE;
+                   includefile="recievefile.jspf"; 
+               }
+
                if(request.getParameter(BUTTON_RENEWCA) != null){
                  int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
                  if(signedby != CAInfo.SIGNEDBYEXTERNALCA){
@@ -988,7 +987,7 @@
                  includefile="choosecapage.jspf"; 
              }
              // Make Request Button Pushed down, this will create a certificate request but not do anything
-             // else with the CA. For creatgin cross-certificate requests of similar.
+             // else with the CA. For creating cross-certificate requests of similar.
              if(request.getParameter(BUTTON_MAKEREQUEST) != null){
                try{
                  caid = Integer.parseInt(request.getParameter(HIDDEN_CAID));

@@ -518,14 +518,25 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;            
 
-    /** Creates a PKCS#10 certificate request, that can be sent to an external Root CA
+    /** Creates a certificate signature request CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA.
+     * For X509 CAs PKCS#10 requests are created, for CVC CAs CVC requests are created.
      * 
      * @param attributes PKCS10 attributes to be included in the request, a Collection of DEREncodable objects, ready to put in the request. Can be null.
      * @param signAlg the signature algorithm used by the CA
-     * @return byte array with binary encoded PKCS#10 request
+     * @return byte array with binary encoded request
      */
     public abstract byte[] createRequest(Collection attributes, String signAlg) throws CATokenOfflineException;
-        
+
+    /** Signs a certificate signature request CSR), that can be sent to an external CA. This signature can be use to authenticate the 
+     * original request. mainly used for CVC CAs where the CVC requests is created and (self)signed by the DV and then the CVCA
+     * adds an outer signature to the request.
+     * 
+     * @param request the binary coded request to be signed
+     * @param signAlg the signature algorithm to be used
+     * @return byte array with binary encoded signed request or the original request of the CA can not create an additional signature on the passed in request.
+     */
+    public abstract byte[] signRequest(byte[] request, String signAlg) throws CATokenOfflineException;
+
     public byte[] encryptKeys(KeyPair keypair) throws Exception{
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream os = new ObjectOutputStream(baos);

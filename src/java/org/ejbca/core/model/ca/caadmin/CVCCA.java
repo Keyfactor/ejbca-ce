@@ -24,6 +24,7 @@ import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -43,11 +44,13 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -154,6 +157,51 @@ public class CVCCA extends CA implements Serializable {
 		return ret;
 	}
 
+	/** If the request is a CVC request, this method adds an outer signature to the request.
+	 * 
+	 * @see CA#signRequest(Collection, String)
+	 */
+	public byte[] signRequest(byte[] request, String signAlg) throws CATokenOfflineException {
+		byte[] ret = request;
+		try {
+			KeyPair keyPair = new KeyPair(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+			String subject = getCAInfo().getSubjectDN();
+			String country = CertTools.getPartFromDN(subject, "C");
+			String mnemonic = CertTools.getPartFromDN(subject, "O");
+			String seq = CertTools.getPartFromDN(subject, "CN");
+			CAReferenceField caRef = new CAReferenceField(country, mnemonic, seq);
+			CVCertificate cvcert = null;
+			try {
+				Certificate cert = CertTools.getCertfromByteArray(request);
+				CardVerifiableCertificate cardcert = (CardVerifiableCertificate)cert;
+				cvcert = cardcert.getCVCertificate();
+			} catch (ClassCastException e) {
+				log.info("Request is not a CVCertificate request: ", e);
+				return request;
+			} catch (CertificateException e) {
+				log.info("Request is not a CVCertificate request: ", e);
+				return request;			
+			}
+			CVCAuthenticatedRequest authreq = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef);
+			ret = authreq.getDEREncoded();
+		} catch (IllegalKeyStoreException e) {
+			throw new javax.ejb.EJBException(e);
+		} catch (InvalidKeyException e) {
+			throw new javax.ejb.EJBException(e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new javax.ejb.EJBException(e);
+		} catch (NoSuchProviderException e) {
+			throw new javax.ejb.EJBException(e);
+		} catch (SignatureException e) {
+			throw new javax.ejb.EJBException(e);
+		} catch (IOException e) {
+			throw new javax.ejb.EJBException(e);
+		} catch (ConstructionException e) {
+			throw new javax.ejb.EJBException(e);
+		}
+		return ret;
+	}
+	
 	public Certificate generateCertificate(UserDataVO subject, 
 			PublicKey publicKey, 
 			int keyusage, 

@@ -399,6 +399,14 @@ public class X509CA extends CA implements Serializable {
 		} 
     }
 
+	/** Returns the original request without adding any signature to it.
+	 * 
+	 * @see CA#signRequest(Collection, String)
+	 */
+	public byte[] signRequest(byte[] request, String signAlg) throws CATokenOfflineException {
+		return request;
+	}
+
     public Certificate generateCertificate(UserDataVO subject, 
                                            PublicKey publicKey, 
                                            int keyusage, 
