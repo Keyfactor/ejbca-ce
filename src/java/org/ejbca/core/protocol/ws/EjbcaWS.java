@@ -1250,7 +1250,7 @@ public class EjbcaWS implements IEjbcaWS {
 								while(revokeCerts.hasNext()){
 									X509Certificate next = (X509Certificate) revokeCerts.next();							 
 									try{
-										if(!next.getExtendedKeyUsage().contains(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[CertificateProfile.SMARTCARDLOGON])){
+										if(next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[CertificateProfile.SMARTCARDLOGON])){
 											revokeCert(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next).toString(16), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
 										}
 									}catch(CertificateParsingException e){
