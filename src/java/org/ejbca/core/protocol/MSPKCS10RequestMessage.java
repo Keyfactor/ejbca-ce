@@ -35,7 +35,8 @@ import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-/**
+/** Extends the PKCS10RequestMessgae and contains a few function to parse MS specific information like GUID, DNS, Template etc..
+ *
  * @version $Id$
  */
 public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
@@ -166,7 +167,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         			DERString derobj = (DERString) new ASN1InputStream(new ByteArrayInputStream(dos.getOctets())).readObject();
         			return derobj.getString();
         		} catch (IOException e) {
-        			e.printStackTrace();
+        			log.error(e);
         		}
         	}
         }
@@ -224,7 +225,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
                 			}
             			}
             		} catch (IOException e) {
-						e.printStackTrace();
+						log.error(e);
 					}
             	}
             }
