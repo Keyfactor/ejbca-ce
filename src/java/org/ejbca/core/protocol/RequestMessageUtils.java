@@ -130,7 +130,7 @@ public class RequestMessageUtils {
 		return new CVCRequestMessage(buffer);
 	} // genCvcRequestMessageFromPEM
 
-	private static byte[] getRequestBytes(byte[] b64Encoded) {
+	public static byte[] getRequestBytes(byte[] b64Encoded) {
 		byte[] buffer = null;
 		try {
 			// A real PKCS10 PEM request

@@ -119,7 +119,7 @@ import org.ejbca.util.dn.DnComponents;
  * @version $Id$
  */
 public class CertTools {
-    private static Logger log = Logger.getLogger(CertTools.class);
+    private static final Logger log = Logger.getLogger(CertTools.class);
     
     // Initialize dnComponents
     static { 

@@ -900,19 +900,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	// If this is a CVC CA and it is a SubCA (DV) then we
             	// should actually get the request signed (an outer signature) 
             	// by the CVCA in order for other member states to accept our request
-            	int signedbyid = ca.getSignedBy();
             	if (ca instanceof CVCCA) {
-                	if ( (signedbyid > CAInfo.SPECIALCAIDBORDER) || (signedbyid < 0) ) {
-                		// We should not try to sign the request by a CA which does not exist
-                		// No outer signature for Root CAs. No outer signature for SignedBy External
-                    	// TODO: make a configurable "request signed by" to select more generally so it can be used to sign requests
-                		//       for CAs signed by External CA as well
+            		CVCCA cvcca = (CVCCA)ca;
+                	int signedbyid = cvcca.getRequestSignedBy();
+                	if (signedbyid != CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE) {
+                		// Create an outer signature by the CA that is configured to sign requests for this CA
                         CADataLocal signedbydata = this.cadatahome.findByPrimaryKey(new Integer(signedbyid));
                         CA signedbyCA = signedbydata.getCA();
-                        log.debug("Signing request from '"+caname+"' by '"+signedbyCA.getName()+"'.");
                     	returnval = signedbyCA.signRequest(returnval, signAlg);
+                    	String msg = intres.getLocalizedMessage("caadmin.certreqsigned", signedbydata.getName(), caname);            	
+                    	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
                 	} else {
-                		log.debug("Not signing request by any other CA because signed by caid is: "+signedbyid);
+                		log.debug("Not signing request by any other CA because signed by caid is CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE.");
                 	}            		
             	}
             	
@@ -1768,7 +1767,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             // Create the CAInfo to be used for either generating the whole CA or making a request
             cainfo = new CVCCAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, SecConst.CA_ACTIVE, new Date(),
             		certprof, validity, 
-            		CertTools.getNotAfter(caSignatureCertificate), CAInfo.CATYPE_CVC, signedby,
+            		CertTools.getNotAfter(caSignatureCertificate), CAInfo.CATYPE_CVC, signedby, CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE,
             		certificatechain, catoken.getCATokenInfo(), 
             		description, -1, (Date)null,
                     24, 0, 10, 0, // CRL periods

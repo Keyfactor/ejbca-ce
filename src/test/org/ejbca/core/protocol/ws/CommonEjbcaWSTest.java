@@ -1782,7 +1782,7 @@ public class CommonEjbcaWSTest extends TestCase {
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(),
             		SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, 
                     null, // Expiretime 
-                    CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED,
+                    CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE,
                     null, catokeninfo, "JUnit WS CVC CA", 
                     -1, null,
                     24, // CRLPeriod
@@ -1817,7 +1817,7 @@ public class CommonEjbcaWSTest extends TestCase {
         	CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(),
         			SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
         			null, // Expiretime 
-        			CAInfo.CATYPE_CVC, cvcaid,
+        			CAInfo.CATYPE_CVC, cvcaid, CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE,
         			null, catokeninfo, "JUnit WS CVC DV CA", 
         			-1, null,
         			24, // CRLPeriod

@@ -91,12 +91,6 @@ public class CVCRequestMessage implements IRequestMessage {
         init();
     }
 
-    /** Direct access to the underlying CVCertificate
-     */
-    public CVCertificate getCVCertificate() {
-    	return cvcert;
-    }
-    
     private void init() {
 		try {
 			CVCObject parsedObject;

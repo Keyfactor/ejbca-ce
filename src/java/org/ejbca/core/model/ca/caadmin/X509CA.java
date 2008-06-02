@@ -129,7 +129,7 @@ public class X509CA extends CA implements Serializable {
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
     
-    // protected fields.
+    // protected fields for properties specific to this type of CA.
     protected static final String POLICIES                       = "policies";
     protected static final String SUBJECTALTNAME                 = "subjectaltname";
     protected static final String USEAUTHORITYKEYIDENTIFIER      = "useauthoritykeyidentifier";

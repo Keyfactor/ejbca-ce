@@ -99,8 +99,8 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			} catch (IOException ie) {
 				// this was not a PEM cert, try to see it it was a PEM certificate req
 				byte[] cvcdata = FileTools.readFiletoBuffer(filename);				
-				CVCRequestMessage req = RequestMessageUtils.genCVCRequestMessageFromPEM(cvcdata);
-				ret = req.getCVCertificate();
+				byte[] req = RequestMessageUtils.getRequestBytes(cvcdata);
+				ret = CertificateParser.parseCVCObject(req);
 			}
 		}
 		return ret;

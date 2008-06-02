@@ -107,7 +107,8 @@
   static final String SELECT_REVOKEREASONS                        = "selectrevokereasons";
   static final String SELECT_CATYPE                               = "selectcatype";  
   static final String SELECT_CATOKEN                              = "selectcatoken";
-  static final String SELECT_SIGNEDBY                             = "selectsignedby";  
+  static final String SELECT_SIGNEDBY                             = "selectsignedby"; 
+  static final String SELECT_INITIALREQSIGNEDBY                   = "initialreqsignedby";
   static final String SELECT_KEYSIZE                              = "selectsize";
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
@@ -370,6 +371,7 @@
          int signedby = 0;
          if(request.getParameter(SELECT_SIGNEDBY) != null)
             signedby = Integer.parseInt(request.getParameter(SELECT_SIGNEDBY));
+         
          String description = request.getParameter(TEXTFIELD_DESCRIPTION);        
          if(description == null)
            description = "";
@@ -657,17 +659,21 @@
                      signedby = CAInfo.SIGNEDBYEXTERNALCA;
                  }
 
+                 int reqsignedby = 0;
+                 if(request.getParameter(SELECT_INITIALREQSIGNEDBY) != null)
+                	 reqsignedby = Integer.parseInt(request.getParameter(SELECT_INITIALREQSIGNEDBY));
+
                  // Create the CAInfo to be used for either generating the whole CA or making a request
                  CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
                          certprofileid, validity, 
-                         null, catype, signedby,
+                         null, catype, signedby, reqsignedby,
                          null, catoken, description, -1, null,
                          crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                          finishuser, extendedcaservices,
                          approvalsettings,
                          numofreqapprovals,
                          true);
-
+                                  
           		if(request.getParameter(BUTTON_CREATE) != null){           
                      try{
                        cadatahandler.createCA(cvccainfo);
@@ -937,10 +943,14 @@
                  // Edit CVC CA data                            
 					// A CVC CA does not have any of the external services OCSP, XKMS, CMS
             		ArrayList extendedcaservices = new ArrayList();
+                 
+                    int reqsignedby = 0;
+                    if(request.getParameter(SELECT_INITIALREQSIGNEDBY) != null)
+                   	 reqsignedby = Integer.parseInt(request.getParameter(SELECT_INITIALREQSIGNEDBY));
 
                    // Create the CAInfo to be used for either generating the whole CA or making a request
                    cainfo = new CVCCAInfo(caid, validity, 
-                           catoken, description,
+                           catoken, description, reqsignedby,
                            crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                            finishuser, extendedcaservices,
                            approvalsettings,
@@ -1117,6 +1127,7 @@
          int signedby = 0;
          if(request.getParameter(SELECT_SIGNEDBY) != null)
             signedby = Integer.parseInt(request.getParameter(SELECT_SIGNEDBY));
+         
          String description = request.getParameter(TEXTFIELD_DESCRIPTION);        
          if(description == null)
            description = "";

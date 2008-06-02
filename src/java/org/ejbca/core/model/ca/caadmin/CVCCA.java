@@ -50,7 +50,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
-import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -65,7 +64,7 @@ import org.ejbca.util.CertTools;
  */
 public class CVCCA extends CA implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	private static final Logger log = Logger.getLogger(CVCCA.class);
 
@@ -75,12 +74,17 @@ public class CVCCA extends CA implements Serializable {
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
 	public static final float LATEST_VERSION = 1;
 
+    // protected fields for properties specific to this type of CA.
+	/** Which other CA should sign CSRs created by this CA */ 
+    protected static final String INITIALREQSIGNEDBY = "reqsignedby";
 
 	// Public Methods
 	/** Creates a new instance of CA, this constructor should be used when a new CA is created */
 	public CVCCA(CVCCAInfo cainfo) {
 		super(cainfo);  
 
+		setRequestSignedBy(CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE);
+		
 		setFinishUser(cainfo.getFinishUser());
 		setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
 
@@ -101,7 +105,7 @@ public class CVCCA extends CA implements Serializable {
 			}
 		}
 		CAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
-				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
+				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getRequestSignedBy(), getCertificateChain(),
 				getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
 				getApprovalSettings(), getNumOfRequiredApprovals(),
@@ -109,13 +113,26 @@ public class CVCCA extends CA implements Serializable {
 		super.setCAInfo(info);
 	}
 
-	public void updateCA(CAInfo cainfo) throws Exception{
-		super.updateCA(cainfo); 
-	}
+    public int getRequestSignedBy(){
+    	Integer ret = CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE;
+    	Object o = data.get(INITIALREQSIGNEDBY);
+    	if (o != null) {
+    		ret = ((Integer)o).intValue();
+    	}
+    	return ret;
+    }
+    public void setRequestSignedBy(int reqsignedby) {data.put(INITIALREQSIGNEDBY, new Integer(reqsignedby));}
+
+    public void updateCA(CAInfo cainfo) throws Exception{
+    	super.updateCA(cainfo); 
+    	CVCCAInfo info = (CVCCAInfo) cainfo;
+    	setRequestSignedBy(info.getInitialReqSignedBy());		
+    }
 
 
 	public byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException {
-		log.info("There is no such thing as a CVC PKCS7");
+    	String msg = intres.getLocalizedMessage("cvc.info.nocvcpkcs7");
+		log.info(msg);
 		return null;
 	}    
 
@@ -176,14 +193,17 @@ public class CVCCA extends CA implements Serializable {
 				CardVerifiableCertificate cardcert = (CardVerifiableCertificate)cert;
 				cvcert = cardcert.getCVCertificate();
 			} catch (ClassCastException e) {
-				log.info("Request is not a CVCertificate request: ", e);
+            	String msg = intres.getLocalizedMessage("cvc.error.notcvcrequest");
+				log.info(msg, e);
 				return request;
 			} catch (CertificateException e) {
-				log.info("Request is not a CVCertificate request: ", e);
+            	String msg = intres.getLocalizedMessage("cvc.error.notcvcrequest");
+				log.info(msg, e);
 				return request;			
 			}
 			CVCAuthenticatedRequest authreq = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef);
 			ret = authreq.getDEREncoded();
+			log.debug("Signed a CardVerifiableCertificate request and returned a CVCAuthenticatedRequest.");
 		} catch (IllegalKeyStoreException e) {
 			throw new javax.ejb.EJBException(e);
 		} catch (InvalidKeyException e) {
