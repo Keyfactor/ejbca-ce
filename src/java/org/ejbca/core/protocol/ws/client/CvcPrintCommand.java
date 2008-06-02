@@ -13,10 +13,18 @@
 
 package org.ejbca.core.protocol.ws.client;
 
+import java.io.IOException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.util.Collection;
+
+import org.ejbca.core.protocol.CVCRequestMessage;
+import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -56,15 +64,13 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			String filename = args[1];
 			getPrintStream().println("Printing CV Certificate: "+filename);
 			// Read file to a buffer and use the toString functions in the cvc-lib
-			byte[] cvcdata = FileTools.readFiletoBuffer(filename);
-			CVCObject parsedObject = CertificateParser.parseCVCObject(cvcdata);
+			CVCObject parsedObject = getCVCObject(filename);
 			getPrintStream().println(parsedObject.getAsText(""));
 			if (args.length > 2) {
 				String verifycert = args[2];
 				getPrintStream().println("Verifying certificate "+filename+" with certificate "+verifycert);
 				CVCertificate cert1 = (CVCertificate)parsedObject;
-				cvcdata = FileTools.readFiletoBuffer(verifycert);
-				parsedObject = CertificateParser.parseCVCObject(cvcdata);
+				parsedObject = getCVCObject(verifycert);
 				CVCertificate cert2 = (CVCertificate)parsedObject;
 				CardVerifiableCertificate cvcert = new CardVerifiableCertificate(cert1);
 				try {
@@ -77,6 +83,27 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);
 		}
+	}
+
+	private CVCObject getCVCObject(String filename) throws IOException, ConstructionException, CertificateException {
+		CVCObject ret = null;
+		try {
+			byte[] cvcdata = FileTools.readFiletoBuffer(filename);				
+			ret = CertificateParser.parseCVCObject(cvcdata);
+		} catch (IllegalArgumentException e) {
+			try {
+				// this was not parseable, try to see it it was a PEM certificate
+				Collection col = CertTools.getCertsFromPEM(filename);
+				Certificate cert = (Certificate)col.iterator().next();
+	        	ret = CertificateParser.parseCVCObject(cert.getEncoded());			
+			} catch (IOException ie) {
+				// this was not a PEM cert, try to see it it was a PEM certificate req
+				byte[] cvcdata = FileTools.readFiletoBuffer(filename);				
+				CVCRequestMessage req = RequestMessageUtils.genCVCRequestMessageFromPEM(cvcdata);
+				ret = req.getCVCertificate();
+			}
+		}
+		return ret;
 	}
 
 	protected void usage() {

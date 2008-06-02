@@ -106,9 +106,9 @@ public class ScepResponseMessage implements IResponseMessage {
     private transient Certificate cert = null;
     private transient CRL crl = null;
     /** Certificate for the signer of the response message (CA or RA) */
-    private transient X509Certificate signCert = null;
+    private transient Certificate signCert = null;
     /** Certificate for the CA of the response certificate in successful responses, is the same as signCert if not using RA mode */
-    private transient X509Certificate caCert = null;
+    private transient Certificate caCert = null;
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
@@ -143,7 +143,7 @@ public class ScepResponseMessage implements IResponseMessage {
     	this.includeCACert = incCACert;
     }
 
-    public void setCACert(X509Certificate caCert) {
+    public void setCACert(Certificate caCert) {
     	this.caCert = caCert;
     }
 
@@ -382,8 +382,8 @@ public class ScepResponseMessage implements IResponseMessage {
             }
 
             // Add our signer info and sign the message
-            log.debug("Signing SCEP message with cert: "+signCert.getSubjectDN().getName());
-            gen1.addSigner(signKey, signCert, digestAlg, new AttributeTable(attributes), null);
+            log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(signCert));
+            gen1.addSigner(signKey, (X509Certificate)signCert, digestAlg, new AttributeTable(attributes), null);
             signedData = gen1.generate(msg, true, provider);
             responseMessage = signedData.getEncoded();
             if (responseMessage != null) {
@@ -430,7 +430,7 @@ public class ScepResponseMessage implements IResponseMessage {
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(X509Certificate cert, PrivateKey key, String prov) {
+    public void setSignKeyInfo(Certificate cert, PrivateKey key, String prov) {
         this.signCert = cert;
         this.signKey = key;
         if (prov != null) {
@@ -448,7 +448,7 @@ public class ScepResponseMessage implements IResponseMessage {
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
+    public void setEncKeyInfo(Certificate cert, PrivateKey key, String provider) {
         // We don't need these.
     }
 

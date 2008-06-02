@@ -100,6 +100,7 @@ import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.core.model.util.GenerateToken;
+import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
@@ -506,7 +507,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 			PublicKey pubKey = null;
 			if (reqType == REQTYPE_PKCS10) {				
-				PKCS10RequestMessage pkcs10req=RequestMessageUtils.genPKCS10RequestMessageFromPEM(req.getBytes());
+				IRequestMessage pkcs10req=RequestMessageUtils.genPKCS10RequestMessageFromPEM(req.getBytes());
 				pubKey = pkcs10req.getRequestPublicKey();
 			}
 			if (reqType == REQTYPE_SPKAC) {

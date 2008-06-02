@@ -21,7 +21,6 @@ import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
@@ -77,7 +76,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements IRespons
 
 	public void setIncludeCACert(boolean incCACert) {
 	}
-	public void setCACert(X509Certificate cACert) {
+	public void setCACert(Certificate cACert) {
 	}
 
 	public byte[] getResponseMessage() throws IOException,
@@ -151,11 +150,11 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements IRespons
 		return false;
 	}
 
-	public void setSignKeyInfo(X509Certificate cert, PrivateKey key,
+	public void setSignKeyInfo(Certificate cert, PrivateKey key,
 			String provider) {
 	}
 
-	public void setEncKeyInfo(X509Certificate cert, PrivateKey key,
+	public void setEncKeyInfo(Certificate cert, PrivateKey key,
 			String provider) {
 	}
 

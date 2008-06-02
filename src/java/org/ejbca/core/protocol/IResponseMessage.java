@@ -22,7 +22,6 @@ import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -73,9 +72,9 @@ public interface IResponseMessage extends Serializable {
      * Explicitly sets the CA certificate if it is not the same as the signer certificate. Used if
      * IncludeCACert is set to true and the CA certificate is not the same as the signer certificate.
      * 
-     * @param caCert an X509Certificate
+     * @param caCert a Certificate
      */
-    public void setCACert(X509Certificate caCert);
+    public void setCACert(Certificate caCert);
 
     /**
      * Gets the response message in the default encoding format.
@@ -172,7 +171,7 @@ public interface IResponseMessage extends Serializable {
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(X509Certificate cert, PrivateKey key, String provider);
+    public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider);
 
     /**
      * Sets the public and private key needed to encrypt the message. Must be set if
@@ -184,7 +183,7 @@ public interface IResponseMessage extends Serializable {
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(X509Certificate cert, PrivateKey key, String provider);
+    public void setEncKeyInfo(Certificate cert, PrivateKey key, String provider);
 
     /**
      * Sets a senderNonce if it should be present in the response

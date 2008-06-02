@@ -23,7 +23,6 @@ import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.SignRequestException;
@@ -86,7 +85,7 @@ public class X509ResponseMessage implements IResponseMessage {
     public void setIncludeCACert(boolean incCACert) {
     	// Do nothing, not applicable
     }
-	public void setCACert(X509Certificate cACert) {
+	public void setCACert(Certificate cACert) {
 	}
 
     /**
@@ -220,7 +219,7 @@ public class X509ResponseMessage implements IResponseMessage {
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
+    public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
     }
 
     /**
@@ -233,7 +232,7 @@ public class X509ResponseMessage implements IResponseMessage {
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
+    public void setEncKeyInfo(Certificate cert, PrivateKey key, String provider) {
     }
 
     /**

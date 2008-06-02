@@ -100,7 +100,7 @@ public class CmpResponseMessage implements IResponseMessage {
 	/** Certificate to be in certificate response message, not serialized */
 	private transient Certificate cert = null;
 	/** Certificate for the signer of the response message (CA) */
-	private transient X509Certificate signCert = null;
+	private transient Certificate signCert = null;
 	/** Private key used to sign the response message */
 	private transient PrivateKey signKey = null;
 	/** used to choose response body type */
@@ -124,7 +124,7 @@ public class CmpResponseMessage implements IResponseMessage {
 	
 	public void setIncludeCACert(boolean incCACert) {
 	}
-	public void setCACert(X509Certificate cACert) {
+	public void setCACert(Certificate cACert) {
 	}
 	
 	public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
@@ -165,7 +165,7 @@ public class CmpResponseMessage implements IResponseMessage {
 			issuer = x509cert.getIssuerDN().getName();
 			subject = x509cert.getSubjectDN().getName();
 		} else if (signCert != null) {
-			issuer = signCert.getSubjectDN().getName();
+			issuer = ((X509Certificate)signCert).getSubjectDN().getName();
 			subject = "CN=fooSubject";
 		} else {
 			issuer = "CN=fooIssuer";
@@ -199,7 +199,7 @@ public class CmpResponseMessage implements IResponseMessage {
 					if ( (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null) ) {
 						responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
 					} else {
-						responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
+						responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
 					}
 					ret = true;	
 				}
@@ -217,7 +217,7 @@ public class CmpResponseMessage implements IResponseMessage {
 				if ( (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null) ) {
 					responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
 				} else {
-					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
+					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
 				}
 				ret = true;	
 			} else {
@@ -235,7 +235,7 @@ public class CmpResponseMessage implements IResponseMessage {
 				if ( (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null) ) {
 					responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
 				} else {
-					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
+					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
 				}
 				ret = true;	
 			}
@@ -264,7 +264,7 @@ public class CmpResponseMessage implements IResponseMessage {
 		return false;
 	}
 	
-	public void setSignKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
+	public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
 		this.signCert = cert;
 		this.signKey = key;
 		if (provider != null) {
@@ -272,7 +272,7 @@ public class CmpResponseMessage implements IResponseMessage {
 		}
 	}
 	
-	public void setEncKeyInfo(X509Certificate cert, PrivateKey key,
+	public void setEncKeyInfo(Certificate cert, PrivateKey key,
 			String provider) {
 	}
 	

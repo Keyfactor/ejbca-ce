@@ -179,7 +179,7 @@ public interface IEjbcaWS {
 	 * @see #editUser
 	 * @see #pkcs10Request
 	 * @param userdata the user data for editing/adding a user
-	 * @param cvcreq the CVC request message
+	 * @param cvcreq Base64 encoded CVC request message
 	 * @return the full certificate chain for the IS, with IS certificate in pos 0, DV in 1, CVCA in 2.
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)

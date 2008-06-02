@@ -16,7 +16,6 @@ package org.ejbca.core.protocol;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -63,8 +62,8 @@ public class RequestMessageUtils {
 		try {
 			ret = genPKCS10RequestMessageFromPEM(request);			
 		} catch (IllegalArgumentException e) {
-			log.info("Can not parse PKCS10 request: ", e);
-			// TODO: try to create a CVC request message instead
+			log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
+			ret = genCVCRequestMessageFromPEM(request);
 		}
 		return ret;
 	}
@@ -83,10 +82,10 @@ public class RequestMessageUtils {
 			return null;
 		}
 		if (ret.requireSignKeyInfo()) {
-			ret.setSignKeyInfo((X509Certificate) cert, signPriv, provider);
+			ret.setSignKeyInfo(cert, signPriv, provider);
 		}
 		if (ret.requireEncKeyInfo()) {
-			ret.setEncKeyInfo((X509Certificate) cert, encPriv, provider);
+			ret.setEncKeyInfo(cert, encPriv, provider);
 		}
 		if (req.getSenderNonce() != null) {
 			ret.setRecipientNonce(req.getSenderNonce());
@@ -121,7 +120,15 @@ public class RequestMessageUtils {
 			return null;
 		}	  
 		return new PKCS10RequestMessage(buffer);
-	} // PKCS10RequestMessage
+	} // genPKCS10RequestMessageFromPEM
+
+	public static CVCRequestMessage genCVCRequestMessageFromPEM(byte[] b64Encoded){ 
+		byte[] buffer = getRequestBytes(b64Encoded); 
+		if (buffer == null) {
+			return null;
+		}	  
+		return new CVCRequestMessage(buffer);
+	} // genCvcRequestMessageFromPEM
 
 	private static byte[] getRequestBytes(byte[] b64Encoded) {
 		byte[] buffer = null;

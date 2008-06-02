@@ -207,7 +207,7 @@ public interface IRequestMessage extends Serializable {
     public String getPreferredDigestAlg(); 
     
     
-    /** If the CA certificate should be included in the reponse or not, default to true = yes.
+    /** If the CA certificate should be included in the response or not, default to true = yes.
      * Not applicable for all request/response types.
      * 
      * @return true or false
@@ -215,14 +215,14 @@ public interface IRequestMessage extends Serializable {
     public boolean includeCACert();
 
     /** Sometimes (CMP) the response identifier sent depends on which request identifier was used, 
-     * even if the messages themselves are the same mesages.
+     * even if the messages themselves are the same messages.
      * 
      * @param reqtype which type of request message this response is in response to
      */ 
     public int getRequestType();
     
     /**
-     * For some types of request-responses there is a need for a requetsId to match the request and the
+     * For some types of request-responses there is a need for a requestId to match the request and the
      * response together.
      * @param reqId the id from the request matching to this response
      */
