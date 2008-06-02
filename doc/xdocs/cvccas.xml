@@ -60,14 +60,26 @@
   </p>
   </section>
   
-  <section name="Foreign DVs">
+  <section name="Document verifiers (DV)">
+  <p>
+  You create domestic DVs as simply as creating a SubCA to your CVCA, using a SubCA certificate profile.
+  </p>
   <p>
   You can sign foreign DVs by receiving and processing a CV certificate request. In the 'Edit Certificate Authorities' page enter a name for the 
   foreign DV and click 'Process Certificate Request'.
+  <br/>
+  You can also treat your DVs as regular End Entities by simply creating and choosing a SubCA certificate profiles when adding the End Entities.
+  A benefit of handling foreign DVs as end entities is that you can process and renew them using the same WS-API as you can use for inspection systems. 
   </p>
   <p>You can create a DV to be signed by a foreign CVCA by creating a new CA and selecting 'Signed By=External CA'.
   You need the CVCA certificate of the foreign CVCA to create the request to be sent.
-  </p> 
+  When creating this CA a self-signed CV certificate request is created.
+  </p>
+  <p>You can sign CV certificate requests by your CVCA by going to 'Edit Certificate Authorities', typing the name of your CVCA in the
+  test field (same name as appears in the list above the text field) and then clicking on 'Sign Certificate Request'. You will be a chance to upload the
+  CV certificate request to the CVCA, and you will get an Authenticated request back.
+  This is required when sending certificate requests from your DVs to other member states.
+  </p>
   </section>
   
   <section name="Inspection Systems">
@@ -92,7 +104,51 @@
   There is a simple command line client for testing which is under dist/ejbcawscli/cvcwscli.sh. This can be used to make requests and to parse, print and verify requests and certificates.
   </p>
   </section>
+
+  <section name="Web Service API">
+  <p>In the regular EJBCA WS-API there is a method for enrolling and renewing DVs and ISs.
+  </p>
+  <source>
+  	/** Generate a CV certificate for a user, uses the same authorizations as editUser and pkcs10Request
+	 * responseType is always CertificateHelper.RESPONSETYPE_CERTIFICATE.
+	 * 
+	 * @see #editUser
+	 * @see #pkcs10Request
+	 * @param userdata the user data for editing/adding a user
+	 * @param cvcreq Base64 encoded CVC request message
+	 * @return the full certificate chain for the IS, with IS certificate in pos 0, DV in 1, CVCA in 2.
+	 */
+	public List&lt;Certificate&gt; cvcRequest(String username, String password, String cvcreq)
+	throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+	EjbcaException, ApprovalException, WaitingForApprovalException;
+  </source> 
+  </section>
+
+  <section name="Command line client">
+  <p>there is a command line client using the WS-API. You can use this for reference and sample how to use the WS-API.
+  </p>
+  <p>The command line client have two functions:
+  <ul>
+  <li>cvcrequest - adds a new user and requests a CV Certificate.</li>
+  <li>cvcprint - used to parse and print CV Certificate and requests.</li>
+  </ul>
+  Type the command on the command line to get usage information. 
+  </p>
+  <source>
+  ejbca> cd dist/ejbcawscli
+  ejbca/dist/ejbcawscli> ./cvcwscli.sh
+  Usage: cvcrequest cvcprint
   
+  ejbca/dist/ejbcawscli> ./cvcwscli.sh cvcrequest
+  Usage : cvcrequest &lt;username&gt; &lt;password&gt; &lt;subjectdn&gt; &lt;caname&gt; &lt;signatureAlg&gt; ...
+  ...
+  
+  ejbca/dist/ejbcawscli> ./cvcwscli.sh cvcprint
+  Usage : cvcprint &lt;filename&gt; [verifycert]
+  ...
+  </source> 
+  </section>
+    
   <section name="Importing CAs">
   <p>For test purposes you may receive a private key and a CV certificate for the CVCA trust point used by the passport manufacturer when creating 
   specimen passports. To test your process and inspection systems you can import a CVCA (with soft keystore) in EJBCA if you have a PKCS#8 private key and a CV certificate iwth the public key.
