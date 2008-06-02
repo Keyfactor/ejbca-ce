@@ -403,7 +403,7 @@ public class X509CA extends CA implements Serializable {
 	 * 
 	 * @see CA#signRequest(Collection, String)
 	 */
-	public byte[] signRequest(byte[] request, String signAlg) throws CATokenOfflineException {
+	public byte[] signRequest(byte[] request) throws CATokenOfflineException {
 		return request;
 	}
 

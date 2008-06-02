@@ -19,6 +19,7 @@
   static final String ACTION_CHOOSE_CATYPE                = "choosecatype";
   static final String ACTION_CHOOSE_CATOKENTYPE           = "choosecatokentype";
   static final String ACTION_MAKEREQUEST                  = "makerequest";
+  static final String ACTION_SIGNREQUEST                  = "signrequest";
   static final String ACTION_RECEIVERESPONSE              = "receiveresponse";
   static final String ACTION_PROCESSREQUEST               = "processrequest";
   static final String ACTION_PROCESSREQUEST2              = "processrequest2";
@@ -34,6 +35,7 @@
   static final String BUTTON_CREATE_CA                     = "buttoncreateca"; 
   static final String BUTTON_RENAME_CA                     = "buttonrenameca";
   static final String BUTTON_PROCESSREQUEST                = "buttonprocessrequest";
+  static final String BUTTON_SIGNREQUEST                   = "buttonsignrequest";
   static final String BUTTON_IMPORTCA		               = "buttonimportca";
   static final String BUTTON_EXPORTCA		               = "buttonexportca";
   
@@ -108,7 +110,6 @@
   static final String SELECT_CATYPE                               = "selectcatype";  
   static final String SELECT_CATOKEN                              = "selectcatoken";
   static final String SELECT_SIGNEDBY                             = "selectsignedby"; 
-  static final String SELECT_INITIALREQSIGNEDBY                   = "initialreqsignedby";
   static final String SELECT_KEYSIZE                              = "selectsize";
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
@@ -122,9 +123,11 @@
 
   static final String CERTSERNO_PARAMETER       = "certsernoparameter"; 
 
+  // These constants is an index in to the arrays in recievefile.jspf
   static final int    MAKEREQUESTMODE     = 0;
   static final int    RECIEVERESPONSEMODE = 1;
   static final int    PROCESSREQUESTMODE  = 2;   
+  static final int    SIGNREQUESTMODE     = 3;   
   
   static final int    CERTREQGENMODE      = 0;
   static final int    CERTGENMODE         = 1;
@@ -300,6 +303,17 @@
            }      
          }                        
       }
+      if( request.getParameter(BUTTON_SIGNREQUEST) != null){
+          caname = request.getParameter(TEXTFIELD_CANAME);
+          if(caname != null){
+            caname = caname.trim();
+            if(!caname.equals("")){
+              caid = cabean.getCAInfo(caname).getCAInfo().getCAId();
+              filemode = SIGNREQUESTMODE;
+              includefile="recievefile.jspf";               
+            }      
+          }                        
+       }
     }
     if( action.equals(ACTION_CREATE_CA)){
       if( request.getParameter(BUTTON_CREATE)  != null || request.getParameter(BUTTON_MAKEREQUEST)  != null){
@@ -659,14 +673,10 @@
                      signedby = CAInfo.SIGNEDBYEXTERNALCA;
                  }
 
-                 int reqsignedby = 0;
-                 if(request.getParameter(SELECT_INITIALREQSIGNEDBY) != null)
-                	 reqsignedby = Integer.parseInt(request.getParameter(SELECT_INITIALREQSIGNEDBY));
-
                  // Create the CAInfo to be used for either generating the whole CA or making a request
                  CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
                          certprofileid, validity, 
-                         null, catype, signedby, reqsignedby,
+                         null, catype, signedby,
                          null, catoken, description, -1, null,
                          crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                          finishuser, extendedcaservices,
@@ -944,13 +954,9 @@
 					// A CVC CA does not have any of the external services OCSP, XKMS, CMS
             		ArrayList extendedcaservices = new ArrayList();
                  
-                    int reqsignedby = 0;
-                    if(request.getParameter(SELECT_INITIALREQSIGNEDBY) != null)
-                   	 reqsignedby = Integer.parseInt(request.getParameter(SELECT_INITIALREQSIGNEDBY));
-
                    // Create the CAInfo to be used for either generating the whole CA or making a request
                    cainfo = new CVCCAInfo(caid, validity, 
-                           catoken, description, reqsignedby,
+                           catoken, description,
                            crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                            finishuser, extendedcaservices,
                            approvalsettings,
@@ -1078,6 +1084,32 @@
           } 
         }
       }
+      
+      if( action.equals(ACTION_SIGNREQUEST)){       
+          if(!buttoncancel){
+            try{           
+              BufferedReader bufRdr = new BufferedReader(new InputStreamReader(file));
+              while (bufRdr.ready()) {
+               ByteArrayOutputStream ostr = new ByteArrayOutputStream();
+               PrintStream opstr = new PrintStream(ostr);
+               String temp;
+               while ((temp = bufRdr.readLine()) != null){            
+                 opstr.print(temp + "\n");                
+               }  
+               opstr.close();                
+                                    
+               byte[] reqbytes = ostr.toByteArray();
+               byte[] signedreq = cadatahandler.signRequest(caid, reqbytes);                                
+               cabean.saveRequestData(signedreq);     
+               filemode = CERTREQGENMODE;
+               includefile = "displayresult.jspf";
+              }
+            }catch(Exception e){                      
+              errorrecievingfile = true; 
+            } 
+          }
+      }
+      
       if( action.equals(ACTION_PROCESSREQUEST)){       
        if(!buttoncancel){
          try{           

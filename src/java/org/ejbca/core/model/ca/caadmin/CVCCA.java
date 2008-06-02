@@ -41,6 +41,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
@@ -75,16 +76,12 @@ public class CVCCA extends CA implements Serializable {
 	public static final float LATEST_VERSION = 1;
 
     // protected fields for properties specific to this type of CA.
-	/** Which other CA should sign CSRs created by this CA */ 
-    protected static final String INITIALREQSIGNEDBY = "reqsignedby";
 
 	// Public Methods
 	/** Creates a new instance of CA, this constructor should be used when a new CA is created */
 	public CVCCA(CVCCAInfo cainfo) {
 		super(cainfo);  
 
-		setRequestSignedBy(CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE);
-		
 		setFinishUser(cainfo.getFinishUser());
 		setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
 
@@ -105,7 +102,7 @@ public class CVCCA extends CA implements Serializable {
 			}
 		}
 		CAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
-				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getRequestSignedBy(), getCertificateChain(),
+				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
 				getApprovalSettings(), getNumOfRequiredApprovals(),
@@ -113,20 +110,9 @@ public class CVCCA extends CA implements Serializable {
 		super.setCAInfo(info);
 	}
 
-    public int getRequestSignedBy(){
-    	Integer ret = CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE;
-    	Object o = data.get(INITIALREQSIGNEDBY);
-    	if (o != null) {
-    		ret = ((Integer)o).intValue();
-    	}
-    	return ret;
-    }
-    public void setRequestSignedBy(int reqsignedby) {data.put(INITIALREQSIGNEDBY, new Integer(reqsignedby));}
-
     public void updateCA(CAInfo cainfo) throws Exception{
     	super.updateCA(cainfo); 
     	CVCCAInfo info = (CVCCAInfo) cainfo;
-    	setRequestSignedBy(info.getInitialReqSignedBy());		
     }
 
 
@@ -178,10 +164,11 @@ public class CVCCA extends CA implements Serializable {
 	 * 
 	 * @see CA#signRequest(Collection, String)
 	 */
-	public byte[] signRequest(byte[] request, String signAlg) throws CATokenOfflineException {
+	public byte[] signRequest(byte[] request) throws CATokenOfflineException {
 		byte[] ret = request;
 		try {
 			KeyPair keyPair = new KeyPair(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+			String signAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
 			String subject = getCAInfo().getSubjectDN();
 			String country = CertTools.getPartFromDN(subject, "C");
 			String mnemonic = CertTools.getPartFromDN(subject, "O");
@@ -189,7 +176,15 @@ public class CVCCA extends CA implements Serializable {
 			CAReferenceField caRef = new CAReferenceField(country, mnemonic, seq);
 			CVCertificate cvcert = null;
 			try {
-				Certificate cert = CertTools.getCertfromByteArray(request);
+				byte[] binbytes = request;
+				try {
+					// We don't know if this is a PEM or binary request so we first try to 
+					// decode it as a PEM request, and if it's not we try it as a binary request 
+					binbytes = RequestMessageUtils.getRequestBytes(request);
+				} catch (Exception e) {
+					log.debug("This is not a PEM request?: "+e.getMessage());
+				}
+				Certificate cert = CertTools.getCertfromByteArray(binbytes);
 				CardVerifiableCertificate cardcert = (CardVerifiableCertificate)cert;
 				cvcert = cardcert.getCVCertificate();
 			} catch (ClassCastException e) {

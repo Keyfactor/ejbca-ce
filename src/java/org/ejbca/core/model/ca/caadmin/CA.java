@@ -530,12 +530,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /** Signs a certificate signature request CSR), that can be sent to an external CA. This signature can be use to authenticate the 
      * original request. mainly used for CVC CAs where the CVC requests is created and (self)signed by the DV and then the CVCA
      * adds an outer signature to the request.
+     * The signature algorithm used to sign the request will be whatever algorithm the CA uses to sign certificates.
      * 
      * @param request the binary coded request to be signed
-     * @param signAlg the signature algorithm to be used
      * @return byte array with binary encoded signed request or the original request of the CA can not create an additional signature on the passed in request.
      */
-    public abstract byte[] signRequest(byte[] request, String signAlg) throws CATokenOfflineException;
+    public abstract byte[] signRequest(byte[] request) throws CATokenOfflineException;
 
     public byte[] encryptKeys(KeyPair keypair) throws Exception{
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();

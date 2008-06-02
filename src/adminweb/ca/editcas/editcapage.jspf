@@ -840,24 +840,7 @@ function checkallfields(){
    <% if(catype == CAInfo.CATYPE_CVC){ 
 	     CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
         %>
-            <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("INITIALREQSIGNEDBY") %>
-      </td>
-      <td width="50%">
-        <select name="<%=SELECT_INITIALREQSIGNEDBY %>" size="1">
-                <option value="<%= CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE%>" selected><%= ejbcawebbean.getText("NONE") %></option>  
-                <% Iterator iter = casigners.keySet().iterator();
-                   while(iter.hasNext()){
-                     String nameofca = (String) iter.next();  %>              
-                     <option value="<%= casigners.get(nameofca)%>"
-                     <% if(cvccainfo.getInitialReqSignedBy() == (Integer)casigners.get(nameofca)) out.write(" selected ");
-                     %>> <%= nameofca %></option>  
-                <% } %> 
-	 </select>
-      </td>
-    </tr>
-        
+                 
    <%
     } // if(catype == CAInfo.CATYPE_CVC){
    %>

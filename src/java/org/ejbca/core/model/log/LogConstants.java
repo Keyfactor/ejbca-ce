@@ -69,6 +69,7 @@ public interface LogConstants {
     public static final int EVENT_INFO_CUSTOMLOG = 47;
     public static final int EVENT_INFO_PUKVIEWED = 48;
     public static final int EVENT_INFO_STARTING = 49;
+    public static final int EVENT_INFO_SIGNEDREQUEST = 50;
 
     // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
     public static final int EVENT_ERROR_UNKNOWN = 1000;
@@ -121,6 +122,7 @@ public interface LogConstants {
     public static final int EVENT_ERROR_CUSTOMLOG = 1047;
     public static final int EVENT_ERROR_PUKVIEWED = 1048;
     public static final int EVENT_ERROR_STARTING = 1049;
+    public static final int EVENT_ERROR_SIGNEDREQUEST = 1050;
 
     // System event. Used for internal processing.
 	public static final int EVENT_SYSTEM_INITILIZED_LOGGING		= 2000;
@@ -154,7 +156,7 @@ public interface LogConstants {
                                                     "EVENT_INFO_PUBLISHERDATA", "EVENT_INFO_USERDATASOURCEDATA", "EVENT_INFO_USERDATAFETCHED", "EVENT_INFO_UNREVOKEDCERT",
                                                     "EVENT_INFO_APPROVALREQUESTED","EVENT_INFO_APPROVALAPPROVED","EVENT_INFO_APPROVALREJECTED","EVENT_INFO_SERVICESEDITED","EVENT_INFO_SERVICEEXECUTED",
                                                     "EVENT_INFO_REQUESTCERTIFICATE", "EVENT_INFO_CARENEWED", "EVENT_INFO_CAEXPORTED", "EVENT_INFO_USERDATAREMOVED", "EVENT_INFO_CUSTOMLOG",
-                                                    "EVENT_INFO_PUKVIEWED", "EVENT_INFO_STARTING"};
+                                                    "EVENT_INFO_PUKVIEWED", "EVENT_INFO_STARTING", "EVENT_INFO_SIGNEDREQUEST"};
 
 
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY", "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
@@ -168,7 +170,7 @@ public interface LogConstants {
                                                      "EVENT_ERROR_PUBLISHERDATA", "EVENT_ERROR_USERDATASOURCEDATA", "EVENT_ERROR_USERDATAFETCHED", "EVENT_ERROR_UNREVOKEDCERT",
                                                      "EVENT_ERROR_APPROVALREQUESTED","EVENT_ERROR_APPROVALAPPROVED","EVENT_ERROR_APPROVALREJECTED","EVENT_ERROR_SERVICESEDITED",
                                                      "EVENT_ERROR_SERVICEEXECUTED", "EVENT_ERROR_REQUESTCERTIFICATE", "EVENT_ERROR_CARENEWED", "EVENT_ERROR_CAEXPORTED", "EVENT_ERROR_USERDATAREMOVED", 
-                                                     "EVENT_ERROR_CUSTOMLOG","EVENT_ERROR_PUKVIEWED", "EVENT_ERROR_STARTING"};
+                                                     "EVENT_ERROR_CUSTOMLOG","EVENT_ERROR_PUKVIEWED", "EVENT_ERROR_STARTING", "EVENT_ERROR_SIGNEDREQUEST"};
     
     public static final String[] EVENTNAMES_SYSTEM = {"EVENT_SYSTEM_INITILIZED_LOGGING", "EVENT_SYSTEM_STOPPED_LOGGING"};
 

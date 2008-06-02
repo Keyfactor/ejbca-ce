@@ -890,31 +890,14 @@ public class CAAdminSessionBean extends BaseSessionBean {
             try{
             	// Generate new certificate request.
             	ca.setRequestCertificateChain(createCertChain(cachain));
-            	String signAlg = "SHA1WithRSA"; // Defaulf algorithm
+            	String signAlg = "SHA1WithRSA"; // Default algorithm
             	CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
             	if (tinfo != null) {
             		signAlg = tinfo.getSignatureAlgorithm();
             	}
+            	log.debug("Using signing algorithm: "+signAlg+" for the CSR.");
             	returnval = ca.createRequest(null, signAlg);            	
 
-            	// If this is a CVC CA and it is a SubCA (DV) then we
-            	// should actually get the request signed (an outer signature) 
-            	// by the CVCA in order for other member states to accept our request
-            	if (ca instanceof CVCCA) {
-            		CVCCA cvcca = (CVCCA)ca;
-                	int signedbyid = cvcca.getRequestSignedBy();
-                	if (signedbyid != CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE) {
-                		// Create an outer signature by the CA that is configured to sign requests for this CA
-                        CADataLocal signedbydata = this.cadatahome.findByPrimaryKey(new Integer(signedbyid));
-                        CA signedbyCA = signedbydata.getCA();
-                    	returnval = signedbyCA.signRequest(returnval, signAlg);
-                    	String msg = intres.getLocalizedMessage("caadmin.certreqsigned", signedbydata.getName(), caname);            	
-                    	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
-                	} else {
-                		log.debug("Not signing request by any other CA because signed by caid is CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE.");
-                	}            		
-            	}
-            	
             	// Set statuses if it should be set.
             	if(setstatustowaiting){
             		cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
@@ -945,6 +928,49 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	debug("<makeRequest: "+caid);
         return returnval;
     } // makeRequest
+
+    /** 
+     * If the CA can do so, this method signs a nother entitys CSR, for authentication. Prime example of for EU EAC ePassports where
+     * the DVs initial certificate request is signed by the CVCA. 
+     * The signature algorithm used to sign the request will be whatever algorithm the CA uses to sign certificates.
+     * 
+     * @param admin
+     * @param caid the CA that should sign the request
+     * @param request binary certificate request, the format should be understood by the CA
+     * @return binary certificate request, which is the same as passed in except also signed by the CA, or it might be the exact same if the CA does not support request signing
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
+     * @throws CATokenOfflineException
+     * 
+     * @ejb.interface-method
+     */
+    public byte[] signRequest(Admin admin, int caid, byte[] request) throws AuthorizationDeniedException, CADoesntExistsException, CATokenOfflineException {
+        try{
+            getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+        }catch(AuthorizationDeniedException e){
+    		String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", new Integer(caid));            	
+            getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,e);
+            throw new AuthorizationDeniedException(msg);
+        }
+    	byte [] returnval = null;
+    	CADataLocal signedbydata;
+    	String caname = ""+caid;
+		try {
+			signedbydata = this.cadatahome.findByPrimaryKey(new Integer(caid));
+	    	caname = signedbydata.getName();
+	    	CA signedbyCA = signedbydata.getCA();
+	    	returnval = signedbyCA.signRequest(request);
+	    	String msg = intres.getLocalizedMessage("caadmin.certreqsigned", caname);            	
+	    	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_SIGNEDREQUEST,msg);
+		} catch (FinderException e) {
+			throw new CADoesntExistsException("caid="+caid);
+        }catch(Exception e){
+    		String msg = intres.getLocalizedMessage("caadmin.errorcertreqsign", caname);            	
+            getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SIGNEDREQUEST,msg,e);
+            throw new EJBException(e);
+        }
+    	return returnval;
+    }
 
     /**
      *  Receives a certificate response from an external CA and sets the newly created CAs status to active.
@@ -1767,7 +1793,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             // Create the CAInfo to be used for either generating the whole CA or making a request
             cainfo = new CVCCAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, SecConst.CA_ACTIVE, new Date(),
             		certprof, validity, 
-            		CertTools.getNotAfter(caSignatureCertificate), CAInfo.CATYPE_CVC, signedby, CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE,
+            		CertTools.getNotAfter(caSignatureCertificate), CAInfo.CATYPE_CVC, signedby,
             		certificatechain, catoken.getCATokenInfo(), 
             		description, -1, (Date)null,
                     24, 0, 10, 0, // CRL periods

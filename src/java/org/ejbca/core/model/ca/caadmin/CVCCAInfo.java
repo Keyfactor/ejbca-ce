@@ -30,15 +30,11 @@ public class CVCCAInfo extends CAInfo {
 
 	private static final long serialVersionUID = 2L;
 
-    public static final int INITIAL_REQ_SIGNED_BY_NONE = 0;
-
-	private int initialreqsignedby = CVCCAInfo.INITIAL_REQ_SIGNED_BY_NONE;
-	
 	/**
 	 * Constructor that should be used when creating CA and retrieving CA info.
 	 */
 	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
-			int validity, Date expiretime, int catype, int signedby, int reqsignedby, Collection certificatechain, 
+			int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
 			CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
 			Collection crlpublishers,boolean finishuser,Collection extendedcaserviceinfos, 
 			Collection approvalSettings, int numOfReqApprovals,
@@ -52,7 +48,6 @@ public class CVCCAInfo extends CAInfo {
 		this.expiretime = expiretime;
 		this.catype = catype;
 		this.signedby = signedby;
-		this.initialreqsignedby = reqsignedby;
         this.certificatechain = certificatechain;	
 		this.catokeninfo = catokeninfo; 
 		this.description = description;
@@ -74,7 +69,7 @@ public class CVCCAInfo extends CAInfo {
 	/**
 	 * Constructor that should be used when updating CA data.
 	 */
-	public CVCCAInfo(int caid, int validity, CATokenInfo catokeninfo, String description, int reqsignedby,
+	public CVCCAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
 			int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
 			Collection crlpublishers,
 			boolean finishuser, Collection extendedcaserviceinfos, 
@@ -84,7 +79,6 @@ public class CVCCAInfo extends CAInfo {
 		this.validity=validity;
 		this.catokeninfo = catokeninfo; 
 		this.description = description;    
-		this.initialreqsignedby = reqsignedby;
 		this.crlperiod = crlperiod;
 		this.crlIssueInterval = crlIssueInterval;
 		this.crlOverlapTime = crlOverlapTime;
@@ -99,13 +93,5 @@ public class CVCCAInfo extends CAInfo {
 
 
 	public CVCCAInfo(){}
-
-	public int getInitialReqSignedBy() {
-		return initialreqsignedby;
-	}
-
-	public void setInitialReqSignedBy(int initialreqsignedby) {
-		this.initialreqsignedby = initialreqsignedby;
-	}
 
 }
