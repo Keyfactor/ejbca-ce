@@ -108,6 +108,7 @@ public class CAInfo implements Serializable {
     public int getStatus() {return status;}
     public int getCAType() {return catype;}
     public int getSignedBy() {return signedby;}
+    public void setSignedBy(int signedby) {this.signedby = signedby;}
     
     public int getValidity() { return validity;}
     public void setValidity(int validity) { this.validity = validity; }

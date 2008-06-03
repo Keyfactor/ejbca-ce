@@ -21,6 +21,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -40,6 +41,7 @@ import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
@@ -50,6 +52,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -73,6 +76,8 @@ public class TestCAs extends TestCase {
     private static ICertificateStoreSessionHome cacheStoreHome;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    
+    private static Collection rootcacertchain = null;
 
     /**
      * Creates a new TestCAs object.
@@ -203,7 +208,8 @@ public class TestCAs extends TestCase {
 
             CAInfo info = cacheAdmin.getCAInfo(admin, "TEST");
 
-            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            rootcacertchain = info.getCertificateChain();
+            X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TEST"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TEST"));
             PublicKey pk = cert.getPublicKey();
@@ -965,7 +971,7 @@ public class TestCAs extends TestCase {
         cacheStore.changeCertificateProfile(admin, "TESTCVCDV", profile);
 
         int caid = dvdcainfo.getCAId();
-        cacheAdmin.renewCA(admin, caid, null, null, false);
+        cacheAdmin.renewCA(admin, caid, null, false);
         dvdcainfo = cacheAdmin.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         Certificate cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
@@ -1009,6 +1015,125 @@ public class TestCAs extends TestCase {
         assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getValue());
         
         log.debug("<test09AddCVCCA()");
+    }
+
+    /** Test that we can create a SubCA signed by an external RootCA.
+     * The SubCA create a certificate request sent to the RootCA that creates a certificate which is then received on the SubCA again.
+     * @throws Exception
+     */
+    public void test10RSASignedByExternal() throws Exception {
+        log.debug(">test10RSASignedByExternal()");
+        boolean ret = false;
+        try {
+
+            Context context = getInitialContext();
+            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
+            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
+            authorizationsession.initialize(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
+
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setSignKeySpec("1024");
+            catokeninfo.setEncKeySpec("1024");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                    "CN=OCSPSignerCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
+                    "",
+                    "1024",
+                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                    "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
+                    "",
+                    "1024",
+                    CATokenConstants.KEYALGORITHM_RSA));
+			 extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+						  "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
+			     		  "",
+			     		  "1024",
+			     		 CATokenConstants.KEYALGORITHM_RSA));
+
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL",
+                    "TESTSIGNEDBYEXTERNAL", SecConst.CA_ACTIVE, new Date(),
+                    "", SecConst.CERTPROFILE_FIXED_SUBCA,
+                    1000,
+                    null, // Expiretime
+                    CAInfo.CATYPE_X509,
+                    CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
+                    (Collection) null,
+                    catokeninfo,
+                    "JUnit RSA CA Signed by external",
+                    -1, null,
+                    null, // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(),
+                    true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
+                    null, // defaultocsplocator
+                    null, // defaultfreshestcrl
+                    true, // Finish User
+                    extendedcaservices,
+                    false, // use default utf8 settings
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false, // Use UTF8 subject DN by default
+            		true, // Use LDAP DN order by default
+            		false, // Use CRL Distribution Point on CRL
+            		false,  // CRL Distribution Point on CRL critical
+            		true);
+
+            cacheAdmin.createCA(admin, cainfo);
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+
+            // Generate a certificate request from the CA and send to the TEST CA
+            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), rootcacertchain, false);
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
+
+            // Receive the certificate request on the TEST CA
+            info.setSignedBy("CN=TEST".hashCode());
+            IResponseMessage resp = cacheAdmin.processRequest(admin, info, msg);
+            
+            // Receive the signed certificate back on our SubCA
+            cacheAdmin.receiveResponse(admin, info.getCAId(), resp);
+            
+            // Check that the CA has the correct certificate chain now
+            info = cacheAdmin.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            Iterator iter = info.getCertificateChain().iterator();
+            X509Certificate cert = (X509Certificate) iter.next();
+            assertTrue("Error in created ca certificate", CertTools.getSubjectDN(cert).equals("CN=TESTSIGNEDBYEXTERNAL"));
+            assertTrue("Error in created ca certificate", CertTools.getIssuerDN(cert).equals("CN=TEST"));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTSIGNEDBYEXTERNAL"));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof RSAPublicKey) {
+            	RSAPublicKey rsapk = (RSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "RSA");
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
+            cert = (X509Certificate) iter.next();
+            assertTrue("Error in root ca certificate", CertTools.getSubjectDN(cert).equals("CN=TEST"));
+            assertTrue("Error in root ca certificate", CertTools.getIssuerDN(cert).equals("CN=TEST"));
+            
+            ret = true;
+
+        } catch (CAExistsException pee) {
+            log.info("CA exists: ", pee);
+        }
+
+        assertTrue("Creating RSA CA failed", ret);
+        log.debug("<test10RSASignedByExternal");
     }
 
 }

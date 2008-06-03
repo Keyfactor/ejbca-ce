@@ -213,4 +213,17 @@ public class TestRemoveCA extends TestCase {
         log.debug("<test07removeCVCCA()");
     }
 
+    public void test09removeRSASignedByExternal() throws Exception {
+        log.debug(">test09removeRSASignedByExternal()");
+        boolean ret = false;
+        try {
+            cacheAdmin.removeCA(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
+            ret = true;
+        } catch (Exception pee) {
+        }
+        assertTrue("Removing RSA CA failed", ret);
+
+        log.debug("<test09removeRSASignedByExternal()");
+    }
+
 }

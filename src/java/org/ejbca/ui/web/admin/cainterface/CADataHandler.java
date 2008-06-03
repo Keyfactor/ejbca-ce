@@ -219,8 +219,8 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public void renewCA(int caid, IResponseMessage responsemessage, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-      caadminsession.renewCA(administrator, caid, responsemessage, keystorepass, regenerateKeys );
+  public void renewCA(int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+      caadminsession.renewCA(administrator, caid, keystorepass, regenerateKeys );
       info.cAsEdited();
   }
 

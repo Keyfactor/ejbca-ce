@@ -89,7 +89,7 @@ public class TestRenewCA extends TestCase {
         X509CAInfo info = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         
-        cacheAdmin.renewCA(admin,info.getCAId(),null,null,false);
+        cacheAdmin.renewCA(admin,info.getCAId(),null,false);
         X509CAInfo newinfo = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
@@ -100,7 +100,7 @@ public class TestRenewCA extends TestCase {
         assertTrue(newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
 
         // This assumes that the default system keystore password is not changed from foo123
-        cacheAdmin.renewCA(admin,info.getCAId(),null,"foo123",true);
+        cacheAdmin.renewCA(admin,info.getCAId(),"foo123",true);
         X509CAInfo newinfo2 = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));

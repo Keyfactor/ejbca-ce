@@ -78,6 +78,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CACacheManager;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -1000,7 +1001,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			if(responsemessage instanceof X509ResponseMessage){
     				cacert = ((X509ResponseMessage) responsemessage).getCertificate();
     			}else{
-    	    		String msg = intres.getLocalizedMessage("caadmin.errorcertrespillegalmsg");            	
+    	    		String msg = intres.getLocalizedMessage("caadmin.errorcertrespillegalmsg", responsemessage != null ? responsemessage.getClass().getName() : "null");
     				getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util. Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg);
     				throw new EjbcaException(msg);
     			}
@@ -1212,11 +1213,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     			}catch(CATokenOfflineException e){
     	    		String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());            	
+    				error(msg, e);
     				getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
     				throw e;
     			}
     		}catch(Exception e){
 	    		String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());            	
+				error(msg, e);
     			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
     			throw new EJBException(e);
     		}
@@ -1226,8 +1229,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	if(certchain != null) {
     		String msg = intres.getLocalizedMessage("caadmin.processedca", cainfo.getName());            	
     		getLogSession().log(admin, cainfo.getCAId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);    		
-    	}
-    	else {
+    	} else {
     		String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());            	
     		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg);    		
     	}
@@ -1240,14 +1242,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
      *  from database.
      *
      *  @param caid the caid of the CA that will be renewed
-     *  @param responsemessage should be a X509ResponseMessage with new CA certificate if CA is signed by external
-     *         RootCA, otherwise use the null value.
      *  @param keystorepass password used when regenerating keys, can be null if regenerateKeys is false.
      *  @param regenerateKeys, if true and the CA have a softCAToken the keys are regenerated before the certrequest.
      *          
      * @ejb.interface-method
      */
-    public void renewCA(Admin admin, int caid, IResponseMessage responsemessage, String keystorepass, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    public void renewCA(Admin admin, int caid, String keystorepass, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
     	debug(">CAAdminSession, renewCA(), caid=" + caid);
     	Collection cachain = null;
     	Certificate cacertificate = null;
@@ -1278,6 +1278,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
         		caToken.generateKeys(keystorepass, renew);
     			ca.setCAToken(caToken);
+    			// In order to generate a certificate with this keystore we must make sure it is activated
+    			ca.getCAToken().activate(keystorepass);
     		}
     		
     		try{
@@ -1325,30 +1327,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     						cachain.addAll(rootcachain);
     					}
     				}
-    			}else{
-    				// if external signer then use signed certificate.
-    				// check the validity of the certificate chain.
-    				if(responsemessage instanceof X509ResponseMessage){
-    					cacertificate = ((X509ResponseMessage) responsemessage).getCertificate();
-    				}else{
-    	        		String msg = intres.getLocalizedMessage("error.errorcertrespillegalmsg");            	
-    					getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg);
-    					throw new EJBException(new EjbcaException(msg));
-    				}
-
-    				// Check that DN is the equals the request.
-    				if(!CertTools.getSubjectDN(cacertificate).equals(CertTools.stringToBCDNString(ca.getSubjectDN()))){
-        	    		String msg = intres.getLocalizedMessage("caadmin.errorcertrespwrongdn", CertTools.getSubjectDN(cacertificate), ca.getSubjectDN());            	
-    					getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg);
-    					throw new EJBException(new EjbcaException(msg));
-    				}
-
-    				cachain = new ArrayList();
-    				cachain.add(cacertificate);
-    				cachain.addAll(ca.getRequestCertificateChain());
-
-    				cachain = createCertChain(cachain);
-
+    			} else {
+    				// We should never get here
+    				log.error("Directly renewing a CA signed by external can not be done");
+    				throw new NotSupportedException("Directly renewing a CA signed by external can not be done");
     			}
     			// Set statuses.
     			cadata.setExpireTime(CertTools.getNotAfter(cacertificate).getTime());

@@ -47,6 +47,8 @@
   static final String HIDDEN_CATYPE                        = "hiddencatype";
   static final String HIDDEN_CATOKENPATH                   = "hiddencatokenpath";
   static final String HIDDEN_CATOKENTYPE                   = "hiddencatokentype";
+  static final String HIDDEN_RENEWKEYS                     = "hiddenrenewkeys";
+  static final String HIDDEN_RENEWAUTHCODE                 = "hiddenrenewauthcode";
  
 // Buttons used in editcapage.jsp
   static final String BUTTON_SAVE                       = "buttonsave";
@@ -137,6 +139,8 @@
   // Initialize environment
   int caid = 0;
   String caname = null;
+  boolean reGenerateKeys = false;
+  String renewauthenticationcode = null;
   String includefile = "choosecapage.jspf"; 
   String processedsubjectdn = "";
   int catype = CAInfo.CATYPE_X509;  // default
@@ -978,18 +982,18 @@
                }
 
                if(request.getParameter(BUTTON_RENEWCA) != null){
-                 int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
-                 if(signedby != CAInfo.SIGNEDBYEXTERNALCA){
-                   boolean reGenerateKeys = false;
-                   if(request.getParameter(CHECKBOX_RENEWKEYS) != null && catokentype == CATokenInfo.CATOKENTYPE_P12){
+                   reGenerateKeys = false;
+                   if(request.getParameter(CHECKBOX_RENEWKEYS) != null){
                 	   reGenerateKeys = request.getParameter(CHECKBOX_RENEWKEYS).equals(CHECKBOX_VALUE);                	   
                    }
-                   String renewauthenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODERENEW);
-                   cadatahandler.renewCA(caid, null, renewauthenticationcode, reGenerateKeys);
-                   carenewed = true;
-                 }else{                   
-                   includefile="renewexternal.jspf"; 
-                 }  
+                   renewauthenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODERENEW);
+                   int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
+                   if(signedby != CAInfo.SIGNEDBYEXTERNALCA){
+                       cadatahandler.renewCA(caid, renewauthenticationcode, reGenerateKeys);
+                       carenewed = true;
+                   }else{                   
+                       includefile="renewexternal.jspf"; 
+                   }  
                }
                 
              if(request.getParameter(BUTTON_REVOKECA) != null){
@@ -1267,8 +1271,14 @@
       if( action.equals(ACTION_RENEWCA_MAKEREQUEST)){
         if(!buttoncancel){
           try{
-           Collection certchain = CertTools.getCertsFromPEM(file);                       
-           byte[] certreq = cadatahandler.makeRequest(caid, certchain, false);
+           Collection certchain = CertTools.getCertsFromPEM(file);
+           renewauthenticationcode = request.getParameter(HIDDEN_RENEWAUTHCODE);
+           reGenerateKeys = Boolean.valueOf(request.getParameter(HIDDEN_RENEWKEYS));
+           //cadatahandler.renewCA(caid, renewauthenticationcode, reGenerateKeys);
+           // TODO: add regenerate and authcode to makeRequest
+
+           // When renewing a CA we want to set status to waiting for response
+           byte[] certreq = cadatahandler.makeRequest(caid, certchain, true);
            cabean.saveRequestData(certreq);   
                
            filemode = CERTREQGENMODE;
