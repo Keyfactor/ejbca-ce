@@ -988,16 +988,25 @@ public class TestCAs extends TestCase {
 		Certificate req = CertTools.getCertfromByteArray(request);
 		CardVerifiableCertificate cardcert = (CardVerifiableCertificate)req;
 		CVCertificate reqcert = cardcert.getCVCertificate();
+        assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getHolderReference().getValue());
+        assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getAuthorityReference().getValue());
 
         // Make a certificate request from a DV
         cachain = dvdcainfo.getCertificateChain();
-        byte[] authrequest = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false);
-        CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
-        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
-        assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getValue());
-
+        request = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false);
+		req = CertTools.getCertfromByteArray(request);
+		cardcert = (CardVerifiableCertificate)req;
+		reqcert = cardcert.getCVCertificate();
+        assertEquals("SETESTDV-D00001", reqcert.getCertificateBody().getHolderReference().getValue());
+        assertEquals("SETESTDV-D00001", reqcert.getCertificateBody().getAuthorityReference().getValue());
+        
         // Get the DVs certificate request signed by the CVCA
-        // TODO:
+        byte[] authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request);
+		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
+        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
+        assertEquals("SETESTDV-D00001", authreq.getRequest().getCertificateBody().getAuthorityReference().getValue());
+        assertEquals("SETESTDV-D00001", authreq.getRequest().getCertificateBody().getHolderReference().getValue());
+        assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getValue());
         
         log.debug("<test09AddCVCCA()");
     }
