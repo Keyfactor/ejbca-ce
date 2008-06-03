@@ -240,6 +240,21 @@ function checkfields(){
 <table width="100%" border="0" cellspacing="1" cellpadding="0">
   <tr> 
     <td width="2%">&nbsp;</td>
+    <td width="5%" align="left">&nbsp;</td>
+    <td width="93%" align="left"> 
+      <select name="<%=SELECT_VIEWLOGDEVICE %>" >
+        <% Collection availableLogDevices = logbean.getAvailableLogDevices();
+           Iterator iteradv = availableLogDevices.iterator();
+           while(iteradv.hasNext()){
+             String deviceName = (String) iteradv.next();
+             String deviceSelected = (deviceName.equalsIgnoreCase(request.getParameter(SELECT_VIEWLOGDEVICE)) ? "selected" : ""); %>
+             <option value='<%=deviceName %>' <%=deviceSelected %> ><%=deviceName %></option>
+        <% } %>
+      </select> 
+    </td>
+  </tr>
+  <tr> 
+    <td width="2%">&nbsp;</td>
     <td width="5%" align="left">&nbsp;
     </td>
     <td width="93%" align="left"> 
