@@ -26,7 +26,6 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
