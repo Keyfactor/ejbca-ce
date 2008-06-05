@@ -224,7 +224,7 @@ public class TestCAs extends TestCase {
             
             // Test to generate a certificate request from the CA
             Collection cachain = info.getCertificateChain();
-            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), cachain, false);
+            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), cachain, false, null, false);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
         } catch (CAExistsException pee) {
@@ -990,7 +990,7 @@ public class TestCAs extends TestCase {
 
         // Make a certificate request from a CVCA
         Collection cachain = cvcainfo.getCertificateChain();
-        byte[] request = cacheAdmin.makeRequest(admin, cvcainfo.getCAId(), cachain, false);
+        byte[] request = cacheAdmin.makeRequest(admin, cvcainfo.getCAId(), cachain, false, null, false);
 		Certificate req = CertTools.getCertfromByteArray(request);
 		CardVerifiableCertificate cardcert = (CardVerifiableCertificate)req;
 		CVCertificate reqcert = cardcert.getCVCertificate();
@@ -999,7 +999,7 @@ public class TestCAs extends TestCase {
 
         // Make a certificate request from a DV
         cachain = dvdcainfo.getCertificateChain();
-        request = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false);
+        request = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false, null, false);
 		req = CertTools.getCertfromByteArray(request);
 		cardcert = (CardVerifiableCertificate)req;
 		reqcert = cardcert.getCVCertificate();
@@ -1024,6 +1024,7 @@ public class TestCAs extends TestCase {
     public void test10RSASignedByExternal() throws Exception {
         log.debug(">test10RSASignedByExternal()");
         boolean ret = false;
+        CAInfo info =null;
         try {
 
             Context context = getInitialContext();
@@ -1094,10 +1095,10 @@ public class TestCAs extends TestCase {
 
             cacheAdmin.createCA(admin, cainfo);
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            info = cacheAdmin.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
 
             // Generate a certificate request from the CA and send to the TEST CA
-            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), rootcacertchain, false);
+            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), rootcacertchain, false, null, false);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
@@ -1132,7 +1133,13 @@ public class TestCAs extends TestCase {
             log.info("CA exists: ", pee);
         }
 
-        assertTrue("Creating RSA CA failed", ret);
+        // Make a certificate request from the CA
+        Collection cachain = info.getCertificateChain();
+        byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), cachain, false, null, false);
+        PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
+        assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
+
+        assertTrue("Creating RSA CA (signed by external) failed", ret);
         log.debug("<test10RSASignedByExternal");
     }
 

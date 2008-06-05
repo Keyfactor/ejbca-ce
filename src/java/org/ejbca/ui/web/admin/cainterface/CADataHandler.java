@@ -170,8 +170,8 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public byte[] makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-	  byte[] result = caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting);
+  public byte[] makeRequest(int caid, Collection cachain, boolean setstatustowaiting, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+	  byte[] result = caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting,keystorepass,regenerateKeys);
 	  return result;    
   }	    
 

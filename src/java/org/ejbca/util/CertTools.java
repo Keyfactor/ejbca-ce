@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.math.BigInteger;
 import java.net.URL;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
@@ -35,6 +36,10 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertPathValidatorResult;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -42,6 +47,9 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.PKIXCertPathValidatorResult;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -50,6 +58,8 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -2435,4 +2445,127 @@ public class CertTools {
     	return ( "".equals(directoryName) ? null : directoryName );
     }
     
+    
+    /**
+     * Method to create certificate path and to check it's validity from a list of certificates.
+     * The list of certificates should only contain one root certificate.
+     *
+     * @param certlist
+     * @return the certificatepath
+     * @throws InvalidAlgorithmParameterException 
+     * @throws NoSuchProviderException 
+     * @throws NoSuchAlgorithmException 
+     * @throws CertificateException 
+     */
+    public static Collection createCertChain(Collection certlist) throws CertPathValidatorException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException{
+    	ArrayList returnval = new ArrayList();
+
+    	certlist = orderCertificateChain(certlist);
+
+    	// set certificate chain
+    	Certificate rootcert = null;
+    	ArrayList calist = new ArrayList();
+    	Iterator iter = certlist.iterator();
+    	while(iter.hasNext()){
+    		Certificate next = (Certificate) iter.next();
+    		if (CertTools.isSelfSigned(next)){
+    			rootcert = (Certificate)next;
+    		} else{
+    			calist.add(next);
+    		}
+    	}
+
+    	if(calist.size() == 0){
+    		// only one root cert, no certchain
+    		returnval.add(rootcert);
+    	} else {
+    		// We need a bit special handling for CV certificates because those can not be handled using a PKIX CertPathValidator
+    		Certificate test = (Certificate)calist.get(0);
+    		if (test.getType().equals("CVC")) {
+    			if (calist.size() == 1) {
+    				returnval.add(test);
+    				returnval.add(rootcert);
+    			} else {
+    				throw new CertPathValidatorException("CVC certificate chain can not be of length longer than two.");
+    			}
+    		} else {
+    			// Normal X509 certificates
+    			HashSet trustancors = new HashSet();
+    			TrustAnchor trustanchor = null;
+    			trustanchor = new TrustAnchor((X509Certificate)rootcert, null);
+    			trustancors.add(trustanchor);
+
+    			// Create the parameters for the validator
+    			PKIXParameters params = new PKIXParameters(trustancors);
+
+    			// Disable CRL checking since we are not supplying any CRLs
+    			params.setRevocationEnabled(false);
+    			params.setDate( new Date() );
+
+    			// Create the validator and validate the path
+    			CertPathValidator certPathValidator = CertPathValidator.getInstance(CertPathValidator.getDefaultType(), "BC");
+    			CertificateFactory fact = CertTools.getCertificateFactory();
+    			CertPath certpath = fact.generateCertPath(calist);
+
+    			CertPathValidatorResult result = certPathValidator.validate(certpath, params);
+
+    			// Get the certificates validate in the path
+    			PKIXCertPathValidatorResult pkixResult = (PKIXCertPathValidatorResult)result;
+    			returnval.addAll(certpath.getCertificates());
+
+    			// Get the CA used to validate this path
+    			TrustAnchor ta = pkixResult.getTrustAnchor();
+    			X509Certificate cert = ta.getTrustedCert();
+    			returnval.add(cert);
+    		}
+    	}
+    	return returnval;
+    }
+
+    /**
+     * Method ordering a list of certificate into a certificate path with the CA at the end.
+     * Does not check validity or verification of any kind, just ordering by issuerdn.
+     * @param certlist list of certificates to order.
+     * @return Collection with certificatechain.
+     */
+    private static Collection orderCertificateChain(Collection certlist) throws CertPathValidatorException{
+    	 ArrayList returnval = new ArrayList();
+       Certificate rootca = null;
+    	 HashMap cacertmap = new HashMap();
+    	 Iterator iter = certlist.iterator();
+    	 while(iter.hasNext()){
+    	 	Certificate cert = (Certificate) iter.next();
+    	    if(CertTools.isSelfSigned(cert))
+    	      rootca = cert;
+    	    else {
+    	    	log.debug("Adding to cacertmap with index '"+CertTools.getIssuerDN(cert)+"'");
+    	    	cacertmap.put(CertTools.getIssuerDN(cert),cert);
+    	    }
+    	 }
+
+    	 if(rootca == null)
+    	   throw new CertPathValidatorException("No root CA certificate found in certificatelist");
+
+    	 returnval.add(0,rootca);
+    	 Certificate currentcert = rootca;
+    	 int i =0;
+    	 while(certlist.size() != returnval.size() && i <= certlist.size()){
+    		 log.debug("Looking in cacertmap for '"+CertTools.getSubjectDN(currentcert)+"'");
+    	 	Certificate nextcert = (Certificate) cacertmap.get(CertTools.getSubjectDN(currentcert));
+    	 	if(nextcert == null)
+  		  throw new CertPathValidatorException("Error building certificate path");
+
+  		returnval.add(0,nextcert);
+  		currentcert = nextcert;
+    	 	i++;
+    	 }
+
+    	 if(i > certlist.size())
+  	  throw new CertPathValidatorException("Error building certificate path");
+
+
+    	 return returnval;
+    }
+
+
 } // CertTools

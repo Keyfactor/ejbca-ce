@@ -221,6 +221,10 @@
            caid = Integer.parseInt(item.getString());
          if(item.getFieldName().equals(HIDDEN_CANAME))
            caname = item.getString();
+         if(item.getFieldName().equals(HIDDEN_RENEWAUTHCODE))
+             renewauthenticationcode = item.getString();
+         if(item.getFieldName().equals(HIDDEN_RENEWKEYS))
+             reGenerateKeys = Boolean.valueOf(item.getString());
          if(item.getFieldName().equals(BUTTON_CANCEL))
            buttoncancel = true; 
          if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_NAME))
@@ -1013,7 +1017,7 @@
                  caid = Integer.parseInt(request.getParameter(HIDDEN_CAID));
                  caname = request.getParameter(HIDDEN_CANAME);
                  Collection certchain = cabean.getCAInfo(caid).getCertificateChain();
-                 byte[] certreq = cadatahandler.makeRequest(caid, certchain, false);
+                 byte[] certreq = cadatahandler.makeRequest(caid, certchain, false, null, false);
                  cabean.saveRequestData(certreq);     
                  filemode = CERTREQGENMODE;
                  includefile = "displayresult.jspf";
@@ -1040,7 +1044,7 @@
              CAInfo cainfo = cabean.getRequestInfo();              
              cadatahandler.createCA(cainfo);                           
              try{ 
-               byte[] certreq=cadatahandler.makeRequest(caid, certchain, true);
+               byte[] certreq=cadatahandler.makeRequest(caid, certchain, true, null, false);
                cabean.saveRequestData(certreq);     
                filemode = CERTREQGENMODE;
                includefile = "displayresult.jspf";
@@ -1272,13 +1276,10 @@
         if(!buttoncancel){
           try{
            Collection certchain = CertTools.getCertsFromPEM(file);
-           renewauthenticationcode = request.getParameter(HIDDEN_RENEWAUTHCODE);
-           reGenerateKeys = Boolean.valueOf(request.getParameter(HIDDEN_RENEWKEYS));
-           //cadatahandler.renewCA(caid, renewauthenticationcode, reGenerateKeys);
-           // TODO: add regenerate and authcode to makeRequest
-
-           // When renewing a CA we want to set status to waiting for response
-           byte[] certreq = cadatahandler.makeRequest(caid, certchain, true);
+           // These parameters are set in 'if(FileUpload.isMultipartContent(request)){'            
+           //renewauthenticationcode = request.getParameter(HIDDEN_RENEWAUTHCODE);
+           //reGenerateKeys = Boolean.valueOf(request.getParameter(HIDDEN_RENEWKEYS));
+           byte[] certreq = cadatahandler.makeRequest(caid, certchain, false, renewauthenticationcode, reGenerateKeys);
            cabean.saveRequestData(certreq);   
                
            filemode = CERTREQGENMODE;

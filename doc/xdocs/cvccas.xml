@@ -80,6 +80,19 @@
   CV certificate request to the CVCA, and you will get an Authenticated request back.
   This is required when sending certificate requests from your DVs to other member states.
   </p>
+  <p>You can at any time create a CV certificate request from a DV by going into 'Edit Certificate Authorities' and click 'Make Certificate Request'. 
+  This generates a CSR created by the CAs keystore. When receiving the signed certificate back, you can feed that to your IS-system. There is no need (or way)
+  to import it into EJBCA.
+  </p>
+  <p>
+  You can renew a DV by going into 'Edit Certificate Authorities' and click 'Renew CA'. By uploading the CA certificate supposed to sign the 
+  certificate, you can get a new CSR created. You can import the received certificate by clicking 'Renew CA' again and choosing the function to 
+  'Receive Certificate Response' instead of 'Make Certificate Request'. 
+  You only have to (or can) import one issued certificate to make your DV operational.
+  <br/>
+  By filling in the CA tokens password and checking the box 'Renew Keys' the DV will generate new keys.
+  This is only working for soft keystores currently. The renewal CRS is not signed with the old keys. 
+  </p>
   </section>
   
   <section name="Inspection Systems">
