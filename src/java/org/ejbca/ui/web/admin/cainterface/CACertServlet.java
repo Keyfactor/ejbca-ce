@@ -302,7 +302,20 @@ public class CACertServlet extends HttpServlet {
                 }
                 Certificate cacert = (Certificate)chain[level];
                 byte[] enccert = cacert.getEncoded();
-            	String strippedCACN = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN").replaceAll("\\W", "");
+                // Se if we can name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
+                // and if that does not exist, use the fixed string CertificateAuthority. 
+                String dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+                if (dnpart == null) {
+                	dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "SN");
+                }
+                if (dnpart == null) {
+                	dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+                }
+                if (dnpart == null) {
+                	dnpart = "CertificateAuthority";
+                }
+                // Strip whitespace though
+            	String strippedCACN = dnpart.replaceAll("\\W", "");
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
