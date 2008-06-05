@@ -1691,19 +1691,20 @@ public class CommonEjbcaWSTest extends TestCase {
         	assertTrue(msg.contains("NEW, FAILED or INPROCESS required"));
         }
         assertTrue(thrown);
+        
+        // Finally remove the CAs
+		deleteCVCCA();
 
-		// Finally clean up by removing the CVC CA
-        try {
-        	String dn = CertTools.stringToBCDNString("CN=00001,O=WSCVCA,C=SE");
-            getCAAdminSession().removeCA(intAdmin, dn.hashCode());
-        	dn = CertTools.stringToBCDNString("CN=00001,O=WSDVCA,C=SE");
-            getCAAdminSession().removeCA(intAdmin, dn.hashCode());
-        } catch (Exception e) {
-        	e.printStackTrace();
-        	assertTrue(false);
-        }
 	}
 
+	protected void test27EjbcaVersion(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		String version = ejbcaraws.getEjbcaVersion();
+		assertTrue(version.contains("EJBCA 3")); // We don't know which specific version we are testing
+
+	}
     protected void test99cleanUpAdmins() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
 		//getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
@@ -1846,6 +1847,22 @@ public class CommonEjbcaWSTest extends TestCase {
         }    	
     }
 
+    /** Create a CVC CA
+     * 
+     */
+    private void deleteCVCCA() throws Exception {
+		// Clean up by removing the CVC CA
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=00001,O=WSCVCA,C=SE");
+            getCAAdminSession().removeCA(intAdmin, dn.hashCode());
+        	dn = CertTools.stringToBCDNString("CN=00001,O=WSDVCA,C=SE");
+            getCAAdminSession().removeCA(intAdmin, dn.hashCode());
+        } catch (Exception e) {
+        	e.printStackTrace();
+        	assertTrue(false);
+        }
+    }
+    
 	/**
 	 * Create a user a generate cert. 
 	 */

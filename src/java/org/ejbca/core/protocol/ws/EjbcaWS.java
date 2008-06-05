@@ -95,6 +95,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
@@ -1956,6 +1957,13 @@ public class EjbcaWS implements IEjbcaWS {
 			log.error("EJBCA WebService error, isApproved : ",e);
 			throw new EjbcaException(e.getMessage());
 		} 
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getEjbcaVersion()
+	 */
+	public String getEjbcaVersion() {
+		return GlobalConfiguration.EJBCA_VERSION;
 	}
 
 }

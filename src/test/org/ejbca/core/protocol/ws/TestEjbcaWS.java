@@ -132,7 +132,11 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     public void test26CVCRequest() throws Exception {
     	test26CVCRequest(true);  
     }
-    
+
+    public void test27EjbcaVersion() throws Exception {
+    	test27EjbcaVersion(true);  
+    }
+
     public void test99cleanUpAdmins() throws Exception {
     	super.test99cleanUpAdmins();
     }

@@ -678,4 +678,14 @@ public interface IEjbcaWS {
 	 */
 	public abstract void createCRL(String caname) 
 			throws ApprovalException, EjbcaException, ApprovalRequestExpiredException;
+	
+	/**
+	 * Authorization requirements:
+	 *  - none
+     *
+	 * @returns String with the version of EJBCA, i.e. "EJBCA 3.6.2"
+	 * @throws EjbcaException if an error occured
+	 */
+	public abstract String getEjbcaVersion();
+
 }
