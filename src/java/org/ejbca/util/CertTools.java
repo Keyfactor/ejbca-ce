@@ -1042,7 +1042,7 @@ public class CertTools {
      */
     public static Certificate getCertfromByteArray(byte[] cert, String provider)
         throws CertificateException {
-        log.debug(">getCertfromByteArray:");
+        //log.debug(">getCertfromByteArray:");
         Certificate ret = null;
         String prov = provider;
         if (provider == null) {
@@ -1066,9 +1066,10 @@ public class CertTools {
 			}
 
         }
-        log.debug("<getCertfromByteArray:");
+        //log.debug("<getCertfromByteArray:");
         return ret;
     } // getCertfromByteArray
+    
     public static Certificate getCertfromByteArray(byte[] cert)
         throws CertificateException {
     	return getCertfromByteArray(cert, "BC");
@@ -2002,7 +2003,7 @@ public class CertTools {
      * @return Byte array containing SHA1 hash of DER encoded certificate.
      */
     public static byte[] generateSHA1Fingerprint(byte[] ba) {
-    	log.debug(">generateSHA1Fingerprint");
+    	//log.debug(">generateSHA1Fingerprint");
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
 
@@ -2010,7 +2011,7 @@ public class CertTools {
         } catch (NoSuchAlgorithmException nsae) {
             log.error("SHA1 algorithm not supported", nsae);
         }
-    	log.debug("<generateSHA1Fingerprint");
+    	//log.debug("<generateSHA1Fingerprint");
         return null;
     } // generateSHA1Fingerprint
 
