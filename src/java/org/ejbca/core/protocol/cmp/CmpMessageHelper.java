@@ -104,7 +104,7 @@ public class CmpMessageHelper {
 	public static void buildCertBasedPKIProtection( PKIMessage pKIMessage, X509CertificateStructure cert, PrivateKey key, String digestAlg, String provider )
 	throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException
 	{
-		// SHA1WITHRSA
+		// Select which signature algorithm we should use for the response, based on the digest algorithm.
 		DERObjectIdentifier oid = PKCSObjectIdentifiers.sha1WithRSAEncryption;
 		if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256)) {
 			oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;			
@@ -112,10 +112,19 @@ public class CmpMessageHelper {
 		if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5)) {
 			oid = PKCSObjectIdentifiers.md5WithRSAEncryption;			
 		}
-		log.debug("Signing CMP message with signature alg oid: "+oid.getId());
+		log.debug("Selected signature alg oid: "+oid.getId());
 		pKIMessage.getHeader().setProtectionAlg( new AlgorithmIdentifier(oid) );
-		
-		Signature sig = Signature.getInstance( pKIMessage.getHeader().getProtectionAlg().getObjectId().getId(), provider );
+		// Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
+		// we use BC provider to translate it into a signature algorithm name instead
+		String sigAlg = oid.getId();
+		try {
+			Signature sig = Signature.getInstance( sigAlg, "BC" );
+			sigAlg = sig.getAlgorithm();			
+		} catch (NoSuchAlgorithmException e) {
+			log.info("Algorithm oid "+sigAlg+" could not be translated to algorithm name, sticking with oid.");
+		}
+		log.debug("Signing CMP message with signature alg: "+sigAlg);
+		Signature sig = Signature.getInstance(sigAlg , provider );
 		sig.initSign(key);
 		sig.update( pKIMessage.getProtectedBytes() );
 		
