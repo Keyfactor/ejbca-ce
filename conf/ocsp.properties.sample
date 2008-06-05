@@ -204,5 +204,3 @@ A pattern for use with ocsp.audit-order to replace constants with values during 
 
 # Use ocsp.trx-order to specify what information should be logged and in what order. You can also configure what characters you want in between
 #ocsp.trx-order = LOG ID:${LOG_ID};\nOCSP REQUEST:\n\\"${OCSPREQUEST}\\";\nOCSP RESPONSE:\n\\"${OCSPRESPONSE}\\"\n
-
-

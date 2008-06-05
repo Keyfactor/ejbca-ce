@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
  * @author thamwickenberg
  * @version $Id$
  */
-public abstract class PatternLogger {
+public abstract class PatternLogger { 
 	public static final String LOG_TIME="LOG_TIME";// The Date and time the request.
 	protected HashMap valuepairs= new HashMap();
 	private StringBuffer logmessage = new StringBuffer();

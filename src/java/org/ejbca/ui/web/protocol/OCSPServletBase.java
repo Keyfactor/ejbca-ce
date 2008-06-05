@@ -157,7 +157,7 @@ import org.ejbca.util.StringTools;
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
  * @version  $Id$
  */
-abstract class OCSPServletBase extends HttpServlet {
+abstract class OCSPServletBase extends HttpServlet { 
 
 	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
 	/** Internal localization of logs and errors */

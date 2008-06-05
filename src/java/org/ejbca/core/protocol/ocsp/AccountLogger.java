@@ -27,7 +27,7 @@ import org.ejbca.util.PatternLogger;
  * @author tham
  * @version $Id$
  */
-public class AccountLogger extends PatternLogger {
+public class AccountLogger extends PatternLogger { 
 	private static Pattern PATTERN;
 	private static String orderString;
 	private static Matcher m_matcher;

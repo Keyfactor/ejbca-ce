@@ -26,7 +26,7 @@ import org.ejbca.util.PatternLogger;
  * @version $Id$
  *
  */
-public class AuditLogger extends PatternLogger{
+public class AuditLogger extends PatternLogger{ 
 	private long transactionNumber;
 	public static final Logger auditlog = Logger.getLogger("org.ejbca.core.protocol.ocsp.auditlogger");
 	public static final String LOG_ID="LOG_ID";//A random 32 bit number identifying a log entry for a request
