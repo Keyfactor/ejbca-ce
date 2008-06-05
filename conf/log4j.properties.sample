@@ -21,6 +21,29 @@ log4j.appender.R.MaxFileSize=1024KB
 log4j.appender.R.layout=org.apache.log4j.PatternLayout
 log4j.appender.R.layout.ConversionPattern=%d %p [%t] %c - %m%n
 
+# An OCSP transaction appender, rolls around 10 logfiles with maximum size of 1024 KB
+log4j.appender.tappender=org.apache.log4j.RollingFileAppender
+log4j.appender.tappender.File=/home/ejbca/OCSPTRANSACTIONS.log
+# Keep 10 backup files of max size 1024 KB
+log4j.appender.tappender.MaxBackupIndex=10
+log4j.appender.tappender.MaxFileSize=1024KB
+# Pattern to output the date, level and caller's thread.
+log4j.appender.tappender.layout=org.apache.log4j.PatternLayout
+log4j.appender.tappender.layout.ConversionPattern=%m %n
+
+# An OCSP audit appender, rolls around 10 logfiles with maximum size of 1024 KB
+log4j.appender.auditappender=org.apache.log4j.RollingFileAppender
+log4j.appender.auditappender.File=/home/ejbca/ocspaudit.log
+# Keep 10 backup files of max size 1024 KB
+log4j.appender.auditappender.MaxBackupIndex=10
+log4j.appender.auditappender.MaxFileSize=1024KB
+# Pattern to output the date, level and caller's thread.
+log4j.appender.auditappender.layout=org.apache.log4j.PatternLayout
+log4j.appender.auditappender.layout.ConversionPattern=%m %n
+
 # Limit some logging
 log4j.logger.org.apache.commons=INFO
 log4j.logger.org.apache.myfaces=INFO
+log4j.logger.org.ejbca.core.protocol.ocsp.AccountLogger=debug,tappender
+log4j.logger.org.ejbca.core.protocol.ocsp.auditlogger=debug, auditappender
+
