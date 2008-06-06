@@ -24,6 +24,8 @@ create index userdata_idx3 on UserData (cAId,timeModified);
 create index userdata_idx4 on UserData (cAId);
 create index userdata_idx5 on UserData (username);
 create index userdata_idx6 on UserData (username, cAId);
+create index userdata_idx7 on UserData (status, cAId);
+create index userdata_idx8 on UserData (subjectDN, cAId);
 
 -- Indexes on CertReqHistoryData: for viewing history
 create index historydata_idx1 on CertReqHistoryData (username);
@@ -40,3 +42,13 @@ create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
 create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(1));
 create index protectedlogdata_idx3 on ProtectedLogData (username, caId, module);
 create index protectedlogexportdata_idx1 on ProtectedLogExportData (exportStartTime);
+
+-- Indexes on CAData
+-- CAData is usually very small, but lets make good indexes overall
+create index cadata_idx1 on CAData (name);
+
+-- Indexes on AccessRulesData
+create index accessrules_idx1 on AccessRulesData (AdminGroupData_accessRules);
+
+-- Indexes on AdminEntityData
+create index adminentity_idx1 on AdminEntityData (AdminGroupData_adminEntities);
