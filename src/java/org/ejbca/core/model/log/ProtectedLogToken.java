@@ -7,7 +7,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.Arrays;
 
 import javax.crypto.Mac;
@@ -19,6 +19,7 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.util.CertTools;
 
 /**
  * Represents the token used for protect-operations of the log events.
@@ -41,12 +42,12 @@ public class ProtectedLogToken {
 	private int caId = -1;
 	private Integer tokenIdentifier = null;
 	private int tokenType = 0;
-	private X509Certificate protectedLogTokenCertificate;
+	private Certificate protectedLogTokenCertificate;
 	
 	/**
 	 * Constructor for symmetric keys. Not implemented yet.
 	 */
-	public ProtectedLogToken(SecretKey protectionSecretKey, X509Certificate protectedLogTokenCertificate) {
+	public ProtectedLogToken(SecretKey protectionSecretKey, Certificate protectedLogTokenCertificate) {
 		this.tokenType = TYPE_SYM_KEY;
 		this.protectionSecretKey = protectionSecretKey;
 		this.protectedLogTokenCertificate = protectedLogTokenCertificate;
@@ -56,22 +57,22 @@ public class ProtectedLogToken {
 	/**
 	 * Constructor for asymmetric keys.
 	 */
-	public ProtectedLogToken(PrivateKey protectionPrivateKey, X509Certificate protectedLogTokenCertificate) {
+	public ProtectedLogToken(PrivateKey protectionPrivateKey, Certificate protectedLogTokenCertificate) {
 		this.tokenType = TYPE_ASYM_KEY;
 		this.protectionPublicKey = protectedLogTokenCertificate.getPublicKey();
 		this.protectionPrivateKey = protectionPrivateKey;
 		this.protectedLogTokenCertificate = protectedLogTokenCertificate;
-		this.protectionAlgorithm = protectedLogTokenCertificate.getSigAlgName();
+		this.protectionAlgorithm = CertTools.getSignatureAlgorithm(protectedLogTokenCertificate);
 	}
 	
 	/**
 	 * Constructor for CA keys.
 	 */
-	public ProtectedLogToken(int caId, X509Certificate protectedLogTokenCertificate) {
+	public ProtectedLogToken(int caId, Certificate protectedLogTokenCertificate) {
 		this.tokenType = TYPE_CA;
     	this.caId = caId;
 		this.protectedLogTokenCertificate = protectedLogTokenCertificate;
-    	this.protectionAlgorithm = protectedLogTokenCertificate.getSigAlgName(); 
+		this.protectionAlgorithm = CertTools.getSignatureAlgorithm(protectedLogTokenCertificate);
 	}
 
 	public ProtectedLogToken() {
@@ -97,7 +98,7 @@ public class ProtectedLogToken {
 		return tokenType;
 	}
 	
-	public X509Certificate getTokenCertificate() {
+	public Certificate getTokenCertificate() {
 		return protectedLogTokenCertificate;
 	}
 	

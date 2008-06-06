@@ -27,7 +27,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -202,7 +201,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	private IServiceSessionLocal serviceSession = null;
 
 	private ProtectedLogToken protectedLogTokenCache = null;
-	private X509Certificate certificateCache = null;
+	private Certificate certificateCache = null;
 
 	public void ejbCreate() {
 	}
@@ -326,7 +325,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			int tokenType = protectedLogTokenDataLocal.getTokenType();
 			switch (tokenType) {
 			case ProtectedLogToken.TYPE_CA:
-				protectedLogToken = new ProtectedLogToken(new Integer(Integer.parseInt(protectedLogTokenDataLocal.getTokenReference())).intValue(), (X509Certificate) protectedLogTokenDataLocal.getTokenCertificate());
+				protectedLogToken = new ProtectedLogToken(new Integer(Integer.parseInt(protectedLogTokenDataLocal.getTokenReference())).intValue(), protectedLogTokenDataLocal.getTokenCertificate());
 				break;
 			case ProtectedLogToken.TYPE_NONE:
 				protectedLogToken = new ProtectedLogToken();
@@ -334,14 +333,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			case ProtectedLogToken.TYPE_ASYM_KEY:
 			case ProtectedLogToken.TYPE_SYM_KEY:
 				byte[] rawKeyData = Base64.decode(protectedLogTokenDataLocal.getTokenReference().getBytes()); 
-				ByteArrayInputStream bais = new ByteArrayInputStream(decryptKeyData(rawKeyData, (X509Certificate) protectedLogTokenDataLocal.getTokenCertificate()));
+				ByteArrayInputStream bais = new ByteArrayInputStream(decryptKeyData(rawKeyData, protectedLogTokenDataLocal.getTokenCertificate()));
 				ObjectInputStream ois = new ObjectInputStream(bais);
 				Key key = (Key) ois.readObject();
 				ois.close();
 				if (key instanceof PrivateKey) {
-					protectedLogToken = new ProtectedLogToken((PrivateKey) key, (X509Certificate) protectedLogTokenDataLocal.getTokenCertificate());
+					protectedLogToken = new ProtectedLogToken((PrivateKey) key, protectedLogTokenDataLocal.getTokenCertificate());
 				} else {
-					protectedLogToken = new ProtectedLogToken((SecretKey) key, (X509Certificate) protectedLogTokenDataLocal.getTokenCertificate());
+					protectedLogToken = new ProtectedLogToken((SecretKey) key, protectedLogTokenDataLocal.getTokenCertificate());
 				}
 			}
 		} catch (ObjectNotFoundException e) {
@@ -357,10 +356,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Encrypt key-data with the issuers certificate.
 	 */
-	private byte[] encryptKeyData(byte[] data, X509Certificate certificate) throws Exception {
+	private byte[] encryptKeyData(byte[] data, Certificate certificate) throws Exception {
 		log.debug(">encryptKeyData");
 		// Use issuing CA for encryption
-		int caid = certificate.getIssuerDN().getName().hashCode();
+		int caid = CertTools.getIssuerDN(certificate).hashCode();
 		log.debug("<encryptKeyData");
 		return getCAAdminSession().encryptWithCA(caid, data);
 	}
@@ -368,10 +367,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Decrypt key-data with the issuers certificate.
 	 */
-	private byte[] decryptKeyData(byte[] data, X509Certificate certificate) throws Exception {
+	private byte[] decryptKeyData(byte[] data, Certificate certificate) throws Exception {
 		log.debug("<decryptKeyData");
 		// Use issuing CA for decryption
-		int caid = certificate.getIssuerDN().getName().hashCode();
+		int caid = CertTools.getIssuerDN(certificate).hashCode();
 		log.debug("<decryptKeyData");
 		return getCAAdminSession().decryptWithCA(caid, data);
 	}
@@ -1171,8 +1170,8 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			if (plt.getType() != ProtectedLogToken.TYPE_CA) {
 				// If it is a soft token we need to verify that is issuing CA is online.
-				X509Certificate cert = plt.getTokenCertificate();
-				int caId = cert.getIssuerDN().getName().hashCode();
+				Certificate cert = plt.getTokenCertificate();
+				int caId = CertTools.getIssuerDN(cert).hashCode();
 				try {
 					getSignSession().signData(dummy, caId, SecConst.CAKEYPURPOSE_CERTSIGN);
 				} catch (Exception e) {
@@ -1640,7 +1639,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			String protectionTokenReference = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREF, "AdminCA1");
 			String protectionTokenKeyStoreAlias = properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREALIAS, "defaultKey");
 			String protectionTokenKeyStorePassword = properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREPASSWORD, "foo123");
-			X509Certificate protectedLogTokenCertificate = null;
+			Certificate protectedLogTokenCertificate = null;
 			if ( ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME.equalsIgnoreCase(protectionTokenReferenceType) ) {
 				// Use a CA as token
 				CAInfo caInfo = getCAAdminSession().getCAInfo(internalAdmin, protectionTokenReference);
@@ -1649,7 +1648,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		        	log.error(intres.getLocalizedMessage("protectedlog.error.reverttonone"));
 					protectedLogToken = new ProtectedLogToken();
 				} else {
-					protectedLogTokenCertificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+					protectedLogTokenCertificate = (Certificate) caInfo.getCertificateChain().iterator().next();
 					protectedLogToken = new ProtectedLogToken(caInfo.getCAId(), protectedLogTokenCertificate);
 				}
 			} else if (ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE.equalsIgnoreCase(protectionTokenReferenceType)) {
@@ -1672,7 +1671,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				keyStore = KeyStore.getInstance("JKS");
 				keyStore.load(is, protectionTokenKeyStorePassword.toCharArray());
 				protectionKey = keyStore.getKey(protectionTokenKeyStoreAlias, protectionTokenKeyStorePassword.toCharArray());
-				protectedLogTokenCertificate = (X509Certificate) keyStore.getCertificate(protectionTokenKeyStoreAlias);
+				protectedLogTokenCertificate = keyStore.getCertificate(protectionTokenKeyStoreAlias);
 				// Validate certificate here
 				if (!verifyCertificate(protectedLogTokenCertificate, new Date().getTime())) {
 		        	log.error(intres.getLocalizedMessage("protectedlog.error.invalidtokencert"));
@@ -1848,13 +1847,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					// Final processing
 					long timeOfExport = new Date().getTime();
 					// Get token-cert
-					X509Certificate certificate = getToken(newesetExportedProtectedLogEventRow.getProtectionKeyIdentifier()).getTokenCertificate();
+					Certificate certificate = getToken(newesetExportedProtectedLogEventRow.getProtectionKeyIdentifier()).getTokenCertificate();
 					// if not CA-cert get the issuers cert
-					int caId = certificate.getSubjectDN().getName().hashCode();
+					int caId = CertTools.getSubjectDN(certificate).hashCode();
 					//int caId = CertTools.getSubjectDN(certificate).hashCode();
 					CAInfo caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 					if (caInfo == null) {
-						caId = certificate.getIssuerDN().getName().hashCode();
+						caId = CertTools.getIssuerDN(certificate).hashCode();
 						//int caId = CertTools.getIssuerDN(certificate).hashCode();
 						caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 						if (caInfo == null) {
@@ -1862,7 +1861,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 							protectedLogExportHandler.abort();
 							return false;
 						} else {
-							certificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+							certificate = (Certificate) caInfo.getCertificateChain().iterator().next();
 						}
 					}
 					ProtectedLogExportRow newProtectedLogExportRow = new ProtectedLogExportRow(timeOfExport, exportEndTime, exportStartTime, exportedHash,
@@ -2039,10 +2038,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				// Final processing
 				long timeOfExport = new Date().getTime();
 				// Get token-cert
-				X509Certificate certificate = getToken(newesetExportedProtectedLogEventRow.getProtectionKeyIdentifier()).getTokenCertificate();
+				Certificate certificate = getToken(newesetExportedProtectedLogEventRow.getProtectionKeyIdentifier()).getTokenCertificate();
 				// if not CA-cert get the issuers cert
-				int caId = certificate.getSubjectDN().getName().hashCode();
-				int issuingCAId = certificate.getIssuerDN().getName().hashCode();
+				int caId = CertTools.getSubjectDN(certificate).hashCode();
+				int issuingCAId = CertTools.getIssuerDN(certificate).hashCode();
 				if (caInfo == null || (caInfo.getCAId() != caId && caInfo.getCAId() != issuingCAId)) {
 					// Cache CAInfo locally
 					caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);	
@@ -2055,7 +2054,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 							protectedLogExportHandler.abort();
 							return false;
 						} else {
-							certificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+							certificate = (Certificate) caInfo.getCertificateChain().iterator().next();
 						}
 					}
 				}

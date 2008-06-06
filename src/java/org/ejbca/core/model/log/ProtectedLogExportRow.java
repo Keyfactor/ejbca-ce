@@ -9,7 +9,6 @@ import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -50,7 +49,7 @@ public class ProtectedLogExportRow {
 	}
 
 	public ProtectedLogExportRow(long timeOfExport, long exportEndTime, long exportStartTime, byte[] logDataHash, byte[] previousExportHash, String currentHashAlgorithm,
-			X509Certificate signatureCertificate, boolean deleted, byte[] signature) {
+			Certificate signatureCertificate, boolean deleted, byte[] signature) {
 		this.timeOfExport = timeOfExport;
 		this.exportEndTime = exportEndTime;
 		this.exportStartTime = exportStartTime;
