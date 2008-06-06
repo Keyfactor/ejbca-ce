@@ -163,8 +163,8 @@ ocsp.usecasigningcert=true
 
 # Parameter specifying database test query string. Used to check that
 # the database is operational.
-# Default : Select 1 From CertificateData 
-#ocsphealthcheck.dbquery=Select 1 From CertificateData
+# Default : Select 1 From CertificateData where fingerprint='XX'
+#ocsphealthcheck.dbquery=Select 1 From CertificateData where fingerprint='XX'
 
 # Parameter specifying IP addresses authorized to access the healthcheck
 # servlet. Use ';' between multiple IPs.

@@ -248,7 +248,7 @@
     <property name="database.password" value="" />
     <property name="weblogic-oracle-columntype" value="" />
     <property name="healthcheck.amountfreemem" value="1" />
-    <property name="healthcheck.dbquery" value="Select 1 From CertificateData" />
+    <property name="healthcheck.dbquery" value="Select 1 From CertificateData where fingerprint='XX'" />
     <property name="healthcheck.authorizedips" value="127.0.0.1" />
     <property name="healthcheck.maintenancefile" value="" />
     <property name="healthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
