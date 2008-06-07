@@ -1075,10 +1075,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="70%"> 
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER + j%>" size="40" maxlength="255" 
-           value="<%= not.getNotificationSender() %>"            
-           <% if(!used)
-                 out.write(" disabled ");
-           %>>             
+           value="<%= not.getNotificationSender() %>" readonly>             
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
@@ -1090,10 +1087,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="70%">         
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT + j%>" size="40" maxlength="255" 
-           value="<%= not.getNotificationRecipient() %>" 
-           <% if(!used)
-                 out.write(" disabled ");
-           %>>                  
+           value="<%= not.getNotificationRecipient() %>" readonly>                  
       </td>
     </tr>
     
@@ -1105,7 +1099,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("NOTIFICATIONEVENTS") %> <br>&nbsp;
       </td>
       <td width="70%"> 
-        <select name="<%=SELECT_NOTIFICATIONEVENTS + j%>" size="7" multiple >
+        <select name="<%=SELECT_NOTIFICATIONEVENTS + j%>" size="7" multiple readonly>
             <% int[] statuses = ViewEndEntityHelper.statusids;
                String[] statustexts = ViewEndEntityHelper.statustexts;
                Collection evcol = not.getNotificationEventsCollection();
@@ -1133,10 +1127,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="70%">         
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT + j%>" size="40" maxlength="1024" 
-           value="<%= not.getNotificationSubject() %>" 
-           <% if(!used)
-                 out.write(" disabled ");
-           %>>                  
+           value="<%= not.getNotificationSubject() %>" readonly>                  
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -1147,7 +1138,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("NOTIFICATIONMESSAGE") %> <br/>
       </td>
       <td width="70%">       
-        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols="40" rows="4" <% if(!used) out.write(" disabled "); %> ><%= not.getNotificationMessage() %></textarea>  
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols="40" rows="4" readonly ><%= not.getNotificationMessage() %></textarea>  
       </td>
       
     </tr>
