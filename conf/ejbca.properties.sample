@@ -19,7 +19,10 @@
 #appserver.home=/home/ibm/WebSphere/Appserver
 #appserver.home=${env.APPSRV_HOME}
 
-# which compiler to use
+# See also the section 'cluster configuration' for other JBoss options, for example
+# for deploying on JBoss EAP.
+
+# Which compiler to use, don't change this
 # default: javac
 #build.compiler=jikes
 
@@ -140,7 +143,8 @@ ca.cmskeystorepass=foo123
 #logging.log4j.config=/home/ejbca/conf/log4j.properties
 
 # ----------------- cluster configuration ----------------
-# The configuration. Use "all" when clustering.
+# The configuration. Use "all" when clustering, 
+# or for example "production" when deploying on JBoss EAP.
 # Default: default
 #jboss.config=all
 

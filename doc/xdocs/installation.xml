@@ -181,11 +181,17 @@ web.properties. Enroll from public web after the installation is complete, as yo
 with any other smartcard user. Username is &quot;superadmin&quot; and password is superadmin.password
 from web.properties.
 </li>
-<li>Customize the database if needed but easiest thing is to keep the default as it is,
-it will use the JBoss embedded HSQLDB and everything will be easier for you.
-For production use you should use a real database instead of the embedded one.</li>
+<li>If you are deploying on JBoss EAP you probably want to look at the property 'jboss.config' as well, since 'production' is the default server to start on JBoss EAP.</li>
 <li>Small note, in the ca.dn you can not use DC components for the initial CA, 
 you can create CAs using DC components later on once the admin GUI is up and running.</li>
+</ul>
+Do the same with other configuration files that you might want to customize. The default values often works fine and is a safe bet if you are unsure.
+Most options are well documented in the sample files.
+<ul>
+<li>Customize the database in conf/database.properties if needed. 
+But easiest thing is to keep the default as it is,
+it will use the JBoss embedded HSQLDB and everything will be easier for you.
+For production use you should use a real database instead of the embedded one.</li>
 </ul>
 </p><p>
 3) Open a console and type:
