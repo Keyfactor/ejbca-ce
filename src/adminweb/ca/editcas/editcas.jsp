@@ -224,7 +224,7 @@
          if(item.getFieldName().equals(HIDDEN_RENEWAUTHCODE))
              renewauthenticationcode = item.getString();
          if(item.getFieldName().equals(HIDDEN_RENEWKEYS))
-             reGenerateKeys = Boolean.valueOf(item.getString());
+             reGenerateKeys = Boolean.valueOf(item.getString()).booleanValue();
          if(item.getFieldName().equals(BUTTON_CANCEL))
            buttoncancel = true; 
          if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_NAME))
@@ -1278,7 +1278,7 @@
            Collection certchain = CertTools.getCertsFromPEM(file);
            // These parameters are set in 'if(FileUpload.isMultipartContent(request)){'            
            //renewauthenticationcode = request.getParameter(HIDDEN_RENEWAUTHCODE);
-           //reGenerateKeys = Boolean.valueOf(request.getParameter(HIDDEN_RENEWKEYS));
+           //reGenerateKeys = Boolean.valueOf(request.getParameter(HIDDEN_RENEWKEYS)).booleanValue();
            byte[] certreq = cadatahandler.makeRequest(caid, certchain, false, renewauthenticationcode, reGenerateKeys);
            cabean.saveRequestData(certreq);   
                
