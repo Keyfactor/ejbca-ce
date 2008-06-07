@@ -12,6 +12,7 @@ create index crldata_idx2 on CRLData (issuerDN,deltaCRLIndicator);
 
 -- Indexes on CertificateData:
 -- unique to increase security the no two certificate with the same issuer and serial number can be issued
+-- this index can not be unique when CVC CAs are used, because CV Certificates don't have serial numbers so all is 0
 create unique index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
 create index certificatedata_idx2 on CertificateData (username);
 create index certificatedata_idx3 on CertificateData (status,issuerDN);
