@@ -37,9 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.ocsp.CertID;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -74,7 +72,6 @@ import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.GUIDGenerator;
-import org.ejbca.util.StringTools;
 
 /**
  * @web.servlet-init-param description="Algorithm used by server to generate signature on OCSP responses"
