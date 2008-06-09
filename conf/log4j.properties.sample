@@ -45,4 +45,4 @@ log4j.appender.auditappender.layout.ConversionPattern=%m %n
 log4j.logger.org.apache.commons=INFO
 log4j.logger.org.apache.myfaces=INFO
 log4j.logger.org.ejbca.core.protocol.ocsp.AccountLogger=debug,tappender
-log4j.logger.org.ejbca.core.protocol.ocsp.auditlogger=debug, auditappender
+log4j.logger.org.ejbca.core.protocol.ocsp.AuditLogger=debug, auditappender

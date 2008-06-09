@@ -183,8 +183,10 @@ ocsp.usecasigningcert=true
 #ocsphealthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
 
 #------------------- OCSP Logging settings -------------
-# Specifies what logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
-#  Change below to true if you want audit information to be logged
+
+# Audit logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
+# Specifies if audity logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
+# Change below to true if you want audit information to be logged
 #ocsp.auditlog = false
 
 # Configure how time of logging in auditlog will be output
@@ -196,6 +198,7 @@ ocsp.usecasigningcert=true
 # Use ocsp.audit-order to specify what information should be logged and in what order. You can also configure what characters you want in between
 #ocsp.audit-order = ${LOG_ID};${STATUS};\\"${CLIENT_IP}\\";\\"${SIGN_ISSUER_NAME_DN}\\";\\"${SIGN_SUBJECT_NAME}\\";${SIGN_SERIAL_NO};\\"${LOG_TIME}\\";${NUM_CERT_ID};0;0;0;0;0;0;0;\\"${ISSUER_NAME_DN}\\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NO};${CERT_STATUS}
 
+# Transaction logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
 # change ocsp.trxlog to true of you want transaction, (account), logging turned on
 #ocsp.trxlog = false 
 
