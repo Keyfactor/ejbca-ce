@@ -19,8 +19,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
 
-import javax.ejb.EJBException;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
@@ -62,6 +60,7 @@ public class InternalResources implements Serializable {
 	 * 
 	 * @param globalConfiguration used to retrieve the internal language
 	 * of the application, configured in the System Configuration.
+	 * @throws IOException 
 	 */
 	protected InternalResources(boolean test) {		
 		String primaryLanguage = GlobalConfiguration.PREFEREDINTERNALRESOURCES.toLowerCase();
@@ -93,8 +92,8 @@ public class InternalResources implements Serializable {
 	    		} else {
 	    			log.error("secondaryResource == null");
 	    		}
-	    	} catch (IOException e) {			
-	    		throw new EJBException("Error reading internal resourcefile", e);
+	    	} catch (IOException e) {
+	    		log.error("Error reading internal resourcefile", e);
 	    	}
 	    } finally {
 	    	try {
@@ -110,7 +109,7 @@ public class InternalResources implements Serializable {
 	 * Metod that returs a instance of the InternalResources
 	 * might be null if load() haven't been called before this method.
 	 */
-	public static synchronized InternalResources getInstance(){
+	public static synchronized InternalResources getInstance() {
 		if(instance == null){
 			instance = new InternalResources(false);
 		}
