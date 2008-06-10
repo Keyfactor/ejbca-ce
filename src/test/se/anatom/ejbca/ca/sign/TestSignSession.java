@@ -67,9 +67,9 @@ import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.dn.DnComponents;
+import org.ejbca.util.keystore.KeyTools;
 
 
 /**

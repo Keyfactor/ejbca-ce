@@ -37,8 +37,8 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
-import org.ejbca.util.KeyTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 /**

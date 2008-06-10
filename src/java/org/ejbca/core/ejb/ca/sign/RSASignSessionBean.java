@@ -86,7 +86,7 @@ import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Creates and signs certificates.

@@ -41,7 +41,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 /**

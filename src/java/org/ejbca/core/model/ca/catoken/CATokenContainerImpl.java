@@ -36,7 +36,8 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyStoreContainer;
+import org.ejbca.util.keystore.KeyTools;
 
 
 
@@ -311,63 +312,65 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 * Method that generates the keys that will be used by the CAToken.
 	 * Only available for Soft CA Tokens so far.
 	 * 
-	 * @param authenticationCode the password used to encrypt the keystore, laterneeded to activate CA Token
+	 * @param authenticationCode the password used to encrypt the keystore, later needed to activate CA Token
 	 * @param renew flag indicating if the keys are renewed instead of created fresh. Renewing keys does not 
 	 * create new encryption keys, since this would make it impossible to decrypt old stuff.
 	 */
 	public void generateKeys(String authenticationCode, boolean renew) throws Exception{  
 		log.debug(">generateKeys");
 		CATokenInfo catokeninfo = getCATokenInfo();
-		if ( !(catokeninfo instanceof SoftCATokenInfo) ) {
-			log.error("generateKeys is only available for Soft CA tokens (PKCS12)");
+		if (catokeninfo instanceof SoftCATokenInfo) {
+			// Currently only RSA keys are supported
+			SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
+			KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+			keystore.load(null, null);
+
+			// Generate signature keys.
+			KeyPair signkeys = KeyTools.genKeys(info.getSignKeySpec(), info.getSignKeyAlgorithm());
+			// generate dummy certificate
+			Certificate[] certchain = new Certificate[1];
+			certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, signkeys.getPrivate(), signkeys.getPublic(), info.getSignatureAlgorithm(), true);
+
+			keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS,signkeys.getPrivate(),null, certchain);             
+
+			PublicKey pubEnc = null;
+			PrivateKey privEnc = null;
+			if (!renew) {
+				// Generate encryption keys.  
+				// Encryption keys must be RSA still
+				KeyPair enckeys = KeyTools.genKeys(info.getEncKeySpec(), info.getEncKeyAlgorithm());
+				pubEnc = enckeys.getPublic();
+				privEnc = enckeys.getPrivate();
+			} else {
+				// Get the already existing keys
+				ICAToken token = getCAToken();
+				pubEnc = token.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+				privEnc = token.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+			}
+			// generate dummy certificate
+			certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, privEnc, pubEnc, info.getEncryptionAlgorithm(), true);
+			keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS, privEnc, null, certchain);			
+			
+			// Store the key store
+			java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+			keystore.store(baos, authenticationCode.toCharArray());
+			data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
+			data.put(SIGNKEYSPEC, info.getSignKeySpec());
+			data.put(SIGNKEYALGORITHM, info.getSignKeyAlgorithm());
+			data.put(SIGNATUREALGORITHM, info.getSignatureAlgorithm());
+			data.put(ENCKEYSPEC, info.getEncKeySpec());
+			data.put(ENCKEYALGORITHM, info.getEncKeyAlgorithm());
+			data.put(ENCRYPTIONALGORITHM, info.getEncryptionAlgorithm());
+			
+			// Finally reset the token so it will be re-read when we want to use it
+			this.catoken = null;
+			String msg = intres.getLocalizedMessage("catoken.generatedkeys", "Soft");
+			log.info(msg);
+		} else {
+			String msg = intres.getLocalizedMessage("catoken.getkeysnotavail");
+			log.error(msg);
 			return;
 		}
-		
-		// Currently only RSA keys are supported
-		SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
-		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-		keystore.load(null, null);
-
-		// Generate signature keys.
-		KeyPair signkeys = KeyTools.genKeys(info.getSignKeySpec(), info.getSignKeyAlgorithm());
-		// generate dummy certificate
-		Certificate[] certchain = new Certificate[1];
-		certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, signkeys.getPrivate(), signkeys.getPublic(), info.getSignatureAlgorithm(), true);
-
-		keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS,signkeys.getPrivate(),null, certchain);             
-
-		PublicKey pubEnc = null;
-		PrivateKey privEnc = null;
-		if (!renew) {
-			// Generate encryption keys.  
-			// Encryption keys must be RSA still
-			KeyPair enckeys = KeyTools.genKeys(info.getEncKeySpec(), info.getEncKeyAlgorithm());
-			pubEnc = enckeys.getPublic();
-			privEnc = enckeys.getPrivate();
-		} else {
-			// Get the already existing keys
-			ICAToken token = getCAToken();
-			pubEnc = token.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-			privEnc = token.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-			
-		}
-		// generate dummy certificate
-		certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, privEnc, pubEnc, info.getEncryptionAlgorithm(), true);
-		keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS, privEnc, null, certchain);			
-		
-		// Store the key store
-		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-		keystore.store(baos, authenticationCode.toCharArray());
-		data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
-		data.put(SIGNKEYSPEC, info.getSignKeySpec());
-		data.put(SIGNKEYALGORITHM, info.getSignKeyAlgorithm());
-		data.put(SIGNATUREALGORITHM, info.getSignatureAlgorithm());
-		data.put(ENCKEYSPEC, info.getEncKeySpec());
-		data.put(ENCKEYALGORITHM, info.getEncKeyAlgorithm());
-		data.put(ENCRYPTIONALGORITHM, info.getEncryptionAlgorithm());
-		
-		// Finally reset the token so it will be re-read when we want to use it
-		this.catoken = null;
 		log.debug("<generateKeys");
 	}
 

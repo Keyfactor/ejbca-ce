@@ -63,7 +63,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2000._09.xmldsig_.X509DataType;
 import org.w3._2002._03.xkms_.NotBoundAuthenticationType;

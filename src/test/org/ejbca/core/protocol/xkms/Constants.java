@@ -24,7 +24,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 
 import org.ejbca.util.Base64;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Class containing constans common for unit tests.

@@ -56,6 +56,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
+import org.ejbca.util.keystore.KeyTools;
 
 import com.novell.ldap.LDAPDN;
 

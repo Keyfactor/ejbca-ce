@@ -78,7 +78,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ocsp.FnrFromUnidExtension;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /** Tests http pages of ocsp lookup server.
  * This test requires a lot of setup. 

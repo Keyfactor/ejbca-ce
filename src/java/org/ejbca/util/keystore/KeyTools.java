@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.util;
+package org.ejbca.util.keystore;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -58,6 +58,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.util.CertTools;
 
 
 /**

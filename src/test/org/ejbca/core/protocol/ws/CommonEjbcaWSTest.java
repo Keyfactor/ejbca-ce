@@ -111,8 +111,8 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
 import org.ejbca.util.dn.DnComponents;
+import org.ejbca.util.keystore.KeyTools;
 
 public class CommonEjbcaWSTest extends TestCase {
 	

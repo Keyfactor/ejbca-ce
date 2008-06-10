@@ -45,7 +45,7 @@ import org.ejbca.core.protocol.ScepRequestMessage;
 import org.ejbca.core.protocol.ScepResponseMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 public class ScepRequestGenerator {

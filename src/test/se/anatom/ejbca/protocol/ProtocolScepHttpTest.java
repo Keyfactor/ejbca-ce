@@ -85,7 +85,7 @@ import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.core.protocol.ScepRequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
 import com.gargoylesoftware.htmlunit.WebClient;

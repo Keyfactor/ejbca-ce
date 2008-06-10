@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * @author lars

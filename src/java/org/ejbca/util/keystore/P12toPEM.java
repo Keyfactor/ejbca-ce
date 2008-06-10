@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.util;
+package org.ejbca.util.keystore;
 
 import java.io.*;
 import java.security.KeyStore;
@@ -24,6 +24,8 @@ import java.security.cert.*;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 /**
  * P12toPEM is used to export PEM files from a single p12 file. The class exports the user

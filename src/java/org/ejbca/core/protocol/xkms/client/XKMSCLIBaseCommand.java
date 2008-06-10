@@ -32,7 +32,7 @@ import javax.xml.bind.JAXBElement;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.P12toPEM;
+import org.ejbca.util.keystore.P12toPEM;
 import org.w3._2000._09.xmldsig_.X509DataType;
 import org.w3._2002._03.xkms_.KeyBindingType;
 import org.w3._2002._03.xkms_.StatusType;

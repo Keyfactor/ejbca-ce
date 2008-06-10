@@ -59,7 +59,7 @@ import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RespID;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /** A simple OCSP lookup client used to query the OCSPUnidExtension. Attributes needed to call the client is a keystore
  * issued from the same CA as has issued the TLS server certificate of the OCSP/Lookup server.

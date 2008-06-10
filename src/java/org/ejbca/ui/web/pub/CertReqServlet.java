@@ -64,7 +64,7 @@ import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 

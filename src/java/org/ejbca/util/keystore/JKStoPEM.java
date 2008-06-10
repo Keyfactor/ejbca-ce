@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.util;
+package org.ejbca.util.keystore;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +30,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 
 /**

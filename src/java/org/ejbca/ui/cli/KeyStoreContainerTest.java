@@ -30,6 +30,7 @@ import javax.crypto.Cipher;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
+import org.ejbca.util.keystore.KeyStoreContainer;
 
 /**
  * 
@@ -134,7 +135,7 @@ class KeyStoreContainerTest {
         KeyStoreContainer keyStore = null;
         while( keyStore==null ) {
             try {
-                keyStore = KeyStoreContainer.getIt(keyStoreType, providerName,
+                keyStore = KeyStoreContainer.getInstance(keyStoreType, providerName,
                                                    encryptProviderClassName, storeID);
             } catch( Throwable t ) {
                 t.printStackTrace(System.err);

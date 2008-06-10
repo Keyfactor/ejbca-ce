@@ -59,7 +59,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)

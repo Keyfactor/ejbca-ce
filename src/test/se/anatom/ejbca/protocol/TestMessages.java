@@ -28,7 +28,7 @@ import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.ScepRequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 

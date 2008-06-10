@@ -55,7 +55,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /** Test requiring signed OCSP requests.
  * This test requires that the option 'ocsp.signaturerequired=true' is set in conf/ocsp-properties.

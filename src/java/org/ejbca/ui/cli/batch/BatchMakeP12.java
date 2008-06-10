@@ -58,8 +58,8 @@ import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
-import org.ejbca.util.P12toPEM;
+import org.ejbca.util.keystore.KeyTools;
+import org.ejbca.util.keystore.P12toPEM;
 
 
 

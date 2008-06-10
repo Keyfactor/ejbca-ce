@@ -31,7 +31,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 
@@ -213,11 +213,16 @@ public class HttpGetCert {
         out.close();
 
         // Read the reqponse
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        String inputLine;
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
 
-        while ((inputLine = in.readLine()) != null) {
-            System.out.println(inputLine);
+            while ((inputLine = in.readLine()) != null) {
+                System.out.println(inputLine);
+            }        	
+        } finally {
+        	if (in != null) in.close();
         }
 
         if (con.getResponseCode() == 200) {

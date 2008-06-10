@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.KeyTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 
  * Generating tokens can often depend on the ejb services (local interfaces), for example for key recovery.

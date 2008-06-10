@@ -51,8 +51,8 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
-import org.ejbca.util.KeyTools;
 import org.ejbca.util.dn.DNFieldExtractor;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
