@@ -77,7 +77,8 @@ public abstract class KeyStoreContainer {
     public static KeyStoreContainer getInstance(final String keyStoreType,
                                    final String providerClassName,
                                    final String encryptProviderClassName,
-                                   final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
+                                   final String storeID,
+                                   final String attributesFile) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
     	log.debug("keyStoreType "+keyStoreType+", providerClassName "+providerClassName+", encryptProviderClassName "+encryptProviderClassName+", storeID "+storeID);
         Security.addProvider( new BouncyCastleProvider() );
         if ( isP11(keyStoreType) ) {
@@ -93,7 +94,7 @@ public abstract class KeyStoreContainer {
             }
             return KeyStoreContainerP11.getInstance( slotID,
                                                providerClassName,
-                                               isIndex, null);
+                                               isIndex, attributesFile, null);
         } else
             return KeyStoreContainerJCE.getInstance( keyStoreType,
                                                providerClassName,
@@ -163,7 +164,7 @@ public abstract class KeyStoreContainer {
     public byte[] generate( final int keySize,
                             final String keyEntryName) throws Exception {
         // Generate the RSA Keypair
-    	log.debug(">generate: keySize"+keySize+", keyEntryName"+keyEntryName);
+    	log.debug(">generate: keySize "+keySize+", keyEntryName "+keyEntryName);
         final String keyAlgName = "RSA";
         final String sigAlgName = "SHA1withRSA";
         final KeyPair keyPair = generate(this.providerName, keyAlgName, keySize);
@@ -182,8 +183,8 @@ public abstract class KeyStoreContainer {
                      final String keyStoreType,
                      final String fromID,
                      final String toID) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, UnrecoverableKeyException, LoginException {
-        KeyStoreContainer fromKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, fromID);
-        KeyStoreContainer toKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, toID);
+        KeyStoreContainer fromKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, fromID, null);
+        KeyStoreContainer toKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, toID, null);
         Enumeration e = fromKS.getKeyStore().aliases();
         while( e.hasMoreElements() ) {
             String alias = (String) e.nextElement();

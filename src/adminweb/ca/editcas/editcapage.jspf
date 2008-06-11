@@ -1047,9 +1047,7 @@ function checkallfields(){
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             
         <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" > 
-        <%     if(catokeninfo instanceof SoftCATokenInfo){ %>
            &nbsp; <%= ejbcawebbean.getText("RENEWKEYS") %><input type="checkbox" name="<%=CHECKBOX_RENEWKEYS %>" value="<%=CHECKBOX_VALUE %>" >
-        <%  } %>
         <br/>
         <%= ejbcawebbean.getText("AUTHENTICATIONCODERENEW") %>
         <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODERENEW%>" size="20" maxlength="64">

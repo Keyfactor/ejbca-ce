@@ -85,6 +85,11 @@ public interface ICAToken {
     */
     public PublicKey getPublicKey(int purpose) throws CATokenOfflineException;
     
+    /**
+     * Returns the key label configured for a specific key purpose. Key labels are KeyStrings.CAKEYPURPOSE_XXX
+     * @param purpose
+     */
+    public String getKeyLabel(int purpose);
     
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signing device implementation.

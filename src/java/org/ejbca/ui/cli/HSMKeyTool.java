@@ -67,7 +67,7 @@ public class HSMKeyTool {
                     if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
                         System.setProperty("protect", "module");
                     }
-                    KeyStoreContainer store = KeyStoreContainer.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null);
+                    KeyStoreContainer store = KeyStoreContainer.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null);
                     String keyEntryName = args.length>6 ? args[6] :"myKey";
                     store.generate(Integer.parseInt(args[5].trim()), keyEntryName);
                     System.err.println("Created certificate with entry "+keyEntryName+'.');
@@ -79,32 +79,32 @@ public class HSMKeyTool {
                 } else {
                 	String alias = args.length>6 ? args[6] : null;
                     System.err.println("Deleting certificate with alias "+alias+'.');
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5]).delete(alias);
+                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null).delete(alias);
                 }
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(CERT_REQ)) {
                 if ( args.length < 7 )
                     System.err.println(commandString + sKeyStore + " <key entry name>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5]).generateCertReq(args[6]);
+                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null).generateCertReq(args[6]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
                 if ( args.length < 7 )
                     System.err.println(commandString + sKeyStore + " <certificate in PEM format>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5]).installCertificate(args[6]);
+                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null).installCertificate(args[6]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
                 if ( args.length < 9 )
                     System.err.println(commandString + sKeyStore + " <input file> <output file> <key alias>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5]).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
                 if ( args.length < 9 )
                     System.err.println(commandString + sKeyStore + " <input file> <output file> <key alias>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5]).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 6 )
@@ -128,7 +128,7 @@ public class HSMKeyTool {
                 if( args.length > 1 && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
                     if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH))
                         System.setProperty("protect", "module");
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], null).storeKeyStore();
+                    KeyStoreContainer.getInstance(args[4], args[2], args[3], null, null).storeKeyStore();
                     return;
                 }
             }

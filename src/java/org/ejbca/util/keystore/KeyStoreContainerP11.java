@@ -52,8 +52,9 @@ public class KeyStoreContainerP11 extends KeyStoreContainer {
 	static KeyStoreContainer getInstance(final String slot,
 			final String libName,
 			final boolean isIx,
+			final String attributesFile,
 			final KeyStore.ProtectionParameter protectionParameter) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-		AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName, isIx);
+		AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName, isIx, attributesFile);
 		final String providerName = provider.getName();
 		Security.addProvider(provider);
 

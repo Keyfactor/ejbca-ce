@@ -59,6 +59,7 @@ import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FileTools;
 
 
 /**
@@ -481,13 +482,27 @@ public class KeyTools {
 
     /** Creates the SUN PKCS#11 provider using the passed in pkcs11 library.
      * 
-     * @param slot pkcs11 slot number or config file name if libName is null
+     * @param slot pkcs11 slot number or null if a config file name is provided as fileName
      * @param fileName the manufacturers provided pkcs11 library (.dll or .so) or config file name if slot is null 
+     * @param isIndex specifies if the slot is a slot number ir a slotIndex
+     * @param attributesFile a file specifying PKCS#11 attributes (used mainly for key generation) in the format specified in the "JavaTM PKCS#11 Reference Guide", http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html
+     * 
+     * Example contents of attributes file:
+     * 
+     * attributes(generate,CKO_PRIVATE_KEY,*) = {
+     *  CKA_PRIVATE = true
+     *  CKA_SIGN = true
+     *  CKA_DECRYPT = true
+     *  CKA_TOKEN = true
+     * }
+     * 
+     * See also html documentation for PKCS#11 HSMs in EJBCA.
+     * 
      * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11"
      * @throws IOException if the pkcs11 library can not be found, or the SunPKCS11 can not be created.
      */ 
     public static AuthProvider getP11AuthProvider(final String slot, final String fileName,
-                                                  final boolean isIndex) throws IOException {
+                                                  final boolean isIndex, final String attributesFile) throws IOException {
     	if (StringUtils.isEmpty(fileName)) {
     		throw new IOException("A file name must be supplied.");
     	}
@@ -513,6 +528,10 @@ public class KeyTools {
     	if ( slotNr>=0 ) {
         	pw.println("slot"+(isIndex ? "ListIndex":"")+" = "+slot);    		
     	}
+    	if (attributesFile != null) {
+    		byte[] attrs = FileTools.readFiletoBuffer(attributesFile);
+    		pw.println(new String(attrs));
+    	}
     	pw.flush();
     	pw.close();
     	if (log.isDebugEnabled()) {
@@ -522,7 +541,7 @@ public class KeyTools {
     }
     private static AuthProvider getP11AuthProvider(final InputStream is) throws IOException {
 
-        // We will construct the PKCS11 provider (sun.security...) using reflextion, because 
+        // We will construct the PKCS11 provider (sun.security...) using reflection, because 
         // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
         // The below code replaces the single line:
         //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
@@ -531,7 +550,7 @@ public class KeyTools {
     		final Constructor construct = implClass.getConstructor(InputStream.class);
     		return (AuthProvider)construct.newInstance(new Object[] {is});
     	} catch (Exception e) {
-    		log.error("Error constructing pkcs11 provider: ", e);
+    		log.error("Error constructing pkcs11 provider: "+e.getMessage());
     		IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
     		ioe.initCause(e);
     		throw ioe;

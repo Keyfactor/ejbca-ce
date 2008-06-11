@@ -270,7 +270,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private boolean loadFromP11HSM(Admin adm) throws Exception {
         if ( mSharedLibrary==null || mSharedLibrary.length()<1 )
             return false;
-        final Provider provider = KeyTools.getP11AuthProvider(mSlot, mSharedLibrary, mIsIndex);
+        final Provider provider = KeyTools.getP11AuthProvider(mSlot, mSharedLibrary, mIsIndex, null);
         Security.addProvider( provider );
 
         final PasswordProtection pwp =new PasswordProtection( (mP11Password!=null && mP11Password.length()>0)? mStorePassword.toCharArray():null );

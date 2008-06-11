@@ -33,6 +33,12 @@ public class PKCS11CAToken extends BaseCAToken {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
+    /** Keys, specific to PKCS#11, that can be defined in CA token properties */
+    static final public String SLOT_LABEL_KEY = "slot";
+    static final public String SHLIB_LABEL_KEY = "sharedLibrary";
+    static final public String ATTRIB_LABEL_KEY = "attributesFile";
+    
+    
     /**
      * @param providerClass
      * @throws InstantiationException
@@ -83,7 +89,9 @@ public class PKCS11CAToken extends BaseCAToken {
             isIndex = sSlotLabel!=null;
         } else
             isIndex = false;
-        setJCAProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary"), isIndex) );
+        String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
+        String arributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
+        setJCAProvider( KeyTools.getP11AuthProvider(sSlotLabel, sharedLibrary, isIndex, arributesFile) );
         autoActivate();
     }
 }

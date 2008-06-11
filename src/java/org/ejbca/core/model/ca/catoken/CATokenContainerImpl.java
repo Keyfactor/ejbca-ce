@@ -366,6 +366,30 @@ public class CATokenContainerImpl extends CATokenContainer {
 			this.catoken = null;
 			String msg = intres.getLocalizedMessage("catoken.generatedkeys", "Soft");
 			log.info(msg);
+		} else if (catokeninfo instanceof HardCATokenInfo) {
+			ICAToken token = getCAToken();
+			if (token instanceof PKCS11CAToken) {
+				Properties properties = getProperties();
+				PublicKey pubK = token.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+				String keyLabel = token.getKeyLabel(SecConst.CAKEYPURPOSE_CERTSIGN);
+				int keysize = KeyTools.getKeyLength(pubK);
+				String alg = pubK.getAlgorithm();
+				String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
+				String slot = properties.getProperty(PKCS11CAToken.SLOT_LABEL_KEY);
+				String attributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
+				if (log.isDebugEnabled()) {
+					log.debug("Generating new PKCS#11 "+alg+" key of size "+keysize+" with label "+keyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile"+attributesFile);
+				}
+				KeyStoreContainer cont = KeyStoreContainer.getInstance("PKCS11", sharedLibrary, null, slot, attributesFile);
+				cont.generate(keysize, keyLabel);
+				String msg = intres.getLocalizedMessage("catoken.generatedkeys", "PKCS#11");
+				log.info(msg);
+				token.deactivate();
+				token.activate(authenticationCode);
+				// Re-activate token to re-read session
+				token.deactivate();
+				token.activate(authenticationCode);
+			}
 		} else {
 			String msg = intres.getLocalizedMessage("catoken.getkeysnotavail");
 			log.error(msg);
@@ -522,7 +546,8 @@ public class CATokenContainerImpl extends CATokenContainer {
 				this.catoken = (ICAToken) obj;
 				this.catoken.init(getProperties(), data, getSignatureAlgorithm());				
 			}catch(Throwable e){
-				log.error("Error contructing CA Token: ", e);
+				log.error("Error contructing CA Token (setting to null): ", e);
+				catoken = null;
 			}
 		}
 

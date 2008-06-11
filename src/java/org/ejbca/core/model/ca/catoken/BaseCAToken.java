@@ -319,6 +319,13 @@ public abstract class BaseCAToken implements ICAToken {
     }
 
     /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#getKeyLabel(int)
+     */
+    public String getKeyLabel(int purpose) {
+    	return keyStrings.getString(purpose);
+    }
+
+    /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.ICAToken#getProvider()
      */
     public String getProvider() {

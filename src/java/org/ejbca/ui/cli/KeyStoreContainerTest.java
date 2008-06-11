@@ -136,7 +136,7 @@ class KeyStoreContainerTest {
         while( keyStore==null ) {
             try {
                 keyStore = KeyStoreContainer.getInstance(keyStoreType, providerName,
-                                                   encryptProviderClassName, storeID);
+                                                   encryptProviderClassName, storeID, null);
             } catch( Throwable t ) {
                 t.printStackTrace(System.err);
                 System.err.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");
