@@ -61,7 +61,11 @@ public class CAWrapper implements Serializable {
 	public String getStatus() {
 		caStatus = cainfo.getStatus();
 		String status = webBean.getText("ACTIVE");
-		if(caStatus != SecConst.CA_ACTIVE) {
+		if(caStatus == SecConst.CA_EXPIRED) {
+			status = webBean.getText("EXPIRED");
+		} else if(caStatus == SecConst.CA_REVOKED) {
+			status = webBean.getText("REVOKED");
+		} else if (caStatus != SecConst.CA_ACTIVE) {
 			status = webBean.getText("OFFLINE");
 		} 
 		return status;	
@@ -85,12 +89,14 @@ public class CAWrapper implements Serializable {
 		getStatus();
 		getTokenStatus();
 		activateoption = CAActivationMBean.KEEPCURRENT;
-		//If CA status is off line and Token is online default should be 'Activate'
-		if ((tokenStatus != ICAToken.STATUS_OFFLINE) && (caStatus != SecConst.CA_ACTIVE)) {
+		if ((caStatus == SecConst.CA_EXPIRED) || (caStatus == SecConst.CA_REVOKED)) {
+			//If CA status is expired of revoked, status should be to not change anything
+			activateoption = CAActivationMBean.KEEPCURRENT;
+		} else if ((tokenStatus != ICAToken.STATUS_OFFLINE) && (caStatus != SecConst.CA_ACTIVE)) {
+			//If CA status is off line and Token is online default should be 'Make off line'
 			activateoption = CAActivationMBean.MAKEOFFLINE;
-		}
-		//If CA status is active and Token is off line default should be 'Make off line'
-		if ((tokenStatus == ICAToken.STATUS_OFFLINE) && (caStatus == SecConst.CA_ACTIVE)) {
+		} else if ((tokenStatus == ICAToken.STATUS_OFFLINE) && (caStatus == SecConst.CA_ACTIVE)) {
+			//If CA status is active and Token is off line default should be 'Activate'
 			activateoption = CAActivationMBean.ACTIVATE;
 		}
 		return activateoption;

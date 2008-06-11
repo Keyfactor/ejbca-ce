@@ -125,6 +125,10 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		}
 	}
 
+	/** Returns list of authorized CAs
+	 * 
+	 * @return List of CAWrapper
+	 */
 	public List getAuthorizedCAWrappers() {
 		initializeWrappers();
 		Iterator it = caInfoList.iterator();
