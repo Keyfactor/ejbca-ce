@@ -1233,7 +1233,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 }
                 
                 if (data.get(CVCACCESSRIGHTS) == null) {
-                	setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4); // v28
+                	setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE); // v28
                 } 
             }
             data.put(VERSION, new Float(LATEST_VERSION));
