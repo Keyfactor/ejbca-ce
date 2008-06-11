@@ -415,11 +415,18 @@ function checkallfields(){
         <td width="50%"  align="right"> 
           <%= ejbcawebbean.getText("TYPEOFCA") %>
         </td>
-        <td width="50%" valign="top"> 
+        <td width="50%" valign="top">
+            <% if (!editca) { %> 
             <select name="<%=SELECT_CATYPE %>" size="1" onchange="document.changecatype.submit()"'>                
                  <option value="<%=CAInfo.CATYPE_X509%>" <%if(catype == CAInfo.CATYPE_X509) out.write("selected");%>>X509</option>
                  <option value="<%=CAInfo.CATYPE_CVC%>" <%if(catype == CAInfo.CATYPE_CVC) out.write("selected");%>>CVC</option>  
 	        </select> 
+	        <% } else { 
+	             if(catype == CAInfo.CATYPE_X509) out.write("X509");
+	             else if(catype == CAInfo.CATYPE_CVC) out.write("CVC");
+	             else out.write("UNKNOWN");
+	           }
+	        %>
         </td>
       </tr>
     </form>
