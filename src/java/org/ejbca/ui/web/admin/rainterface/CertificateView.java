@@ -216,27 +216,26 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public String getBasicConstraints(EjbcaWebBean ejbcawebbean) {
-    	String retval = ejbcawebbean.getText("ENDENTITY");
-    	if(CertTools.isCA(certificate)){                	
-            retval = ejbcawebbean.getText("CANOLIMIT");
-            if (certificate instanceof X509Certificate) {
-            	X509Certificate x509cert = (X509Certificate)certificate;
-           	    if(x509cert.getBasicConstraints() == Integer.MAX_VALUE){
-                    retval = ejbcawebbean.getText("CANOLIMIT");
-           	    }else{
-                   retval = ejbcawebbean.getText("CAPATHLENGTH") + " : " + x509cert.getBasicConstraints();                    	 
-                }            	
-            } else if (certificate.getType().equals("CVC")) {
-            	CardVerifiableCertificate cvccert = (CardVerifiableCertificate)certificate;
-            	try {
-            		retval = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
-				} catch (NoSuchFieldException e) {
-					retval = "ERROR";
-				}
-            }
-       }
-    	
-      return retval;
+    	String retval = ejbcawebbean.getText("NONE");
+    	if (certificate instanceof X509Certificate) {
+    		X509Certificate x509cert = (X509Certificate)certificate;
+    		int bc = x509cert.getBasicConstraints();
+    		if (bc == Integer.MAX_VALUE) {
+    			retval = ejbcawebbean.getText("CANOLIMIT");
+    		} else if (bc == -1) {
+    			retval = ejbcawebbean.getText("ENDENTITY");
+    		} else {
+    			retval = ejbcawebbean.getText("CAPATHLENGTH") + " : " + x509cert.getBasicConstraints();                    	     			
+    		}
+    	} else if (certificate.getType().equals("CVC")) {
+    		CardVerifiableCertificate cvccert = (CardVerifiableCertificate)certificate;
+    		try {
+    			retval = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+    		} catch (NoSuchFieldException e) {
+    	    	retval = ejbcawebbean.getText("NONE");
+    		}
+    	}
+    	return retval;
     }
 
     public String getSignature() {
