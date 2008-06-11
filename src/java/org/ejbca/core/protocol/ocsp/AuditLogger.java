@@ -26,9 +26,8 @@ import org.ejbca.util.PatternLogger;
  * @version $Id$
  *
  */
-public class AuditLogger extends PatternLogger{ 
-	private long transactionNumber;
-	public static final Logger auditlog = Logger.getLogger("org.ejbca.core.protocol.ocsp.auditlogger");
+public class AuditLogger extends PatternLogger{
+	public static final Logger auditlog = Logger.getLogger(AuditLogger.class.getName());
 	public static final String LOG_ID="LOG_ID";//A random 32 bit number identifying a log entry for a request
 	public static final String STATUS="STATUS";//The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;
 	//TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;

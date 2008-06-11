@@ -31,8 +31,7 @@ public class AccountLogger extends PatternLogger {
 	private static Pattern PATTERN;
 	private static String orderString;
 	private static Matcher m_matcher;
-	private long transactionNumber;
-    private static Logger accountLog = Logger.getLogger("org.ejbca.core.protocol.ocsp.AccountLogger");
+    private static final Logger accountLog = Logger.getLogger(AccountLogger.class.getName());
 	private static String mLogDateFormat ;
 	public static final String CERT_STATUS="CERT_STATUS"; // The revocation status of a requested certificate
 	public static final String LOG_ID="LOG_ID";//A random 32 bit number identifying a log entry for a request
@@ -44,8 +43,6 @@ public class AccountLogger extends PatternLogger {
 	public static final String ISSUER_KEY = "ISSUER_KEY";
 	
 	//TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;
-    private static final Logger transaction_log = Logger.getLogger("org.ejbca.core.protocol.ocsp.AccountLogger");
-
 	 /** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
 
 	public AccountLogger () {
