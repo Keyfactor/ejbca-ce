@@ -278,6 +278,7 @@
         <delete dir="${test.dir}/ws/reports" />
         <mkdir dir="${test.dir}/ws/reports/html" />
         <junit printsummary="yes" haltonfailure="no">
+        	<jvmarg value="-Djava.endorsed.dirs=${jaxws.libdir}"/>
 			<sysproperty key="testtype" value="WEB"/>
             <classpath>
                 <path refid="jaxws.test.classpath" />

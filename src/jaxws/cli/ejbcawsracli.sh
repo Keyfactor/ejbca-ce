@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -jar ejbcawscli.jar "$@"
+java -Djava.endorsed.dirs=lib -jar ejbcawscli.jar "$@"
