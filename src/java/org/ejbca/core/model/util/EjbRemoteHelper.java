@@ -55,7 +55,7 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 public class EjbRemoteHelper {
 
 	/**
-	 * return the environment entries locator
+	 * Return the environment entries locator. ServiceLocator caches the home interfaces.
 	 * @return return the environment entries locator
 	 */
 	private ServiceLocator getLocator() {
