@@ -246,7 +246,6 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#findCerts(java.lang.String, boolean)
 	 */
-	
 	public List<Certificate> findCerts(String username, boolean onlyValid)
 			throws  AuthorizationDeniedException, NotFoundException, EjbcaException {
 		
@@ -293,6 +292,67 @@ public class EjbcaWS implements IEjbcaWS {
 		} 
 		return retval;
 	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getLastCertChain(java.lang.String)
+	 */
+	public List<Certificate> getLastCertChain(String username) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+		List<Certificate> retval = new ArrayList<Certificate>();
+		log.debug(">getLastCertChain: "+username);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
+		Admin admin = ejbhelper.getAdmin(wsContext);
+		try {
+			UserDataVO user;
+			user = ejbhelper.getUserAdminSession().findUser(admin, username);
+			if (user != null) {
+				Collection certs = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin,username);
+				if (certs.size() > 0) {
+					// The latest certificate will be first
+					java.security.cert.Certificate lastcert = (java.security.cert.Certificate)certs.iterator().next();
+					if (lastcert != null) {
+						log.debug("Found certificate for user with subjectDN: "+CertTools.getSubjectDN(lastcert)+" and serialNo: "+CertTools.getSerialNumber(lastcert)); 
+						retval.add(new Certificate(lastcert));
+						// If we added a certificate, we will also append the CA certificate chain
+						// First get the CAid for the issuer of the users certificate
+						String issuerDN = CertTools.getIssuerDN(lastcert); 
+						int caid = issuerDN.hashCode();
+						Collection chaincerts = ejbhelper.getSignSession().getCertificateChain(admin, caid);
+						if (chaincerts != null) {
+							Iterator iter = chaincerts.iterator();
+							while (iter.hasNext()) {
+								java.security.cert.Certificate cert = (java.security.cert.Certificate)iter.next();
+								log.debug("Adding certificate chain cert with subjectDN: "+CertTools.getSubjectDN(cert)); 
+								retval.add(new Certificate(cert));
+							}							
+						} else {
+							log.debug("No certificate chain found for CA with id: "+caid+" and subjectDN: "+issuerDN);
+						}
+					} else {
+						log.debug("Found no certificate (in non null list??) for user "+username);
+					}
+				} else {
+					log.debug("Found no certificate for user "+username);
+				}
+			} else {
+				log.debug("No existing user with username: "+username);
+			}
+		} catch (RemoteException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (FinderException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CertificateEncodingException e) {
+			log.error("EJBCA WebService error, cvcRequest : ",e);
+			throw new EjbcaException(e.getMessage());
+		}		
+		log.debug("<getLastCertChain: "+username);
+		return retval;
+	}
+
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#crmfRequest(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -416,7 +476,7 @@ public class EjbcaWS implements IEjbcaWS {
 				// status is NEW and password is correct.
 			} else {
 				// If there are no old user, continue processing as usual... it will fail
-				log.debug("No existing user exists with username: "+username);
+				log.debug("No existing user with username: "+username);
 			}
 			
 			// Finally generate the certificate (assuming status is NEW and password is correct
@@ -577,7 +637,7 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new EjbcaException(e.getMessage());
 		} catch (IllegalKeyException e) {
 			// Don't log a bad error for this (user's key length too small)
-			log.debug("EJBCA WebService error, pkcs12Req : ",e);
+			log.debug("EJBCA WebService error, processCertReq : ",e);
 		    throw new EjbcaException(e.getMessage());
 		} catch (AuthStatusException e) {
 			// Don't log a bad error for this (user wrong status)

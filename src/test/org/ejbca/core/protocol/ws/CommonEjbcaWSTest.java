@@ -1703,8 +1703,27 @@ public class CommonEjbcaWSTest extends TestCase {
 		}
 		String version = ejbcaraws.getEjbcaVersion();
 		assertTrue(version.contains("EJBCA 3")); // We don't know which specific version we are testing
-
 	}
+	
+	protected void test28getLastCertChain(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+        List<Certificate> foundcerts = ejbcaraws.findCerts("WSTESTUSER1",false);
+        assertTrue(foundcerts != null);
+        assertTrue(foundcerts.size() > 1);
+        
+        boolean certFound = false;
+    	java.security.cert.Certificate cacert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(foundcerts.size()-1).getCertificateData());
+    	assertTrue(CertTools.isSelfSigned(cacert));
+    	java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(0).getCertificateData());
+    	for (int i = 1; i < foundcerts.size(); i++) {
+        	java.security.cert.Certificate cert2 = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
+    		cert.verify(cert2.getPublicKey());
+    		cert = cert2;
+    	}
+	}
+
     protected void test99cleanUpAdmins() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
 		//getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);

@@ -50,8 +50,12 @@ import org.ejbca.util.query.IllegalQueryException;
  * editUser    : Edits/adds  userdata
  * findUser    : Retrieves the userdata for a given user.
  * findCerts   : Retrieves the certificates generated for a user.
+ * getLastCertChain : retrieves the latest full certificate chain issued for the user
  * pkcs10Req   : Generates a certificate using the given userdata and the public key from the PKCS10
  * pkcs12Req   : Generates a PKCS12 keystore (with the private key) using the given userdata
+ * crmfRequest : Generates a certificate using the given userdata and the public key from the CRMF
+ * spkacRequest : Generates a certificate using the given userdata and the public key from the SPKAC (netscape)
+ * cvcRequest : Generates a certificate using the given userdata and the public key from the CVC (EAC ePassports)
  * revokeCert  : Revokes the given certificate.
  * revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user.
  * revokeToken : Revokes all certificates placed on a given hard token
@@ -67,8 +71,13 @@ import org.ejbca.util.query.IllegalQueryException;
  * customLog  : Logs a CUSTOM_LOG event to the logging system
  * deleteUserDataFromSource : Method used to remove user data from a user data source
  * getCertificate : Returns a certificate given its issuer and serial number
+ * getAvailableCAs() : 
+ * getAuthorizedEndEntityProfiles() : 
+ * getAvailableCertificateProfiles : 
+ * getAvailableCAsInProfile : 
  * 
- * Observere: All methods have to be called using client authenticated https
+ * 
+ * Observe: All methods have to be called using client authenticated https
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
@@ -146,6 +155,25 @@ public interface IEjbcaWS {
 			boolean onlyValid) throws AuthorizationDeniedException,
 			NotFoundException, EjbcaException;
 
+	/**
+	 * Retrieves a the latest certificate issued to the user, together woth the CA certificates so the whole certificate chain is returned.
+	 * 
+	 * Authorization requirements: the client certificate must have the following privileges set
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /ra_functionality/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user>/view_end_entity
+	 * - /ca/<ca of user>
+	 * 
+	 * @param username a unique username 
+	 * @return a collection of X509Certificates or null if no certificates could be found with user certificate in pos 0, SubCA in 1, RootCA in 2 etc
+	 * @throws AuthorizationDeniedException if client isn't authorized to request
+	 * @throws NotFoundException if user cannot be found
+	 * @throws EjbcaException 
+	 */
+
+	public abstract List<Certificate> getLastCertChain(String username) 
+	throws AuthorizationDeniedException, NotFoundException, EjbcaException;
 	
 	/** Generate a certificate for a user, works the same as pkcs10Request
 	 * 

@@ -137,6 +137,10 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     	test27EjbcaVersion(true);  
     }
 
+    public void test28getLastCertChain() throws Exception {
+    	test28getLastCertChain(true);  
+    }
+
     public void test99cleanUpAdmins() throws Exception {
     	super.test99cleanUpAdmins();
     }

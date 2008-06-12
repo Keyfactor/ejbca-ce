@@ -62,6 +62,18 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 	private static final Logger log = Logger.getLogger(EjbcaWSHelper.class);				
 
+	private static EjbcaWSHelper instance = null;
+	
+//	private EjbcaWSHelper() {
+//	}
+//	
+//	public static EjbcaWSHelper getInstance() {
+//		if (instance == null) {
+//			instance = new EjbcaWSHelper();
+//		}
+//		return instance;
+//	}
+	
 	//
 	// Helper methods for various tasks done from the WS interface
 	//
@@ -71,7 +83,6 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	
 	protected Admin getAdmin(boolean allowNonAdmins, WebServiceContext wsContext) throws AuthorizationDeniedException, EjbcaException {
 		Admin admin = null;
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		try {
 			MessageContext msgContext = wsContext.getMessageContext();
 			HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
@@ -84,11 +95,11 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			admin = new Admin(certificates[0]);
 			// Check that user have the administrator flag set.
 			if(!allowNonAdmins){
-				ejbhelper.getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
+				getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
+				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
 			}
 
-			RevokedCertInfo revokeResult =  ejbhelper.getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
+			RevokedCertInfo revokeResult =  getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
 			if(revokeResult == null || revokeResult.getReason() != RevokedCertInfo.NOT_REVOKED){
 				throw new AuthorizationDeniedException("Error administrator certificate doesn't exist or is revoked.");
 			}
@@ -112,7 +123,6 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	 */
 	protected boolean isAdmin(WebServiceContext wsContext) throws EjbcaException {
 		boolean retval = false;
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		MessageContext msgContext = wsContext.getMessageContext();
 		HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
 		X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
@@ -123,8 +133,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 		Admin admin = new Admin(certificates[0]);
 		try{
-			ejbhelper.getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
+			getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
+			getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
 			retval = true;
 		}catch(AuthorizationDeniedException e){
 		} catch (CreateException e) {			
@@ -139,19 +149,18 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 	protected void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException, RemoteException{
 		try {
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
 			UserDataVO userdata = null;
 			try {
-				userdata = ejbhelper.getUserAdminSession().findUser(admin, username);
+				userdata = getUserAdminSession().findUser(admin, username);
 			} catch (FinderException e) {
 				throw new EjbcaException("Error the  user doesn't seem to exist.");
 			}
 			if(userdata == null){
 				throw new EjbcaException("Error the  user doesn't seem to exist.");
 			}
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.VIEW_RIGHTS);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid );		
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.VIEW_RIGHTS);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid );		
 		} catch (RemoteException e) {
 			throw new EjbcaException(e);
 		} catch (CreateException e) {
@@ -163,12 +172,11 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	
 	protected void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException, RemoteException {
 		try {
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
 			UserDataVO userdata = null;
 			boolean userExists = false;
 			try {
-				userdata = ejbhelper.getUserAdminSession().findUser(admin, username);
+				userdata = getUserAdminSession().findUser(admin, username);
 				if(userdata != null){
 					userExists = true;
 				}
@@ -176,15 +184,15 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				// Do nothing
 			}
 
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
 			if(viewPUKData){
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWPUKS);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWPUKS);
 			}
 
 			if(userExists){		
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_RIGHTS);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_RIGHTS);
 				if(viewPUKData){
-					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS);			
+					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS);			
 				}
 			}
 
@@ -196,8 +204,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	}
 	
 	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws EjbcaException, ClassCastException, CreateException, NamingException, RemoteException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-		CAInfo cainfo = ejbhelper.getCAAdminSession().getCAInfo(admin,userdata.getCaName());
+		CAInfo cainfo = getCAAdminSession().getCAInfo(admin,userdata.getCaName());
 		if (cainfo == null) {
 			throw new EjbcaException("Error CA " + userdata.getCaName() + " doesn't exists.");
 		}
@@ -206,19 +213,19 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			throw new EjbcaException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
-		int endentityprofileid = ejbhelper.getRAAdminSession().getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
+		int endentityprofileid = getRAAdminSession().getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
 		if(endentityprofileid == 0){
 			throw new EjbcaException("Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
 		}
 
-		int certificateprofileid = ejbhelper.getCertStoreSession().getCertificateProfileId(admin,userdata.getCertificateProfileName());
+		int certificateprofileid = getCertStoreSession().getCertificateProfileId(admin,userdata.getCertificateProfileName());
 		if(certificateprofileid == 0){
 			throw new EjbcaException("Error Certificate profile " + userdata.getCertificateProfileName() + " doesn't exists.");
 		}
 		
 		int hardtokenissuerid = 0;
 		if(userdata.getHardTokenIssuerName() != null){
-         hardtokenissuerid = ejbhelper.getHardTokenSession().getHardTokenIssuerId(admin,userdata.getHardTokenIssuerName());
+         hardtokenissuerid = getHardTokenSession().getHardTokenIssuerId(admin,userdata.getHardTokenIssuerName());
 		   if(hardtokenissuerid == 0){
 			  throw new EjbcaException("Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " doesn't exists.");
 		   }
@@ -253,22 +260,21 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	
 	protected UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException, CreateException, NamingException, RemoteException{
 		String username = userdata.getUsername();
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
-		String caname = ejbhelper.getCAAdminSession().getCAInfo(admin,userdata.getCAId()).getName();
+		String caname = getCAAdminSession().getCAInfo(admin,userdata.getCAId()).getName();
 		if(caname == null){
 			String message = "Error CA id " + userdata.getCAId() + " doesn't exists. User: "+username;
 			log.error(message);
 			throw new EjbcaException(message);
 		}
 		
-		String endentityprofilename = ejbhelper.getRAAdminSession().getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
+		String endentityprofilename = getRAAdminSession().getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
 		if(endentityprofilename == null){
 			String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " doesn't exists. User: "+username;
 			log.error(message);
 			throw new EjbcaException(message);
 		}
 
-		String certificateprofilename = ejbhelper.getCertStoreSession().getCertificateProfileName(admin,userdata.getCertificateProfileId());
+		String certificateprofilename = getCertStoreSession().getCertificateProfileName(admin,userdata.getCertificateProfileId());
 		if(certificateprofilename == null){
 			String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " doesn't exists. User: "+username;
 			log.error(message);
@@ -277,7 +283,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		
 		String hardtokenissuername = null;
 		if(userdata.getHardTokenIssuerId() != 0){
-		   hardtokenissuername = ejbhelper.getHardTokenSession().getHardTokenIssuerAlias(admin,userdata.getHardTokenIssuerId());
+		   hardtokenissuername = getHardTokenSession().getHardTokenIssuerAlias(admin,userdata.getHardTokenIssuerId());
 		   if(hardtokenissuername == null){
 			   String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " doesn't exists. User: "+username;
 			   log.error(message);
@@ -364,18 +370,17 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	 */
 	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException, ClassCastException, CreateException, NamingException, RemoteException{
 		Query retval = new Query(Query.TYPE_USERQUERY);		  		
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		switch(usermatch.getMatchwith()){
 		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
-			  String endentityprofilename = Integer.toString(ejbhelper.getRAAdminSession().getEndEntityProfileId(admin,usermatch.getMatchvalue()));
+			  String endentityprofilename = Integer.toString(getRAAdminSession().getEndEntityProfileId(admin,usermatch.getMatchvalue()));
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),endentityprofilename);
 			  break;
 		  case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
-			  String certificateprofilename = Integer.toString(ejbhelper.getCertStoreSession().getCertificateProfileId(admin,usermatch.getMatchvalue()));
+			  String certificateprofilename = Integer.toString(getCertStoreSession().getCertificateProfileId(admin,usermatch.getMatchvalue()));
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),certificateprofilename);
 			  break;			  
 		  case UserMatch.MATCH_WITH_CA:
-			  String caname = Integer.toString(ejbhelper.getCAAdminSession().getCAInfo(admin,usermatch.getMatchvalue()).getCAId());
+			  String caname = Integer.toString(getCAAdminSession().getCAInfo(admin,usermatch.getMatchvalue()).getCAId());
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),caname);
 			  break;	
 		  case UserMatch.MATCH_WITH_TOKEN:
@@ -400,12 +405,11 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	 */
 	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) throws CreateException, NamingException, RemoteException {
      ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
-     EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
      Iterator<java.security.cert.Certificate> iter = certs.iterator();
      while(iter.hasNext()){
     	 java.security.cert.Certificate next = iter.next();
   	   
-  	   RevokedCertInfo info = ejbhelper.getCertStoreSession().isRevoked(admin,CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
+  	   RevokedCertInfo info = getCertStoreSession().isRevoked(admin,CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
   	   if(info.getReason() == RevokedCertInfo.NOT_REVOKED){
   		   try{
   			   CertTools.checkValidity(next, new Date());
@@ -421,14 +425,13 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	
 	protected Collection<java.security.cert.Certificate> returnOnlyAuthorizedCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) throws RemoteException, CreateException {
 		ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Iterator<java.security.cert.Certificate> iter = certs.iterator();
 		while(iter.hasNext()){
 			java.security.cert.Certificate next = iter.next();
 			try{
 				// check that admin is autorized to CA
 				int caid = CertTools.getIssuerDN(next).hashCode();		
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 				retval.add(next);
 			}catch(AuthorizationDeniedException ade){
 				log.debug("findCerts : not authorized to certificate " + CertTools.getSerialNumber(next).toString(16));
@@ -454,9 +457,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
       		break;
       	}        	
       }
-      EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
       if (returnval == 0) {
-           returnval = ejbhelper.getHardTokenSession().getHardTokenProfileId(admin , tokenname);
+           returnval = getHardTokenSession().getHardTokenProfileId(admin , tokenname);
       }
 
       return returnval;
@@ -472,9 +474,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
       		break;
       	}        	
       }
-      EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
       if (returnval == null) {
-           returnval = ejbhelper.getHardTokenSession().getHardTokenProfileName(admin , tokenid);
+           returnval = getHardTokenSession().getHardTokenProfileName(admin , tokenid);
       }
 
       return returnval;
