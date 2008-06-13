@@ -678,7 +678,7 @@ abstract class OCSPServletBase extends HttpServlet {
 						responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));
 						if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
 						if (mAudit) audit.writeln();
-						if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
+						//if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
 						//if (mAccount) account.writeln();
 						continue;
 					} else {
@@ -700,7 +700,7 @@ abstract class OCSPServletBase extends HttpServlet {
 					}
 					CertificateStatus certStatus = null; // null means good
 					if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 3 = unknown
-					if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "1"); // 3 = unknown
+					//if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "1"); // 3 = unknown
 					if (null == rci) {
 						rci = isRevoked(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
 						if (null == rci) {
@@ -712,7 +712,7 @@ abstract class OCSPServletBase extends HttpServlet {
 							String status = "good";
 							certStatus = null; // null means "good" in OCSP
 							if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
-							if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "1"); // 3 = unknown
+							//if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "1"); // 3 = unknown
 							// If we do not treat non existing certificates as good 
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
@@ -721,7 +721,7 @@ abstract class OCSPServletBase extends HttpServlet {
 								status = "unknown";
 								certStatus = new UnknownStatus();
 								if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
-								if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "3"); // 3 = unknown
+								//if (mAccount) account.paramPut(AccountLogger.CERT_STATUS, "3"); // 3 = unknown
 							} 
 							infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 							m_log.info(infoMsg);
@@ -739,15 +739,15 @@ abstract class OCSPServletBase extends HttpServlet {
 								} else {
 									certStatus = null;
 									if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
-									if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
+									//if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
 								}
 								String status = "good";
 								if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
-								if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
+								//if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
 								if (certStatus != null) {
 									status ="revoked";
 									if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
-									if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
+									//if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
 								}
 								infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 
@@ -762,7 +762,7 @@ abstract class OCSPServletBase extends HttpServlet {
 								m_log.info(infoMsg);
 								// audit.paramPut(AuditLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
 								if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "3");
-								if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
+								//if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
 								if (mAudit) audit.writeln();
 								// if (mAccount) account.writeln();
 								responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));                		
@@ -777,7 +777,7 @@ abstract class OCSPServletBase extends HttpServlet {
 						// audit.paramPut(AuditLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
 						if (mAudit) audit.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
 						if (mAudit) audit.writeln();
-						if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
+						//if (mAccount) account.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
 						//if (mAccount) account.writeln();
 					}
 					// Look for extension OIDs
@@ -810,7 +810,7 @@ abstract class OCSPServletBase extends HttpServlet {
 										}
 									}
 								}
-							}                        	
+							}
 						}
 					}
 

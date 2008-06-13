@@ -59,7 +59,7 @@ public class AuditLogger extends PatternLogger{
 	private  static String orderString;
 	private static String mLogDateFormat; 
 	public AuditLogger () {
-		super(m_matcher, orderString, auditlog, mLogDateFormat);
+		super(PATTERN.matcher(orderString), orderString, auditlog, mLogDateFormat);
 		tempstring = intres.getLocalizedMessage("certtools.dnorderreverse");
 		cleanParams();
 	}
