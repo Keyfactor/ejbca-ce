@@ -121,7 +121,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	public List getNewRequestDataAsText(Admin admin) {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("CERTSERIALNUMBER",CertTools.getSerialNumber(cert).toString(16),true,false));
+		retval.add(new ApprovalDataText("CERTSERIALNUMBER",CertTools.getSerialNumberAsString(cert),true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.getSubjectDN(cert).toString(),true,false));
 		retval.add(new ApprovalDataText("ISSUERDN",CertTools.getIssuerDN(cert).toString(),true,false));
 		return retval;

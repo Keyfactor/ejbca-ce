@@ -548,7 +548,7 @@ abstract class OCSPServletBase extends HttpServlet {
 						Certificate cert = (Certificate) iter.next();
 						certInfo.append(CertTools.getSubjectDN(cert));
 						certInfo.append(',');
-						certInfo.append(CertTools.getSerialNumber(cert).toString(16));
+						certInfo.append(CertTools.getSerialNumberAsString(cert));
 						certInfo.append('\n');
 					}
 					m_log.debug("Found the following CA certificates : \n"

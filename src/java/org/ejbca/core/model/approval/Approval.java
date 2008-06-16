@@ -124,7 +124,7 @@ public class Approval implements Comparable, Externalizable {
 	 */
 	public void setApprovalCertificateAndUsername(boolean approved, Certificate approvalAdminCert, String username) {
 		this.approved = approved;
-		this.adminCertSerialNumber = CertTools.getSerialNumber(approvalAdminCert).toString(16);
+		this.adminCertSerialNumber = CertTools.getSerialNumberAsString(approvalAdminCert);
 		this.adminCertIssuerDN = CertTools.getIssuerDN(approvalAdminCert);
 		this.username = username;
 	}

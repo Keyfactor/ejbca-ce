@@ -137,7 +137,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
     		try {
     			String uid = null;
     			if (certificate != null) {
-    				uid = CertTools.getSerialNumber(certificate).toString(16) + "," + CertTools.getIssuerDN(certificate);        		
+    				uid = CertTools.getSerialNumberAsString(certificate) + "," + CertTools.getIssuerDN(certificate);        		
     			}
     			Integer id = getAndIncrementRowCount();
     			logentryhome.create(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);

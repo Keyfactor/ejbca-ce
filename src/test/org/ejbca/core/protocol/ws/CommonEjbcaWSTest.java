@@ -733,7 +733,7 @@ public class CommonEjbcaWSTest extends TestCase {
         assertTrue(certFound);
 		
         String issuerdn = CertTools.getIssuerDN(gencert);
-        String serno = CertTools.getSerialNumber(gencert).toString(16);
+        String serno = CertTools.getSerialNumberAsString(gencert);
         
         ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
         

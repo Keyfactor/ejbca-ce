@@ -114,7 +114,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         }
 
         if (certificate != null) {
-        	cert = CertTools.getSerialNumber(certificate).toString(16) + ", issuer: " + CertTools.getIssuerDN(certificate);        		
+        	cert = CertTools.getSerialNumberAsString(certificate) + ", issuer: " + CertTools.getIssuerDN(certificate);        		
         }
 
         if (admininfo.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {

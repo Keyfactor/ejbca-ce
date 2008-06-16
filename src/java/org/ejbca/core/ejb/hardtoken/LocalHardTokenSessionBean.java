@@ -1379,7 +1379,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.transaction type="Required"
        */
     public void addHardTokenCertificateMapping(Admin admin, String tokensn, Certificate certificate){
-        String certificatesn = CertTools.getSerialNumber(certificate).toString(16);
+        String certificatesn = CertTools.getSerialNumberAsString(certificate);
         debug(">addHardTokenCertificateMapping(certificatesn : "+ certificatesn  +", tokensn : " + tokensn + ")");
         int caid = CertTools.getIssuerDN(certificate).hashCode();
         String fp = CertTools.getFingerprintAsString(certificate);
@@ -1421,7 +1421,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.transaction type="Required"
        */
     public void removeHardTokenCertificateMapping(Admin admin, Certificate certificate){
-       String certificatesn = CertTools.getSerialNumber(certificate).toString(16);
+       String certificatesn = CertTools.getSerialNumberAsString(certificate);
        debug(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
 	   int caid = CertTools.getIssuerDN(certificate).hashCode();
       try{

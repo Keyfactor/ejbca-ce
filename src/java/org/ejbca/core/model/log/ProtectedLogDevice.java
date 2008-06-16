@@ -362,7 +362,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			String certificateSerialNumber = null;
 			String certificateIssuerDN = null; 
 			if (certificate != null) {
-				certificateSerialNumber = CertTools.getSerialNumber(certificate).toString(16);
+				certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
 				certificateIssuerDN = CertTools.getIssuerDN(certificate); 
 			}
 			ProtectedLogEventRow protectedLogEventRow = new ProtectedLogEventRow(
@@ -396,7 +396,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		String certificateSerialNumber = null;
 		String certificateIssuerDN = null; 
 		if (certificate != null) {
-			certificateSerialNumber = CertTools.getSerialNumber(certificate).toString(16);
+			certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
 			certificateIssuerDN = CertTools.getIssuerDN(certificate); 
 		}
 		ProtectedLogEventIdentifier[] linkedInEventIdentifiers = new ProtectedLogEventIdentifier[1];

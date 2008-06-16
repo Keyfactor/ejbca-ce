@@ -965,7 +965,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	if (certificate == null) {
     		return;
     	}
-    	debug(">setRevokeStatus(Certificate),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumber(certificate).toString(16));
+    	debug(">setRevokeStatus(Certificate),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
 
     	CertificateDataPK revpk = new CertificateDataPK();
     	revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
@@ -1300,7 +1300,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method     
      */
     public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata){
-        debug(">addCertReqHistData(" + CertTools.getSerialNumber(cert).toString(16) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
+        debug(">addCertReqHistData(" + CertTools.getSerialNumberAsString(cert) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
         try {
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);

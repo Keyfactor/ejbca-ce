@@ -76,7 +76,7 @@ public class Admin implements Serializable {
 
     // Public Constructors
     public Admin(Certificate certificate) {
-        this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumber(certificate).toString(16) + ", " + CertTools.getIssuerDN(certificate));
+        this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumberAsString(certificate) + ", " + CertTools.getIssuerDN(certificate));
         this.certificate = certificate;
     }
 

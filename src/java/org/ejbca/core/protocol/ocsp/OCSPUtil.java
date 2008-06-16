@@ -299,7 +299,7 @@ public class OCSPUtil {
                                 + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
                                 + " CA certificate\n"
                                 + "      CA SubjectDN: '" + CertTools.getSubjectDN(cacert) + "'\n"
-                                + "      SerialNumber: '" + CertTools.getSerialNumber(cacert).toString(16) + "'\n"
+                                + "      SerialNumber: '" + CertTools.getSerialNumberAsString(cacert) + "'\n"
                                 + " CA certificate hashes\n"
                                 + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
                                 + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"

@@ -1709,7 +1709,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 				// by an external CA. Useful if admin user forgot to create a full
 				// certificate chain in PKCS#12 package.
 				log.error("Cannot import CA " + CertTools.getSubjectDN(caSignatureCertificate)
-						+ ": certificate " + CertTools.getSerialNumber(caSignatureCertificate).toString(16)
+						+ ": certificate " + CertTools.getSerialNumberAsString(caSignatureCertificate)
 						+ " is not self-signed.");
 				throw new Exception("Cannot import CA "
 						+ CertTools.getSubjectDN(caSignatureCertificate)

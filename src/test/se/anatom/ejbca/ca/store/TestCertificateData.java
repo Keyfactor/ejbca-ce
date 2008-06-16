@@ -261,7 +261,7 @@ public class TestCertificateData extends TestCase {
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
             Certificate xcert = (Certificate) iter.next();
-            log.debug(CertTools.getSubjectDN(xcert) + " - " + CertTools.getSerialNumber(xcert).toString());
+            log.debug(CertTools.getSubjectDN(xcert) + " - " + CertTools.getSerialNumberAsString(xcert));
             //log.debug(certs[i].toString());
         }
         log.debug("<test05FindAgain()");

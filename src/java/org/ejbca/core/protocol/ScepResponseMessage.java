@@ -283,7 +283,7 @@ public class ScepResponseMessage implements IResponseMessage {
                 if (recipientKeyInfo != null) {
                     try {
                         X509Certificate rec = (X509Certificate)CertTools.getCertfromByteArray(recipientKeyInfo);
-                        log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumber(rec).toString(16));
+                        log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
                         edGen.addKeyTransRecipient(rec);
                     } catch (CertificateException e) {
                         throw new IOException("Can not decode recipients self signed certificate!");

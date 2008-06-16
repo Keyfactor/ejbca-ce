@@ -223,7 +223,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 							signercert = CertTools.getCertfromByteArray(requestKeyInfo);
 							if (log.isDebugEnabled()) {
 								log.debug("requestKeyInfo is SubjectDN: " + CertTools.getSubjectDN(signercert) +
-										", Serial=" + CertTools.getSerialNumber(signercert).toString(16) +
+										", Serial=" + CertTools.getSerialNumberAsString(signercert) +
 										"; IssuerDN: "+ CertTools.getIssuerDN(signercert).toString());								
 							}
 						} catch (CertificateException e) {

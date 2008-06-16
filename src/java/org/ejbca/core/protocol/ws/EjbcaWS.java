@@ -316,7 +316,7 @@ public class EjbcaWS implements IEjbcaWS {
 					// The latest certificate will be first
 					java.security.cert.Certificate lastcert = (java.security.cert.Certificate)certs.iterator().next();
 					if (lastcert != null) {
-						log.debug("Found certificate for user with subjectDN: "+CertTools.getSubjectDN(lastcert)+" and serialNo: "+CertTools.getSerialNumber(lastcert)); 
+						log.debug("Found certificate for user with subjectDN: "+CertTools.getSubjectDN(lastcert)+" and serialNo: "+CertTools.getSerialNumberAsString(lastcert)); 
 						retval.add(new Certificate(lastcert));
 						// If we added a certificate, we will also append the CA certificate chain
 						// First get the CAid for the issuer of the users certificate

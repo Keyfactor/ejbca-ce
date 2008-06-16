@@ -105,7 +105,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
                     byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
                             "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
                     Certificate cert = CertTools.getCertfromByteArray(bytes);
-                    String key = CertTools.getIssuerDN(cert)+";"+CertTools.getSerialNumber(cert).toString(16);
+                    String key = CertTools.getIssuerDN(cert)+";"+CertTools.getSerialNumberAsString(cert);
                     trustedCerts.put(key,cert);
                 } catch (CertificateException e) {
             		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());

@@ -434,7 +434,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 				retval.add(next);
 			}catch(AuthorizationDeniedException ade){
-				log.debug("findCerts : not authorized to certificate " + CertTools.getSerialNumber(next).toString(16));
+				log.debug("findCerts : not authorized to certificate " + CertTools.getSerialNumberAsString(next));
 			}
 		}
 		

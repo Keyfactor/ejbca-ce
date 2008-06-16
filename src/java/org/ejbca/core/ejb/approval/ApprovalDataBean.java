@@ -600,7 +600,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
         
         if(approvalRequest.getRequestAdminCert() != null){
           setReqAdminCertIssuerDn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
-          setReqAdminCertSn(CertTools.getSerialNumber(approvalRequest.getRequestAdminCert()).toString(16));
+          setReqAdminCertSn(CertTools.getSerialNumberAsString(approvalRequest.getRequestAdminCert()));
         }
         setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);        
         setApprovals(new ArrayList());

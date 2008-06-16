@@ -160,7 +160,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			Certificate certificate = loadcert(args[5]);
 			String fingerprint = CertTools.getFingerprintAsString(certificate);
 			if (getCertificateStoreSession().findCertificateByFingerprint(administrator, fingerprint) != null) {
-				throw new Exception("Certificate number '" + CertTools.getSerialNumber(certificate).toString(16) + "' is already present.");
+				throw new Exception("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' is already present.");
 			}
 			if (CertTools.getNotAfter(certificate).compareTo(new java.util.Date()) < 0) {
 				status = CertificateDataBean.CERT_EXPIRED;
@@ -261,7 +261,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 					fingerprint,
 					status, type);
 			
-			getOutputStream().println("Certificate number '" + CertTools.getSerialNumber(certificate).toString(16) + "' has been added.");
+			getOutputStream().println("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
 		}
 		catch (Exception e) {
 			getOutputStream().println("Error: " + e.getMessage());
