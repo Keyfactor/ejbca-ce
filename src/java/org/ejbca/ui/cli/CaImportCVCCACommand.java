@@ -24,6 +24,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
@@ -60,8 +61,10 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
         if (args.length < 4) {
            String msg = "Usage 1: ca importcvcca <CA name> <pkcs8 RSA private key file> <certificate file>\n" +
         				"Imports a private key and a self signed CVCA certificate and creates a CVCA.\n" +
-        				"Usage 2: ca importcvcca <CA name> <pkcs8 private key file> <certificate file> <DN of form C=country,CN=mnemonic,SERIALNIUMBER=sequence> <signatureAlgorithm> <validity days>\n" +
-        				"Imports a private key and generates a new self signed CVCA certificate with the given DN and creates a CVCA. Signature algorithm can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1";
+        				"Usage 2: ca importcvcca <CA name> <pkcs8 private key file> <certificate file> <DN of form C=country,CN=mnemonic,SERIALNUMBER=sequence> <signatureAlgorithm> <validity days>\n" +
+        				"Imports a private key and generates a new self signed CVCA certificate with the given DN and creates a CVCA. Signature algorithm can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1\n" +
+        				"SERIALNUMBER will not be a part of the CAs DN, it is only used to set a specified sequence (should be of form 00001). Can be left out, and a random sequence is then generated.";
+           
            throw new IllegalAdminCommandException(msg);
         }
         try {
@@ -97,6 +100,10 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	    		String country = CertTools.getPartFromDN(dn, "C");
 	    		String mnemonic = CertTools.getPartFromDN(dn, "CN");
 	    		String seq = CertTools.getPartFromDN(dn, "SERIALNUMBER");
+	    		if (StringUtils.isEmpty(seq)) {
+	    			seq = RandomStringUtils.randomNumeric(5);
+	    			getOutputStream().println("No sequence given, using random 5 number sequence: "+seq);
+	    		}
 	            HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
 	            CAReferenceField caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());
 	            AuthorizationRoleEnum authRole = AuthorizationRoleEnum.CVCA;
@@ -109,8 +116,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	        } else {
 	        	getOutputStream().println("Using passed in self signed certificate.");
 	        	cacert = cert;
-	        }
-	        try {
+	        } try {
 	        	cacert.verify(pubKey);
 	        } catch (SignatureException e) {
 	        	getOutputStream().println("Can not verify self signed certificate: "+e.getMessage());

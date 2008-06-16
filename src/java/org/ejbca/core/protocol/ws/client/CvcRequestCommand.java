@@ -123,8 +123,8 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					String country = CertTools.getPartFromDN(dn, "C");
 					String mnemonic = CertTools.getPartFromDN(dn, "CN");
 					if (sequence.equalsIgnoreCase("null")) {
-						getPrintStream().println("No sequence given, using random 5 number sequence.");
 						sequence = RandomStringUtils.randomNumeric(5);
+						getPrintStream().println("No sequence given, using random 5 number sequence: "+sequence);
 					}
 					CAReferenceField caRef = new CAReferenceField(country,mnemonic,sequence);
 					// We are making a self signed request, so holder ref is same as ca ref
