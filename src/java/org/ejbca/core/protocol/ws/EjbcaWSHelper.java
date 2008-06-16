@@ -410,7 +410,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
     	 java.security.cert.Certificate next = iter.next();
   	   
   	   RevokedCertInfo info = getCertStoreSession().isRevoked(admin,CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
-  	   if(info.getReason() == RevokedCertInfo.NOT_REVOKED){
+  	   if ( (info != null) && (info.getReason() == RevokedCertInfo.NOT_REVOKED) ) {
   		   try{
   			   CertTools.checkValidity(next, new Date());
   			   retval.add(next);

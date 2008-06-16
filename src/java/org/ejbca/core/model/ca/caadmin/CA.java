@@ -477,11 +477,23 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
     
     
+    /**
+     * 
+     * @param subject
+     * @param publicKey
+     * @param keyusage
+     * @param validity requested validity in days
+     * @param certProfile
+     * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by CVC CAs for sequence field. Can be set to null.
+     * @return
+     * @throws Exception
+     */
     public Certificate generateCertificate(UserDataVO subject, 
             PublicKey publicKey, 
             int keyusage, 
             long validity,
-            CertificateProfile certProfile) throws Exception {
+            CertificateProfile certProfile,
+            String sequence) throws Exception {
     	// Calculate the notAfter date
     	Date notAfter = null;
         if(validity != -1) {
@@ -489,7 +501,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             notAfter.setTime(notAfter.getTime() + ( validity * 24 * 60 * 60 * 1000));        	
         }
         Date notBefore = new Date(); 
-    	return generateCertificate(subject, publicKey, keyusage, notBefore, notAfter, certProfile, null); 
+    	return generateCertificate(subject, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence); 
     }
 
     /**
@@ -501,6 +513,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param notAfter
      * @param certProfile
      * @param extensions an optional set of extensions to set in the created certificate, if the profile allows extension override, null if the profile default extensions should be used.
+     * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by CVC CAs for sequence field. Can be set to null.
      * @return
      * @throws Exception
      */
@@ -510,7 +523,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                                                     Date notBefore,
                                                     Date notAfter,
                                                     CertificateProfile certProfile,
-                                                    X509Extensions extensions) throws Exception;
+                                                    X509Extensions extensions,
+                                                    String sequence) throws Exception;
     
     public abstract CRL generateCRL(Collection certs, int crlnumber) throws Exception;
     

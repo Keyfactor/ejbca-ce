@@ -23,7 +23,9 @@ import java.io.Serializable;
 public class HardCATokenInfo extends CATokenInfo implements Serializable {    
     
 	
-    public HardCATokenInfo(){}
+    public HardCATokenInfo(){
+    	super();
+    }
     
         
 }

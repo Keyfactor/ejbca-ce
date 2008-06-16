@@ -66,7 +66,9 @@ import java.util.List;
 import java.util.Vector;
 
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -121,6 +123,7 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
+import org.jfree.chart.ChartUtilities;
 
 
 /**
@@ -649,16 +652,17 @@ public class CertTools {
     				rf = cvccert.getCVCertificate().getCertificateBody().getAuthorityReference();                	
                 }
 				// Construct a "fake" DN which can be used in EJBCA
+                // Use only mnemonic and country, since sequence is more of a serialnumber than a DN part
 				String dn = "";
-				if (rf.getSequence() != null) {
-					dn += "CN="+rf.getSequence();
-				}
+//				if (rf.getSequence() != null) {
+//					dn += "SERIALNUMBER="+rf.getSequence();
+//				}
 				if (rf.getMnemonic() != null) {
-					if (dn != null) dn += ", ";
-					dn += "O="+rf.getMnemonic();
+					if (StringUtils.isNotEmpty(dn)) dn += ", ";
+					dn += "CN="+rf.getMnemonic();
 				}
 				if (rf.getCountry() != null) {
-					if (dn != null) dn += ", ";
+					if (StringUtils.isNotEmpty(dn)) dn += ", ";
 					dn += "C="+rf.getCountry();
 				}				
                 ret = stringToBCDNString(dn);
@@ -676,7 +680,7 @@ public class CertTools {
      *
      * @param cert Certificate
      *
-     * @return BigInteger containing the certificate serialNumber
+     * @return BigInteger containing the certificate serialNumber. Can be 0 for CVC certificates with alphanumering serialnumbers if the sequence does not contain any number characters at all.
      */
     public static BigInteger getSerialNumber(Certificate cert) {
     	BigInteger ret = null;
@@ -684,10 +688,70 @@ public class CertTools {
 			X509Certificate xcert = (X509Certificate) cert;
 			ret = xcert.getSerialNumber();
 		} else if (StringUtils.equals(cert.getType(), "CVC")) {
-			// CVC certificates don't have any serial number so we just call it 0 for all
-			return BigInteger.valueOf(0);
+			// For CVC certificates the sequence field of the HolderReference is kind of a serial number,
+			// but if can be alphanumeric which means it can not be made into a BigInteger
+			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
+			try {
+				String sequence = cvccert.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
+				try {
+					if (NumberUtils.isNumber(sequence)) {
+						ret = NumberUtils.createBigInteger(sequence);											
+					} else {
+						log.error("getSerialNumber: Sequence is not a numeric string, trying to get sequence part.");
+						StringBuffer buf = new StringBuffer();
+						for (int i = 0; i < sequence.length(); i++) {
+							char c = sequence.charAt(i);
+							if (CharUtils.isAsciiNumeric(c)) {
+								buf.append(c);
+							}
+						}
+						if (buf.length() > 0) {
+							ret = NumberUtils.createBigInteger(buf.toString());
+						} else {
+							log.error("getSerialNumber: Sequence does not contain a numeric string, returning 0.");
+							ret = BigInteger.valueOf(0);
+						}
+					}
+				} catch (NumberFormatException e) {
+					// If we can't make the sequence into a serial number big integer, set it to 0
+		            log.error("getSerialNumber: NumberFormatException for sequence: "+sequence, e);
+					ret = BigInteger.valueOf(0);				
+				}
+			} catch (NoSuchFieldException e) {
+	            log.error("getSerialNumber: NoSuchFieldException: ", e);
+				ret = BigInteger.valueOf(0);
+			}
 		} else {
-			throw new IllegalArgumentException("Certificate of type "+cert.getType()+" is not implemented");			
+			throw new IllegalArgumentException("getSerialNumber: Certificate of type "+cert.getType()+" is not implemented");			
+		}
+        return ret;
+    }
+
+    /**
+     * Gets Serial number of the certificate as a string. For X509 Certificate this means a HEX encoded BigInteger, and for CVC certificate is
+     * means the sequence field of the holder reference.
+     *
+     * @param cert Certificate
+     *
+     * @return String to be displayed
+     */
+    public static String getSerialNumberAsString(Certificate cert) {
+    	String ret = null;
+    	if (cert instanceof X509Certificate) {
+			X509Certificate xcert = (X509Certificate) cert;
+			ret = xcert.getSerialNumber().toString(16).toUpperCase();
+		} else if (StringUtils.equals(cert.getType(), "CVC")) {
+			// For CVC certificates the sequence field of the HolderReference is kind of a serial number,
+			// but if can be alphanumeric which means it can not be made into a BigInteger
+			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
+			try {
+				ret = cvccert.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
+			} catch (NoSuchFieldException e) {
+	            log.error("getSerialNumber: NoSuchFieldException: ", e);
+				ret = "N/A";
+			}
+		} else {
+			throw new IllegalArgumentException("getSerialNumber: Certificate of type "+cert.getType()+" is not implemented");			
 		}
         return ret;
     }
@@ -755,7 +819,8 @@ public class CertTools {
 			try {
 				ret = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
 			} catch (NoSuchFieldException e) {
-	            log.error("NoSuchFieldException: ", e);
+				// it is not uncommon that this field is missing in CVC certificate requests (it's not in the EAC standard so)
+	            log.debug("NoSuchFieldException: "+ e.getMessage());
 	            return null;
 			}
 		}
@@ -772,7 +837,8 @@ public class CertTools {
 			try {
 				ret = cvccert.getCVCertificate().getCertificateBody().getValidTo();
 			} catch (NoSuchFieldException e) {
-	            log.error("NoSuchFieldException: ", e);
+				// it is not uncommon that this field is missing in CVC certificate requests (it's not in the EAC standard so)
+	            log.debug("NoSuchFieldException: "+ e.getMessage());
 	            return null;
 			}
 		}

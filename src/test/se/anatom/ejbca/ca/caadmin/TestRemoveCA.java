@@ -183,21 +183,21 @@ public class TestRemoveCA extends TestCase {
         log.debug(">test07removeCVCCA()");
         boolean ret = false;
         try {
-        	String dn = CertTools.stringToBCDNString("CN=00001,O=TESTCVCA,C=SE");
+        	String dn = CertTools.stringToBCDNString("CN=TESTCVCA,C=SE");
             cacheAdmin.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
-        	String dn = CertTools.stringToBCDNString("CN=00001,O=TESTDV-D,C=SE");
+        	String dn = CertTools.stringToBCDNString("CN=TESTDV-D,C=SE");
             cacheAdmin.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
-        	String dn = CertTools.stringToBCDNString("CN=00001,O=TESTDV-F,C=FI");
+        	String dn = CertTools.stringToBCDNString("CN=TESTDV-F,C=FI");
             cacheAdmin.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {

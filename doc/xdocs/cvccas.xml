@@ -35,13 +35,21 @@
   have common handling in EJBCA. The mapping is:
   <ul>
     <li>Country = C</li>
-    <li>Mnemonic = O</li>
-    <li>Sequence = CN</li>
+    <li>Mnemonic = CN</li>
   </ul>
-  For example when creating a country CVCA you select type CVC in the create CA page and enter a 'Subject DN' like: C=SE,O=EJBCA,CN=00001.
+  For example when creating a country CVCA you select type CVC in the create CA page and enter a 'Subject DN' like: C=SE,CN=TESTCVCA.
   For the CVCA you select 'Signed by=Self Signed' and 'Certificate Profile=ROOTCA'.
   </p>
   <p>To create a DV you select 'Signed by=Name of CVCCA' and 'Certificate Profile=SUBCA'.</p>
+  </section>
+
+  <section name="CVC Sequence">
+  <p>The sequence in the holder reference of EAC CVC certificates should identify a public key. For CAs created and managed by EJBCA this sequence is
+  an automatic property in the CA token. It starts with 00001 and is increased when new keys are generated (renew CA with checkbox to renew keys checked).
+  </p>
+  <p>For entity (IS and DV) requests that are received, the sequence in the issued certificates are taken from the request. The entity knows best 
+  how to index it's keys.
+  </p>
   </section>
   
   <section name="EAC roles">
@@ -153,7 +161,7 @@
   Usage: cvcrequest cvcprint
   
   ejbca/dist/ejbcawscli> ./cvcwscli.sh cvcrequest
-  Usage : cvcrequest &lt;username&gt; &lt;password&gt; &lt;subjectdn&gt; &lt;caname&gt; &lt;signatureAlg&gt; ...
+  Usage : cvcrequest &lt;username&gt; &lt;password&gt; &lt;subjectdn&gt; &lt;sequence&gt; &lt;caname&gt; &lt;signatureAlg&gt; ...
   ...
   
   ejbca/dist/ejbcawscli> ./cvcwscli.sh cvcprint
@@ -172,13 +180,13 @@
   Example import command using the given CV Certificate:
   </p>
   <source>
-bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvcert C=SE,O=IMPCA1,CN=10001
+bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvcert C=SE,CN=IMPCA1
   </source>
   <p>
   Example import command using the same private/public keys but generating a new certificate:
   </p>
   <source>
-bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvcert C=SE,O=IMPCA1,CN=10001 SHA1WithRSA 365
+bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvcert C=SE,CN=IMPCA1 SHA1WithRSA 365
   </source>
   </section>
   

@@ -1601,7 +1601,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setUsername("WSTESTUSER1");
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
-        user1.setSubjectDN("CN=10001,O=Test,C=SE");
+        user1.setSubjectDN("CN=Test,C=SE");
 		user1.setCaName(getCVCCAName());
 		user1.setStatus(UserDataConstants.STATUS_NEW);
 		user1.setTokenType("USERGENERATED");
@@ -1621,7 +1621,8 @@ public class CommonEjbcaWSTest extends TestCase {
 		CardVerifiableCertificate cvcert = new CardVerifiableCertificate(cert);
 		
 		assertNotNull(cert);
-		assertEquals("CN=10001,O=Test,C=SE", CertTools.getSubjectDN(cvcert));
+		assertEquals("CN=Test,C=SE", CertTools.getSubjectDN(cvcert));
+		assertEquals("00111", CertTools.getSerialNumberAsString(cvcert));
 		PublicKey pk = cvcert.getPublicKey();
 		assertEquals("CVC", pk.getFormat());
 		// Verify that we have the complete chain
@@ -1677,7 +1678,8 @@ public class CommonEjbcaWSTest extends TestCase {
 		cert = (CVCertificate)parsedObject;
 		cvcert = new CardVerifiableCertificate(cert);		
 		assertNotNull(cert);
-		assertEquals("CN=10001,O=Test,C=SE", CertTools.getSubjectDN(cvcert));
+		assertEquals("CN=Test,C=SE", CertTools.getSubjectDN(cvcert));
+		assertEquals("00111", CertTools.getSerialNumberAsString(cvcert));
 
 		//
 		// Fifth test try to renew with an outer signature which is not by the last issued cert (false renew request). This should fail.
@@ -1709,7 +1711,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		if(performSetup){
 			setUpAdmin();
 		}
-        List<Certificate> foundcerts = ejbcaraws.findCerts("WSTESTUSER1",false);
+        List<Certificate> foundcerts = ejbcaraws.getLastCertChain("WSTESTUSER1");
         assertTrue(foundcerts != null);
         assertTrue(foundcerts.size() > 1);
         
@@ -1717,6 +1719,7 @@ public class CommonEjbcaWSTest extends TestCase {
     	java.security.cert.Certificate cacert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(foundcerts.size()-1).getCertificateData());
     	assertTrue(CertTools.isSelfSigned(cacert));
     	java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(0).getCertificateData());
+    	assertEquals("CN=WSTESTUSER1,O=Test", CertTools.getSubjectDN(cert));
     	for (int i = 1; i < foundcerts.size(); i++) {
         	java.security.cert.Certificate cert2 = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
     		cert.verify(cert2.getPublicKey());
@@ -1791,7 +1794,7 @@ public class CommonEjbcaWSTest extends TestCase {
         // No CA Services.
         ArrayList extendedcaservices = new ArrayList();
 
-        String rootcadn = "CN=00001,O=WSCVCA,C=SE";
+        String rootcadn = "CN=WSCVCA,C=SE";
     	String rootcaname = "WSTESTCVCA";
 
     	java.security.cert.Certificate cvcacert = null;
@@ -1831,7 +1834,7 @@ public class CommonEjbcaWSTest extends TestCase {
         }    	
 
         try {
-            String dvcadn = "CN=00001,O=WSDVCA,C=SE";
+            String dvcadn = "CN=WSDVCA,C=SE";
         	String dvcaname = "WSTESTDVCA";
 
         	CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(),
@@ -1872,9 +1875,9 @@ public class CommonEjbcaWSTest extends TestCase {
     private void deleteCVCCA() throws Exception {
 		// Clean up by removing the CVC CA
         try {
-        	String dn = CertTools.stringToBCDNString("CN=00001,O=WSCVCA,C=SE");
+        	String dn = CertTools.stringToBCDNString("CN=WSCVCA,C=SE");
             getCAAdminSession().removeCA(intAdmin, dn.hashCode());
-        	dn = CertTools.stringToBCDNString("CN=00001,O=WSDVCA,C=SE");
+        	dn = CertTools.stringToBCDNString("CN=WSDVCA,C=SE");
             getCAAdminSession().removeCA(intAdmin, dn.hashCode());
         } catch (Exception e) {
         	e.printStackTrace();

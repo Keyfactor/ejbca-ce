@@ -102,7 +102,7 @@
            	  <include name="ejbca-ejb.jar"/>
          	  <include name="log4j.jar"/>
          	  <include name="bc*.jar"/>
-         	  <include name="commons-lang-2.0.jar"/>
+         	  <include name="commons-lang-*.jar"/>
 	        </fileset>
 	    </copy>
 	</target>
@@ -167,7 +167,7 @@
          	 <include name="ejbca-ejb.jar"/>
          	 <include name="log4j.jar"/>
          	 <include name="bc*.jar"/>
-         	 <include name="commons-lang-2.0.jar"/>
+         	 <include name="commons-lang-*.jar"/>
          	</lib>
         </war>
     </target>
@@ -220,7 +220,7 @@
             <fileset dir="${ejbca.home}/lib">        
               <include name="bcprov-jdk15.jar"/>
               <include name="log4j.jar"/>      
-              <include name="commons-lang-2.0.jar"/>            	
+              <include name="commons-lang-*.jar"/>            	
               <include name="cert-cvc.jar"/>            	
             </fileset>	
             <fileset dir="${ejbca.home}/dist">
@@ -253,7 +253,7 @@
     	              
         <jar destfile="dist/ejbcawscli/ejbcawscli.jar" basedir="tmp/ejbcawscli.jar">
           <manifest>
-          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/cert-cvc.jar lib/ejbca-util.jar lib/log4j.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.0.jar"/>
+          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/cert-cvc.jar lib/ejbca-util.jar lib/log4j.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.4.jar"/>
             <attribute name="Main-Class" value="org.ejbca.core.protocol.ws.client.ejbcawsracli"/>
           </manifest>
         </jar>    	    	

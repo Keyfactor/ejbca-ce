@@ -466,7 +466,7 @@
                 <include name="${lib}/cert-cvc.jar" />
                 <include name="${lib}/log4j.jar" />
                 <include name="${lib}/ldap.jar" />
-                <include name="${lib}/commons-lang-2.0.jar" />
+                <include name="${lib}/commons-lang-*.jar" />
                 <include name="${lib}/commons-collections-3.2.jar" />
                 <include name="${lib}/commons-fileupload-1.0.jar" />
             </fileset>

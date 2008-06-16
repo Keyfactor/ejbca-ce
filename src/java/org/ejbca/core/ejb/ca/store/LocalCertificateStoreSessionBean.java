@@ -1403,7 +1403,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     			CertificateProfileDataLocal pdata = (CertificateProfileDataLocal)iter.next();
     			String name = pdata.getCertificateProfileName();
     			pdata.upgradeProfile();
-    			log.info("Loaded certificate profile: "+name);
+    			log.debug("Loaded certificate profile: "+name);
     		}
     	} catch (FinderException e) {
     		log.error("FinderException trying to load profiles: ", e);

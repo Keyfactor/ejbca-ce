@@ -158,7 +158,9 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 						   , ocspkeys.getPublic(),
 						   -1, // KeyUsage
 						   ca.getValidity(), 
-						   new OCSPSignerCertificateProfile());
+						   new OCSPSignerCertificateProfile(),
+						   null // sequence
+						   );
 	  
 	 ocspcertificatechain = new ArrayList();
 	 ocspcertificatechain.add(ocspcertificate);

@@ -29,6 +29,7 @@ public class SoftCATokenInfo extends CATokenInfo implements Serializable {
     
     
     public SoftCATokenInfo(){
+    	super();
     	setClassPath(SoftCAToken.class.getName());
     }
     

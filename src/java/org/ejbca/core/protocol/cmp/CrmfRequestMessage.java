@@ -116,11 +116,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 
     /**
      * 
-     * @param header PKIHeader
-     * @param body PKIBody
+     * @param msg PKIMessage
      * @param defaultCA possibility to enforce a certain CA, instead of taking the CA name from the request, if set to null the CA is taken from the request
      * @param allowRaVerifyPopo true if we allows the user/RA to specify the POP should not be verified
-     * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the DN should have been pre-set, here it is the same as CN.
+     * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the username should have been pre-set, or that here it is the same as CN.
      */
 	public CrmfRequestMessage(PKIMessage msg, String defaultCA, boolean allowRaVerifyPopo, String extractUsernameComponent) {
         log.debug(">CrmfRequestMessage");

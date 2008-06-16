@@ -358,7 +358,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     			EndEntityProfileDataLocal pdata = (EndEntityProfileDataLocal)iter.next();
     			String name = pdata.getProfileName();
     			pdata.upgradeProfile();
-    			log.info("Loaded end entity profile: "+name);
+    			log.debug("Loaded end entity profile: "+name);
     		}
     	} catch (FinderException e) {
     		log.error("FinderException trying to load profiles: ", e);

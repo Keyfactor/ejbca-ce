@@ -366,13 +366,11 @@ function confirmrepublish(){
         </td>
       </tr>
       
-     <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
-	       <tr id="Row<%=(row++)%2%>">
+     <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMBER") %></td>
 		 <td><%= certificatedata.getSerialNumber() %> 
-	         </td>
-	       </tr>
-     <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
+         </td>
+     </tr>
        
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("ISSUERDN") %></td>

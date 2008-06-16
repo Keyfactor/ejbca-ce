@@ -1343,17 +1343,17 @@ public class TestSignSession extends TestCase {
     public void test21CVCertificate() throws Exception {
         log.debug(">test21CVCertificate()");
 
-        UserDataVO user = new UserDataVO("cvc", "C=SE,O=RPS,CN=10001", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        UserDataVO user = new UserDataVO("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
         usersession.addUser(admin, user, false);
         usersession.setUserStatus(admin, "cvc", UserDataConstants.STATUS_NEW);
         usersession.setPassword(admin, "cvc", "foo123");
         log.debug("Reset status of 'cvc' to NEW");
         // user that we know exists...
         Certificate cert = (Certificate) remote.createCertificate(admin, "cvc", "foo123", rsakeys.getPublic());
-        assertNotNull("Misslyckades skapa cert", cert);
+        assertNotNull("Failed to create cert", cert);
         log.debug("Cert=" + cert.toString());
         // Normal DN order
-        assertEquals(CertTools.getSubjectDN(cert), "CN=10001,O=RPS,C=SE");
+        assertEquals(CertTools.getSubjectDN(cert), "CN=TESTCVC,C=SE");
         assertEquals("CVC", cert.getType());
         assertEquals(CertTools.getIssuerDN(cert), CertTools.getSubjectDN(cvccacert));
         try {

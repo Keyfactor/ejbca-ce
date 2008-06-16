@@ -32,6 +32,9 @@ public abstract class CATokenContainer extends UpgradeableDataHashMap implements
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     protected static final String ENCRYPTIONALGORITHM = "encryptionalgorithm";
 
+    /** A sequence for the keys, updated when keys are re-generated */
+    protected static final String SEQUENCE = "sequence";
+    
     /** constants needed for soft CA keystores */
     protected static final String SIGNKEYSPEC       = "SIGNKEYSPEC";
     protected static final String ENCKEYSPEC        = "ENCKEYSPEC";

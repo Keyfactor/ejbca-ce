@@ -173,6 +173,7 @@ public abstract class KeyStoreContainer {
                                       (long)30*24*60*60*365, sigAlgName, keyPair);
         log.debug("Creating certificate with entry "+keyEntryName+'.');
         setKeyEntry(keyEntryName, keyPair.getPrivate(), chain);
+    	log.debug("<generate: keySize "+keySize+", keyEntryName "+keyEntryName);
         return storeKeyStore();
     }
     

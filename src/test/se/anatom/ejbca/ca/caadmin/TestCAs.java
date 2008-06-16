@@ -791,11 +791,11 @@ public class TestCAs extends TestCase {
         // No CA Services.
         ArrayList extendedcaservices = new ArrayList();
 
-        String rootcadn = "CN=00001,O=TESTCVCA,C=SE";
+        String rootcadn = "CN=TESTCVCA,C=SE";
     	String rootcaname = "TESTCVCA";
-        String dvddn = "CN=00001,O=TESTDV-D,C=SE";
+        String dvddn = "CN=TESTDV-D,C=SE";
     	String dvdcaname = "TESTDV-D";
-        String dvfdn = "CN=00001,O=TESTDV-F,C=FI";
+        String dvfdn = "CN=TESTDV-F,C=FI";
     	String dvfcaname = "TESTDV-F";
 
     	CAInfo dvdcainfo = null; // to be used for renewal
@@ -830,9 +830,9 @@ public class TestCAs extends TestCase {
 
             Certificate cert = (Certificate)cvcainfo.getCertificateChain().iterator().next();
             assertEquals("CVC", cert.getType());
-            assertEquals(CertTools.getSubjectDN(cert), rootcadn);
-            assertEquals(CertTools.getIssuerDN(cert), rootcadn);
-            assertEquals(cvcainfo.getSubjectDN(), rootcadn);
+            assertEquals(rootcadn, CertTools.getSubjectDN(cert));
+            assertEquals(rootcadn, CertTools.getIssuerDN(cert));
+            assertEquals(rootcadn, cvcainfo.getSubjectDN());
             PublicKey pk = cert.getPublicKey();
             if (pk instanceof RSAPublicKey) {
             	RSAPublicKey rsapk = (RSAPublicKey) pk;
@@ -847,6 +847,7 @@ public class TestCAs extends TestCase {
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+            assertEquals("SETESTCVCA00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getValue());
             assertEquals("CVCA", role);
             ret = true;
         } catch (CAExistsException pee) {
@@ -903,6 +904,7 @@ public class TestCAs extends TestCase {
             assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            assertEquals("SETESTDV-D00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getValue());
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
             assertEquals("DV_D", role);
             String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
@@ -957,6 +959,7 @@ public class TestCAs extends TestCase {
             assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            assertEquals("FITESTDV-F00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getValue());
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
             assertEquals("DV_F", role);
             ret = true;
@@ -990,6 +993,10 @@ public class TestCAs extends TestCase {
 
         // Make a certificate request from a CVCA
         Collection cachain = cvcainfo.getCertificateChain();
+        assertEquals(1, cachain.size());
+        Certificate cert1 = (Certificate)cachain.iterator().next();
+        CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate)cert1;
+        assertEquals("SETESTCVCA00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getValue());
         byte[] request = cacheAdmin.makeRequest(admin, cvcainfo.getCAId(), cachain, false, null, false);
 		Certificate req = CertTools.getCertfromByteArray(request);
 		CardVerifiableCertificate cardcert = (CardVerifiableCertificate)req;
@@ -997,23 +1004,40 @@ public class TestCAs extends TestCase {
         assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getHolderReference().getValue());
         assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getAuthorityReference().getValue());
 
-        // Make a certificate request from a DV
+        // Make a certificate request from a DV, regenerating keys
         cachain = dvdcainfo.getCertificateChain();
-        request = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false, null, false);
+        request = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false, "foo123", true);
 		req = CertTools.getCertfromByteArray(request);
 		cardcert = (CardVerifiableCertificate)req;
 		reqcert = cardcert.getCVCertificate();
-        assertEquals("SETESTDV-D00001", reqcert.getCertificateBody().getHolderReference().getValue());
-        assertEquals("SETESTDV-D00001", reqcert.getCertificateBody().getAuthorityReference().getValue());
+        assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getHolderReference().getValue());
+        assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getAuthorityReference().getValue());
         
         // Get the DVs certificate request signed by the CVCA
         byte[] authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request);
 		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
         CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
-        assertEquals("SETESTDV-D00001", authreq.getRequest().getCertificateBody().getAuthorityReference().getValue());
-        assertEquals("SETESTDV-D00001", authreq.getRequest().getCertificateBody().getHolderReference().getValue());
+        assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getAuthorityReference().getValue());
+        assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getHolderReference().getValue());
         assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getValue());
-        
+
+        // Renew again but regenerate keys this time to make sure sequence is updated
+        caid = dvdcainfo.getCAId();
+        cacheAdmin.renewCA(admin, caid, "foo123", true);
+        dvdcainfo = cacheAdmin.getCAInfo(admin, dvdcaname);
+        assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
+        cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
+        assertEquals("CVC", cert.getType());
+        assertEquals(CertTools.getSubjectDN(cert), dvddn);
+        assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+        assertEquals(dvdcainfo.getSubjectDN(), dvddn);
+        cvcert = (CardVerifiableCertificate)cert;
+        role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+        assertEquals("DV_D", role);
+        String holderRef = cvcert.getCVCertificate().getCertificateBody().getHolderReference().getValue();
+        // Sequence must have been updated with 1
+        assertEquals("SETESTDV-D00003", holderRef);
+
         log.debug("<test09AddCVCCA()");
     }
 

@@ -37,7 +37,9 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
     private String signaturealgoritm = SIGALG_SHA1_WITH_RSA;
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants */
     private String encryptionalgoritm = SIGALG_SHA1_WITH_RSA;
-    /** Authenntication code to activate a CA Token, can be PIN for a smartcard/HSM or password for a PKCS12 */
+	/** Key sequence to be updated when keys are re-generated */
+    private String sequence = "00000"; // Default value first time token is created
+    /** Authentication code to activate a CA Token, can be PIN for a smartcard/HSM or password for a PKCS12 */
 	private String authenticationCode;
 	/** indicates if the CA token is available for use, i.e. if the authenticationCode has been entered and the hardware is functioning */
 	private int cATokenStatus = ICAToken.STATUS_OFFLINE;
@@ -46,10 +48,10 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
 	/** Classpath of the java class implementing the particular type of CA Token */
 	private String classPath;
 
-    public CATokenInfo(){}
+    public CATokenInfo() {}
     
     /**
-     * Method to retrieve which algoritm that should be used for signing certificate.
+     * Method to retrieve which algorithm that should be used for signing certificate.
      */
     public String getSignatureAlgorithm(){ return signaturealgoritm; }
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants 
@@ -64,9 +66,17 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
 	 * @param encryptionalgoritm Any of the supported algorithms CATokenInfo.SIGALG_XX 
 	 */
     public void setEncryptionAlgorithm(String encryptionalgoritm){ this.encryptionalgoritm=encryptionalgoritm;}
+    /**
+     * Method to retrieve the sequence of keys
+     */
+    public String getSequence(){ return sequence; }
+	/** Sequence of the signature keys 
+	 * @param sequence 
+	 */
+    public void setSequence(String sequence){ this.sequence=sequence;}
     
 	/**
-	 * @return Returns the authenticationcode.
+	 * @return Returns the authentication code.
 	 */
 	public String getAuthenticationCode() {
 		return authenticationCode;

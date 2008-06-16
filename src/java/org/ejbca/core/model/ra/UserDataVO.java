@@ -72,8 +72,8 @@ public class UserDataVO implements Serializable {
     }
 
     /**
-     * Creates new UserDataVO. All fields are almos required in this constructor. Password must
-     * be set amnually though. This is so you should be sure what you do with the password.
+     * Creates new UserDataVO. All fields are almost required in this constructor. Password must
+     * be set manually though. This is so you should be sure what you do with the password.
      *
      * @param user DOCUMENT ME!
      * @param caid CA id of the CA that the user is registered with

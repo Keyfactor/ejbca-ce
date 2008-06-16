@@ -106,7 +106,7 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public String getSerialNumber() {
-      return CertTools.getSerialNumber(certificate).toString(16).toUpperCase();
+      return CertTools.getSerialNumberAsString(certificate);
     }
 
     public BigInteger getSerialNumberBigInt() {

@@ -178,7 +178,9 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			, cmskeys.getPublic(),
 			-1, // KeyUsage
 			ca.getValidity(),
-			new XKMSCertificateProfile()); // We can use the (simple) XKMS profile, since it uses the same values as we want for CMS
+			new XKMSCertificateProfile(), // We can use the (simple) XKMS profile, since it uses the same values as we want for CMS
+			null // sequence
+			);
 
 		certificatechain = new ArrayList();
 		certificatechain.add(certificate);

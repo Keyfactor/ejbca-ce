@@ -123,7 +123,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 16;
+    public static final float LATEST_VERSION = 17;
 
     /** key ID used for identifier of key used for key recovery encryption */
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
@@ -407,13 +407,17 @@ public class X509CA extends CA implements Serializable {
 		return request;
 	}
 
+	/**
+	 * sequence is ignored by X509CA
+	 */
     public Certificate generateCertificate(UserDataVO subject, 
                                            PublicKey publicKey, 
                                            int keyusage, 
                                            Date notBefore,
                                            Date notAfter,
                                            CertificateProfile certProfile,
-                                           X509Extensions extensions) throws Exception{
+                                           X509Extensions extensions,
+                                           String sequence) throws Exception{
     	// Before we start, check if the CA is off-line, we don't have to waste time
     	// one the stuff below of we are off-line. The line below will throw CATokenOfflineException of CA is offline
         getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
@@ -748,7 +752,6 @@ public class X509CA extends CA implements Serializable {
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
             log.info("Upgrading X509CA with version "+getVersion());
-
             if (data.get(DEFAULTOCSPSERVICELOCATOR) == null) {
                 setDefaultCRLDistPoint("");
                 setDefaultOCSPServiceLocator("");

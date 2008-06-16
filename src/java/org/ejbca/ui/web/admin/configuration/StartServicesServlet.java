@@ -271,6 +271,24 @@ public class StartServicesServlet extends HttpServlet {
 			}
         }
 
+        // We have to read CAs into cache (and upgrade them) early, because the log system may use CAs for signing logs
+        
+		log.debug(">init CATokenManager");
+		CATokenManager.instance();
+		
+        // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
+        log.debug(">init loading CAs into cache");
+        try {
+        	ICAAdminSessionLocalHome casessionhome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+        	ICAAdminSessionLocal casession;
+        	casession = casessionhome.create();
+        	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
+        	casession.initializeAndUpgradeCAs(admin);
+        } catch (Exception e) {
+        	log.error("Error creating CAAdminSession: ", e);
+        }
+
+        // Make a log row that EJBCA is starting
         Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
         getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
         		LogConstants.EVENT_INFO_STARTING, iMsg);
@@ -308,7 +326,7 @@ public class StartServicesServlet extends HttpServlet {
 		} catch (ServiceExistsException e) {
 			throw new EJBException(e);
 		} catch (IOException e) {
-			log.error("Error init ServiceSession: ", e);
+			log.error("Error init ProtectedLogVerificationService: ", e);
 		}
 
         log.debug(">init ProtectedLogExportService is configured");
@@ -344,7 +362,7 @@ public class StartServicesServlet extends HttpServlet {
 		} catch (ServiceExistsException e) {
 			throw new EJBException(e);
 		} catch (IOException e) {
-			log.error("Error init ServiceSession: ", e);
+			log.error("Error init ProtectedLogExportService: ", e);
 		}
 
         log.debug(">init calling ServiceSession.load");
@@ -354,20 +372,6 @@ public class StartServicesServlet extends HttpServlet {
 			log.error("Error init ServiceSession: ", e);
 		}
 		
-		log.debug(">init CATokenManager");
-		CATokenManager.instance();
-		
-        // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
-        log.debug(">init loading CAs into cache");
-        try {
-        	ICAAdminSessionLocalHome casessionhome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-        	ICAAdminSessionLocal casession;
-        	casession = casessionhome.create();
-        	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	casession.initializeAndUpgradeCAs(admin);
-        } catch (Exception e) {
-        	log.error("Error creating CAAdminSession: ", e);
-        }
         // Load Certificate profiles at startup to upgrade them if needed
         log.debug(">init loading CertificateProfile to check for upgrades");
         try {
@@ -378,6 +382,7 @@ public class StartServicesServlet extends HttpServlet {
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
+        
         // Load EndEntity profiles at startup to upgrade them if needed
         log.debug(">init loading EndEntityProfile to check for upgrades");
         try {

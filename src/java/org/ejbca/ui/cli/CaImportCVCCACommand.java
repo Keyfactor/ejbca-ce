@@ -60,7 +60,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
         if (args.length < 4) {
            String msg = "Usage 1: ca importcvcca <CA name> <pkcs8 RSA private key file> <certificate file>\n" +
         				"Imports a private key and a self signed CVCA certificate and creates a CVCA.\n" +
-        				"Usage 2: ca importcvcca <CA name> <pkcs8 private key file> <certificate file> <DN of form C=country,O=mnemonic,CN=sequence> <signatureAlgorithm> <validity days>\n" +
+        				"Usage 2: ca importcvcca <CA name> <pkcs8 private key file> <certificate file> <DN of form C=country,CN=mnemonic,SERIALNIUMBER=sequence> <signatureAlgorithm> <validity days>\n" +
         				"Imports a private key and generates a new self signed CVCA certificate with the given DN and creates a CVCA. Signature algorithm can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1";
            throw new IllegalAdminCommandException(msg);
         }
@@ -95,8 +95,8 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	        	Integer valdays = Integer.parseInt(args[6]);
 	        	
 	    		String country = CertTools.getPartFromDN(dn, "C");
-	    		String mnemonic = CertTools.getPartFromDN(dn, "O");
-	    		String seq = CertTools.getPartFromDN(dn, "CN");
+	    		String mnemonic = CertTools.getPartFromDN(dn, "CN");
+	    		String seq = CertTools.getPartFromDN(dn, "SERIALNUMBER");
 	            HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
 	            CAReferenceField caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());
 	            AuthorizationRoleEnum authRole = AuthorizationRoleEnum.CVCA;

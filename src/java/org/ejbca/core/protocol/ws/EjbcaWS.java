@@ -73,6 +73,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -101,9 +102,13 @@ import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.core.model.util.GenerateToken;
+import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.IRequestMessage;
+import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.RequestMessageUtils;
+import org.ejbca.core.protocol.SimpleRequestMessage;
+import org.ejbca.core.protocol.cmp.CrmfRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
@@ -136,6 +141,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
+import com.novosec.pkix.asn1.cmp.PKIMessage;
 import com.novosec.pkix.asn1.crmf.CertRequest;
 
 /**
@@ -337,16 +343,16 @@ public class EjbcaWS implements IEjbcaWS {
 				log.debug("No existing user with username: "+username);
 			}
 		} catch (RemoteException e) {
-			log.error("EJBCA WebService error, cvcRequest : ",e);
+			log.error("EJBCA WebService error, getLastCertChain : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (CreateException e) {
-			log.error("EJBCA WebService error, cvcRequest : ",e);
+			log.error("EJBCA WebService error, getLastCertChain : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (FinderException e) {
-			log.error("EJBCA WebService error, cvcRequest : ",e);
+			log.error("EJBCA WebService error, getLastCertChain : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (CertificateEncodingException e) {
-			log.error("EJBCA WebService error, cvcRequest : ",e);
+			log.error("EJBCA WebService error, getLastCertChain : ",e);
 			throw new EjbcaException(e.getMessage());
 		}		
 		log.debug("<getLastCertChain: "+username);
@@ -551,14 +557,13 @@ public class EjbcaWS implements IEjbcaWS {
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(wsContext);			  
 
-			// check CAID
+			// check authorization to CAID
 			UserDataVO userdata = ejbhelper.getUserAdminSession().findUser(admin,username);
 			if(userdata == null){
 				throw new NotFoundException("Error: User " + username + " doesn't exist");
 			}
 			int caid = userdata.getCAId();
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
-
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
 
 			// Check tokentype
@@ -566,10 +571,11 @@ public class EjbcaWS implements IEjbcaWS {
 				throw new EjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 			}
 
-			PublicKey pubKey = null;
+			IRequestMessage imsg = null;
 			if (reqType == REQTYPE_PKCS10) {				
 				IRequestMessage pkcs10req=RequestMessageUtils.genPKCS10RequestMessageFromPEM(req.getBytes());
-				pubKey = pkcs10req.getRequestPublicKey();
+				PublicKey pubKey = pkcs10req.getRequestPublicKey();
+				imsg = new SimpleRequestMessage(pubKey, username, password);
 			}
 			if (reqType == REQTYPE_SPKAC) {
 				// parts copied from request helper.
@@ -591,18 +597,25 @@ public class EjbcaWS implements IEjbcaWS {
 						throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
 					}
 					log.debug("POPO verification successful");
-					pubKey = nscr.getPublicKey();
+					PublicKey pubKey = nscr.getPublicKey();
+					imsg = new SimpleRequestMessage(pubKey, username, password);
 				}		
 			}
 			if (reqType == REQTYPE_CRMF) {
-				ASN1InputStream in = new ASN1InputStream( Base64.decode(req.getBytes()) );
+				byte[] request = Base64.decode(req.getBytes());
+				ASN1InputStream in = new ASN1InputStream(request);
 				ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
 				ASN1Sequence reqSeq =  (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
 				CertRequest certReq = new CertRequest( reqSeq );
 				SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
 				KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
 				KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
-				pubKey = keyFact.generatePublic(keySpec);
+				PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
+				imsg = new SimpleRequestMessage(pubKey, username, password);
+				// a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
+				//PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
+				//CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
+				//imsg = reqmsg;
 			}
 			if (reqType == REQTYPE_CVC) {
 				CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(req.getBytes()));
@@ -615,19 +628,20 @@ public class EjbcaWS implements IEjbcaWS {
 				} else {
 					cvccert = (CVCertificate)parsedObject;
 				}
-				pubKey = cvccert.getCertificateBody().getPublicKey();
-				// Verify POP on the inner request
-				CardVerifiableCertificate cert = new CardVerifiableCertificate(cvccert);
-				try {
-					cert.verify(pubKey);
-				} catch (CertificateException e) {
+				CVCRequestMessage reqmsg = new CVCRequestMessage(cvccert.getDEREncoded());
+				reqmsg.setUsername(username);
+				reqmsg.setPassword(password);
+				// Popo is really actually verified by the CA (in RSASignSessionBean) as well
+				if (reqmsg.verify() == false) {
 					log.debug("POPO verification Failed");
 					throw new SignRequestSignatureException("Invalid inner signature in CVCRequest, popo-verification failed.");
+				} else {
+					log.debug("POPO verification successful");					
 				}
-				log.debug("POPO verification successful");
+				imsg = reqmsg;
 			}
-			if (pubKey != null) {
-				retval = getCertResponseFromPublicKey(admin, pubKey, username, password, hardTokenSN, responseType, ejbhelper);
+			if (imsg != null) {
+				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType, ejbhelper);
 			}
 		}catch(AuthorizationDeniedException ade){
 			throw ade;
@@ -661,7 +675,7 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (NoSuchProviderException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
-		} catch (CertificateEncodingException e) {
+		} catch (CertificateException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
 		} catch (CreateException e) {
@@ -690,10 +704,12 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 
-	private byte[] getCertResponseFromPublicKey(Admin admin, PublicKey pubKey, String username, String password,
-			String hardTokenSN, String responseType, EjbcaWSHelper ejbhelper) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, RemoteException, ServiceLocatorException, CreateException, CertificateEncodingException, SignRequestSignatureException {
+	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg,
+			String hardTokenSN, String responseType, EjbcaWSHelper ejbhelper) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, ServiceLocatorException, CreateException, SignRequestSignatureException, NotFoundException, SignRequestException, CertificateException, IOException {
 		byte[] retval = null;
-		java.security.cert.Certificate cert =  ejbhelper.getSignSession().createCertificate(admin,username,password, pubKey);
+		Class respClass = org.ejbca.core.protocol.X509ResponseMessage.class; 
+		IResponseMessage resp =  ejbhelper.getSignSession().createCertificate(admin, msg, respClass);
+		java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
 		if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)){
 			retval = cert.getEncoded();
 		}
@@ -706,7 +722,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 
 		if(hardTokenSN != null){ 
-			ejbhelper.getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,(X509Certificate) cert);				  
+			ejbhelper.getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,cert);				  
 		}
 		return retval;
 	}

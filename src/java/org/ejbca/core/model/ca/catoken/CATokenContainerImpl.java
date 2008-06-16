@@ -21,6 +21,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
@@ -109,7 +111,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 
 	private ICAToken catoken = null; 
 
-	public static final float LATEST_VERSION = 5;
+	public static final float LATEST_VERSION = 6;
 
 
 	// Default Values
@@ -165,6 +167,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		info.setClassPath(getClassPath());
 		info.setProperties(getPropertyData());
 		info.setSignatureAlgorithm(getSignatureAlgorithm());
+		info.setSequence(getSequence());
 
 		// Set status of the CA token
 		int status = ICAToken.STATUS_OFFLINE;
@@ -210,8 +213,10 @@ public class CATokenContainerImpl extends CATokenContainer {
 		if ( (newprops != null) && !StringUtils.equals(props, newprops)) {
 			this.setPropertyData(newprops);				
 			changed = true;
-		}			
-
+		}
+		if (catokeninfo.getSequence() != null) {
+			this.setSequence(catokeninfo.getSequence());
+		}
 		if (catokeninfo instanceof NullCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_NULL");
 			if (data.get(CATOKENTYPE) == null) {
@@ -319,6 +324,17 @@ public class CATokenContainerImpl extends CATokenContainer {
 	public void generateKeys(String authenticationCode, boolean renew) throws Exception{  
 		log.debug(">generateKeys");
 		CATokenInfo catokeninfo = getCATokenInfo();
+		
+		// First we start by setting a new sequence for our new keys
+		Integer seq = NumberUtils.createInteger(getSequence());
+		seq = seq + 1;
+		// We want this to be (at least) 5 digits, as required by CVC
+		DecimalFormat df = new DecimalFormat("00000");
+		String fseq = df.format(seq);
+		log.debug("Setting new sequence: "+fseq);
+		setSequence(fseq);
+		
+		// Then we can move on to actually generating the keys
 		if (catokeninfo instanceof SoftCATokenInfo) {
 			// Currently only RSA keys are supported
 			SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
@@ -378,20 +394,18 @@ public class CATokenContainerImpl extends CATokenContainer {
 				String slot = properties.getProperty(PKCS11CAToken.SLOT_LABEL_KEY);
 				String attributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
 				if (log.isDebugEnabled()) {
-					log.debug("Generating new PKCS#11 "+alg+" key of size "+keysize+" with label "+keyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile"+attributesFile);
+					log.debug("Generating new PKCS#11 "+alg+" key of size "+keysize+" with label "+keyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile "+attributesFile);
 				}
 				KeyStoreContainer cont = KeyStoreContainer.getInstance("PKCS11", sharedLibrary, null, slot, attributesFile);
 				cont.generate(keysize, keyLabel);
 				String msg = intres.getLocalizedMessage("catoken.generatedkeys", "PKCS#11");
 				log.info(msg);
-				token.deactivate();
-				token.activate(authenticationCode);
 				// Re-activate token to re-read session
 				token.deactivate();
 				token.activate(authenticationCode);
 			}
 		} else {
-			String msg = intres.getLocalizedMessage("catoken.getkeysnotavail");
+			String msg = intres.getLocalizedMessage("catoken.genkeysnotavail");
 			log.error(msg);
 			return;
 		}
@@ -512,7 +526,20 @@ public class CATokenContainerImpl extends CATokenContainer {
 		data.put(SIGNATUREALGORITHM, signaturealgoritm);	
 	}
 
+	/**
+	 *  Returns the Sequence, that is a sequence that is updated when keys are re-generated 
+	 */    
+	private String getSequence(){
+		return (String) data.get(SEQUENCE);
+	}
 
+	/**
+	 *  Sets the SignatureAlgoritm
+	 */        
+	private void setSequence(String sequence){
+		data.put(SEQUENCE, sequence);	
+	}
+	
 	/**
 	 *  Returns the propertydata used to configure this CA Token.
 	 */    
@@ -597,6 +624,12 @@ public class CATokenContainerImpl extends CATokenContainer {
 				}
 				log.info("Adding new classpath to CA Token data: "+classpath);
 				data.put(CLASSPATH, classpath);
+			}
+
+			if (data.get(SEQUENCE) == null) {
+				String sequence = "00000";
+				log.info("Adding new sequence to CA Token data: "+sequence);
+				data.put(SEQUENCE, sequence);
 			}
 
 			data.put(VERSION, new Float(LATEST_VERSION));

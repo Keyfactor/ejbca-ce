@@ -743,7 +743,12 @@ public class RSASignSessionBean extends BaseSessionBean {
                             	}
                         	}
                     	}
-                    	cert = createCertificate(admin, data, ca, reqpk, ku, notBefore, notAfter, exts);
+    					String sequence = null;
+    					byte[] ki = req.getRequestKeyInfo();
+    					if ( (ki != null) && (ki.length > 0) ) {
+        					sequence = new String(ki);    						
+    					}
+                    	cert = createCertificate(admin, data, ca, reqpk, ku, notBefore, notAfter, exts, sequence);
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -1074,15 +1079,19 @@ public class RSASignSessionBean extends BaseSessionBean {
             		}
             	}
             	debug("Using DN: "+dn);
-                cadata = cadatahome.findByPrimaryKey(new Integer(dn.hashCode()));
-                debug("Using CA (from issuerDN) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
+            	try {
+                    cadata = cadatahome.findByPrimaryKey(new Integer(dn.hashCode()));            		
+                    debug("Using CA (from issuerDN) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
+            	} catch (Exception e) {
+            		// We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
+            		if (req.getUsername() != null) {
+            			cadata = getCAFromUsername(admin, req);
+                    } else {
+                        throw new CADoesntExistsException();
+                    }
+            	}
             } else if (req.getUsername() != null) {
-                // See if we can get username and password directly from request
-                String username = req.getUsername();
-                String password = req.getPassword();
-                data = authUser(admin, username, password);
-                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-                debug("Using CA (from username) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
+                cadata = getCAFromUsername(admin, req);
             } else {
                 throw new CADoesntExistsException();
             }
@@ -1127,6 +1136,17 @@ public class RSASignSessionBean extends BaseSessionBean {
         
         return cadata;
     }
+
+	private CADataLocal getCAFromUsername(Admin admin, IRequestMessage req)
+			throws ObjectNotFoundException, AuthStatusException, AuthLoginException, FinderException {
+		// See if we can get username and password directly from request
+		String username = req.getUsername();
+		String password = req.getPassword();
+		UserDataVO data = authUser(admin, username, password);
+		CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+		debug("Using CA (from username) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
+		return cadata;
+	}
 
     /**
      * Requests for a CRL to be created with the passed (revoked) certificates.
@@ -1325,7 +1345,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @param certificateprofileid used to override the one set in userdata.
      *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
-     * @param caid                 used to override the one set in userdata.�
+     * @param caid                 used to override the one set in userdata.
      *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
      * 
      * 
@@ -1353,7 +1373,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
 
-            debug("type=" + data.getType());
+            debug("User type=" + data.getType());
             // get CA
             CADataLocal cadata = null;
             try {
@@ -1394,8 +1414,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
 
-            // Now finally after all these checks, get the certificate
-            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null);
+            // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
+            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null, null);
             // Call authentication session and tell that we are finished with this user
             if (ca.getFinishUser() == true) {
                 finishUser(admin, username, password);
@@ -1425,10 +1445,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @param extensions an optional set of extensions to set in the created certificate, if the profile allows extension override, null if the profile default extensions should be used.
+     * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by CVC CAs for sequence field. Can be set to null.
      * @return Certificate that has been generated and signed by the CA
      * @throws IllegalKeyException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException {
         debug(">createCertificate(pk, ku, notAfter)");
         try {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
@@ -1493,8 +1514,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 String cafingerprint = null;
                 String serialNo = "unknown";
                 while (!stored && retrycounter < 5) {
-                    cert = ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions);
-                    serialNo = CertTools.getSerialNumber(cert).toString(16);
+                    cert = ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
+                    serialNo = CertTools.getSerialNumberAsString(cert);
                     // Store certificate in the database
                     Certificate cacert = ca.getCACertificate();
                     cafingerprint = CertTools.getFingerprintAsString(cacert);

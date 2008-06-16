@@ -19,6 +19,7 @@ import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.util.List;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
@@ -50,13 +51,14 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	private static final int ARG_USERNAME           = 1;
 	private static final int ARG_PASSWORD           = 2;
 	private static final int ARG_SUBJECTDN          = 3;
-	private static final int ARG_CA                 = 4;
-	private static final int ARG_SIGNALG            = 5;
-	private static final int ARG_KEYSPEC            = 6;
-	private static final int ARG_ENDENTITYPROFILE   = 7;
-	private static final int ARG_CERTIFICATEPROFILE = 8;
-	private static final int ARG_GENREQ             = 9;
-	private static final int ARG_BASEFILENAME        = 10;
+	private static final int ARG_SEQUENCE           = 4;
+	private static final int ARG_CA                 = 5;
+	private static final int ARG_SIGNALG            = 6;
+	private static final int ARG_KEYSPEC            = 7;
+	private static final int ARG_ENDENTITYPROFILE   = 8;
+	private static final int ARG_CERTIFICATEPROFILE = 9;
+	private static final int ARG_GENREQ             = 10;
+	private static final int ARG_BASEFILENAME        = 11;
 
 	/**
 	 * Creates a new instance of CvcRequestCommand
@@ -76,7 +78,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {   
-			if(args.length < 11 || args.length > 11){
+			if(args.length < 12 || args.length > 12){
 				getPrintStream().println("Number of argument: "+args.length);
 				usage();
 				System.exit(-1);
@@ -87,6 +89,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			userdata.setPassword(args[ARG_PASSWORD]);
 			userdata.setClearPwd(false);
 			userdata.setSubjectDN(args[ARG_SUBJECTDN]);
+			String sequence = args[ARG_SEQUENCE];
 			userdata.setCaName(args[ARG_CA]);
 			userdata.setEndEntityProfileName(args[ARG_ENDENTITYPROFILE]);
 			userdata.setCertificateProfileName(args[ARG_CERTIFICATEPROFILE]);
@@ -100,6 +103,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			getPrintStream().println("Trying to add user:");
 			getPrintStream().println("Username: "+userdata.getUsername());
 			getPrintStream().println("Subject name: "+userdata.getSubjectDN());
+			getPrintStream().println("Sequence: "+sequence);
 			getPrintStream().println("CA Name: "+userdata.getCaName());                        
 			getPrintStream().println("Signature algorithm: "+signatureAlg);                        
 			getPrintStream().println("Key spec: "+keySpec);                        
@@ -117,8 +121,11 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					KeyPair keyPair = keyGen.generateKeyPair();
 					String dn = userdata.getSubjectDN();
 					String country = CertTools.getPartFromDN(dn, "C");
-					String mnemonic = CertTools.getPartFromDN(dn, "O");
-					String sequence = CertTools.getPartFromDN(dn, "CN");
+					String mnemonic = CertTools.getPartFromDN(dn, "CN");
+					if (sequence.equalsIgnoreCase("null")) {
+						getPrintStream().println("No sequence given, using random 5 number sequence.");
+						sequence = RandomStringUtils.randomNumeric(5);
+					}
 					CAReferenceField caRef = new CAReferenceField(country,mnemonic,sequence);
 					// We are making a self signed request, so holder ref is same as ca ref
 					HolderReferenceField holderRef = new HolderReferenceField(caRef.getCountry(), caRef.getMnemonic(), caRef.getSequence());
@@ -173,11 +180,12 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 	protected void usage() {
 		getPrintStream().println("Command used to make a CVC request. If user does not exist a new will be created and if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <caname> <signatureAlg> <keyspec (1024/2048)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <basefilename>\n\n");
+		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <caname> <signatureAlg> <keyspec (1024/2048)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <basefilename>\n\n");
 		getPrintStream().println("SignatureAlg can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1");
-		getPrintStream().println("DN is of form \"C=SE, O=RPS, CN=00001\".");
+		getPrintStream().println("DN is of form \"C=SE, CN=ISTEST2\".");
+		getPrintStream().println("Sequence is a sequence number for the public key, recomended form 00001 etc. If 'null' a random 5 number sequence will be generated.");
 		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <basefilename>.req, and the private key to <basefilename>.pkcs8.");
-		getPrintStream().println("If genreq is false a request is read from <reqfilename>.req and sent to the CA.");
+		getPrintStream().println("If genreq is false a request is read from <reqfilename>.req and sent to the CA, the sequence from the command line is ignored.");
 		getPrintStream().println("The issued certificate is written to <basefilename>.cvcert");
 	}
 

@@ -154,7 +154,9 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 						   , xKMSkeys.getPublic(),
 						   -1, // KeyUsage
 						   ca.getValidity(), 
-						   new XKMSCertificateProfile());
+						   new XKMSCertificateProfile(),
+						   null // sequence
+						   );
 	  
 	 xKMScertificatechain = new ArrayList();
 	 xKMScertificatechain.add(xKMSCertificate);

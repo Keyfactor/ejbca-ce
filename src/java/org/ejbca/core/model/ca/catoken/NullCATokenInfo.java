@@ -23,6 +23,7 @@ import java.io.Serializable;
 public class NullCATokenInfo extends CATokenInfo implements Serializable {    
        
     public NullCATokenInfo(){
+    	super();
     	setClassPath(NullCAToken.class.getName());
     }
     

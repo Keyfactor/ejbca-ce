@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -65,7 +66,7 @@ import org.ejbca.util.CertTools;
  */
 public class CVCCA extends CA implements Serializable {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 
 	private static final Logger log = Logger.getLogger(CVCCA.class);
 
@@ -135,8 +136,22 @@ public class CVCCA extends CA implements Serializable {
 			keyPair = new KeyPair(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
 			String subject = getCAInfo().getSubjectDN();
 			String country = CertTools.getPartFromDN(subject, "C");
-			String mnemonic = CertTools.getPartFromDN(subject, "O");
-			String seq = CertTools.getPartFromDN(subject, "CN");
+			String mnemonic = CertTools.getPartFromDN(subject, "CN");
+			String seq = getCAToken().getCATokenInfo().getSequence(); 
+			if (seq == null) {
+				log.info("No sequence found in ca token info, using random 5 number sequence.");
+				seq = RandomStringUtils.randomNumeric(5);
+			}
+			if (seq.length() > 5) {
+				log.info("Sequence "+seq+" is too long, only using first 5.");
+				seq = seq.substring(0, 4);
+			}
+			if (seq.length() < 5) {
+				log.info("Sequence "+seq+" is too short, padding with zeroes.");
+				for (int i = seq.length(); i < 5; i++) {
+					seq = "0"+seq;					
+				}
+			}
 			HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
 			CAReferenceField caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());
 			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef);
@@ -170,10 +185,9 @@ public class CVCCA extends CA implements Serializable {
 			KeyPair keyPair = new KeyPair(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
 			String signAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
 			String subject = getCAInfo().getSubjectDN();
-			String country = CertTools.getPartFromDN(subject, "C");
-			String mnemonic = CertTools.getPartFromDN(subject, "O");
-			String seq = CertTools.getPartFromDN(subject, "CN");
-			CAReferenceField caRef = new CAReferenceField(country, mnemonic, seq);
+			// Create the CA reference, should be from signing certificate
+			CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
+			CAReferenceField caRef = cacert.getCVCertificate().getCertificateBody().getAuthorityReference();
 			CVCertificate cvcert = null;
 			try {
 				byte[] binbytes = request;
@@ -213,23 +227,43 @@ public class CVCCA extends CA implements Serializable {
 			throw new javax.ejb.EJBException(e);
 		} catch (ConstructionException e) {
 			throw new javax.ejb.EJBException(e);
+		} catch (NoSuchFieldException e) {
+			throw new javax.ejb.EJBException(e);
 		}
 		return ret;
 	}
 	
+	/**
+     * @param sequence an optional requested sequence number (serial number) for the certificate. If null a random sequence will be generated.
+	 */
 	public Certificate generateCertificate(UserDataVO subject, 
 			PublicKey publicKey, 
 			int keyusage, 
 			Date notBefore,
 			Date notAfter,
 			CertificateProfile certProfile,
-			X509Extensions extensions) throws Exception{
+			X509Extensions extensions,
+			String sequence) throws Exception{
 		log.debug(">generateCertificate("+notBefore+", "+notAfter+")");
 		// Get the fields for the Holder Reference fields
-		// country is taken from C in a DN string, mnemonic from O in a DN string and seq from CN in a DN string
+		// country is taken from C in a DN string, mnemonic from CN in a DN string and seq from SERIALNUMBER in a DN string
 		String country = CertTools.getPartFromDN(subject.getDN(), "C");
-		String mnemonic = CertTools.getPartFromDN(subject.getDN(), "O");
-		String seq = CertTools.getPartFromDN(subject.getDN(), "CN");
+		String mnemonic = CertTools.getPartFromDN(subject.getDN(), "CN");
+		String seq = sequence;
+		if (seq == null) {
+			log.info("No sequence in request, using random 5 number sequence.");
+			seq = RandomStringUtils.randomNumeric(5);
+		}
+		if (seq.length() > 5) {
+			log.info("Sequence "+seq+" is too long, only using first 5.");
+			seq = seq.substring(0, 4);
+		}
+		if (seq.length() < 5) {
+			log.info("Sequence "+seq+" is too short, padding with zeroes.");
+			for (int i = seq.length(); i < 5; i++) {
+				seq = "0"+seq;					
+			}
+		}
 		// The DN 'CN=00111,O=CVCA-RPS,C=SE' will make the following reference
         //HolderReferenceField holderRef = new HolderReferenceField("SE","CVCA-RPS","00111");		
         HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
@@ -277,6 +311,7 @@ public class CVCCA extends CA implements Serializable {
 
         AccessRightEnum accessRights = AccessRightEnum.READ_ACCESS_NONE;
         int rights = certProfile.getCVCAccessRights();
+        log.debug("Access rights in certificate profile: "+rights);
         switch (rights) {
 	        case CertificateProfile.CVC_ACCESS_DG3: accessRights = AccessRightEnum.READ_ACCESS_DG3; break;
 	        case CertificateProfile.CVC_ACCESS_DG4: accessRights = AccessRightEnum.READ_ACCESS_DG4; break;
@@ -328,7 +363,7 @@ public class CVCCA extends CA implements Serializable {
 	public void upgrade(){
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
-			log.info("Upgrading CVCCA with version "+getVersion());
+            log.info("Upgrading CVCCA with version "+getVersion());
 
 			// Put upgrade code here...
 

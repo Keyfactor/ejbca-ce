@@ -1192,9 +1192,10 @@ public class TestCertTools extends TestCase {
 			assertTrue(false);
 		}
 		String subjectdn = CertTools.getSubjectDN(cert);
-		assertEquals("CN=10110,O=RPS,C=SE", subjectdn);
+		assertEquals("CN=RPS,C=SE", subjectdn);
 		String issuerdn = CertTools.getIssuerDN(cert);
-		assertEquals("CN=10110,O=RPS,C=SE", issuerdn);
+		assertEquals("CN=RPS,C=SE", issuerdn);
+		assertEquals("10110", CertTools.getSerialNumberAsString(cert));
 		CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
 		assertEquals("CVCA", cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name());
 
@@ -1286,9 +1287,9 @@ public class TestCertTools extends TestCase {
 		assertEquals(2, col.size());
 		Iterator iter = col.iterator();
 		Certificate certsub = (Certificate)iter.next();
-		assertEquals("CN=DVEX2,O=RPS,C=SE", CertTools.getSubjectDN(certsub));
+		assertEquals("CN=RPS,C=SE", CertTools.getSubjectDN(certsub));
 		Certificate certroot = (Certificate)iter.next();
-		assertEquals("CN=00001,O=HSMCVCA,C=SE", CertTools.getSubjectDN(certroot));
+		assertEquals("CN=HSMCVCA,C=SE", CertTools.getSubjectDN(certroot));
 		
 		// Test creating a certificate chain for X509CAs
 		Certificate x509certsubsub = CertTools.getCertfromByteArray(x509certchainsubsub);

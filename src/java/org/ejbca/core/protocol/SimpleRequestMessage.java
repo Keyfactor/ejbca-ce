@@ -13,39 +13,27 @@
 
 package org.ejbca.core.protocol;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.ejbca.cvc.CVCAuthenticatedRequest;
-import org.ejbca.cvc.CVCObject;
-import org.ejbca.cvc.CVCertificate;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.CertificateParser;
-import org.ejbca.cvc.HolderReferenceField;
-import org.ejbca.cvc.exception.ConstructionException;
-import org.ejbca.cvc.exception.ParseException;
-import org.ejbca.util.CertTools;
 
 
 
 /**
- * Class to handle CVC request messages sent to the CA.
+ * Class to handle simple requests from only a public key, all required parameters must be set.
  *
  * @version $Id$
  */
-public class CVCRequestMessage implements IRequestMessage {
+public class SimpleRequestMessage implements IRequestMessage {
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -57,10 +45,10 @@ public class CVCRequestMessage implements IRequestMessage {
      */
     static final long serialVersionUID = 1L;
 
-    private static final Logger log = Logger.getLogger(CVCRequestMessage.class);
+    private static final Logger log = Logger.getLogger(SimpleRequestMessage.class);
 
-    /** Raw form of the CVC message */
-    protected byte[] cvcmsg;
+    /** The public key */
+    protected PublicKey pubkey;
 
     /** manually set password */
     protected String password = null;
@@ -68,111 +56,63 @@ public class CVCRequestMessage implements IRequestMessage {
     /** manually set username */
     protected String username = null;
     
-    /** The cvc request message, not serialized. */
-    protected transient CVCertificate cvcert = null;
+    /** If the CA certificate should be included in the response or not, default to true = yes */
+    protected boolean includeCACert = true;
+
+    /** preferred digest algorithm to use in replies, if applicable */
+    private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
+
+    /** Type of error */
+    private int error = 0;
+
+    /** Error text */
+    private String errorText = null;
 
     /**
-     * Constructs a new empty message handler object.
-     *
-     * @throws IOException if the request can not be parsed.
+     * Constructs a new Simple message handler object.
+     * @param pubkey the public key to be certified
+     * @param username username of the EJBCA user
+     * @param password password of the EJBCA user
      */
-    public CVCRequestMessage() {
-    	// No constructor
+    public SimpleRequestMessage(PublicKey pubkey, String username, String password) {
+        log.debug(">SimpleRequestMessage()");
+        this.pubkey = pubkey;
+        this.username = username;
+        this.password = password;
+        log.debug("<SimpleRequestMessage()");
     }
 
     /**
-     * Constructs a new message handler object.
-     *
-     * @param msg The DER encoded request.
-     *
-     * @throws IOException if the request can not be parsed.
+     * @see org.ejbca.core.protocol.IRequestMessage
      */
-    public CVCRequestMessage(byte[] msg) {
-        this.cvcmsg = msg;
-        init();
+    public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    	return pubkey;
     }
 
-    private void init() {
-		try {
-			CVCObject parsedObject;
-			parsedObject = CertificateParser.parseCVCObject(cvcmsg);
-			if (parsedObject instanceof CVCertificate) {
-				cvcert = (CVCertificate) parsedObject;
-			} else if (parsedObject instanceof CVCAuthenticatedRequest) {
-				CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
-				cvcert = authreq.getRequest();
-			}
-		} catch (ParseException e) {
-            log.error("Error in init for CVC request: ", e);
-            throw new IllegalArgumentException(e);
-		} catch (ConstructionException e) {
-            log.error("Error in init for CVC request: ", e);
-            throw new IllegalArgumentException(e);
-		} catch (NoSuchFieldException e) {
-            log.error("Error in init for CVC request: ", e);
-            throw new IllegalArgumentException(e);
-		}
-    }
-
-    public PublicKey getRequestPublicKey()
-            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        try {
-            if (cvcert == null) {
-                init();
-            }
-        } catch (IllegalArgumentException e) {
-            log.error("CVC not inited!");
-
-            return null;
-        }
-
-        PublicKey pk;
-		try {
-			pk = cvcert.getCertificateBody().getPublicKey();
-		} catch (NoSuchFieldException e) {
-			throw new InvalidKeyException(e);
-		}
-        return pk;
-    }
-
-    /** force a password
+    /** set a password
      */
     public void setPassword(String pwd) {
         this.password = pwd;
     }
 
     /**
-     * Returns the forced password
-     *
-     * @return password
+     * @return password.
      */
     public String getPassword() {
     	return password;
     }
 
-    /** force a username, i.e. ignore the DN/username in the request
+    /** set a username
      */
     public void setUsername(String username) {
         this.username = username;
     }
 
     /**
-     * Returns the string representation of the holderReference field (mnemonic+country) of the certification request,
-     * to be used as username.
-     *
-     * @return username, which is the holderReference field from the subject DN in certification request.
+     * @return username, which is the CN field from the subject DN in certification request.
      */
     public String getUsername() {
-        if (username != null)
-            return username;
-        String subject = null;
-		try {
-			HolderReferenceField hr = cvcert.getCertificateBody().getHolderReference();
-			subject = hr.getMnemonic()+hr.getCountry();
-		} catch (NoSuchFieldException e) {
-			log.error(e);
-		}
-        return subject;
+    	return username;
     }
 
     /**
@@ -181,8 +121,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return issuerDN of receiving CA or null.
      */
     public String getIssuerDN() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-        return CertTools.getIssuerDN(cc);
+        return null;
     }
 
     /**
@@ -192,8 +131,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return serial number of CA certificate for CA issuing CRL or null.
      */
     public BigInteger getSerialNo() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-        return CertTools.getSerialNumber(cc);
+    	return null;
     }
     
     /**
@@ -220,8 +158,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return subject DN from certification request or null.
      */
     public String getRequestDN() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-        return CertTools.getSubjectDN(cc);
+    	return null;
     }
 
     public String getRequestAltNames() {
@@ -232,16 +169,14 @@ public class CVCRequestMessage implements IRequestMessage {
      * @see org.ejbca.core.protocol.IRequestMessage
      */
 	public Date getRequestValidityNotBefore() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-        return CertTools.getNotBefore(cc);
+		return null;
 	}
 	
     /**
      * @see org.ejbca.core.protocol.IRequestMessage
      */
 	public Date getRequestValidityNotAfter() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-        return CertTools.getNotAfter(cc);
+		return null;
 	}
 	
     /**
@@ -256,42 +191,7 @@ public class CVCRequestMessage implements IRequestMessage {
      */
     public boolean verify()
     throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        return verify(null);
-    }
-    private boolean verify(PublicKey pubKey)
-            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        log.debug(">verify()");
-
-        boolean ret = false;
-
-        try {
-            if (cvcert == null) {
-                init();
-            }
-        	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-            if (pubKey == null) {
-            	cc.verify(cvcert.getCertificateBody().getPublicKey());
-            	ret = true; // If we came here verification was successful
-            } else {
-                cc.verify(pubKey);
-            	ret = true; // If we came here verification was successful
-            }
-        } catch (IllegalArgumentException e) {
-            log.error("CVC not inited!", e);
-        } catch (NoSuchFieldException e) {
-            log.error("CVC error!", e);
-        } catch (InvalidKeyException e) {
-            log.error("Error in CVC-request:", e);
-            throw e;
-        } catch (CertificateException e) {
-            log.error("Error in CVC-signature:", e);
-        } catch (SignatureException e) {
-            log.error("Error in CVC-signature:", e);
-        }
-
-        log.debug("<verify()");
-
-        return ret;
+        return true;
     }
 
     /**
@@ -318,21 +218,21 @@ public class CVCRequestMessage implements IRequestMessage {
     }
 
     /**
-     * Returns an error number after an error has occurred processing the request
+     * Returns an error number after an error has occured processing the request
      *
      * @return class specific error number
      */
     public int getErrorNo() {
-        return 0;
+        return error;
     }
 
     /**
-     * Returns an error message after an error has occurred processing the request
+     * Returns an error message after an error has occured processing the request
      *
      * @return class specific error message
      */
     public String getErrorText() {
-        return "";
+        return errorText;
     }
 
     /**
@@ -359,26 +259,18 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return request key info
      */
     public byte[] getRequestKeyInfo() {
-    	byte[] ret = null;
-    	try {
-        	String seq = cvcert.getCertificateBody().getHolderReference().getSequence();
-        	ret = seq.getBytes();
-    	} catch (NoSuchFieldException e) {
-            log.error("CVC error!", e);
-    	}
-        return ret;
+        return null;
     }
     
     /** @see org.ejbca.core.protocol.IRequestMessage
      */
     public String getPreferredDigestAlg() {
-    	// Not used
-    	return CMSSignedGenerator.DIGEST_SHA256;
+    	return preferredDigestAlg;
     }
     /** @see org.ejbca.core.protocol.IRequestMessage
      */
     public boolean includeCACert() {
-    	return false;
+    	return includeCACert;
     }
 
     /** @see org.ejbca.core.protocol.IRequestMessage
@@ -398,4 +290,4 @@ public class CVCRequestMessage implements IRequestMessage {
     public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, encPriv, provider);
     }
-} // PKCS10RequestMessage
+} // SimpleRequestMessage
