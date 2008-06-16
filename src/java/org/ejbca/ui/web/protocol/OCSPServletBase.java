@@ -502,8 +502,10 @@ abstract class OCSPServletBase extends HttpServlet {
 		if (m_log.isDebugEnabled()) {
 			m_log.debug(">service()");
 		}
-		AuditLogger audit = new AuditLogger();
-		AccountLogger account = new AccountLogger();
+		AuditLogger audit = null;
+		AccountLogger account = null;
+		if (mAudit) audit = new AuditLogger();
+		if (mAccount)  account = new AccountLogger();
 		String transactionID = GUIDGenerator.generateGUID(this);
 		if (mAccount) account.paramPut(AccountLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
 		if (mAccount) account.paramPut(AccountLogger.LOG_ID, transactionID);
@@ -527,7 +529,6 @@ abstract class OCSPServletBase extends HttpServlet {
 			return;
 		}
 		try {
-
 			OCSPResp ocspresp = null;
 			OCSPRespGenerator res = new OCSPRespGenerator();
 			X509Certificate cacert = null; // CA-certificate used to sign response
