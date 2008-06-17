@@ -515,9 +515,9 @@ abstract class OCSPServletBase extends HttpServlet {
 		if (account != null) account.paramPut(AccountLogger.CLIENT_IP, remoteAddress);
 		if ((reqBytes == null) || (reqBytes.length == 0)) {
 			m_log.info("No request bytes from ip: "+remoteAddress);
-			if (mAudit) audit.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-			if (mAudit) audit.writeln();
-			if (mAudit) audit.flush();
+			if (audit != null) audit.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+			if (audit != null) audit.writeln();
+			if (audit != null) audit.flush();
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
 			return;
 		}
@@ -538,7 +538,7 @@ abstract class OCSPServletBase extends HttpServlet {
 				}
 				else {
 					m_log.debug("Requestorname is req.getRequestorName().toString()");
-					if (mAudit) audit.paramPut(AuditLogger.REQ_NAME, req.getRequestorName().toString());
+					if (audit != null) audit.paramPut(AuditLogger.REQ_NAME, req.getRequestorName().toString());
 				}
 				loadCertificates();
 				if (m_log.isDebugEnabled()) {
