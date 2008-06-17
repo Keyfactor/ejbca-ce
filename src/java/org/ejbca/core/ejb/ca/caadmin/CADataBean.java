@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.HashMap;
 
