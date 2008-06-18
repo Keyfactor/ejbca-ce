@@ -326,7 +326,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		CATokenInfo catokeninfo = getCATokenInfo();
 		
 		// First we start by setting a new sequence for our new keys
-		Integer seq = NumberUtils.createInteger(getSequence());
+		Integer seq = Integer.valueOf(getSequence());
 		seq = seq + 1;
 		// We want this to be (at least) 5 digits, as required by CVC
 		DecimalFormat df = new DecimalFormat("00000");
