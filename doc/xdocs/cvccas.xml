@@ -101,6 +101,9 @@
   By filling in the CA tokens password and checking the box 'Renew Keys' the DV will generate new keys.
   This is only working for soft keystores currently. The renewal CRS is not signed with the old keys. 
   </p>
+  <p>DVs have short validity periods, and it may be good to have them automatically renewed. There is a service 'Renew CA Service' to 
+  automatically renew CAs. Thhe User's Guide form more information about this service.
+  </p>
   </section>
   
   <section name="Inspection Systems">

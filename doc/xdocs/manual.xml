@@ -1955,6 +1955,17 @@ enroll for a certificate, i.e. the time before the user's password expire.
 </ul>
 </p>
 
+<p><i>Renew CA Service</i></p>
+<p>
+The renew CA service can be used to automatically renew CAs that are about to expire. This might be used for SubCAs that
+are valid only short periods of time. The specific settings are:
+<ul>
+<li><i>CAs to Check</i> - which CAs should be checked, and renewed if they are about to expire.</li>
+<li><i>Time before CA expires to renew</i> - the amount of time before the CA actually expires that the service should renew the CA.</li>
+</ul>
+For CAs not using soft keystores using the default password, auto-activation is required. 
+</p>
+
 </subsubsection>
 <subsubsection name="Intervals">
 <p><i>Periodical Interval</i></p>
