@@ -132,6 +132,7 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		return admin;
 	}
 	
+	/** Returns the amount of time, in milliseconds that the expire time of configured for */
 	protected long getTimeBeforeExpire()
 	throws ServiceExecutionFailedException {
 		if(timeBeforeExpire == -1){
@@ -171,6 +172,7 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		return timeBeforeExpire * 1000;
 	}
 
+	/** returns a collection of String with CAIds */
 	protected Collection getCAIdsToCheck() throws ServiceExecutionFailedException {
 		if(cAIdsToCheck == null){
 			cAIdsToCheck = new ArrayList();

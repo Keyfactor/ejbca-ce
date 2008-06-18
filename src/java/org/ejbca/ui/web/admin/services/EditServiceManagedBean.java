@@ -26,6 +26,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -38,6 +39,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.UserPasswordExpireWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
@@ -171,12 +173,23 @@ public class EditServiceManagedBean extends BaseManagedBean {
 			if ( (cp != null) && cp.equals(UserPasswordExpireWorker.class.getName()) ) {
 				name = UserPasswordExpireWorkerType.NAME;
 			}			
+			if ( (cp != null) && cp.equals(RenewCAWorker.class.getName()) ) {
+				name = RenewCAWorkerType.NAME;
+			}			
 		} catch (IOException e) {
 			log.error(e);
 		}
 		return (BaseEmailNotifyingWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
 	}
-	
+
+	/**
+	 * Help method used to edit data in the RenewCAWorkerType.
+	 */
+	public RenewCAWorkerType getRenewType(){
+		String name = RenewCAWorkerType.NAME;
+		return (RenewCAWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+	}
+
 	/**
 	 * Help method used to edit data in the custom interval type.
 	 */

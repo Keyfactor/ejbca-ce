@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -23,7 +22,6 @@ import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.EmailSendingWorker;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
@@ -31,16 +29,12 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * Class managing the view of the Certificate Exiration Notifier Worker
  * 
  * @author Philip Vendil
+ * 
+ * @version $Id$
  *
  */
-public class BaseEmailNotifyingWorkerType extends WorkerType {
+public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 
-	private Collection compatibleActionTypeNames = new ArrayList();
-	private Collection compatibleIntervalTypeNames = new ArrayList();	
-	
-	
-	public static final String DEFAULT_TIMEUNIT = BaseWorker.UNIT_DAYS;
-	public static final String DEFAULT_TIMEVALUE = "7";
 	
 	public static final boolean DEFAULT_USEENDUSERNOTIFICATIONS = false;
 	public static final boolean DEFAULT_USEADMINNOTIFICATIONS = false;
@@ -56,42 +50,16 @@ public class BaseEmailNotifyingWorkerType extends WorkerType {
 	private String endUserMessage = "";
 	private String adminMessage = "";
 	
-	private String classpath = null;
-	
-	
-	
 	public BaseEmailNotifyingWorkerType(String name, String jsp, String classpath){
-		super(jsp, name, true);
-		this.classpath = classpath;
+		super(jsp, name, true, classpath);
 		
-		compatibleActionTypeNames.add(MailActionType.NAME);
-		compatibleActionTypeNames.add(NoActionType.NAME);
+		addCompatibleActionTypeName(MailActionType.NAME);
+		addCompatibleActionTypeName(NoActionType.NAME);
 		
-		compatibleIntervalTypeNames.add(PeriodicalIntervalType.NAME);
+		addCompatibleIntervalTypeName(PeriodicalIntervalType.NAME);
 	}
-	/**
-	 * 
-	 * @see org.ejbca.ui.web.admin.services.servicetypes.WorkerType#getCompatibleActionTypeNames()
-	 */
-	public Collection getCompatibleActionTypeNames() {
-		return compatibleActionTypeNames;
-	}
-
-	/**
-	 * @see org.ejbca.ui.web.admin.services.servicetypes.WorkerType#getCompatibleIntervalTypeNames()
-	 */
-	public Collection getCompatibleIntervalTypeNames() {
-		return compatibleIntervalTypeNames;
-	}
-
-	/**
-	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getClassPath()
-	 */
-	public String getClassPath() {
-		return classpath;
-	}
-
-	/**
+	
+	/** Overrides
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
 	public Properties getProperties(ArrayList errorMessages) throws IOException {
@@ -109,9 +77,9 @@ public class BaseEmailNotifyingWorkerType extends WorkerType {
 			  }
 			}
 		}
-		retval.setProperty(CertificateExpirationNotifierWorker.PROP_CAIDSTOCHECK, caIdString);
+		retval.setProperty(BaseWorker.PROP_CAIDSTOCHECK, caIdString);
 		
-		retval.setProperty(CertificateExpirationNotifierWorker.PROP_TIMEUNIT, timeUnit);
+		retval.setProperty(BaseWorker.PROP_TIMEUNIT, timeUnit);
 		
 		try{
 			int value = Integer.parseInt(timeValue);
@@ -121,7 +89,7 @@ public class BaseEmailNotifyingWorkerType extends WorkerType {
 		}catch(NumberFormatException e){
 			errorMessages.add("TIMEBEFOREEXPIRATIONERROR");
 		}
-		retval.setProperty(EmailSendingWorker.PROP_TIMEBEFOREEXPIRING, timeValue);
+		retval.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, timeValue);
 		
 		if(useEndUserNotifications){
 			retval.setProperty(EmailSendingWorker.PROP_SENDTOENDUSERS, "TRUE");
@@ -147,14 +115,7 @@ public class BaseEmailNotifyingWorkerType extends WorkerType {
 		return retval;
 	}
 
-	/**
-	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#isCustom()
-	 */
-	public boolean isCustom() {
-		return false;
-	}
-
-	/**
+	/** Overrides
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#setProperties(java.util.Properties)
 	 */
 	public void setProperties(Properties properties) throws IOException {

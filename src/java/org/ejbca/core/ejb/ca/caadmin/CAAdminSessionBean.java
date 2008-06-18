@@ -1365,19 +1365,19 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				log.error("Directly renewing a CA signed by external can not be done");
     				throw new NotSupportedException("Directly renewing a CA signed by external can not be done");
     			}
-    			// Set statuses.
+    			// Set statuses and expire time
     			cadata.setExpireTime(CertTools.getNotAfter(cacertificate).getTime());
+    			ca.setExpireTime(CertTools.getNotAfter(cacertificate));
     			cadata.setStatus(SecConst.CA_ACTIVE);
+    			ca.setStatus(SecConst.CA_ACTIVE);
 
     			ca.setCertificateChain(cachain);
     			cadata.setCA(ca);
 
     			// Publish the new CA certificate
-                 ArrayList cacert = new ArrayList();
-                 cacert.add(ca.getCACertificate());
-     			 getSignSession().publishCACertificate(admin, cacert, ca.getCRLPublishers());
-
-
+    			ArrayList cacert = new ArrayList();
+    			cacert.add(ca.getCACertificate());
+    			getSignSession().publishCACertificate(admin, cacert, ca.getCRLPublishers());
     		}catch(CATokenOfflineException e){
 	    		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
     			getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
