@@ -91,7 +91,7 @@ public class OCSPServlet extends OCSPServletBase {
     			ICertificateStoreSessionLocalHome storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
     			m_certStore = storehome.create();
     		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
+    			throw new EJBException(e);
     		}
     	}
     	return m_certStore;

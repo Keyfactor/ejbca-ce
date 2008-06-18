@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -65,8 +66,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.ocsp.AccountLogger;
 import org.ejbca.core.protocol.ocsp.AuditLogger;
+import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.core.protocol.ocsp.IOCSPExtension;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
@@ -124,31 +125,31 @@ import org.ejbca.util.GUIDGenerator;
  *   
  *  @web.servlet-init-param description="When true, an audit log will be created."
  *   name="auditLog"
- *   value="${ocsp.auditlog}"
- *   
- *  @web.servlet-init-param description="A format string for logging of dates in auditLog and accountLog"
- *   name="auditLogDate"
- *   value="${ocsp.audit-log-date}"
+ *   value="${ocsp.audit-log}"
  *   
  *  @web.servlet-init-param description="A String to create a java Pattern to format the audit Log"
  *   name="auditLogPattern"
- *   value="${ocsp.audit-pattern}"
+ *   value="${ocsp.audit-log-pattern}"
  *   
  *  @web.servlet-init-param description="A String which combined with auditLogPattern determines how auditLog output is formatted."
  *   name="auditLogOrder"
- *   value="${ocsp.audit-order}"
+ *   value="${ocsp.audit-log-order}"
  *   
  *  @web.servlet-init-param description="When true, an account log will be created."
- *   name="accountLog"
- *   value="${ocsp.trxlog}"
+ *   name="transactionLog"
+ *   value="${ocsp.trx-log}"
+ *   
+ *  @web.servlet-init-param description="A format string for logging of dates in auditLog and transactionLog"
+ *   name="transactionLogDate"
+ *   value="${ocsp.trx-log-date}"
  *   
  *  @web.servlet-init-param description="A String to create a java Pattern to format the account Log."
- *   name="accountLogPattern"
- *   value="${ocsp.trx-pattern}"
+ *   name="transactionLogPattern"
+ *   value="${ocsp.trx-log-pattern}"
  *   
  *  @web.servlet-init-param description="A String which combined with auditLogPattern determines how auditLog output is formatted."
- *   name="accountLogOrder"
- *   value="${ocsp.trx-order}"
+ *   name="transactionLogOrder"
+ *   value="${ocsp.trx-log-order}"
  *   
 
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
@@ -188,8 +189,8 @@ abstract class OCSPServletBase extends HttpServlet {
 	private Collection m_extensionOids = new ArrayList();
 	private Collection m_extensionClasses = new ArrayList();
 	private HashMap m_extensionMap = null;
-	private boolean mAudit=false; //Default is no audit logging
-	private boolean mAccount=false; //Default is no account logging
+	private boolean mDoAuditLog=false; //Default is no audit logging
+	private boolean mDoTransactionLog=false; //Default is no account logging
 
 	/**
 	 * The interval on which new OCSP signing certs are loaded in seconds.
@@ -353,14 +354,12 @@ abstract class OCSPServletBase extends HttpServlet {
 		if (!StringUtils.isEmpty(initparam)) {
 			if (initparam.equalsIgnoreCase("true")
 					|| initparam.equalsIgnoreCase("yes")) {
-				mAudit = true;
+				mDoAuditLog = true;
 			}
 		}
-
-		initparam = config.getInitParameter("auditLogDate");
+		initparam = config.getInitParameter("transactionLogDate");
 		String logDateFormat = initparam;
-		String temp = "deleteme";
-		if (mAudit==true) { // If we are not going to do any logging we wont bother setting it up
+		if (mDoAuditLog==true) { // If we are not going to do any logging we wont bother setting it up
 			String auditLogPattern = config.getInitParameter("auditLogPattern");
 			if (m_log.isDebugEnabled()) {
 				m_log.debug("Pattern used for audit log: '"
@@ -377,34 +376,34 @@ abstract class OCSPServletBase extends HttpServlet {
 			AuditLogger.configure(auditLogPattern, auditLogOrder,logDateFormat);
 		}
 
-		initparam = config.getInitParameter("accountLog");
+		initparam = config.getInitParameter("transactionLog");
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("Are we doing auditLogging?: '"
 					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 					+ "'");
 		}
-		mAccount = false; // Default is no accountlogging
+		mDoTransactionLog = false; // Default is no accountlogging
 		if (!StringUtils.isEmpty(initparam)) {
 			if (initparam.equalsIgnoreCase("true")
 					|| initparam.equalsIgnoreCase("yes")) {
-				mAccount = true;
+				mDoTransactionLog = true;
 			}
 		}
-		if (mAccount==true) { // If we are not going to do any logging we wont bother setting it up
+		if (mDoTransactionLog==true) { // If we are not going to do any logging we wont bother setting it up
 
-			String accountLogPattern = config.getInitParameter("accountLogPattern");
+			String transactionLogPattern = config.getInitParameter("transactionLogPattern");
 			if (m_log.isDebugEnabled()) {
 				m_log.debug("Pattern used for account log: '"
 						+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 						+ "'");
 			}
-			String accountLogOrder = config.getInitParameter("accountLogOrder");
+			String transactionLogOrder = config.getInitParameter("transactionLogOrder");
 			if (m_log.isDebugEnabled()) {
 				m_log.debug("Pattern used for account log: '"
 						+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 						+ "'");
 			}	
-			AccountLogger.configure(accountLogPattern, accountLogOrder, logDateFormat);
+			TransactionLogger.configure(transactionLogPattern, transactionLogOrder, logDateFormat);
 		}
 
 		String extensionOid = null;
@@ -501,23 +500,23 @@ abstract class OCSPServletBase extends HttpServlet {
 		if (m_log.isDebugEnabled()) {
 			m_log.debug(">service()");
 		}
-		AuditLogger audit = null;
-		AccountLogger account = null;
-		if (mAudit) audit = new AuditLogger();
-		if (mAccount)  account = new AccountLogger();
+		TransactionLogger transactionLogger = null;
+		AuditLogger auditLogger = null;
+		if (mDoTransactionLog) transactionLogger = new TransactionLogger();
+		if (mDoAuditLog)  auditLogger = new AuditLogger();
 		String transactionID = GUIDGenerator.generateGUID(this);
-		if (account != null) account.paramPut(AccountLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
-		if (account != null) account.paramPut(AccountLogger.LOG_ID, transactionID);
-		if (audit != null) audit.paramPut(AuditLogger.LOG_ID, transactionID);
-		//audit.paramPut(AuditLogger.DIGEST_ALGOR, m_sigAlg); //Algorithm used by server to generate signature on OCSP responses
+		if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
+		if (auditLogger != null) auditLogger.paramPut(AuditLogger.LOG_ID, transactionID);
+		if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.LOG_ID, transactionID);
+		//audit.paramPut(TransactionLogger.DIGEST_ALGOR, m_sigAlg); //Algorithm used by server to generate signature on OCSP responses
 		String remoteAddress = request.getRemoteAddr();
-		if (audit != null) audit.paramPut(AuditLogger.CLIENT_IP, remoteAddress);
-		if (account != null) account.paramPut(AccountLogger.CLIENT_IP, remoteAddress);
+		if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CLIENT_IP, remoteAddress);
+		if (auditLogger != null) auditLogger.paramPut(AuditLogger.CLIENT_IP, remoteAddress);
 		if ((reqBytes == null) || (reqBytes.length == 0)) {
 			m_log.info("No request bytes from ip: "+remoteAddress);
-			if (audit != null) audit.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-			if (audit != null) audit.writeln();
-			if (audit != null) audit.flush();
+			if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+			if (transactionLogger != null) transactionLogger.writeln();
+			if (transactionLogger != null) transactionLogger.flush();
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
 			return;
 		}
@@ -538,7 +537,7 @@ abstract class OCSPServletBase extends HttpServlet {
 				}
 				else {
 					m_log.debug("Requestorname is req.getRequestorName().toString()");
-					if (audit != null) audit.paramPut(AuditLogger.REQ_NAME, req.getRequestorName().toString());
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REQ_NAME, req.getRequestorName().toString());
 				}
 				loadCertificates();
 				if (m_log.isDebugEnabled()) {
@@ -571,9 +570,9 @@ abstract class OCSPServletBase extends HttpServlet {
 						String signercertIssuerName = signercert.getIssuerDN().getName();
 						BigInteger signercertSerNo = signercert.getSerialNumber();
 						String signercertSubjectName = signercert.getSubjectDN().getName();
-						if (audit != null ) audit.paramPut(AuditLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
-						if (audit != null) audit.paramPut(AuditLogger.SIGN_SERIAL_NO, signercertSerNo.toString());
-						if (audit != null) audit.paramPut(AuditLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
+						if (transactionLogger != null ) transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
+						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, signercertSerNo.toString());
+						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
 					} catch (Exception e ) {
 						// nothing, just keep going
 					}
@@ -598,7 +597,7 @@ abstract class OCSPServletBase extends HttpServlet {
 
 				// Get the certificate status requests that are inside this OCSP req
 				Req[] requests = req.getRequestList();
-				if (audit != null) audit.paramPut(AuditLogger.NUM_CERT_ID, requests.length);
+				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, requests.length);
 				if (requests.length <= 0) {
 					String errMsg = intres.getLocalizedMessage("ocsp.errornoreqentities");
 					m_log.error(errMsg);
@@ -631,13 +630,13 @@ abstract class OCSPServletBase extends HttpServlet {
 				for (int i = 0; i < requests.length; i++) {
 					CertificateID certId = requests[i].getCertID();
 					// now some Logging
-					if (audit != null) audit.paramPut(AuditLogger.SERIAL_NO, certId.getSerialNumber().toString());
-					if (audit != null) audit.paramPut(AuditLogger.DIGEST_ALGOR, certId.getHashAlgOID()); //todo, find text version of this or find out if it should be something else                    
-					if (audit != null) audit.paramPut(AuditLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
-					if (audit != null) audit.paramPut(AuditLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
-					if (account != null) account.paramPut(AccountLogger.SERIAL_NOHEX, new String( Hex.encode(certId.getSerialNumber().toByteArray())));
-					if (account != null) account.paramPut(AccountLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
-					if (account != null) account.paramPut(AccountLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SERIAL_NO, certId.getSerialNumber().toString());
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID()); //todo, find text version of this or find out if it should be something else                    
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
+					if (auditLogger != null) auditLogger.paramPut(AuditLogger.SERIAL_NOHEX, new String( Hex.encode(certId.getSerialNumber().toByteArray())));
+					if (auditLogger != null) auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
+					if (auditLogger != null) auditLogger.paramPut(AuditLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
  					byte[] hashbytes = certId.getIssuerNameHash();
 					String hash = null;
 					if (hashbytes != null) {
@@ -676,13 +675,11 @@ abstract class OCSPServletBase extends HttpServlet {
 						m_log.info(errMsg);
 						// If we can not find the CA, answer UnknowStatus
 						responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));
-						if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
-						if (audit != null) audit.writeln();
-						//if (account != null) account.paramPut(AccountLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
-						//if (account != null) account.writeln();
- 						continue;
+						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
+						if (transactionLogger != null) transactionLogger.writeln();
+						continue;
 					} else {
-						if (audit != null) audit.paramPut(AuditLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
+						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
 					}
 					/*
 					 * Implement logic according to
@@ -699,8 +696,8 @@ abstract class OCSPServletBase extends HttpServlet {
 						rci = null;
 					}
 					CertificateStatus certStatus = null; // null means good
-					if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 3 = unknown
-					//if (account != null) account.paramPut(AccountLogger.CERT_STATUS, "1"); // 3 = unknown
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "1"); // 3 = unknown
+					//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 3 = unknown
 
 					if (null == rci) {
 						rci = isRevoked(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
@@ -712,8 +709,8 @@ abstract class OCSPServletBase extends HttpServlet {
 							}
 							String status = "good";
 							certStatus = null; // null means "good" in OCSP
-							if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
-							//if (account != null) account.paramPut(AccountLogger.CERT_STATUS, "1"); // 3 = unknown
+							if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
+							//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 3 = unknown
 							// If we do not treat non existing certificates as good 
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
@@ -721,13 +718,12 @@ abstract class OCSPServletBase extends HttpServlet {
 							if ( (!m_nonExistingIsGood) || (OCSPUtil.findCAByHash(certId, m_cacerts) == null) ) {
 								status = "unknown";
 								certStatus = new UnknownStatus();
-								if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
-								//if (account != null) account.paramPut(AccountLogger.CERT_STATUS, "3"); // 3 = unknown
+								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
 							} 
 							infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 							m_log.info(infoMsg);
 							responseList.add(new OCSPResponseItem(certId, certStatus));
-							if (audit != null) audit.writeln();
+							if (transactionLogger != null) transactionLogger.writeln();
 							//  if (account != null) account.writeln();
 						} else {
 							BigInteger rciSerno = rci.getUserCertificate(); 
@@ -735,37 +731,29 @@ abstract class OCSPServletBase extends HttpServlet {
 								if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
 									certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
 											new CRLReason(rci.getReason())));
-									if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
-									//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
+									if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
 								} else {
 									certStatus = null;
-									if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
-									//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
+									if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
 								}
 								String status = "good";
-								if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
-								//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
+								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "1"); // 1= good 2 = revoked 3 = unknown
 								if (certStatus != null) {
 									status ="revoked";
-									if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
-									//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
+									if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
 								}
 								infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 
 								m_log.info(infoMsg);
 								responseList.add(new OCSPResponseItem(certId, certStatus));
-								if (audit != null) audit.writeln();
-								//if (account != null) account.writeln();
+								if (transactionLogger != null) transactionLogger.writeln();
 							} else {
 								m_log.error("ERROR: Certificate serialNumber ("+rciSerno.toString(16)+") in response from database does not match request ("
 										+certId.getSerialNumber().toString(16)+").");
 								infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "unknown", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 								m_log.info(infoMsg);
-								// audit.paramPut(AuditLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
-								if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "3");
-								//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown
-								if (audit != null) audit.writeln();
-								// if (account != null) account.writeln();
+								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "3");
+								if (transactionLogger != null) transactionLogger.writeln();
 								responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));                		
 							}
 						}
@@ -775,11 +763,8 @@ abstract class OCSPServletBase extends HttpServlet {
 						infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 						m_log.info(infoMsg);
 						responseList.add(new OCSPResponseItem(certId, certStatus));
-						// audit.paramPut(AuditLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
-						if (audit != null) audit.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
-						if (audit != null) audit.writeln();
-						//if (account != null) account.paramPut(AuditLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
-						//if (account != null) account.writeln();
+						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "2"); // 1= good 2 = revoked 3 = unknown
+						if (transactionLogger != null) transactionLogger.writeln();
 					}
 					// Look for extension OIDs
 					Iterator iter = m_extensionOids.iterator();
@@ -834,24 +819,32 @@ abstract class OCSPServletBase extends HttpServlet {
 				// generate the signed response object
 				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
 				ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicresp);
-				if (audit != null) audit.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-				if (audit != null) audit.writeln();
+				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (SignRequestException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.info(errMsg, e);
 				// generate the signed response object
 				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
 				ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicresp);
-				if (audit != null) audit.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
-				if (audit != null) audit.writeln();
+				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
+				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (SignRequestSignatureException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.info(errMsg, e);
 				// generate the signed response object
 				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
 				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, basicresp);
-				if (audit != null) audit.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
-				if (audit != null) audit.writeln();
+				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
+				if (transactionLogger != null) transactionLogger.writeln();
+			} catch (InvalidKeyException e) {
+				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+				m_log.info(errMsg, e);
+				// generate the signed response object
+				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
+				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, basicresp);
+				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
+				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (Exception e) {
 				if (e instanceof ServletException)
 					throw (ServletException) e;
@@ -860,12 +853,12 @@ abstract class OCSPServletBase extends HttpServlet {
 				// generate the signed response object
 				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
 				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
-				if (audit != null) audit.paramPut(AuditLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
-				if (audit != null) audit.writeln();
+				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
+				if (transactionLogger != null) transactionLogger.writeln();
 			}
 			byte[] respBytes = ocspresp.getEncoded();
-			if (account != null) account.paramPut(AccountLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
-			if (account != null) account.writeln();
+			if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
+			if (auditLogger != null) auditLogger.writeln();
 			response.setContentType("application/ocsp-response");
 			//response.setHeader("Content-transfer-encoding", "binary");
 			response.setContentLength(respBytes.length);
@@ -894,8 +887,8 @@ abstract class OCSPServletBase extends HttpServlet {
 		} catch (Exception e ) {
 			m_log.error(e);
 		}
-		if (audit != null) audit.flush();
-		if (account != null) account.flush();
+		if (transactionLogger != null) transactionLogger.flush();
+		if (auditLogger != null) auditLogger.flush();
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("<service()");
 		}

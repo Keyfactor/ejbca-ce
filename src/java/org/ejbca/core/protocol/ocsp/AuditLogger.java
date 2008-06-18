@@ -12,87 +12,67 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.PatternLogger;
 
 /**
- * This class is used for logging information about ocsp-requests.
+ * This class is used for logging ocsp-responses with the purpose of auditing.
+ * It can be used to store entire ocsp-requests and responses which means the log can be used to verify requests afterwards.
  * 
  * @author tham
  * @version $Id$
- *
  */
-public class AuditLogger extends PatternLogger{
-	public static final Logger auditlog = Logger.getLogger(AuditLogger.class.getName());
+public class AuditLogger extends PatternLogger { 
+	private static Pattern PATTERN;
+	private static String orderString;
+	private static Matcher m_matcher;
+    private static final Logger accountLog = Logger.getLogger(AuditLogger.class.getName());
+	private static String mLogDateFormat ;
 	public static final String LOG_ID="LOG_ID";//A random 32 bit number identifying a log entry for a request
-	public static final String STATUS="STATUS";//The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;
-	//TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;
 	public static final String CLIENT_IP="CLIENT_IP";//IP of the client making the request
-	public static final String REQ_NAME="REQ_NAME";//The Common Name (CN) of the client making the request
-	public static final String SIGN_ISSUER_NAME_DN="SIGN_ISSUER_NAME_DN";//DN of the issuer of the certificate used to sign the request.
-	public static final String SIGN_SUBJECT_NAME="SIGN_SUBJECT_NAME";//Subject Name of the certificate used to sign the request.
-	public static final String SIGN_SERIAL_NO="SIGN_SERIAL_NO";//Certificate serial number of the certificate used to sign the request.
-	public static final String NUM_CERT_ID="NUM_CERT_ID"; // The number of certificates to check revocation status for
-	public static final String ISSUER_NAME_DN="ISSUER_NAME_DN";// The subject DN of the issuer of a requested certificate
-	public static final String ISSUER_NAME_HASH="ISSUER_NAME_HASH";//MD5 hash of the issuer DN
-	public static final String ISSUER_KEY="ISSUER_KEY";//The public key of the issuer of a requested certificate
-	public static final String DIGEST_ALGOR="DIGEST_ALGOR";//Algorithm used by requested certificate to hash issuer key and issuer name
-	public static final String SERIAL_NO="SERIAL_NO";// Serial number of the a requested certificate.
-	public static final String CERT_STATUS="CERT_STATUS";//The requested certificate revocation status.
-	public String tempstring;
+	public static final String SERIAL_NOHEX = "SERIAL_NOHEX"; // The serial number of the requested certificate
+	public static final String OCSPREQUEST = "OCSPREQUEST";	//The byte[] ocsp-request that came with the http-request
+	public static final String OCSPRESPONSE = "OCSPRESPONSE"; //The byte[] ocsp-response that was included in the http-response
+	public static final String ISSUER_NAME_HASH = "ISSUER_NAME_HASH"; // The DN of the issuer of the requested
+	public static final String ISSUER_KEY = "ISSUER_KEY";
+	
+	//TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;
+	 /** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
 
-	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
-
-	/** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
-	// private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}"); // TODO this should be configurable from file
-	private  static Pattern PATTERN;// = Pattern.compile("\\$\\{(.+?)\\}");// TODO this should be configurable from file
-
-	//  = "${LOG_ID};${STATUS};\"${CLIENT_IP}\";\"${SIGN_ISSUER_NAME_DN}\";\"${SIGN_SUBJECT_NAME}\";${SIGN_SERIAL_NO};" +
-	// 		"\"${LOG_TIME}\";${NUM_CERT_ID};0;0;0;0;0;0;0;" +
-	//		"\"${ISSUER_NAME_DN}\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NO};${CERT_STATUS}";
-	private  static Matcher m_matcher; 
-	private  static String orderString;
-	private static String mLogDateFormat; 
 	public AuditLogger () {
-		super(PATTERN.matcher(orderString), orderString, auditlog, mLogDateFormat);
-		tempstring = intres.getLocalizedMessage("certtools.dnorderreverse");
+		super(PATTERN.matcher(orderString), orderString, accountLog, mLogDateFormat);
 		cleanParams();
+		super.paramPut(LOG_ID, GUIDGenerator.generateGUID(this));
+        super.paramPut(LOG_TIME, new Date().toString());
 	}
-
+	
+	/**
+	 * Use this method to avoid having parts of the order-string logged when some values have not been stored before a writeln()
+	 */
+	protected void cleanParams() {
+		super.cleanParams();
+		super.paramPut(TransactionLogger.LOG_ID, "0");
+		super.paramPut(CLIENT_IP,"0");
+		super.paramPut(OCSPREQUEST, "0");
+		super.paramPut(OCSPRESPONSE, "0");
+	}
+	
 	/**
 	 * This Method needs to be called before creating any instances
 	 * 
-	 * @param auditLogPattern
-	 * @param auditLogOrder
+	 * @param accountLogPattern  
+	 * @param accountLogOrder
 	 * @param logDateFormat
 	 */
-	public static void configure(String auditLogPattern, String auditLogOrder, String logDateFormat) {
-		PATTERN = Pattern.compile(auditLogPattern);
-		orderString = auditLogOrder;
+	public static void configure(String accountLogPattern, String accountLogOrder, String logDateFormat) {
+		PATTERN = Pattern.compile(accountLogPattern);
+		orderString = accountLogOrder;
 		m_matcher = PATTERN.matcher(orderString);
 		mLogDateFormat = logDateFormat;
-	}
-
-	protected void cleanParams() {
-		super.cleanParams();
-		super.paramPut(AuditLogger.LOG_ID, "0");
-		super.paramPut(STATUS,"0");
-		super.paramPut(CLIENT_IP,"0");
-		super.paramPut(REQ_NAME,"0");
-		super.paramPut(SIGN_ISSUER_NAME_DN,"0");
-		super.paramPut(SIGN_SUBJECT_NAME,"0");
-		super.paramPut(SIGN_SERIAL_NO,"0");
-		super.paramPut(NUM_CERT_ID,"0");
-		super.paramPut(ISSUER_NAME_DN,"0");
-		super.paramPut(ISSUER_NAME_HASH,"0");
-		super.paramPut(ISSUER_KEY,"0");
-		super.paramPut(DIGEST_ALGOR,"0");
-		super.paramPut(SERIAL_NO,"0");
-		super.paramPut(CERT_STATUS,"0");
 	}
 }
