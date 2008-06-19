@@ -30,7 +30,7 @@ import org.ejbca.util.Base64;
 /**
  * Creates or edits a user and sends a CVC request. Writes the issues CV Certificate to file
  *
- * @version $Id: CvcRequestCommand.java 5742 2008-06-16 08:54:27Z anatom $
+ * @version $Id$
  */
 public class CvcGetChainCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
