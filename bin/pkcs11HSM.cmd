@@ -18,7 +18,7 @@ set CLASSES=%EJBCA_HOME%\lib\bcprov-jdk15.jar
 set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\bcmail-jdk15.jar
 set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\jline-0.9.94.jar
 set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\log4j.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\commons-lang-2.0.jar
+set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\commons-lang-2.4.jar
 set CLASSES=%CLASSES%;%EJBCA_HOME%\tmp\bin\classes
 rem use this instead if you want build from eclipse
 rem CLASSES=$CLASSES:$EJBCA_HOME/out/classes
