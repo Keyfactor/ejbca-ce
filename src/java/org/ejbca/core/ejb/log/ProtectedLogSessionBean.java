@@ -1895,12 +1895,12 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		ServiceConfiguration serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(false);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
 		serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(false);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
 		// Wait for already running instances of the services to stop. Time-out after x minutes.
 		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
@@ -1937,12 +1937,12 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		ServiceConfiguration serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(true);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
 		serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(true);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
 	}
 
