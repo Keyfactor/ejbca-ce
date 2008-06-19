@@ -734,7 +734,7 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getDefaultCRLDistPoint());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="80" maxlength="4096"
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="60" maxlength="4096"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLDistPoint()+ "'");%>>
            <% } %> 
            <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
@@ -747,7 +747,7 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getDefaultCRLIssuer());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="80" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="60" maxlength="255"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLIssuer()+ "'");%>>
            <% } %> 
       </td>
@@ -760,7 +760,7 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getCADefinedFreshestCRL());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="80" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="60" maxlength="255"
             <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)) out.write(" value='" + x509cainfo.getCADefinedFreshestCRL()+ "'");%>>
            <% } %>
       </td>
@@ -773,7 +773,7 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getDefaultOCSPServiceLocator());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="80" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="60" maxlength="255"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultOCSPServiceLocator()+ "'");%>>
            <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
