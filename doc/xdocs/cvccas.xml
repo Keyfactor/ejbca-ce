@@ -154,6 +154,7 @@
   <p>The command line client have two functions:
   <ul>
   <li>cvcrequest - adds a new user and requests a CV Certificate.</li>
+  <li>cvcgetchain - retrieves the last certificate chain for a user.</li>
   <li>cvcprint - used to parse and print CV Certificate and requests.</li>
   </ul>
   Type the command on the command line to get usage information. 
