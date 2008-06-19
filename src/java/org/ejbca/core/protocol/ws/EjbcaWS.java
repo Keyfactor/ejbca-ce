@@ -435,7 +435,7 @@ public class EjbcaWS implements IEjbcaWS {
 						CVCPublicKey cvcKey = authreq.getRequest().getCertificateBody().getPublicKey();
 			            String algorithm = AlgorithmUtil.getAlgorithmName(cvcKey.getObjectIdentifier());
 			            log.debug("Received request has a public key with algorithm: "+algorithm);
-						String holderRef = authreq.getRequest().getCertificateBody().getHolderReference().getValue();
+						String holderRef = authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated();
 						while (iterator.hasNext()) {
 							java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
 							try {

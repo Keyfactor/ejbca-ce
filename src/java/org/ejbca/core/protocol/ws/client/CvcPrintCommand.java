@@ -18,13 +18,14 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 
-import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.CvcException;
+import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -85,18 +86,18 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		}
 	}
 
-	private CVCObject getCVCObject(String filename) throws IOException, ConstructionException, CertificateException {
+	private CVCObject getCVCObject(String filename) throws IOException, CvcException, CertificateException {
 		CVCObject ret = null;
 		try {
 			byte[] cvcdata = FileTools.readFiletoBuffer(filename);				
 			ret = CertificateParser.parseCVCObject(cvcdata);
-		} catch (IllegalArgumentException e) {
+		} catch (ParseException e) {
 			try {
 				// this was not parseable, try to see it it was a PEM certificate
 				Collection col = CertTools.getCertsFromPEM(filename);
 				Certificate cert = (Certificate)col.iterator().next();
 	        	ret = CertificateParser.parseCVCObject(cert.getEncoded());			
-			} catch (IOException ie) {
+			} catch (ParseException ie) {
 				// this was not a PEM cert, try to see it it was a PEM certificate req
 				byte[] cvcdata = FileTools.readFiletoBuffer(filename);				
 				byte[] req = RequestMessageUtils.getRequestBytes(cvcdata);
