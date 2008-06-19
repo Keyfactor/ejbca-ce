@@ -154,7 +154,7 @@
 #  be used. None is activated by default.
 #
  
-# MailAction sends emails to the listed addresses for the selected events. The account-properties from mail.properties are used.
+# MailAction sends emails to the listed addresses for tampering events. The account-properties from mail.properties are used.
 #useMailAction=false
 #mailAction.senderAddress=no-reply-ca@company.com
 #mailAction.emailAddresses=address1@company.com;address2@company.com

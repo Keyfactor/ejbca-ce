@@ -98,6 +98,8 @@ import org.ejbca.util.ManualUpdateCache;
  *   type="Stateless"
  *   transaction-type="Container"
  *
+ * @ejb.transaction type="Supports"
+ * 
  * @weblogic.enable-call-by-reference True
  *
  * @ejb.env-entry
@@ -312,7 +314,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Fetch a existing token from the database. Caches the last found token.
 	 * @return null if no token was found
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogToken getToken(int tokenIdentifier) {
 		log.debug(">getToken");
@@ -420,7 +421,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return the newest export
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogExportRow getLastExport() {
 		log.debug(">getLastExport");
@@ -451,7 +451,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return the last signed export
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogExportRow getLastSignedExport() {
 		log.debug(">getLastSignedExport");
@@ -482,7 +481,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Persist a new ProtectedLogEvent
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.transaction type="Required"
 	 */
 	public void addProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow) {
 		if (log.isDebugEnabled()) {
@@ -510,7 +509,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return the requested ProtectedLogRow or null if not found
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventRow getProtectedLogEventRow(ProtectedLogEventIdentifier identifier) {
 		if (log.isDebugEnabled()) {
@@ -534,7 +532,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Find the newest event for all nodes, except the specified node.
 	 * 
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier[] findNewestProtectedLogEventsForAllOtherNodes(int nodeToExclude, long newerThan) {
 		if (log.isDebugEnabled()) {
@@ -610,7 +607,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return the identifier of the newest protected ProtectedLogEvent
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(int nodeGUID) {
 		if (log.isDebugEnabled()) {
@@ -646,7 +642,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return the identifier of the newest ProtectedLogEvent, protected or unprotected
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findNewestLogEventRow(int nodeGUID) {
 		if (log.isDebugEnabled()) {
@@ -681,7 +676,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 
 	/**
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow() {
 		return findNewestProtectedLogEventRow(true);
@@ -691,7 +685,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @param search for protected events if true or unprotected if not
 	 * @return the identifier of the newest ProtectedLogEvent
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(boolean isProtected) {
 		if (log.isDebugEnabled()) {
@@ -726,7 +719,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Find the oldest log-event, protected or unprotected
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findOldestProtectedLogEventRow() {
 		if (log.isDebugEnabled()) {
@@ -762,7 +754,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Find the oldest protected log-event
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier findOldestSignedProtectedLogEventRow() {
 		if (log.isDebugEnabled()) {
@@ -797,7 +788,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return all different nodeGUID that exist between the requested times
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public Integer[] getNodeGUIDs(long exportStartTime, long exportEndTime) {
 		log.debug(">getNodeGUIDs");
@@ -828,7 +818,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return all different nodeGUID that exist
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public Integer[] getAllNodeGUIDs() {
 		log.debug(">getAllNodeGUIDs");
@@ -857,7 +846,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Find all nodeGUIDs where all log events are unprotected.
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public Integer[] getFullyUnprotectedNodeGUIDs() {
 		log.debug(">getFullyUnprotectedNodeGUIDs");
@@ -886,7 +874,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * @return at most fetchSize legevents between the specified times, oldest first 
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventRow[] findNextProtectedLogEventRows(long exportStartTime, long exportEndTime, int fetchSize) {
 		if (log.isDebugEnabled()) {
@@ -980,7 +967,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Roll back the export table to the last one with the delete-flag set. This will remove all the export if none has the delet-flag set.
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public boolean removeAllExports(boolean removeDeletedToo) {
 		log.debug(">removeAllExports");
@@ -1004,7 +990,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Retrieve a list of token the has been used before, but not after the request time.
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public Integer[] findTokenIndentifiersUsedOnlyUntil(long exportEndTime) {
 		log.debug(">findTokenIndentifiersUsedOnlyUntil");
@@ -1043,7 +1028,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Verifies that the certificate was valid at the time of signing and that the signature was made by the owner of this certificate.
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public boolean verifySignature(byte[] data, byte[] signature, Certificate certificate, long timeOfSigning) {
 		log.debug(">verifySignature");
@@ -1070,7 +1054,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Verifies that the certificate was valid at the specified time
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public boolean verifyCertificate(Certificate certificate, long timeOfUse) {
 		log.debug("<verifyCertificate");
@@ -1360,7 +1343,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 *  
 	 * @param freezeThreshold longest allowed time to newest ProtectedLogEvent of any node (milliseconds)
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Supports"
 	 */
 	public ProtectedLogEventIdentifier verifyEntireLog(ProtectedLogActions protectedLogActions, long freezeThreshold) {
 		log.debug(">verifyProtectedLogEventRow");
@@ -1627,7 +1609,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Fetches a known token from the database or creates a new one, depending on the configuration.
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.transaction type="Required"
 	 */
 	public ProtectedLogToken getProtectedLogToken() {
 		log.debug(">getProtectedLogToken");
@@ -1907,7 +1889,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Temporary halts the verification and export services
 	 * @return true if successful
 	 * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
 	 */
 	public boolean stopServices() {
 		// Disable services first.
@@ -1950,7 +1931,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Restarts the verification and export services
 	 * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
 	 */
 	public void startServices() {
 		// Enable services again

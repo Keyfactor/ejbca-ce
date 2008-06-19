@@ -4346,6 +4346,7 @@ It is good practise to
 <ul>
 <li>use secure communication with the database.</li>
 <li>use asymmetric log-signing key and a HSM.</li>
+<li>use a database/database engine that supports transaction (e.g. InnoDB and not MyIsam for MySQL).</li>
 </ul>
 <p>
 The log can be verified manually using "ejbca.sh/cmd log" CLI.
