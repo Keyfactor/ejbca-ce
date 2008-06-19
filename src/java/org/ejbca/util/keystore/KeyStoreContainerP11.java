@@ -13,12 +13,12 @@
 package org.ejbca.util.keystore;
 
 import java.io.IOException;
-import java.security.AuthProvider;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Provider;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.KeyStore.CallbackHandlerProtection;
@@ -54,7 +54,7 @@ public class KeyStoreContainerP11 extends KeyStoreContainer {
 			final boolean isIx,
 			final String attributesFile,
 			final KeyStore.ProtectionParameter protectionParameter) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-		AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName, isIx, attributesFile);
+		Provider provider = KeyTools.getP11Provider(slot, libName, isIx, attributesFile);
 		final String providerName = provider.getName();
 		Security.addProvider(provider);
 

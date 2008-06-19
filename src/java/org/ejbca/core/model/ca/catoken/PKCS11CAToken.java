@@ -46,9 +46,9 @@ public class PKCS11CAToken extends BaseCAToken {
     public PKCS11CAToken() throws InstantiationException {
         super();
         try {
-        	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
+        	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.PKCS11CLASS);
         } catch (Throwable t) {
-            throw new InstantiationException("SUN pkcs11 wrapper class \"SunPKCS11\" not found.");
+            throw new InstantiationException("Pkcs11 provider class "+KeyTools.PKCS11CLASS+" not found.");
         }
     }
 
@@ -91,7 +91,7 @@ public class PKCS11CAToken extends BaseCAToken {
             isIndex = false;
         String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
         String arributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
-        setJCAProvider( KeyTools.getP11AuthProvider(sSlotLabel, sharedLibrary, isIndex, arributesFile) );
+        setJCAProvider( KeyTools.getP11Provider(sSlotLabel, sharedLibrary, isIndex, arributesFile) );
         autoActivate();
     }
 }
