@@ -107,7 +107,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		try {
 			serviceConfigurationView.getServiceConfiguration(errorMessages);
 			if(errorMessages.size() == 0){
-			  EjbcaJSFHelper.getBean().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages));
+			  EjbcaJSFHelper.getBean().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages), false);
 			  EjbcaJSFHelper.getBean().getServiceSession().activateServiceTimer(getAdmin(), serviceName);
 			}else{
 				Iterator iter = errorMessages.iterator();

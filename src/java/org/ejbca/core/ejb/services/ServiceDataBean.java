@@ -78,8 +78,14 @@ import org.ejbca.util.Base64PutHashMap;
  *
  * @ejb.transaction type="Required"
  *
- * @jonas.jdbc-mapping
- *   jndi-name="${datasource.jndi-name}"
+  * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
+ * @jboss.method-attributes
+ *   pattern = "find*"
+ *   read-only = "true"
+ *
  */
 public abstract class ServiceDataBean extends BaseEntityBean {
 
@@ -123,9 +129,8 @@ public abstract class ServiceDataBean extends BaseEntityBean {
      * Method that returns the service configuration data and updates it if nessesary.
      *
      * @ejb.interface-method view-type="local"
-     * @jboss.persistence row-locking="true" 
      */
-    public ServiceConfiguration getServiceConfiguration() {
+    public ServiceConfiguration serviceConfiguration() {
 
         if (serviceConfiguration == null) {
             java.beans.XMLDecoder decoder;

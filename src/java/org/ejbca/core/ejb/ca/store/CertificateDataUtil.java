@@ -195,8 +195,8 @@ public class CertificateDataUtil {
             if (coll != null) {
                 if (coll.size() > 1) {
                 	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
-                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(),
-                                null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
+                    //adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
+                	adapter.error(msg);
                 }
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {

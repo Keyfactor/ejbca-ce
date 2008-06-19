@@ -171,7 +171,7 @@ public class TestUserPasswordExpire extends TestCase {
         // Include a dummy CA so we can see that the query works with checking several CAs
 		workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caid)+";45");
 		config.setWorkerProperties(workerprop);
-        servicesession.changeService(admin, "TestUserPasswordService", config);
+        servicesession.changeService(admin, "TestUserPasswordService", config, false);
         
         // The service will run...
         Thread.sleep(10000);

@@ -254,7 +254,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		if(currentDate.after(nextRunDate)){
 			nextRunDate = new Date(currentDate.getTime() + nextInterval);
 			serviceData.setNextRunTimestamp(nextRunDate);
-			getServiceSession().changeService(intAdmin, serviceName, serviceData); 
+			getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
 			ret=true;
 		}		
 		return ret;

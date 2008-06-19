@@ -333,12 +333,14 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
 
     /**
      * Updates service configuration, but does not re-set the timer
+     * 
+     * @param noLogging if true no logging (to the database will be done
      *
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
 
-    public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration) {
+    public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
         debug(">changeService(name: " + name + ")");
         boolean success = false;
         if(isAuthorizedToEditService(admin,serviceConfiguration)){
@@ -351,12 +353,28 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	}
         	
         	if (success){
-        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceedited", name));
+        		String msg = intres.getLocalizedMessage("services.serviceedited", name);
+        		if (!noLogging) {
+        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, msg);
+        		} else {
+            		log.info(msg);
+        		}
         	}else{
-        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroreditingservice", name));
+        		String msg = intres.getLocalizedMessage("services.serviceedited", name);
+        		log.error(msg);
+        		if (!noLogging) {
+        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, msg);
+        		} else {
+            		log.error(msg);        			
+        		}
         	}
         }else{
-        	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+        	String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
+    		if (!noLogging) {
+    			getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
+    		} else {
+            	log.error(msg);    			
+    		}
         }      
         
         debug("<changeService()");
@@ -374,7 +392,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         ServiceConfiguration servicedata = null;
         try {
         	ServiceDataLocal htp = getServiceDataHome().findByName(oldname);
-        	servicedata = (ServiceConfiguration) htp.getServiceConfiguration().clone();
+        	servicedata = (ServiceConfiguration) htp.serviceConfiguration().clone();
         	if(isAuthorizedToEditService(admin,servicedata)){                   		
         		try {
         			addService(admin, newname, servicedata);
@@ -408,7 +426,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         boolean retval = false;
         try {
         	ServiceDataLocal htp = getServiceDataHome().findByName(name);
-        	ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
+        	ServiceConfiguration serviceConfiguration = htp.serviceConfiguration();
         	if(isAuthorizedToEditService(admin,serviceConfiguration)){        	        		
         	  IWorker worker = getWorker(serviceConfiguration, name);
         	  if(worker != null){
@@ -443,7 +461,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         } catch (FinderException e) {
             try {
             	ServiceDataLocal htp = getServiceDataHome().findByName(oldname);
-            	if(isAuthorizedToEditService(admin,htp.getServiceConfiguration())){
+            	if(isAuthorizedToEditService(admin,htp.serviceConfiguration())){
                   htp.setName(newname);
                   success = true;
             	}else{
@@ -525,7 +543,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     	ServiceConfiguration returnval = null;
 
         try {
-        	returnval = (getServiceDataHome().findByName(name)).getServiceConfiguration();            
+        	returnval = (getServiceDataHome().findByName(name)).serviceConfiguration();            
         } catch (FinderException e) {
             // return null if we cant find it
         }
@@ -543,7 +561,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     	ServiceConfiguration returnval = null;
 
         try {            
-        	returnval = (getServiceDataHome().findByPrimaryKey(new Integer(id))).getServiceConfiguration();                      
+        	returnval = (getServiceDataHome().findByPrimaryKey(new Integer(id))).serviceConfiguration();                      
         } catch (FinderException e) {
             // return null if we cant find it
         }
@@ -609,7 +627,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     	debug(">activateServiceTimer(name: " + name + ")");
     	try {
     		ServiceDataLocal htp = getServiceDataHome().findByName(name);
-    		ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
+    		ServiceConfiguration serviceConfiguration = htp.serviceConfiguration();
     		if(isAuthorizedToEditService(admin,serviceConfiguration)){
     			IWorker worker = getWorker(serviceConfiguration, name);
     			if(worker != null){

@@ -312,7 +312,7 @@ public class StartServicesServlet extends HttpServlet {
         			serviceConfiguration.setHidden(true);
         			serviceConfiguration.setWorkerProperties(logProperties);
         			if (getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
-        				getServiceSession().changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        				getServiceSession().changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
         			} else {
         				getServiceSession().addService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
         			}
@@ -348,7 +348,7 @@ public class StartServicesServlet extends HttpServlet {
         			serviceConfiguration.setHidden(true);
         			serviceConfiguration.setWorkerProperties(logProperties);
         			if (getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
-        				getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        				getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
         			} else {
         				getServiceSession().addService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
         			}
