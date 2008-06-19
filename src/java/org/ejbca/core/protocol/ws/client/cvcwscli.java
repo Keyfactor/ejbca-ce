@@ -30,7 +30,7 @@ public class cvcwscli  {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: cvcrequest cvcprint");
+                    "Usage: cvcrequest cvcgetchain cvcprint");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

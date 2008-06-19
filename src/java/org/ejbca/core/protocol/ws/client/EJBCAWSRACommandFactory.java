@@ -63,6 +63,8 @@ public class EJBCAWSRACommandFactory {
             return new CreateCRLCommand(args);        
         } else if (args[0].equals("stress")) {
             return new StressTestCommand(args);
+        } else if (args[0].equals("cvcgetchain")) {
+            return new CvcGetChainCommand(args);
         } else if (args[0].equals("cvcrequest")) {
             return new CvcRequestCommand(args);
         } else if (args[0].equals("cvcprint")) {

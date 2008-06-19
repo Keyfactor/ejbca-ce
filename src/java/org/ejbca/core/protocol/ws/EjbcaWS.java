@@ -319,20 +319,34 @@ public class EjbcaWS implements IEjbcaWS {
 						log.debug("Found certificate for user with subjectDN: "+CertTools.getSubjectDN(lastcert)+" and serialNo: "+CertTools.getSerialNumberAsString(lastcert)); 
 						retval.add(new Certificate(lastcert));
 						// If we added a certificate, we will also append the CA certificate chain
-						// First get the CAid for the issuer of the users certificate
-						String issuerDN = CertTools.getIssuerDN(lastcert); 
-						int caid = issuerDN.hashCode();
-						Collection chaincerts = ejbhelper.getSignSession().getCertificateChain(admin, caid);
-						if (chaincerts != null) {
-							Iterator iter = chaincerts.iterator();
+						boolean selfSigned = false;
+						int bar = 0; // to control so we don't enter an infinite loop. Max chain length is 10
+						while ( (!selfSigned) && (bar < 10) ) {
+							bar++;
+							String issuerDN = CertTools.getIssuerDN(lastcert); 
+							Collection cacerts = ejbhelper.getCertStoreSession().findCertificatesBySubject(admin, issuerDN);
+							if ( (cacerts == null) || (cacerts.size() == 0) ) { 						
+								log.info("No certificate found for CA with subjectDN: "+issuerDN);
+								break;
+							}
+							Iterator iter = cacerts.iterator();
 							while (iter.hasNext()) {
 								java.security.cert.Certificate cert = (java.security.cert.Certificate)iter.next();
-								log.debug("Adding certificate chain cert with subjectDN: "+CertTools.getSubjectDN(cert)); 
-								retval.add(new Certificate(cert));
+								try {
+									lastcert.verify(cert.getPublicKey());
+									// this was the right certificate
+									retval.add(new Certificate(cert));
+									// To determine if we have found the last certificate or not
+									selfSigned = CertTools.isSelfSigned(cert);
+									// Find the next certificate in the chain now
+									lastcert = cert;
+									break; // Break of iteration over this CAs certs
+								} catch (Exception e) {
+									log.debug("Failed verification when looking for CA certificate, this was not the correct CA certificate. IssuerDN: "+issuerDN+", serno: "+CertTools.getSerialNumberAsString(cert));
+								}
 							}							
-						} else {
-							log.debug("No certificate chain found for CA with id: "+caid+" and subjectDN: "+issuerDN);
 						}
+						
 					} else {
 						log.debug("Found no certificate (in non null list??) for user "+username);
 					}
