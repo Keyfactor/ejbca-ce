@@ -194,6 +194,15 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   </source>
   </section>
   
+  <section name="Using HSMs">
+  <p>
+  The EU policy surely requires that you use an HSM to protect the CAs signature keys. 
+  Depending on the algorithms you choose you have different options and difficulties. Using PKCS#11 the Sun PKCS#11 provider only supports
+  RSA with PKCS1 padding (SHA256WithRSA), and not PSS (SHA256WIthRSAAndMGF1). If you want to use the PSS algorithms you need to use the IAIK PKCS#11 provider.
+  The the User's Guide for instructions how to use the IAIK PKCS#11 provider. 
+  </p>
+  </section>
+  
 </body>
 </document>
 

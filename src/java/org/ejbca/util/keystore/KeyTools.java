@@ -72,8 +72,8 @@ public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
 
     /** The name of Suns pkcs11 implementation */
-    public static final String PKCS11CLASS = "sun.security.pkcs11.SunPKCS11";
-    //public static final String PKCS11CLASS = "iaik.pkcs.pkcs11.provider.IAIKPkcs11";
+    public static final String SUNPKCS11CLASS = "sun.security.pkcs11.SunPKCS11";
+    public static final String IAIKPKCS11CLASS = "iaik.pkcs.pkcs11.provider.IAIKPkcs11";
         
     /**
      * Prevent from creating new KeyTools object
@@ -482,7 +482,8 @@ public class KeyTools {
         }
     } // createSubjectKeyId
 
-    /** Creates the SUN PKCS#11 provider using the passed in pkcs11 library.
+    /** Creates a SUN or IAIK PKCS#11 provider using the passed in pkcs11 library. First we try to see if the IAIK provider is available,
+     * because it supports more algorithms. If the IAIK provider is not available in the classpath, we try the SUN provider.
      * 
      * @param slot pkcs11 slot number or null if a config file name is provided as fileName
      * @param fileName the manufacturers provided pkcs11 library (.dll or .so) or config file name if slot is null 
@@ -514,6 +515,8 @@ public class KeyTools {
     	}
         if ( slot==null )
             return getP11Provider(new FileInputStream(fileName), null);
+        
+        // Properties for the SUN PKCS#11 provider
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter pw = new PrintWriter(baos);
     	pw.println("name = "+libFile.getName()+"-slot"+slot);
@@ -540,35 +543,54 @@ public class KeyTools {
     	if (log.isDebugEnabled()) {
     		log.debug(baos.toString());
     	}
+    	
+    	// Properties for the IAIK PKCS#11 provider
     	Properties prop = new Properties();
     	prop.setProperty("PKCS11_NATIVE_MODULE", libFile.getCanonicalPath());
-    	prop.setProperty("SLOT_ID", slot);    		
+    	// If using Slot Index it is denoted by brackets in iaik
+    	prop.setProperty("SLOT_ID", isIndex ? ("["+slot+"]") : slot);    
+    	if (log.isDebugEnabled()) {
+    		log.debug(prop.toString());
+    	}
         return getP11Provider(new ByteArrayInputStream(baos.toByteArray()), prop);
     }
+    /**
+     * 
+     * @param is for the SUN PKCS#11 provider
+     * @param prop for the IAIK PKCS#11 provider
+     * @return Java security Provider for a PCKS#11 token
+     * @throws IOException if neither the IAIK or the SUN provider can be created
+     */
     private static Provider getP11Provider(final InputStream is, Properties prop) throws IOException {
 
-        // We will construct the PKCS11 provider (sun.security...) using reflection, because 
-        // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
-        // The below code replaces the single line:
-        //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
-    	log.debug("Using PKCS11 provider: "+PKCS11CLASS);
+    	// We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because 
+    	// the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
+    	// The below code replaces the single line (for the SUN provider):
+    	//   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
+    	
+    	// We will first try to construct the more competent IAIK provider, if it exists in the classpath
+    	// if that does not exist, we will revert back to use the SUN provider
     	try {
-    		final Class implClass = Class.forName(PKCS11CLASS);
-    		Constructor construct = null;
-    		if (StringUtils.contains(PKCS11CLASS, "iaik")) {
-    			// iaik PKCS11 has Properties as constructor argument
-        		construct = implClass.getConstructor(Properties.class);    			
-        		return (Provider)construct.newInstance(new Object[] {prop});
-    		} else {
-    			// Sun PKCS11 has InputStream as constructor argument
-        		construct = implClass.getConstructor(InputStream.class);    			
-        		return (Provider)construct.newInstance(new Object[] {is});
-    		}
+    		final Class implClass = Class.forName(IAIKPKCS11CLASS);
+    		log.info("Using IAIK PKCS11 provider: "+IAIKPKCS11CLASS);
+    		// iaik PKCS11 has Properties as constructor argument
+    		Constructor construct = implClass.getConstructor(Properties.class);    			
+    		Provider prov = (Provider)construct.newInstance(new Object[] {prop});
+    		return prov;
     	} catch (Exception e) {
-    		log.error("Error constructing pkcs11 provider: "+e.getMessage());
-    		IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
-    		ioe.initCause(e);
-    		throw ioe;
+    		e.printStackTrace();
+    		try {
+    			// Sun PKCS11 has InputStream as constructor argument
+    			final Class implClass = Class.forName(SUNPKCS11CLASS);
+    			log.info("Using SUN PKCS11 provider: "+SUNPKCS11CLASS);
+    			Constructor construct = implClass.getConstructor(InputStream.class);    			
+    			return (Provider)construct.newInstance(new Object[] {is});
+    		} catch (Exception e2) {
+    			log.error("Error constructing pkcs11 provider: "+e2.getMessage());
+    			IOException ioe = new IOException("Error constructing pkcs11 provider: "+e2.getMessage());
+    			ioe.initCause(e2);
+    			throw ioe;
+    		}
     	} 
     }
 
