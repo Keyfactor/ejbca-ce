@@ -578,7 +578,6 @@ public class KeyTools {
     		Provider prov = (Provider)construct.newInstance(new Object[] {prop});
     		return prov;
     	} catch (Exception e) {
-    		e.printStackTrace();
     		try {
     			// Sun PKCS11 has InputStream as constructor argument
     			final Class implClass = Class.forName(SUNPKCS11CLASS);
