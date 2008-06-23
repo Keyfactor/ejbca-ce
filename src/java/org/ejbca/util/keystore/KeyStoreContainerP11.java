@@ -69,8 +69,6 @@ public class KeyStoreContainerP11 extends KeyStoreContainer {
 				final Class implClass = Class.forName(SUNTEXTCBHANDLERCLASS);
 				cbh = (CallbackHandler)implClass.newInstance();
 			} catch (Exception e) {
-				System.err.println("Error constructing pkcs11 text callback handler:");
-				e.printStackTrace();
 				IOException ioe = new IOException("Error constructing pkcs11 text callback handler: "+e.getMessage());
 				ioe.initCause(e);
 				throw ioe;
@@ -84,7 +82,8 @@ public class KeyStoreContainerP11 extends KeyStoreContainer {
 		return new KeyStoreContainerP11( keyStore, providerName, providerName );
 	}
 	public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-		this.keyStore.store(null, null);
+		char[] authCode = getPassPhraseLoadSave();
+		this.keyStore.store(null, authCode);
 		return new byte[0];
 	}
 	void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {

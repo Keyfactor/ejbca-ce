@@ -74,11 +74,37 @@ public abstract class KeyStoreContainer {
     protected final KeyStore keyStore;
     private final String providerName;
     private final String ecryptProviderName;
+	private char passPhraseLoadSave[] = null;
+
+    /**
+     * 
+     * @param keyStoreType
+     * @param providerClassName
+     * @param encryptProviderClassName
+     * @param storeID
+     * @param attributesFile
+     * @param pp KeyStore.ProtectionParameter if null a default (prompting) is used
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws KeyStoreException
+     * @throws NoSuchProviderException
+     * @throws IOException
+     * @throws IllegalArgumentException
+     * @throws SecurityException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     * @throws ClassNotFoundException
+     * @throws LoginException
+     */
     public static KeyStoreContainer getInstance(final String keyStoreType,
                                    final String providerClassName,
                                    final String encryptProviderClassName,
                                    final String storeID,
-                                   final String attributesFile) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
+                                   final String attributesFile,
+                                   KeyStore.ProtectionParameter pp) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
     	log.debug("keyStoreType "+keyStoreType+", providerClassName "+providerClassName+", encryptProviderClassName "+encryptProviderClassName+", storeID "+storeID);
         Security.addProvider( new BouncyCastleProvider() );
         if ( isP11(keyStoreType) ) {
@@ -94,7 +120,7 @@ public abstract class KeyStoreContainer {
             }
             return KeyStoreContainerP11.getInstance( slotID,
                                                providerClassName,
-                                               isIndex, attributesFile, null);
+                                               isIndex, attributesFile, pp);
         } else
             return KeyStoreContainerJCE.getInstance( keyStoreType,
                                                providerClassName,
@@ -121,6 +147,12 @@ public abstract class KeyStoreContainer {
     abstract public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException;
     abstract public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException;
     abstract public char[] getPassPhraseGetSetEntry();
+    public void setPassPhraseLoadSave(char[] passPhrase) {
+    	this.passPhraseLoadSave = passPhrase;
+    }
+    protected char[] getPassPhraseLoadSave() {
+    	return this.passPhraseLoadSave;
+    }
     void deleteAlias(String alias) throws KeyStoreException {
         this.keyStore.deleteEntry(alias);
     	String msg = intres.getLocalizedMessage("catoken.deletecert", alias);
@@ -167,25 +199,40 @@ public abstract class KeyStoreContainer {
     	log.debug(">generate: keySize "+keySize+", keyEntryName "+keyEntryName);
         final String keyAlgName = "RSA";
         final String sigAlgName = "SHA1withRSA";
-        final KeyPair keyPair = generate(this.providerName, keyAlgName, keySize);
-        X509Certificate[] chain = new X509Certificate[1];
-        chain[0] = getSelfCertificate("CN=some guy, L=around, C=US",
-                                      (long)30*24*60*60*365, sigAlgName, keyPair);
-        log.debug("Creating certificate with entry "+keyEntryName+'.');
-        setKeyEntry(keyEntryName, keyPair.getPrivate(), chain);
+        // We will make a loop to retry key generation here. Using the IAIK provider it seems to give
+        // CKR_OBJECT_HANDLE_INVALID about every second time we try to store keys
+        // But if we try again it succeeds
+        int bar = 0;
+        while (bar < 3) {
+        	bar ++;
+        	try {
+        		final KeyPair keyPair = generate(this.providerName, keyAlgName, keySize);
+        		X509Certificate[] chain = new X509Certificate[1];
+        		chain[0] = getSelfCertificate("CN=some guy, L=around, C=US",
+        				(long)30*24*60*60*365, sigAlgName, keyPair);
+        		log.debug("Creating certificate with entry "+keyEntryName+'.');
+        		setKeyEntry(keyEntryName, keyPair.getPrivate(), chain);
+        		break; // success no need to try more
+        	} catch (KeyStoreException e) {
+        		log.info("Failed to generate or store new key, will try 3 times. This was try: "+bar, e);
+        	}
+        }
     	log.debug("<generate: keySize "+keySize+", keyEntryName "+keyEntryName);
         return storeKeyStore();
     }
     
     /** Moves an entry in a keystore from an alias (fromID) to another (toID) 
+     * 
+     * @param pp KeyStore.ProtectionParameter if null a default (prompting) is used
      */
     public static void move(final String providerClassName,
                      final String encryptProviderClassName,
                      final String keyStoreType,
                      final String fromID,
-                     final String toID) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, UnrecoverableKeyException, LoginException {
-        KeyStoreContainer fromKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, fromID, null);
-        KeyStoreContainer toKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, toID, null);
+                     final String toID,
+                     KeyStore.ProtectionParameter pp) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, UnrecoverableKeyException, LoginException {
+        KeyStoreContainer fromKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, fromID, null, pp);
+        KeyStoreContainer toKS = getInstance(keyStoreType, providerClassName, encryptProviderClassName, toID, null, pp);
         Enumeration e = fromKS.getKeyStore().aliases();
         while( e.hasMoreElements() ) {
             String alias = (String) e.nextElement();

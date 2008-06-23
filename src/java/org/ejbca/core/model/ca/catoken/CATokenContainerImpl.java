@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
@@ -396,7 +395,18 @@ public class CATokenContainerImpl extends CATokenContainer {
 				if (log.isDebugEnabled()) {
 					log.debug("Generating new PKCS#11 "+alg+" key of size "+keysize+" with label "+keyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile "+attributesFile);
 				}
-				KeyStoreContainer cont = KeyStoreContainer.getInstance("PKCS11", sharedLibrary, null, slot, attributesFile);
+				char[] authCode = (authenticationCode!=null && authenticationCode.length()>0)? authenticationCode.toCharArray():null;
+				if (authCode == null) {
+					PKCS11CAToken p11 = (PKCS11CAToken)token;
+					String pin = BaseCAToken.getAutoActivatePin(getProperties());
+					if (pin == null) {
+						throw new CATokenAuthenticationFailedException("Generating new keys on PKCS#11 HSM requires either password as argument or autoActivation enabled.");
+					}
+					authCode = pin.toCharArray();
+				}
+	            final KeyStore.PasswordProtection pwp =new KeyStore.PasswordProtection(authCode);
+				KeyStoreContainer cont = KeyStoreContainer.getInstance("PKCS11", sharedLibrary, null, slot, attributesFile, pwp);
+				cont.setPassPhraseLoadSave(authCode);
 				cont.generate(keysize, keyLabel);
 				String msg = intres.getLocalizedMessage("catoken.generatedkeys", "PKCS#11");
 				log.info(msg);

@@ -46,9 +46,9 @@ public class PKCS11CAToken extends BaseCAToken {
     public PKCS11CAToken() throws InstantiationException {
         super();
         try {
-        	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.PKCS11CLASS);
+        	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
         } catch (Throwable t) {
-            throw new InstantiationException("Pkcs11 provider class "+KeyTools.PKCS11CLASS+" not found.");
+            throw new InstantiationException("Pkcs11 provider class "+KeyTools.SUNPKCS11CLASS+" not found.");
         }
     }
 

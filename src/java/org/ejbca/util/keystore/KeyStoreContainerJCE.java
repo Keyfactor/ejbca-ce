@@ -36,7 +36,6 @@ import org.ejbca.ui.cli.util.PasswordReader;
  */
 public class KeyStoreContainerJCE extends KeyStoreContainer {
 	private final PasswordReader passwordReader;
-	private char passPhraseLoadSave[] = null;
 	private char passPhraseGetSetEntry[] = null;
 	private KeyStoreContainerJCE( final KeyStore _keyStore,
 			final String _providerName,
@@ -87,10 +86,11 @@ public class KeyStoreContainerJCE extends KeyStoreContainer {
 	private void setPassWord(boolean isKeystoreException) throws IOException {
 		System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
 		final char result[] = passwordReader.readPassword();
-		if ( isKeystoreException )
+		if ( isKeystoreException ) {
 			this.passPhraseGetSetEntry = result;
-		else
-			this.passPhraseLoadSave = result;
+		} else {
+			setPassPhraseLoadSave(result);
+		}
 	}
 	protected void load(byte storeID[]) throws NoSuchAlgorithmException, CertificateException, IOException {
 		try {
@@ -101,7 +101,7 @@ public class KeyStoreContainerJCE extends KeyStoreContainer {
 		}
 	}
 	private void loadHelper(byte storeID[]) throws NoSuchAlgorithmException, CertificateException, IOException {
-		this.keyStore.load(storeID!=null ? new ByteArrayInputStream(storeID):null, this.passPhraseLoadSave);
+		this.keyStore.load(storeID!=null ? new ByteArrayInputStream(storeID):null, getPassPhraseLoadSave());
 	}
 	private static String getProviderName( String className ) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
 		Provider provider = (Provider)Class.forName(className).getConstructor(new Class[0]).newInstance(new Object[0]);
@@ -111,13 +111,10 @@ public class KeyStoreContainerJCE extends KeyStoreContainer {
 	public char[] getPassPhraseGetSetEntry() {
 		return passPhraseGetSetEntry;
 	}
-	public char[] getPassPhraseLoadSave() {
-		return passPhraseLoadSave;
-	}
 	public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		System.err.println("Next line will contain the identity identifying the keystore:");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		this.keyStore.store(baos, this.passPhraseLoadSave);
+		this.keyStore.store(baos, getPassPhraseLoadSave());
 		System.out.print(new String(baos.toByteArray()));
 		System.out.flush();
 		System.err.println();

@@ -123,7 +123,6 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
-import org.jfree.chart.ChartUtilities;
 
 
 /**
@@ -1244,14 +1243,18 @@ public class CertTools {
      * @throws InvalidKeyException DOCUMENT ME!
      * @throws IllegalStateException 
      * @throws CertificateEncodingException 
+     * @throws NoSuchProviderException 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId,
-        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA) 
-    	throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException {
-    	
+            PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA) 
+        	throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException, NoSuchProviderException {
+    	return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, "BC");
+    }
+    public static X509Certificate genSelfCert(String dn, long validity, String policyId,
+        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA, String provider) 
+    	throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException, NoSuchProviderException {
         int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-    	return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage);
-    	
+    	return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, provider);
     } //genselfCert
 
     /**
@@ -1273,10 +1276,16 @@ public class CertTools {
      * @throws InvalidKeyException DOCUMENT ME!
      * @throws IllegalStateException 
      * @throws CertificateEncodingException 
+     * @throws NoSuchProviderException 
      */
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId,
-        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA, int keyusage)
-        throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException {
+    		PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA, int keyusage)
+    throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException, NoSuchProviderException {
+    	return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, "BC");
+    }
+    public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId,
+        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA, int keyusage, String provider)
+        throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException, NoSuchProviderException {
         // Create self signed certificate
         Date firstDate = new Date();
 
@@ -1354,7 +1363,7 @@ public class CertTools {
                 certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, seq);
         }
 
-        X509Certificate selfcert = certgen.generate(privKey);
+        X509Certificate selfcert = certgen.generate(privKey, provider);
 
         return selfcert;
     } //genselfCertForPurpose
