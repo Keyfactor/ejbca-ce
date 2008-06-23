@@ -4,13 +4,15 @@
 # the design document at https://jira.primekey.se/browse/ECA-633
 #
 # Enable log protection by
-#  1. Make sure this device is enabled in conf/log.properties
-#  2. Configure the protection token you want to use in this file (CAName or
+#  1. Make sure EJBCA is using a database or database engine that supports
+#     transactions (like MySQL's InnoDB)
+#  2. Make sure this device is enabled in conf/log.properties
+#  3. Configure the protection token you want to use in this file (CAName or
 #     URI)
-#  3. Run "ant clean" and "ant deploy" to deploy EJBCA with this new
+#  4. Run "ant clean" and "ant deploy" to deploy EJBCA with this new
 #     configuration.
-#  4. Start EJBCA
-#  5. Run the ejbca CLI, "bin/ejbca.sh log accept all" or
+#  5. Start EJBCA
+#  6. Run the ejbca CLI, "bin/ejbca.sh log accept all" or
 #     "bin\ejbca.cmd log accept all"
 #
 
