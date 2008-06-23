@@ -95,6 +95,7 @@ public class CvcGetChainCommand extends EJBCAWSRABaseCommand implements IAdminCo
 
 	protected void usage() {
 		getPrintStream().println("Command used to get the certificate chain for a user. The users last issued certificate is returned, according to the certificate validity date. If two certificates have the exact same issue date the order is indefined.");
+		getPrintStream().println("Usage : cvcgetchain <username> <basefilename>\n");
 		getPrintStream().println("The certificates are written to <basefilename><order>.cvcert. Order nr 1 is the users certificate, followed by the CAs certificates.");
 	}
 
