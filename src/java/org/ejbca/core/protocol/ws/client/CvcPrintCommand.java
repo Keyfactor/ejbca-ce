@@ -91,7 +91,7 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		try {
 			byte[] cvcdata = FileTools.readFiletoBuffer(filename);				
 			ret = CertificateParser.parseCVCObject(cvcdata);
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			try {
 				// this was not parseable, try to see it it was a PEM certificate
 				Collection col = CertTools.getCertsFromPEM(filename);
