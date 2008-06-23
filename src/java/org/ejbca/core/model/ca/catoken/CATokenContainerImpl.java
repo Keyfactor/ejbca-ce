@@ -397,7 +397,6 @@ public class CATokenContainerImpl extends CATokenContainer {
 				}
 				char[] authCode = (authenticationCode!=null && authenticationCode.length()>0)? authenticationCode.toCharArray():null;
 				if (authCode == null) {
-					PKCS11CAToken p11 = (PKCS11CAToken)token;
 					String pin = BaseCAToken.getAutoActivatePin(getProperties());
 					if (pin == null) {
 						throw new CATokenAuthenticationFailedException("Generating new keys on PKCS#11 HSM requires either password as argument or autoActivation enabled.");
@@ -405,14 +404,12 @@ public class CATokenContainerImpl extends CATokenContainer {
 					authCode = pin.toCharArray();
 				}
 	            final KeyStore.PasswordProtection pwp =new KeyStore.PasswordProtection(authCode);
-				KeyStoreContainer cont = KeyStoreContainer.getInstance("PKCS11", sharedLibrary, null, slot, attributesFile, pwp);
+	            
+				KeyStoreContainer cont = KeyStoreContainer.getInstance("PKCS11", token.getProvider(), pwp);
 				cont.setPassPhraseLoadSave(authCode);
 				cont.generate(keysize, keyLabel);
 				String msg = intres.getLocalizedMessage("catoken.generatedkeys", "PKCS#11");
 				log.info(msg);
-				// Re-activate token to re-read session
-				token.deactivate();
-				token.activate(authenticationCode);
 			}
 		} else {
 			String msg = intres.getLocalizedMessage("catoken.genkeysnotavail");
@@ -540,7 +537,11 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 *  Returns the Sequence, that is a sequence that is updated when keys are re-generated 
 	 */    
 	private String getSequence(){
-		return (String) data.get(SEQUENCE);
+		Object seq = data.get(SEQUENCE);
+		if (seq == null) {
+			seq = new String("00000");
+		}
+		return (String)seq;
 	}
 
 	/**

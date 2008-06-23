@@ -92,4 +92,8 @@ public class CACacheManager {
             log.debug("Removed old CA from registry: "+caid);
         }
     }
+    
+    public synchronized void removeAll() {
+		caRegistry = new Hashtable();
+	}
 }

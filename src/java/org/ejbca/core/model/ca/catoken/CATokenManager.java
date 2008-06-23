@@ -97,7 +97,12 @@ public class CATokenManager {
             log.debug("Added CA token for CA: "+caid);
         }
     }
-    
+
+    /** Remove all CA tokens
+     */
+    public synchronized void removeAll() {
+    	caTokenRegistry = new Hashtable();
+	}
     
 	/**
 	 * Method registering a HardCAToken plug-in as available to the system.

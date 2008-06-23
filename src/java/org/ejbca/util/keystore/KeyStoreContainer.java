@@ -121,12 +121,21 @@ public abstract class KeyStoreContainer {
             return KeyStoreContainerP11.getInstance( slotID,
                                                providerClassName,
                                                isIndex, attributesFile, pp);
-        } else
+        } else {
             return KeyStoreContainerJCE.getInstance( keyStoreType,
                                                providerClassName,
                                                encryptProviderClassName,
                                                storeID!=null ? storeID.getBytes():null);
+        }
     }
+    public static KeyStoreContainer getInstance(final String keyStoreType, final String providerName, KeyStore.ProtectionParameter pp) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, LoginException, IOException {
+    	if ( isP11(keyStoreType) ) {
+    		return KeyStoreContainerP11.getInstance(providerName, pp);
+    	} else {
+    		throw new IllegalArgumentException("This getInstance only available for PKCS#11 providers.");
+    	}
+    }
+
     public static boolean isP11(String keyStoreType) {
         return keyStoreType.toLowerCase().indexOf("pkcs11") >= 0;
     }

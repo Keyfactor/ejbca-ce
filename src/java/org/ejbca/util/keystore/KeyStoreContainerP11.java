@@ -28,11 +28,15 @@ import java.security.cert.CertificateException;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 
+import org.apache.log4j.Logger;
+
 /** A keystore container for PCKS#11 keystores i.e. the java PKCS#11 wrapper
  * 
  * @version $Id$
  */
 public class KeyStoreContainerP11 extends KeyStoreContainer {
+    private static final Logger log = Logger.getLogger(KeyStoreContainerP11.class);
+    
     /** The name of Suns textcallbackhandler (for pkcs11) implementation */
     private static final String SUNTEXTCBHANDLERCLASS = "com.sun.security.auth.callback.TextCallbackHandler";
 
@@ -56,8 +60,16 @@ public class KeyStoreContainerP11 extends KeyStoreContainer {
 			final KeyStore.ProtectionParameter protectionParameter) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
 		Provider provider = KeyTools.getP11Provider(slot, libName, isIx, attributesFile);
 		final String providerName = provider.getName();
+		log.debug("Adding provider with name: "+providerName);
 		Security.addProvider(provider);
-
+		
+		return getInstance(providerName, protectionParameter);
+	}
+	/** Use KeyStoreContainer.getInstance to get an instance of this class
+	 * @see KeyStoreContainer#getInstance(String, String, String, String)
+	 */
+	static KeyStoreContainer getInstance(final String providerName,
+			final KeyStore.ProtectionParameter protectionParameter) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
 		// Make a default password callback handler, if we don't specify one on the command line
 		KeyStore.ProtectionParameter pp = protectionParameter;
 		if (pp == null) {
@@ -77,10 +89,12 @@ public class KeyStoreContainerP11 extends KeyStoreContainer {
 			//final CallbackHandler cbh = new TextCallbackHandler();        	
 			pp = new CallbackHandlerProtection(cbh);        	
 		}
+		Provider provider = Security.getProvider(providerName);
 		KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider, pp);
 		final KeyStore keyStore = builder.getKeyStore();
 		return new KeyStoreContainerP11( keyStore, providerName, providerName );
 	}
+	
 	public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		char[] authCode = getPassPhraseLoadSave();
 		this.keyStore.store(null, authCode);

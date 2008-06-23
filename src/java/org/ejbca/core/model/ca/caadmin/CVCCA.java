@@ -379,7 +379,7 @@ public class CVCCA extends CA implements Serializable {
 	 */
 	public boolean upgradeExtendedCAServices() {
 		// Nothing to upgrade yet
-		return true;
+		return false;
 	}
 
 

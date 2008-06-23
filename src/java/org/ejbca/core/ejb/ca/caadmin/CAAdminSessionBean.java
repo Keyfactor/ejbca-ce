@@ -1308,9 +1308,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		boolean renew = true;
                 keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
         		caToken.generateKeys(keystorepass, renew);
+        		// We need to save all this
     			ca.setCAToken(caToken);
+    			cadata.setCA(ca);
+    			// After this we need to reload all CAs? really make sure that we do that
+    			// This is because IAIK PKCS#11 provider cuts ALL PKCS#11 sessions when I generate new keys for one CA
+    			CACacheManager.instance().removeAll();
+    			CATokenManager.instance().removeAll();
+        		cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
+        		ca = cadata.getCA();
     			// In order to generate a certificate with this keystore we must make sure it is activated
-    			ca.getCAToken().activate(keystorepass);
+    			caToken = ca.getCAToken();
+    			caToken.activate(keystorepass);
     		}
     		
     		try{
