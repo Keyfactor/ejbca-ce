@@ -88,6 +88,7 @@ can be used together with PKI to even further improve your PKI experience.
     </ul>
     <p>
     </p>
+    
 <subsection name="GemSAFE Toolbox">
     <p>
     GemSAFE toolbox and tokens are developed by Gemalto. Using this product an
@@ -116,6 +117,23 @@ can be used together with PKI to even further improve your PKI experience.
     There is a howto for using GemSAFE with EJBCA in the <a href="howto.html">Howto</a> section.
     </p>
 </subsection>
+
+<subsection name="AET SafeSign IC bundle">
+<p>
+A.E.T. Europe B.V. (AET) is a leading global supplier of strong authentication solutions. 
+Our SafeSign Identity Client (IC) is the leading smart card/USB Token middleware available today. 
+It is used by millions of people to securely store their digital certificate on smart cards and USB tokens and 
+gain access to all kinds of applications and systems, like the Industrial Commercial bank of China (ICBC) and the Dutch UZIpas.
+</p><p>
+SafeSign IC provides strong authentication, smart card logon, encryption and digital signatures on Windows, 
+Linux and MAC. Combined with the CCID compatible steel Marx CrypToken USB token it is a perfect solution to use 
+with an EJBCA PKI infrastructure. AET likes to offer EJBCA users the opportunity to evaluate and use the 
+SafeSign IC software in combination with a steel, CCID compatible USB token for a special price!
+<br/>
+See <a href="http://www.aeteurope.nl/aet/aet-europe/_www/en/pub/news/aet_promotions/ejbca_promotion.cfm">AET EJBCA promotion</a> for more information.
+</p>
+</subsection>
+
 </section>
 
   </body>
