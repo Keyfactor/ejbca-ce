@@ -38,6 +38,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TCPTool;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 import com.novell.ldap.LDAPAttribute;
@@ -61,7 +62,7 @@ public class LdapPublisher extends BasePublisher {
 
 	private static byte[] fakecrl = null;
 
-	public static final float LATEST_VERSION = 8;
+	public static final float LATEST_VERSION = 9;
 
 	public static final int TYPE_LDAPPUBLISHER = 2;
 
@@ -81,16 +82,18 @@ public class LdapPublisher extends BasePublisher {
 	public static final String DEFAULT_ARLATTRIBUTE        = "authorityRevocationList;binary";
 	public static final String DEFAULT_PORT                = "389";
 	public static final String DEFAULT_SSLPORT             = "636";
+	public static final String DEFAULT_TIMEOUT             = "5000";
 
 
 	// Default Values
 
-	protected static final String HOSTNAME                 = "hostname";
+	protected static final String HOSTNAMES                 = "hostname";
 	protected static final String USESSL                   = "usessl";
 	protected static final String PORT                     = "port";
 	protected static final String BASEDN                   = "baswdn";
 	protected static final String LOGINDN                  = "logindn";
 	protected static final String LOGINPASSWORD            = "loginpassword";
+	protected static final String TIMEOUT            = "timeout";
 	protected static final String CREATENONEXISTING        = "createnonexisting";
 	protected static final String MODIFYEXISTING           = "modifyexisting"; 
 	protected static final String ADDNONEXISTINGATTR       = "addnonexistingattr"; 
@@ -115,12 +118,13 @@ public class LdapPublisher extends BasePublisher {
 		super();
 		data.put(TYPE, new Integer(TYPE_LDAPPUBLISHER));
 
-		setHostname("");
+		setHostnames("");
 		setUseSSL(true);
 		setPort(DEFAULT_SSLPORT);
 		setBaseDN("");
 		setLoginDN("");
 		setLoginPassword("");
+		setTimeOut(getTimeOut());
 		setCreateNonExistingUsers(true);
 		setModifyExistingUsers(true);     
 		setModifyExistingAttributes(false);
@@ -191,7 +195,7 @@ public class LdapPublisher extends BasePublisher {
 		String objectclass = null;
 
 		if (type == CertificateDataBean.CERTTYPE_ENDENTITY) {
-			log.debug("Publishing end user certificate to " + getHostname());
+			log.debug("Publishing end user certificate to first available server of " + getHostnames());
 
 			if (oldEntry != null) {
 				// TODO: Are we the correct type objectclass?
@@ -233,7 +237,7 @@ public class LdapPublisher extends BasePublisher {
 				throw new PublisherException(msg);                
 			}
 		} else if ((type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
-			log.debug("Publishing CA certificate to " + getHostname());
+			log.debug("Publishing CA certificate to first available server of " + getHostnames());
 
 			if (oldEntry != null) {
 				modSet = getModificationSet(oldEntry, certdn, false, false);
@@ -268,61 +272,74 @@ public class LdapPublisher extends BasePublisher {
 		}
 
 		// PART 3: MODIFICATION AND ADDITION OF NEW USERS
-		try {
-			lc.connect(getHostname(), Integer.parseInt(getPort()));
-			// authenticate to the server
-			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
-			// Add or modify the entry
-			if (oldEntry != null && getModifyExistingUsers()) {
-				LDAPModification[] mods = new LDAPModification[modSet.size()]; 
-				mods = (LDAPModification[])modSet.toArray(mods);
-				String oldDn = oldEntry.getDN();
-				log.debug("Writing modification to DN: "+oldDn);
-				lc.modify(oldDn, mods);
-				String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
-				log.info(msg);  
-			} else {
-				if(this.getCreateNonExistingUsers()){     
-					if (oldEntry == null) {           
-						// Check if the intermediate parent node is present, and if it is not
-						// we can create it, of allowed to do so by the publisher configuration
-						if(getCreateIntermediateNodes()) {
-							final String parentDN = dn.substring(dn.indexOf(',') + 1);
-							try {
-								lc.read(parentDN);
-							} catch(LDAPException e) {
-								if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-									this.createIntermediateNodes(lc, dn);
-									String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", parentDN);
-									log.info(msg);
+		// Try all the listed servers
+		Iterator servers = getHostnameList().iterator();
+		boolean connectionFailed;
+		do {
+			connectionFailed = false;
+			String currentServer = (String) servers.next();
+			try {
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				lc.connect(currentServer, Integer.parseInt(getPort()));
+				// authenticate to the server
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
+				// Add or modify the entry
+				if (oldEntry != null && getModifyExistingUsers()) {
+					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
+					mods = (LDAPModification[])modSet.toArray(mods);
+					String oldDn = oldEntry.getDN();
+					log.debug("Writing modification to DN: "+oldDn);
+					lc.modify(oldDn, mods);
+					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
+					log.info(msg);  
+				} else {
+					if(this.getCreateNonExistingUsers()){     
+						if (oldEntry == null) {           
+							// Check if the intermediate parent node is present, and if it is not
+							// we can create it, of allowed to do so by the publisher configuration
+							if(getCreateIntermediateNodes()) {
+								final String parentDN = dn.substring(dn.indexOf(',') + 1);
+								try {
+									lc.read(parentDN);
+								} catch(LDAPException e) {
+									if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+										this.createIntermediateNodes(lc, dn);
+										String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", parentDN);
+										log.info(msg);
+									}
 								}
 							}
+							newEntry = new LDAPEntry(dn, attributeSet);
+							log.debug("Adding DN: "+dn);
+							lc.add(newEntry);
+							String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
+							log.info(msg);
 						}
-						newEntry = new LDAPEntry(dn, attributeSet);
-						log.debug("Adding DN: "+dn);
-						lc.add(newEntry);
-						String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
-						log.info(msg);
-					}
-				}  
-			}
-		} catch (LDAPException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn);
-			log.error(msg, e);  
-			throw new PublisherException(msg);            
-		} catch (UnsupportedEncodingException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-			log.error(msg, e);
-			throw new PublisherException(msg);            
-		} finally {
-			// disconnect with the server
-			try {
-				lc.disconnect();
+					}  
+				}
 			} catch (LDAPException e) {
-				String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
+				connectionFailed = true;
+				if (servers.hasNext()) {
+					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
+				} else {
+					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn);
+					log.error(msg, e);  
+					throw new PublisherException(msg);            
+				}
+			} catch (UnsupportedEncodingException e) {
+				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
 				log.error(msg, e);
+				throw new PublisherException(msg);            
+			} finally {
+				// disconnect with the server
+				try {
+					lc.disconnect();
+				} catch (LDAPException e) {
+					String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
+					log.error(msg, e);
+				}
 			}
-		}
+		} while (connectionFailed && servers.hasNext()) ;
 		log.debug("<storeCertificate()");
 		return true;
 
@@ -454,40 +471,53 @@ public class LdapPublisher extends BasePublisher {
 		if (oldEntry == null) {
 			newEntry = new LDAPEntry(dn, attributeSet);
 		}
-		try {
-			// connect to the server
-			lc.connect(getHostname(), Integer.parseInt(getPort()));
-			// authenticate to the server
-			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-			// Add or modify the entry
-			if (oldEntry != null) {
-				LDAPModification[] mods = new LDAPModification[modSet.size()]; 
-				mods = (LDAPModification[])modSet.toArray(mods);
-				lc.modify(dn, mods);
-				String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CRL", dn);
-				log.info(msg);  
-			} else {
-				lc.add(newEntry);
-				String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", dn);
-				log.info(msg);  
-			}
-		} catch (LDAPException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn);
-			log.error(msg, e);
-			throw new PublisherException(msg);                        
-		} catch (UnsupportedEncodingException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-			log.error(msg, e);
-			throw new PublisherException(msg);            
-		} finally {
-			// disconnect with the server
+		// Try all the listed servers
+		Iterator servers = getHostnameList().iterator();
+		boolean connectionFailed;
+		do {
+			connectionFailed = false;
+			String currentServer = (String) servers.next();
 			try {
-				lc.disconnect();
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				// connect to the server
+				lc.connect(currentServer, Integer.parseInt(getPort()));
+				// authenticate to the server
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+				// Add or modify the entry
+				if (oldEntry != null) {
+					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
+					mods = (LDAPModification[])modSet.toArray(mods);
+					lc.modify(dn, mods);
+					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CRL", dn);
+					log.info(msg);  
+				} else {
+					lc.add(newEntry);
+					String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", dn);
+					log.info(msg);  
+				}
 			} catch (LDAPException e) {
-				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				connectionFailed = true;
+				if (servers.hasNext()) {
+					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
+				} else {
+					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn);
+					log.error(msg, e);  
+					throw new PublisherException(msg);            
+				}
+			} catch (UnsupportedEncodingException e) {
+				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
 				log.error(msg, e);
+				throw new PublisherException(msg);            
+			} finally {
+				// disconnect with the server
+				try {
+					lc.disconnect();
+				} catch (LDAPException e) {
+					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+					log.error(msg, e);
+				}
 			}
-		}
+		} while (connectionFailed && servers.hasNext()) ;
 		return true;
 	}
 
@@ -530,7 +560,7 @@ public class LdapPublisher extends BasePublisher {
 		ArrayList modSet = new ArrayList();
 
 		if (((X509Certificate) cert).getBasicConstraints() == -1) {
-			log.debug("Removing end user certificate from " + getHostname());
+			log.debug("Removing end user certificate from first available server of " + getHostnames());
 
 			if (oldEntry != null) {          
 				if (removecert) {
@@ -551,7 +581,7 @@ public class LdapPublisher extends BasePublisher {
 				throw new PublisherException(msg);            
 			}
 		} else  {
-			log.debug("Not removing CA certificate from " + getHostname() + "Because of object class restrictions.");
+			log.debug("Not removing CA certificate from first available server of " + getHostnames() + ", because of object class restrictions.");
 			// Currently removal of CA certificate isn't support because of object class restictions
 			/*
             if (oldEntry != null) {
@@ -563,41 +593,53 @@ public class LdapPublisher extends BasePublisher {
             }*/
 		}
 
-		try {
-
-			lc.connect(getHostname(), Integer.parseInt(getPort()));
-			// authenticate to the server
-			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
-			// Add or modify the entry
-			if (oldEntry != null && modSet != null && getModifyExistingUsers()) {
-				if (removecert) {
-					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
-					mods = (LDAPModification[])modSet.toArray(mods);
-					lc.modify(oldEntry.getDN(), mods);            		
-				}
-				if (removeuser) {
-					lc.delete(oldEntry.getDN());            		
-				}
-				String msg = intres.getLocalizedMessage("publisher.ldapremove", dn);
-				log.info(msg);  
-			}               
-		} catch (LDAPException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapremove", dn);
-			log.error(msg, e);  
-			throw new PublisherException(msg);            
-		} catch (UnsupportedEncodingException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-			log.error(msg, e);
-			throw new PublisherException(msg);            
-		} finally {
-			// disconnect with the server
+		// Try all the listed servers
+		Iterator servers = getHostnameList().iterator();
+		boolean connectionFailed;
+		do {
+			connectionFailed = false;
+			String currentServer =(String) servers.next(); 
 			try {
-				lc.disconnect();
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				lc.connect(currentServer, Integer.parseInt(getPort()));
+				// authenticate to the server
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
+				// Add or modify the entry
+				if (oldEntry != null && modSet != null && getModifyExistingUsers()) {
+					if (removecert) {
+						LDAPModification[] mods = new LDAPModification[modSet.size()]; 
+						mods = (LDAPModification[])modSet.toArray(mods);
+						lc.modify(oldEntry.getDN(), mods);            		
+					}
+					if (removeuser) {
+						lc.delete(oldEntry.getDN());            		
+					}
+					String msg = intres.getLocalizedMessage("publisher.ldapremove", dn);
+					log.info(msg);  
+				}               
 			} catch (LDAPException e) {
-				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				connectionFailed = true;
+				if (servers.hasNext()) {
+					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
+				} else {
+					String msg = intres.getLocalizedMessage("publisher.errorldapremove", dn);
+					log.error(msg, e);  
+					throw new PublisherException(msg);            
+				}
+			} catch (UnsupportedEncodingException e) {
+				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
 				log.error(msg, e);
+				throw new PublisherException(msg);            
+			} finally {
+				// disconnect with the server
+				try {
+					lc.disconnect();
+				} catch (LDAPException e) {
+					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+					log.error(msg, e);
+				}
 			}
-		}
+		} while (connectionFailed && servers.hasNext()) ;
 		log.debug("<revokeCertificate()");
 	}
 
@@ -606,33 +648,46 @@ public class LdapPublisher extends BasePublisher {
 	 */
 	protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
 		LDAPEntry oldEntry = null; // return value
-		try {
-			// connect to the server
-			lc.connect(getHostname(), Integer.parseInt(getPort()));
-			// authenticate to the server
-			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-			// try to read the old object
-			oldEntry = lc.read(dn);
-		} catch (LDAPException e) {
-			if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-				log.debug("No old entry exist for '" + dn + "'.");
-			} else {
-				String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
-				log.error(msg, e);
-				throw new PublisherException(msg);                                
-			}
-		} catch (UnsupportedEncodingException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-			throw new PublisherException(msg);            
-		} finally {
-			// disconnect with the server
+		// Try all the listed servers
+		Iterator servers = getHostnameList().iterator();
+		boolean connectionFailed;
+		do {
+			connectionFailed = false;
+			String currentServer = (String) servers.next();
 			try {
-				lc.disconnect();
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				// connect to the server
+				lc.connect(currentServer, Integer.parseInt(getPort()));
+				// authenticate to the server
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+				// try to read the old object
+				oldEntry = lc.read(dn);
 			} catch (LDAPException e) {
-				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
-				log.error(msg, e);
+				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+					log.debug("No old entry exist for '" + dn + "'.");
+				} else {
+					connectionFailed = true;
+					if (servers.hasNext()) {
+						log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
+					} else {
+						String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
+						log.error(msg, e);
+						throw new PublisherException(msg);                                
+					}
+				}
+			} catch (UnsupportedEncodingException e) {
+				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+				throw new PublisherException(msg);            
+			} finally {
+				// disconnect with the server
+				try {
+					lc.disconnect();
+				} catch (LDAPException e) {
+					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+					log.error(msg, e);
+				}
 			}
-		}
+		} while (connectionFailed && servers.hasNext()) ;
 		return oldEntry;
 	}
 
@@ -641,43 +696,56 @@ public class LdapPublisher extends BasePublisher {
 	 */    
 	public void testConnection(Admin admin) throws PublisherConnectionException {
 		int ldapVersion = LDAPConnection.LDAP_V3;
-		LDAPConnection lc = null;
+		LDAPConnection lc = createLdapConnection();
+		/*
 		if(getUseSSL()){
 			lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
 		}else{
 			lc = new LDAPConnection();        
-		}
-
-		LDAPEntry entry = null;
-		try {
-			// connect to the server
-			lc.connect(getHostname(), Integer.parseInt(getPort()));
-			// authenticate to the server
-			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-			// try to read the old object
-			entry = lc.read(getBaseDN());			
-			log.debug("Entry" + entry.toString());
-			if(entry == null) {
-				String msg = intres.getLocalizedMessage("publisher.errornobinddn");
-				throw new PublisherConnectionException(msg);
-			}
-		} catch (LDAPException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
-			log.error(msg, e);
-			throw new PublisherConnectionException(msg);                            
-		} catch (UnsupportedEncodingException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-			log.error(msg, e);
-			throw new PublisherConnectionException(msg);            
-		} finally {
-			// disconnect with the server
+		}*/
+		// Try all the listed servers
+		Iterator servers = getHostnameList().iterator();
+		boolean connectionFailed;
+		do {
+			connectionFailed = false;
+			String currentServer = (String) servers.next();
+			LDAPEntry entry = null;
 			try {
-				lc.disconnect();
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				// connect to the server
+				lc.connect(currentServer, Integer.parseInt(getPort()));
+				// authenticate to the server
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+				// try to read the old object
+				entry = lc.read(getBaseDN());			
+				log.debug("Entry" + entry.toString());
+				if(entry == null) {
+					String msg = intres.getLocalizedMessage("publisher.errornobinddn");
+					throw new PublisherConnectionException(msg);
+				}
 			} catch (LDAPException e) {
-				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				connectionFailed = true;
+				if (servers.hasNext()) {
+					log.warn("Failed to connect to " + currentServer + ". Trying next in list.", e);
+				} else {
+					String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
+					log.error(msg, e);
+					throw new PublisherConnectionException(msg);                            
+				}
+			} catch (UnsupportedEncodingException e) {
+				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
 				log.error(msg, e);
+				throw new PublisherConnectionException(msg);            
+			} finally {
+				// disconnect with the server
+				try {
+					lc.disconnect();
+				} catch (LDAPException e) {
+					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+					log.error(msg, e);
+				}
 			}
-		}
+		} while (connectionFailed && servers.hasNext()) ;
 	} 
 
 	protected LDAPConnection createLdapConnection() {
@@ -691,17 +759,29 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	/**
-	 *  Returns the hostname of ldap server.
+	 *  Returns the hostnames of ldap server.
 	 */    
-	public String getHostname (){
-		return (String) data.get(HOSTNAME);
+	public ArrayList getHostnameList(){
+		ArrayList ret = new ArrayList();	// <String>
+		String[] hostnames = getHostnames().split(";");
+		for (int i=0; i<hostnames.length; i++) {
+			ret.add(hostnames[i]);
+		}
+		return ret;
+	}
+
+	/**
+	 *  Returns the hostnames of ldap server.
+	 */    
+	public String getHostnames(){
+		return (String) data.get(HOSTNAMES);
 	}
 
 	/**
 	 *  Sets the hostname of ldap server.
 	 */        
-	public void setHostname (String hostname){
-		data.put(HOSTNAME, hostname);	
+	public void setHostnames(String hostnames){
+		data.put(HOSTNAMES, hostnames);	
 	}
 
 	/**
@@ -1009,6 +1089,20 @@ public class LdapPublisher extends BasePublisher {
 			createnodes = ((Boolean)data.get(CREATEINTERMEDIATENODES)).booleanValue();
 		}
 		return createnodes;
+	}
+
+	/** Return timout in milliseconds */
+	public int getTimeOut() {
+		int timeout = Integer.parseInt(DEFAULT_TIMEOUT);
+		if ( data.get(TIMEOUT) != null ) {
+			timeout = Integer.parseInt((String) data.get(TIMEOUT));
+		}
+		return timeout;
+	}
+	
+	/** Set timout in milliseconds */
+	public void setTimeOut(int timeout) {
+		data.put(TIMEOUT, Integer.toString(timeout));  
 	}
 
 	// Private methods   
@@ -1357,6 +1451,9 @@ public class LdapPublisher extends BasePublisher {
 			if(data.get(ADDNONEXISTINGATTR) == null) {
 				setModifyExistingAttributes(false); // v8
 				setAddNonExistingAttributes(true);
+			}
+			if (getVersion() < 9) {
+				setTimeOut(getTimeOut());	// v9
 			}
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}

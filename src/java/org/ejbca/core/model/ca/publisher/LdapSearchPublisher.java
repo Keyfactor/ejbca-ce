@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TCPTool;
 
 import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPEntry;
@@ -48,110 +49,123 @@ public class LdapSearchPublisher extends LdapPublisher {
     protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
         LDAPEntry oldEntry = null; // return value
 
-        // PARTE 1: Search for an existing entry in the LDAP directory
-		//  If it exists, s�lo se a�adir� al DN la parte del certificado (PARTE 2)
-		//  if not exist, se a�adir� toda una entrada LDAP nueva (PARTE 2)
-		try {
-			// connect to the server
-			log.debug("Connecting to " + getHostname());
-			lc.connect(getHostname(), Integer.parseInt(getPort()));
-			// authenticate to the server
-			log.debug("Logging in with BIND DN " + getLoginDN());
-			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-			// Filtro est�tico:
-			//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
-			String searchFilter = getSearchFilter();
-			if (log.isDebugEnabled()) {
-				log.debug("Compiling search filter: " +searchFilter+", from dn: "+dn);
-			}
-			if (username != null) {
-				Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
-				searchFilter = USER.matcher(searchFilter).replaceAll(username);
-			}
-			if (email != null) {
-				Pattern EMAIL = Pattern.compile("\\$EMAIL", Pattern.CASE_INSENSITIVE);
-				searchFilter = EMAIL.matcher(searchFilter).replaceAll(email);
-			}
-			if (CertTools.getPartFromDN(dn, "CN") != null) {
-				Pattern CN = Pattern.compile("\\$CN", Pattern.CASE_INSENSITIVE);
-				searchFilter = CN.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "CN"));
-			}
-			if (CertTools.getPartFromDN(dn, "O") != null) {
-				Pattern O = Pattern.compile("\\$O", Pattern.CASE_INSENSITIVE);
-				searchFilter = O.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "O"));
-			}
-			if (CertTools.getPartFromDN(dn, "OU") != null) {
-				Pattern OU = Pattern.compile("\\$OU", Pattern.CASE_INSENSITIVE);
-				searchFilter = OU.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "OU"));
-			}
-			if (CertTools.getPartFromDN(dn, "C") != null) {
-				Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
-				searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "C"));
-			}
-			if (CertTools.getPartFromDN(dn, "UID") != null) {
-				Pattern C = Pattern.compile("\\$UID", Pattern.CASE_INSENSITIVE);
-				searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "UID"));
-			}
-			log.debug("Resulting search filter '" + searchFilter+"'.");
-			log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
-			String searchbasedn = getSearchBaseDN();
-			int searchScope = LDAPConnection.SCOPE_SUB;
-	        String attrs[] = { LDAPConnection.NO_ATTRS };
-			boolean attributeTypesOnly = true;
-			LDAPSearchResults searchResults = lc.search(searchbasedn, // container to search
-					searchScope, // search scope
-					searchFilter, // search filter
-					attrs, // "1.1" returns entry name only
-					attributeTypesOnly); // no attribute values are returned
-			// try to read the old object
-			if (log.isDebugEnabled()) {
-				log.debug("serachResults contains entries: "+searchResults.hasMore());
-			}
-			if (searchResults.hasMore()) {
-				oldEntry = searchResults.next();
-				dn = oldEntry.getDN();
-				if (searchResults.hasMore()) {
-					log.debug("Found more than one matches with filter '" + searchFilter +
-							"'. Using the first match with LDAP entry with DN: " +oldEntry.getDN());
-				} else {
-					log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + oldEntry.getDN());
-				}
-			} else {
-				log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + dn);
-			}
-			// try to read the old object
+		// Try all the listed servers
+		Iterator servers = getHostnameList().iterator();
+		boolean connectionFailed;
+		do {
+			connectionFailed = false;
+			String currentServer = (String) servers.next();
+	        // PARTE 1: Search for an existing entry in the LDAP directory
+			//  If it exists, s�lo se a�adir� al DN la parte del certificado (PARTE 2)
+			//  if not exist, se a�adir� toda una entrada LDAP nueva (PARTE 2)
 			try {
-				oldEntry = lc.read(dn);
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				// connect to the server
+				log.debug("Connecting to " + currentServer);
+				lc.connect(currentServer, Integer.parseInt(getPort()));
+				// authenticate to the server
+				log.debug("Logging in with BIND DN " + getLoginDN());
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+				// Filtro est�tico:
+				//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
+				String searchFilter = getSearchFilter();
+				if (log.isDebugEnabled()) {
+					log.debug("Compiling search filter: " +searchFilter+", from dn: "+dn);
+				}
+				if (username != null) {
+					Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
+					searchFilter = USER.matcher(searchFilter).replaceAll(username);
+				}
+				if (email != null) {
+					Pattern EMAIL = Pattern.compile("\\$EMAIL", Pattern.CASE_INSENSITIVE);
+					searchFilter = EMAIL.matcher(searchFilter).replaceAll(email);
+				}
+				if (CertTools.getPartFromDN(dn, "CN") != null) {
+					Pattern CN = Pattern.compile("\\$CN", Pattern.CASE_INSENSITIVE);
+					searchFilter = CN.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "CN"));
+				}
+				if (CertTools.getPartFromDN(dn, "O") != null) {
+					Pattern O = Pattern.compile("\\$O", Pattern.CASE_INSENSITIVE);
+					searchFilter = O.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "O"));
+				}
+				if (CertTools.getPartFromDN(dn, "OU") != null) {
+					Pattern OU = Pattern.compile("\\$OU", Pattern.CASE_INSENSITIVE);
+					searchFilter = OU.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "OU"));
+				}
+				if (CertTools.getPartFromDN(dn, "C") != null) {
+					Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
+					searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "C"));
+				}
+				if (CertTools.getPartFromDN(dn, "UID") != null) {
+					Pattern C = Pattern.compile("\\$UID", Pattern.CASE_INSENSITIVE);
+					searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "UID"));
+				}
+				log.debug("Resulting search filter '" + searchFilter+"'.");
+				log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
+				String searchbasedn = getSearchBaseDN();
+				int searchScope = LDAPConnection.SCOPE_SUB;
+		        String attrs[] = { LDAPConnection.NO_ATTRS };
+				boolean attributeTypesOnly = true;
+				LDAPSearchResults searchResults = lc.search(searchbasedn, // container to search
+						searchScope, // search scope
+						searchFilter, // search filter
+						attrs, // "1.1" returns entry name only
+						attributeTypesOnly); // no attribute values are returned
+				// try to read the old object
+				if (log.isDebugEnabled()) {
+					log.debug("serachResults contains entries: "+searchResults.hasMore());
+				}
+				if (searchResults.hasMore()) {
+					oldEntry = searchResults.next();
+					dn = oldEntry.getDN();
+					if (searchResults.hasMore()) {
+						log.debug("Found more than one matches with filter '" + searchFilter +
+								"'. Using the first match with LDAP entry with DN: " +oldEntry.getDN());
+					} else {
+						log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + oldEntry.getDN());
+					}
+				} else {
+					log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + dn);
+				}
+				// try to read the old object
+				try {
+					oldEntry = lc.read(dn);
+				} catch (LDAPException e) {
+					if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+						String msg = intres.getLocalizedMessage("publisher.noentry", dn);
+						log.info(msg);
+					} else {
+						String msg = intres.getLocalizedMessage("publisher.infoexists", dn);
+						log.info(msg);
+					}
+				}
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
 					String msg = intres.getLocalizedMessage("publisher.noentry", dn);
 					log.info(msg);
 				} else {
-					String msg = intres.getLocalizedMessage("publisher.infoexists", dn);
-					log.info(msg);
+					connectionFailed = true;
+					if (servers.hasNext()) {
+						log.debug("Failed to publish to " + currentServer + ". Trying next in list.");
+					} else {
+		    			String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
+		                log.error(msg, e);
+						throw new PublisherException(msg);
+					}
+				}
+	        } catch (UnsupportedEncodingException e) {
+				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+	            throw new PublisherException(msg);            
+			} finally {
+				// disconnect with the server
+				try {
+					lc.disconnect();
+				} catch (LDAPException e) {
+					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+					log.error(msg, e);
 				}
 			}
-		} catch (LDAPException e) {
-			if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-				String msg = intres.getLocalizedMessage("publisher.noentry", dn);
-				log.info(msg);
-			} else {
-    			String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
-                log.error(msg, e);
-				throw new PublisherException(msg);
-			}
-        } catch (UnsupportedEncodingException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-            throw new PublisherException(msg);            
-		} finally {
-			// disconnect with the server
-			try {
-				lc.disconnect();
-			} catch (LDAPException e) {
-				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
-				log.error(msg, e);
-			}
-		}
+		} while (connectionFailed && servers.hasNext()) ;
         return oldEntry;
     }
     

@@ -3236,12 +3236,17 @@ fill in all the necessary fields.</li>
 Generic parameters to LDAP Publisher:
 </p>
 <ul>
-<li>'Hostname' is the host where the LDAP server is located.</li>
+<li>'Hostnames' is ';'-separated list of the hosts where the LDAP servers are
+located. E.g. "ldap.company.com" or "ldap1.company.com;ldap2.company.com".
+Only the first available of the listed hosts will be used.</li>
 <li>'Port' is the port on which the LDAP server listens, default non-SSL is
 389.</li>
 <li>'Login DN' is the DN of a user on the LDAP server with permissions to add
 and update entities.</li>
 <li>'Login Password' is the password for the user above.</li>
+<li>'Timeout' is number of milliseconds a server has to respond before it is
+considered unavailable and the next server in the list of hostnames (if any)
+is used instead.</li>
 <li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if it is no existing object 
 when EJBCA publishes the certificate.</li>
 <li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values and/or added

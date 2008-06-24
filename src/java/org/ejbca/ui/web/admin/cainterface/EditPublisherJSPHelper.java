@@ -102,6 +102,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String TEXTFIELD_LDAPARLATTRIBUTE      = "textfieldldaparlattribute";
     public static final String TEXTFIELD_LDAPSEARCHBASEDN      = "textfieldldapsearchbasedn";
     public static final String TEXTFIELD_LDAPSEARCHFILTER      = "textfieldldapsearchfilter";
+    public static final String TEXTFIELD_LDAPTIMEOUT      = "textfieldldaptimeout";
     public static final String PASSWORD_LDAPLOGINPASSWORD      = "textfieldldaploginpassword";
     public static final String PASSWORD_LDAPCONFIRMLOGINPWD    = "textfieldldaploginconfirmpwd";
     public static final String CHECKBOX_LDAPUSESSL             = "checkboxldapusessl";
@@ -272,7 +273,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 value = request.getParameter(TEXTFIELD_LDAPHOSTNAME);
                                 if(value != null){
                                     value = value.trim();
-                                    ldappublisher.setHostname(value);
+                                    ldappublisher.setHostnames(value);
                                 }
                                 value = request.getParameter(TEXTFIELD_LDAPPORT);
                                 if(value != null){
@@ -293,6 +294,11 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 if(value != null){
                                     value = value.trim();
                                     ldappublisher.setLoginPassword(value);
+                                }
+                                value = request.getParameter(TEXTFIELD_LDAPTIMEOUT);
+                                if(value != null){
+                                    value = value.trim();
+                                    ldappublisher.setTimeOut(Integer.parseInt(value));
                                 }
                                 value = request.getParameter(TEXTFIELD_LDAPUSEROBJECTCLASS);
                                 if(value != null){

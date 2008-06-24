@@ -31,7 +31,7 @@
       </td>
       <td width="50%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPHOSTNAME%>" size="30" maxlength="255" 
-               value='<%= ldappublisher.getHostname ()%>'>
+               value='<%= ldappublisher.getHostnames ()%>'>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -93,6 +93,17 @@
       <td width="50%" valign="top"> 
          <input type="password" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPCONFIRMLOGINPWD%>" size="30" maxlength="255" 
                value='<%= ldappublisher.getLoginPassword()%>'> 
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("TIMEOUT") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPTIMEOUT%>" size="30" maxlength="255" 
+               value='<%= ldappublisher.getTimeOut()%>'> 
       </td>
     </tr>
    <tr id="Row<%=row++%2%>"> 

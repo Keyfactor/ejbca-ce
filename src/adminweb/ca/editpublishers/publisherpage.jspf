@@ -90,7 +90,11 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("LOGINPWD", true)%>");
       illegalfields++;
     }
-
+    if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPTIMEOUT%>.value == ""){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("TIMEOUT", true)%>");
+      illegalfields++;
+    }
+    
  <% } %>
  <% if( publisherdata instanceof CustomPublisherContainer){ %>
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
