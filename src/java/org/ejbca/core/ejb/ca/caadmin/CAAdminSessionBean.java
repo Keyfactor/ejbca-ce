@@ -2113,6 +2113,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				CACacheManager.instance().removeCA(cadata.getCaId().intValue());
             		String msg = intres.getLocalizedMessage("caadmin.catokenactivated", cadata.getName());            	
     				getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
+    			} catch (CATokenAuthenticationFailedException e) {
+            		String msg = intres.getLocalizedMessage("caadmin.badcaactivationcode", cadata.getName());
+    				getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAACTIVATIONCODE, msg);
+                    throw e;
     			} catch (IllegalKeyStoreException e) {
                     throw new EJBException(e);
     			} catch (UnsupportedEncodingException e) {

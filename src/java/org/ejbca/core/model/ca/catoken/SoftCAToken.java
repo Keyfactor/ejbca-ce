@@ -115,9 +115,15 @@ public class SoftCAToken extends BaseCAToken {
         	try {
         		KeyStore keystore = loadKeyStore(keyStoreData, authenticationcode);
         		setKeys(keystore, authenticationcode);
+        	} catch (IOException e) {
+        		String msg = intres.getLocalizedMessage("catoken.erroractivate", e.getMessage());
+                log.error(msg, e);
+                CATokenAuthenticationFailedException oe = new CATokenAuthenticationFailedException(e.getMessage());
+        		oe.initCause(e);
+        		throw oe;
         	} catch (Exception e) {
         		String msg = intres.getLocalizedMessage("catoken.erroractivate", e.getMessage());
-                log.info(msg, e);
+                log.error(msg, e);
         		CATokenOfflineException oe = new CATokenOfflineException(e.getMessage());
         		oe.initCause(e);
         		throw oe;
