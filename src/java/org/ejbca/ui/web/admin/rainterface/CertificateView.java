@@ -26,6 +26,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.cvc.CVCertificateBody;
@@ -177,6 +178,16 @@ public class CertificateView implements java.io.Serializable {
         keylength = "" + ((RSAPublicKey)certificate.getPublicKey()).getModulus().bitLength();
       }
       return keylength;
+    }
+
+    public String getPublicKeyModulus(){
+    	String mod = null;
+    	if( certificate.getPublicKey() instanceof RSAPublicKey){
+    		mod = "" + ((RSAPublicKey)certificate.getPublicKey()).getModulus().toString(16);
+    		mod = mod.toUpperCase();
+    		mod = StringUtils.abbreviate(mod, 50);
+    	}
+    	return mod;
     }
 
     public String getSignatureAlgoritm() {
