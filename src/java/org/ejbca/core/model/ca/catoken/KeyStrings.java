@@ -42,7 +42,9 @@ public class KeyStrings {
     final static public String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
     final static public String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
     final static public String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = "hardTokenEncrypt";
+    final static public String CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS = "previousCertSignKey";
     final private Map map;
+    final private Map keymap;
     final String defaultKeyS;
     public KeyStrings(Properties properties) {
     	{
@@ -53,6 +55,7 @@ public class KeyStrings {
     		defaultKeyS = tmpS!=null ? tmpS.trim() : null;
     	}
     	map = new Hashtable();
+    	keymap = new Hashtable();
     	addKey(CAKEYPURPOSE_CERTSIGN_STRING,
     			SecConst.CAKEYPURPOSE_CERTSIGN,
     			properties);
@@ -75,6 +78,7 @@ public class KeyStrings {
         if ( value!=null && value.length()>0 ) {
             value = value.trim();
             map.put(new Integer(keyI), value);
+            keymap.put(new Integer(keyI), keyS);
         }
     }
     public String getString(int key) {
@@ -87,6 +91,21 @@ public class KeyStrings {
         if ( s!=null && s.length()>0 )
             return s;
         return defaultKeyS;
+    }
+    /** Returns which property key is used for a certain key purpose. 
+     * For example for SecConst.CAKEYPURPOSE_CERTSIGN would either CAKEYPURPOSE_CERTSIGN_STRING (certSignKey) 
+     * or CAKEYPURPOSE_DEFAULT_STRING (defaultKey) be returned.
+     */ 
+    public String getKey(int key) {
+        String s;
+        try {
+            s = (String)keymap.get(new Integer(key));
+        } catch(Exception e) {
+            s = null;
+        }
+        if ( s!=null && s.length()>0 )
+            return s;
+        return CAKEYPURPOSE_DEFAULT_STRING;
     }
     public String[] getAllStrings() {
         Set set = new HashSet();

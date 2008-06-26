@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -45,7 +46,7 @@ import org.ejbca.util.keystore.KeyTools;
 
 
 /**
- * HardCATokenContainer is a class managing the persistent storage of a CA token.
+ * CATokenContainerImpl is a class managing the persistent storage of a CA token.
  * 
  *
  * @version $Id$
@@ -57,9 +58,7 @@ public class CATokenContainerImpl extends CATokenContainer {
      */
     private static final long serialVersionUID = 3363098236866891317L;
 
-    /**
-     * @author lars
-     *
+    /** Class for printing properties (for debug purposes) without revealing any pin properties in the log file
      */
     private class PropertiesWithHiddenPIN extends Properties {
 
@@ -315,7 +314,8 @@ public class CATokenContainerImpl extends CATokenContainer {
 
 	/**
 	 * Method that generates the keys that will be used by the CAToken.
-	 * Only available for Soft CA Tokens so far.
+	 * Only available for initial generation of Soft CA Tokens so far. 
+	 * For PKCS11 tokens the method can be used to generate new Certificate signing keys. 
 	 * 
 	 * @param authenticationCode the password used to encrypt the keystore, later needed to activate CA Token
 	 * @param renew flag indicating if the keys are renewed instead of created fresh. Renewing keys does not 
@@ -388,9 +388,23 @@ public class CATokenContainerImpl extends CATokenContainer {
 				Properties properties = getProperties();
 				PublicKey pubK = token.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
 				String keyLabel = token.getKeyLabel(SecConst.CAKEYPURPOSE_CERTSIGN);
+				log.debug("Old key label is: "+keyLabel);
 				String crlKeyLabel = token.getKeyLabel(SecConst.CAKEYPURPOSE_CRLSIGN);
 				// The key label to use for the new key
-				String newKeyLabel = keyLabel+seq;
+				// Here we will strip any sequence number at the end of the key label and add the new sequence there
+				StringBuffer buf = new StringBuffer();
+				for (int i = keyLabel.length()-1; i > 0; i--) {
+					char c = keyLabel.charAt(i);		
+					if (CharUtils.isAsciiNumeric(c)) {
+						buf.insert(0, c);						
+					} else {
+						break; // at first non numeric character we break
+					}
+				}
+				String end = buf.toString();
+				String chompedLabel = StringUtils.removeEnd(keyLabel, end);
+				String newKeyLabel = chompedLabel+seq;
+				log.debug("New key label is: "+newKeyLabel);
 				int keysize = KeyTools.getKeyLength(pubK);
 				String alg = pubK.getAlgorithm();
 				String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
@@ -414,12 +428,16 @@ public class CATokenContainerImpl extends CATokenContainer {
 				cont.generate(keysize, newKeyLabel);
 				// Set properties so that we will start using the new key
 				KeyStrings kstr = new KeyStrings(properties);
-				String certsignkeystr = kstr.getString(SecConst.CAKEYPURPOSE_CERTSIGN);
-				String crlsignkeystr = kstr.getString(SecConst.CAKEYPURPOSE_CRLSIGN);
+				String certsignkeystr = kstr.getKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+				log.debug("CAKEYPURPOSE_CERTSIGN keystring is: "+certsignkeystr);
+				String crlsignkeystr = kstr.getKey(SecConst.CAKEYPURPOSE_CRLSIGN);
+				log.debug("CAKEYPURPOSE_CRLSIGN keystring is: "+crlsignkeystr);
 				properties.setProperty(certsignkeystr, newKeyLabel);
+				properties.setProperty(KeyStrings.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, keyLabel);
 				// If the key strings are not equal, i.e. crtSignKey and crlSignKey was used instead of just defaultKey
 				// and the keys are the same. Then we need to set both keys to use the new key label
 				if (!StringUtils.equals(certsignkeystr, crlsignkeystr) && StringUtils.equals(keyLabel, crlKeyLabel)) {
+					log.debug("Also setting crlsignkeystr");
 					properties.setProperty(crlsignkeystr, newKeyLabel);
 				}
 				setProperties(properties);
