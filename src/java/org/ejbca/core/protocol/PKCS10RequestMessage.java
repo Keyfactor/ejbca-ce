@@ -179,11 +179,17 @@ public class PKCS10RequestMessage implements IRequestMessage {
         // or
         // a pkcs_9_at_extensionRequest containing a pkcs_9_at_challengePassword as a
         // X509Extension.
+        AttributeTable attributes = null;
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        AttributeTable attributes = new AttributeTable(info.getAttributes());
+        if (info != null) {
+        	ASN1Set attrs = info.getAttributes();
+        	if (attrs != null) {
+        		attributes = new AttributeTable(attrs);		
+        	}
+        }
         if (attributes == null) {
             return null;
-        }
+        }        
         Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
         DEREncodable obj = null;
         if (attr == null) {
