@@ -575,7 +575,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     		for(int i=0; i< certificates.length; i++){
     			RevokedInfoView revokedinfo = null;
     			Certificate cert = (Certificate) j.next();
-    			RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+    			RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getFingerprintAsString(cert));
     			if(revinfo != null) {
     				revokedinfo = new RevokedInfoView(revinfo);
     			}

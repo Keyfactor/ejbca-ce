@@ -1175,6 +1175,32 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } //isRevoked
 
     /**
+     * Checks if a certificate is revoked.
+     *
+     * @param admin    Administrator performing the operation
+     * @param fingerprint SHA1 fingerprint of the certificate.
+     * @return RevokedCertInfo with revocation information, with reason RevokedCertInfo.NOT_REVOKED if NOT revoked. Returns null if certificate is not found.
+     * @ejb.interface-method
+     */
+    public RevokedCertInfo isRevoked(Admin admin, String fingerprint) {
+        RevokedCertInfo revinfo = null;
+		try {
+			log.debug("Checking revocation for certificate with fp: "+fingerprint);
+			CertificateDataLocal data = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
+	        Certificate cert = data.getCertificate();
+	        revinfo = new RevokedCertInfo(data.getFingerprint(), CertTools.getSerialNumber(cert), new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
+	        log.debug("isRevoked: "+revinfo.isRevoked());
+	    	// Make sure we have it as NOT revoked if it isn't
+	    	if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
+	    		revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
+	    	}
+		} catch (FinderException e) {
+			log.debug("Certificate does not exists with fp: "+fingerprint);
+		}
+    	return revinfo;
+    } //isRevoked
+
+    /**
      * Retrieves the latest CRL issued by this CA.
      *
      * @param admin Administrator performing the operation
