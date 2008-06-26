@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.catoken;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -387,13 +388,16 @@ public class CATokenContainerImpl extends CATokenContainer {
 				Properties properties = getProperties();
 				PublicKey pubK = token.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
 				String keyLabel = token.getKeyLabel(SecConst.CAKEYPURPOSE_CERTSIGN);
+				String crlKeyLabel = token.getKeyLabel(SecConst.CAKEYPURPOSE_CRLSIGN);
+				// The key label to use for the new key
+				String newKeyLabel = keyLabel+seq;
 				int keysize = KeyTools.getKeyLength(pubK);
 				String alg = pubK.getAlgorithm();
 				String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
 				String slot = properties.getProperty(PKCS11CAToken.SLOT_LABEL_KEY);
 				String attributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
 				if (log.isDebugEnabled()) {
-					log.debug("Generating new PKCS#11 "+alg+" key of size "+keysize+" with label "+keyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile "+attributesFile);
+					log.debug("Generating new PKCS#11 "+alg+" key of size "+keysize+" with label "+newKeyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile "+attributesFile);
 				}
 				char[] authCode = (authenticationCode!=null && authenticationCode.length()>0)? authenticationCode.toCharArray():null;
 				if (authCode == null) {
@@ -407,7 +411,18 @@ public class CATokenContainerImpl extends CATokenContainer {
 	            
 				KeyStoreContainer cont = KeyStoreContainer.getInstance("PKCS11", token.getProvider(), pwp);
 				cont.setPassPhraseLoadSave(authCode);
-				cont.generate(keysize, keyLabel);
+				cont.generate(keysize, newKeyLabel);
+				// Set properties so that we will start using the new key
+				KeyStrings kstr = new KeyStrings(properties);
+				String certsignkeystr = kstr.getString(SecConst.CAKEYPURPOSE_CERTSIGN);
+				String crlsignkeystr = kstr.getString(SecConst.CAKEYPURPOSE_CRLSIGN);
+				properties.setProperty(certsignkeystr, newKeyLabel);
+				// If the key strings are not equal, i.e. crtSignKey and crlSignKey was used instead of just defaultKey
+				// and the keys are the same. Then we need to set both keys to use the new key label
+				if (!StringUtils.equals(certsignkeystr, crlsignkeystr) && StringUtils.equals(keyLabel, crlKeyLabel)) {
+					properties.setProperty(crlsignkeystr, newKeyLabel);
+				}
+				setProperties(properties);
 				String msg = intres.getLocalizedMessage("catoken.generatedkeys", "PKCS#11");
 				log.info(msg);
 			}
@@ -565,6 +580,12 @@ public class CATokenContainerImpl extends CATokenContainer {
 		data.put(PROPERTYDATA, propertydata);	
 	}
 
+	private void setProperties(Properties prop) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		prop.store(baos, null);
+		baos.close(); // this has no effect according to javadoc
+		setPropertyData(baos.toString());
+	}
 	private Properties getProperties() throws IOException{
 		Properties prop = new PropertiesWithHiddenPIN();
 		String pdata = getPropertyData();

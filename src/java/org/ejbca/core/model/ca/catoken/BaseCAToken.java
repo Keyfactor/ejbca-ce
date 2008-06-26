@@ -123,6 +123,10 @@ public abstract class BaseCAToken implements ICAToken {
         }
         for ( int i=0; i<keyAliases.length; i++ ) {
             KeyPair pair = mTmp.get(keyAliases[i]);
+            log.debug("Testing keys with alias "+keyAliases[i]);
+            if (pair == null) {
+                log.debug("No keys with alias "+keyAliases[i]+" exists.");
+            }
             testKey(pair);
             if (log.isDebugEnabled()) {
                 log.debug("Key with alias "+keyAliases[i]+" tested.");            	
