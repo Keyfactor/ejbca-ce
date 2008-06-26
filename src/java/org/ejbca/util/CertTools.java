@@ -1838,7 +1838,8 @@ public class CertTools {
 	 *
 	 * @param certificate cert to verify
 	 * @param caCertPath collection of X509Certificate
-	 * @return true if verified OK, false if not
+	 * @return true if verified OK
+	 * @throws Exception if verification failed
 	 */
 	public static boolean verify(Certificate certificate, Collection caCertPath) throws Exception {
 		try {
