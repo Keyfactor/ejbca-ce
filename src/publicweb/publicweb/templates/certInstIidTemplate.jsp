@@ -152,7 +152,6 @@
 	<script language="JavaScript" type="text/javascript">
 		document.writeln("<h2>A new certificate has been installed on your card.</h2>");
 	</script>
-	<p><a href="javascript:history.back()">Go back</a></p>
 
 <!-- Footer -->
       </div>
