@@ -67,10 +67,10 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.AuditLogger;
-import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.core.protocol.ocsp.IOCSPExtension;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
+import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.GUIDGenerator;
 
@@ -86,6 +86,22 @@ import org.ejbca.util.GUIDGenerator;
  * @web.servlet-init-param description="If set to true the servlet will enforce OCSP request signing"
  *   name="enforceRequestSigning"
  *   value="${ocsp.signaturerequired}"
+ *   
+ * @web.servlet-init-param description="If set to true the servlet will restrict OCSP request signing"
+ *   name="restrictSignatures"
+ *   value="${ocsp.restrictsignatures}"
+ *   
+ * @web.servlet-init-param description="Set this to issuer or signer depending on how you want to restrict allowed signatures for OCSP request signing"
+ *   name="restrictSignaturesByMethod"
+ *   value="${ocsp.restrictsignaturesbymethod}"
+ *   
+ * @web.servlet-init-param description="If restrictSignatures is true the servlet will look in this directory for allowed signer certificates or issuers"
+ *   name="signTrustDir"
+ *   value="${ocsp.signtrustdir}"
+ *   
+ * @web.servlet-init-param description="The interval on which list of allowed OCSP request signing certs are loaded from signTrustDir in seconds"
+ *   name="signTrustValidTime"
+ *   value="${ocsp.signtrustvalidtime}"
  *   
  * @web.servlet-init-param description="If set to true the certificate chain will be returned with the OCSP response"
  *   name="includeCertChain"
@@ -151,20 +167,26 @@ import org.ejbca.util.GUIDGenerator;
  *   name="transactionLogOrder"
  *   value="${ocsp.trx-log-order}"
  *   
-
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
  * @version  $Id$
  */
 abstract class OCSPServletBase extends HttpServlet { 
 
 	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
+	private static final int RESTRICTONISSUER = 0;
+	private static final int RESTRICTONSIGNER = 1;
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
-
 	private Admin m_adm;
-
 	private String m_sigAlg;
 	private boolean m_reqMustBeSigned;
+	/** True if requests must be signed by a certificate issued by a list of trusted CA's*/
+	private boolean m_reqRestrictSignatures;
+	private int m_reqRestrictMethod;
+	private int signTrustValidTime = 180;
+	/** A list of CA's trusted for issuing certificates for signing requests */
+	private Hashtable mTrustedReqSigIssuers;
+	private Hashtable mTrustedReqSigSigners;
 	Collection m_cacerts = null;
 	/** Cache time counter */
 	private long m_certValidTo = 0;
@@ -196,6 +218,8 @@ abstract class OCSPServletBase extends HttpServlet {
 	 * The interval on which new OCSP signing certs are loaded in seconds.
 	 */
 	private int m_valid_time;
+	private long m_trustDirValidTo;
+	private String m_signTrustDir;
 
 	/** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
 	 */
@@ -211,6 +235,31 @@ abstract class OCSPServletBase extends HttpServlet {
 		loadPrivateKeys(m_adm);
 		m_certValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;;
 	}
+	
+	protected synchronized void loadTrustDir() throws Exception {
+		// Check if we have a cached collection that is not too old
+		if(m_reqRestrictMethod == RESTRICTONISSUER) {
+			if (mTrustedReqSigIssuers != null && m_trustDirValidTo > new Date().getTime()) {
+				return;
+			}
+			mTrustedReqSigIssuers = OCSPUtil.getCertificatesFromDirectory(m_signTrustDir);
+			if (m_log.isDebugEnabled()) {
+				m_log.debug("Loaded "+mTrustedReqSigIssuers == null ? "0":mTrustedReqSigIssuers.size()+" CA-certificates as trusted for OCSP-request signing");        	
+			}
+			m_trustDirValidTo = signTrustValidTime>0 ? new Date().getTime()+signTrustValidTime : Long.MAX_VALUE;;
+		}
+		if(m_reqRestrictMethod == RESTRICTONSIGNER) {
+			if (mTrustedReqSigSigners != null && m_trustDirValidTo > new Date().getTime()) {
+				return;
+			}
+			mTrustedReqSigSigners = OCSPUtil.getCertificatesFromDirectory(m_signTrustDir);
+			if (m_log.isDebugEnabled()) {
+				m_log.debug("Loaded "+mTrustedReqSigSigners == null ? "0":mTrustedReqSigSigners.size()+" Signer-certificates as trusted for OCSP-request signing");        	
+			}
+			m_trustDirValidTo = signTrustValidTime>0 ? new Date().getTime()+signTrustValidTime : Long.MAX_VALUE;;
+		}
+	}
+
 	abstract protected void loadPrivateKeys(Admin adm) throws Exception;
 
 	abstract protected Collection findCertificatesByType(Admin adm, int i, String issuerDN);
@@ -301,6 +350,48 @@ abstract class OCSPServletBase extends HttpServlet {
 				m_reqMustBeSigned = false;
 			}
 		}
+		
+		initparam = config.getInitParameter("restrictSignatures");
+		if (m_log.isDebugEnabled()) {
+			m_log.debug("Restrict request signing : '"
+					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
+					+ "'");
+		}
+		m_reqRestrictSignatures = true;
+		if (!StringUtils.isEmpty(initparam)) {
+			if ((!initparam.equalsIgnoreCase("true")) && (!initparam.equalsIgnoreCase("yes"))) {
+				m_reqRestrictSignatures = false;
+			}
+		}
+		if (m_reqRestrictSignatures) {
+			m_reqRestrictMethod=RESTRICTONISSUER; // default = issuer
+			// find out method for restricting request signatures
+			String restrictMethod = config.getInitParameter("restrictSignaturesByMethod");
+			m_signTrustDir = config.getInitParameter("signTrustDir");
+			if (m_log.isDebugEnabled()) {
+				m_log.debug("Directory containing trusted CA's for request Signing : '"
+						+ (StringUtils.isEmpty(initparam) ? "<not set>" : m_signTrustDir)
+						+ "'");
+			}
+			if ( restrictMethod.equalsIgnoreCase("issuer") ) {
+				try {
+					mTrustedReqSigIssuers = OCSPUtil.getCertificatesFromDirectory(m_signTrustDir);
+					m_reqRestrictMethod = RESTRICTONISSUER;
+				} catch (IOException e1) {
+					m_log.error("OCSP request signatures are restricted but allowed signatures could not be read from file, check ocsp.properties." +e1);
+				} 
+			} else if ( restrictMethod.equalsIgnoreCase("signer") ) {
+				try {
+					mTrustedReqSigSigners = OCSPUtil.getCertificatesFromDirectory(m_signTrustDir);
+					m_reqRestrictMethod = RESTRICTONSIGNER;
+				} catch (IOException e1) {
+					m_log.error("OCSP request signatures are restricted but allowed signatures could not be read from file, check ocsp.properties." +e1);
+				} 
+			} else {
+				m_log.error("OCSP request signatures are restricted but allowed signatures could not be read from file, check ocsp.properties.");
+			}
+		}
+
 		initparam = config.getInitParameter("useCASigningCert");
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("Use CA signing cert : '"
@@ -342,7 +433,7 @@ abstract class OCSPServletBase extends HttpServlet {
 		}
 
 		/**
-		 * Set up Audit and Account Logging
+		 * Set up Audit and Transaction Logging
 		 */
 		initparam = config.getInitParameter("auditLog");
 		if (m_log.isDebugEnabled()) {
@@ -414,7 +505,6 @@ abstract class OCSPServletBase extends HttpServlet {
 		} else {
 			String[] oids = extensionOid.split(";");
 			m_extensionOids = Arrays.asList(oids);
-
 		}
 		extensionClass = config.getInitParameter("extensionClass");
 		if (StringUtils.isEmpty(extensionClass)) {
@@ -571,7 +661,7 @@ abstract class OCSPServletBase extends HttpServlet {
 						BigInteger signercertSerNo = signercert.getSerialNumber();
 						String signercertSubjectName = signercert.getSubjectDN().getName();
 						if (transactionLogger != null ) transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
-						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, signercertSerNo.toString());
+						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, signercertSerNo.toString(16));
 						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
 					} catch (Exception e ) {
 						// nothing, just keep going
@@ -579,6 +669,7 @@ abstract class OCSPServletBase extends HttpServlet {
 				}
 
 				if (m_reqMustBeSigned) {
+
 					X509Certificate signercert = OCSPUtil.checkRequestSignature(request.getRemoteAddr(), req, m_cacerts);
 					String signercertIssuerName = signercert.getIssuerDN().getName();
 					BigInteger signercertSerNo = signercert.getSerialNumber();
@@ -592,6 +683,27 @@ abstract class OCSPServletBase extends HttpServlet {
 						String errMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
 						m_log.error(errMsg);
 						throw new SignRequestSignatureException(errMsg);
+					}
+					
+					if (m_reqRestrictSignatures) {
+						loadTrustDir();
+						if ( m_reqRestrictMethod == RESTRICTONSIGNER) {
+							if (!OCSPUtil.checkCertInList(signercert, mTrustedReqSigSigners)) {
+								String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
+								m_log.error(errMsg);
+								throw new SignRequestSignatureException(errMsg);
+							}
+						}
+						else if (m_reqRestrictMethod == RESTRICTONISSUER) {
+							X509Certificate signerca = OCSPUtil.findCertificateBySubject(signercertIssuerName, m_cacerts);
+							if ((signerca == null) || (!OCSPUtil.checkCertInList(signerca, mTrustedReqSigIssuers)) ) {
+								String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
+								m_log.error(errMsg);
+								throw new SignRequestSignatureException(errMsg);
+							}
+						} else {
+							throw new Exception(); // there must be an internal error. We do not want to send a response, just to be safe.
+						}
 					}
 				}
 
@@ -799,7 +911,6 @@ abstract class OCSPServletBase extends HttpServlet {
 							}
 						}
 					}
-
 				} // end of huge for loop
 				if ((req != null) && (cacert != null)) {
 					// Add responseExtensions

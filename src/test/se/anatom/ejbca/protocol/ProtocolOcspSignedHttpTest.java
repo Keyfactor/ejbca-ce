@@ -241,7 +241,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         req = gen.generate();
         // Send the request and receive a singleResponse, this response should have error code SIGNATURE_REQUIRED
         singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 5);
-        assertNull(singleResps[0]);
+        assertNull(singleResps);
 
         // sign with a keystore where the CA-certificate is not known
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
@@ -254,7 +254,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         req = gen.generate("SHA1WithRSA", pk, chain, "BC");
         // Send the request and receive a singleResponse, this response should have error code UNAUTHORIZED
         singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 6);
-        assertNull(singleResps[0]);
+        assertNull(singleResps);
 
         log.debug("<test01OcspGood()");
     }

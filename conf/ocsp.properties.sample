@@ -15,19 +15,45 @@ ocsp.usecasigningcert=true
 # if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used.
 #
 # Default: SHA1WithRSA;SHA1WithECDSA
-#ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA
+# ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA
 
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.
 # nCipher P11 HSM is not working after an update so you should set 0 for this HSM
 # Default: 300
-#ocsp.signingCertsValidTime=0
+# ocsp.signingCertsValidTime=0
 
 # Specifies if the OCSP-responder should require signed requests or not.
 # If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
 #
 # Default: false
-#ocsp.signaturerequired=false
+# ocsp.signaturerequired=false
+
+# Specifies if the OCSP-responder should require signatures to be issued by a list of allowed CA's.
+#
+# Default: false
+# ocsp.restrictsignatures=false
+
+# Specifies how to restrict OCSP-request signatures.
+# 'issuer' means that the OCSP-responder will require signatures to be issued by a CA in a list of allowed CA's.
+# 'signer' means that the OCSP-responder will require signatures to be in a list of allowed signatures.
+# Note that unless ocsp.restrictsignatures is set to true this variable will not be used.
+#
+# Default: issuer
+# ocsp.restrictsignaturesbymethod=issuer
+
+# Specifies a directory with CA's which are allowed
+# If signatures are restricted and required only requests signed by a certificate issued by a CA in this directory is accepted.
+#
+# Default: nothing
+# ocsp.signtrustdir=~/signtrustdir
+
+# Specifies an interval in seconds in which the server reloads certificates from the signtrustdir
+# if this variable is set to 0 certificates will not be reloaded after startup
+# 
+# Default: 180
+# ocsp.signtrustvalidtime=180
+
 
 # If true a certificate that does not exist in the database, but is issued by a CA the responder handles
 # will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
@@ -35,7 +61,7 @@ ocsp.usecasigningcert=true
 # all certificates.
 #
 # Default: false
-#ocsp.nonexistingisgood=false 
+# ocsp.nonexistingisgood=false 
 
 # Specifies OCSP extension oids that will result in a call to an extension class, 
 # separate multiple entries with ;"

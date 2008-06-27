@@ -1,6 +1,7 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -15,9 +16,12 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,6 +47,7 @@ import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FileTools;
 
 public class OCSPUtil {
 
@@ -163,7 +168,7 @@ public class OCSPUtil {
      * @param req The signed OCSPReq
      * @param cacerts a Collection of X509Certificate, the authorized CA-certificates. The signer certificate must be issued by one of these.
      * @return X509Certificate which is the certificate that signed the OCSP request
-     * @throws SignRequestSignatureException if signature verification fail, or if the signing certificate is not ahthorized
+     * @throws SignRequestSignatureException if signature verification fail, or if the signing certificate is not authorized
      * @throws SignRequestException if there is no signature on the OCSPReq
      * @throws OCSPException if the request can not be parsed to retrieve certificates
      * @throws NoSuchProviderException if the BC provider is not installed
@@ -357,4 +362,76 @@ public class OCSPUtil {
     	return table;
     }
     
+    public static Hashtable getCertificatesFromDirectory(String certificateDir) throws IOException {
+    	// read all files from trustDir, expect that they are PEM formatted certificates
+    	CertTools.installBCProvider();
+    	File dir = new File(certificateDir);
+    	Hashtable trustedCerts  = new Hashtable();
+    	if (dir == null || dir.isDirectory() == false) {
+    		m_log.error(dir.getCanonicalPath()+ " is not a directory.");
+    		throw new IllegalArgumentException(dir.getCanonicalPath()+ " is not a directory.");                
+    	}
+    	File files[] = dir.listFiles();
+    	if (files == null || files.length == 0) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornotrustfiles", dir.getCanonicalPath());
+    		m_log.error(errMsg);                
+    	}
+    	for ( int i=0; i<files.length; i++ ) {
+    		final String fileName = files[i].getCanonicalPath();
+    		// Read the file, don't stop completely if one file has errors in it
+    		try {
+    			byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
+    					"-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+    			Certificate cert = CertTools.getCertfromByteArray(bytes);
+    			String key = CertTools.getIssuerDN(cert)+";"+CertTools.getSerialNumber(cert).toString(16);
+    			trustedCerts.put(key,cert);
+    		} catch (CertificateException e) {
+    			String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
+    			m_log.error(errMsg, e);
+    		} catch (IOException e) {
+    			String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
+    			m_log.error(errMsg, e);
+    		}
+    	}
+    	return trustedCerts;
+    }
+    
+    boolean checkAuthorization(HttpServletRequest request, Hashtable trustedCerts) {
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        if (certs == null) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+            m_log.error(errMsg);
+            return false;
+        }
+        // The entitys certificate is nr 0
+        X509Certificate cert = certs[0];
+        if (cert == null) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+            m_log.error(errMsg);
+            return false;
+        }
+        if (checkCertInList(cert, trustedCerts)) {
+        	return true;
+        }
+    	String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", request.getRemoteAddr(), request.getRemoteHost());
+        m_log.error(errMsg);
+		return false;
+	}
+    
+    
+    /**
+     * Checks to see if a certificate is in a list of certificate.
+     * Comparison is made on SerialNumber
+     * @param cert the certificate to look for
+     * @param trustedCerts the list (Hashtable) to look in
+     * @return true if cert is in trustedCerts, false otherwise
+     */
+    public static boolean checkCertInList(X509Certificate cert, Hashtable trustedCerts) {
+    	String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
+    	Object found = trustedCerts.get(key);
+        if (found != null) {
+            return true;
+        }
+        return false;
+    }
 }
