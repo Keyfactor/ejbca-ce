@@ -128,7 +128,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      if(request.getParameter(BUTTON_ACTIVATE) != null &&
     	      	 can_activate &&
 				 ( (status == SecConst.CA_OFFLINE) ||
-				   ((status == SecConst.CA_ACTIVE || status == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE)) )) {
+				   ((status == SecConst.CA_ACTIVE || status == SecConst.CA_WAITING_CERTIFICATE_RESPONSE || status == SecConst.CA_EXPIRED) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE)) )) {
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
     	         try {
