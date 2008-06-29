@@ -38,6 +38,19 @@ For the Oracle database we have made a switch from the deprecated type LONG to C
 EJBCA 3.6 still works if you continue to use the LONG data type (i.e. does not make any changes to your database).
 If you decide to migrate, there is a migration sql script in src/upgrade/35_36/oracle-long-to-clob.sql.
 
+EJBCA 3.5.7
+-----------
+This is a minor release, fixing a few bugs.
+ - Deadlock under stress test involving revocation
+ - Importing certificate to CA with off-line token did not work
+ - NPE issuing some sparecard with HTMF
+ - Error enrolling certificate using SSL with client cert
+ - CRL generation for CAs waiting for certificate response throws exception  
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.5.6
 -----------
 This is a minor release, fixing a few bugs and adding a new activation page to the admin-GUI.

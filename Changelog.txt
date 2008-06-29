@@ -111,6 +111,18 @@ Bug
     * [ECA-758] - Under some conditions it's not possible to edit rfc822name altname field for user in admin-gui
     * [ECA-766] - Error saving CRL Service on Weblogic 10
 
+3.5.7, 2008-06-29
+---
+Improvement
+    * [ECA-808] - Errors that should not be errors but info messages
+
+Bug
+    * [ECA-799] - Deadlock when running stress test that is revoking certificates
+    * [ECA-800] - Importing certificate to CA with off-line token causes status to be wrong
+    * [ECA-801] - CRL generation for CAs waiting for certificate response throws excepton
+    * [ECA-807] - Error enrolling though SSL with client cert
+    * [ECA-818] - NPE when issuing sparecard with cert without extended keyusage through HTMF
+
 3.5.6, 2008-05-02 
 ---
 New Feature
