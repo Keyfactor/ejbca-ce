@@ -224,6 +224,12 @@ you can get nice logging with only the things you are interested in logged to th
 sudo ant javatruststore
 </source>
 <p>
+You can also import another CA than the initial AdminCA (My CA in the example) with the command:
+</p>
+<source>
+sudo ant -Dca.name="My CA" javatruststore
+</source>
+<p>
 Or you can run the commands manually. You don't have to do this if you use the convenience command 'ant javatruststore'.
 </p>
 <source>
