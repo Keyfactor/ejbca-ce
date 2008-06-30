@@ -441,28 +441,29 @@ public class EjbcaWS implements IEjbcaWS {
 							try {
 								// Only allow renewal if the old certificate is valid
 								try {
-									CertTools.checkValidity(cert, new Date());
-									log.debug("Trying to verify the outer signature with a valid certificate");
-									authreq.verify(cert.getPublicKey());
-									// Verification succeeded, lets set user status to new, the password as passed in and proceed
-									String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
-									log.info(msg);
-									ejbhelper.getUserAdminSession().setPassword(admin, username, password);
-									ejbhelper.getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
-									// If we managed to verify the certificate we will break out of the loop
-									log.debug("Verified outer signature");
 									// Check to see that the inner signature does not also verify using the old certificate
 									// because that means the same keys were used, and that is not allowed according to the EU policy
 									CVCertificate innerreq = authreq.getRequest();
 									CardVerifiableCertificate innercert = new CardVerifiableCertificate(innerreq);
 									try {
 										innercert.verify(cert.getPublicKey());										
-										msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef);            	
+										String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef);            	
 										log.info(msg);
 										throw new AuthorizationDeniedException(msg);
 									} catch (SignatureException e) {
+										// It was good if the verification failed
 									}
-									
+									// Check validity of the certificate before veriying the signature
+									CertTools.checkValidity(cert, new Date());
+									log.debug("Trying to verify the outer signature with a valid certificate");
+									authreq.verify(cert.getPublicKey());
+									log.debug("Verified outer signature");
+									// Verification succeeded, lets set user status to new, the password as passed in and proceed
+									String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
+									log.info(msg);
+									ejbhelper.getUserAdminSession().setPassword(admin, username, password);
+									ejbhelper.getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+									// If we managed to verify the certificate we will break out of the loop									
 									break;																		
 								} catch (CertificateNotYetValidException e) {
 									log.debug("Certificate we try to verify outer signature with is not yet valid");
@@ -659,7 +660,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		}catch(AuthorizationDeniedException ade){
 			throw ade;
-		
 		} catch (InvalidKeyException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
