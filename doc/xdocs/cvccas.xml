@@ -18,16 +18,17 @@
     </p>
     You can also set up a Country Signing CA, which is a regular X.509 CA. 
     <p>
-    Using the complimentary project <a href="http://www.signserver.org/">SignServer</a> you can set up a clustered Document Signer.
-    </p> 
-    <p>
     Currently EJBCA supports RSA keys in CV certificates with the follwing algorithms:
     <ul>
       <li>SHA1WithRSA - id-TA-RSA-v1-5-SHA-1</li>
       <li>SHA256WithRSA - id-TA-RSA-v1-5-SHA-256</li>
+      <li>SHA1WithRSAAndMGF1 - id-TA-RSA-PSS-SHA-1</li>
       <li>SHA256WithRSAAndMGF1 - id-TA-RSA-PSS-SHA-256</li>
     </ul>
     </p>
+    <p>
+    Using the complimentary project <a href="http://www.signserver.org/">SignServer</a> you can set up a clustered Document Signer.
+    </p> 
   </section>
   
   <section name="Creating CVC CAs and DVs">
@@ -99,10 +100,10 @@
   You only have to (or can) import one issued certificate to make your DV operational.
   <br/>
   By filling in the CA tokens password and checking the box 'Renew Keys' the DV will generate new keys.
-  This is only working for soft keystores currently. The renewal CRS is not signed with the old keys. 
+  This is working for soft CA tokens and PKCS#11 CA tokens. The renewal CRS is not signed with the old keys. 
   </p>
   <p>DVs have short validity periods, and it may be good to have them automatically renewed. There is a service 'Renew CA Service' to 
-  automatically renew CAs. Thhe User's Guide form more information about this service.
+  automatically renew CAs. The User's Guide contain more information about this service.
   </p>
   </section>
   
@@ -146,6 +147,25 @@
 	throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 	EjbcaException, ApprovalException, WaitingForApprovalException;
   </source> 
+  <p>The process when a CVC request is received through the WS-API call is:
+  <ul>
+  <li>Look up if there exists a user with the specified username.</li>
+  <li>If the user exists:</li>
+	  <ul>
+	  <li>If the user's status is revoked, the request is denied (AuthorizationDeniedException).</li>
+	  <li>See if the user have old certificates.</li>
+	  <li>If there are old certificates and the request is an authenticated request (with outer signature):</li>
+	  	<ul>
+	  	<li>If the request uses the same public key as the old certificate the request is denied (AuthorizationDeniedException).</li>
+	  	<li>If the old certificate is not valid any more we will not try to verify the request with it.</li>
+	  	<li>If the request can be verified using one of the old <strong>valid</strong> certificates the request is automatically granted and users status is set to new and the password set to the given password.</li>
+	  	</ul>
+	  <li>If there are no old certificates we try to process the request as a non-authenticated request.</li>
+  	  </ul>
+  <li>If the user does not exist we try to process the request as a non-authenticated request.</li>
+  <li>Processing the request means that we try to authenticate using the password given, and that only works if the users status is NEW.</li>
+  </ul>
+  </p>
   </section>
 
   <section name="Command line client">
@@ -200,6 +220,13 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   Depending on the algorithms you choose you have different options and difficulties. Using PKCS#11 the Sun PKCS#11 provider only supports
   RSA with PKCS1 padding (SHA256WithRSA), and not PSS (SHA256WIthRSAAndMGF1). If you want to use the PSS algorithms you need to use the IAIK PKCS#11 provider.
   The the User's Guide for instructions how to use the IAIK PKCS#11 provider. 
+  </p>
+  <p>
+  Currently tested HSMs are:
+  <ul>
+  <li>Utimaco</li>
+  <li>Eracom</li>
+  </ul>
   </p>
   </section>
   
