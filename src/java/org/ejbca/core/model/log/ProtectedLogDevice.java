@@ -18,11 +18,11 @@ import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -39,6 +39,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotAc
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FifoLock;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -65,6 +66,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	public final static String CONFIG_ALLOW_EVENTSCONFIG		= "allowConfigurableEvents";
 	public final static String CONFIG_LINKIN_INTENSITY					= "linkinIntensity";
 	public final static String CONFIG_VERIFYOWN_INTENSITY			= "verifyownIntensity";
+	public final static String CONFIG_SEARCHWINDOW                    = "searchWindow";
 	
 	public final static String DEFAULT_NODEIP								= "127.0.0.1";
 	public final static String DEFAULT_DEVICE_NAME						= "ProtectedLogDevice";
@@ -83,12 +85,14 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * A handle to the unique Singleton instance.
 	 */
 	private static ILogDevice instance;
+	private FifoLock fifoLock;
 	private boolean isDestructorInvoked;
 	private boolean systemShutdownNotice;
 	private Properties properties;
 	private int nodeGUID;
 	private long counter;
-	private byte[] lastProtectedLogRowHash;
+	private HashMap lastProtectedLogRowHashTime;	// <Long, HashTime> 
+	long lastProtectedLogRowCount;
 	private long lastTime;
 	private long protectionIntensity;
 	private String nodeIP;
@@ -102,8 +106,10 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private long lastTimeOfSearchForOwnLogEvent;
 	private long intensityOfSearchForLogEvents;
 	private long intensityOfSearchForOwnLogEvent;
+	private long searchWindow;
 	
 	protected ProtectedLogDevice(Properties properties) throws Exception {
+		fifoLock = new FifoLock();
 		resetDevice(properties);
 	}
 	
@@ -114,7 +120,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		// Init of local variables
 		isDestructorInvoked = false;
 		systemShutdownNotice = false;
-		lastProtectedLogRowHash = null;
+		lastProtectedLogRowHashTime = new HashMap();	// <Long, HashTime>
+		lastProtectedLogRowCount = 0;
 		lastTime = 0;
 		protectedLogToken = null;
 		isFirstLogEvent = true;
@@ -142,6 +149,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			intensityOfSearchForLogEvents = Long.parseLong(properties.getProperty(CONFIG_LINKIN_INTENSITY, "1")) * 1000; 
 			intensityOfSearchForOwnLogEvent = Long.parseLong(properties.getProperty(CONFIG_VERIFYOWN_INTENSITY, "1")) * 1000; 
 		}
+		searchWindow = Long.parseLong(properties.getProperty(CONFIG_SEARCHWINDOW, "300")) * 1000;
 	}
 
 	/**
@@ -235,17 +243,23 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	synchronized public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
-		// Is first LogEvent? Write Initiating Log Event
-		if (isFirstLogEvent) {
-			isFirstLogEvent = false;
-			logInternal(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(time.getTime()-1), null, null, LogConstants.EVENT_SYSTEM_INITILIZED_LOGGING, "Initiating log for this node.",null);
-			//protectedLogActions.takeActions(IProtectedLogAction.CAUSE_TESTING);
-		}
-		if (!systemShutdownNotice || event == LogConstants.EVENT_SYSTEM_STOPPED_LOGGING) {
-			logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
-		} else {
-			logInternalOnShutDown(admininfo, caid, module, time, username, certificate, event, comment, exception);
+	public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
+		try {
+			fifoLock.lock();
+			// Is first LogEvent? Write Initiating Log Event
+			if (isFirstLogEvent) {
+				isFirstLogEvent = false;
+				logInternal(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(time.getTime()-1), null, null, LogConstants.EVENT_SYSTEM_INITILIZED_LOGGING, "Initiating log for this node.",null);
+				//protectedLogActions.takeActions(IProtectedLogAction.CAUSE_TESTING);
+			}
+			if (!systemShutdownNotice || event == LogConstants.EVENT_SYSTEM_STOPPED_LOGGING) {
+				logInternal(admininfo, caid, module, time, username, certificate, event, comment, exception);
+			} else {
+				logInternalOnShutDown(admininfo, caid, module, time, username, certificate, event, comment, exception);
+			}
+			fifoLock.unlock();
+		} catch (InterruptedException e) {
+			log.error("Interupted: " + e.getMessage());
 		}
 	}
 
@@ -279,8 +293,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				// FInd all new events from other nodes in database to link in, if the right amount of time has passed since last time
 				long now = System.currentTimeMillis();
 				if (intensityOfSearchForLogEvents != -1000 && lastTimeOfSearchForLogEvents + intensityOfSearchForLogEvents < now) {
-					ProtectedLogEventIdentifier[] protectedLogEventIdentifiers = null;
-					protectedLogEventIdentifiers = getProtectedLogSession().findNewestProtectedLogEventsForAllOtherNodes(nodeGUID, lastTimeOfSearchForLogEvents - 50); // Have some marginal for processing time
+					long searchLimit = Math.min(now - searchWindow, lastTimeOfSearchForLogEvents - 50);
+					ProtectedLogEventIdentifier[] protectedLogEventIdentifiers = getProtectedLogSession().findNewestProtectedLogEventsForAllOtherNodes(
+							nodeGUID, searchLimit);
 					if (protectedLogEventIdentifiers != null) {
 						for (int i=0; i<protectedLogEventIdentifiers.length; i++) {
 							linkedInEventIdentifiersCollection.add(protectedLogEventIdentifiers[i]);
@@ -328,17 +343,38 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			// Add previous ProtectedLogEventRow this node has produced, if any
 			// Start by verifying that the last event in the database is correct, but only do this if sufficient time has passed since this was last verified
 			if (counter != 0) {
-				ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = new ProtectedLogEventIdentifier(nodeGUID, counter-1);
-				linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
 				long now = System.currentTimeMillis();
 				if (intensityOfSearchForOwnLogEvent != -1000 && lastTimeOfSearchForOwnLogEvent + intensityOfSearchForOwnLogEvent < now) {
-					ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);
-					if (protectedLogEventRow == null) {
-				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, counter-1));
+					ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow(nodeGUID);
+					if (lastProtectedLogEventIdentifier == null) {
+				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, 0));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
-					} else if (!Arrays.equals(protectedLogEventRow.calculateHash(), lastProtectedLogRowHash)) {
-				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", nodeGUID, counter-1));
-						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
+					} else {
+						linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
+						ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);
+						HashTime hashTime = (HashTime) lastProtectedLogRowHashTime.get(lastProtectedLogEventIdentifier.getCounter());
+						if (protectedLogEventRow == null) {
+					    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
+							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+						} else if (hashTime == null) {
+					    	log.error("Missing hashTime for counter=" + lastProtectedLogEventIdentifier.getCounter() + ". lastProtectedLogRowHashTime.size=" + lastProtectedLogRowHashTime.size());
+							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+						} else if (!Arrays.equals(protectedLogEventRow.calculateHash(), hashTime.getHash() )) {
+					    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
+							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
+						} else {
+							if (now - protectedLogEventRow.getEventTime() > searchWindow) {
+								// Too old = some are missing
+						    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
+						    	log.debug("The last found event was more than " + (now - protectedLogEventRow.getEventTime()) + " milliseconds old.");
+						    	protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+							}
+							// Remove all saved events before (now-searchWindow) unless it's the last one
+							while ( lastProtectedLogRowHashTime.size() > 1 && ((HashTime)lastProtectedLogRowHashTime.get(lastProtectedLogRowCount)).getTime() < (now - searchWindow) ) {
+								lastProtectedLogRowHashTime.remove(lastProtectedLogRowCount);
+								lastProtectedLogRowCount++;
+							}
+						}
 					}
 					lastTimeOfSearchForOwnLogEvent = now;
 				}
@@ -352,7 +388,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				for (int i=0; i<linkedInEventIdentifiers.length; i++) {
 					if (linkedInEventIdentifiers[i].equals(new ProtectedLogEventIdentifier(nodeGUID, counter-1))) {
 						// Don't trust the database for this, use saved value
-						messageDigest.update(lastProtectedLogRowHash);
+						messageDigest.update(((HashTime) lastProtectedLogRowHashTime.get(counter-1)).getHash());
 					} else {
 						messageDigest.update(getProtectedLogSession().getProtectedLogEventRow(linkedInEventIdentifiers[i]).calculateHash());
 					}
@@ -378,7 +414,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				lastTime = time.getTime();
 			}
 			getProtectedLogSession().addProtectedLogEventRow(protectedLogEventRow);
-			lastProtectedLogRowHash = protectedLogEventRow.calculateHash();
+			lastProtectedLogRowHashTime.put(counter, new HashTime(protectedLogEventRow.calculateHash(), protectedLogEventRow.getEventTime()));
 			counter++;
 		} catch (Exception e) {
         	log.error(intres.getLocalizedMessage("protectedlog.error.internallogerror"), e);
@@ -404,7 +440,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		ProtectedLogEventRow protectedLogEventRow = new ProtectedLogEventRow(
 				admininfo.getAdminType(), admininfo.getAdminData(), caid, module, time.getTime(), username, certificateSerialNumber, 
 				certificateIssuerDN, event, comment, new ProtectedLogEventIdentifier(nodeGUID, counter), nodeIP, linkedInEventIdentifiers,
-				lastProtectedLogRowHash, protectionHashAlgorithm, protectedLogToken.getIdentifier(),
+				((HashTime) lastProtectedLogRowHashTime.get(counter)).getHash(), protectionHashAlgorithm, protectedLogToken.getIdentifier(),
 				protectedLogToken.getProtectionAlgorithm(), null);
 		try {
 			getProtectedLogSession().addProtectedLogEventRow(protectedLogEventRow);
@@ -415,7 +451,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		}
     	log.error(intres.getLocalizedMessage("protectedlog.error.logunprotected",admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
 				+certificate+" "+event+" "+comment+" "+exception));
-		lastProtectedLogRowHash = protectedLogEventRow.calculateHash();
+		lastProtectedLogRowHashTime.put(counter, new HashTime(protectedLogEventRow.calculateHash(), protectedLogEventRow.getEventTime()));
 		counter++;
 	}
 
@@ -478,5 +514,18 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
         }
 		nodeIP = getPropertiesFromInstance().getProperty(CONFIG_NODEIP, nodeIP);
 		return nodeIP;
+	}
+	
+	private class HashTime {
+		private byte[] hash = null;
+		private long time = 0;
+
+		public HashTime(byte[] hash, long time) {
+			this.hash = hash;
+			this.time = time;
+		}
+		
+		public byte[] getHash() { return hash; }
+		public long getTime() { return time; }
 	}
 }

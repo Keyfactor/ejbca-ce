@@ -64,6 +64,13 @@
 #  Default is "-1" for the none-token and "1" for all other tokens.
 #verifyownIntensity=1
 
+# How far back to search for events. To avoid using serializable isolation
+#  level for the database, a tolerance of X seconds is accepted between a
+#  logevent is supposed to be written to the database and it's considered
+#  missing (if it isn't readable). Try increasing this value if you get
+#  problems with false warnings about missing log-rows during high load.
+#searchWindow=300
+
 # The hash algorithm used to chain unprotected log rows.
 #  Default is "SHA-256"
 #protectionHashAlgorithm=SHA-1
