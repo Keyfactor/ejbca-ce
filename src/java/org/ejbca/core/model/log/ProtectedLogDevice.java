@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.ejb.EJBException;
 
@@ -39,7 +40,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotAc
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.FifoLock;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -85,7 +85,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * A handle to the unique Singleton instance.
 	 */
 	private static ILogDevice instance;
-	private FifoLock fifoLock;
+	private ReentrantLock fairLock;
 	private boolean isDestructorInvoked;
 	private boolean systemShutdownNotice;
 	private Properties properties;
@@ -109,7 +109,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private long searchWindow;
 	
 	protected ProtectedLogDevice(Properties properties) throws Exception {
-		fifoLock = new FifoLock();
+		fairLock = new ReentrantLock(true);		// Create a fair lock.
 		resetDevice(properties);
 	}
 	
@@ -244,8 +244,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
 	public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
+		fairLock.lock();
 		try {
-			fifoLock.lock();
 			// Is first LogEvent? Write Initiating Log Event
 			if (isFirstLogEvent) {
 				isFirstLogEvent = false;
@@ -257,9 +257,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			} else {
 				logInternalOnShutDown(admininfo, caid, module, time, username, certificate, event, comment, exception);
 			}
-			fifoLock.unlock();
-		} catch (InterruptedException e) {
-			log.error("Interupted: " + e.getMessage());
+		} finally {
+			fairLock.unlock();
 		}
 	}
 
