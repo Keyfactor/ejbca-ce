@@ -39,6 +39,7 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -113,7 +114,8 @@ public class CVCCA extends CA implements Serializable {
 
     public void updateCA(CAInfo cainfo) throws Exception{
     	super.updateCA(cainfo); 
-    	CVCCAInfo info = (CVCCAInfo) cainfo;
+    	//CVCCAInfo info = (CVCCAInfo) cainfo;
+    	// do something with this if needed
     }
 
 
@@ -133,7 +135,8 @@ public class CVCCA extends CA implements Serializable {
 		// No outer signature on this self signed request
 		KeyPair keyPair;
 		try {
-			keyPair = new KeyPair(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+			CATokenContainer catoken = getCAToken();
+			keyPair = new KeyPair(catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
 			String subject = getCAInfo().getSubjectDN();
 			String country = CertTools.getPartFromDN(subject, "C");
 			String mnemonic = CertTools.getPartFromDN(subject, "CN");
@@ -154,7 +157,8 @@ public class CVCCA extends CA implements Serializable {
 			}
 			HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
 			CAReferenceField caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());
-			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef);
+			log.debug("Creating request with signature alg: "+signAlg+", using provider "+catoken.getProvider());
+			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, catoken.getProvider());
 			ret = request.getDEREncoded();
 		} catch (IllegalKeyStoreException e) {
             throw new javax.ejb.EJBException(e);
@@ -182,12 +186,13 @@ public class CVCCA extends CA implements Serializable {
 	public byte[] signRequest(byte[] request) throws CATokenOfflineException {
 		byte[] ret = request;
 		try {
-			KeyPair keyPair = new KeyPair(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+			CATokenContainer catoken = getCAToken();
+			KeyPair keyPair = new KeyPair(catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
 			String signAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
-			String subject = getCAInfo().getSubjectDN();
-			// Create the CA reference, should be from signing certificate
+			// Create the CA reference, should be from signing certificates holder field
 			CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
-			CAReferenceField caRef = cacert.getCVCertificate().getCertificateBody().getAuthorityReference();
+			HolderReferenceField caHolder = cacert.getCVCertificate().getCertificateBody().getHolderReference();
+			CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), caHolder.getSequence());
 			CVCertificate cvcert = null;
 			try {
 				byte[] binbytes = request;
@@ -210,7 +215,8 @@ public class CVCCA extends CA implements Serializable {
 				log.info(msg, e);
 				return request;			
 			}
-			CVCAuthenticatedRequest authreq = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef);
+			log.debug("Creating authenticated request with signature alg: "+signAlg+", using provider "+catoken.getProvider());
+			CVCAuthenticatedRequest authreq = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef, catoken.getProvider());
 			ret = authreq.getDEREncoded();
 			log.debug("Signed a CardVerifiableCertificate request and returned a CVCAuthenticatedRequest.");
 		} catch (IllegalKeyStoreException e) {
@@ -319,11 +325,12 @@ public class CVCCA extends CA implements Serializable {
 	        case CertificateProfile.CVC_ACCESS_NONE: accessRights = AccessRightEnum.READ_ACCESS_NONE; break;
         }
         // Generate the CVC certificate using Keijos library
-        String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
-        log.debug("Creating CV certificate with algorithm "+sigAlg+", public key algorithm from CVC request must match this algorithm.");
+        CATokenContainer catoken = getCAToken();
+        String sigAlg = catoken.getCATokenInfo().getSignatureAlgorithm();
+        log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+catoken.getProvider()+", public key algorithm from CVC request must match this algorithm.");
         log.debug("CARef: "+caRef.getConcatenated()+"; holderRef: "+holderRef.getConcatenated());
-        CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
-        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), getCAToken().getProvider());
+        CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
+        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), catoken.getProvider());
 
         if (log.isDebugEnabled()) {
             log.debug("Certificate: "+cvc.toString());
