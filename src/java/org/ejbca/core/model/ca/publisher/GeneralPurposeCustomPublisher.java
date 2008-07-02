@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -28,6 +30,7 @@ import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.util.CertTools;
 
 /**
  * This class is used for publishing to user defined script or command.
@@ -72,33 +75,15 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	public void init(Properties properties) {
 		log.debug("Initializing GeneralPurposeCustomPublisher");		
 		// Extract system properties
-		if ( properties.getProperty(crlFailOnErrorCodePropertyName) != null ) {
-			crlFailOnErrorCode = properties.getProperty(crlFailOnErrorCodePropertyName).equalsIgnoreCase("true");
-		}
-		if ( properties.getProperty(crlFailOnStandardErrorPropertyName) != null ) {
-			crlFailOnStandardError = properties.getProperty(crlFailOnStandardErrorPropertyName).equalsIgnoreCase("true");
-		}
-		if ( properties.getProperty(crlExternalCommandPropertyName) != null ) {
-			crlExternalCommandFileName = properties.getProperty(crlExternalCommandPropertyName);
-		}
-		if ( properties.getProperty(certFailOnErrorCodePropertyName) != null ) {
-			certFailOnErrorCode = properties.getProperty(certFailOnErrorCodePropertyName).equalsIgnoreCase("true");
-		}
-		if ( properties.getProperty(certFailOnStandardErrorPropertyName) != null ) {
-			certFailOnStandardError = properties.getProperty(certFailOnStandardErrorPropertyName).equalsIgnoreCase("true");
-		}
-		if ( properties.getProperty(certExternalCommandPropertyName) != null ) {
-			certExternalCommandFileName = properties.getProperty(certExternalCommandPropertyName);
-		}
-		if ( properties.getProperty(revokeFailOnErrorCodePropertyName) != null ) {
-			revokeFailOnErrorCode = properties.getProperty(revokeFailOnErrorCodePropertyName).equalsIgnoreCase("true");
-		}
-		if ( properties.getProperty(revokeFailOnStandardErrorPropertyName) != null ) {
-			revokeFailOnStandardError = properties.getProperty(revokeFailOnStandardErrorPropertyName).equalsIgnoreCase("true");
-		}
-		if ( properties.getProperty(revokeExternalCommandPropertyName) != null ) {
-			revokeExternalCommandFileName = properties.getProperty(revokeExternalCommandPropertyName);
-		}
+		crlFailOnErrorCode = properties.getProperty(crlFailOnErrorCodePropertyName, "true").equalsIgnoreCase("true");
+		crlFailOnStandardError = properties.getProperty(crlFailOnStandardErrorPropertyName, "true").equalsIgnoreCase("true");
+		crlExternalCommandFileName = properties.getProperty(crlExternalCommandPropertyName);
+		certFailOnErrorCode = properties.getProperty(certFailOnErrorCodePropertyName, "true").equalsIgnoreCase("true");
+		certFailOnStandardError = properties.getProperty(certFailOnStandardErrorPropertyName, "true").equalsIgnoreCase("true");
+		certExternalCommandFileName = properties.getProperty(certExternalCommandPropertyName);
+		revokeFailOnErrorCode = properties.getProperty(revokeFailOnErrorCodePropertyName, "true").equalsIgnoreCase("true");
+		revokeFailOnStandardError = properties.getProperty(revokeFailOnStandardErrorPropertyName, "true").equalsIgnoreCase("true");
+		revokeExternalCommandFileName = properties.getProperty(revokeExternalCommandPropertyName);
 	} // init
 
 	/**
@@ -124,8 +109,13 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 			throw new PublisherException(msg);
 		}
 		// Run internal method to create tempfile and run the command
+		List arguments = new ArrayList();	//<String>
+		arguments.add(String.valueOf(type));
 		try {
-			runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError, String.valueOf(type));
+			arguments.add(CertTools.getSubjectDN(incert));
+			arguments.add(CertTools.getIssuerDN(incert));
+			arguments.add(CertTools.getSerialNumberAsString(incert));
+			runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError, arguments);
 		} catch (CertificateEncodingException e) {
 			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
         	log.error(msg);
@@ -150,7 +140,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 			throw new PublisherException(msg);
 		}
 		// Run internal method to create tempfile and run the command
-		runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError, null);
+		runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError);
 		return true;
 	}
 
@@ -171,8 +161,13 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 			throw new PublisherException(msg);
 		}
 		// Run internal method to create tempfile and run the command
+		List arguments = new ArrayList();	//<String>
+		arguments.add(String.valueOf(reason));
 		try {
-			runWithTempFile(revokeExternalCommandFileName, cert.getEncoded(), revokeFailOnErrorCode, revokeFailOnStandardError, String.valueOf(reason));
+			arguments.add(CertTools.getSubjectDN(cert));
+			arguments.add(CertTools.getIssuerDN(cert));
+			arguments.add(CertTools.getSerialNumberAsString(cert));
+			runWithTempFile(revokeExternalCommandFileName, cert.getEncoded(), revokeFailOnErrorCode, revokeFailOnStandardError, arguments);
 		} catch (CertificateEncodingException e) {
 			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
         	log.error(msg);
@@ -220,6 +215,41 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 		super.finalize(); 
 	} // finalize
 	
+
+	/**
+	 * Writes a byte-array to a temporary file and executes the given command with the file as argument. The
+	 * function will, depending on its parameters, fail if output to standard error from the command was
+	 * detected or the command returns with an non-zero exit code. 
+	 * 
+	 * @param externalCommand The command to run.
+	 * @param bytes The buffer with content to write to the file.
+	 * @param failOnCode Determines if the method should fail on a non-zero exit code.
+	 * @param failOnOutput Determines if the method should fail on output to standard error.
+	 * @throws PublisherException
+	 */
+	private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput) throws PublisherException {
+		List additionalArguments = new ArrayList();	// <String>
+		runWithTempFile(externalCommand, bytes, failOnCode, failOnOutput, additionalArguments);
+	}
+
+	/**
+	 * Writes a byte-array to a temporary file and executes the given command with the file as argument. The
+	 * function will, depending on its parameters, fail if output to standard error from the command was
+	 * detected or the command returns with an non-zero exit code. 
+	 * 
+	 * @param externalCommand The command to run.
+	 * @param bytes The buffer with content to write to the file.
+	 * @param failOnCode Determines if the method should fail on a non-zero exit code.
+	 * @param failOnOutput Determines if the method should fail on output to standard error.
+	 * @param additionalArgument Added to the command after the tempfiles name
+	 * @throws PublisherException
+	 */
+	private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, String additionalArgument) throws PublisherException {
+		List additionalArguments = new ArrayList();	// <String>
+		additionalArguments.add(additionalArgument);
+		runWithTempFile(externalCommand, bytes, failOnCode, failOnOutput, additionalArguments);
+	}
+
 	/**
 	 * Writes a byte-array to a temporary file and executes the given command with the file as argument. The
 	 * function will, depending on its parameters, fail if output to standard error from the command was
@@ -232,7 +262,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * @param additionalArguments Added to the command after the tempfiles name
 	 * @throws PublisherException
 	 */
-	private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, String additionalArguments) throws PublisherException {
+	private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, List additionalArguments) throws PublisherException {
 		// Create temporary file
 		File tempFile 			= null;
 		FileOutputStream fos	= null;
@@ -260,19 +290,12 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 		try {
 			tempFileName = tempFile.getCanonicalPath();
 			String[] cmdcommand = (externalCommand).split("\\s");
-			String[] cmdargs;
-			if ( additionalArguments == null ) {
-				String[] cmdargst = { tempFileName };
-				cmdargs = cmdargst;
-			} else {
-				String[] cmdargst = { tempFileName, additionalArguments };
-				cmdargs = cmdargst;
-			}
+			additionalArguments.add(0, tempFileName);
+			String[] cmdargs = (String[]) additionalArguments.toArray(new String[0]);
 			String[] cmdarray = new String[cmdcommand.length+cmdargs.length];
 			System.arraycopy(cmdcommand, 0, cmdarray, 0, cmdcommand.length);
 			System.arraycopy(cmdargs, 0, cmdarray, cmdcommand.length, cmdargs.length);
 			Process externalProcess = Runtime.getRuntime().exec( cmdarray, null, null);
-			//Process externalProcess = Runtime.getRuntime().exec( externalCommand + " " +  tempFileName + " " + additionalArguments);
 			BufferedReader stdError = new BufferedReader( new InputStreamReader( externalProcess.getErrorStream() ) );
 			BufferedReader stdInput = new BufferedReader( new InputStreamReader( externalProcess.getInputStream() ) );
 			while ( stdInput.readLine() != null ) { }	// Required under win32 to avoid lock

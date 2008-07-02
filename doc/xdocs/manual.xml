@@ -3805,8 +3805,8 @@ Administration GUI, select a CA, click "Edit" and then "Republish CA Certificate
 <p>
 More advanced scripts or applications have the ability to use the additional argument
 <ul>
-<li>cert.application fulltempfilepathname x509type</li>
-<li>revoke.application fulltempfilepathname x509reason</li>
+<li>cert.application fulltempfilepathname x509type certificateDN issuerDN certHexSerialNumber</li>
+<li>revoke.application fulltempfilepathname x509reason certificateDN issuerDN certHexSerialNumber</li>
 </ul>
 </p>
 </subsubsection>
