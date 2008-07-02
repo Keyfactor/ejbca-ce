@@ -382,8 +382,8 @@ public class OCSPUtil {
     		try {
     			byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
     					"-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-    			Certificate cert = CertTools.getCertfromByteArray(bytes);
-    			String key = CertTools.getIssuerDN(cert)+";"+CertTools.getSerialNumber(cert).toString(16);
+    			X509Certificate  cert = (X509Certificate) CertTools.getCertfromByteArray(bytes);
+    			String key =  cert.getIssuerDN()+";"+cert.getSerialNumber().toString(16);
     			trustedCerts.put(key,cert);
     		} catch (CertificateException e) {
     			String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
@@ -427,7 +427,8 @@ public class OCSPUtil {
      * @return true if cert is in trustedCerts, false otherwise
      */
     public static boolean checkCertInList(X509Certificate cert, Hashtable trustedCerts) {
-    	String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
+    	//String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
+    	String key =  cert.getIssuerDN()+";"+cert.getSerialNumber().toString(16);
     	Object found = trustedCerts.get(key);
         if (found != null) {
             return true;

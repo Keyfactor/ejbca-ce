@@ -391,7 +391,6 @@ abstract class OCSPServletBase extends HttpServlet {
 				m_log.error("OCSP request signatures are restricted but allowed signatures could not be read from file, check ocsp.properties.");
 			}
 		}
-
 		initparam = config.getInitParameter("useCASigningCert");
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("Use CA signing cert : '"
