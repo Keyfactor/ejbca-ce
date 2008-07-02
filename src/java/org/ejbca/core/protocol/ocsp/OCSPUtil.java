@@ -418,7 +418,6 @@ public class OCSPUtil {
 		return false;
 	}
     
-    
     /**
      * Checks to see if a certificate is in a list of certificate.
      * Comparison is made on SerialNumber
