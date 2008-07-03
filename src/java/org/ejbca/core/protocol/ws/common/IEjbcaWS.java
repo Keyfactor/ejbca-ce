@@ -693,7 +693,7 @@ public interface IEjbcaWS {
 	public abstract NameAndId[] getAvailableCAsInProfile(int entityProfileId) 
 			throws AuthorizationDeniedException, EjbcaException;
 
-	/**
+	/** Generates a CRL for the given CA.
 	 * Authorization requirements:
 	 * - Administrator flag set
 	 * - /administrator
@@ -707,7 +707,7 @@ public interface IEjbcaWS {
 	public abstract void createCRL(String caname) 
 			throws ApprovalException, EjbcaException, ApprovalRequestExpiredException;
 	
-	/**
+	/** Returns the version of the EJBCA server.
 	 * Authorization requirements:
 	 *  - none
      *
