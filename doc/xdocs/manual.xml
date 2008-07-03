@@ -1035,12 +1035,14 @@ The JAX-WS interface depends on java 1.5 or later and will otherwise not be incl
 The functionality currently available through the Web Service Interface are:
 </p>
 <ul>
+<li>getEjbcaVersion : Returns the version of the EJBCA server.</li>
 <li>editUser    : Edits/adds  userdata</li>
 <li>findUser    : Retrieves the userdata for a given user</li>
 <li>findCerts   : Retrieves the certificates generated for a user</li>
 <li>pkcs10Req   : Deprecated method previously used to generate a certificate using the given userdata and the public key from the PKCS10</li>
 <li>pkcs10Request : Newer method that generates a certificate or PKCS7 using the given userdata and the public key from the PKCS10</li>
 <li>pkcs12Req   : Generates a PKCS12 keystore (with the private key) using the given userdata</li>
+<li>cvcRequest  : Generate a CV certificate for the specified user using the public key from the CVC request. See the CVC documentation for more details.</li> 
 <li>revokeCert  : Revokes the given certificate</li>
 <li>revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user</li>
 <li>revokeToken : Revokes all certificates placed on a given hard token</li>
@@ -1058,7 +1060,12 @@ The functionality currently available through the Web Service Interface are:
 <li>getCertificate : Returns a certificate given its issuer and serial number</li>
 <li>keyRecoverNewest : Marks the users latest certificate for key recovery. Note, to key recover the user the status 
 must also be set to KEYRECOVERY (70), and the user must have been generated for key recovery from the start.
-If all prerequisites are fulfilled, the next pkcs12Req call (for example) will return the recovered key and certificate.</li> 
+If all prerequisites are fulfilled, the next pkcs12Req call (for example) will return the recovered key and certificate.</li>
+<li>getAvailableCAs : Fetch a list of the ids and names of available CAs, i.e. not having status "external" or "waiting for certificate response".</li>
+<li>getAuthorizedEndEntityProfiles : Fetch a list of end entity profiles that the administrator is authorized to use.</li>
+<li>getAvailableCertificateProfiles : Fetch a list of available certificate profiles in an end entity profile.</li>
+<li>getAvailableCAsInProfile : Fetch a list of the ids and names of available CAs in an end entity profile.</li>
+<li>createCRL : Generates a CRL for the given CA.</li>
 </ul>
 <p>
 There is also a cli tool that can be used for remote scripting. See following section for more information.
