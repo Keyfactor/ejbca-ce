@@ -171,9 +171,9 @@ public class CAWrapper implements Serializable {
 	{
 		tokenStatus = cainfo.getCATokenInfo().getCATokenStatus();
 		if (tokenStatus == ICAToken.STATUS_OFFLINE) {
-			return("Off-line");
+			return(webBean.getText("OFFLINE"));
 		}
-		return ("Active");
+		return (webBean.getText("ACTIVE"));
 	}
 	public String getTokenStatusImg() {
 		tokenStatus = cainfo.getCATokenInfo().getCATokenStatus();

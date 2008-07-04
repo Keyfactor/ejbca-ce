@@ -24,7 +24,7 @@
 </head>
 <f:view>
 <body>
-<h1 align="center"><h:outputText value="Activate CA's"/></h1>
+<h1 align="center"><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
 	<h:form>
 	<h:dataTable border="0" value="#{cAActivationMBean.hasMessages}" var="item" style="right: auto; left: auto">
 	     	<h:column>
@@ -79,9 +79,9 @@
 	    	 		<h:outputText value="#{web.text.ACTIVATEORMAKEOFFLINE}" />
 	    		</f:facet>
 	    		<h:selectOneRadio id="align" value="#{item.activateOption}">
-  					<f:selectItem itemLabel="Activate" itemValue="#{cAActivationMBean.activate}"/>
-  					<f:selectItem itemLabel="Make off-line" itemValue="#{cAActivationMBean.makeoffline}"/>
-  					<f:selectItem itemLabel="No change" itemValue="#{cAActivationMBean.keepcurrent}"/>
+  					<f:selectItem itemLabel="#{web.text.ACTIVATE}" itemValue="#{cAActivationMBean.activate}"/>
+  					<f:selectItem itemLabel="#{web.text.MAKEOFFLINE}" itemValue="#{cAActivationMBean.makeoffline}"/>
+  					<f:selectItem itemLabel="#{web.text.NOCHANGE}" itemValue="#{cAActivationMBean.keepcurrent}"/>
 				</h:selectOneRadio>
 	    		</h:column>
 	    		<h:column>
