@@ -1161,7 +1161,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         if ( getUserStatus(admin, username) == UserDataConstants.STATUS_REVOKED ) {
             String msg = intres.getLocalizedMessage("ra.errorbadrequest", new Integer(data.getEndEntityProfileId()));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
             throw new AlreadyRevokedException(msg);
         }
         // Check if approvals is required.
@@ -1236,20 +1236,20 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         RevokedCertInfo revinfo = certificatesession.isRevoked(admin, issuerdn, certserno);
         if ( revinfo == null ) {
             String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
         	throw new FinderException(msg);
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (reason == RevokedCertInfo.NOT_REVOKED) {
             if ( revinfo.getReason() != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ) {
                 String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
                 throw new AlreadyRevokedException(msg);
             }            
         } else {
             if ( revinfo.getReason() != RevokedCertInfo.NOT_REVOKED ) {
                 String msg = intres.getLocalizedMessage("ra.errorrevocationexists");            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
                 throw new AlreadyRevokedException(msg);
             }            
         }
