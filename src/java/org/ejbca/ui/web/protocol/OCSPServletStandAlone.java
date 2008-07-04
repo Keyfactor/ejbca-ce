@@ -59,6 +59,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /** 
@@ -329,6 +330,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             try {
                 final PrivateKey key = (PrivateKey)keyStore.getKey(alias, keyPassword!=null ? keyPassword.toCharArray() : null);
                 final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
+                m_log.debug("Trying to load signing keys for signer with subjectDN (EJBCA ordering): "+CertTools.getSubjectDN(cert));
                 
                 if ( key!=null && cert!=null && signTest(key, cert.getPublicKey(), errorComment, providerName) ) {
                     putSignEntity(new PrivateKeyFactoryKeyStore(key), cert, adm, providerName);
