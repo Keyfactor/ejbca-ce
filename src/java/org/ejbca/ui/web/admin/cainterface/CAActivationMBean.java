@@ -189,11 +189,18 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	/** Updates the IncludeInChealthCheck flag in the database for the CA
 	 */
 	public CAInfo updateMonitored(int caid, boolean monitored) throws Exception {
-		CAInfo cainfo = caBean.getCAInfo(caid).getCAInfo();
-		cainfo.setincludeInHealthCheck(monitored);
-		cadatahandler.editCA(cainfo);
-		return cainfo;
+		CAInfoView cv = caBean.getCAInfo(caid);
+		if (cv != null) {
+			CAInfo cainfo = cv.getCAInfo();
+			cainfo.setincludeInHealthCheck(monitored);
+			cadatahandler.editCA(cainfo);
+			return cainfo;			
+		} else {
+			log.debug("No CA with id: "+caid);
+		}
+		return null;
 	}
+	
 	public void apply() {
 		activationMessages=new ArrayList();
 		activationMessages.add("Results:");
@@ -213,9 +220,14 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 					wrapper.setCAActivationMessage("");			
 				}
 				// Update the monitored flag in the DB if it changed
-				CAInfo cainfo = caBean.getCAInfo(wrapper.getID()).getCAInfo();
-				if (wrapper.getMonitored() != cainfo.getIncludeInHealthCheck()) {
-					wrapper.updateMonitored();
+				CAInfoView cv = caBean.getCAInfo(wrapper.getID());
+				if (cv != null) {
+					CAInfo cainfo = cv.getCAInfo();
+					if (wrapper.getMonitored() != cainfo.getIncludeInHealthCheck()) {
+						wrapper.updateMonitored();
+					}					
+				} else {
+					log.debug("No CA with id: "+wrapper.getID());
 				}
 			} catch (Exception e) {
 				log.error(e);
