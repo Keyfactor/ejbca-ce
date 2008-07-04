@@ -3,7 +3,7 @@
 
 	<property name="app.name" value="ejbca" />
     <property name="app.name.cap" value="EJBCA" />
-	<property name="app.version" value="${app.name.cap} 3.7alpha" />
+	<property name="app.version" value="${app.name.cap} 3.7b3" />
 	
     <property name="ejbca.home" location="." />
     <property environment="env" />
@@ -250,6 +250,7 @@
     <property name="healthcheck.amountfreemem" value="1" />
     <property name="healthcheck.dbquery" value="Select 1 From CertificateData where fingerprint='XX'" />
     <property name="healthcheck.authorizedips" value="127.0.0.1" />
+    <property name="healthcheck.catokensigntest" value="false" />
     <property name="healthcheck.maintenancefile" value="" />
     <property name="healthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
     <property name="ocsphealthcheck.amountfreemem" value="1" />

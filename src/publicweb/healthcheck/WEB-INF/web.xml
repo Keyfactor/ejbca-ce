@@ -50,6 +50,13 @@
                 all the publishers. 
             </description>
         </init-param>
+        <init-param>
+            <param-name>CaTokenSignTest</param-name>
+            <param-value>@healthcheck.catokensigntest@</param-value>
+            <description>
+               Parameter specifying a if the CA check should perform an actual test signature on the CA token.
+            </description>
+        </init-param>
         <!-- TextResponse specific init parameters -->
         <init-param>
             <param-name>OKMessage</param-name>

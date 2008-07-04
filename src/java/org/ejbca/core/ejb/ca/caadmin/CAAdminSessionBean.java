@@ -761,12 +761,14 @@ public class CAAdminSessionBean extends BaseSessionBean {
         CAInfo cainfo = null;
         try{
             CADataLocal cadata = cadatahome.findByName(name);
-            if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
-                cadata.setStatus(SecConst.CA_EXPIRED);
-            }
-            authorizedToCA(admin,cadata.getCaId().intValue());
-
             cainfo = cadata.getCA().getCAInfo();
+            authorizedToCA(admin,cainfo.getCAId());
+            int status = cainfo.getStatus();
+            Date expireTime = cainfo.getExpireTime();
+            if(status == SecConst.CA_ACTIVE && expireTime.before(new Date())){
+                cadata.setStatus(SecConst.CA_EXPIRED);
+                cadata.setUpdateTime(new Date().getTime());
+            }
         } catch(javax.ejb.FinderException fe) {             
             // ignore
             log.debug("Can not find CA with name: '"+name+"'.");
@@ -780,6 +782,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /**
      * Returns a value object containing nonsensitive information about a CA give it's CAId.
+     * 
      * @param admin administrator calling the method
      * @param caid numerical id of CA (subjectDN.hashCode())
      * @return value object or null if CA does not exist
@@ -788,15 +791,57 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public CAInfo getCAInfo(Admin admin, int caid){
+    	// No sign test for the standard method
+    	return getCAInfo(admin, caid, false);
+    }
+    
+    /**
+     * Returns a value object containing nonsensitive information about a CA give it's CAId.
+     * 
+     * If doSignTest is true, and the CA is active and the CA is included in healthcheck (cainfo.getIncludeInHealthCheck()), 
+     * a signature with the test keys is performed to set the CA Token status correctly.
+     * 
+     * @param admin administrator calling the method
+     * @param caid numerical id of CA (subjectDN.hashCode())
+     * @param doSignTest true if a test signature should be performed, false if only the status from token info is checked. Should normally be set to false.
+     * @return value object or null if CA does not exist
+     * 
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
+     */
+    public CAInfo getCAInfo(Admin admin, int caid, boolean doSignTest){
         CAInfo cainfo = null;
         try{
             authorizedToCA(admin,caid);
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-            if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
+            CA ca = cadata.getCA();
+            String name = ca.getName();
+            cainfo = ca.getCAInfo();
+            int status = cainfo.getStatus();
+            boolean includeInHealthCheck = cainfo.getIncludeInHealthCheck();
+            Date expireTime = cainfo.getExpireTime();
+            if (status == SecConst.CA_ACTIVE && expireTime.before(new Date())) {
+                cainfo.setStatus(SecConst.CA_EXPIRED); // update the value object
                 cadata.setStatus(SecConst.CA_EXPIRED);
+                cadata.setUpdateTime(new Date().getTime());
+            }   
+            int tokenstatus = ICAToken.STATUS_OFFLINE;
+            if (doSignTest && status == SecConst.CA_ACTIVE && includeInHealthCheck) {
+            	// Only do a real test signature if the CA is supposed to be active and if it is included in healthchecking
+            	// Otherwise we will only waste resources
+            	if (log.isDebugEnabled()) {
+                	log.debug("Making test signature with CAs token. CA="+name+", doSignTest="+doSignTest+", CA status="+status+", includeInHealthCheck="+includeInHealthCheck);            		
+            	}
+                CATokenContainer catoken = ca.getCAToken();
+                tokenstatus = catoken.getCATokenInfo().getCATokenStatus();            	
+            } else {
+            	if (log.isDebugEnabled()) {
+                	log.debug("Not making test signature with CAs token. doSignTest="+doSignTest+", CA status="+status+", includeInHealthCheck="+includeInHealthCheck);            		
+            	}
+            	tokenstatus = cainfo.getCATokenInfo().getCATokenStatus(); 
             }
-
-            cainfo = cadata.getCA().getCAInfo();
+            // Set a possible new status in the info value object
+            cainfo.getCATokenInfo().setCATokenStatus(tokenstatus);
         } catch(javax.ejb.FinderException fe) {
             // ignore
             log.debug("Can not find CA with id: "+caid);

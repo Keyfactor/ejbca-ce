@@ -543,6 +543,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.amountfreemem@" value="${healthcheck.amountfreemem}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.dbquery@" value="${healthcheck.dbquery}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.authorizedips@" value="${healthcheck.authorizedips}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.catokensigntest@" value="${healthcheck.catokensigntest}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.maintenancefile@" value="${healthcheck.maintenancefile}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.maintenancepropertyname@" value="${healthcheck.maintenancepropertyname}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	

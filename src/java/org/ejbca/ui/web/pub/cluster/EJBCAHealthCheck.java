@@ -28,7 +28,6 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.log.Admin;
@@ -46,6 +45,8 @@ import org.ejbca.core.model.log.Admin;
  * * All CATokens are active, if not set as offline and not set to specifically not be monitored
  * * All Publishers can establish connection
  * 
+ * * Optionally you can configure the CAToken test to also make a test signature, not only check if the token status is active.
+ * 
  * @author Philip Vendil
  * @version $Id$
  */
@@ -57,12 +58,18 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	
 	private boolean checkPublishers = false;
+	private boolean caTokenSignTest = false;
 	
 	public void init(ServletConfig config) {
 		super.init(config);
 		if(config.getInitParameter("CheckPublishers") != null){
 			checkPublishers = config.getInitParameter("CheckPublishers").equalsIgnoreCase("TRUE");
 		}
+		log.debug("CheckPublishers: "+checkPublishers);
+		if(config.getInitParameter("CaTokenSignTest") != null){
+			caTokenSignTest = config.getInitParameter("CaTokenSignTest").equalsIgnoreCase("TRUE");
+		}
+		log.debug("CaTokenSignTest: "+caTokenSignTest);
 	}
 
 	public String checkHealth(HttpServletRequest request) {
@@ -96,13 +103,14 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		String retval = "";
 		Iterator iter = getCAAdminSession().getAvailableCAs(admin).iterator();
 		while(iter.hasNext()){
-			CAInfo cainfo = getCAAdminSession().getCAInfo(admin,((Integer) iter.next()).intValue());
-			CATokenInfo tokeninfo = cainfo.getCATokenInfo(); 
+			int caid = ((Integer) iter.next()).intValue();
+			CAInfo cainfo = getCAAdminSession().getCAInfo(admin,caid,caTokenSignTest);
 			if((cainfo.getStatus() == SecConst.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()){
-			  if(tokeninfo.getCATokenStatus() == ICAToken.STATUS_OFFLINE){
-				retval +="\nCA: Error CA Token is disconnected, CA Name : " + cainfo.getName();
-				log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
-			  }
+				int tokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
+				if(tokenstatus == ICAToken.STATUS_OFFLINE){
+					retval +="\nCA: Error CA Token is disconnected, CA Name : " + cainfo.getName();
+					log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
+				}
 			}
 		}				
 		return retval;
