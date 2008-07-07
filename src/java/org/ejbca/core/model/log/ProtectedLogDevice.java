@@ -362,8 +362,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 					    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
 							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 						} else {
-							if (now - protectedLogEventRow.getEventTime() > searchWindow) {
-								// Too old = some are missing
+							if (now - protectedLogEventRow.getEventTime() > searchWindow && lastProtectedLogEventIdentifier.getCounter() != (counter-1) ) {
+								// Too old and the last one that should have been written = some are missing
 						    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
 						    	log.debug("The last found event was more than " + (now - protectedLogEventRow.getEventTime()) + " milliseconds old.");
 						    	protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
