@@ -32,6 +32,9 @@ CLASSES=$CLASSES:$EJBCA_HOME/lib/bcmail-jdk15.jar
 CLASSES=$CLASSES:$EJBCA_HOME/lib/jline-0.9.94.jar
 CLASSES=$CLASSES:$EJBCA_HOME/lib/log4j.jar
 CLASSES=$CLASSES:$EJBCA_HOME/lib/commons-lang-2.4.jar
+#CLASSES=$CLASSES:$APPSRV_HOME/server/default/lib/iaik_jce.jar
+#CLASSES=$CLASSES:$APPSRV_HOME/server/default/lib/iaikPkcs11Provider.jar
+#CLASSES=$CLASSES:$APPSRV_HOME/server/default/lib/iaikPkcs11Wrapper.jar
 CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
 # use this instead if you want build from eclipse
 #CLASSES=$CLASSES:$EJBCA_HOME/out/classes
