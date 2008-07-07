@@ -65,7 +65,7 @@
   
   <section name="EAC access rights">
   <p>
-  The EAC access rights for all issued CV certificates will be read access DG3 and DG4.
+  You can configure in the certificate profile which EAC access rights will be used for issued certificates. None, read access DG3, read access DG4 or read access DG3 and DG4.
   </p>
   </section>
   
