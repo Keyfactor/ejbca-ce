@@ -349,6 +349,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
             keyrecoverydatahome.create(CertTools.getSerialNumber(certificate),
                     CertTools.getIssuerDN(certificate), username, response.getKeyData());
+           // same method to make hex serno as in KeyRecoveryDataBean
             String msg = intres.getLocalizedMessage("keyrecovery.addeddata", CertTools.getSerialNumber(certificate).toString(16), CertTools.getIssuerDN(certificate));            	
             logsession.log(admin, certificate, LogConstants.MODULE_KEYRECOVERY, new java.util.Date(), username,
                     certificate, LogConstants.EVENT_INFO_KEYRECOVERY, msg);
@@ -423,7 +424,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void removeKeyRecoveryData(Admin admin, Certificate certificate) {
-        final String hexSerial = CertTools.getSerialNumberAsString(certificate);
+        final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
         debug(">removeKeyRecoveryData(certificate: " + CertTools.getSerialNumber(certificate).toString(16) +")");
         final String dn = CertTools.getIssuerDN(certificate);
         try {
@@ -641,7 +642,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
-        final String hexSerial = CertTools.getSerialNumberAsString(certificate);
+        final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);        
         debug(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
         boolean returnval = false;
@@ -756,7 +757,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         debug(">existsKeys()");
 
         boolean returnval = false;
-        final String hexSerial = CertTools.getSerialNumberAsString(certificate);
+        final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);
         try {
             KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
