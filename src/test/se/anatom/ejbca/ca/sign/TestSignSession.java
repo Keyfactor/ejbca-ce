@@ -1344,6 +1344,7 @@ public class TestSignSession extends TestCase {
         log.debug(">test21CVCertificate()");
 
         UserDataVO user = new UserDataVO("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        user.setPassword("cvc");
         usersession.addUser(admin, user, false);
         usersession.setUserStatus(admin, "cvc", UserDataConstants.STATUS_NEW);
         usersession.setPassword(admin, "cvc", "foo123");
