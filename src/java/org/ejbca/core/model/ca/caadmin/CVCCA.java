@@ -208,7 +208,9 @@ public class CVCCA extends CA implements Serializable {
 			// See if we have a previous sequence to put in the CA reference instead of the same as we have from the request
 			String propdata = catoken.getCATokenInfo().getProperties();
 			Properties prop = new Properties();
-			prop.load(new ByteArrayInputStream(propdata.getBytes()));	
+			if (propdata != null) {
+				prop.load(new ByteArrayInputStream(propdata.getBytes()));					
+			}
 			String previousSequence = (String)prop.get(ICAToken.PREVIOUS_SEQUENCE_PROPERTY);
 			// Only use previous sequence if we also use previous key
 			if ( (previousSequence != null) && (usepreviouskey) ) {
@@ -255,13 +257,20 @@ public class CVCCA extends CA implements Serializable {
 			// instead of an authenticated request
 			CardVerifiableCertificate cvccert = new CardVerifiableCertificate(cvcert);
 			HolderReferenceField cvccertholder = cvccert.getCVCertificate().getCertificateBody().getHolderReference();
-			if (createlinkcert) {
+			AuthorizationRoleEnum authRole = null;
+			AccessRightEnum rights = null;
+			try {
+				authRole = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole();					
+ 				rights = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight();
+			} catch (NoSuchFieldException e) {
+				log.debug("No AuthorizationRoleEnum or AccessRightEnum, this is not a CV certificate so we can't make a link certificate: "+e.getMessage());
+				
+			}
+			if (createlinkcert && (authRole != null) && (rights != null)) {
 				log.debug("We will create a link certificate.");
 				String msg = intres.getLocalizedMessage("cvc.info.createlinkcert", cvccertholder.getConcatenated(), caRef.getConcatenated());
 				log.info(msg);
 				PublicKey pk = cvccert.getPublicKey();
-				AuthorizationRoleEnum authRole= cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole();
-				AccessRightEnum rights = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight();
 				Date validFrom = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
 				Date validTo = cvccert.getCVCertificate().getCertificateBody().getValidTo();
 				// Generate a new certificate with the same contents as the passed in certificate, but with new caRef and signature
