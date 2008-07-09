@@ -1014,12 +1014,19 @@ public class TestCAs extends TestCase {
         assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
         
         // Get the DVs certificate request signed by the CVCA
-        byte[] authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request, false);
+        byte[] authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request, false, false);
 		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
         CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
         assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getAuthorityReference().getConcatenated());
         assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated());
         assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getConcatenated());
+
+        // Get the DVs certificate request signed by the CVCA creating a link certificate
+        authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request, false, true);
+		parsedObject = CertificateParser.parseCVCObject(authrequest);
+        CVCertificate linkcert = (CVCertificate)parsedObject;
+        assertEquals("SETESTCVCA00001", linkcert.getCertificateBody().getAuthorityReference().getConcatenated());
+        assertEquals("SETESTDV-D00002", linkcert.getCertificateBody().getHolderReference().getConcatenated());
 
         // Renew again but regenerate keys this time to make sure sequence is updated
         caid = dvdcainfo.getCAId();

@@ -53,7 +53,10 @@ function check()
         <input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText(buttontexts[filemode]) %>" ><br><br>
         <% if (filemode == 3) { // SIGNREQUEST %>
            <%= ejbcawebbean.getText("USEPREVIOUSKEY") %>
-           <input type="checkbox" name="<%=CHECKBOX_USEPREVIOUSKEY%>" value="<%=CHECKBOX_VALUE%>" 
+           <input type="checkbox" name="<%=CHECKBOX_USEPREVIOUSKEY%>" value="<%=CHECKBOX_VALUE%>"
+           <br> 
+           <%= ejbcawebbean.getText("CREATELINKCERT") %>
+           <input type="checkbox" name="<%=CHECKBOX_CREATELINKCERT%>" value="<%=CHECKBOX_VALUE%>" 
         <% } %>
         <br><br>
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     

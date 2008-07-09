@@ -183,10 +183,11 @@ public class CVCCA extends CA implements Serializable {
 	}
 
 	/** If the request is a CVC request, this method adds an outer signature to the request.
+	 * If this request is a CVCA certificate and this is the same CVCA, this method creates a CVCA link certificate.
 	 * 
 	 * @see CA#signRequest(Collection, String)
 	 */
-	public byte[] signRequest(byte[] request, boolean usepreviouskey) throws CATokenOfflineException {
+	public byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CATokenOfflineException {
 		byte[] ret = request;
 		try {
 			CATokenContainer catoken = getCAToken();
@@ -212,6 +213,9 @@ public class CVCCA extends CA implements Serializable {
 			// Only use previous sequence if we also use previous key
 			if ( (previousSequence != null) && (usepreviouskey) ) {
 				sequence = previousSequence;
+				log.debug("Using previous sequence in caRef: "+sequence);
+			} else {
+				log.debug("Using current sequence in caRef: "+sequence);				
 			}
 			// Set the CA reference field for the authentication signature
 			CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), sequence);
@@ -225,7 +229,7 @@ public class CVCCA extends CA implements Serializable {
 					Collection col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
 					Certificate cert = (Certificate)col.iterator().next();
 					if (cert != null) {
-						binbytes = cert.getEncoded();						
+						binbytes = cert.getEncoded();
 					}
 				} catch (Exception e) {
 					log.debug("This is not a PEM certificate?: "+e.getMessage());
@@ -247,10 +251,29 @@ public class CVCCA extends CA implements Serializable {
 				log.info(msg, e);
 				return request;			
 			}
-			log.debug("Creating authenticated request with signature alg: "+signAlg+", using provider "+catoken.getProvider());
-			CVCAuthenticatedRequest authreq = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef, catoken.getProvider());
-			ret = authreq.getDEREncoded();
-			log.debug("Signed a CardVerifiableCertificate request and returned a CVCAuthenticatedRequest.");
+			// Check if the input was a CVCA certificate, which is the same CVCA as this. If all is true we should create a CVCA link certificate
+			// instead of an authenticated request
+			CardVerifiableCertificate cvccert = new CardVerifiableCertificate(cvcert);
+			HolderReferenceField cvccertholder = cvccert.getCVCertificate().getCertificateBody().getHolderReference();
+			if (createlinkcert) {
+				log.debug("We will create a link certificate.");
+				String msg = intres.getLocalizedMessage("cvc.info.createlinkcert", cvccertholder.getConcatenated(), caRef.getConcatenated());
+				log.info(msg);
+				PublicKey pk = cvccert.getPublicKey();
+				AuthorizationRoleEnum authRole= cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole();
+				AccessRightEnum rights = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight();
+				Date validFrom = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
+				Date validTo = cvccert.getCVCertificate().getCertificateBody().getValidTo();
+				// Generate a new certificate with the same contents as the passed in certificate, but with new caRef and signature
+				CVCertificate retcert = CertificateGenerator.createCertificate(pk, keyPair.getPrivate(), signAlg, caRef, cvccertholder, authRole, rights, validFrom, validTo, catoken.getProvider());
+				ret = retcert.getDEREncoded();
+				log.debug("Signed a CardVerifiableCertificate CardVerifiableCertificate.");
+			} else {
+				log.debug("Creating authenticated request with signature alg: "+signAlg+", using provider "+catoken.getProvider());
+				CVCAuthenticatedRequest authreq = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef, catoken.getProvider());
+				ret = authreq.getDEREncoded();				
+				log.debug("Signed a CardVerifiableCertificate request and returned a CVCAuthenticatedRequest.");
+			}
 		} catch (IllegalKeyStoreException e) {
 			throw new javax.ejb.EJBException(e);
 		} catch (InvalidKeyException e) {

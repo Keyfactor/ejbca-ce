@@ -102,7 +102,7 @@
   </p>
   </section>
   
-  <section name="Creating authenticated requests">
+  <section name="Creating authenticated requests and link certificates">
   <p>You can sign CV certificate requests by your CVCA or DV by going to 'Edit Certificate Authorities', typing the name of your CA in the
   text field (same name as appears in the list above the text field) and then clicking on 'Sign Certificate Request'. You will be a chance to upload the
   CV certificate request to the CVCA, and you will get an Authenticated request back.
@@ -115,7 +115,8 @@
   </p>
   <p>
   to create CVCA link certificates the same approach is done. First renew the CVCA (generating new keys), which creates a new self-signed CVCA certificate internally. 
-  After this you can create a link certificate by going info 'Sign Certificate Request' for the CVCA and signing the certificate with 'Use previous key'.
+  Download the new self-signed CVCA certificate (for example from Basic Functions). After this you can create a link certificate by going into 'Sign Certificate Request' 
+  for the CVCA and signing the certificate with 'Use previous key' and 'Create link certificate'.
   </p>
   </section>
   

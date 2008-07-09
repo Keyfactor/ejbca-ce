@@ -108,6 +108,8 @@
   
   /** Use previous key to sign requests by CA, primarily used to create authenticated CVC requests */
   static final String CHECKBOX_USEPREVIOUSKEY                     = "checkboxusepreviouskey";
+  /** Create a link certificate when signign request by CA, primarily used to create CVC link certificates */
+  static final String CHECKBOX_CREATELINKCERT                     = "checkboxcreatelinkcert";
   
   static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
   
@@ -154,6 +156,7 @@
   String importsigalias = null;
   String importencalias = null;
   String usepreviouskey = null;
+  String createlinkcert = null;
 
   InputStream file = null;
 
@@ -241,6 +244,8 @@
            importencalias = item.getString();
          if(item.getFieldName().equals(CHECKBOX_USEPREVIOUSKEY))
         	 usepreviouskey = item.getString();
+         if(item.getFieldName().equals(CHECKBOX_CREATELINKCERT))
+        	 createlinkcert = item.getString();
        }else{         
          file = item.getInputStream(); 
          errorrecievingfile = false;                          
@@ -1115,8 +1120,11 @@
                boolean previouskey = false;
                if(usepreviouskey != null)
             	   previouskey = usepreviouskey.equals(CHECKBOX_VALUE);         
+               boolean createlinkcertificate = false;
+               if(createlinkcert != null)
+            	   createlinkcertificate = createlinkcert.equals(CHECKBOX_VALUE);         
                byte[] reqbytes = ostr.toByteArray();
-               byte[] signedreq = cadatahandler.signRequest(caid, reqbytes, previouskey);                                
+               byte[] signedreq = cadatahandler.signRequest(caid, reqbytes, previouskey, createlinkcertificate);                                
                cabean.saveRequestData(signedreq);     
                filemode = CERTREQGENMODE;
                includefile = "displayresult.jspf";

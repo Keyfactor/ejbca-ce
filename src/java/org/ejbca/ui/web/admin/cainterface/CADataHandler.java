@@ -178,8 +178,8 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public byte[] signRequest(int caid, byte[] request, boolean usepreviouskey) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-	  byte[] result = caadminsession.signRequest(administrator, caid, request, usepreviouskey);
+  public byte[] signRequest(int caid, byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+	  byte[] result = caadminsession.signRequest(administrator, caid, request, usepreviouskey, createlinkcert);
 	  return result;    
   }	    
   

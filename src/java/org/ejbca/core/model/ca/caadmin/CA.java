@@ -548,9 +548,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param request the binary coded request to be signed
      * @param usepreviouskey true if the CAs previous key should be used to sign the request, if the CA has generated new keys. Primarily used to create authenticated CVC requests.
+     * @param createlinkcert true if the signed request should be a link certificate. Primarily used to create CVC link certificates.
      * @return byte array with binary encoded signed request or the original request of the CA can not create an additional signature on the passed in request.
      */
-    public abstract byte[] signRequest(byte[] request, boolean usepreviouskey) throws CATokenOfflineException;
+    public abstract byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CATokenOfflineException;
 
     public byte[] encryptKeys(KeyPair keypair) throws Exception{
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
