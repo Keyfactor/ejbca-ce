@@ -198,7 +198,7 @@ public class TestApprovalSession extends TestCase {
 		assertTrue(next.getCAId() == caid);
 		assertTrue(next.getEndEntityProfileiId() == SecConst.EMPTY_ENDENTITYPROFILE);
 		assertTrue(next.getReqadmincertissuerdn().equals(CertTools.getIssuerDN(reqadmincert)));
-		assertTrue(next.getReqadmincertsn().equals(reqadmincert.getSerialNumber().toString(16)));
+		assertTrue(next.getReqadmincertsn().equals(CertTools.getSerialNumberAsString(reqadmincert)));
 		assertTrue(next.getApprovalId() == nonExecutableRequest.generateApprovalId());
 		assertTrue(next.getApprovalType() == nonExecutableRequest.getApprovalType());
 		assertTrue(next.getApprovals().size() == 0);
