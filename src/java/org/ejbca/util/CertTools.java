@@ -1138,6 +1138,8 @@ public class CertTools {
 	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
 			} catch (ConstructionException e) {
 	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
+			} catch (IllegalArgumentException e) {
+	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
 			}
 
         }

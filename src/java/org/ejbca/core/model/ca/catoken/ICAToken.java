@@ -32,7 +32,10 @@ public interface ICAToken {
 	public static final int STATUS_ACTIVE  = 1;
 	public static final int STATUS_OFFLINE = 2;
 	
+	/** Auto activation property that can be defined in CA token properties */
     public static final String AUTOACTIVATE_PIN_PROPERTY = "pin";
+    /** Previous sequence (matching KeyString.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS key) that can be set in CA token properties */
+    public static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
     
    /** 
     * Method called after creation of instance. Gives the object it's properties.

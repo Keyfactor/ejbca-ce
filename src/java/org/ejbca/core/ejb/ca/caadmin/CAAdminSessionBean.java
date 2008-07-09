@@ -1002,7 +1002,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      * @ejb.interface-method
      */
-    public byte[] signRequest(Admin admin, int caid, byte[] request) throws AuthorizationDeniedException, CADoesntExistsException, CATokenOfflineException {
+    public byte[] signRequest(Admin admin, int caid, byte[] request, boolean usepreviouskey) throws AuthorizationDeniedException, CADoesntExistsException, CATokenOfflineException {
         try{
             getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
         }catch(AuthorizationDeniedException e){
@@ -1017,7 +1017,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			signedbydata = this.cadatahome.findByPrimaryKey(new Integer(caid));
 	    	caname = signedbydata.getName();
 	    	CA signedbyCA = signedbydata.getCA();
-	    	returnval = signedbyCA.signRequest(request);
+	    	returnval = signedbyCA.signRequest(request, usepreviouskey);
 	    	String msg = intres.getLocalizedMessage("caadmin.certreqsigned", caname);            	
 	    	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_SIGNEDREQUEST,msg);
 		} catch (FinderException e) {

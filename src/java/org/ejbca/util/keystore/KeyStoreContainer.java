@@ -215,6 +215,7 @@ public abstract class KeyStoreContainer {
         while (bar < 3) {
         	bar ++;
         	try {
+        		log.debug("generating...");
         		final KeyPair keyPair = generate(this.providerName, keyAlgName, keySize);
         		X509Certificate[] chain = new X509Certificate[1];
         		chain[0] = getSelfCertificate("CN=some guy, L=around, C=US",

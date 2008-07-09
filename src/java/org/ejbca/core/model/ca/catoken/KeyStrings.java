@@ -71,6 +71,9 @@ public class KeyStrings {
     	addKey(CAKEYPURPOSE_HARDTOKENENCRYPT_STRING,
     			SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT,
     			properties);    		
+    	addKey(CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS,
+    			SecConst.CAKEYPURPOSE_CERTSIGN_PREVIOUS,
+    			properties);    		
     } 
     private void addKey(String keyS, int keyI,
                         Properties properties) {

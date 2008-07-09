@@ -1014,7 +1014,7 @@ public class TestCAs extends TestCase {
         assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
         
         // Get the DVs certificate request signed by the CVCA
-        byte[] authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request);
+        byte[] authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request, false);
 		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
         CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
         assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getAuthorityReference().getConcatenated());

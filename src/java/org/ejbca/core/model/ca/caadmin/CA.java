@@ -547,9 +547,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * The signature algorithm used to sign the request will be whatever algorithm the CA uses to sign certificates.
      * 
      * @param request the binary coded request to be signed
+     * @param usepreviouskey true if the CAs previous key should be used to sign the request, if the CA has generated new keys. Primarily used to create authenticated CVC requests.
      * @return byte array with binary encoded signed request or the original request of the CA can not create an additional signature on the passed in request.
      */
-    public abstract byte[] signRequest(byte[] request) throws CATokenOfflineException;
+    public abstract byte[] signRequest(byte[] request, boolean usepreviouskey) throws CATokenOfflineException;
 
     public byte[] encryptKeys(KeyPair keypair) throws Exception{
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -106,6 +106,9 @@
   static final String CHECKBOX_RENEWKEYS                          = "checkboxrenewkeys";  
   static final String CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE     = "checkboxauthcodeautoactivate";
   
+  /** Use previous key to sign requests by CA, primarily used to create authenticated CVC requests */
+  static final String CHECKBOX_USEPREVIOUSKEY                     = "checkboxusepreviouskey";
+  
   static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
   
   static final String SELECT_REVOKEREASONS                        = "selectrevokereasons";
@@ -150,6 +153,7 @@
   String importpassword = null;
   String importsigalias = null;
   String importencalias = null;
+  String usepreviouskey = null;
 
   InputStream file = null;
 
@@ -235,6 +239,8 @@
            importsigalias = item.getString();
          if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_ENCKEYALIAS))
            importencalias = item.getString();
+         if(item.getFieldName().equals(CHECKBOX_USEPREVIOUSKEY))
+        	 usepreviouskey = item.getString();
        }else{         
          file = item.getInputStream(); 
          errorrecievingfile = false;                          
@@ -1106,8 +1112,11 @@
                }  
                opstr.close();                
                                     
+               boolean previouskey = false;
+               if(usepreviouskey != null)
+            	   previouskey = usepreviouskey.equals(CHECKBOX_VALUE);         
                byte[] reqbytes = ostr.toByteArray();
-               byte[] signedreq = cadatahandler.signRequest(caid, reqbytes);                                
+               byte[] signedreq = cadatahandler.signRequest(caid, reqbytes, previouskey);                                
                cabean.saveRequestData(signedreq);     
                filemode = CERTREQGENMODE;
                includefile = "displayresult.jspf";

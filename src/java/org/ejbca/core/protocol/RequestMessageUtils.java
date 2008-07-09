@@ -57,7 +57,7 @@ public class RequestMessageUtils {
 	 * 
 	 * @return IRequestMessage
 	 */
-	public static IRequestMessage parseRequestMessage(byte[] request) {
+	public static IRequestMessage parseRequestMessage(byte[] request) throws IOException {
 		IRequestMessage ret = null;
 		try {
 			ret = genPKCS10RequestMessageFromPEM(request);			
@@ -114,7 +114,7 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static PKCS10RequestMessage genPKCS10RequestMessageFromPEM(byte[] b64Encoded){ 
+	public static PKCS10RequestMessage genPKCS10RequestMessageFromPEM(byte[] b64Encoded) throws IOException { 
 		byte[] buffer = getRequestBytes(b64Encoded); 
 		if (buffer == null) {
 			return null;
@@ -122,7 +122,7 @@ public class RequestMessageUtils {
 		return new PKCS10RequestMessage(buffer);
 	} // genPKCS10RequestMessageFromPEM
 
-	public static CVCRequestMessage genCVCRequestMessageFromPEM(byte[] b64Encoded){ 
+	public static CVCRequestMessage genCVCRequestMessageFromPEM(byte[] b64Encoded) throws IOException { 
 		byte[] buffer = getRequestBytes(b64Encoded); 
 		if (buffer == null) {
 			return null;
@@ -130,7 +130,7 @@ public class RequestMessageUtils {
 		return new CVCRequestMessage(buffer);
 	} // genCvcRequestMessageFromPEM
 
-	public static byte[] getRequestBytes(byte[] b64Encoded) {
+	public static byte[] getRequestBytes(byte[] b64Encoded) throws IOException {
 		byte[] buffer = null;
 		try {
 			// A real PKCS10 PEM request
@@ -146,6 +146,9 @@ public class RequestMessageUtils {
 			} catch (IOException ioe) {
 				// IE PKCS10 Base64 coded request
 				buffer = Base64.decode(b64Encoded);
+				if (buffer == null) {
+					throw new IOException("Base64 decode of buffer returns null");
+				}
 			}
 		}
 		return buffer;

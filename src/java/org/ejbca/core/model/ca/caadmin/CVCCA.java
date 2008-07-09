@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.ca.caadmin;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
@@ -30,6 +31,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Properties;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +43,7 @@ import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
+import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.RequestMessageUtils;
@@ -183,25 +186,54 @@ public class CVCCA extends CA implements Serializable {
 	 * 
 	 * @see CA#signRequest(Collection, String)
 	 */
-	public byte[] signRequest(byte[] request) throws CATokenOfflineException {
+	public byte[] signRequest(byte[] request, boolean usepreviouskey) throws CATokenOfflineException {
 		byte[] ret = request;
 		try {
 			CATokenContainer catoken = getCAToken();
-			KeyPair keyPair = new KeyPair(catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+			// Get either the current or the previous signing key for signing this request
+			int key = SecConst.CAKEYPURPOSE_CERTSIGN;
+			if (usepreviouskey) {
+				log.debug("Using previous CertSign key to sign request");
+				key = SecConst.CAKEYPURPOSE_CERTSIGN_PREVIOUS;
+			} else {
+				log.debug("Using current CertSign key to sign request");
+			}
+			KeyPair keyPair = new KeyPair(catoken.getPublicKey(key), catoken.getPrivateKey(key));
 			String signAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
 			// Create the CA reference, should be from signing certificates holder field
 			CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
 			HolderReferenceField caHolder = cacert.getCVCertificate().getCertificateBody().getHolderReference();
-			CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), caHolder.getSequence());
+			String sequence = caHolder.getSequence();
+			// See if we have a previous sequence to put in the CA reference instead of the same as we have from the request
+			String propdata = catoken.getCATokenInfo().getProperties();
+			Properties prop = new Properties();
+			prop.load(new ByteArrayInputStream(propdata.getBytes()));	
+			String previousSequence = (String)prop.get(ICAToken.PREVIOUS_SEQUENCE_PROPERTY);
+			// Only use previous sequence if we also use previous key
+			if ( (previousSequence != null) && (usepreviouskey) ) {
+				sequence = previousSequence;
+			}
+			// Set the CA reference field for the authentication signature
+			CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), sequence);
+
 			CVCertificate cvcert = null;
 			try {
 				byte[] binbytes = request;
 				try {
-					// We don't know if this is a PEM or binary request so we first try to 
-					// decode it as a PEM request, and if it's not we try it as a binary request 
-					binbytes = RequestMessageUtils.getRequestBytes(request);
+					// We don't know if this is a PEM or binary certificate or request request so we first try to 
+					// decode it as a PEM certificate, and if it's not we try it as a PEM request and finally as a binary request 
+					Collection col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
+					Certificate cert = (Certificate)col.iterator().next();
+					if (cert != null) {
+						binbytes = cert.getEncoded();						
+					}
 				} catch (Exception e) {
-					log.debug("This is not a PEM request?: "+e.getMessage());
+					log.debug("This is not a PEM certificate?: "+e.getMessage());
+					try {
+						binbytes = RequestMessageUtils.getRequestBytes(request);
+					} catch (Exception e2) {
+						log.debug("This is not a PEM request?: "+e2.getMessage());						
+					}
 				}
 				Certificate cert = CertTools.getCertfromByteArray(binbytes);
 				CardVerifiableCertificate cardcert = (CardVerifiableCertificate)cert;

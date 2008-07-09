@@ -139,6 +139,8 @@ public class SecConst extends Object {
     public static final int CAKEYPURPOSE_KEYTEST             = 4;
     /** encrypts hard token PIN/PUK codes etc */
     public static final int CAKEYPURPOSE_HARDTOKENENCRYPT    = 5;
+    /** The CAs previous signing key, if any exists */
+    public static final int CAKEYPURPOSE_CERTSIGN_PREVIOUS   = 6;
 
     /**
      * Default key lengths. Users are allowed to choose from these key lengths when

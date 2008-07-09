@@ -326,7 +326,9 @@ public class CATokenContainerImpl extends CATokenContainer {
 		CATokenInfo catokeninfo = getCATokenInfo();
 		
 		// First we start by setting a new sequence for our new keys
-		Integer seq = Integer.valueOf(getSequence());
+		String oldSequence = getSequence();
+		log.debug("Current sequence: "+oldSequence);
+		Integer seq = Integer.valueOf(oldSequence);
 		seq = seq + 1;
 		// We want this to be (at least) 5 digits, as required by CVC
 		DecimalFormat df = new DecimalFormat("00000");
@@ -434,6 +436,8 @@ public class CATokenContainerImpl extends CATokenContainer {
 				log.debug("CAKEYPURPOSE_CRLSIGN keystring is: "+crlsignkeystr);
 				properties.setProperty(certsignkeystr, newKeyLabel);
 				properties.setProperty(KeyStrings.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, keyLabel);
+				// Also set the previous sequence
+				properties.setProperty(ICAToken.PREVIOUS_SEQUENCE_PROPERTY, oldSequence);
 				// If the key strings are not equal, i.e. crtSignKey and crlSignKey was used instead of just defaultKey
 				// and the keys are the same. Then we need to set both keys to use the new key label
 				if (!StringUtils.equals(certsignkeystr, crlsignkeystr) && StringUtils.equals(keyLabel, crlKeyLabel)) {

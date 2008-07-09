@@ -84,11 +84,6 @@
   You need the CVCA certificate of the foreign CVCA to create the request to be sent.
   When creating this CA a self-signed CV certificate request is created.
   </p>
-  <p>You can sign CV certificate requests by your CVCA by going to 'Edit Certificate Authorities', typing the name of your CVCA in the
-  test field (same name as appears in the list above the text field) and then clicking on 'Sign Certificate Request'. You will be a chance to upload the
-  CV certificate request to the CVCA, and you will get an Authenticated request back.
-  This is required when sending certificate requests from your DVs to other member states.
-  </p>
   <p>You can at any time create a CV certificate request from a DV by going into 'Edit Certificate Authorities' and click 'Make Certificate Request'. 
   This generates a CSR created by the CAs keystore. When receiving the signed certificate back, you can feed that to your IS-system. There is no need (or way)
   to import it into EJBCA.
@@ -104,6 +99,23 @@
   </p>
   <p>DVs have short validity periods, and it may be good to have them automatically renewed. There is a service 'Renew CA Service' to 
   automatically renew CAs. The User's Guide contain more information about this service.
+  </p>
+  </section>
+  
+  <section name="Creating authenticated requests">
+  <p>You can sign CV certificate requests by your CVCA or DV by going to 'Edit Certificate Authorities', typing the name of your CA in the
+  text field (same name as appears in the list above the text field) and then clicking on 'Sign Certificate Request'. You will be a chance to upload the
+  CV certificate request to the CVCA, and you will get an Authenticated request back.
+  This is required when sending certificate requests from your DVs to other member states and when creating CVCA link certificates.
+  </p>
+  <p>
+  The renewing a DV and sending a request to another member state you can get the request automatically authenticated by signing the request with the DVs old keys.
+  You can do this by first renewing the DV to create a new certificate request. Then you go into 'Sign Certificate Request' for the same DV and sign the request checking the
+  checkbox 'Use previous key'. An authenticated request, authenticated with the DVs previous key will be returned.
+  </p>
+  <p>
+  to create CVCA link certificates the same approach is done. First renew the CVCA (generating new keys), which creates a new self-signed CVCA certificate internally. 
+  After this you can create a link certificate by going info 'Sign Certificate Request' for the CVCA and signing the certificate with 'Use previous key'.
   </p>
   </section>
   
@@ -219,7 +231,7 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   The EU policy surely requires that you use an HSM to protect the CAs signature keys. 
   Depending on the algorithms you choose you have different options and difficulties. Using PKCS#11 the Sun PKCS#11 provider only supports
   RSA with PKCS1 padding (SHA256WithRSA), and not PSS (SHA256WIthRSAAndMGF1). If you want to use the PSS algorithms you need to use the IAIK PKCS#11 provider.
-  The the User's Guide for instructions how to use the IAIK PKCS#11 provider. 
+  See the User's Guide for instructions how to use the IAIK PKCS#11 provider. 
   </p>
   <p>
   Currently tested HSMs are:
