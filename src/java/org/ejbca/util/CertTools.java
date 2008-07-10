@@ -650,21 +650,23 @@ public class CertTools {
                 } else {
     				rf = cvccert.getCVCertificate().getCertificateBody().getAuthorityReference();                	
                 }
-				// Construct a "fake" DN which can be used in EJBCA
-                // Use only mnemonic and country, since sequence is more of a serialnumber than a DN part
-				String dn = "";
-//				if (rf.getSequence() != null) {
-//					dn += "SERIALNUMBER="+rf.getSequence();
-//				}
-				if (rf.getMnemonic() != null) {
-					if (StringUtils.isNotEmpty(dn)) dn += ", ";
-					dn += "CN="+rf.getMnemonic();
-				}
-				if (rf.getCountry() != null) {
-					if (StringUtils.isNotEmpty(dn)) dn += ", ";
-					dn += "C="+rf.getCountry();
-				}				
-                ret = stringToBCDNString(dn);
+                if (rf != null) {
+    				// Construct a "fake" DN which can be used in EJBCA
+                    // Use only mnemonic and country, since sequence is more of a serialnumber than a DN part
+    				String dn = "";
+//    				if (rf.getSequence() != null) {
+//    					dn += "SERIALNUMBER="+rf.getSequence();
+//    				}
+    				if (rf.getMnemonic() != null) {
+    					if (StringUtils.isNotEmpty(dn)) dn += ", ";
+    					dn += "CN="+rf.getMnemonic();
+    				}
+    				if (rf.getCountry() != null) {
+    					if (StringUtils.isNotEmpty(dn)) dn += ", ";
+    					dn += "C="+rf.getCountry();
+    				}				
+                    ret = stringToBCDNString(dn);                	
+                }
 			} catch (NoSuchFieldException e) {
                 log.error("NoSuchFieldException: ", e);
                 return null;
