@@ -241,6 +241,15 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   <li>Eracom</li>
   </ul>
   </p>
+  <p>There are two additional key properties (filled in the CAs token properties) when using a HSM controlling the use of the previous keys.
+  <ul>
+  <li>previousCertSignKey - this is the alias of the previous signature key, as opposed to 'certSignKey' which is the current signature key.</li>
+  <li>previousSequence - this is the sequence identifying the previous signature key, as opposed to the current sequence that is held in the CA token.
+  This sequence will replace the current sequence in the caRef field when signing a request with the CAs previous key.</li>
+  </ul>
+  Normally these properties are set completely automatically when you generate new keys from the Admin GUI. If keys are generated manually, or if there is 
+  a problem these properties can be modified or set manually.
+  </p>
   </section>
   
 </body>
