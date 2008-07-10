@@ -3963,16 +3963,15 @@ exported files will be given unique names containing profile name and profile id
 When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
 directory will be imported.
 </p><p>
-Fixed profiles will not be imported, they will simply be skipped during import.
-If a profiles with the same name as the one being imported already exist, the profiles will not be imported.
+Fixed profiles will not be exported or imported. If a profiles with the same name as the one being imported already
+exist, the profiles will not be imported. References to publishers with unknown id will be dropped.
 </p><p>
 Import of profiles try to keep the same profile id. If it already exist a profile with the same id in the database, 
-you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
+it will try to choose another and change any (end entity profile to certificate profile) reference during later imports.
 The reason the id is kept is that there are references to the profile id from users belonging to the profile.
 </p><p>
-One issue to notice regarding import/export of profiles is that if you export an entity profile with 'Available CAs' put to a CA that does not exist where you import the profile, you will not see it.
-Before exporting the profiles, you should set 'Available CAs' to a CA that is also present (with the same DN=caid) on the other CA.   
-This is not ideal, but it is a consequence of how the authorization system works, you are not authorized to see the imported profiles when the caid is unknown. 
+During import on a new EJBCA instance where CAs that are referenced from the profiles don't exist, a default CA has to be
+specified on command line. Two CAs are concidered identical in this context if they have the same subject DN.
 </p></section>
 
 <section name="Export and import CAs">

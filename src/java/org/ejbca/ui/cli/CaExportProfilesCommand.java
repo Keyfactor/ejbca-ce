@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli;
 
 import java.beans.XMLEncoder;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
@@ -58,13 +59,19 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             }
 
             String outpath = args[1];
-
-            getOutputStream().println("Exporting certificate profiles: ");
+            if (!new File(outpath).isDirectory()) {
+                getOutputStream().println("Error: '"+outpath+"' is not a directory.");
+                return;
+            }
+            
+            getOutputStream().println("Exporting non-fixed certificate profiles: ");
             Iterator iter = certprofids.iterator();
             while (iter.hasNext()) {
             	int profileid = ((Integer) iter.next()).intValue();
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Certificate profile not found i database.
                     getOutputStream().println("Error : Couldn't find certificate profile '"+profileid+"' in database.");
+                } else if (SecConst.isFixedCertificateProfile(profileid)) {
+                    //getOutputStream().println("Debug : Skipping export fixed certificate profile with id '"+profileid+"'.");
                 } else {
 					String profilename = getCertificateStoreSession().getCertificateProfileName(administrator, profileid);									
                     CertificateProfile profile = getCertificateStoreSession().getCertificateProfile(administrator,profileid);
@@ -80,12 +87,14 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 }
             }
 
-            getOutputStream().println("Exporting end entity profiles: ");
+            getOutputStream().println("Exporting non-fixed end entity profiles: ");
             iter = endentityprofids.iterator();
             while (iter.hasNext()){                
                 int profileid = ((Integer) iter.next()).intValue();
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
                     getOutputStream().println("Error : Couldn't find entity profile '"+profileid+"' in database.");
+                } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+                    //getOutputStream().println("Debug : Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
                 	String profilename = getRaAdminSession().getEndEntityProfileName(administrator, profileid);
                     EndEntityProfile profile = getRaAdminSession().getEndEntityProfile(administrator, profileid);

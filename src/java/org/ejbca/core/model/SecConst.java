@@ -154,6 +154,21 @@ public class SecConst extends Object {
      */
     private SecConst() {
     }
+    
+    /**
+     * @return true is certificate profile identified by profileId is fixed
+     */
+    public static boolean isFixedCertificateProfile(int profileId) {
+    	return (
+    			profileId == SecConst.CERTPROFILE_FIXED_ENDUSER ||
+    			profileId == SecConst.CERTPROFILE_FIXED_SUBCA ||
+    			profileId == SecConst.CERTPROFILE_FIXED_ROOTCA ||
+    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH ||
+    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC ||
+    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENENC ||
+    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN || 
+    			profileId == SecConst.CERTPROFILE_FIXED_OCSPSIGNER );
+    }
 }
 
 

@@ -1964,9 +1964,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return exists;
     } // existsPublisherInCertificateProfiles
 
-    // Private methods
-
-    private int findFreeCertificateProfileId() {
+    /**
+     * @ejb.interface-method
+     */
+    public int findFreeCertificateProfileId() {
         Random random = new Random((new Date()).getTime());
         int id = random.nextInt();
         boolean foundfree = false;
@@ -1985,7 +1986,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return id;
     } // findFreeCertificateProfileId
 
-    
+
+    // Private methods
+
     private boolean isCertificateProfileNameFixed(String certificateprofilename) {
         boolean returnval = false;
 
