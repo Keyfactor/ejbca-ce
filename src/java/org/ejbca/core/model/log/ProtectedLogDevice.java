@@ -289,7 +289,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				}
 				lastTimeOfSearchForLogEvents = System.currentTimeMillis();
 			} else {
-				// FInd all new events from other nodes in database to link in, if the right amount of time has passed since last time
+				// Find all new events from other nodes in database to link in, if the right amount of time has passed since last time
 				long now = System.currentTimeMillis();
 				if (intensityOfSearchForLogEvents != -1000 && lastTimeOfSearchForLogEvents + intensityOfSearchForLogEvents < now) {
 					long searchLimit = Math.min(now - searchWindow, lastTimeOfSearchForLogEvents - 50);
@@ -342,6 +342,8 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			// Add previous ProtectedLogEventRow this node has produced, if any
 			// Start by verifying that the last event in the database is correct, but only do this if sufficient time has passed since this was last verified
 			if (counter != 0) {
+				// Even though we might not be able to read the last event yet from the database, we use this for continious linking (it will be verified in the future)
+				linkedInEventIdentifiersCollection.add(new ProtectedLogEventIdentifier(nodeGUID, counter-1));
 				long now = System.currentTimeMillis();
 				if (intensityOfSearchForOwnLogEvent != -1000 && lastTimeOfSearchForOwnLogEvent + intensityOfSearchForOwnLogEvent < now) {
 					ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow(nodeGUID);
@@ -349,7 +351,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, 0));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 					} else {
-						linkedInEventIdentifiersCollection.add(lastProtectedLogEventIdentifier);
+						// Verify the event we found
 						ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);
 						HashTime hashTime = (HashTime) lastProtectedLogRowHashTime.get(lastProtectedLogEventIdentifier.getCounter());
 						if (protectedLogEventRow == null) {
