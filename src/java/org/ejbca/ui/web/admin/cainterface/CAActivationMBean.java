@@ -71,7 +71,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private IRaAdminSessionLocal               raadminsession;
 	private ISignSessionLocal                  signsession;
 	private InformationMemory                  informationmemory;
-	private List 							   activationMessages;
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
 	public static final String KEEPCURRENT = "keepcurrent";
@@ -81,7 +80,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		webBean = jsfHelper.getEjbcaWebBean();
 		new ViewCAInfoJSPHelper();
 		caBean = new CAInterfaceBean();
-		activationMessages = new ArrayList();
 		try {
 			caBean.initialize(webBean.getAdminObject(), webBean);
 		} catch (Exception e) {
@@ -202,8 +200,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	}
 	
 	public void apply() {
-		activationMessages=new ArrayList();
-		activationMessages.add("Results:");
 		log.debug(">apply");
 		List list = caInfoList;
 		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
@@ -246,19 +242,11 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		return KEEPCURRENT;
 	}
 	
-	public List getActivationMessages() {
-		return activationMessages;
-	}
-	
-	public void addActivationMessage(String message) {
-		activationMessages.add(message);
-	}
-	
 	public List getHasMessages() {
 		log.debug(">getHasMessages");
 		List list = caInfoList;
 		List hasMessages = new ArrayList();
-		for (Iterator iterator = hasMessages.iterator(); iterator.hasNext();) {
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
 			CAWrapper wrapper = (CAWrapper) iterator.next();
 			String option = wrapper.getActivateOption();
 			if (!wrapper.getCAActivationMessage().equals(""))  {

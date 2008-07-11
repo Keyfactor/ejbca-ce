@@ -196,8 +196,5 @@ public class CAWrapper implements Serializable {
 	}
 	public void setCAActivationMessage(String message) {
 		activationmessage = message;
-		if (!activationmessage.equals("")){
-			mbean.addActivationMessage(getName()+": " +activationmessage);
-		}
 	}
 }
