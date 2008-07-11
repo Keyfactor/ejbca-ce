@@ -108,7 +108,6 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.core.protocol.SimpleRequestMessage;
-import org.ejbca.core.protocol.cmp.CrmfRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
@@ -141,7 +140,6 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 import com.novosec.pkix.asn1.crmf.CertRequest;
 
 /**
@@ -678,6 +676,9 @@ public class EjbcaWS implements IEjbcaWS {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());
 		} catch (SignatureException e) {
+			log.error("EJBCA WebService error, processCertReq : ",e);
+			throw new EjbcaException(e.getMessage());			
+		} catch (SignRequestSignatureException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
 		} catch (InvalidKeySpecException e) {
