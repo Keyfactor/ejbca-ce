@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.ejb.EJBException;
@@ -313,6 +314,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 					if (protectedLogEventRow == null ) {
 				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", protectedLogEventIdentifier.getNodeGUID(),
 				    			protectedLogEventIdentifier.getCounter()));
+				    	log.debug("Logrow was missing verifying nodes about to be linked in.");
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 						protectedLogEventIdentifiersToRemove.add(protectedLogEventIdentifier);
 						continue;
@@ -348,8 +350,20 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				if (intensityOfSearchForOwnLogEvent != -1000 && lastTimeOfSearchForOwnLogEvent + intensityOfSearchForOwnLogEvent < now) {
 					ProtectedLogEventIdentifier lastProtectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow(nodeGUID);
 					if (lastProtectedLogEventIdentifier == null) {
-				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, 0));
-						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+						// If the first event in local cache is older that the threshold we should warn
+						Set counters = lastProtectedLogRowHashTime.keySet();
+						Iterator i = counters.iterator();
+						long lowest = Integer.MAX_VALUE;
+						while (i.hasNext()) {
+							long current = (Long) i.next();
+							lowest = Math.min(current, lowest);
+						}
+						log.debug("The earliest present log-event in HashTime-cache is " + lowest + " (counter is " + counter + ").");
+						HashTime hashTime = (HashTime) lastProtectedLogRowHashTime.get(lowest);
+						if (lowest != 0 || hashTime.getTime() < (now - searchWindow) ) {
+					    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lowest));
+							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+						}
 					} else {
 						// Verify the event we found
 						ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(lastProtectedLogEventIdentifier);

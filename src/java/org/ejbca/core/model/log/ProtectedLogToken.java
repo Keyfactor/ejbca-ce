@@ -16,10 +16,15 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.caadmin.CADataLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CACacheManager;
+import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Represents the token used for protect-operations of the log events.
@@ -158,7 +163,15 @@ public class ProtectedLogToken {
 			if (tokenType == TYPE_NONE) {
 				// Always return null
 			} else if (protectionSecretKey == null && protectionPrivateKey == null) {
-				signature = getSignSession().signData(data, caId, SecConst.CAKEYPURPOSE_CERTSIGN);
+		        CA ca = CACacheManager.instance().getCA(caId, null);
+		        if (ca == null) {
+		        	log.error("CA not found.");
+		        } else {
+			        CATokenContainer caToken = ca.getCAToken(); 
+			        PrivateKey privateKey = caToken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+			        String signatureAlgorithm = caToken.getCATokenInfo().getSignatureAlgorithm();
+			        signature = KeyTools.signData(privateKey, signatureAlgorithm, data);
+				}
 			} else if (protectionPrivateKey != null) {
 				Signature signer = Signature.getInstance(protectionAlgorithm, "BC");
 				signer.initSign(protectionPrivateKey);
@@ -185,7 +198,14 @@ public class ProtectedLogToken {
 			if (tokenType == TYPE_NONE) {
 				// Never return true
 			} else if (protectionSecretKey == null && protectionPublicKey == null) {
-				verified = getSignSession().verifySignedData(data, caId, SecConst.CAKEYPURPOSE_CERTSIGN, signature);
+		        CA ca = CACacheManager.instance().getCA(caId, null);
+		        if (ca == null) {
+		        	log.error("CA not found.");
+		        }
+		        CATokenContainer caToken = ca.getCAToken(); 
+		        PublicKey publicKey = caToken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+		        String signatureAlgorithm = caToken.getCATokenInfo().getSignatureAlgorithm();
+		        verified = KeyTools.verifyData(publicKey, signatureAlgorithm, data, signature);
 			} else if (protectionPublicKey != null) {
 				Signature signer = Signature.getInstance(protectionAlgorithm, "BC");
 				signer.initVerify(protectionPublicKey);

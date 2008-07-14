@@ -54,16 +54,19 @@ public class CACacheManager {
     /** Returns a previously registered (using addCAToken) CA, or null.
      * 
      * @param caid the id of the CA whose CA object you want to fetch.
+     * @param caData the data-bean or null to only fetch CA from cache without any updates
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
     public CA getCA(int caid, CADataBean caData) {
         CA ret = (CA)caRegistry.get(new Integer(caid));
         if (ret != null) {
-        	// We mainly cache the xml data, some of the other values may change slightly at will...
-        	ret.setStatus(caData.getStatus());
-        	ret.setExpireTime(new Date(caData.getExpireTime()));
-        	ret.setName(caData.getName());
-        	ret.setSubjectDN(caData.getSubjectDN());
+        	if (caData != null) {
+            	// We mainly cache the xml data, some of the other values may change slightly at will...
+            	ret.setStatus(caData.getStatus());
+            	ret.setExpireTime(new Date(caData.getExpireTime()));
+            	ret.setName(caData.getName());
+            	ret.setSubjectDN(caData.getSubjectDN());
+        	}
         	ret.setCAId(caid);
         }
         return ret;

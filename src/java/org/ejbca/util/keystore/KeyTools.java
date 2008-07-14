@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -33,6 +34,8 @@ import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -610,6 +613,38 @@ public class KeyTools {
 		} catch (NoSuchAlgorithmException e) {
 		}
 		return returnValue;
+    }
+    
+    /**
+     * Sign provided data with specified private key and algortihm
+     * 
+     * @param privateKey the private key
+     * @param signatureAlgorithm e.g. as returned by caToken.getCATokenInfo().getSignatureAlgorithm()
+     * @param data the data to sign
+     * @return the signature
+     */
+    public static byte[] signData(PrivateKey privateKey , String signatureAlgorithm, byte[] data) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
+    	Signature signer = Signature.getInstance(signatureAlgorithm);
+        signer.initSign(privateKey);
+        signer.update(data);
+        return (signer.sign());
+    }
+
+    /**
+     * Verify signed data with specified public key, algorith and signature
+     * 
+     * @param publicKey the public key
+     * @param signatureAlgorithm e.g. as returned by caToken.getCATokenInfo().getSignatureAlgorithm()
+     * @param data the data to verify
+     * @param signature the signature
+     * @return true if the signature is ok 
+     */
+    public static boolean verifyData(PublicKey publicKey , String signatureAlgorithm, byte[] data, byte[] signature) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
+        Signature signer = Signature.getInstance(signatureAlgorithm);
+        signer.initVerify(publicKey);
+        signer.update(data);
+        return (signer.verify(signature));    	
+
     }
 
 } // KeyTools

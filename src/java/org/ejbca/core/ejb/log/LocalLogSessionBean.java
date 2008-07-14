@@ -168,6 +168,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
     /** The home interface of  LogConfigurationData entity bean */
     private LogConfigurationDataLocalHome logconfigurationhome;
 
+    private ILogSessionLocal logSession = null;
+
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList logdevices;
 
@@ -240,6 +242,20 @@ public class LocalLogSessionBean extends BaseSessionBean {
             dev.destructor();
         }
     }
+
+    /**
+     * We need to reference the bean, rather than the internal class method to get container managed transaction.
+     */
+	private ILogSessionLocal getLogSession() {
+		try{
+			if(logSession == null){
+				logSession = ((ILogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ILogSessionLocalHome.COMP_NAME)).create();
+			}
+		} catch(Exception e){
+			throw new EJBException(e);
+		}
+		return logSession;
+	}
 
     /**
      * @ejb.interface-method
@@ -380,43 +396,43 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
     /**
      * Internal implementation for logging. Does not allow Exceptions to propagate outside the logging functionality.
-     * 
-     * @ejb.transaction type="Supports"
      */
     private void doLog(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception ex) {
-        try {
-	        boolean authorized = true;
-	        if(event == LogConstants.EVENT_INFO_CUSTOMLOG || event == LogConstants.EVENT_ERROR_CUSTOMLOG){
-	           try{
-	        	getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_LOG_CUSTOM_EVENTS);
-	           }catch(AuthorizationDeniedException e){
-	        	   String msg = intres.getLocalizedMessage("log.notauthtocustomlog");
-	        	   doSyncronizedLog(admin,caid,LogConstants.MODULE_LOG,new Date(),username, null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,null);
-	        	   authorized = false;
-	           }
-	        }
-	        if (authorized) {
-	            doSyncronizedLog(admin, caid, module, time, username, certificate, event, comment, ex);
-	        }
-        } catch (Throwable e) {
-	        String msg = intres.getLocalizedMessage("log.errormissingentry");            	
-	        log.error(msg, e);
+    	Iterator i = logdevices.iterator();
+    	while (i.hasNext()) {
+    		ILogDevice dev = (ILogDevice) i.next();
+    		try {
+    			boolean authorized = true;
+    			if(event == LogConstants.EVENT_INFO_CUSTOMLOG || event == LogConstants.EVENT_ERROR_CUSTOMLOG){
+    				try{
+    					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_LOG_CUSTOM_EVENTS);
+    				}catch(AuthorizationDeniedException e){
+    					String msg = intres.getLocalizedMessage("log.notauthtocustomlog");
+    					getLogSession().doSyncronizedLog(dev, admin,caid,LogConstants.MODULE_LOG,new Date(),username, null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,null);
+    					authorized = false;
+    				}
+    			}
+    			if (authorized) {
+    				getLogSession().doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
+    			}
+    		} catch (Throwable e) {
+    			String msg = intres.getLocalizedMessage("log.errormissingentry");            	
+    			log.error(msg, e);
+    		}
         }
     }
     /**
-     * Internal implementation for logging
+     * Internal implementation for logging.
+     * DO NOT USE! ONLY PUBLIC FOR INTERNAL LOG-IMPLEMENTATION TO START A NEW TRANSACTION..
      *
+     * @ejb.interface-method view-type="local"
      * @ejb.transaction type="RequiresNew"
      */
-    private void doSyncronizedLog(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception ex) {
-        final LogConfiguration config = loadLogConfiguration(caid);
-        Iterator i = logdevices.iterator();
-        while (i.hasNext()) {
-    		ILogDevice dev = (ILogDevice) i.next();
-        	if (!dev.getAllowConfigurableEvents() || config.logEvent(event)) {
-        		dev.log(admin, caid, module, time, username, certificate, event, comment, ex);
-        	}
-        }
+    public void doSyncronizedLog(ILogDevice dev, Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception ex) {
+    	final LogConfiguration config = loadLogConfiguration(caid);
+    	if (!dev.getAllowConfigurableEvents() || config.logEvent(event)) {
+    		dev.log(admin, caid, module, time, username, certificate, event, comment, ex);
+    	}
     }
 
     /**
@@ -519,13 +535,12 @@ public class LocalLogSessionBean extends BaseSessionBean {
     public void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration) {
         try {
             try {
-                (logconfigurationhome.findByPrimaryKey(new Integer(caid))).saveLogConfiguration(logconfiguration);
                 log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
+                (logconfigurationhome.findByPrimaryKey(new Integer(caid))).saveLogConfiguration(logconfiguration);
             } catch (FinderException e) {
                 String msg = intres.getLocalizedMessage("log.createconf", new Integer(caid));            	
                 log.info(msg);
                 logconfigurationhome.create(new Integer(caid), logconfiguration);
-                log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
             }
         } catch (Exception e) {
             log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_EDITLOGCONFIGURATION, "");
@@ -533,6 +548,18 @@ public class LocalLogSessionBean extends BaseSessionBean {
         }
     } // saveLogConfiguration
 
+	/**
+     * Methods for testing that a log-row is never rolled back if the rest of the transaction is.
+     * 
+     * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="RequiresNew"
+     */
+	public void testRollbackInternal(long rollbackTestTime) {
+		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+		getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
+				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
+		throw new EJBException("Test of rollback resistance of log-system.");
+	}
 
     /**
      * Gets connection to authorization session bean

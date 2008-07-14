@@ -5,9 +5,11 @@ package org.ejbca.core.model.log;
  */
 public interface LogConstants {
 
-	/** Constant limiting thenumber of rows returned when querying logfiles to be viewed by in the admin-GUI
+	/**
+	 * Constant limiting thenumber of rows returned when querying logfiles to be viewed by in the admin-GUI
+	 * (We have to be able to use this class from JUint tests also, so use some default if no preprocessing has taken place.)
 	 */
-    public static final int MAXIMUM_QUERY_ROWCOUNT = Integer.parseInt("@log.maxqueryrowcount@");
+    public static final int MAXIMUM_QUERY_ROWCOUNT = ("@log.maxqueryrowcount@".startsWith("@") ? 1000 : Integer.parseInt("@log.maxqueryrowcount@")); 
 
     /**
      * Constant containing caid that couldn't be determined in any other way. Log events can only be viewed.

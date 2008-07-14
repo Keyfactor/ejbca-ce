@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
@@ -307,6 +308,13 @@ public abstract class CADataBean extends BaseEntityBean {
         setUpdateTime(new Date().getTime());
         // remove the CA from the cache to force an update the next time we load it
         CACacheManager.instance().removeCA(getCaId().intValue());
+        // .. and we try to load it right away
+        try {
+			readAndUpgradeCAInternal();
+		} catch (IllegalKeyStoreException e) {
+			// Ok.. so we failed after all.. try loading it next time so the error is displayed as it used to..
+	        CACacheManager.instance().removeCA(getCaId().intValue());
+		}
     }   
     
     //

@@ -3,6 +3,7 @@ package org.ejbca.core.model.log;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -105,6 +106,7 @@ public class TestProtectedLog extends TestCase {
 		Properties properties = new Properties();
 		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME);
 		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
+		properties.setProperty("searchWindow", "1");
 		logSession.setTestDevice(ProtectedLogDeviceFactory.class, properties);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Write an logevent and make sure it complains about an empty log
@@ -308,5 +310,27 @@ public class TestProtectedLog extends TestCase {
 				caAdminSession.editCA(internalAdmin, x509cainfo);
 			}
 		}
+	}
+	
+	/**
+	 * Test that a log-events isn't rolled back when the surrounding transaction is.
+	 * 
+	 * @throws Exception
+	 */
+	public void test04() throws Exception {
+		long now = System.currentTimeMillis();
+		// Setup a protected log device
+		Properties properties = new Properties();
+		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
+		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
+		logSession.setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
+		try {
+			logSession.testRollbackInternal(now);
+		} catch (RemoteException e) {
+		}
+		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
+		// Verify that event written at time "now" still exists
+		assertTrue("The log event has been rolled back and cannot be found any more..", protectedLogSession.existsAnyProtectedLogEventByTime(now));
 	}
 }

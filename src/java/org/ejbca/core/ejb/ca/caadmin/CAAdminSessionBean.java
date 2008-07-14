@@ -280,7 +280,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /**
      * A method designed to be called at startuptime to speed up the (next) first request to a CA.
-     * This method will initialize the CA-cache with all CAs, if thay are not already in the cache.
+     * This method will initialize the CA-cache with all CAs, if they are not already in the cache.
      * Can have a side-effect of upgrading a CA, therefore the Required transaction setting.
      * 
      * @param admin administrator calling the method

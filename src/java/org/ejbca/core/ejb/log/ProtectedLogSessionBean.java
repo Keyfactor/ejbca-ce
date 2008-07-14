@@ -280,7 +280,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/**
 	 * Persists a new token to the database.
 	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.transaction type="Required"
 	 */
 	public void addToken(ProtectedLogToken token) {
 		log.debug(">addToken");
@@ -2074,4 +2074,20 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		log.debug("<exportLog");
 		return true;
 	}
+	
+	/**
+	 * @return true if one or more event with the specified time exists in the log
+	 * 
+	 * @ejb.interface-method view-type="both"
+	 */
+	public boolean existsAnyProtectedLogEventByTime(long time) {
+		try {
+			Collection protectedLogDataLocals = getProtectedLogData().findProtectedLogEventsByTime(time);
+			Iterator i = protectedLogDataLocals.iterator();
+			return i.hasNext();
+		} catch (FinderException e) {
+		}
+		return false;
+	}
+
 }
