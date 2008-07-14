@@ -6,18 +6,25 @@
   </properties>
 
 <body>
-  <section name="EJBCA Promotion: SafeSign IC &amp; CrypToken bundle">
+  <section name="News">
   <note>
-  SafeSign IC provides strong authentication and smart card logon on Windows, Linux and MAC. Combined with the CCID compatible steel Marx CrypToken USB token it is a perfect solution to use with an EJBCA PKI infrastructure.
+  We are very proud to announce this initial release of the Cert-cvc library developed by the 
+  Swedish National Police Board and kindly donated to the EJBCA project.
+  <br/>
+  The library handles CVC certificates for EU EAC ePassport PKIs and the initial release is 
+  feature complete for EU EAC ePassports using RSA algorithm.
+  <br/>
+  The library is freely usable under the LGPL 2.1 (or later) license for all parties interesting 
+  in handling CVC certificates, in particular for EU EAC ePassports, and can be downloaded from the EJBCA
+  project page at <a href="http://sourceforge.net/project/platformdownload.php?group_id=39716">Sourceforge</a>.
+  </note>
+  <note>
+  SafeSign IC provides strong authentication and smart card logon on Windows, Linux and MAC. 
   <br/> 
-  For more information or an evaluation kit visit <a href="http://www.aeteurope.nl/aet/aet-europe/_www/en/pub/news/aet_promotions/ejbca_promotion.htm">www.aeteurope.com</a>.
-  <p> 
-  This evaluation kit has been tested with EJBCA on both GNU/Linux, Mac OS X and Windows, and it works good!
-  <br/>Note that is an AET offer, EJBCA does not get paid for this announcement.
-  </p>
+  For more information or an evaluation kit see the <a href="complimentary.html">complimentary software section</a> or visit <a href="http://www.aeteurope.nl/aet/aet-europe/_www/en/pub/news/aet_promotions/ejbca_promotion.htm">www.aeteurope.com</a>.
   </note>
   </section>
-  <section name="Latest News">
+  <section name="Latest Release">
     <note>
     EJBCA 3.6.1 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
@@ -28,16 +35,15 @@
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
     <br/>
     SHA1 checksum: ed4ca78dcabc7136fff43f3c3265f542463a9044
-    </note>
-    <note>
-    Presentations from the first EJBCA conference in Paris, 31st of January 2007, are available
-    <a href="http://download.primekey.se/ejbca/conference20070131/">here</a>.
     <br/><br/>
-    New Windows <a href="howto.html#Microsoft smart card logon">Smart card logon guide</a> available.
+    Cert-cvc library 1.2.6 is now available for <a
+    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=283747">download</a>.
+    <br/>
+    SHA1 checksum: e90e40c557659327225ae444313f509af0606c4c
     </note>
   </section>
 
-<section name="EJBCA">
+<section name="About EJBCA">
 <p>
 EJBCA is a fully functional Certificate Authority. Based on J2EE technology it constitutes a robust,
 high performance and component based CA. Both flexible and platform independent, EJBCA can be used
@@ -128,7 +134,7 @@ If you want to contribute to EJBCA, please see <i><a href="donations.html">Contr
     </p>
     <p>
     EJBCA 3.7 contains support for CVC CAs used for EU EAC ePassports. 
-    This development was sponsored and contributed by the <a href="http://www.polisen.se//">National Swedish Police Board</a>.
+    This development was sponsored and contributed by the <a href="http://www.polisen.se//">Swedish National Police Board</a>.
     </p>
 </section>
 </body>
