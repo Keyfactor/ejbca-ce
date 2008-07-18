@@ -196,7 +196,11 @@ function getPasswordAndSubmit(formname) {
 <% // Delta CRLs 
  	       CRLInfo deltacrlinfo = cabean.getLastCRLInfo(subjectdn, true);
 	       if(deltacrlinfo == null){ 
-	         out.write(ejbcawebbean.getText("NODELTACRLHAVEBEENGENERATED"));
+     	       if (cainfo.getCAInfo().getDeltaCRLPeriod() > 0) {
+    	           out.write(ejbcawebbean.getText("NODELTACRLHAVEBEENGENERATED"));
+     	       } else {
+     	           out.write(ejbcawebbean.getText("DELTACRLSNOTENABLED"));
+     	       }
 	         %> <br> <%
 	       }else{
 	       	 boolean expired = deltacrlinfo.getExpireDate().compareTo(new Date()) < 0; %>
