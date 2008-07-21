@@ -702,7 +702,7 @@ public class X509CA extends CA implements Serializable {
         	CRLNumber basecrlnum = new CRLNumber(BigInteger.valueOf(basecrlnumber));
         	crlgen.addExtension(X509Extensions.DeltaCRLIndicator.getId(), true, basecrlnum);        	
         }
-    	// CRL Distribution point URI
+    	// CRL Distribution point URI and Freshest CRL DP
   	    if(getUseCrlDistributionPointOnCrl()) {
   	        String crldistpoint;
   	        if(isDeltaCRL) {
@@ -710,26 +710,25 @@ public class X509CA extends CA implements Serializable {
   	        } else {
   	            crldistpoint = getDefaultCRLDistPoint();
   	        }
-  	        // Multiple CDPs are spearated with the ';' sign  
-  	        StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
-  	        ArrayList distpoints = new ArrayList();
-  	        while (tokenizer.hasMoreTokens()) {
-  	            String uri = tokenizer.nextToken();
-  	            GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
-  	            if(log.isDebugEnabled()) {
-  	                log.debug("Added CRL distpoint: " + uri);
-  	            }
-  	            ASN1EncodableVector vec = new ASN1EncodableVector();
-  	            vec.add(gn);
-  	            GeneralNames gns = new GeneralNames(new DERSequence(vec));
-  	            DistributionPointName dpn = new DistributionPointName(0, gns);
-  	            distpoints.add(new DistributionPoint(dpn, null, null));
-  	        }
+
+  	        List distpoints = generateDistributionPoints(crldistpoint);
+
   	        if (distpoints.size() > 0) {
   	            CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
   	            crlgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
   	                                getCrlDistributionPointOnCrlCritical(), ext);
   	        }
+
+            if (!isDeltaCRL) {
+                String crlFreshestDP = getCADefinedFreshestCRL();
+                List freshestDistPoints = generateDistributionPoints(crlFreshestDP);
+                if (freshestDistPoints.size() > 0) {
+                    CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])freshestDistPoints.toArray(new DistributionPoint[0]));
+                    crlgen.addExtension(X509Extensions.FreshestCRL.getId(),
+                            getCrlDistributionPointOnCrlCritical(), ext);
+                }
+
+            }
     	}
 
         X509CRL crl;
@@ -739,6 +738,29 @@ public class X509CA extends CA implements Serializable {
 
         return crl;        
     }    
+
+    /** Generate a list of Distribution points.
+     * @param distPoints distribution points as String in semi column (';') separated format.
+     * @return list of distribution points.
+     */
+    private List generateDistributionPoints(String distPoints) {
+        // Multiple CDPs are spearated with the ';' sign  
+        StringTokenizer tokenizer = new StringTokenizer(distPoints, ";", false);
+        ArrayList result = new ArrayList();
+        while (tokenizer.hasMoreTokens()) {
+            String uri = tokenizer.nextToken();
+            GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
+            if(log.isDebugEnabled()) {
+                log.debug("Added CRL distpoint: " + uri);
+            }
+            ASN1EncodableVector vec = new ASN1EncodableVector();
+            vec.add(gn);
+            GeneralNames gns = new GeneralNames(new DERSequence(vec));
+            DistributionPointName dpn = new DistributionPointName(0, gns);
+            result.add(new DistributionPoint(dpn, null, null));
+        }
+        return result;
+    }
 
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */

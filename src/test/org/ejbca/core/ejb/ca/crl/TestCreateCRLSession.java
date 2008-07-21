@@ -493,6 +493,41 @@ public class TestCreateCRLSession extends TestCase {
         log.debug("<test06CRLDistPointOnCRL()");
     }
 
+    /** Tests the extension Freshest CRL DP.
+     * @throws Exception in case of error.
+     */
+    public void test07CRLFreshestCRL() throws Exception {
+        log.debug(">test07CRLFreshestCRL()");
+
+        final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
+        final String freshestCdpURL = "http://www.ejbca.org/foo/delta.crl";
+        X509CAInfo cainfo = (X509CAInfo) casession.getCAInfo(admin, caid);
+        X509CRL x509crl;
+        byte [] cFreshestDpDER;
+
+        cainfo.setUseCrlDistributionPointOnCrl(true);
+        cainfo.setDefaultCRLDistPoint(cdpURL);
+        cainfo.setCADefinedFreshestCRL(freshestCdpURL);
+        casession.editCA(admin, cainfo);
+        crlSession.run(admin, cadn);
+        x509crl = CertTools.getCRLfromByteArray(storeremote.getLastCRL(admin, cadn, false));
+        cFreshestDpDER = x509crl.getExtensionValue(X509Extensions.FreshestCRL.getId());
+        assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
+
+        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
+        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+        CRLDistPoint cdp = new CRLDistPoint((ASN1Sequence) aIn.readObject());
+        DistributionPoint[] distpoints = cdp.getDistributionPoints();
+
+        assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
+        assertEquals("Freshest CRL distribution point is different",
+                     freshestCdpURL,
+                     ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint().getName()).getNames()[0].getName()).getString());
+
+        log.debug("<test07CRLFreshestCRL()");
+    }
+
     // 
 	// Helper methods
 	//
