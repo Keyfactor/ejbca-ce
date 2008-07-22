@@ -675,10 +675,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             UserDataPK pk = new UserDataPK(userdata.getUsername());
             UserDataLocal data1 = home.findByPrimaryKey(pk);
             data1.setDN(dn);
-            if (userdata.getSubjectAltName() != null)
-                data1.setSubjectAltName(userdata.getSubjectAltName());
-            if (userdata.getEmail() != null)
-                data1.setSubjectEmail(userdata.getEmail());
+            data1.setSubjectAltName(userdata.getSubjectAltName());
+            data1.setSubjectEmail(userdata.getEmail());
             data1.setCaId(userdata.getCAId());
             data1.setType(type);
             data1.setEndEntityProfileId(userdata.getEndEntityProfileId());
