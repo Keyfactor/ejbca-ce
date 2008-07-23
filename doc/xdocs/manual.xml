@@ -4529,6 +4529,20 @@ existing file(s) found in the EJBCA_HOME-directory or its subdirectories before
 executing an 'ant'-command. A sample, conf/custom.properties.sample, is provided. 
 </p>
 <p>
+Example usage: <br />
+You have a working set of configuration files and database from the latest
+stable release, and want to try the latest trunk snapshot.
+<ul>
+<li>Backup your database</li>
+<li>Copy $EJBCA_HOME/conf/ to $EJBCA_HOME/../ejbca-custom/conf/</li>
+<li>Copy $EJBCA_HOME/p12/ to $EJBCA_HOME/../ejbca-custom/p12/</li>
+<li>Copy $EJBCA_HOME/src/java/*.properties to $EJBCA_HOME/../ejbca-custom/src/java/*.properties</li>
+</ul>
+You can now remove the entire $EJBCA_HOME-directory and replace it with the a fresh snapshot from
+the trunk. Restore the database and all the config and generated keys will be restored to $EJBCA_HOME
+next time you run "ant deploy".
+</p>
+<p>
 Please note that
 <ul>
 <li>there is no way to recover overwritten files, so you have to manually restore
