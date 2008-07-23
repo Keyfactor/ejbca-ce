@@ -26,17 +26,12 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -49,6 +44,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -61,7 +57,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  */
 public class CrmfRATcpRequestTest extends CmpTestCase {
 	
-    private static Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
+    private static final Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
 
     private static final String PBEPASSWORD = "password";
     
@@ -69,23 +65,17 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;  
 
-    private static IUserAdminSessionRemote usersession;
     private static int caid = 0;
-    private static Admin admin;
+    private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);;
     private static X509Certificate cacert = null;
 
 	public CrmfRATcpRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
 		super(arg0);
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 		CertTools.installBCProvider();
-		Context ctx = getInitialContext();
-        Object obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
         // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = casession.getCAInfo(admin, "AdminCA1");
+        CAInfo adminca1 = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection caids = casession.getAvailableCAs(admin);
+            Collection caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
             Iterator iter = caids.iterator();
             while (iter.hasNext()) {
             	caid = ((Integer) iter.next()).intValue();
@@ -96,7 +86,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         if (caid == 0) {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
-        CAInfo cainfo = casession.getCAInfo(admin, caid);
+        CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator certiter = certs.iterator();
@@ -109,19 +99,9 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         } else {
             log.error("NO CACERT for caid " + caid);
         }
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-        
         issuerDN = cacert.getIssuerDN().getName();
 	}
 	
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-        return ctx;
-    }
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
@@ -259,7 +239,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         boolean userExists = false;
 		userDN = "C=SE,O=PrimeKey,CN=cmptest";
         try {
-            usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+        	TestTools.getUserAdminSession().addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: cmptest, foo123, "+userDN);
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
@@ -271,10 +251,9 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
         if (userExists) {
             log.debug("User cmptest already exists.");
-            usersession.setUserStatus(admin,"cmptest",UserDataConstants.STATUS_NEW);
+            TestTools.getUserAdminSession().setUserStatus(admin,"cmptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
-        
     }
 
     static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"+

@@ -26,8 +26,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -38,18 +36,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.approval.IApprovalSessionHome;
-import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.TestRevocationApproval;
@@ -67,6 +53,7 @@ import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2000._09.xmldsig_.X509DataType;
@@ -87,7 +74,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 
 /**
  * To Run this test, there must be a CA with DN "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
- * 
+ * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @author Philip Vendil 2006 sep 27 
  *
@@ -108,22 +95,15 @@ public class TestXKMSKRSS extends TestCase {
 	private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
 	private static String baseUsername;
-	private IUserAdminSessionRemote userAdminSession;
-	private IUserAdminSessionHome userAdminSessionHome;
-	private ICertificateStoreSessionRemote certificateStoreSession;
-	private IRaAdminSessionRemote raAdminSession;
-	private IKeyRecoverySessionRemote keyRecoverySession;
-    private IApprovalSessionRemote approvalSession;
-    private ICAAdminSessionRemote caAdminSession;
 	
-	private static Admin administrator = new Admin(Admin.TYPE_RA_USER);
+	private static final Admin administrator = new Admin(Admin.TYPE_RA_USER);
 	
-	private int caid;
 	private static String username1 = null;
 	private static String username2 = null;
 	private static String username3 = null;
 
-	private static String issuerdn = null;
+	private static final String issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+	private final int caid = issuerdn.hashCode();
 	
 	private int userNo;
 	
@@ -169,45 +149,11 @@ public class TestXKMSKRSS extends TestCase {
 		} catch (JAXBException e) {
 			log.error("Error initializing RequestAbstractTypeResponseGenerator",e);
 		}
-
 	}
 	
     protected void setUp() throws Exception {
         log.debug(">setUp()");
         CertTools.installBCProvider();
-        if (userAdminSession == null) {
-            if (userAdminSessionHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IUserAdminSessionHome.JNDI_NAME);
-                userAdminSessionHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-                
-                Object obj2 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
-                ICertificateStoreSessionHome certhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
-                certificateStoreSession = certhome.create();
-                
-                Object obj3 = jndiContext.lookup(IRaAdminSessionHome.JNDI_NAME);
-                IRaAdminSessionHome raAdminHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj3, IRaAdminSessionHome.class);
-                raAdminSession = raAdminHome.create();
-                
-                Object obj4 = jndiContext.lookup(IKeyRecoverySessionHome.JNDI_NAME);
-                IKeyRecoverySessionHome keyAdminHome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj4, IKeyRecoverySessionHome.class);
-                keyRecoverySession = keyAdminHome.create();
-                
-                Object obj5 = jndiContext.lookup(IApprovalSessionHome.JNDI_NAME);
-                IApprovalSessionHome approvalSessionHome = (IApprovalSessionHome) javax.rmi.PortableRemoteObject.narrow(obj5, IApprovalSessionHome.class);
-                approvalSession = approvalSessionHome.create();
-                
-                Object obj6 = jndiContext.lookup(ICAAdminSessionHome.JNDI_NAME);
-                ICAAdminSessionHome caAdminSessionHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj6, ICAAdminSessionHome.class);
-                caAdminSession = caAdminSessionHome.create(); 
-
-                issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE"; 
-                caid = issuerdn.hashCode();
-            }
-            userAdminSession = userAdminSessionHome.create();
-        }      
-
-        
         Random ran = new Random();
         if(baseUsername == null){
           baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
@@ -227,11 +173,11 @@ public class TestXKMSKRSS extends TestCase {
     	certprofilename2 = "XKMSTESTEXCHANDENC" + baseUsername;
     	endentityprofilename = "XKMSTESTPROFILE" + baseUsername;
     	
-    	orgGlobalConfig = raAdminSession.loadGlobalConfiguration(administrator);
+    	orgGlobalConfig = TestTools.getRaAdminSession().loadGlobalConfiguration(administrator);
     	
-    	GlobalConfiguration newGlobalConfig = raAdminSession.loadGlobalConfiguration(administrator);
+    	GlobalConfiguration newGlobalConfig = TestTools.getRaAdminSession().loadGlobalConfiguration(administrator);
     	newGlobalConfig.setEnableKeyRecovery(true);
-    	raAdminSession.saveGlobalConfiguration(administrator, newGlobalConfig);
+    	TestTools.getRaAdminSession().saveGlobalConfiguration(administrator, newGlobalConfig);
     	
     	
     	// Setup with two new Certificate profiles.
@@ -243,11 +189,11 @@ public class TestXKMSKRSS extends TestCase {
     	EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
     	profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT,true);
     	
-    	certificateStoreSession.addCertificateProfile(administrator, certprofilename1, profile1);
-    	certificateStoreSession.addCertificateProfile(administrator, certprofilename2, profile2);
+    	TestTools.getCertificateStoreSession().addCertificateProfile(administrator, certprofilename1, profile1);
+    	TestTools.getCertificateStoreSession().addCertificateProfile(administrator, certprofilename2, profile2);
     	
-    	int profile1Id = certificateStoreSession.getCertificateProfileId(administrator, certprofilename1);
-    	int profile2Id = certificateStoreSession.getCertificateProfileId(administrator, certprofilename2);
+    	int profile1Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, certprofilename1);
+    	int profile2Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, certprofilename2);
     	
     	EndEntityProfile endentityprofile = new EndEntityProfile(true);
     	
@@ -256,8 +202,8 @@ public class TestXKMSKRSS extends TestCase {
     	
     	endentityprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
     	
-    	raAdminSession.addEndEntityProfile(administrator, endentityprofilename, endentityprofile);
-        endEntityProfileId = raAdminSession.getEndEntityProfileId(administrator, endentityprofilename);
+    	TestTools.getRaAdminSession().addEndEntityProfile(administrator, endentityprofilename, endentityprofile);
+        endEntityProfileId = TestTools.getRaAdminSession().getEndEntityProfileId(administrator, endentityprofilename);
         
     	
     	username1 = genUserName();
@@ -269,12 +215,12 @@ public class TestXKMSKRSS extends TestCase {
     	dn1 = "C=SE, O=AnaTom, CN=" + username1;
     	String subjectaltname1 = "RFC822NAME=" + username1 + "@foo.se";
     	String email1 = username1 + "@foo.se";
-    	if (userAdminSession.findUser(administrator, username1) != null) {
+    	if (TestTools.getUserAdminSession().findUser(administrator, username1) != null) {
     		System.out.println("Error : User already exists in the database.");
     	}
-    	userAdminSession.addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
+    	TestTools.getUserAdminSession().addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
     			type, token, hardtokenissuerid, caid);
-    	userAdminSession.setClearTextPassword(administrator, username1, pwd);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, pwd);
  
     	username2 = genUserName();
     	dn2 = "C=SE, O=AnaTom, CN=" + username2;
@@ -282,23 +228,23 @@ public class TestXKMSKRSS extends TestCase {
     	token = SecConst.TOKEN_SOFT_P12;
     	String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/"+username2+",IPADDRESS=10.0.0.1,DNSNAME="+username2+".test.com";
     	String email2 = username2 + "@foo.se";    	
-    	if (userAdminSession.findUser(administrator, username2) != null) {
+    	if (TestTools.getUserAdminSession().findUser(administrator, username2) != null) {
     		System.out.println("Error : User already exists in the database.");
     	}
-    	userAdminSession.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
+    	TestTools.getUserAdminSession().addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
     			type, token, hardtokenissuerid, caid);
-    	userAdminSession.setClearTextPassword(administrator, username2, pwd);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, pwd);
 
     	username3 = genUserName();
     	dn3 = "C=SE, O=AnaTom, CN=" + username3;
     	String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
     	String email3 = username3 + "@foo.se";
-    	if (userAdminSession.findUser(administrator, username3) != null) {
+    	if (TestTools.getUserAdminSession().findUser(administrator, username3) != null) {
     		System.out.println("Error : User already exists in the database.");
     	}
-    	userAdminSession.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
+    	TestTools.getUserAdminSession().addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
     			type, token, hardtokenissuerid, caid);
-    	userAdminSession.setClearTextPassword(administrator, username3, pwd);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username3, pwd);
 
     }
     
@@ -576,8 +522,8 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test08SimpleReissue() throws Exception{
-    	userAdminSession.setUserStatus(administrator, username1, 10);
-    	userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
+    	TestTools.getUserAdminSession().setUserStatus(administrator, username1, 10);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, "ReissuePassword");
      	ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
      	reissueRequestType.setId("607");       	
         	               
@@ -628,8 +574,8 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test09ReissueWrongPassword() throws Exception{
-    	userAdminSession.setUserStatus(administrator, username1, 10);
-    	userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
+    	TestTools.getUserAdminSession().setUserStatus(administrator, username1, 10);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, "ReissuePassword");
      	ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
      	reissueRequestType.setId("608");       	
         	               
@@ -661,8 +607,8 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test10ReissueWrongStatus() throws Exception{
-    	userAdminSession.setUserStatus(administrator, username1, 40);
-    	userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
+    	TestTools.getUserAdminSession().setUserStatus(administrator, username1, 40);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, "ReissuePassword");
      	ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
      	reissueRequestType.setId("609");       	
         	               
@@ -693,8 +639,8 @@ public class TestXKMSKRSS extends TestCase {
     
     public void test11ReissueWrongCert() throws Exception{
     	
-    	userAdminSession.setUserStatus(administrator, username1, 10);
-    	userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
+    	TestTools.getUserAdminSession().setUserStatus(administrator, username1, 10);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, "ReissuePassword");
      	ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
      	reissueRequestType.setId("610");       	
         	               
@@ -724,8 +670,8 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test12SimpleRecover() throws Exception{
-    	keyRecoverySession.markAsRecoverable(administrator, cert2, endEntityProfileId);    	
-    	userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+    	TestTools.getKeyRecoverySession().markAsRecoverable(administrator, cert2, endEntityProfileId);    	
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("700");       	
         	               
@@ -785,8 +731,8 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test13RecoverWrongPassword() throws Exception{
-    	keyRecoverySession.markAsRecoverable(administrator, cert2, endEntityProfileId);    	
-    	userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+    	TestTools.getKeyRecoverySession().markAsRecoverable(administrator, cert2, endEntityProfileId);    	
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("701");       	
         	               
@@ -818,8 +764,8 @@ public class TestXKMSKRSS extends TestCase {
     }
   
     public void test14RecoverWrongStatus() throws Exception{
-    	userAdminSession.setUserStatus(administrator, username2, 10);    	    	
-    	userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+    	TestTools.getUserAdminSession().setUserStatus(administrator, username2, 10);    	    	
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("702");       	
         	               
@@ -852,8 +798,8 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test15RecoverWrongCert() throws Exception{
-    	userAdminSession.setUserStatus(administrator, username2, UserDataConstants.STATUS_KEYRECOVERY);    	    	
-    	userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+    	TestTools.getUserAdminSession().setUserStatus(administrator, username2, UserDataConstants.STATUS_KEYRECOVERY);    	    	
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("703");       	
         	               
@@ -886,9 +832,9 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test16CertNotMarked() throws Exception{
-    	keyRecoverySession.unmarkUser(administrator, username2);
-    	userAdminSession.setUserStatus(administrator, username2, 40);    	    	
-    	userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+    	TestTools.getKeyRecoverySession().unmarkUser(administrator, username2);
+    	TestTools.getUserAdminSession().setUserStatus(administrator, username2, 40);    	    	
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("704");       	
         	               
@@ -1055,15 +1001,15 @@ public class TestXKMSKRSS extends TestCase {
 		String username = "xkmsRevocationUser" + randomPostfix;
 		int caID = -1;
 	    try {
-	    	caID = TestRevocationApproval.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession);
-			X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(administrator, APPROVINGADMINNAME).iterator().next();
+	    	caID = TestRevocationApproval.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, TestTools.getCAAdminSession());
+			X509Certificate adminCert = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(administrator, APPROVINGADMINNAME).iterator().next();
 	    	Admin approvingAdmin = new Admin(adminCert);
 	    	try {
 	    		// Create new user
 	    		UserDataVO userdata = new UserDataVO(username,"CN="+username,caID,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
 	    				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
 	    		userdata.setPassword("foo123");
-	    		userAdminSession.addUser(administrator, userdata , true);
+	    		TestTools.getUserAdminSession().addUser(administrator, userdata , true);
 	    		// Register user
     	     	RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
     	    	registerRequestType.setId("806");       	
@@ -1081,7 +1027,7 @@ public class TestXKMSKRSS extends TestCase {
     			RegisterResultType registerResultType = xKMSInvoker.register(registerRequestType, null, null, "foo123", null, prototypeKeyBindingType.getId());
     			assertTrue(registerResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
 	    		// Get user's certificate 
-    		    Collection userCerts = certificateStoreSession.findCertificatesByUsername(administrator, username);
+    		    Collection userCerts = TestTools.getCertificateStoreSession().findCertificatesByUsername(administrator, username);
     		    assertTrue( userCerts.size() == 1 );
     		    X509Certificate cert = (X509Certificate) userCerts.iterator().next();
     			// Revoke via XKMS and verify response
@@ -1118,44 +1064,35 @@ public class TestXKMSKRSS extends TestCase {
 	            assertTrue(ERRORNOTSENTFORAPPROVAL, revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));	
 				// Approve revocation and verify success
 	            TestRevocationApproval.approveRevocation(administrator, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED,
-	            		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession);
+	            		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession());
 		        // Try to reactivate user
 	    	} finally {
-		    	userAdminSession.deleteUser(administrator, username);
+		    	TestTools.getUserAdminSession().deleteUser(administrator, username);
 	    	}
 	    } finally {
 			// Nuke CA
 	        try {
-	        	caAdminSession.revokeCA(administrator, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+	        	TestTools.getCAAdminSession().revokeCA(administrator, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 	        } finally {
-	        	caAdminSession.removeCA(administrator, caID);
+	        	TestTools.getCAAdminSession().removeCA(administrator, caID);
 	        }
 	    }
     } // test21RevocationApprovals
     
     public void test99CleanDatabase() throws Exception{    	    	
     	Admin administrator = new Admin(Admin.TYPE_RA_USER);
-    	userAdminSession.deleteUser(administrator, username1);
-        userAdminSession.deleteUser(administrator, username2);
-    	userAdminSession.deleteUser(administrator, username3);
+    	TestTools.getUserAdminSession().deleteUser(administrator, username1);
+        TestTools.getUserAdminSession().deleteUser(administrator, username2);
+    	TestTools.getUserAdminSession().deleteUser(administrator, username3);
     	
-    	raAdminSession.removeEndEntityProfile(administrator, endentityprofilename);
+    	TestTools.getRaAdminSession().removeEndEntityProfile(administrator, endentityprofilename);
     	
-    	certificateStoreSession.removeCertificateProfile(administrator, certprofilename1);
-    	certificateStoreSession.removeCertificateProfile(administrator, certprofilename2);
+    	TestTools.getCertificateStoreSession().removeCertificateProfile(administrator, certprofilename1);
+    	TestTools.getCertificateStoreSession().removeCertificateProfile(administrator, certprofilename2);
     	
-    	raAdminSession.saveGlobalConfiguration(administrator, orgGlobalConfig);
+    	TestTools.getRaAdminSession().saveGlobalConfiguration(administrator, orgGlobalConfig);
     }
 
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
-    
     private String genUserName() throws Exception {
         // Gen new user
         userNo++;

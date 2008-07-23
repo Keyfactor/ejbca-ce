@@ -56,16 +56,18 @@ import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * This test requires:
- * mode=ra, responseProtection=pbe, authenticationsecret=password, allowraverifypopo=true.
+ * cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=pbe, cmp.ra.authenticationsecret=password,
  * Allow CN, O, C in DN and rfc822Name, UPN in altNames in the end entity profile configured in cmp.properties
  * 
- * You need a CMP tcp listener configured on port 5547.
+ * You need a CMP tcp listener configured on port 5587.
+ * (cmp.tcp.enabled=true, cmp.tcp.portno=5587)
  * 
  * @author tomas
  * @version $Id$
@@ -82,32 +84,18 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;  
 
-    private static IUserAdminSessionRemote userAdminSession = null;
-    private static ICertificateStoreSessionRemote certificateStoreSession = null;
-    private static ICAAdminSessionRemote caAdminSession = null;
-    private static IApprovalSessionRemote approvalSession = null;
     private static int caid = 0;
-    private static Admin admin;
+    private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
 
 	public CrmfRAPbeRequestTest(String arg0) throws NamingException, RemoteException, CreateException,
 			CertificateEncodingException, CertificateException {
 		super(arg0);
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 		CertTools.installBCProvider();
-        Context ctx = new javax.naming.InitialContext();
-		caAdminSession = ((ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(ICAAdminSessionHome.JNDI_NAME), ICAAdminSessionHome.class)).create();
-		userAdminSession = ((IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(IUserAdminSessionHome.JNDI_NAME), IUserAdminSessionHome.class)).create();
-		certificateStoreSession = ((ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(ICertificateStoreSessionHome.JNDI_NAME), ICertificateStoreSessionHome.class)).create();
-		approvalSession = ((IApprovalSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(IApprovalSessionHome.JNDI_NAME), IApprovalSessionHome.class)).create();
         // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caAdminSession.getCAInfo(admin, "AdminCA1");
+        CAInfo adminca1 = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection caids = caAdminSession.getAvailableCAs(admin);
+            Collection caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
             Iterator iter = caids.iterator();
             while (iter.hasNext()) {
             	caid = ((Integer) iter.next()).intValue();
@@ -118,7 +106,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         if (caid == 0) {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
-        CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
+        CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator certiter = certs.iterator();
@@ -261,7 +249,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
 	
 	public void test99CleanUp() throws Exception {
-		userAdminSession.deleteUser(admin, "cmptest");
+		TestTools.getUserAdminSession().deleteUser(admin, "cmptest");
 	}
 	
 	public void testRevocationApprovals() throws Exception {
@@ -272,21 +260,21 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		X509CAInfo cainfo = null;
 	    try {
 			// Generate CA with approvals for revocation enabled
-	    	int caID = TestRevocationApproval.createApprovalCA(admin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession);
+	    	int caID = TestRevocationApproval.createApprovalCA(admin, caname, CAInfo.REQ_APPROVAL_REVOCATION, TestTools.getCAAdminSession());
 			// Get CA cert
-			cainfo = (X509CAInfo) caAdminSession.getCAInfo(admin, caID);
+			cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, caID);
 	        assertNotNull(cainfo);
 			X509Certificate newCACert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
 			// Create a user and generate the cert
 			UserDataVO userdata = new UserDataVO(username,"CN="+username,cainfo.getCAId(),null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
 					SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
 			userdata.setPassword("foo123");
-			userAdminSession.addUser(admin, userdata , true);
+			TestTools.getUserAdminSession().addUser(admin, userdata , true);
 		    BatchMakeP12 makep12 = new BatchMakeP12();
 		    File tmpfile = File.createTempFile("ejbca", "p12");
 		    makep12.setMainStoreDir(tmpfile.getParent());
 		    makep12.createAllNew();
-		    Collection userCerts = certificateStoreSession.findCertificatesByUsername(admin, username);
+		    Collection userCerts = TestTools.getCertificateStoreSession().findCertificatesByUsername(admin, username);
 		    assertTrue( userCerts.size() == 1 );
 		    X509Certificate cert = (X509Certificate) userCerts.iterator().next();
 		    // revoke via CMP and verify response
@@ -329,10 +317,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
 			assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
 			// Approve revocation and verify success
-			Admin approvingAdmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(
+			Admin approvingAdmin = new Admin((X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(
 					admin, APPROVINGADMINNAME).iterator().next());
 			TestRevocationApproval.approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE,
-					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession);
+					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession());
 			// try to revoke the now revoked cert via CMP and verify error
 			nonce = CmpMessageHelper.createSenderNonce();
 			transid = CmpMessageHelper.createSenderNonce();
@@ -353,12 +341,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 					ResponseStatus.FAILURE.getIntValue());
 	    } finally {
 			// Delete user
-			userAdminSession.deleteUser(admin, username);
+			TestTools.getUserAdminSession().deleteUser(admin, username);
 			// Nuke CA
 	        try {
-	        	caAdminSession.revokeCA(admin, cainfo.getCAId(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+	        	TestTools.getCAAdminSession().revokeCA(admin, cainfo.getCAId(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 	        } finally {
-	        	caAdminSession.removeCA(admin, cainfo.getCAId());
+	        	TestTools.getCAAdminSession().removeCA(admin, cainfo.getCAId());
 	        }
 	    }
 	} // testRevocationApprovals
@@ -369,7 +357,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
     private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
     	int ret = RevokedCertInfo.NOT_REVOKED;
-    	RevokedCertInfo info = certificateStoreSession.isRevoked(admin, issuerDN, serno);
+    	RevokedCertInfo info = TestTools.getCertificateStoreSession().isRevoked(admin, issuerDN, serno);
     	ret = info.getReason();
     	return ret;
     }

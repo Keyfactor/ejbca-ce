@@ -17,16 +17,9 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.services.IServiceSessionHome;
-import org.ejbca.core.ejb.services.IServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -35,9 +28,7 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
-
-
-
+import org.ejbca.util.TestTools;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -45,14 +36,12 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
  */
 public class TestUserPasswordExpire extends TestCase {
 
-    private static Logger log = Logger.getLogger(TestUserPasswordExpire.class);
-    private static Context ctx;
-    private static IUserAdminSessionRemote usersession;
-    private static IServiceSessionRemote servicesession;
+    private static final Logger log = Logger.getLogger(TestUserPasswordExpire.class);
+    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final int caid = TestTools.getTestCAId();
+
     private static String username;
     private static String pwd;
-    private static int caid;
-    private static Admin admin = null;
 
     /**
      * Creates a new TestUserPasswordExpire object.
@@ -61,35 +50,13 @@ public class TestUserPasswordExpire extends TestCase {
      */
     public TestUserPasswordExpire(String name) {
         super(name);
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-        ctx = getInitialContext();
-
-        caid = "CN=TEST".hashCode();
-
-        Object obj = ctx.lookup(IUserAdminSessionHome.JNDI_NAME);
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        obj = ctx.lookup(IServiceSessionHome.JNDI_NAME);
-        IServiceSessionHome servicehome = (IServiceSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IServiceSessionHome.class);
-        usersession = userhome.create();
-        servicesession = servicehome.create();
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
     }
 
     private String genRandomUserName() throws Exception {
@@ -101,7 +68,6 @@ public class TestUserPasswordExpire extends TestCase {
             username += (new Integer(randint)).toString();
         }
         log.debug("Generated random username: username =" + username);
-
         return username;
     } // genRandomUserName
 
@@ -114,9 +80,7 @@ public class TestUserPasswordExpire extends TestCase {
             int randint = rand.nextInt(9);
             password += (new Integer(randint)).toString();
         }
-
         log.debug("Generated random pwd: password=" + password);
-
         return password;
     } // genRandomPwd
 
@@ -130,7 +94,7 @@ public class TestUserPasswordExpire extends TestCase {
         // Create a new user
         username = genRandomUserName();
         pwd = genRandomPwd();
-        usersession.addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
+        TestTools.getUserAdminSession().addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created user: "+username);
         
         // Create a new UserPasswordExpireService
@@ -155,14 +119,14 @@ public class TestUserPasswordExpire extends TestCase {
 		workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_HOURS);
 		config.setWorkerProperties(workerprop);
 		
-        servicesession.addService(admin, "TestUserPasswordService", config);
-        servicesession.activateServiceTimer(admin, "TestUserPasswordService");
+		TestTools.getServiceSession().addService(admin, "TestUserPasswordService", config);
+        TestTools.getServiceSession().activateServiceTimer(admin, "TestUserPasswordService");
         
         // The service will run...
         Thread.sleep(5000);
         
         // Now the user will not have been expired
-        UserDataVO data = usersession.findUser(admin,username);
+        UserDataVO data = TestTools.getUserAdminSession().findUser(admin,username);
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_NEW, data.getStatus());
 
@@ -171,13 +135,13 @@ public class TestUserPasswordExpire extends TestCase {
         // Include a dummy CA so we can see that the query works with checking several CAs
 		workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caid)+";45");
 		config.setWorkerProperties(workerprop);
-        servicesession.changeService(admin, "TestUserPasswordService", config, false);
+        TestTools.getServiceSession().changeService(admin, "TestUserPasswordService", config, false);
         
         // The service will run...
         Thread.sleep(10000);
         
         // Now the user will be expired
-        data = usersession.findUser(admin,username);
+        data = TestTools.getUserAdminSession().findUser(admin,username);
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_GENERATED, data.getStatus());
         
@@ -191,12 +155,12 @@ public class TestUserPasswordExpire extends TestCase {
      */
     public void test99CleanUp() throws Exception {
         log.debug(">test99CleanUp()");
-
-        usersession.deleteUser(admin,username);
+        TestTools.getUserAdminSession().deleteUser(admin,username);
         log.debug("Removed user: "+username);
-        servicesession.removeService(admin, "TestUserPasswordService");
+        TestTools.getServiceSession().removeService(admin, "TestUserPasswordService");
         log.debug("Removed service: TestUserPasswordService");
-        
+        TestTools.removeTestCA();
+        log.debug("Removed test CA");
         log.debug("<test99CleanUp()");
     }
 }

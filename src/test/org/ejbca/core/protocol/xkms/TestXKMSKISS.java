@@ -35,14 +35,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -55,6 +47,7 @@ import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.KeyValueType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -72,7 +65,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 
 /**
  * To Run this test, there must be a CA with DN "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
- * 
+ * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @author Philip Vendil 2006 sep 27 
  *
@@ -93,18 +86,13 @@ public class TestXKMSKISS extends TestCase {
 	private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
 	private static String baseUsername;
-	private IUserAdminSessionRemote cacheAdmin;
-	private IUserAdminSessionHome cacheHome;
-	private ISignSessionRemote rsaremote;
-	private ICertificateStoreSessionRemote certStore;
-	private IRaAdminSessionRemote raAdmin;
 	
-	private int caid;
 	private static String username1 = null;
 	private static String username2 = null;
 	private static String username3 = null;
 
-	private static String issuerdn = null;
+	private static final String issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+	private final int caid = issuerdn.hashCode();
 	
 	private int userNo;
 
@@ -118,40 +106,10 @@ public class TestXKMSKISS extends TestCase {
     protected void setUp() throws Exception {
         log.debug(">setUp()");
         CertTools.installBCProvider();
-
-        
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("UserAdminSession");
-                cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-                
-                Object obj = jndiContext.lookup("RSASignSession");
-                ISignSessionHome rsahome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-                rsaremote = rsahome.create();
-                
-                Object obj2 = jndiContext.lookup("CertificateStoreSession");
-                ICertificateStoreSessionHome certhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
-                certStore = certhome.create();
-                
-                Object obj3 = jndiContext.lookup("RaAdminSession");
-                IRaAdminSessionHome raAdminHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj3, IRaAdminSessionHome.class);
-                raAdmin = raAdminHome.create();
-                
-                issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE"; 
-                caid = issuerdn.hashCode();
-                
-            }
-
-            cacheAdmin = cacheHome.create();
-        }      
-
-        
         Random ran = new Random();
         if(baseUsername == null){
           baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
         }
-        
         log.debug("<setUp()");
     }
 
@@ -171,29 +129,29 @@ public class TestXKMSKISS extends TestCase {
     	profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT,true);
     	
     	try {
-    		certStore.addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
+    		TestTools.getCertificateStoreSession().addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
     	} catch (CertificateProfileExistsException e) {
     		System.out.println("Certificateprofile XKMSTESTSIGN already exists.");
     	}
     	try {
-    		certStore.addCertificateProfile(administrator, "XKMSTESTEXCHANDENC", profile2);
+    		TestTools.getCertificateStoreSession().addCertificateProfile(administrator, "XKMSTESTEXCHANDENC", profile2);
     	} catch (CertificateProfileExistsException e) {
     		System.out.println("Certificateprofile XKMSTESTSIGN already exists.");
     	}
     	
-    	int profile1Id = certStore.getCertificateProfileId(administrator, "XKMSTESTSIGN");
-    	int profile2Id = certStore.getCertificateProfileId(administrator, "XKMSTESTEXCHANDENC");
+    	int profile1Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, "XKMSTESTSIGN");
+    	int profile2Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, "XKMSTESTEXCHANDENC");
     	
     	EndEntityProfile endentityprofile = new EndEntityProfile(true);
     	endentityprofile.setValue(EndEntityProfile.AVAILCAS, 0, ""+caid);
     	endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, ""+SecConst.CERTPROFILE_FIXED_ENDUSER +";" + profile1Id + ";" + profile2Id );
     	
     	try {
-    		raAdmin.addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
+    		TestTools.getRaAdminSession().addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
     	} catch (EndEntityProfileExistsException e) {
     		System.out.println("Endentityprofile XKMSTESTPROFILE already exists.");
     	}
-        int endEntityProfileId = raAdmin.getEndEntityProfileId(administrator, "XKMSTESTPROFILE");
+        int endEntityProfileId = TestTools.getRaAdminSession().getEndEntityProfileId(administrator, "XKMSTESTPROFILE");
         
     	
     	username1 = genUserName();
@@ -205,40 +163,40 @@ public class TestXKMSKISS extends TestCase {
     	dn1 = "C=SE, O=AnaTom, CN=" + username1;
     	String subjectaltname1 = "RFC822NAME=" + username1 + "@foo.se";
     	String email1 = username1 + "@foo.se";
-    	if (cacheAdmin.findUser(administrator, username1) != null) {
+    	if (TestTools.getUserAdminSession().findUser(administrator, username1) != null) {
     		System.out.println("Error : User already exists in the database.");
     	}
-    	cacheAdmin.addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
+    	TestTools.getUserAdminSession().addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
     			type, token, hardtokenissuerid, caid);
-    	cacheAdmin.setClearTextPassword(administrator, username1, pwd);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, pwd);
     	KeyPair keys1 = genKeys();        
-    	cert1 = (X509Certificate) rsaremote.createCertificate(administrator, username1, "foo123", keys1.getPublic());
+    	cert1 = (X509Certificate) TestTools.getSignSession().createCertificate(administrator, username1, "foo123", keys1.getPublic());
 
     	username2 = genUserName();
     	dn2 = "C=SE, O=AnaTom, CN=" + username2;
     	String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/"+username2+",IPADDRESS=10.0.0.1,DNSNAME="+username2+".test.com";
     	String email2 = username2 + "@foo.se";    	
-    	if (cacheAdmin.findUser(administrator, username2) != null) {
+    	if (TestTools.getUserAdminSession().findUser(administrator, username2) != null) {
     		System.out.println("Error : User already exists in the database.");
     	}
-    	cacheAdmin.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
+    	TestTools.getUserAdminSession().addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
     			type, token, hardtokenissuerid, caid);
-    	cacheAdmin.setClearTextPassword(administrator, username2, pwd);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, pwd);
     	KeyPair keys2 = genKeys();        
-    	cert2 = (X509Certificate) rsaremote.createCertificate(administrator, username2, "foo123", keys2.getPublic());    	
+    	cert2 = (X509Certificate) TestTools.getSignSession().createCertificate(administrator, username2, "foo123", keys2.getPublic());    	
 
     	username3 = genUserName();
     	dn3 = "C=SE, O=AnaTom, CN=" + username3;
     	String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
     	String email3 = username3 + "@foo.se";
-    	if (cacheAdmin.findUser(administrator, username3) != null) {
+    	if (TestTools.getUserAdminSession().findUser(administrator, username3) != null) {
     		System.out.println("Error : User already exists in the database.");
     	}
-    	cacheAdmin.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
+    	TestTools.getUserAdminSession().addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
     			type, token, hardtokenissuerid, caid);
-    	cacheAdmin.setClearTextPassword(administrator, username3, pwd);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username3, pwd);
     	KeyPair keys3 = genKeys();        
-    	 rsaremote.createCertificate(administrator, username3, "foo123", keys3.getPublic());      
+    	TestTools.getSignSession().createCertificate(administrator, username3, "foo123", keys3.getPublic());      
 
     }
     
@@ -971,7 +929,7 @@ public class TestXKMSKISS extends TestCase {
         
         // Revoke certificate
         Admin administrator = new Admin(Admin.TYPE_RA_USER);
-        certStore.revokeCertificate(administrator, cert1, new ArrayList(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        TestTools.getCertificateStoreSession().revokeCertificate(administrator, cert1, new ArrayList(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
     	// Validate with revoked certificate
     	validateRequestType = xKMSObjectFactory.createValidateRequestType();
     	validateRequestType.setId("203");       	
@@ -1003,14 +961,14 @@ public class TestXKMSKISS extends TestCase {
     
     public void test99CleanDatabase() throws Exception{    	    	
     	Admin administrator = new Admin(Admin.TYPE_RA_USER);
-    	cacheAdmin.deleteUser(administrator, username1);
-        cacheAdmin.deleteUser(administrator, username2);
-    	cacheAdmin.deleteUser(administrator, username3);
+    	TestTools.getUserAdminSession().deleteUser(administrator, username1);
+        TestTools.getUserAdminSession().deleteUser(administrator, username2);
+    	TestTools.getUserAdminSession().deleteUser(administrator, username3);
     	
-    	raAdmin.removeEndEntityProfile(administrator, "XKMSTESTPROFILE");
+    	TestTools.getRaAdminSession().removeEndEntityProfile(administrator, "XKMSTESTPROFILE");
     	
-    	certStore.removeCertificateProfile(administrator, "XKMSTESTSIGN");
-    	certStore.removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC");
+    	TestTools.getCertificateStoreSession().removeCertificateProfile(administrator, "XKMSTESTSIGN");
+    	TestTools.getCertificateStoreSession().removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC");
     }
     
     

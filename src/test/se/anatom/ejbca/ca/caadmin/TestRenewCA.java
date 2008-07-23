@@ -16,16 +16,12 @@ package se.anatom.ejbca.ca.caadmin;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.TestTools;
 
 /**
  * Tests and removes the ca data entity bean.
@@ -33,11 +29,7 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  */
 public class TestRenewCA extends TestCase {
-    private static Logger log = Logger.getLogger(TestCAs.class);
-
-    private ICAAdminSessionRemote cacheAdmin;
-    private static ICAAdminSessionHome cacheHome;
-
+    private static final Logger log = Logger.getLogger(TestCAs.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     /**
@@ -47,35 +39,13 @@ public class TestRenewCA extends TestCase {
      */
     public TestRenewCA(String name) {
         super(name);
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("CAAdminSession");
-                cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
-            }
-
-            cacheAdmin = cacheHome.create();
-        }
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
     }
 
     /**
@@ -86,11 +56,11 @@ public class TestRenewCA extends TestCase {
     public void test01renewCA() throws Exception {
         log.debug(">test01renewCA()");
 
-        X509CAInfo info = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
+        X509CAInfo info = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         
-        cacheAdmin.renewCA(admin,info.getCAId(),null,false);
-        X509CAInfo newinfo = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
+        TestTools.getCAAdminSession().renewCA(admin,info.getCAId(),null,false);
+        X509CAInfo newinfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
         byte[] orgkey = orgcert.getPublicKey().getEncoded();
@@ -100,8 +70,8 @@ public class TestRenewCA extends TestCase {
         assertTrue(newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
 
         // This assumes that the default system keystore password is not changed from foo123
-        cacheAdmin.renewCA(admin,info.getCAId(),"foo123",true);
-        X509CAInfo newinfo2 = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
+        TestTools.getCAAdminSession().renewCA(admin,info.getCAId(),"foo123",true);
+        X509CAInfo newinfo2 = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
         byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();
@@ -110,4 +80,7 @@ public class TestRenewCA extends TestCase {
         log.debug("<test01renewCA()");
     }
 
+	public void test99RemoveTestCA() throws Exception {
+		TestTools.removeTestCA();
+	}
 }

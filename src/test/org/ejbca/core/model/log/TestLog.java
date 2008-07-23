@@ -17,21 +17,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.log.ILogSessionHome;
-import org.ejbca.core.ejb.log.ILogSessionRemote;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.CsvLogExporter;
-import org.ejbca.core.model.log.ILogExporter;
-import org.ejbca.core.model.log.Log4jLogDevice;
-import org.ejbca.core.model.log.LogConfiguration;
-import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.LogMatch;
 import org.ejbca.util.query.Query;
@@ -42,13 +31,9 @@ import org.ejbca.util.query.Query;
  * @version $Id$
  */
 public class TestLog extends TestCase {
-    private static Logger log = Logger.getLogger(TestLog.class);
+    private static final Logger log = Logger.getLogger(TestLog.class);
 
-    private ILogSessionRemote cacheLogSession;
-
-    private static ILogSessionHome cacheHome;
-
-    private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     /**
      * Creates a new TestLog object.
@@ -60,36 +45,10 @@ public class TestLog extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-
-        if (cacheLogSession == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("LogSession");
-                cacheHome = (ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ILogSessionHome.class);
-
-            }
-
-            cacheLogSession = cacheHome.create();
-        }
-
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
-
 
     /**
      * tests adding a log configuration and checks if it can be read again.
@@ -98,14 +57,15 @@ public class TestLog extends TestCase {
      */
     public void test01AddLogConfiguration() throws Exception {
         log.debug(">test01AddLogConfiguration()");
-
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        
         LogConfiguration logconf = new LogConfiguration();
         logconf.setLogEvent(LogConstants.EVENT_INFO_DATABASE, false);
         logconf.setLogEvent(LogConstants.EVENT_ERROR_DATABASE, true);
 
-        cacheLogSession.saveLogConfiguration(admin, "CN=TEST".hashCode(), logconf);
+        TestTools.getLogSession().saveLogConfiguration(admin, TestTools.getTestCAId(), logconf);
 
-        LogConfiguration logconf2 = cacheLogSession.loadLogConfiguration("CN=TEST".hashCode());
+        LogConfiguration logconf2 = TestTools.getLogSession().loadLogConfiguration(TestTools.getTestCAId());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogConstants.EVENT_INFO_DATABASE).booleanValue());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogConstants.EVENT_ERROR_DATABASE).booleanValue());
 
@@ -120,11 +80,8 @@ public class TestLog extends TestCase {
      */
     public void test02AddAndCheckLogEvents() throws Exception {
         log.debug(">test02AddAndCheckLogEvents()");
-
-        cacheLogSession.log(admin, "CN=TEST".hashCode(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
-
-
-        Collection logDeviceNames = cacheLogSession.getAvailableLogDevices();
+        TestTools.getLogSession().log(admin, TestTools.getTestCAId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
+        Collection logDeviceNames = TestTools.getLogSession().getAvailableLogDevices();
         Iterator iterator = logDeviceNames.iterator();
         Collection result = null;
         while (iterator.hasNext()) {
@@ -134,7 +91,7 @@ public class TestLog extends TestCase {
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
         	query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
-        	result = cacheLogSession.query(logDeviceName, query, "", "caid=" + Integer.toString("CN=TEST".hashCode()));
+        	result = TestTools.getLogSession().query(logDeviceName, query, "", "caid=" + Integer.toString(TestTools.getTestCAId()));
         	Iterator iter = result.iterator();
         	boolean found = false;
         	while (iter.hasNext()) {
@@ -145,7 +102,6 @@ public class TestLog extends TestCase {
         	}
         	assertTrue("Couldn't retrieve correct log data from database.", found);
         }
-
  	   ILogExporter exporter = new CsvLogExporter();
  	   exporter.setEntries(result);
 	   byte[] export = exporter.export();
@@ -154,7 +110,10 @@ public class TestLog extends TestCase {
 	   //assertEquals("foo", str);
 	   int ind = str.indexOf("Test\t");
 	   assertTrue(ind > 0);
-
         log.debug("<test02AddAndCheckLogEvents()");
     }
+    
+	public void test99RemoveTestCA() throws Exception {
+		TestTools.removeTestCA();
+	}
 }

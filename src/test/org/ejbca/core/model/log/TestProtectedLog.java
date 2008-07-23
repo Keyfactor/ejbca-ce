@@ -10,28 +10,21 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.naming.Context;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.log.ILogSessionHome;
-import org.ejbca.core.ejb.log.ILogSessionRemote;
-import org.ejbca.core.ejb.log.IProtectedLogSessionHome;
-import org.ejbca.core.ejb.log.IProtectedLogSessionRemote;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.util.TestTools;
 
 public class TestProtectedLog extends TestCase {
 
-	private final static String DEFAULT_CA_NAME		= "AdminCA1";
+	private final static String DEFAULT_CA_NAME		= "TEST";
 	private final static String LOGMESSAGE					= "Logmessage ";
 	private final static String ERROR_LASTACTION		= "Last actions should not have generated an error.";
 	private final static String ERROR_NONEMPTY		= "The protected log was not empty.";
@@ -41,12 +34,8 @@ public class TestProtectedLog extends TestCase {
 	private final static String ERROR_NOEXPORT			= "No export file was written.";
 	private final static String ERROR_BADEXPORT		= "Exported log does not contain any log-data";
 
-	private static Logger log = Logger.getLogger(TestProtectedLog.class);
-	private Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-
-	private IProtectedLogSessionRemote protectedLogSession = null;
-	private ILogSessionRemote logSession = null;
-	private ICAAdminSessionRemote caAdminSession = null;
+	private static final Logger log = Logger.getLogger(TestProtectedLog.class);
+	private final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 
 	/**
 	 * Creates a new TestProtectedLog object.
@@ -55,30 +44,16 @@ public class TestProtectedLog extends TestCase {
 	 */
 	public TestProtectedLog(String name) {
 		super(name);
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
 	}
 
 	protected void setUp() throws Exception {
 		log.debug(">setUp()");
-		if (protectedLogSession == null) {
-			Context jndiContext = new javax.naming.InitialContext();
-			protectedLogSession = ((IProtectedLogSessionHome) javax.rmi.PortableRemoteObject.narrow(
-					jndiContext.lookup(IProtectedLogSessionHome.JNDI_NAME), IProtectedLogSessionHome.class)).create();
-		}
-		if (logSession == null) {
-			Context jndiContext = new javax.naming.InitialContext();
-			logSession = ((ILogSessionHome) javax.rmi.PortableRemoteObject.narrow(
-					jndiContext.lookup(ILogSessionHome.JNDI_NAME), ILogSessionHome.class)).create();
-		}
-		if (caAdminSession == null) {
-			Context jndiContext = new javax.naming.InitialContext();
-			caAdminSession = ((ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
-					jndiContext.lookup(ICAAdminSessionHome.JNDI_NAME), ICAAdminSessionHome.class)).create();
-		}
 		// Stop services
-		protectedLogSession.stopServices();
+		TestTools.getProtectedLogSession().stopServices();
 		// Clear protected log
-		protectedLogSession.removeAllUntil(System.currentTimeMillis());
-		protectedLogSession.removeAllExports(true);
+		TestTools.getProtectedLogSession().removeAllUntil(System.currentTimeMillis());
+		TestTools.getProtectedLogSession().removeAllExports(true);
 		// Make sure tempfile is removed
 		ProtectedLogTestAction.removeFileInTempDir();
 		log.debug("<setUp()");
@@ -86,12 +61,12 @@ public class TestProtectedLog extends TestCase {
 
 	protected void tearDown() throws Exception {
 		// Clear protected log
-		protectedLogSession.removeAllUntil(System.currentTimeMillis()+60*1000);
-		protectedLogSession.removeAllExports(true);
+		TestTools.getProtectedLogSession().removeAllUntil(System.currentTimeMillis()+60*1000);
+		TestTools.getProtectedLogSession().removeAllExports(true);
 		// Restore log devices
-		logSession.restoreTestDevice();
+		TestTools.getLogSession().restoreTestDevice();
 		// Start servies
-		protectedLogSession.startServices();
+		TestTools.getProtectedLogSession().startServices();
 		ProtectedLogTestAction.removeFileInTempDir();
 	}
 
@@ -105,38 +80,39 @@ public class TestProtectedLog extends TestCase {
 		// Setup a protected log device
 		Properties properties = new Properties();
 		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME);
+		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREF, DEFAULT_CA_NAME);
 		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
 		properties.setProperty("searchWindow", "1");
-		logSession.setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Write an logevent and make sure it complains about an empty log
 		int messageCounter = 0;
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
 				LogConstants.EVENT_INFO_STARTING, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
 		// Write another and make sure there are no error message
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Test if log-freeze is detected
 		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties);
-		protectedLogSession.verifyEntireLog(protectedLogActions, -1);
+		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, -1);
 		assertTrue(ERROR_FROZENLOG, IProtectedLogAction.CAUSE_FROZEN.equals(ProtectedLogTestAction.getLastActionCause()));
-		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Test if removed logevents are detected
 		long testTime1 = System.currentTimeMillis();
-		protectedLogSession.removeAllUntil(testTime1);
+		TestTools.getProtectedLogSession().removeAllUntil(testTime1);
 		Thread.sleep(1100);	// Default interval to search for its own event in database is 1 second.
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW.equals(ProtectedLogTestAction.getLastActionCause()));
-		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW.equals(ProtectedLogTestAction.getLastActionCause()));
 		// Recover
-		protectedLogSession.resetEntireLog(false, null);
+		TestTools.getProtectedLogSession().resetEntireLog(false, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 	}
 
@@ -150,40 +126,41 @@ public class TestProtectedLog extends TestCase {
 		Properties properties = new Properties();
 		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
 		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
-		logSession.setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties);
 		// Write an logevent and make sure it complains about an empty log
 		int messageCounter = 0;
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null,
 				LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Terminating log session for this node.",null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Start new chain with CAName-token
 		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME);
-		logSession.setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREF, DEFAULT_CA_NAME);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
-		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN.equals(ProtectedLogTestAction.getLastActionCause()));
 		// Sign unsigned chain so it can be linked in
-		protectedLogSession.signAllUnsignedChains(false);
+		TestTools.getProtectedLogSession().signAllUnsignedChains(false);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		Thread.sleep(1100);	// By default it takes 1 second between searches new events from other nodes..
 		// And that event will be set 10 seconds in the future so we have to wait 10 more seconds or "cheat"
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(new Date().getTime()+10*1000), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(new Date().getTime()+10*1000), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Now try to remove the first chain and see if it will be detected
-		protectedLogSession.removeNodeChain(protectedLogSession.findOldestProtectedLogEventRow().getNodeGUID());
+		TestTools.getProtectedLogSession().removeNodeChain(TestTools.getProtectedLogSession().findOldestProtectedLogEventRow().getNodeGUID());
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		protectedLogSession.verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
 		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_MISSING_LOGROW.equals(ProtectedLogTestAction.getLastActionCause()));
 	}
 
@@ -206,17 +183,19 @@ public class TestProtectedLog extends TestCase {
 		// Setup a protected log device
 		Properties properties = new Properties();
 		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME);
+		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREF, DEFAULT_CA_NAME);
 		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
 		properties.setProperty(ProtectedLogCMSExportHandler.CONF_EXPORTPATH, ProtectedLogTestAction.getTempDir() + logPrefix);
-		logSession.setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		properties.setProperty(ProtectedLogCMSExportHandler.CONF_CANAME, DEFAULT_CA_NAME);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties);
 		int messageCounter = 0;
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
+		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
 		// Activate CMS service
-		X509CAInfo x509cainfo = (X509CAInfo) caAdminSession.getCAInfo(internalAdmin, DEFAULT_CA_NAME);
+		X509CAInfo x509cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(internalAdmin, DEFAULT_CA_NAME);
 		assertTrue("The test expects the CA \""+DEFAULT_CA_NAME+"\" to exist.", x509cainfo != null);
 		CmsCAServiceInfo cmscainfo = null;
 		Collection extendedCAServiceInfos = x509cainfo.getExtendedCAServiceInfos();
@@ -237,21 +216,21 @@ public class TestProtectedLog extends TestCase {
 		if (wasCMSDisabled) {
 			ArrayList extendedcaserviceinfos = new ArrayList();
 			extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE, false));    
-			extendedcaserviceinfos.add(new XKMSCAServiceInfo(XKMSCAServiceInfo.STATUS_ACTIVE, false)); 
+			extendedcaserviceinfos.add(new XKMSCAServiceInfo(XKMSCAServiceInfo.STATUS_ACTIVE, false));
 			extendedcaserviceinfos.add(new CmsCAServiceInfo(CmsCAServiceInfo.STATUS_ACTIVE, "CN=CMSCertificate, " + x509cainfo.getSubjectDN(), "",
 					((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeySpec(), ((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeyAlgorithm()));
 			x509cainfo.setExtendedCAServiceInfos(extendedcaserviceinfos);
-			caAdminSession.editCA(internalAdmin, x509cainfo);
+			TestTools.getCAAdminSession().editCA(internalAdmin, x509cainfo);
 		}
 		try {
 			// Write an logevent and make sure it complains about an empty log
 			while (messageCounter < 100) {
-				logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
+				TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 						LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 			}
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// Do export
-			protectedLogSession.exportLog(new ProtectedLogCMSExportHandler(), properties, protectedLogActions, "SHA-256", false, 0);
+			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), properties, protectedLogActions, "SHA-256", false, 0);
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// See if any file was exported
 			File file = null;
@@ -272,12 +251,12 @@ public class TestProtectedLog extends TestCase {
 			// Export another 100 rows and make sure they don't overlap
 			// Write an logevent and make sure it complains about an empty log
 			while (messageCounter < 100+100) {
-				logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
+				TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 						LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 			}
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// Do export
-			protectedLogSession.exportLog(new ProtectedLogCMSExportHandler(), properties, protectedLogActions, "SHA-256", false, 0);
+			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), properties, protectedLogActions, "SHA-256", false, 0);
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// See if any file was exported
 			file = null;
@@ -299,7 +278,7 @@ public class TestProtectedLog extends TestCase {
 		} finally {
 			// Deactivate CMS service if needed
 			if (wasCMSDisabled) {
-				x509cainfo = (X509CAInfo) caAdminSession.getCAInfo(internalAdmin, DEFAULT_CA_NAME);
+				x509cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(internalAdmin, DEFAULT_CA_NAME);
 				//CmsCAServiceInfo cmscainfo = null; 
 				ArrayList extendedcaserviceinfos = new ArrayList();
 				extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE, false));    
@@ -307,7 +286,7 @@ public class TestProtectedLog extends TestCase {
 				extendedcaserviceinfos.add(new CmsCAServiceInfo(CmsCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + x509cainfo.getSubjectDN(), "",
 						((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeySpec(), ((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeyAlgorithm()));
 				x509cainfo.setExtendedCAServiceInfos(extendedcaserviceinfos);
-				caAdminSession.editCA(internalAdmin, x509cainfo);
+				TestTools.getCAAdminSession().editCA(internalAdmin, x509cainfo);
 			}
 		}
 	}
@@ -323,14 +302,19 @@ public class TestProtectedLog extends TestCase {
 		Properties properties = new Properties();
 		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
 		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
-		logSession.setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		try {
-			logSession.testRollbackInternal(now);
+			TestTools.getLogSession().testRollbackInternal(now);
 		} catch (RemoteException e) {
 		}
+		// TODO: The following test fails on Hypersonic the second time for some reason...
 		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
 		// Verify that event written at time "now" still exists
-		assertTrue("The log event has been rolled back and cannot be found any more..", protectedLogSession.existsAnyProtectedLogEventByTime(now));
+		assertTrue("The log event has been rolled back and cannot be found any more..", TestTools.getProtectedLogSession().existsAnyProtectedLogEventByTime(now));
+	}
+	
+	public void test99RemoveTestCA() throws Exception {
+		TestTools.removeTestCA();
 	}
 }

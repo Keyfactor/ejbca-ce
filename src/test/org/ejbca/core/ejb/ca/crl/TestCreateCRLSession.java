@@ -28,8 +28,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.DuplicateKeyException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 
@@ -42,19 +40,7 @@ import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -70,6 +56,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.CrlExtensions;
 
 /**
@@ -79,17 +66,9 @@ import org.ejbca.util.cert.CrlExtensions;
  */
 public class TestCreateCRLSession extends TestCase {
 
-	private static Logger log = Logger.getLogger(TestCreateCRLSession.class);
-	private static Context ctx;
-	private static ICreateCRLSessionHome home;
-	private static ICreateCRLSessionRemote crlSession;
-	private static ICertificateStoreSessionHome storehome;
-	private static ICertificateStoreSessionRemote storeremote;
-	private static ICAAdminSessionRemote casession;
-	private static IUserAdminSessionRemote usersession;
-	private static ISignSessionRemote signsession;
-	private static IRaAdminSessionRemote rasession;
-	private static Admin admin;
+	private final static Logger log = Logger.getLogger(TestCreateCRLSession.class);
+	private final static Admin admin =  new Admin(Admin.TYPE_INTERNALUSER);
+	
 	private static int caid;
 	private static String cadn;
 	private static final String TESTUSERNAME = "TestCreateCRLSessionUser";
@@ -108,55 +87,19 @@ public class TestCreateCRLSession extends TestCase {
 		log.debug(">setUp()");
 		CertTools.installBCProvider();
 
-		ctx = getInitialContext();
-
-		admin = new Admin(Admin.TYPE_INTERNALUSER);
-
-		Object obj = ctx.lookup("CreateCRLSession");
-		home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICreateCRLSessionHome.class);
-		crlSession = home.create();
-
-		Object obj1 = ctx.lookup("CertificateStoreSession");
-		storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-		storeremote = storehome.create();
-
-		obj = ctx.lookup("UserAdminSession");
-		IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-		usersession = userhome.create();
-
-		obj = ctx.lookup("RSASignSession");
-		ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-		signsession = signhome.create();
-
-		obj = ctx.lookup("CAAdminSession");
-		ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-		casession = cahome.create();
-		Collection caids = casession.getAvailableCAs(admin);
+		Collection caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
 		Iterator iter = caids.iterator();
 		if (iter.hasNext()) {
 			caid = ((Integer) iter.next()).intValue();
-			CAInfo cainfo = casession.getCAInfo(admin, caid);
+			CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
 			cadn = cainfo.getSubjectDN();
 		} else {
 			assertTrue("No active CA! Must have at least one active CA to run tests!", false);
 		}
-
-		obj = ctx.lookup(IRaAdminSessionHome.JNDI_NAME);
-		IRaAdminSessionHome raadminhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
-		rasession = raadminhome.create(); 
-
 		log.debug("<setUp()");
 	}
 
 	protected void tearDown() throws Exception {
-	}
-
-	private Context getInitialContext() throws NamingException {
-		log.debug(">getInitialContext");
-		Context ctx = new javax.naming.InitialContext();
-		log.debug("<getInitialContext");
-
-		return ctx;
 	}
 
 	/**
@@ -166,7 +109,7 @@ public class TestCreateCRLSession extends TestCase {
 	 */
 	public void test01CreateNewCRL() throws Exception {
 		log.debug(">test01CreateNewCRL()");
-		crlSession.run(admin, cadn);
+		TestTools.getCreateCRLSession().run(admin, cadn);
 		log.debug("<test01CreateNewCRL()");
 	}
 
@@ -178,17 +121,17 @@ public class TestCreateCRLSession extends TestCase {
 	public void test02LastCRL() throws Exception {
 		log.debug(">test02LastCRL()");
 		// Get number of last CRL
-		int number = storeremote.getLastCRLNumber(admin, cadn, false);
+		int number = TestTools.getCertificateStoreSession().getLastCRLNumber(admin, cadn, false);
 		log.debug("Last CRLNumber = " + number);
-		byte[] crl = storeremote.getLastCRL(admin, cadn, false);
+		byte[] crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
 		assertNotNull("Could not get CRL", crl);
 		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
 		BigInteger num = CrlExtensions.getCrlNumber(x509crl);
 		// Create a new CRL again to see that the number increases
-		crlSession.run(admin, cadn);
-		int number1 = storeremote.getLastCRLNumber(admin, cadn, false);
+		TestTools.getCreateCRLSession().run(admin, cadn);
+		int number1 = TestTools.getCertificateStoreSession().getLastCRLNumber(admin, cadn, false);
 		assertEquals(number+1, number1);
-		byte[] crl1 = storeremote.getLastCRL(admin, cadn, false);
+		byte[] crl1 = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
 		X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
 		BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
 		assertEquals(num.intValue()+1, num1.intValue());
@@ -204,9 +147,9 @@ public class TestCreateCRLSession extends TestCase {
 		log.debug(">test03CheckNumberofRevokedCerts()");
 
 		// Get number of last CRL
-		Collection revfp = storeremote.listRevokedCertInfo(admin, cadn, -1);
+		Collection revfp = TestTools.getCertificateStoreSession().listRevokedCertInfo(admin, cadn, -1);
 		log.debug("Number of revoked certificates=" + revfp.size());
-		byte[] crl = storeremote.getLastCRL(admin, cadn, false);
+		byte[] crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
 		assertNotNull("Could not get CRL", crl);
 
 		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -231,7 +174,7 @@ public class TestCreateCRLSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+        	TestTools.getUserAdminSession().addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
         	userExists = true;
@@ -242,20 +185,20 @@ public class TestCreateCRLSession extends TestCase {
             log.info("User foo already exists, resetting status.");
             UserDataVO userdata = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", caid, null, "foo@anatom.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
             userdata.setPassword("foo123");
-            usersession.changeUser(admin, userdata, false);
+            TestTools.getUserAdminSession().changeUser(admin, userdata, false);
             log.debug("Reset status to NEW");
         }
         KeyPair keys = genKeys();
 
         // user that we know exists...
-        X509Certificate cert = (X509Certificate)signsession.createCertificate(admin, "foo", "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
 
         // Create a new CRL again...
-        crlSession.run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate is not present in a new CRL
-        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
+        byte[] crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set revset = x509crl.getRevokedCertificates();
@@ -267,11 +210,11 @@ public class TestCreateCRLSession extends TestCase {
             }            
         } // If no revoked certificates exist at all, this test passed...
 
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
         // Create a new CRL again...
-        crlSession.run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
-        crl = storeremote.getLastCRL(admin, cadn, false);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -288,11 +231,11 @@ public class TestCreateCRLSession extends TestCase {
         assertTrue("Certificate with serial "+cert.getSerialNumber().toString(16)+" not revoked", found);
         
         // Unrevoke the certificate that we just revoked
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
         // Create a new CRL again...
-        crlSession.run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate IS NOT present in the new CRL.
-        crl = storeremote.getLastCRL(admin, cadn, false);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -308,11 +251,11 @@ public class TestCreateCRLSession extends TestCase {
         	assertFalse(found);
         } // If no revoked certificates exist at all, this test passed...
 
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
         // Create a new CRL again...
-        crlSession.run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
-        crl = storeremote.getLastCRL(admin, cadn, false);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -327,12 +270,12 @@ public class TestCreateCRLSession extends TestCase {
         }
         assertTrue(found);
 
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
         // Create a new CRL again...
-        crlSession.run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate is present in the new CRL, because the revocation reason
         // was not CERTIFICATE_HOLD, we can only un-revoke certificates that are on hold.
-        crl = storeremote.getLastCRL(admin, cadn, false);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -356,7 +299,7 @@ public class TestCreateCRLSession extends TestCase {
 	public void test05CRLPeriodOverflow() throws Exception {
 		log.debug(">test05CRLPeriodOverflow()");
 		// Fetch CAInfo and save CRLPeriod
-		CAInfo cainfo = casession.getCAInfo(admin, caid);
+		CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
 		int tempCRLPeriod = cainfo.getCRLPeriod();
 		try {
 			// Create a user that Should be revoked
@@ -367,15 +310,15 @@ public class TestCreateCRLSession extends TestCase {
 				try {
 					CertificateProfile certProfile = new CertificateProfile();
 					certProfile.setAllowValidityOverride(true);
-					storeremote.addCertificateProfile(admin, TESTPROFILE, certProfile);
+					TestTools.getCertificateStoreSession().addCertificateProfile(admin, TESTPROFILE, certProfile);
 				} catch (CertificateProfileExistsException cpeee) {
 				} 
-				certprofileid = storeremote.getCertificateProfileId(admin, TESTPROFILE);
+				certprofileid = TestTools.getCertificateStoreSession().getCertificateProfileId(admin, TESTPROFILE);
 				assertTrue(certprofileid != 0);
 				// add End Entity Profile with validity limitations
 				EndEntityProfile profile;
 				try {
-					rasession.removeEndEntityProfile(admin, TESTPROFILE);
+					TestTools.getRaAdminSession().removeEndEntityProfile(admin, TESTPROFILE);
 					profile = new EndEntityProfile();
 					profile.setUse(EndEntityProfile.ENDTIME, 0, true);
 					profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD,0,false);
@@ -384,7 +327,7 @@ public class TestCreateCRLSession extends TestCase {
 					profile.setUse(EndEntityProfile.STARTTIME, 0, true);
 					profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, new Integer(certprofileid).toString());
 					profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, new Integer(certprofileid).toString());
-					rasession.addEndEntityProfile(admin, TESTPROFILE, profile);
+					TestTools.getRaAdminSession().addEndEntityProfile(admin, TESTPROFILE, profile);
 				} catch (EndEntityProfileExistsException pee) {
 				}
 				// Create a new user
@@ -392,14 +335,14 @@ public class TestCreateCRLSession extends TestCase {
 				ei.setCustomData(EndEntityProfile.STARTTIME, "0:00:00");
 				ei.setCustomData(EndEntityProfile.ENDTIME, "0:00:50");
 				UserDataVO userdata = new UserDataVO(TESTUSERNAME, "CN="+TESTUSERNAME, caid, "","foo@bar.se",  UserDataConstants.STATUS_NEW, 
-						SecConst.USER_ENDUSER, rasession.getEndEntityProfileId(admin, TESTPROFILE), 
+						SecConst.USER_ENDUSER, TestTools.getRaAdminSession().getEndEntityProfileId(admin, TESTPROFILE), 
 						certprofileid, new Date(), new Date() , SecConst.TOKEN_SOFT_PEM , 0, ei);
 				userdata.setPassword("foo123");
 				try {
-					usersession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+					TestTools.getUserAdminSession().revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 				} catch (NotFoundException nfe ){
 				}
-				usersession.addUser(admin, userdata, false);
+				TestTools.getUserAdminSession().addUser(admin, userdata, false);
 				log.debug("created user");
 			} catch (RemoteException re) {
 				re.printStackTrace();
@@ -409,40 +352,40 @@ public class TestCreateCRLSession extends TestCase {
 			}
 			if (userExists) {
 				log.info("User testCRLPeriod already exists, resetting status.");
-				usersession.setUserStatus(admin,TESTUSERNAME,UserDataConstants.STATUS_NEW);
+				TestTools.getUserAdminSession().setUserStatus(admin,TESTUSERNAME,UserDataConstants.STATUS_NEW);
 				log.debug("Reset status to NEW");
 			}
 			KeyPair keys = genKeys();
 			// user that we know exists...
-			X509Certificate cert = (X509Certificate)signsession.createCertificate(admin, TESTUSERNAME, "foo123", keys.getPublic());
+			X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, TESTUSERNAME, "foo123", keys.getPublic());
 			assertNotNull("Failed to create certificate", cert);
 			log.debug("Cert=" + cert.toString());
 			// Revoke the user
-			storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+			TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 			// Change CRLPeriod
 			cainfo.setCRLPeriod(Integer.MAX_VALUE);
-			casession.editCA(admin, cainfo);
+			TestTools.getCAAdminSession().editCA(admin, cainfo);
 			// Create new CRL's
-			crlSession.run(admin, cadn);
+			TestTools.getCreateCRLSession().run(admin, cadn);
 			//Verify that status is not archived
-			CertificateInfo certinfo = storeremote.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+			CertificateInfo certinfo = TestTools.getCertificateStoreSession().getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
 			assertFalse("Non Expired Revoked Certificate was archived",certinfo.getStatus() == CertificateDataBean.CERT_ARCHIVED);
 		} finally {
 			// Restore CRL Period
 			cainfo.setCRLPeriod(tempCRLPeriod);
-			casession.editCA(admin, cainfo); 
+			TestTools.getCAAdminSession().editCA(admin, cainfo); 
 			// Delete and revoke User
-			usersession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+			TestTools.getUserAdminSession().revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 			// Delete end entity profile
 			try{
-				storeremote.removeCertificateProfile(admin, TESTPROFILE);
+				TestTools.getCertificateStoreSession().removeCertificateProfile(admin, TESTPROFILE);
 			} catch (RemoteException e )
 			{
 				log.error("Could not remove Certificate Profile");
 			}
 				// Delete certificate profile
 			try {
-				rasession.removeEndEntityProfile(admin, TESTPROFILE);
+				TestTools.getRaAdminSession().removeEndEntityProfile(admin, TESTPROFILE);
 			} catch (Exception e ) {
 				log.error("Could not remove End Entity Profile");
 			}
@@ -458,15 +401,15 @@ public class TestCreateCRLSession extends TestCase {
         log.debug(">test06CRLDistPointOnCRL()");
 
         final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
-        X509CAInfo cainfo = (X509CAInfo) casession.getCAInfo(admin, caid);
+        X509CAInfo cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, caid);
         X509CRL x509crl;
         byte [] cdpDER;
 
         cainfo.setUseCrlDistributionPointOnCrl(true);
         cainfo.setDefaultCRLDistPoint(cdpURL);
-        casession.editCA(admin, cainfo);
-        crlSession.run(admin, cadn);
-        x509crl = CertTools.getCRLfromByteArray(storeremote.getLastCRL(admin, cadn, false));
+        TestTools.getCAAdminSession().editCA(admin, cainfo);
+        TestTools.getCreateCRLSession().run(admin, cadn);
+        x509crl = CertTools.getCRLfromByteArray(TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false));
         cdpDER = x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
@@ -483,10 +426,10 @@ public class TestCreateCRLSession extends TestCase {
 
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint("");
-        casession.editCA(admin, cainfo);
-        crlSession.run(admin, cadn);
+        TestTools.getCAAdminSession().editCA(admin, cainfo);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         x509crl =
-            CertTools.getCRLfromByteArray(storeremote.getLastCRL(admin, cadn, false));
+            CertTools.getCRLfromByteArray(TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false));
         assertNull("CRL has distribution points",
                    x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
 
@@ -501,16 +444,16 @@ public class TestCreateCRLSession extends TestCase {
 
         final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
         final String freshestCdpURL = "http://www.ejbca.org/foo/delta.crl";
-        X509CAInfo cainfo = (X509CAInfo) casession.getCAInfo(admin, caid);
+        X509CAInfo cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, caid);
         X509CRL x509crl;
         byte [] cFreshestDpDER;
 
         cainfo.setUseCrlDistributionPointOnCrl(true);
         cainfo.setDefaultCRLDistPoint(cdpURL);
         cainfo.setCADefinedFreshestCRL(freshestCdpURL);
-        casession.editCA(admin, cainfo);
-        crlSession.run(admin, cadn);
-        x509crl = CertTools.getCRLfromByteArray(storeremote.getLastCRL(admin, cadn, false));
+        TestTools.getCAAdminSession().editCA(admin, cainfo);
+        TestTools.getCreateCRLSession().run(admin, cadn);
+        x509crl = CertTools.getCRLfromByteArray(TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false));
         cFreshestDpDER = x509crl.getExtensionValue(X509Extensions.FreshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 

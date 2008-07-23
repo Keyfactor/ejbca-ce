@@ -23,19 +23,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -60,6 +51,7 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 /**
  * Tests the ca data entity bean.
@@ -67,14 +59,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class TestCAs extends TestCase {
-    private static Logger log = Logger.getLogger(TestCAs.class);
-
-    private static ICAAdminSessionRemote cacheAdmin;
-    private static ICAAdminSessionHome cacheHome;
-
-    private static ICertificateStoreSessionRemote cacheStore;
-    private static ICertificateStoreSessionHome cacheStoreHome;
-
+    private static final Logger log = Logger.getLogger(TestCAs.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
     private static Collection rootcacertchain = null;
@@ -86,48 +71,14 @@ public class TestCAs extends TestCase {
      */
     public TestCAs(String name) {
         super(name);
+        CertTools.installBCProvider();
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(ICAAdminSessionHome.JNDI_NAME);
-                cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
-            }
-
-            cacheAdmin = cacheHome.create();
-        }
-
-        if (cacheStore == null) {
-            if (cacheStoreHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
-                cacheStoreHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-            }
-            cacheStore = cacheStoreHome.create();
-        }
-
-        CertTools.installBCProvider();
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
-
 
     /**
      * adds a CA using RSA keys to the database.
@@ -140,12 +91,8 @@ public class TestCAs extends TestCase {
         log.debug(">test01AddRSACA()");
         boolean ret = false;
         try {
-
-            Context context = getInitialContext();
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, "CN=TEST".hashCode());
-
+        	TestTools.removeTestCA();	// We cant be sure this CA was not left over from some other failed test
+            TestTools.getAuthorizationSession().initialize(admin, TestTools.getTestCAId());
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
@@ -203,10 +150,9 @@ public class TestCAs extends TestCase {
             		false,  // CRL Distribution Point on CRL critical
             		true);
 
-            cacheAdmin.createCA(admin, cainfo);
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
 
-
-            CAInfo info = cacheAdmin.getCAInfo(admin, "TEST");
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
 
             rootcacertchain = info.getCertificateChain();
             X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
@@ -224,7 +170,7 @@ public class TestCAs extends TestCase {
             
             // Test to generate a certificate request from the CA
             Collection cachain = info.getCertificateChain();
-            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), cachain, false, null, false);
+            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, null, false);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
         } catch (CAExistsException pee) {
@@ -245,8 +191,8 @@ public class TestCAs extends TestCase {
 
         boolean ret = false;
         try {
-            cacheAdmin.renameCA(admin, "TEST", "TEST2");
-            cacheAdmin.renameCA(admin, "TEST2", "TEST");
+            TestTools.getCAAdminSession().renameCA(admin, "TEST", "TEST2");
+            TestTools.getCAAdminSession().renameCA(admin, "TEST2", "TEST");
             ret = true;
         } catch (CAExistsException cee) {
         }
@@ -264,10 +210,10 @@ public class TestCAs extends TestCase {
     public void test03EditCA() throws Exception {
         log.debug(">test03EditCA()");
 
-        X509CAInfo info = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
+        X509CAInfo info = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         info.setCRLPeriod(33);
-        cacheAdmin.editCA(admin, info);
-        X509CAInfo info2 = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
+        TestTools.getCAAdminSession().editCA(admin, info);
+        X509CAInfo info2 = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         assertTrue("Editing CA failed", info2.getCRLPeriod() == 33);
 
         log.debug("<test03EditCA()");
@@ -284,11 +230,7 @@ public class TestCAs extends TestCase {
         log.debug(">test04AddECDSACA()");
         boolean ret = false;
         try {
-
-            Context context = getInitialContext();
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, "CN=TESTECDSA".hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, "CN=TESTECDSA".hashCode());
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("prime192v1");
@@ -351,10 +293,10 @@ public class TestCAs extends TestCase {
                     );
 
 
-            cacheAdmin.createCA(admin, cainfo);
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
 
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTECDSA");
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTECDSA");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSA"));
@@ -389,11 +331,7 @@ public class TestCAs extends TestCase {
         log.debug(">test05AddECDSAImplicitlyCACA()");
         boolean ret = false;
         try {
-
-            Context context = getInitialContext();
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("implicitlyCA");
@@ -456,10 +394,10 @@ public class TestCAs extends TestCase {
                     true // Include in healthCheck
             );
 
-            cacheAdmin.createCA(admin, cainfo);
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
 
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTECDSAImplicitlyCA");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSAImplicitlyCA"));
@@ -496,10 +434,8 @@ public class TestCAs extends TestCase {
         boolean ret = false;
         try {
         	String cadn = "CN=TESTSha256WithMGF1";
-            Context context = getInitialContext();
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, cadn.hashCode());
+
+        	TestTools.getAuthorizationSession().initialize(admin, cadn.hashCode());
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
@@ -558,11 +494,9 @@ public class TestCAs extends TestCase {
                     false,  // CRL Distribution Point on CRL critical
                     true // Include in healthCheck
                     );
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
 
-            cacheAdmin.createCA(admin, cainfo);
-
-
-            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTSha256WithMGF1");
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSha256WithMGF1");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(cadn));
@@ -589,10 +523,7 @@ public class TestCAs extends TestCase {
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-            Context context = getInitialContext();
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, dn.hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, dn.hashCode());
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("4096");
@@ -652,10 +583,10 @@ public class TestCAs extends TestCase {
                     true // Include in HealthCheck
                     );
 
-            cacheAdmin.createCA(admin, cainfo);
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
 
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTRSA4096");
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTRSA4096");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()).equals(dn));
@@ -685,10 +616,7 @@ public class TestCAs extends TestCase {
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
         	String name = "TESTRSAREVERSE";
-            Context context = getInitialContext();
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, dn.hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, dn.hashCode());
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
@@ -748,10 +676,10 @@ public class TestCAs extends TestCase {
                     true // Include in health check
                     );
 
-            cacheAdmin.createCA(admin, cainfo);
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
 
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, name);
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, name);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertEquals("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()),dn);
@@ -778,9 +706,6 @@ public class TestCAs extends TestCase {
     public void test09AddCVCCA() throws Exception {
         log.debug(">test09AddCVCCA()");
         boolean ret = false;
-        Context context = getInitialContext();
-        IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-        IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("1024");
         catokeninfo.setEncKeySpec("1024");
@@ -803,7 +728,7 @@ public class TestCAs extends TestCase {
     	
     	// Create a root CVCA
         try {
-            authorizationsession.initialize(admin, rootcadn.hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, rootcadn.hashCode());
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(),
             		SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, 
@@ -823,9 +748,9 @@ public class TestCAs extends TestCase {
                     true // Include in health check
                     );
             
-            cacheAdmin.createCA(admin, cvccainfo);
+            TestTools.getCAAdminSession().createCA(admin, cvccainfo);
 
-            cvcainfo = cacheAdmin.getCAInfo(admin, rootcaname);
+            cvcainfo = TestTools.getCAAdminSession().getCAInfo(admin, rootcaname);
             assertEquals(CAInfo.CATYPE_CVC, cvcainfo.getCAType());
 
             Certificate cert = (Certificate)cvcainfo.getCertificateChain().iterator().next();
@@ -856,12 +781,12 @@ public class TestCAs extends TestCase {
 
         // Create a Sub DV domestic
         try {
-            authorizationsession.initialize(admin, dvddn.hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, dvddn.hashCode());
             // Create a Certificate profile
             CertificateProfile profile = new CACertificateProfile();
             profile.setType(CertificateProfile.TYPE_SUBCA);
-            cacheStore.addCertificateProfile(admin, "TESTCVCDV", profile);
-            int profileid = cacheStore.getCertificateProfileId(admin, "TESTCVCDV");
+            TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTCVCDV", profile);
+            int profileid = TestTools.getCertificateStoreSession().getCertificateProfileId(admin, "TESTCVCDV");
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(),
             		profileid, 3650, 
@@ -881,9 +806,9 @@ public class TestCAs extends TestCase {
                     true // Include in health check
                     );
             
-            cacheAdmin.createCA(admin, cvccainfo);
+            TestTools.getCAAdminSession().createCA(admin, cvccainfo);
 
-            dvdcainfo = cacheAdmin.getCAInfo(admin, dvdcaname);
+            dvdcainfo = TestTools.getCAAdminSession().getCAInfo(admin, dvdcaname);
             assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
 
             Certificate cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
@@ -916,7 +841,7 @@ public class TestCAs extends TestCase {
 
         // Create a Sub DV foreign
         try {
-            authorizationsession.initialize(admin, dvfdn.hashCode());
+            TestTools.getAuthorizationSession().initialize(admin, dvfdn.hashCode());
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(),
             		SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
@@ -936,9 +861,9 @@ public class TestCAs extends TestCase {
                     true // Include in health check
                     );
             
-            cacheAdmin.createCA(admin, cvccainfo);
+            TestTools.getCAAdminSession().createCA(admin, cvccainfo);
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, dvfcaname);
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, dvfcaname);
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
 
             Certificate cert = (Certificate)info.getCertificateChain().iterator().next();
@@ -969,13 +894,13 @@ public class TestCAs extends TestCase {
         assertTrue("Creating CVC CAs failed", ret);
 
         // Test to renew a CVC CA using a different access right
-        CertificateProfile profile = cacheStore.getCertificateProfile(admin, "TESTCVCDV");
+        CertificateProfile profile = TestTools.getCertificateStoreSession().getCertificateProfile(admin, "TESTCVCDV");
         profile.setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3);
-        cacheStore.changeCertificateProfile(admin, "TESTCVCDV", profile);
+        TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTCVCDV", profile);
 
         int caid = dvdcainfo.getCAId();
-        cacheAdmin.renewCA(admin, caid, null, false);
-        dvdcainfo = cacheAdmin.getCAInfo(admin, dvdcaname);
+        TestTools.getCAAdminSession().renewCA(admin, caid, null, false);
+        dvdcainfo = TestTools.getCAAdminSession().getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         Certificate cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
         assertEquals("CVC", cert.getType());
@@ -997,7 +922,7 @@ public class TestCAs extends TestCase {
         Certificate cert1 = (Certificate)cachain.iterator().next();
         CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate)cert1;
         assertEquals("SETESTCVCA00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
-        byte[] request = cacheAdmin.makeRequest(admin, cvcainfo.getCAId(), cachain, false, null, false);
+        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, cvcainfo.getCAId(), cachain, false, null, false);
 		Certificate req = CertTools.getCertfromByteArray(request);
 		CardVerifiableCertificate cardcert = (CardVerifiableCertificate)req;
 		CVCertificate reqcert = cardcert.getCVCertificate();
@@ -1006,7 +931,7 @@ public class TestCAs extends TestCase {
 
         // Make a certificate request from a DV, regenerating keys
         cachain = dvdcainfo.getCertificateChain();
-        request = cacheAdmin.makeRequest(admin, dvdcainfo.getCAId(), cachain, false, "foo123", true);
+        request = TestTools.getCAAdminSession().makeRequest(admin, dvdcainfo.getCAId(), cachain, false, "foo123", true);
 		req = CertTools.getCertfromByteArray(request);
 		cardcert = (CardVerifiableCertificate)req;
 		reqcert = cardcert.getCVCertificate();
@@ -1014,7 +939,7 @@ public class TestCAs extends TestCase {
         assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
         
         // Get the DVs certificate request signed by the CVCA
-        byte[] authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request, false, false);
+        byte[] authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), request, false, false);
 		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
         CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
         assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getAuthorityReference().getConcatenated());
@@ -1023,12 +948,12 @@ public class TestCAs extends TestCase {
 
         // Get the DVs certificate request signed by the CVCA creating a link certificate.
         // Passing in a request without authrole should return a regular authenticated request though.
-        authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), request, false, true);
+        authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), request, false, true);
 		parsedObject = CertificateParser.parseCVCObject(authrequest);
 		authreq = (CVCAuthenticatedRequest)parsedObject;
 		// Pass in a certificate instead
 		CardVerifiableCertificate dvdcert = (CardVerifiableCertificate)cachain.iterator().next();
-        authrequest = cacheAdmin.signRequest(admin, cvcainfo.getCAId(), dvdcert.getEncoded(), false, true);
+        authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), dvdcert.getEncoded(), false, true);
 		parsedObject = CertificateParser.parseCVCObject(authrequest);
 		CVCertificate linkcert = (CVCertificate)parsedObject;
         assertEquals("SETESTCVCA00001", linkcert.getCertificateBody().getAuthorityReference().getConcatenated());
@@ -1036,8 +961,8 @@ public class TestCAs extends TestCase {
 
         // Renew again but regenerate keys this time to make sure sequence is updated
         caid = dvdcainfo.getCAId();
-        cacheAdmin.renewCA(admin, caid, "foo123", true);
-        dvdcainfo = cacheAdmin.getCAInfo(admin, dvdcaname);
+        TestTools.getCAAdminSession().renewCA(admin, caid, "foo123", true);
+        dvdcainfo = TestTools.getCAAdminSession().getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
         assertEquals("CVC", cert.getType());
@@ -1063,11 +988,7 @@ public class TestCAs extends TestCase {
         boolean ret = false;
         CAInfo info =null;
         try {
-
-            Context context = getInitialContext();
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
+            TestTools.getAuthorizationSession().initialize(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
@@ -1130,24 +1051,24 @@ public class TestCAs extends TestCase {
             		false,  // CRL Distribution Point on CRL critical
             		true);
 
-            cacheAdmin.createCA(admin, cainfo);
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
 
-            info = cacheAdmin.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
 
             // Generate a certificate request from the CA and send to the TEST CA
-            byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), rootcacertchain, false, null, false);
+            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), rootcacertchain, false, null, false);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
             // Receive the certificate request on the TEST CA
             info.setSignedBy("CN=TEST".hashCode());
-            IResponseMessage resp = cacheAdmin.processRequest(admin, info, msg);
+            IResponseMessage resp = TestTools.getCAAdminSession().processRequest(admin, info, msg);
             
             // Receive the signed certificate back on our SubCA
-            cacheAdmin.receiveResponse(admin, info.getCAId(), resp);
+            TestTools.getCAAdminSession().receiveResponse(admin, info.getCAId(), resp);
             
             // Check that the CA has the correct certificate chain now
-            info = cacheAdmin.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             Iterator iter = info.getCertificateChain().iterator();
             X509Certificate cert = (X509Certificate) iter.next();
             assertTrue("Error in created ca certificate", CertTools.getSubjectDN(cert).equals("CN=TESTSIGNEDBYEXTERNAL"));
@@ -1172,7 +1093,7 @@ public class TestCAs extends TestCase {
 
         // Make a certificate request from the CA
         Collection cachain = info.getCertificateChain();
-        byte[] request = cacheAdmin.makeRequest(admin, info.getCAId(), cachain, false, null, false);
+        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, null, false);
         PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
         assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 

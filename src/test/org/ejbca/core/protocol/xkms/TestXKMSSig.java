@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.crypto.SecretKey;
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -40,8 +38,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.XMLUtils;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
@@ -51,6 +47,7 @@ import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -66,7 +63,7 @@ import org.w3c.dom.Element;
 
 /**
  * To Run this test, there must be a CA with DN "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
- * 
+ * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @author Philip Vendil 2006 sep 27 
  *
@@ -81,8 +78,6 @@ public class TestXKMSSig extends TestCase {
 	private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 	
 	private static String baseUsername;
-	private IUserAdminSessionRemote cacheAdmin;
-	private IUserAdminSessionHome cacheHome;
 	
 	private static String username;
 	private static File tmpfile;
@@ -119,27 +114,11 @@ public class TestXKMSSig extends TestCase {
 
     protected void setUp() throws Exception {
         log.debug(">setUp()"); 
-        
-        
-        
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("UserAdminSession");
-                cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);                                                               
-            }
-
-            cacheAdmin = cacheHome.create();
-        }      
-
     	caid = CertTools.stringToBCDNString("CN=AdminCA1,O=EJBCA Sample,C=SE").hashCode();
-        
-        
         Random ran = new Random();
         if(baseUsername == null){
           baseUsername = "xkmstestadmin" + (ran.nextInt() % 1000) + "-";
         }
-
         log.debug("<setUp()");
     }
 
@@ -152,11 +131,10 @@ public class TestXKMSSig extends TestCase {
         Object o = null;
         username = baseUsername + "1";
         try {
-        	
-        	cacheAdmin.addUser(administrator, username, "foo123", "CN=superadmin", null,null, false,
+        	TestTools.getUserAdminSession().addUser(administrator, username, "foo123", "CN=superadmin", null,null, false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.USER_ADMINISTRATOR, SecConst.TOKEN_SOFT_JKS, 0, caid);
-        	cacheAdmin.setClearTextPassword(administrator, username, "foo123");
+        	TestTools.getUserAdminSession().setClearTextPassword(administrator, username, "foo123");
             o = new String("");
         } catch (Exception e) {
             assertNotNull("Failed to create user " + username, o);
@@ -333,7 +311,7 @@ public class TestXKMSSig extends TestCase {
     
     public void test04SendRevokedRequest() throws Exception {    	    	
     	
-    	cacheAdmin.revokeUser(new Admin(Admin.TYPE_RA_USER), username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+    	TestTools.getUserAdminSession().revokeUser(new Admin(Admin.TYPE_RA_USER), username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
     	
     	KeyStore clientKeyStore = KeyStore.getInstance("JKS");
     	keystorefile = new File(tmpfile.getAbsolutePath() + "/" + username + ".jks");
@@ -545,7 +523,6 @@ public class TestXKMSSig extends TestCase {
 			
 		assertTrue(xmlVerifySig.checkSignatureValue(sk));		
 		
-		
 		// Verify the pop
         org.w3c.dom.NodeList pOPElements = doc2.getElementsByTagNameNS("http://www.w3.org/2002/03/xkms#", "ProofOfPossession");
         assertTrue(pOPElements.getLength() == 1);
@@ -557,29 +534,10 @@ public class TestXKMSSig extends TestCase {
 		assertTrue(popVerXmlSig.checkSignatureValue(keyPair.getPublic()));
 		assertFalse(popVerXmlSig.checkSignatureValue(pkCert.getPublicKey()));		
     }
-        
-    
-
     
     public void test99RemoveUser() throws Exception {
     	Admin administrator = new Admin(Admin.TYPE_RA_USER);
-    	cacheAdmin.deleteUser(administrator, username);
+    	TestTools.getUserAdminSession().deleteUser(administrator, username);
     	keystorefile.deleteOnExit();
     } 
-    
- 
-
-	
-	
-    
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
-    
-
 }

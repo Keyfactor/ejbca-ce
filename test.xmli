@@ -57,6 +57,7 @@
                     <exclude name="org/ejbca/core/protocol/ws/Test*" />
                     <exclude name="**/ra/TestAddLotsofUsers*" />
                     <exclude name="**/sign/TestSignLotsOfCerts*" />
+                    <exclude name="**/TestTools*" />
                 </fileset>
             </batchtest>
             <batchtest fork="yes" todir="${test.dir}/reports">

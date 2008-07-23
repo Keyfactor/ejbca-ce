@@ -41,7 +41,7 @@ public class TestMessages extends TestCase {
 
     private PrivateKey privateKey = null;
     private X509Certificate caCert = null;
-    private static Logger log = Logger.getLogger(TestMessages.class);
+    private static final Logger log = Logger.getLogger(TestMessages.class);
 
     /**
      * Creates a new TestMessages object.

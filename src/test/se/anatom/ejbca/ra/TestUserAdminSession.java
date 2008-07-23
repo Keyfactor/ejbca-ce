@@ -30,7 +30,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
-
+import org.ejbca.util.TestTools;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -38,13 +38,12 @@ import org.ejbca.core.model.ra.NotFoundException;
  */
 public class TestUserAdminSession extends TestCase {
 
-    private static Logger log = Logger.getLogger(TestUserAdminSession.class);
-    private static Context ctx;
-    private static IUserAdminSessionRemote usersession;
+    private static final Logger log = Logger.getLogger(TestUserAdminSession.class);
+    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final int caid = TestTools.getTestCAId();
+
     private static String username;
     private static String pwd;
-    private static int caid;
-    private static Admin admin = null;
 
     /**
      * Creates a new TestUserData object.
@@ -53,31 +52,13 @@ public class TestUserAdminSession extends TestCase {
      */
     public TestUserAdminSession(String name) {
         super(name);
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-        ctx = getInitialContext();
-        caid = "CN=TEST".hashCode();
-        Object obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
     }
 
     private String genRandomUserName() throws Exception {
@@ -121,12 +102,12 @@ public class TestUserAdminSession extends TestCase {
         username = genRandomUserName();
         pwd = genRandomPwd();
         String email = username + "@anatom.se";
-        usersession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+        TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" + username);
         // Add the same user again
         boolean userexists = false;
         try {
-            usersession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+            TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         } catch (DuplicateKeyException e) {
             // This is what we want
             userexists = true;
@@ -152,12 +133,12 @@ public class TestUserAdminSession extends TestCase {
     public void test01DeleteUser() throws Exception {
         log.debug(">test01DeleteUser()");
 
-        usersession.deleteUser(admin, username);
+        TestTools.getUserAdminSession().deleteUser(admin, username);
         log.debug("deleted user: " + username);
         // Delete the the same user again
         boolean removed = false;
         try {
-            usersession.deleteUser(admin, username);
+            TestTools.getUserAdminSession().deleteUser(admin, username);
         } catch (NotFoundException e) {
             removed = true;
         }
@@ -165,4 +146,8 @@ public class TestUserAdminSession extends TestCase {
 
         log.debug("<test01DeleteUser()");
     }
+
+	public void test99RemoveTestCA() throws Exception {
+		TestTools.removeTestCA();
+	}
 }

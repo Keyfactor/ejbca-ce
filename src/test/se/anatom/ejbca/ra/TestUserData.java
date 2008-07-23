@@ -18,16 +18,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -35,10 +28,8 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
-
-
-
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -46,54 +37,27 @@ import org.ejbca.util.dn.DnComponents;
  */
 public class TestUserData extends TestCase {
 
-    private static Logger log = Logger.getLogger(TestUserData.class);
-    private static Context ctx;
-    private static IUserAdminSessionRemote usersession;
-    private static IRaAdminSessionRemote rasession;
+    private static final Logger log = Logger.getLogger(TestUserData.class);
+    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final int caid = TestTools.getTestCAId();
+
     private static String username;
     private static String username1;
     private static String pwd;
     private static String pwd1;
-    private static int caid;
-    private static Admin admin = null;
 
     /**
      * Creates a new TestUserData object.
-     *
-     * @param name DOCUMENT ME!
      */
     public TestUserData(String name) {
         super(name);
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-        ctx = getInitialContext();
-
-        caid = "CN=TEST".hashCode();
-
-        Object obj = ctx.lookup(IUserAdminSessionHome.JNDI_NAME);
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-        obj = ctx.lookup(IRaAdminSessionHome.JNDI_NAME);
-        IRaAdminSessionHome rahome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
-        rasession = rahome.create();
-
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
     }
 
     private String genRandomUserName() throws Exception {
@@ -129,7 +93,7 @@ public class TestUserData extends TestCase {
         log.debug(">test01CreateNewUser()");
         username = genRandomUserName();
         pwd = genRandomPwd();
-        usersession.addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
+        TestTools.getUserAdminSession().addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it!");
         log.debug("<test01CreateNewUser()");
     }
@@ -138,7 +102,7 @@ public class TestUserData extends TestCase {
         log.debug(">test02LookupAndChangeUser()");
 
         log.debug("username=" + username);
-        UserDataVO data2 = usersession.findUser(admin,username);
+        UserDataVO data2 = TestTools.getUserAdminSession().findUser(admin,username);
         log.debug("found by key! =" + data2);
         log.debug("username=" + data2.getUsername());
         assertTrue("wrong username", data2.getUsername().equals(username));
@@ -150,11 +114,11 @@ public class TestUserData extends TestCase {
         assertTrue("wrong status", data2.getStatus() == UserDataConstants.STATUS_NEW);
         log.debug("type=" + data2.getType());
         assertTrue("wrong type", data2.getType() == SecConst.USER_INVALID);
-        assertTrue("wrong pwd (foo123 works)", usersession.verifyPassword(admin,username,"foo123") == false);
-        assertTrue("wrong pwd " + pwd, usersession.verifyPassword(admin,username,pwd));
+        assertTrue("wrong pwd (foo123 works)", TestTools.getUserAdminSession().verifyPassword(admin,username,"foo123") == false);
+        assertTrue("wrong pwd " + pwd, TestTools.getUserAdminSession().verifyPassword(admin,username,pwd));
 
         // Change DN
-        usersession.changeUser(admin,username,"foo123","C=SE,O=AnaTom,OU=Engineering, CN="+username,null,username+"@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
+        TestTools.getUserAdminSession().changeUser(admin,username,"foo123","C=SE,O=AnaTom,OU=Engineering, CN="+username,null,username+"@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
         log.debug("Changed it");
         log.debug("<test02LookupAndChangeUser()");
     }
@@ -162,7 +126,7 @@ public class TestUserData extends TestCase {
     public void test03LookupChangedUser() throws Exception {
         log.debug(">test03LookupChangedUser()");
 
-        UserDataVO data = usersession.findUser(admin,username);
+        UserDataVO data = TestTools.getUserAdminSession().findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -176,18 +140,18 @@ public class TestUserData extends TestCase {
         assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType() == SecConst.USER_ENDUSER);
-        assertTrue("wrong pwd foo123", usersession.verifyPassword(admin,username,"foo123"));
-        assertTrue("wrong pwd (" + pwd + " works)" + pwd, usersession.verifyPassword(admin,username,pwd) == false);
+        assertTrue("wrong pwd foo123", TestTools.getUserAdminSession().verifyPassword(admin,username,"foo123"));
+        assertTrue("wrong pwd (" + pwd + " works)" + pwd, TestTools.getUserAdminSession().verifyPassword(admin,username,pwd) == false);
 
         // Use clear text pwd instead, new email, reverse DN again
-        usersession.changeUser(admin,username,"foo234","C=SE,O=AnaTom,CN="+username,null,username+"@anatom.nu",true,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
+        TestTools.getUserAdminSession().changeUser(admin,username,"foo234","C=SE,O=AnaTom,CN="+username,null,username+"@anatom.nu",true,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
         log.debug("<test03LookupChangedUser()");
     }
 
     public void test03LookupChangedUser2() throws Exception {
         log.debug(">test03LookupChangedUser2()");
 
-        UserDataVO data = usersession.findUser(admin,username);
+        UserDataVO data = TestTools.getUserAdminSession().findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -201,11 +165,11 @@ public class TestUserData extends TestCase {
         assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType() == SecConst.USER_ENDUSER);
-        assertTrue("wrong pwd foo234", usersession.verifyPassword(admin,username,"foo234"));
+        assertTrue("wrong pwd foo234", TestTools.getUserAdminSession().verifyPassword(admin,username,"foo234"));
         assertEquals("wrong clear pwd foo234", data.getPassword(), "foo234");
-        assertTrue("wrong pwd (" + pwd + " works)", usersession.verifyPassword(admin,username,pwd) == false);
+        assertTrue("wrong pwd (" + pwd + " works)", TestTools.getUserAdminSession().verifyPassword(admin,username,pwd) == false);
         
-        usersession.setPassword(admin,username,"foo234");
+        TestTools.getUserAdminSession().setPassword(admin,username,"foo234");
         log.debug("<test03LookupChangedUser2()");
     }
 
@@ -213,7 +177,7 @@ public class TestUserData extends TestCase {
         log.debug(">test04CreateNewUser()");
         username1 = genRandomUserName();
         pwd1 = genRandomPwd();
-        usersession.addUser(admin,username1,pwd1,"C=SE,O=AnaTom,CN="+username1,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
+        TestTools.getUserAdminSession().addUser(admin,username1,pwd1,"C=SE,O=AnaTom,CN="+username1,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it again!");
         log.debug("<test04CreateNewUser()");
     }
@@ -221,19 +185,16 @@ public class TestUserData extends TestCase {
     public void test05ListNewUser() throws Exception {
         log.debug(">test05ListNewUser()");
 
-        Object obj1 = ctx.lookup(IUserAdminSessionHome.JNDI_NAME);
-        IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-        IUserAdminSessionRemote admin = adminhome.create();
-        Collection coll = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
+        Collection coll = TestTools.getUserAdminSession().findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
         Iterator iter = coll.iterator();
         while (iter.hasNext()) {
 
             UserDataVO data = (UserDataVO) iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
-            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataConstants.STATUS_GENERATED);
+            TestTools.getUserAdminSession().setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataConstants.STATUS_GENERATED);
         }
 
-        Collection coll1 = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
+        Collection coll1 = TestTools.getUserAdminSession().findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.debug("<test05ListNewUser()");
     }
@@ -244,13 +205,13 @@ public class TestUserData extends TestCase {
         // Change already existing user to add extended information with counter
         UserDataVO user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
         user.setStatus(UserDataConstants.STATUS_GENERATED);
-        usersession.changeUser(admin, user, false);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
         
         // Default value should be 1, so it should return 0
-        int counter = usersession.decRequestCounter(admin, username);
+        int counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
         // Default value should be 1, so it should return 0
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
 
         // Now add extended information with allowed requests 2
@@ -258,9 +219,9 @@ public class TestUserData extends TestCase {
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
         user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, ei);
-        usersession.changeUser(admin, user, false);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value, since we use the empty end entity profile, the counter will not be used
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
         
         
@@ -273,8 +234,8 @@ public class TestUserData extends TestCase {
             profile.addField(DnComponents.COMMONNAME);
             profile.setValue(EndEntityProfile.AVAILCAS,0,""+caid);
             profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
-            rasession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
-            pid = rasession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+            TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
+            pid = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
         } catch (EndEntityProfileExistsException pee) {
         	assertTrue("Can not create end entity profile", false);
         }
@@ -283,108 +244,108 @@ public class TestUserData extends TestCase {
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
         user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, ei);
-        usersession.changeUser(admin, user, false);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
         // decrease the value again, default value when the counter is not used is 0        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
 
         // Now allow the counter
-        EndEntityProfile ep = rasession.getEndEntityProfile(admin, pid);
+        EndEntityProfile ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
-        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        usersession.changeUser(admin, user, false);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(1, counter);
         // decrease the value again        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
         // decrease the value again
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(-1, counter);        
         // decrease the value again
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(-1, counter);  
         
         // Now disallow the counter, it will be deleted form the user
-        ep = rasession.getEndEntityProfile(admin, pid);
+        ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
-        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        usersession.changeUser(admin, user, false);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
 
         // allow the counter 
-        ep = rasession.getEndEntityProfile(admin, pid);
+        ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
-        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        usersession.changeUser(admin, user, false);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(1, counter);
         // decrease the value again        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
         // decrease the value again
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(-1, counter);  
 
         // test setuserstatus it will re-set the counter
-        ep = rasession.getEndEntityProfile(admin, pid);
+        ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
-        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         // decrease the value        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(2, counter);
         // decrease the value again        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(1, counter);
         // decrease the value again
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);        
         // decrease the value again
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(-1, counter);
         
         // test setuserstatus again it will not re-set the counter if it is already new
-        ep = rasession.getEndEntityProfile(admin, pid);
+        ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
-        rasession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         // decrease the value        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(-1, counter);
 
         // Also changeUser to new from something else will re-set status, if ei value is 0
-        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");        
         user.setExtendedinformation(ei);
         user.setStatus(UserDataConstants.STATUS_NEW);
-        usersession.changeUser(admin, user, false);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value        
-        counter = usersession.decRequestCounter(admin, username);
+        counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(2, counter);
         
         // Test set and re-set logic
         
         // The profile has 3 as default value, if I change user with status to generated and value 2 it should be set as that
-        UserDataVO user1 = usersession.findUser(admin, user.getUsername());
+        UserDataVO user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = new ExtendedInformation();
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
-        usersession.changeUser(admin, user1, false);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().changeUser(admin, user1, false);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         String value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("2", value);
@@ -394,33 +355,33 @@ public class TestUserData extends TestCase {
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_NEW);
-        usersession.changeUser(admin, user1, false);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().changeUser(admin, user1, false);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I set status to new again, with noting changed, nothing should change
-        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // The same when I change the user
         user1.setStatus(UserDataConstants.STATUS_NEW);
-        usersession.changeUser(admin, user1, false);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().changeUser(admin, user1, false);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to generated, nothing should happen
-        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to new from generated the default value should be used
-        usersession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
@@ -430,15 +391,15 @@ public class TestUserData extends TestCase {
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
-        usersession.changeUser(admin, user1, false);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().changeUser(admin, user1, false);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Changing again to new, with 0 passed in will set the default value
         user1.setStatus(UserDataConstants.STATUS_NEW);
-        usersession.changeUser(admin, user1, false);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().changeUser(admin, user1, false);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
@@ -446,16 +407,16 @@ public class TestUserData extends TestCase {
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");
         user1.setExtendedinformation(ei);
-        usersession.changeUser(admin, user1, false);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().changeUser(admin, user1, false);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Setting with null value will always remove the request counter
         user1.setExtendedinformation(null);
         user1.setStatus(UserDataConstants.STATUS_NEW);
-        usersession.changeUser(admin, user1, false);
-        user1 = usersession.findUser(admin, user.getUsername());
+        TestTools.getUserAdminSession().changeUser(admin, user1, false);
+        user1 = TestTools.getUserAdminSession().findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertNull(value);
@@ -472,15 +433,16 @@ public class TestUserData extends TestCase {
         log.debug(">test99CleanUp()");
 
         try {        	
-            usersession.deleteUser(admin,username);
+            TestTools.getUserAdminSession().deleteUser(admin,username);
         } catch (Exception e) { /* ignore */ }
         try {        	
-            usersession.deleteUser(admin,username1);
+            TestTools.getUserAdminSession().deleteUser(admin,username1);
         } catch (Exception e) { /* ignore */ }
         try {        	
-            rasession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+            TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
         } catch (Exception e) { /* ignore */ }
         log.debug("Removed it!");
+        TestTools.removeTestCA();
         log.debug("<test99CleanUp()");
     }
 }

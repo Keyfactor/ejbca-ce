@@ -16,19 +16,10 @@ package se.anatom.ejbca.hardtoken;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
@@ -37,6 +28,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 /**
  * Tests the hard token related entity beans.
@@ -44,19 +36,10 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class TestHardToken extends TestCase {
-    private static Logger log = Logger.getLogger(TestHardToken.class);
-    private IHardTokenSessionRemote cacheAdmin;
-    private ICertificateStoreSessionRemote certStore;
-    private IRaAdminSessionRemote raAdmin;
-
-
-    private static IHardTokenSessionHome cacheHome;
-    private static ICertificateStoreSessionHome storeHome;
-    private static IRaAdminSessionHome raAdminHome;
+    private static final Logger log = Logger.getLogger(TestHardToken.class);
+    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
     private static int orgEncryptCAId;
-
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
@@ -72,7 +55,6 @@ public class TestHardToken extends TestCase {
             + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
             + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
-
     /**
      * Creates a new TestHardToken object.
      *
@@ -80,58 +62,15 @@ public class TestHardToken extends TestCase {
      */
     public TestHardToken(String name) {
         super(name);
+        CertTools.installBCProvider();
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-        CertTools.installBCProvider();
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IHardTokenSessionHome.JNDI_NAME);
-                cacheHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
-
-            }
-
-            cacheAdmin = cacheHome.create();
-        }
-        if (certStore == null) {
-            if (storeHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
-                storeHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-            }
-
-            certStore = storeHome.create();
-        } 
-        
-        if (raAdmin == null) {
-            if (raAdminHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IRaAdminSessionHome.JNDI_NAME);
-                raAdminHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
-            }
-
-            raAdmin = raAdminHome.create();
-        } 
-
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
-
 
     /**
      * adds a token to the database
@@ -142,10 +81,10 @@ public class TestHardToken extends TestCase {
     public void test01AddHardToken() throws Exception {
         log.debug(">test01AddHardToken()");
       
-        GlobalConfiguration gc = raAdmin.loadGlobalConfiguration(admin);
+        GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
         orgEncryptCAId = gc.getHardTokenEncryptCA();
         gc.setHardTokenEncryptCA(0);
-        raAdmin.saveGlobalConfiguration(admin, gc);
+        TestTools.getRaAdminSession().saveGlobalConfiguration(admin, gc);
         
 
         SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
@@ -154,11 +93,11 @@ public class TestHardToken extends TestCase {
 
         certs.add(CertTools.getCertfromByteArray(testcert));
 
-        cacheAdmin.addHardToken(admin, "1234", "TESTUSER", "CN=TEST", SecConst.TOKEN_SWEDISHEID, token, certs, null);
+        TestTools.getHardTokenSession().addHardToken(admin, "1234", "TESTUSER", "CN=TEST", SecConst.TOKEN_SWEDISHEID, token, certs, null);
 
         TurkishEIDHardToken token2 = new TurkishEIDHardToken("1234",  "123456", 1);
 
-        cacheAdmin.addHardToken(admin, "2345", "TESTUSER", "CN=TEST", SecConst.TOKEN_TURKISHEID, token2, certs, null);
+        TestTools.getHardTokenSession().addHardToken(admin, "2345", "TESTUSER", "CN=TEST", SecConst.TOKEN_TURKISHEID, token2, certs, null);
 
         
 
@@ -177,7 +116,7 @@ public class TestHardToken extends TestCase {
 
         boolean ret = false;
 
-        HardTokenData token = cacheAdmin.getHardToken(admin, "1234", true);
+        HardTokenData token = TestTools.getHardTokenSession().getHardToken(admin, "1234", true);
 
         SwedishEIDHardToken swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -185,7 +124,7 @@ public class TestHardToken extends TestCase {
 
         swe.setInitialAuthEncPIN("5678");
 
-        cacheAdmin.changeHardToken(admin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
+        TestTools.getHardTokenSession().changeHardToken(admin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
         ret = true;
 
         assertTrue("Editing HardToken failed", ret);
@@ -207,10 +146,10 @@ public class TestHardToken extends TestCase {
 
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.  
-        if(certStore.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null){
-          certStore.storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),CertificateDataBean.CERT_ACTIVE,CertificateDataBean.CERTTYPE_ENDENTITY);
+        if(TestTools.getCertificateStoreSession().findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null){
+        	TestTools.getCertificateStoreSession().storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),CertificateDataBean.CERT_ACTIVE,CertificateDataBean.CERTTYPE_ENDENTITY);
         }
-        String tokensn = cacheAdmin.findHardTokenByCertificateSNIssuerDN(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));        
+        String tokensn = TestTools.getHardTokenSession().findHardTokenByCertificateSNIssuerDN(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));        
 
         assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
 
@@ -226,13 +165,13 @@ public class TestHardToken extends TestCase {
     public void test04EncryptHardToken() throws Exception {
         log.debug(">test04EncryptHardToken()");
 
-        GlobalConfiguration gc = raAdmin.loadGlobalConfiguration(admin);
-        gc.setHardTokenEncryptCA("CN=TEST".hashCode());
-        raAdmin.saveGlobalConfiguration(admin, gc);
+        GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
+        gc.setHardTokenEncryptCA(TestTools.getTestCAId());
+        TestTools.getRaAdminSession().saveGlobalConfiguration(admin, gc);
         boolean ret = false;
 
         // Make sure the old data can be read
-        HardTokenData token = cacheAdmin.getHardToken(admin, "1234", true);
+        HardTokenData token = TestTools.getHardTokenSession().getHardToken(admin, "1234", true);
 
         SwedishEIDHardToken swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -241,13 +180,13 @@ public class TestHardToken extends TestCase {
         swe.setInitialAuthEncPIN("5678");
 
         // Store the new data as encrypted
-        cacheAdmin.changeHardToken(admin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
+        TestTools.getHardTokenSession().changeHardToken(admin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
         ret = true;                
 
         assertTrue("Saving encrypted HardToken failed", ret);
 
         // Make sure the encrypted data can be read
-        token = cacheAdmin.getHardToken(admin, "1234",true);
+        token = TestTools.getHardTokenSession().getHardToken(admin, "1234",true);
 
         swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -264,13 +203,13 @@ public class TestHardToken extends TestCase {
    
     public void test05removeHardTokens() throws Exception {
         log.debug(">test05removeHardTokens()");
-        GlobalConfiguration gc = raAdmin.loadGlobalConfiguration(admin);
+        GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
-        raAdmin.saveGlobalConfiguration(admin, gc);
+        TestTools.getRaAdminSession().saveGlobalConfiguration(admin, gc);
         boolean ret = false;
         try {
-            cacheAdmin.removeHardToken(admin, "1234");
-            cacheAdmin.removeHardToken(admin, "2345");
+            TestTools.getHardTokenSession().removeHardToken(admin, "1234");
+            TestTools.getHardTokenSession().removeHardToken(admin, "2345");
 
             ret = true;
         } catch (Exception pee) {
@@ -280,5 +219,7 @@ public class TestHardToken extends TestCase {
         log.debug("<test05removeHardTokens()");
     }
    
-
+	public void test99RemoveTestCA() throws Exception {
+		TestTools.removeTestCA();
+	}
 }

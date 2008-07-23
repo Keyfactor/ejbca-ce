@@ -28,7 +28,6 @@ import java.util.Date;
 
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
-import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 
@@ -39,16 +38,6 @@ import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
@@ -67,6 +56,7 @@ import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
@@ -74,6 +64,8 @@ import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests signing session.
+ * 
+ * Since all the CAs from "TestCAs" is required, you should run it manually before running this test and "RemoveCAs" after.
  *
  * @version $Id$
  */
@@ -147,11 +139,6 @@ public class TestSignSession extends TestCase {
             "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
     private static Logger log = Logger.getLogger(TestSignSession.class);
     private static Context ctx;
-    private static ISignSessionHome home;
-    private static ISignSessionRemote remote;
-    private static IUserAdminSessionRemote usersession;
-    private static IRaAdminSessionRemote rasession;
-    private static ICertificateStoreSessionRemote storesession;
     private static KeyPair rsakeys=null;
     private static KeyPair ecdsakeys=null;
     private static KeyPair ecdsaimplicitlyca=null;
@@ -168,7 +155,7 @@ public class TestSignSession extends TestCase {
     X509Certificate ecdsaimplicitlycacacert = null;
     X509Certificate rsamgf1cacacert = null;
     Certificate cvccacert = null;
-    private Admin admin;
+    private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
     /**
      * Creates a new TestSignSession object.
@@ -189,43 +176,26 @@ public class TestSignSession extends TestCase {
         if (ecdsaimplicitlyca == null) {
         	ecdsaimplicitlyca = KeyTools.genKeys("implicitlyCA", CATokenConstants.KEYALGORITHM_ECDSA);
         }
-
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-
-        ctx = getInitialContext();
-        Object obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
-        CAInfo inforsa = casession.getCAInfo(admin, "TEST");
+        // Add this again since it will be removed by the other tests in the batch..
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
+        assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
-        if (rsacaid == 0){
-            assertTrue("No active RSA CA! Must have at least one active CA to run tests!", false);
-        }
-        CAInfo inforsareverse = casession.getCAInfo(admin, "TESTRSAREVERSE");
+        CAInfo inforsareverse = TestTools.getCAAdminSession().getCAInfo(admin, "TESTRSAREVERSE");
+        assertTrue("No active RSA Reverse CA! Must have at least one active reverse CA to run tests!", inforsareverse != null);
         rsareversecaid = inforsareverse.getCAId();
-        if (rsareversecaid == 0){
-            assertTrue("No active RSA Reverse CA! Must have at least one active reverse CA to run tests!", false);
-        }
-        CAInfo infoecdsa = casession.getCAInfo(admin, "TESTECDSA");
+        CAInfo infoecdsa = TestTools.getCAAdminSession().getCAInfo(admin, "TESTECDSA");
+        assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", infoecdsa != null);
         ecdsacaid = infoecdsa.getCAId();
-        if (ecdsacaid == 0){
-            assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", false);
-        }
-        CAInfo infoecdsaimplicitlyca = casession.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+        CAInfo infoecdsaimplicitlyca = TestTools.getCAAdminSession().getCAInfo(admin, "TESTECDSAImplicitlyCA");
+        assertTrue("No active ECDSA ImplicitlyCA CA! Must have at least one active CA to run tests!", infoecdsaimplicitlyca != null);
         ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        if (ecdsaimplicitlycacaid == 0){
-            assertTrue("No active ECDSA ImplicitlyCA CA! Must have at least one active CA to run tests!", false);
-        }
-        CAInfo inforsamgf1ca = casession.getCAInfo(admin, "TESTSha256WithMGF1");
+        CAInfo inforsamgf1ca = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSha256WithMGF1");
+        assertTrue("No active RSA MGF1 CA! Must have at least one active CA to run tests!", inforsamgf1ca != null);
         rsamgf1cacaid = inforsamgf1ca.getCAId();
-        if (rsamgf1cacaid == 0){
-            assertTrue("No active RSA MGF1 CA! Must have at least one active CA to run tests!", false);
-        }
-        CAInfo infocvcca = casession.getCAInfo(admin, "TESTDV-D");
+        CAInfo infocvcca = TestTools.getCAAdminSession().getCAInfo(admin, "TESTDV-D");
+        assertTrue("No active CVC CA! Must have at least one active CA to run tests!", infocvcca != null);
         cvccaid = infocvcca.getCAId();
-        if (cvccaid == 0){
-            assertTrue("No active CVC CA! Must have at least one active CA to run tests!", false);
-        }
         Collection coll = inforsa.getCertificateChain();
         Object[] objs = coll.toArray();
         rsacacert = (X509Certificate)objs[0]; 
@@ -244,43 +214,13 @@ public class TestSignSession extends TestCase {
         coll = infocvcca.getCertificateChain();
         objs = coll.toArray();
         cvccacert = (Certificate)objs[0]; 
-        
-        obj = ctx.lookup("RSASignSession");
-        home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        remote = home.create();
-
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-        
-        obj = ctx.lookup("RaAdminSession");
-        IRaAdminSessionHome rahome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
-        rasession = rahome.create();
-
-        obj = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICertificateStoreSessionHome.class);
-        storesession = storehome.create();
-
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
-
 
     /**
      * creates new user
@@ -293,7 +233,7 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            TestTools.getUserAdminSession().addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
         	userExists = true;
@@ -302,12 +242,12 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
-            usersession.changeUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsacaid);
+            TestTools.getUserAdminSession().changeUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsacaid);
             log.debug("Reset status to NEW");
         }
         userExists = false;
         try {
-            usersession.addUser(admin,"foorev","foo123","C=SE,O=AnaTom,CN=foorev",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsareversecaid);
+            TestTools.getUserAdminSession().addUser(admin,"foorev","foo123","C=SE,O=AnaTom,CN=foorev",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsareversecaid);
             log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
         } catch (RemoteException re) {
         	userExists = true;
@@ -316,12 +256,12 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User foorev already exists, resetting status.");
-            usersession.changeUser(admin,"foorev","foo123","C=SE,O=AnaTom,CN=foorev",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsareversecaid);
+            TestTools.getUserAdminSession().changeUser(admin,"foorev","foo123","C=SE,O=AnaTom,CN=foorev",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsareversecaid);
             log.debug("Reset status to NEW");
         }
         userExists = false;
         try {
-            usersession.addUser(admin,"fooecdsa","foo123","C=SE,O=AnaTom,CN=fooecdsa",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
+            TestTools.getUserAdminSession().addUser(admin,"fooecdsa","foo123","C=SE,O=AnaTom,CN=fooecdsa",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
             log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
         } catch (RemoteException re) {
         	userExists = true;
@@ -330,12 +270,12 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User fooecdsa already exists, resetting status.");
-            usersession.setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
+            TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         userExists = false;
         try {
-            usersession.addUser(admin,"fooecdsaimpca","foo123","C=SE,O=AnaTom,CN=fooecdsaimpca",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsaimplicitlycacaid);
+            TestTools.getUserAdminSession().addUser(admin,"fooecdsaimpca","foo123","C=SE,O=AnaTom,CN=fooecdsaimpca",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsaimplicitlycacaid);
             log.debug("created user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=fooecdsaimpca");
         } catch (RemoteException re) {
         	userExists = true;
@@ -344,12 +284,12 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User fooecdsaimpca already exists, resetting status.");
-            usersession.setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
+            TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         userExists = false;
         try {
-            usersession.addUser(admin,"foorsamgf1ca","foo123","C=SE,O=AnaTom,CN=foorsamgf1ca",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsamgf1cacaid);
+            TestTools.getUserAdminSession().addUser(admin,"foorsamgf1ca","foo123","C=SE,O=AnaTom,CN=foorsamgf1ca",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsamgf1cacaid);
             log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
         } catch (RemoteException re) {
         	userExists = true;
@@ -358,7 +298,7 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User foorsamgf1ca already exists, resetting status.");
-            usersession.setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
+            TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -374,7 +314,7 @@ public class TestSignSession extends TestCase {
         log.debug(">test02SignSession()");
 
         // user that we know exists...
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -387,7 +327,7 @@ public class TestSignSession extends TestCase {
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        cert = (X509Certificate) remote.createCertificate(admin, "foorev", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foorev", "foo123", rsakeys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         // Reverse DN order
@@ -410,7 +350,7 @@ public class TestSignSession extends TestCase {
      */
     public void test03TestBCPKCS10() throws Exception {
         log.debug(">test03TestBCPKCS10()");
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
@@ -434,7 +374,7 @@ public class TestSignSession extends TestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = remote.createCertificate(admin,
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -450,13 +390,13 @@ public class TestSignSession extends TestCase {
     public void test04TestKeytoolPKCS10() throws Exception {
         log.debug(">test04TestKeytoolPKCS10()");
 
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytoolp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = remote.createCertificate(admin,
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -472,13 +412,13 @@ public class TestSignSession extends TestCase {
     public void test05TestIEPKCS10() throws Exception {
         log.debug(">test05TestIEPKCS10()");
 
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = remote.createCertificate(admin,
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -494,7 +434,7 @@ public class TestSignSession extends TestCase {
     public void test06KeyUsage() throws Exception {
         log.debug(">test06KeyUsage()");
 
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
@@ -505,7 +445,7 @@ public class TestSignSession extends TestCase {
         // keyEncipherment
         keyusage1[2] = true;
 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage1);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage1);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         boolean[] retKU = cert.getKeyUsage();
@@ -513,7 +453,7 @@ public class TestSignSession extends TestCase {
         assertTrue("Fel KeyUsage, keyEncipherment finns ej!", retKU[2]);
         assertTrue("Fel KeyUsage, cRLSign finns!", !retKU[6]);
 
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         boolean[] keyusage2 = new boolean[9];
@@ -523,7 +463,7 @@ public class TestSignSession extends TestCase {
         // cRLSign
         keyusage2[6] = true;
 
-        X509Certificate cert1 = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage2);
+        X509Certificate cert1 = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage2);
         assertNotNull("Misslyckades skapa cert", cert1);
         retKU = cert1.getKeyUsage();
         assertTrue("Fel KeyUsage, keyCertSign finns ej!", retKU[5]);
@@ -542,14 +482,14 @@ public class TestSignSession extends TestCase {
     public void test07DSAKey() throws Exception {
         log.debug(">test07DSAKey()");
 
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         try {
             PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytooldsa);
             p10.setUsername("foo");
             p10.setPassword("foo123");
-            IResponseMessage resp = remote.createCertificate(admin,
+            IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                     p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             log.info("cert with DN '"+CertTools.getSubjectDN(cert)+"' should not be issued?");
@@ -573,7 +513,7 @@ public class TestSignSession extends TestCase {
         boolean userExists = false;
         try {
         	// We use unicode encoding for the three swedish character åäö
-            usersession.addUser(admin,"swede","foo123","C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            TestTools.getUserAdminSession().addUser(admin,"swede","foo123","C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
             log.debug("created user: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } catch (RemoteException re) {
         	userExists = true;
@@ -583,12 +523,12 @@ public class TestSignSession extends TestCase {
         if (userExists) {
             log.debug("user swede already exists: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
 
-            usersession.setUserStatus(admin,"swede",UserDataConstants.STATUS_NEW);
+            TestTools.getUserAdminSession().setUserStatus(admin,"swede",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
         // user that we know exists...
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "swede", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "swede", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"), CertTools.getSubjectDN(cert));
@@ -606,7 +546,7 @@ public class TestSignSession extends TestCase {
         log.debug(">test09TestMultipleAltNames()");
 
         // Create a good end entity profile (good enough), allowing multiple UPN names
-        rasession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTMULALTNAME");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COUNTRY);
@@ -619,11 +559,11 @@ public class TestSignSession extends TestCase {
         profile.addField(DnComponents.UPN);
         profile.addField(DnComponents.UPN);
         profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
-        rasession.addEndEntityProfile(admin, "TESTMULALTNAME", profile);
-        int eeprofile = rasession.getEndEntityProfileId(admin, "TESTMULALTNAME");
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTMULALTNAME", profile);
+        int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTMULALTNAME");
         try {
             // Change a user that we know...
-            usersession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
+            TestTools.getUserAdminSession().changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
                     "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
                     "foo@anatom.se", false,
                     eeprofile,
@@ -634,7 +574,7 @@ public class TestSignSession extends TestCase {
         } catch (RemoteException re) {
             assertTrue("User foo does not exist, or error changing user", false);
         } 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 //        FileOutputStream fos = new FileOutputStream("cert.crt");
 //        fos.write(cert.getEncoded());
@@ -658,7 +598,7 @@ public class TestSignSession extends TestCase {
 
         try {
             // Change a user that we know...
-            usersession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
+            TestTools.getUserAdminSession().changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
                     "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
                     "foo@anatom.se", false,
                     eeprofile,
@@ -669,7 +609,7 @@ public class TestSignSession extends TestCase {
         } catch (RemoteException re) {
             assertTrue("User foo does not exist, or error changing user", false);
         } 
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 //        FileOutputStream fos = new FileOutputStream("cert.crt");
 //        fos.write(cert.getEncoded());
@@ -692,7 +632,7 @@ public class TestSignSession extends TestCase {
         assertEquals("10.1.1.1", name);
 
         // Clean up
-        rasession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTMULALTNAME");
 
         log.debug("<test09TestMultipleAltNames()");        
     }
@@ -704,7 +644,7 @@ public class TestSignSession extends TestCase {
         log.debug(">test10TestQcCert()");
 
         // Create a good certificate profile (good enough), using QC statement
-        storesession.removeCertificateProfile(admin,"TESTQC");
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTQC");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setUseQCStatement(true);
         certprof.setQCStatementRAName("rfc822Name=qc@primekey.se");
@@ -713,21 +653,21 @@ public class TestSignSession extends TestCase {
         certprof.setUseQCEtsiValueLimit(true);
         certprof.setQCEtsiValueLimit(50000);
         certprof.setQCEtsiValueLimitCurrency("SEK");
-        storesession.addCertificateProfile(admin, "TESTQC", certprof);
-        int cprofile = storesession.getCertificateProfileId(admin,"TESTQC");
+        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTQC", certprof);
+        int cprofile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"TESTQC");
 
         // Create a good end entity profile (good enough), allowing multiple UPN names
-        rasession.removeEndEntityProfile(admin, "TESTQC");
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTQC");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
-        rasession.addEndEntityProfile(admin, "TESTQC", profile);
-        int eeprofile = rasession.getEndEntityProfileId(admin, "TESTQC");
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTQC", profile);
+        int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTQC");
         try {
             // Change a user that we know...
-            usersession.changeUser(admin, "foo", "foo123", "C=SE,CN=qc",
+            TestTools.getUserAdminSession().changeUser(admin, "foo", "foo123", "C=SE,CN=qc",
                     null,
                     "foo@anatom.nu", false,
                     eeprofile,
@@ -738,7 +678,7 @@ public class TestSignSession extends TestCase {
         } catch (RemoteException re) {
             assertTrue("User foo does not exist, or error changing user", false);
         } 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 //        FileOutputStream fos = new FileOutputStream("cert.crt");
 //        fos.write(cert.getEncoded());
@@ -755,8 +695,8 @@ public class TestSignSession extends TestCase {
         assertEquals("50000 SEK", limit);
 
         // Clean up
-        rasession.removeEndEntityProfile(admin, "TESTQC");
-        storesession.removeCertificateProfile(admin,"TESTQC");
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTQC");
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTQC");
 
         log.debug("<test10TestQcCert()");        
     }
@@ -768,25 +708,25 @@ public class TestSignSession extends TestCase {
         log.debug(">test11TestValidityOverride()");
 
         // Create a good certificate profile (good enough), using QC statement
-        storesession.removeCertificateProfile(admin,"TESTVALOVERRIDE");
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTVALOVERRIDE");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setAllowValidityOverride(false);
         certprof.setValidity(298);
-        storesession.addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
-        int cprofile = storesession.getCertificateProfileId(admin,"TESTVALOVERRIDE");
+        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
+        int cprofile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"TESTVALOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN names
-        rasession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTVALOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
-        rasession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
-        int eeprofile = rasession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
+        int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTVALOVERRIDE");
         try {
             // Change a user that we know...
-            usersession.changeUser(admin, "foo", "foo123", "C=SE,CN=validityoverride",
+            TestTools.getUserAdminSession().changeUser(admin, "foo", "foo123", "C=SE,CN=validityoverride",
                     null,
                     "foo@anatom.nu", false,
                     eeprofile,
@@ -799,7 +739,7 @@ public class TestSignSession extends TestCase {
         } 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -813,16 +753,16 @@ public class TestSignSession extends TestCase {
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
         
         // Change so that we allow override of validity time
-        CertificateProfile prof = storesession.getCertificateProfile(admin,cprofile);
+        CertificateProfile prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
         prof.setAllowValidityOverride(true);
         prof.setValidity(3065);
-        storesession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
         cal = Calendar.getInstance();
         Calendar notBefore = Calendar.getInstance();
         notBefore.add(Calendar.DAY_OF_MONTH, 2);
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
+        TestTools.getUserAdminSession().setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         notAfter = cert.getNotAfter();
@@ -840,15 +780,15 @@ public class TestSignSession extends TestCase {
 
         // Verify that we can not get a certificate that has notBefore befor the current time
         // and that we can not get a certificate valid longer than the certificate profile allows.
-        prof = storesession.getCertificateProfile(admin,cprofile);
+        prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
         prof.setValidity(50);
-        storesession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
         notBefore = Calendar.getInstance();
         notBefore.add(Calendar.DAY_OF_MONTH, -2);
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 200);
-        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
+        TestTools.getUserAdminSession().setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         Date certNotBefore = cert.getNotBefore();
@@ -868,8 +808,8 @@ public class TestSignSession extends TestCase {
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
 
         // Clean up
-        rasession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
-        storesession.removeCertificateProfile(admin,"TESTVALOVERRIDE");
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTVALOVERRIDE");
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTVALOVERRIDE");
 
         log.debug("<test11TestValidityOverride()");        
     }
@@ -882,11 +822,11 @@ public class TestSignSession extends TestCase {
     public void test12SignSessionECDSAWithRSACA() throws Exception {
         log.debug(">test12SignSessionECDSAWithRSACA()");
 
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
     	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -917,7 +857,7 @@ public class TestSignSession extends TestCase {
      */
     public void test13TestBCPKCS10ECDSAWithRSACA() throws Exception {
         log.debug(">test13TestBCPKCS10ECDSAWithRSACA()");
-        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
@@ -940,7 +880,7 @@ public class TestSignSession extends TestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = remote.createCertificate(admin,
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -970,11 +910,11 @@ public class TestSignSession extends TestCase {
     public void test14SignSessionECDSAWithECDSACA() throws Exception {
         log.debug(">test14SignSessionECDSAWithECDSACA()");
 
-        usersession.setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsa' to NEW");
         // user that we know exists...
     	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "fooecdsa", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "fooecdsa", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1005,7 +945,7 @@ public class TestSignSession extends TestCase {
      */
     public void test15TestBCPKCS10ECDSAWithECDSACA() throws Exception {
         log.debug(">test15TestBCPKCS10ECDSAWithECDSACA()");
-        usersession.setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
@@ -1028,7 +968,7 @@ public class TestSignSession extends TestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("fooecdsa");
         p10.setPassword("foo123");
-        IResponseMessage resp = remote.createCertificate(admin,
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -1057,11 +997,11 @@ public class TestSignSession extends TestCase {
     public void test16SignSessionECDSAWithECDSAImplicitlyCACA() throws Exception {
         log.debug(">test16SignSessionECDSAWithECDSAImplicitlyCACA()");
 
-        usersession.setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsaimpca' to NEW");
         // user that we know exists...
     	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "fooecdsaimpca", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "fooecdsaimpca", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1092,7 +1032,7 @@ public class TestSignSession extends TestCase {
      */
     public void test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA() throws Exception {
         log.debug(">test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
-        usersession.setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
@@ -1115,7 +1055,7 @@ public class TestSignSession extends TestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("fooecdsaimpca");
         p10.setPassword("foo123");
-        IResponseMessage resp = remote.createCertificate(admin,
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -1145,7 +1085,7 @@ public class TestSignSession extends TestCase {
     public void test18SignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
         log.debug(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
 
-        usersession.setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // user that we know exists...
     	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, false);
@@ -1155,7 +1095,7 @@ public class TestSignSession extends TestCase {
     		e.printStackTrace();
     		assertTrue(false);
     	}
-        X509Certificate retcert = (X509Certificate) remote.createCertificate(admin, "foorsamgf1ca", "foo123", selfcert);
+        X509Certificate retcert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foorsamgf1ca", "foo123", selfcert);
         // RSA with MGF1 is not supported by sun, so we must transfer this (serialized) cert to a BC cert
         X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(retcert.getEncoded());
         assertNotNull("Failed to create certificate", cert);
@@ -1192,7 +1132,7 @@ public class TestSignSession extends TestCase {
      */
     public void test19TestBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
         log.debug(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
-        usersession.setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest(CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
@@ -1215,7 +1155,7 @@ public class TestSignSession extends TestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foorsamgf1ca");
         p10.setPassword("foo123");
-        IResponseMessage resp = remote.createCertificate(admin,
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
                 p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
         //X509Certificate cert = CertTools.getCertfromByteArray(retcert.getEncoded());
@@ -1263,18 +1203,18 @@ public class TestSignSession extends TestCase {
             profile.setValue(EndEntityProfile.AVAILCAS,0,""+rsacaid);
             profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
             profile.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
-            rasession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
-            pid = rasession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+            TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
+            pid = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
         } catch (EndEntityProfileExistsException pee) {
         	assertTrue("Can not create end entity profile", false);
         }
         
         // Change already existing user 
         UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
-        usersession.changeUser(admin, user, false);
-        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
+        TestTools.getUserAdminSession().setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         // create first cert
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         //log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1287,7 +1227,7 @@ public class TestSignSession extends TestCase {
         // It should only work once, not twice times
         boolean authstatus = false;
         try {
-            cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());        	
+            cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());        	
         } catch (AuthStatusException e) {
         	authstatus = true;        	
         }
@@ -1299,10 +1239,10 @@ public class TestSignSession extends TestCase {
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
         user.setExtendedinformation(ei);
         user.setStatus(UserDataConstants.STATUS_NEW);
-        usersession.changeUser(admin, user, false);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
 
         // create first cert
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         //log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1315,7 +1255,7 @@ public class TestSignSession extends TestCase {
         String serno = cert.getSerialNumber().toString(16);
 
         // It should work to get two certificates
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         //log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1331,7 +1271,7 @@ public class TestSignSession extends TestCase {
         // It should only work twice, not three times
         authstatus = false;
         try {
-            cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());        	
+            cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());        	
         } catch (AuthStatusException e) {
         	authstatus = true;        	
         }
@@ -1345,12 +1285,12 @@ public class TestSignSession extends TestCase {
 
         UserDataVO user = new UserDataVO("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
         user.setPassword("cvc");
-        usersession.addUser(admin, user, false);
-        usersession.setUserStatus(admin, "cvc", UserDataConstants.STATUS_NEW);
-        usersession.setPassword(admin, "cvc", "foo123");
+        TestTools.getUserAdminSession().addUser(admin, user, false);
+        TestTools.getUserAdminSession().setUserStatus(admin, "cvc", UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setPassword(admin, "cvc", "foo123");
         log.debug("Reset status of 'cvc' to NEW");
         // user that we know exists...
-        Certificate cert = (Certificate) remote.createCertificate(admin, "cvc", "foo123", rsakeys.getPublic());
+        Certificate cert = (Certificate) TestTools.getSignSession().createCertificate(admin, "cvc", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1383,26 +1323,27 @@ public class TestSignSession extends TestCase {
 
         // Delete test end entity profile
         try {        	
-            rasession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+            TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
         } catch (Exception e) { /* ignore */ }
         // delete users that we know...
         try {        	
-        	usersession.deleteUser(admin, "foo");
+        	TestTools.getUserAdminSession().deleteUser(admin, "foo");
         	log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */ }
         try {        	
-        	usersession.deleteUser(admin, "fooecdsa");
+        	TestTools.getUserAdminSession().deleteUser(admin, "fooecdsa");
         	log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */ }
         try {        	
-        	usersession.deleteUser(admin, "fooecdsaimpca");
+        	TestTools.getUserAdminSession().deleteUser(admin, "fooecdsaimpca");
         	log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */ }
         try {        	
-        	usersession.deleteUser(admin, "cvc");
+        	TestTools.getUserAdminSession().deleteUser(admin, "cvc");
         	log.debug("deleted user: cvc, foo123, C=SE,O=RPS,CN=10001");
         } catch (Exception e) { /* ignore */ }
 
+		TestTools.removeTestCA();
         log.debug("<test99CleanUp()");
     }
     

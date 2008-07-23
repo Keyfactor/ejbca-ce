@@ -110,7 +110,7 @@ public class CmpTestCase extends TestCase {
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceCmp = "publicweb/cmp";
 
-    private static final int PORT_NUMBER = 5547;
+    private static final int PORT_NUMBER = 5587;
     private static final String CMP_HOST = "127.0.0.1";
     
 	public CmpTestCase(String arg0) {
