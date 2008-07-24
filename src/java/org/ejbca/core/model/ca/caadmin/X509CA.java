@@ -744,6 +744,9 @@ public class X509CA extends CA implements Serializable {
      * @return list of distribution points.
      */
     private List generateDistributionPoints(String distPoints) {
+    	if (distPoints == null) {
+    		distPoints = "";
+    	}
         // Multiple CDPs are spearated with the ';' sign  
         StringTokenizer tokenizer = new StringTokenizer(distPoints, ";", false);
         ArrayList result = new ArrayList();
