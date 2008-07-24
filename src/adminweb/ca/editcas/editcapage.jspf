@@ -228,7 +228,7 @@ function gendefaultcrlissuer() {
  <% if(!editca){ %>
     document.ca.<%=TEXTFIELD_DEFAULTCRLISSUER%>.value = document.ca.<%=TEXTFIELD_SUBJECTDN%>.value;
  <% }else{ %>
-    document.ca.<%=TEXTFIELD_DEFAULTCRLISSUER%>.value = cainfo.getSubjectDN()%>";
+    document.ca.<%=TEXTFIELD_DEFAULTCRLISSUER%>.value = "<%= cainfo.getSubjectDN()%>";
  <% } %>
 }
 
