@@ -18,10 +18,6 @@ import java.util.Iterator;
 
 import org.ejbca.core.model.ra.UserDataVO;
 
-
-
-
-
 /**
  * List users with specified status in the database.
  *
@@ -50,13 +46,22 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             if (args.length < 2) {
                 getOutputStream().println("Usage: RA listusers <status>");
                 getOutputStream().println(
-                    "Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
-
+                    "Status: ANY=00; NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
                 return;
             }
 
             int status = Integer.parseInt(args[1]);
-            Collection coll = getAdminSession().findAllUsersByStatus(administrator, status);
+            Collection coll = null;
+            if (status==0) {
+                coll = getAdminSession().findAllUsersByStatus(administrator, 10);
+                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 11));
+                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 20));
+                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 30));
+                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 40));
+                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 50));
+            } else {
+                coll = getAdminSession().findAllUsersByStatus(administrator, status);
+            }
             Iterator iter = coll.iterator();
 
             while (iter.hasNext()) {
@@ -68,7 +73,5 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-    }
-
-    // execute
+    } // execute
 }

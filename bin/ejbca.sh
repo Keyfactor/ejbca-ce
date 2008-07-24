@@ -11,7 +11,7 @@ JAVACMD=`which java`
 if [ ! -n "$JAVA_HOME" ]; then
     if [ ! -n "$JAVACMD" ]
     then
-        echo "You must set JAVA_HOME before running the EJBCA cli."
+        echo "You must set JAVA_HOME before running the EJBCA cli." 1>&2
         exit 1
     fi
 else
@@ -63,30 +63,30 @@ fi
 if [ -n "$APPSRV_HOME" ]; then
     J2EE_DIR="${APPSRV_HOME}"/client
     if [ -r "$APPSRV_HOME"/server/lib/weblogic.jar ]; then
-        echo "Using Weblogic JNDI provider..."
+        echo "Using Weblogic JNDI provider..."  1>&2
         J2EE_DIR="${APPSRV_HOME}"/server/lib
     elif [ -r "$APPSRV_HOME"/lib/appserv-rt.jar ]; then
-        echo Using Glassfish JNDI provider...
+        echo "Using Glassfish JNDI provider..."  1>&2
         J2EE_DIR="${APPSRV_HOME}"/lib
     elif [ -r "$APPSRV_HOME"/j2ee/home/oc4jclient.jar ]; then
-        echo Using Oracle JNDI provider...
+        echo "Using Oracle JNDI provider..."  1>&2
         J2EE_DIR="${APPSRV_HOME}"/j2ee/home
     elif [ -d "$APPSRV_HOME"/runtimes ]; then
-        echo Using Websphere JNDI provider...
+        echo "Using Websphere JNDI provider..."  1>&2
         J2EE_DIR="${APPSRV_HOME}"/runtimes
     else 
-        echo "Using JBoss JNDI provider..."
+        echo "Using JBoss JNDI provider..." 1>&2
     fi
 else
-    echo "Could not find a valid J2EE server for JNDI provider.."
-    echo "Specify a APPSRV_HOME environment variable"
+    echo "Could not find a valid J2EE server for JNDI provider.." 1>&2
+    echo "Specify a APPSRV_HOME environment variable" 1>&2
     exit 1
 fi
 
 # Check that classes exist
 if [ ! -d ${EJBCA_HOME}/tmp/bin/classes ]
 then    
-        echo "You must build EJBCA before using the cli, use 'ant'."
+        echo "You must build EJBCA before using the cli, use 'ant'." 1>&2
         exit 1
 fi
 
