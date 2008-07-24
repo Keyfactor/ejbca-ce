@@ -657,4 +657,24 @@ public class EjbcaWebBean implements java.io.Serializable {
         }
         return returnValue;
     }
+    
+    public boolean isHelpEnabled() { return !"disabled".equalsIgnoreCase(GlobalConfiguration.HELPBASEURI); }
+    
+    public String getHelpBaseURI() {
+    	String helpBaseURI = GlobalConfiguration.HELPBASEURI;
+    	if ("internal".equalsIgnoreCase(helpBaseURI)) {
+    		return getBaseUrl() + "doc";
+    	} else {
+    		return helpBaseURI;
+    	}
+    }
+
+    public String getHelpReference(String lastPart) {
+    	if (!isHelpEnabled()) {
+    		return "";
+    	}
+    	return "[<a href=\"" + getHelpBaseURI() +lastPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW +
+    		"\" title=\"" + getText("OPENHELPSECTION") + "\" >?</a>]";
+    }
+
 }

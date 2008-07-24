@@ -61,7 +61,10 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
 
     // Title of ra admin web interface.
     private static final  String   DEFAULTEJBCATITLE             = "@EJBCA@ Administration";
-    
+
+    // The base of help links
+    public static final String HELPBASEURI = "@web.docbaseuri@";
+
     // Default values for AutoEnroll
     private static final  String  AUTOENROLL_DEFAULT_ADSERVER = "dc1.company.local";
     private static final  int  AUTOENROLL_DEFAULT_ADPORT = 0;
@@ -80,6 +83,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public static final  String HEADERFRAME         = "topFrame";  // Name of header browser frame
     public static final  String MENUFRAME           = "leftFrame"; // Name of menu browser frame
     public static final  String MAINFRAME           = "mainFrame"; // Name of main browser frame
+    public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
 
 
     /** Creates a new instance of Globaldatauration */

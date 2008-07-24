@@ -100,6 +100,18 @@
     </target>
 	
     <!-- =================================================================== -->
+    <!-- Build doc part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="doc.war" if="doc.war.enabled">
+    	<antcall target="doc" />
+		<replace file="${eardd.src}/META-INF/application.xml"
+		token="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/${app.name}/doc&lt;/context-root>&lt;/web>&lt;/module>"/>
+		<war destfile="${docwar}" needxmlfile="false">
+            <fileset dir="${doc.src}" />
+        </war>
+    </target>
+
+    <!-- =================================================================== -->
     <!-- Build CMP part                                                                                                                             -->
     <!-- =================================================================== -->
     <target name="cmp.war" depends="compile">
@@ -426,7 +438,7 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ca.ear" depends="jsflibs, publicweb.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
+	<target name="ca.ear" depends="jsflibs, publicweb.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />

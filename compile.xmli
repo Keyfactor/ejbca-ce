@@ -82,6 +82,7 @@ httpsserver.password     = ${httpsserver.password}
 web.availablelanguages   = ${web.availablelanguages}
 web.contentencoding      = ${web.contentencoding}
 web.jsfimpl              = ${web.jsfimpl}
+web.docbaseuri           = ${web.docbaseuri}
 ejbcaws.enabled          = ${ejbcaws.enabled}
 intresources.preferredlanguage   = ${intresources.preferredlanguage}     	
 intresources.secondarylanguage   = ${intresources.secondarylanguage}
@@ -471,6 +472,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 				<replacestring from="@ecdsa.implicitlyca.g@" to="${ecdsa.implicitlyca.g}"/>
 				<replacestring from="@ecdsa.implicitlyca.n@" to="${ecdsa.implicitlyca.n}"/>
 				<replacestring from="@log.maxqueryrowcount@" to="${log.maxqueryrowcount}"/>
+				<replacestring from="@web.docbaseuri@" to="${web.docbaseuri}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>
@@ -535,6 +537,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>				
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>				
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@web.docbaseuri@" value="${web.docbaseuri}"/>				
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
         <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>

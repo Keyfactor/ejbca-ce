@@ -310,7 +310,11 @@
 %>
    <br>
    <br>
-   <A href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" id="menu"><%=ejbcawebbean.getText("PUBLICWEB") %></A>
+   <A href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" id="menu"><%=ejbcawebbean.getText("PUBLICWEB") %></A><br />
+<% if (ejbcawebbean.isHelpEnabled()) { %>
+   <A href="<%= ejbcawebbean.getHelpBaseURI() %>/manual.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
+   id="menu" title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></A>
+<% } %>
 <%
     // If authorized to view help pages then display related links.
  /*  try{

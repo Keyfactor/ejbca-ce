@@ -385,7 +385,7 @@ NameVirtualHost *:443
   </p>
   </section>
 
-  <section name="Setting up Autoenrollment for Windows clients with EJBCA [Alpha]">
+  <section name="Setting up Autoenrollment for Windows clients with EJBCA">
   <p>
   This section will show you how to set up automatic certificate enroll of
   machines and users in an Windows environment with EJBCA.

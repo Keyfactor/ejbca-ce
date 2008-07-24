@@ -109,6 +109,9 @@
     <property name="status.src" value="${src}/publicweb/status" />
     <property name="statuswar" value="${dist.dir}/status.war" />
 	
+    <property name="doc.src" value="tmp/htdocs" />
+    <property name="docwar" value="${dist.dir}/doc.war" />
+	
     <property name="cmp.src" value="${src}/publicweb/cmp" />
     <property name="cmpwar" value="${dist.dir}/cmp.war" />
 	
@@ -286,6 +289,7 @@
     <property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE,PT" />
     <property name="web.contentencoding" value="UTF-8" />
+    <property name="web.docbaseuri" value="disabled" />
     <property name="intresources.preferredlanguage" value="EN" />
     <property name="intresources.secondarylanguage" value="SE" />
     <property name="hardtoken.diplaysensitiveinfo" value="true" />
@@ -295,6 +299,9 @@
     <property name="approval.excludedClasses" value="" />
     <condition property="database.comment.column" value="comment_" else="comment" >
         <equals arg1="${database.name}" arg2="oracle"/>
+    </condition>
+    <condition property="doc.war.enabled">
+    	<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
     </condition>
 
 	<!-- Log4j configuration for glassfish -->
