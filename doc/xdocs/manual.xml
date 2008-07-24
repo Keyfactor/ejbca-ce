@@ -422,6 +422,7 @@ APPSRV_HOME=/usr/local/jboss
 </subsection>
 
 <subsection name="Delta CRLs">
+<p><i>a.k.a. Freshest CRL Extension</i></p>
 <p>EJBCA can issue deltaCRLs as well. 
 In the CA configuration, set 'Delta CRL Period' to the number of hours your delta CRLs should be valid if delta CRLs should be issued.
 Command line interface and CRL Update service will generate delta CRLs if 'Delta CRL Period' is larger than 0.</p>

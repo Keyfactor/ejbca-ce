@@ -66,7 +66,7 @@ function checkusedefaultsecrldisturifield(){
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "<%= globalconfiguration.getStandardCRLDistributionPointURI() %>";
     document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "<%= globalconfiguration.getStandardCRLIssuer() %>";
   }
   else{
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
@@ -82,7 +82,7 @@ function checkusefreshestcrlfield(){
     document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "<%= globalconfiguration.getStandardDeltaCRLDistributionPointURI() %>";
   }
   else{
   	document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.disabled = true;
@@ -99,7 +99,7 @@ function checkusecadefinedfreshestcrlfield(){
   }
   else{
     document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "<%= globalconfiguration.getStandardDeltaCRLDistributionPointURI() %>";
   }
 }
 
@@ -612,8 +612,12 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLDISTPOINT") %> <br>  <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br> <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br> <%= ejbcawebbean.getText("CRLISSUER") %>
-
+        <%= ejbcawebbean.getText("CRLDISTPOINT") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20generation") %> <br>
+        <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br>
+        <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br>
+        <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br>
+        <%= ejbcawebbean.getText("CRLISSUER") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>" onClick="checkusecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
@@ -649,14 +653,20 @@ function checkallfields(){
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 
-                       out.write(" value=\"" + certificateprofiledata.getCRLIssuer() + "\"");%>>
+                      if(!certificateprofiledata.getCRLIssuer().equals(""))
+                       out.write(" value=\"" + certificateprofiledata.getCRLIssuer() + "\"");
+                      else 
+                       out.write(" value=\"" + globalconfiguration.getStandardCRLIssuer() + "\"");%>>
       </td>
     </tr>
 
     <%-- Freshest CRL extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEFRESHESTCRL") %> <br>  <%= ejbcawebbean.getText("USECADEFINEDFRESHESTCRL") %> <br> <%= ejbcawebbean.getText("FRESHESTCRLURI") %>
+        <%= ejbcawebbean.getText("USEFRESHESTCRL") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %> <br>
+        <%= ejbcawebbean.getText("USECADEFINEDFRESHESTCRL") %> <br>
+        <%= ejbcawebbean.getText("FRESHESTCRLURI") %>
        </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEFRESHESTCRL %>" onClick="checkusefreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
@@ -678,7 +688,7 @@ function checkallfields(){
                       if(!certificateprofiledata.getFreshestCRLURI().equals(""))
                        out.write(" value=\"" + certificateprofiledata.getFreshestCRLURI() + "\""); 
                       else
-                       out.write("");%>>
+                       out.write(" value=\"" + globalconfiguration.getStandardDeltaCRLDistributionPointURI()+ "\"");%>>
       </td>
     </tr>
     

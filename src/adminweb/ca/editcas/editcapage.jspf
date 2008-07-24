@@ -224,6 +224,22 @@ function gendefaultcrldistpoint(){
  <% } %>
 }
 
+function gendefaultcrlissuer() {
+ <% if(!editca){ %>
+    document.ca.<%=TEXTFIELD_DEFAULTCRLISSUER%>.value = document.ca.<%=TEXTFIELD_SUBJECTDN%>.value;
+ <% }else{ %>
+    document.ca.<%=TEXTFIELD_DEFAULTCRLISSUER%>.value = cainfo.getSubjectDN()%>";
+ <% } %>
+}
+
+function gencadefinedfresherstcrl() {
+ <% if(!editca){ %>
+    document.ca.<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>.value = "<%=globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN() %>" + document.ca.<%=TEXTFIELD_SUBJECTDN%>.value;
+ <% }else{ %>
+    document.ca.<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>.value = "<%=globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN() + cainfo.getSubjectDN()%>";
+ <% } %>
+}
+
 function gendefaultocsplocator(){
     document.ca.<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>.value = "<%=globalconfiguration.getStandardOCSPServiceLocatorURI() %>";
 }
@@ -728,7 +744,9 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+        <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20generation") %>
+        <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -742,6 +760,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTCRLISSUER") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20generation") %>
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -750,11 +769,14 @@ function checkallfields(){
          <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="60" maxlength="255"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLIssuer()+ "'");%>>
            <% } %> 
+           <input type="button" name="<%=BUTTON_GENDEFAULTCRLISSUER%>" onClick="gendefaultcrlissuer()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CADEFINEDFRESHESTCRL") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+        <%= ejbcawebbean.getText("CADEFINEDFRESHESTCRL") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %>
+        <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -763,11 +785,14 @@ function checkallfields(){
          <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="60" maxlength="255"
             <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)) out.write(" value='" + x509cainfo.getCADefinedFreshestCRL()+ "'");%>>
            <% } %>
+           <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
      </tr>
      <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DEFAULTOCSPLOCATOR") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+        <%= ejbcawebbean.getText("DEFAULTOCSPLOCATOR") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#Ocsp") %>
+        <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -922,7 +947,8 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DELTACRLPERIOD") %> <br/>
+        <%= ejbcawebbean.getText("DELTACRLPERIOD") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %><br/>
         <%= ejbcawebbean.getText("NODELTACRLTIP") %>
       </td>
       <td width="50%">

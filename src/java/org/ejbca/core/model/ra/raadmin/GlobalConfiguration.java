@@ -46,7 +46,10 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
 
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=";
-    
+
+    // Path added to baseurl used as default vaule in DeltaCRLDistributionPointURI field in Certificate Profile definitions.
+    private static final  String   DEFAULTDELTACRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=deltacrl&issuer=";
+
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTCRLDISTURIPATHDN  = "CN=TestCA,O=AnaTom,C=SE";
 
@@ -188,11 +191,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
 
     public String getStandardCRLDistributionPointURI(){
-        String retval = getBaseUrl();
-        retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
-        retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
-        retval+= DEFAULTCRLDISTURIPATH + DEFAULTCRLDISTURIPATHDN;
-        return retval;
+        return getStandardCRLDistributionPointURINoDN() + DEFAULTCRLDISTURIPATHDN;
     }
     
     public String getStandardCRLDistributionPointURINoDN(){
@@ -200,6 +199,22 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
         retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
         retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
         retval+= DEFAULTCRLDISTURIPATH;
+        return retval;
+    }
+    
+    public String getStandardCRLIssuer() {
+    	return DEFAULTCRLDISTURIPATHDN;
+    }
+
+    public String getStandardDeltaCRLDistributionPointURI(){
+    	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULTCRLDISTURIPATHDN;
+    }
+        
+    public String getStandardDeltaCRLDistributionPointURINoDN(){
+        String retval = getBaseUrl();
+        retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
+        retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
+        retval+= DEFAULTDELTACRLDISTURIPATH;
         return retval;
     }
         
