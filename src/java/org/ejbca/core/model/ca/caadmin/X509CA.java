@@ -174,8 +174,9 @@ public class X509CA extends CA implements Serializable {
     
    /** Constructor used when retrieving existing X509CA from database. 
  * @throws IllegalKeyStoreException */
-    public X509CA(HashMap data, int caId, String subjectDN, String name, int status, Date updateTime) throws IllegalKeyStoreException{
+    public X509CA(HashMap data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) throws IllegalKeyStoreException{
     	super(data);
+    	setExpireTime(expireTime);	// Make sure the internal state is synched with the database column. Required for upgrades from EJBCA 3.5.6 or EJBCA 3.6.1 and earlier.
     	ArrayList externalcaserviceinfos = new ArrayList();
     	Iterator iter = getExternalCAServiceTypes().iterator(); 	
     	while(iter.hasNext()){

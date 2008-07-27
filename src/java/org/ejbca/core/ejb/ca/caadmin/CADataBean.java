@@ -267,7 +267,7 @@ public abstract class CADataBean extends BaseEntityBean {
             float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
             switch(((Integer)(data.get(CA.CATYPE))).intValue()){
                 case CAInfo.CATYPE_X509:
-                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
+                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
                     break;
                 case CAInfo.CATYPE_CVC:
                     ca = new CVCCA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
