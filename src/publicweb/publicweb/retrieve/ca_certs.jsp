@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ include file="header.jsp" %>
 
-	<h1 class="title">@EJBCA@ Fetch CA Certificate</h1>
+	<h1 class="title">Fetch CA & OCSP Certificates</h1>
 
 	<jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 	<% finder.initialize(request.getRemoteAddr()); %>
@@ -16,63 +16,70 @@
 		<hr />
 		<h2><c:out value="CA: ${ca.name}" /></h2>
 
-		<c:set var="chain" value="${finder.CACertificateChain}" />
+		<c:set var="chain" value="${finder.CACertificateChainReversed}" />
+		<c:set var="chainsize" value="${fn:length(chain)}" />
 	
 		<c:choose>
-			<c:when test="${fn:length(chain) == 0}">
+			<c:when test="${chainsize == 0}">
 				<p>No CA certificates exist</p>
 			</c:when>
 			<c:otherwise>
-				<c:set var="issuercert" value="${chain[0]}" />
+				<c:set var="issuercert" value="${chain[chainsize - 1]}" />
 				<c:set var="issuerdn" value="${issuercert.subjectDN}" />
 
-				<h3>In PEM format:</h3>
-				<c:forEach var="pemcert" items="${chain}" varStatus="status">
+				<div>
+				<c:forEach var="cert" items="${chain}" varStatus="status">
+					<div style="padding-left: ${status.index}0px ; margin-left: ${status.index}0px ;">
+					<p>
+					<c:if test="${status.last}"><b></c:if>
+						<i><c:out value="${cert.subjectDN}" /></i>
+					<c:if test="${status.last}"></b></c:if>
+					</p><p>
+					<c:out value="CA certificate: " />
 					<c:url var="pem" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="cacert" />
 						<c:param name="issuer" value="${issuerdn}" />
-						<c:param name="level" value="${status.count - 1}" />
+						<c:param name="level" value="${chainsize - status.count}" />
 					</c:url>
-					<p><a href="${pem}">${pemcert.subjectDN}</a>,
-	
-					<c:url var="pem_ocsp" value="../publicweb/webdist/certdist" >
-						<c:param name="cmd" value="ocspcert" />
-						<c:param name="issuer" value="${pemcert.subjectDN}" />
-					</c:url>
-					<a href="${pem_ocsp}">OCSPResponder certificate</a></p>
-				</c:forEach>
-	
-				<h3>For Netscape/Mozilla:</h3>
-				<c:forEach var="nscert" items="${chain}" varStatus="status">
+					<a href="${pem}">Download as PEM</a>,
 					<c:url var="ns" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="nscacert" />
 						<c:param name="issuer" value="${issuerdn}" />
-						<c:param name="level" value="${status.count - 1}" />
+						<c:param name="level" value="${chainsize - status.count}" />
 					</c:url>
-					<p><a href="${ns}">${nscert.subjectDN}</a>,
-	
-					<c:url var="ns_ocsp" value="../publicweb/webdist/certdist" >
-						<c:param name="cmd" value="nsocspcert" />
-						<c:param name="issuer" value="${nscert.subjectDN}" />
-					</c:url>
-					<a href="${ns_ocsp}">OCSPResponder certificate</a></p>
-				</c:forEach>
-	
-				<h3>For Internet Explorer:</h3>
-				<c:forEach var="iecert" items="${chain}" varStatus="status">
+					<a href="${ns}">Download to Firefox</a>,
 					<c:url var="ie" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="iecacert" />
 						<c:param name="issuer" value="${issuerdn}" />
-						<c:param name="level" value="${status.count - 1}" />
+						<c:param name="level" value="${chainsize - status.count}" />
 					</c:url>
-					<p><a href="${ie}">${iecert.subjectDN}</a>,
-	
+					<a href="${ie}">Download to Internet Explorer</a>
+					</p>
+					<c:if test="${status.last && finder.ocspEnabled}">
+					<p>
+					<c:out value="OCSP certificate: "/>
+					<c:url var="pem_ocsp" value="../publicweb/webdist/certdist" >
+						<c:param name="cmd" value="ocspcert" />
+						<c:param name="issuer" value="${cert.subjectDN}" />
+					</c:url>
+					<a href="${pem_ocsp}">Download as PEM</a>,
+					<!-- OCSP certificates cannot be imported to Firefox, so there is no point in showing this
+					<c:url var="ns_ocsp" value="../publicweb/webdist/certdist" >
+						<c:param name="cmd" value="nsocspcert" />
+						<c:param name="issuer" value="${cert.subjectDN}" />
+					</c:url>
+					<a href="${ns_ocsp}">Download to Firefox</a>,
+					-->
 					<c:url var="ie_ocsp" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="ieocspcert" />
-						<c:param name="issuer" value="${iecert.subjectDN}" />
+						<c:param name="issuer" value="${cert.subjectDN}" />
 					</c:url>
-					<a href="${ie_ocsp}">OCSPResponder certificate</a></p>
+					<a href="${ie_ocsp}">Download to Internet Explorer</a>
+					</p>
+					</c:if>
+					</div>
 				</c:forEach>
+				</div>
 			</c:otherwise>
 		</c:choose>
 	</c:forEach>

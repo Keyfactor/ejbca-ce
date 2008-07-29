@@ -19,16 +19,16 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
@@ -36,6 +36,8 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.rainterface.CertificateView;
@@ -86,15 +88,9 @@ public class CertificateFinderBean {
 	public void initialize(String remoteAddress) throws NamingException, RemoteException, CreateException {
 		log.debug(">initialize()");
 	    mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
-		InitialContext ctx = new InitialContext();
-	    final ISignSessionHome home = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-	    mSignSession = home.create();
-		ICAAdminSessionHome cahome = (ICAAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class );            
-	    mCaAdminSession = cahome.create();
-        ICertificateStoreSessionHome cshome = (ICertificateStoreSessionHome) 
-        		PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        mStoreSession = cshome.create();
-
+	    mSignSession = ((ISignSessionHome) ServiceLocator.getInstance().getRemoteHome(ISignSessionHome.JNDI_NAME, ISignSessionHome.class)).create();
+	    mStoreSession = ((ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class)).create();
+	    mCaAdminSession = ((ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class)).create();
 	    mInitialized = true;
 	}
 
@@ -138,6 +134,27 @@ public class CertificateFinderBean {
 		return ret;
 	}
 	
+	public Collection getCACertificateChainReversed() throws RemoteException {
+		Collection ret = getCACertificateChain();
+		if (ret != null) {
+			Collections.reverse((ArrayList) ret);
+		}
+		return ret;
+	}
+	
+	public boolean getOcspEnabled() throws RemoteException {
+		CAInfo caInfo = getCAInfo();
+		boolean active = false;
+		Iterator iter = caInfo.getExtendedCAServiceInfos().iterator();
+		while(iter.hasNext()){
+	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
+	      if(next instanceof OCSPCAServiceInfo){
+	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+	      }
+		}
+		return active;
+	}
+
 	/**
 	 * Get revocation info for a certificate.
 	 * This method fills in the supplied RevokedCertInfo object with data about a certificate.
