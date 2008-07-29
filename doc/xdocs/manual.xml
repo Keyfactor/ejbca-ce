@@ -1628,6 +1628,9 @@ Variables used with userdata:
 <li>
   ${C} or ${user.C}               = The user's country
 </li>
+<li>
+  ${user.E}                       = The user's email address from Subject DN
+</li>
 <li>${user.TIMECREATED}             = The time the user was created</li>
 <li>${user.TIMEMODIFIED}            = The time the user was modified</li>
 </ul>
@@ -1674,22 +1677,28 @@ Variables used with approvals:
   ${requestAdmin.C}                = The requesting administrator's country
 </li>
 <li>
-  ${approvalAdmin.USERNAME}        = The requesting administrator's username
+  ${requestAdmin.E}                = The requesting administrator's email address from Subject DN
 </li>
 <li>
- ${approvalAdmin.CN}              = The common name of the requesting administrator.
+ ${approvalAdmin.USERNAME}        = The approving administrator's username
 </li>
 <li>
- ${approvalAdmin.SN}              = The common name of the requesting administrator. 
+ ${approvalAdmin.CN}              = The common name of the approving administrator.
 </li>
 <li>
- ${approvalAdmin.O}               = The requesting administrator's organization
+ ${approvalAdmin.SN}              = The common name of the approving administrator. 
 </li>
 <li>
- ${approvalAdmin.OU}              = The requesting administrator's organization unit
+ ${approvalAdmin.O}               = The approving administrator's organization
 </li>
 <li>
- ${approvalAdmin.C}               = The requesting administrator's country
+ ${approvalAdmin.OU}              = The approving administrator's organization unit
+</li>
+<li>
+ ${approvalAdmin.C}               = The approving administrator's country
+</li>
+<li>
+ ${approvalAdmin.E}               = The approving administrator's email address from Subject DN
 </li>
 </ul>
 </p><p>
@@ -1708,7 +1717,6 @@ Variables used with  expiring certificates:
   ${expiringCert.CERTISSUERDN}    = The certificate issuer DN
 </li>
 </ul>
-The variables ${CN}, ${SN}, ${O}, ${OU}, ${C} are also available.
 </p>
 </subsection>
 </section>

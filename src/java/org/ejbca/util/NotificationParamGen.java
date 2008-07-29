@@ -146,6 +146,7 @@ public class NotificationParamGen {
 	  paramPut("OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("user.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("C", dnfields.getField(DNFieldExtractor.C, 0));
+	  paramPut("user.E", dnfields.getField(DNFieldExtractor.E, 0));
 	  String time = "(time not available)";
 	  if (user.getTimeCreated() != null) {
 		  time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeCreated());
@@ -185,6 +186,7 @@ public class NotificationParamGen {
 	  paramPut("requestAdmin.O", dnfields.getField(DNFieldExtractor.O, 0));
 	  paramPut("requestAdmin.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("requestAdmin.C", dnfields.getField(DNFieldExtractor.C, 0));
+	  paramPut("requestAdmin.E", dnfields.getField(DNFieldExtractor.E, 0));
 
 	  paramPut("requestAdmin.USERNAME", approvalAdminUsername);
 	  
@@ -197,6 +199,7 @@ public class NotificationParamGen {
 	  paramPut("approvalAdmin.O", dnfields.getField(DNFieldExtractor.O, 0));
 	  paramPut("approvalAdmin.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("approvalAdmin.C", dnfields.getField(DNFieldExtractor.C, 0));
+	  paramPut("approvalAdmin.E", dnfields.getField(DNFieldExtractor.E, 0));
 	  
 	  if(expiringCert != null){
 		  paramPut("expiringCert.CERTSERIAL",CertTools.getSerialNumberAsString(expiringCert));
