@@ -6,6 +6,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -53,17 +54,19 @@ import javax.xml.datatype.XMLGregorianCalendar;
 })
 public class HardTokenDataWS {
 
-    @XmlElement(required = true, nillable = true)
+    @XmlElement(nillable = true)
     protected List<Certificate> certificates;
-    @XmlElement(required = true, nillable = true)
+    @XmlElement(nillable = true)
     protected List<String> copies;
     protected String copyOfSN;
+    @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar createTime;
     protected boolean encKeyKeyRecoverable;
     protected String hardTokenSN;
     protected String label;
+    @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar modifyTime;
-    @XmlElement(required = true, nillable = true)
+    @XmlElement(nillable = true)
     protected List<PinDataWS> pinDatas;
     protected int tokenType;
 

@@ -1317,6 +1317,25 @@ no requirement of the '/administrator' flag
 <li>/ca_functionality/view_certificate</li>
 </ul>
 </subsection>
+<subsection name="Error codes on web services">
+    <p>
+        Business error code have been added in order to discriminate exception of type <code>EjbcaException</code>.
+    </p>
+    <p>
+        The following code sample shows how to use error codes :
+    </p>
+    <source>
+try {
+    ejbcaraws.editUser(user1);
+} catch(EjbcaException_Exception e) {
+    if(org.ejbca.core.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode().equals(e.getFaultInfo().getErrorCode().getInternalErrorCode())) {
+        log.error("No such certifcate profile.");
+    }
+}
+    </source>
+    <p>All error codes are described in <code>org.ejbca.core.ErrorCode</code>.</p>
+    <p> You can also take a look at <code>src/test/org/ejbca/core/protocol/ws/CommonEjbcaWSTest.java</code> to see how the error code can be used.</p>
+</subsection>
 </section>
 <section name="XKMS Service">
 <subsection name="Introduction">

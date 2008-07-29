@@ -82,6 +82,7 @@ import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.ErrorCode;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
@@ -384,9 +385,9 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setTokenType("USERGENERATED");
 		user1.setEndEntityProfileName("EMPTY");
 		user1.setCertificateProfileName("ENDUSER");
-			
-		ejbcaraws.editUser(user1);
-		
+
+            ejbcaraws.editUser(user1);
+
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
@@ -1727,6 +1728,214 @@ public class CommonEjbcaWSTest extends TestCase {
     	}
 	}
 
+	protected void test29ErrorOnEditUser(boolean performSetup) throws Exception{
+		if(performSetup){
+		  setUpAdmin();
+		}
+		// Test to add a user.
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER29");
+		user1.setPassword("foo123");
+		user1.setClearPwd(true);
+		user1.setSubjectDN("CN=WSTESTUSER29");
+		user1.setEmail(null);
+		user1.setSubjectAltName(null);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("USERGENERATED");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+
+        ErrorCode errorCode = null;
+
+        ///// Check ErrorCode.CA_NOT_EXISTS /////
+		user1.setCaName("BadCaName");
+        try {
+            ejbcaraws.editUser(user1);
+        } catch (EjbcaException_Exception e) {
+            errorCode = e.getFaultInfo().getErrorCode();
+        }
+        assertNotNull("error code should not be null", errorCode);
+        assertEquals(errorCode.getInternalErrorCode(), 
+                org.ejbca.core.ErrorCode.CA_NOT_EXISTS.getInternalErrorCode());
+
+        // restore CA name
+		user1.setCaName(getAdminCAName());
+        errorCode = null;
+
+        ///// Check ErrorCode.EE_PROFILE_NOT_EXISTS /////
+		user1.setEndEntityProfileName("Bad EE profile");
+        try {
+            ejbcaraws.editUser(user1);
+        } catch (EjbcaException_Exception e) {
+            errorCode = e.getFaultInfo().getErrorCode();
+        }
+
+        assertNotNull("error code should not be null", errorCode);
+        assertEquals(errorCode.getInternalErrorCode(), 
+                org.ejbca.core.ErrorCode.EE_PROFILE_NOT_EXISTS.getInternalErrorCode());
+
+        // restore EE profile
+		user1.setEndEntityProfileName("EMPTY");
+        errorCode = null;
+
+        ///// Check ErrorCode.CERT_PROFILE_NOT_EXISTS /////
+		user1.setCertificateProfileName("Bad cert profile");
+        try {
+            ejbcaraws.editUser(user1);
+        } catch (EjbcaException_Exception e) {
+            errorCode = e.getFaultInfo().getErrorCode();
+        }
+
+        assertNotNull("error code should not be null", errorCode);
+        assertEquals(errorCode.getInternalErrorCode(), 
+                org.ejbca.core.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode());
+
+        // restore Certificate profile
+		user1.setCertificateProfileName("ENDUSER");
+        errorCode = null;
+
+        ///// Check ErrorCode.UNKOWN_TOKEN_TYPE /////
+		user1.setTokenType("Bad token type");
+        try {
+            ejbcaraws.editUser(user1);
+        } catch (EjbcaException_Exception e) {
+            errorCode = e.getFaultInfo().getErrorCode();
+        }
+
+        assertNotNull("error code should not be null", errorCode);
+        assertEquals(errorCode.getInternalErrorCode(), 
+                org.ejbca.core.ErrorCode.UNKOWN_TOKEN_TYPE.getInternalErrorCode());
+    }
+
+	protected void test30ErrorOnGeneratePkcs10(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+
+		// Add a user for this test purpose.
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER30");
+		user1.setPassword("foo1234");
+		user1.setClearPwd(true);
+		user1.setSubjectDN("CN=WSTESTUSER30");
+		user1.setEmail(null);
+		user1.setSubjectAltName(null);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("USERGENERATED");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+		user1.setCaName(getAdminCAName());
+        ejbcaraws.editUser(user1);
+
+
+        KeyPair keys = null;
+        PKCS10CertificationRequest  pkcs10 = null;
+        ErrorCode errorCode = null;
+
+        /////// Check Error.LOGIN_ERROR ///////
+		keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
+                CertTools.stringToBcX509Name("CN=WSTESTUSER30"), 
+                keys.getPublic(), new DERSet(), keys.getPrivate());
+
+        try {
+            ejbcaraws.pkcs10Request("WSTESTUSER30","foo123",new String(Base64.encode(pkcs10.getEncoded())),
+                null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+        } catch (EjbcaException_Exception e) {
+            errorCode = e.getFaultInfo().getErrorCode();
+        }
+
+        assertNotNull("error code should not be null", errorCode);
+        assertEquals(errorCode.getInternalErrorCode(), 
+                org.ejbca.core.ErrorCode.LOGIN_ERROR.getInternalErrorCode());
+
+        errorCode = null;
+
+        /////// Check Error.USER_WRONG_STATUS ///////
+		user1.setStatus(UserDataConstants.STATUS_REVOKED);
+        ejbcaraws.editUser(user1);
+
+		keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
+                CertTools.stringToBcX509Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(), keys.getPrivate());
+
+        try {
+            ejbcaraws.pkcs10Request("WSTESTUSER30","foo1234",new String(Base64.encode(pkcs10.getEncoded())),
+                null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+        } catch (EjbcaException_Exception e) {
+            errorCode = e.getFaultInfo().getErrorCode();
+        }
+
+        assertNotNull("error code should not be null", errorCode);
+        assertEquals(errorCode.getInternalErrorCode(), 
+                org.ejbca.core.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode());
+
+		
+	}
+
+	protected void test31ErrorOnGeneratePkcs12(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+
+		// Add a user for this test purpose.
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER31");
+		user1.setPassword("foo1234");
+		user1.setClearPwd(true);
+		user1.setSubjectDN("CN=WSTESTUSER31");
+		user1.setEmail(null);
+		user1.setSubjectAltName(null);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("USERGENERATED");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+		user1.setCaName(getAdminCAName());
+        ejbcaraws.editUser(user1);
+
+        ErrorCode errorCode = null;
+
+        // Should failed because of the bad token type (USERGENERATED instead of P12)
+        try {
+            ejbcaraws.pkcs12Req("WSTESTUSER31","foo1234",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        } catch (EjbcaException_Exception ex) {
+            errorCode = ex.getFaultInfo().getErrorCode();
+            assertEquals(org.ejbca.core.ErrorCode.BAD_USER_TOKEN_TYPE.getInternalErrorCode(), 
+                errorCode.getInternalErrorCode());
+        }
+        assertNotNull(errorCode);
+        errorCode = null;
+        // restore correct token type
+		user1.setTokenType("P12");
+        ejbcaraws.editUser(user1);
+
+        // Should failed because of the bad password
+        try {
+            ejbcaraws.pkcs12Req("WSTESTUSER31","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        } catch (EjbcaException_Exception ex) {
+            errorCode = ex.getFaultInfo().getErrorCode();
+            assertEquals(org.ejbca.core.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), 
+                errorCode.getInternalErrorCode());
+        }
+        assertNotNull(errorCode);
+        errorCode = null;
+
+
+        // insert wrong status
+        user1.setStatus(UserDataConstants.STATUS_REVOKED);
+        ejbcaraws.editUser(user1);
+
+        // Should failed because certificate already exists.
+        try {
+            ejbcaraws.pkcs12Req("WSTESTUSER31","foo1234",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        } catch (EjbcaException_Exception ex) {
+            errorCode = ex.getFaultInfo().getErrorCode();
+            assertEquals(org.ejbca.core.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), 
+                errorCode.getInternalErrorCode());
+        }
+        assertNotNull(errorCode);
+	}
+
     protected void test99cleanUpAdmins() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
 		//getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
@@ -1765,6 +1974,16 @@ public class CommonEjbcaWSTest extends TestCase {
         }
         try {
         	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        try {
+        	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        try {
+        	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	e.printStackTrace();
         }

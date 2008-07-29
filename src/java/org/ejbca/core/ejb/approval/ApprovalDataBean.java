@@ -25,6 +25,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataUtil;
@@ -441,12 +442,13 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	}
     	
     	if(getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
-    		throw new ApprovalException("Wrong status of approval request.");
+    		throw new ApprovalException(ErrorCode.APPROVAL_WRONG_STATUS, "Wrong status of approval request.");
     	}
     	
     	int numberofapprovalsleft = getRemainingApprovals() -1;
     	if(numberofapprovalsleft < 0){
-    		throw new ApprovalException("Error already enough approvals have been done on this request.");
+    		throw new ApprovalException(ErrorCode.ENOUGH_APPROVAL,
+                "Error already enough approvals have been done on this request.");
     	}
     		
     	setRemainingApprovals(numberofapprovalsleft);
@@ -490,12 +492,13 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	}
     	
     	if(getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
-    		throw new ApprovalException("Wrong status of approval request.");
+    		throw new ApprovalException(ErrorCode.APPROVAL_WRONG_STATUS, "Wrong status of approval request.");
     	}
     	
     	int numberofapprovalsleft = getRemainingApprovals() -1;
     	if(numberofapprovalsleft < 0){
-    		throw new ApprovalException("Error already enough approvals have been done on this request.");
+    		throw new ApprovalException(ErrorCode.ENOUGH_APPROVAL,
+                "Error already enough approvals have been done on this request.");
     	}
     		
     	setRemainingApprovals(0);

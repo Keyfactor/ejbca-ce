@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class GenTokenCertificatesResponse {
 
-    @XmlElement(name = "return", required = true)
+    @XmlElement(name = "return")
     protected List<TokenCertificateResponseWS> _return;
 
     /**

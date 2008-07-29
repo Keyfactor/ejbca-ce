@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class FetchUserDataResponse {
 
-    @XmlElement(name = "return", required = true)
+    @XmlElement(name = "return")
     protected List<UserDataSourceVOWS> _return;
 
     /**

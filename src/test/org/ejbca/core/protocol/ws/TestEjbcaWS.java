@@ -141,6 +141,18 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     	test28getLastCertChain(true);  
     }
 
+    public void test29ErrorOnEditUser() throws Exception {
+    	test29ErrorOnEditUser(true);  
+    }
+
+    public void test30ErrorOnGeneratePkcs10() throws Exception {
+    	test30ErrorOnGeneratePkcs10(true);  
+    }
+
+    public void test31ErrorOnGeneratePkcs12() throws Exception {
+    	test31ErrorOnGeneratePkcs12(true);  
+    }
+
     public void test99cleanUpAdmins() throws Exception {
     	super.test99cleanUpAdmins();
     }

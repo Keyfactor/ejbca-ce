@@ -38,6 +38,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -352,7 +353,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
         if(data != null){						
 			getLogSession().log(admin,approvalRequest.getCAId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" already exists");
-			throw new ApprovalException("Approval Request " + approvalId + " already exists in database");
+			throw new ApprovalException(ErrorCode.APPROVAL_ALREADY_EXISTS,
+                "Approval Request " + approvalId + " already exists in database");
 		} else {
 			// The exists no approval request with status waiting add a new one
 			try {
@@ -395,7 +397,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			getLogSession().log(admin,admin.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_INFO_APPROVALREQUESTED,"Approval with unique id : " + id +" removed successfully.");
 		} catch (FinderException e) {
 			getLogSession().log(admin,admin.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id +", doesn't exist");
- 			throw new ApprovalException("Error removing approvalrequest with unique id : " +id +", doesn't exist");
+ 			throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
+                "Error removing approvalrequest with unique id : " +id +", doesn't exist");
 		} catch (EJBException e) {
 			getLogSession().log(admin,admin.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
 		    log.error("Error removing approval request",e);
@@ -473,7 +476,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			approval.setApprovalCertificateAndUsername(true, approvingCert,username);
 		}else{
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
-			throw new ApprovalException("Error no username exists for the given approver or requestor certificate");
+			throw new ApprovalException(ErrorCode.USER_NOT_FOUND,
+                "Error no username exists for the given approver or requestor certificate");
 		}
 				
     	
@@ -573,7 +577,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			approval.setApprovalCertificateAndUsername(false, approvingCert,username);
 		}else{
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
-			throw new ApprovalException("Error no username exists for the given approver or requestor certificate");
+			throw new ApprovalException(ErrorCode.USER_NOT_FOUND,
+                "Error no username exists for the given approver or requestor certificate");
 		}
 				
     	
@@ -618,7 +623,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 
 
 		} else {
-			throw new ApprovalException("Suitable approval with id : " + approvalId + " doesn't exist");
+			throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
+                "Suitable approval with id : " + approvalId + " doesn't exist");
 		}
     	return retval;
     }
@@ -650,7 +656,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	try {
 			Collection result = approvalHome.findByApprovalId(approvalId);
 			if(result.size() == 0){
-				throw new ApprovalException("Approval request with id : " + approvalId + " doesn't exists");
+				throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
+                    "Approval request with id : " + approvalId + " doesn't exists");
 			}
 			Iterator iter = result.iterator();
 			while(iter.hasNext()){
@@ -664,7 +671,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			}
 			
 		} catch (FinderException e) {
-            throw new ApprovalException("Approval request with id : " + approvalId + " doesn't exists");
+            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
+                "Approval request with id : " + approvalId + " doesn't exists");
 		}
     	
 		log.debug("<isApproved, result" + retval);
@@ -720,7 +728,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			}
 			
 		} catch (FinderException e) {
-            throw new ApprovalException("Approval request with id : " + approvalId + " doesn't exists");
+            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
+                "Approval request with id : " + approvalId + " doesn't exists");
 		}
     	
 		log.debug("<markAsStepDone.");

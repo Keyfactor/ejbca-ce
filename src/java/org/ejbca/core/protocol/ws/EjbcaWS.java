@@ -141,6 +141,7 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
 import com.novosec.pkix.asn1.crmf.CertRequest;
+import org.ejbca.core.ErrorCode;
 
 /**
  * Implementor of the IEjbcaWS interface.
@@ -187,22 +188,22 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 	    } catch (ClassCastException e) {
 	    	log.error("EJBCA WebService error, editUser : ", e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			log.info("AuthorizationDeniedException: "+e.getMessage());
 			throw e;
 		} catch (CreateException e) {
 	    	log.error("EJBCA WebService error, editUser : ", e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NamingException e) {
 	    	log.error("EJBCA WebService error, editUser : ", e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (FinderException e) {
 			log.error("EJBCA WebService error, editUser : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, editUser : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 	}
 	
@@ -232,16 +233,16 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, findUser : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, findUser : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NamingException e) {
 			log.error("EJBCA WebService error, findUser : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, findUser : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		return retval;
 
@@ -278,21 +279,21 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (ClassCastException e) {
 		    log.error("EJBCA WebService error, findCerts : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, findCerts : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NamingException e) {
 			log.error("EJBCA WebService error, findCerts : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, findCerts : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, findCerts : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		return retval;
 	}
@@ -356,16 +357,16 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getLastCertChain : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getLastCertChain : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (FinderException e) {
 			log.error("EJBCA WebService error, getLastCertChain : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, getLastCertChain : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}		
 		log.debug("<getLastCertChain: "+username);
 		return retval;
@@ -520,28 +521,28 @@ public class EjbcaWS implements IEjbcaWS {
 			return retval;
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ServiceLocatorException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (FinderException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ParseException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ConstructionException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NoSuchFieldException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}		
 	}
 
@@ -581,7 +582,8 @@ public class EjbcaWS implements IEjbcaWS {
 
 			// Check tokentype
 			if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
-				throw new EjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
+				throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
+                    "Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 			}
 
 			IRequestMessage imsg = null;
@@ -660,59 +662,59 @@ public class EjbcaWS implements IEjbcaWS {
 			throw ade;
 		} catch (InvalidKeyException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INVALID_KEY, e.getMessage());
 		} catch (IllegalKeyException e) {
 			// Don't log a bad error for this (user's key length too small)
 			log.debug("EJBCA WebService error, processCertReq : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
 		} catch (AuthStatusException e) {
 			// Don't log a bad error for this (user wrong status)
 			log.debug("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
 		} catch (AuthLoginException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
 		} catch (CADoesntExistsException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e.getMessage());
 		} catch (SignatureException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());			
+			throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());			
 		} catch (SignRequestSignatureException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(e.getMessage());			
 		} catch (InvalidKeySpecException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INVALID_KEY_SPEC, e.getMessage());
 		} catch (NoSuchAlgorithmException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NoSuchProviderException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());			
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());			
 		} catch (CertificateException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());			
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());			
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());		
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());		
 		} catch (IOException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());			
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());			
 		} catch (FinderException e) {
 			new NotFoundException(e.getMessage());
 		} catch (ParseException e) {
 			// CVC error
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());			
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());			
 		} catch (ConstructionException e) {
 			// CVC error
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());			
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());			
 		} catch (NoSuchFieldException e) {
 			// CVC error
 			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(e.getMessage());			
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());			
 		}
 
 		return retval;
@@ -764,7 +766,8 @@ public class EjbcaWS implements IEjbcaWS {
 			  
 			  // Check tokentype
 			  if(userdata.getTokenType() != SecConst.TOKEN_SOFT_P12){
-				  throw new EjbcaException("Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests");
+				  throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
+                      "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests");
 			  }
 
 			  boolean usekeyrecovery = (ejbhelper.getRAAdminSession().loadGlobalConfiguration(admin)).getEnableKeyRecovery();
@@ -788,9 +791,13 @@ public class EjbcaWS implements IEjbcaWS {
 				  Enumeration<String> en = pkcs12.aliases();
 				  String alias = en.nextElement();
 				  cert = (X509Certificate) pkcs12.getCertificate(alias);
-			  } catch (Exception e) {
+              } catch (AuthLoginException e) {
+                  throw e;
+              } catch (AuthStatusException e) {
+                  throw e;
+              } catch (Exception e) {
 				  log.error("Error generating keystore, pkcs12Req: ", e);
-				  throw new EjbcaException(e);
+				  throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 			  }
 			  
 			  if ( (hardTokenSN != null) && (cert != null) ) {
@@ -801,30 +808,30 @@ public class EjbcaWS implements IEjbcaWS {
 				throw ade;
 			} catch (ClassCastException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(e.getMessage());
+			    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 			} catch (CreateException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(e.getMessage());
+			    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 			} catch (ObjectNotFoundException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(e.getMessage());
+			    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 			} catch (AuthStatusException e) {
 				// Don't log a bad error for this (user wrong status)
 				log.debug("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(e.getMessage());
+			    throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
 			} catch (AuthLoginException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(e.getMessage());
+			    throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
 			} catch (IllegalKeyException e) {
 				// Don't log a bad error for this (user's key length too small)
 				log.debug("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(e.getMessage());
+			    throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
 			} catch (CADoesntExistsException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(e.getMessage());
+			    throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e.getMessage());
 			} catch (RemoteException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
-				throw new EjbcaException(e.getMessage());
+				throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 			} catch (FinderException e) {
 				new NotFoundException(e.getMessage());
 			}
@@ -857,7 +864,8 @@ public class EjbcaWS implements IEjbcaWS {
 				if(certInfo.getRevocationReason()== RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD){
 					ejbhelper.getUserAdminSession().unRevokeCert(admin, serno, issuerDN, username);
 				}else{
-					throw new EjbcaException("Error: Status is NOT 'certificate hold' for certificate with serial number " + serno + " and issuer DN " + issuerDN);
+					throw new EjbcaException(ErrorCode.CERT_WRONG_STATUS,
+                        "Error: Status is NOT 'certificate hold' for certificate with serial number " + serno + " and issuer DN " + issuerDN);
 				}
 			}else{			
 				ejbhelper.getUserAdminSession().revokeCert(admin,serno, issuerDN, username,  reason);
@@ -866,18 +874,18 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, revokeCert : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, revokeCert : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, revokeCert : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, revokeCert : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 	}
 
@@ -907,20 +915,20 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, revokeUser : ",e);
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}  catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (NotFoundException e) {
 			throw e;
 		} catch (RemoveException e) {
 			log.error("EJBCA WebService error, revokeUser : ",e);
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, revokeUser : ",e);
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, revokeUser : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 	}
 
@@ -935,7 +943,8 @@ public class EjbcaWS implements IEjbcaWS {
 
             boolean usekeyrecovery = ejbhelper.getRAAdminSession().loadGlobalConfiguration(admin).getEnableKeyRecovery();  
             if(!usekeyrecovery){
-				throw new EjbcaException("Keyrecovery have to be enabled in the system configuration in order to use this command.");
+				throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE,
+                    "Keyrecovery have to be enabled in the system configuration in order to use this command.");
             }   
 			UserDataVO userdata = ejbhelper.getUserAdminSession().findUser(admin, username);
 			if(userdata == null){
@@ -956,10 +965,10 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new NotFoundException(e.getMessage(), e);
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, keyRecoverNewest : ",e);
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, keyRecoverNewest : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		log.debug("<keyRecoverNewest");
 	}
@@ -1014,7 +1023,8 @@ public class EjbcaWS implements IEjbcaWS {
 							lastAlreadyRevokedException = e;
 						}
 					}else{
-						throw new EjbcaException("Error: Status is NOT 'certificate hold' for certificate with serial number " + serno + " and issuer DN " + issuerDN);
+						throw new EjbcaException(ErrorCode.CERT_WRONG_STATUS,
+                            "Error: Status is NOT 'certificate hold' for certificate with serial number " + serno + " and issuer DN " + issuerDN);
 					}
 				}else{
 					try {
@@ -1047,18 +1057,18 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, revokeToken : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, revokeToken : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, revokeToken : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, revokeToken : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 	}
 
@@ -1085,13 +1095,13 @@ public class EjbcaWS implements IEjbcaWS {
 			throw ade;
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, checkRevokationStatus : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, checkRevokationStatus : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, checkRevokationStatus : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		return retval;
 
@@ -1108,13 +1118,13 @@ public class EjbcaWS implements IEjbcaWS {
 		}catch(AuthorizationDeniedException ade){
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, isAuthorized : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, isAuthorized : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, isAuthorized : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		
 		return retval;
@@ -1158,16 +1168,16 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NamingException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		
 		
@@ -1204,10 +1214,11 @@ public class EjbcaWS implements IEjbcaWS {
 			significantcAInfo = ejbhelper.getCAAdminSession().getCAInfo(intAdmin, userDataWS.getCaName());
 		} catch (Exception e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
 		if(significantcAInfo == null){
-			throw new EjbcaException("Error the given CA : " + userDataWS.getCaName() + " couldn't be found.");
+			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS,
+                "Error the given CA : " + userDataWS.getCaName() + " couldn't be found.");
 		}
 		
 		IUserAdminSessionRemote usersess = null;
@@ -1221,7 +1232,8 @@ public class EjbcaWS implements IEjbcaWS {
 			}else{
 				endEntityProfileId = ejbhelper.getRAAdminSession().getEndEntityProfileId(intAdmin, userDataWS.getEndEntityProfileName());	    	  
 				if(endEntityProfileId == 0){
-					throw new EjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" couldn't be found");
+					throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS,
+                        "Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" couldn't be found");
 				}
 			}
 			
@@ -1274,16 +1286,16 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (FinderException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 
 		if(ar != null && isRejectedStep1){
@@ -1314,7 +1326,8 @@ public class EjbcaWS implements IEjbcaWS {
 						} catch (AlreadyRevokedException e) {
 							// Ignore previously revoked certificates
 						} catch (FinderException e) {
-							throw new EjbcaException("Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.");
+							throw new EjbcaException(ErrorCode.USER_NOT_FOUND,
+                                "Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.");
 						} 
 					}
 
@@ -1363,10 +1376,10 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
 		
 		try{
@@ -1388,7 +1401,8 @@ public class EjbcaWS implements IEjbcaWS {
 
 				int certificateProfileId = ejbhelper.getCertStoreSession().getCertificateProfileId(admin, next.getCertificateProfileName());
 				if(certificateProfileId == 0){
-					throw new EjbcaException("Error the given Certificate Profile : " + next.getCertificateProfileName() + " couldn't be found.");
+					throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
+                        "Error the given Certificate Profile : " + next.getCertificateProfileName() + " couldn't be found.");
 				}
 				
 				Date eDate = null;
@@ -1398,13 +1412,15 @@ public class EjbcaWS implements IEjbcaWS {
 						long validity = Long.parseLong(next.getValidityIdDays());
 						eDate = new Date(System.currentTimeMillis() + (validity  * 3600 *24 * 1000));
 					}catch (NumberFormatException e){
-						throw new EjbcaException("Error : Validity in Days must be a number");
+						throw new EjbcaException(ErrorCode.BAD_VALIDITY_FORMAT,
+                            "Error : Validity in Days must be a number");
 					}
 				}
 				
 				CAInfo cAInfo = ejbhelper.getCAAdminSession().getCAInfo(admin, next.getCAName());
 				if(cAInfo == null){
-					throw new EjbcaException("Error the given CA : " + next.getCAName() + " couldn't be found.");
+					throw new EjbcaException(ErrorCode.CA_NOT_EXISTS,
+                        "Error the given CA : " + next.getCAName() + " couldn't be found.");
 				}
 
 				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + cAInfo.getCAId());
@@ -1428,7 +1444,8 @@ public class EjbcaWS implements IEjbcaWS {
 					if(next.getType() == HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST){
 
 						if(!next.getTokenType().equals(HardTokenConstants.TOKENTYPE_PKCS12)){
-							throw new EjbcaException("Unsupported Key Store Type : " + next.getTokenType() + " only " + HardTokenConstants.TOKENTYPE_PKCS12 + " is supported");
+							throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE,
+                                "Unsupported Key Store Type : " + next.getTokenType() + " only " + HardTokenConstants.TOKENTYPE_PKCS12 + " is supported");
 						}
 						KeyPair keys = KeyTools.genKeys(next.getKeyspec(), next.getKeyalg());							  
 						userData.setCertificateProfileId(certificateProfileId);
@@ -1455,22 +1472,23 @@ public class EjbcaWS implements IEjbcaWS {
 
 						retval.add(new TokenCertificateResponseWS(new KeyStore(pkcs12, userDataWS.getPassword())));
 					}else{
-						throw new EjbcaException("Error in request, only REQUESTTYPE_PKCS10_REQUEST and REQUESTTYPE_KEYSTORE_REQUEST are supported token requests.");
+						throw new EjbcaException(ErrorCode.NOT_SUPPORTED_REQUEST_TYPE,
+                            "Error in request, only REQUESTTYPE_PKCS10_REQUEST and REQUESTTYPE_KEYSTORE_REQUEST are supported token requests.");
 					}
 			}
 
 		}catch(Exception e){
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} finally{
 			try {
 				usersess.setUserStatus(admin, userDataWS.getUsername(), UserDataConstants.STATUS_GENERATED);
 			} catch (FinderException e) {
 				log.error("EJBCA WebService error, genTokenCertificates : ",e);
-				throw new EjbcaException(e.getMessage());
+				throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 			} catch (RemoteException e) {
 				log.error("EJBCA WebService error, genTokenCertificates : ",e);
-				throw new EjbcaException(e.getMessage());
+				throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 			} 
 		}
 
@@ -1493,7 +1511,8 @@ public class EjbcaWS implements IEjbcaWS {
 				signaturePUK = pinData.getPUK();
 				break;
 			default :
-				throw new EjbcaException("Unsupported PIN Type " + pinData.getType());
+				throw new EjbcaException(ErrorCode.NOT_SUPPORTED_PIN_TYPE,
+                    "Unsupported PIN Type " + pinData.getType());
 			}
 		}
 		int tokenType = SwedishEIDHardToken.THIS_TOKENTYPE;
@@ -1506,7 +1525,8 @@ public class EjbcaWS implements IEjbcaWS {
 			tokenType = EnhancedEIDHardToken.THIS_TOKENTYPE;
 			break;
 		default:
-			throw new EjbcaException("Unsupported Token Type : " + hardTokenDataWS.getTokenType());
+			throw new EjbcaException(ErrorCode.NOT_SUPPORTED_TOKEN_TYPE,
+                "Unsupported Token Type : " + hardTokenDataWS.getTokenType());
 
 		}
 
@@ -1518,7 +1538,7 @@ public class EjbcaWS implements IEjbcaWS {
 						ejbhelper.getHardTokenSession().removeHardToken(admin, hardTokenDataWS.getHardTokenSN());
 					} catch (HardTokenDoesntExistsException e) {
 						log.error("EJBCA WebService error, genTokenCertificates : ",e);
-						throw new EjbcaException(e.getMessage());
+						throw new EjbcaException(ErrorCode.HARD_TOKEN_NOT_EXISTS, e.getMessage());
 					}
 				}
 			}
@@ -1529,10 +1549,10 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 
 		return retval; 	
@@ -1552,13 +1572,13 @@ public class EjbcaWS implements IEjbcaWS {
 			retval = ejbhelper.getHardTokenSession().existsHardToken(ejbhelper.getAdmin(wsContext), hardTokenSN);
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, existsHardToken : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			log.error("EJBCA WebService error, existsHardToken : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.NOT_AUTHORIZED, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, existsHardToken : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
 		
 		return retval;
@@ -1639,23 +1659,23 @@ public class EjbcaWS implements IEjbcaWS {
 					}		
 				} catch (FinderException e1) {
 					log.error("EJBCA WebService error, getHardTokenData : ",e1);
-					throw new EjbcaException(e1);
+					throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e1);
 				} catch (CreateException e1) {
 					log.error("EJBCA WebService error, getHardTokenData : ",e1);
-					throw new EjbcaException(e1);
+					throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e1);
 				} catch (RemoteException e1) {
 					log.error("EJBCA WebService error, getHardTokenData : ",e1);
-					throw new EjbcaException(e1.getMessage());
+					throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e1.getMessage());
 				}
 			}else{
 				throw e;
 			}
 		} catch (CreateException e1) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e1);
-			throw new EjbcaException(e1);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e1);
 		} catch (RemoteException e1) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e1);
-			throw new EjbcaException(e1.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e1.getMessage());
 		}
 		
 		if(ar != null && isRejectedStep0){
@@ -1684,13 +1704,13 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NamingException e) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 
 		return retval;
@@ -1724,16 +1744,16 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NamingException e) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getHardTokenData : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 
 		return retval;
@@ -1780,13 +1800,13 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, republishCertificate : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, republishCertificate : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, republishCertificate : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 	}
 
@@ -1806,7 +1826,8 @@ public class EjbcaWS implements IEjbcaWS {
 				event = LogConstants.EVENT_INFO_CUSTOMLOG;
 				break;
 			default:
-				throw new EjbcaException("Illegal level "+ level + " sent to custonLog call.");			
+				throw new EjbcaException(ErrorCode.INVALID_LOG_LEVEL,
+                    "Illegal level "+ level + " sent to custonLog call.");			
 			}
 
 			java.security.cert.Certificate logCert = null;
@@ -1818,7 +1839,8 @@ public class EjbcaWS implements IEjbcaWS {
 			if(cAName  != null){
 				CAInfo cAInfo = ejbhelper.getCAAdminSession().getCAInfo(admin, cAName);
 				if(cAInfo == null){
-					throw new EjbcaException("Error given CA Name : " + cAName + " doesn't exists.");
+					throw new EjbcaException(ErrorCode.CA_NOT_EXISTS,
+                        "Error given CA Name : " + cAName + " doesn't exists.");
 				}
 				caId = cAInfo.getCAId();
 			}
@@ -1827,16 +1849,16 @@ public class EjbcaWS implements IEjbcaWS {
 			ejbhelper.getLogSession().log(admin, caId, LogConstants.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);
 		} catch (CertificateException e) {
 			log.error("EJBCA WebService error, customLog : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, customLog : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, customLog : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, customLog : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		
 	}
@@ -1864,10 +1886,10 @@ public class EjbcaWS implements IEjbcaWS {
 			ret = ejbhelper.getUserDataSourceSession().removeUserData(admin, userDataSourceIds, searchString, removeMultipleMatch);
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, deleteUserDataFromSource : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, deleteUserDataFromSource : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 
 		return ret; 
@@ -1884,13 +1906,13 @@ public class EjbcaWS implements IEjbcaWS {
 			retval = ejbhelper.getApprovalSession().isApproved(ejbhelper.getAdmin(true, wsContext), approvalId);
 		} catch (AuthorizationDeniedException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.NOT_AUTHORIZED, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		
 		return retval;
@@ -1914,13 +1936,13 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getCertificate : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, getCertificate : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getCertificate : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		
 		return retval;
@@ -1944,10 +1966,10 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getAvailableCAs : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getAvailableCAs : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		return ejbhelper.convertTreeMapToArray(ret);
 	}
@@ -1968,10 +1990,10 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getAuthorizedEndEntityProfiles : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getAuthorizedEndEntityProfiles : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		
 		return ejbhelper.convertTreeMapToArray(ret);
@@ -1993,10 +2015,10 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getCertificateProfiles : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getCertificateProfiles : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		return  ejbhelper.convertTreeMapToArray(ret);
 	}
@@ -2021,10 +2043,10 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getCas : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, getCas : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		return ejbhelper.convertTreeMapToArray(ret);
 	}
@@ -2040,13 +2062,13 @@ public class EjbcaWS implements IEjbcaWS {
 			ejbhelper.getCrlSession().run(admin, info.getSubjectDN());
 		} catch (AuthorizationDeniedException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
-		    throw new EjbcaException(e.getMessage());
+		    throw new EjbcaException(ErrorCode.NOT_AUTHORIZED, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 	}
 

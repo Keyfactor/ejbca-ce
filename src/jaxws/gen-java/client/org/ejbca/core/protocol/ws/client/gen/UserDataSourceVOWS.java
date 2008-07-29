@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class UserDataSourceVOWS {
 
-    @XmlElement(required = true, nillable = true)
+    @XmlElement(nillable = true)
     protected List<Integer> isModifyable;
     protected UserDataVOWS userDataVOWS;
 

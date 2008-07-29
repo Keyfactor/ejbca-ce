@@ -86,6 +86,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Tham Wickenberg, &#x74;&#x68;&#x61;&#109;&#64;&#x70;&#114;&#x69;&#x6D;&#x65;&#107;&#101;&#x79;&#x2E;&#115;&#x65;, Core developer.</li>
 <li>Kelly Hayashi, &#x6B;&#x65;&#x6C;&#108;&#121;&#x40;&#101;&#x76;&#x61;&#x6C;&#116;&#101;&#x63;&#x2E;&#99;&#x6F;&#x6D;&#46;&#x62;&#114;, patch for PKCS12 ExtRA requests not working with approvals.</li>
 <li>Jakob Jenkov, &#x6A;&#x61;&#x6B;&#111;&#98;&#x40;&#106;&#x65;&#x6E;&#x6B;&#111;&#118;&#x2E;&#x63;&#111;&#x6D;, advice on fair thread locking for ProtectedLog synchronization.</li>
+<li>David Galichet, &#x64;&#x61;&#x76;&#105;&#100;&#x2E;&#103;&#x61;&#x6C;&#x69;&#99;&#104;&#x65;&#x74;&#64;&#x6C;&#x69;&#110;&#x61;&#103;&#x6F;&#x72;&#97;&#x2E;&#99;&#111;&#x6D;, add error code on web services.</li>
 </ul>
     </section>
   </body>

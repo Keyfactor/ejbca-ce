@@ -32,6 +32,7 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
@@ -105,10 +106,10 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			}
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error: ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error: ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
 
 		return admin;
@@ -128,7 +129,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
 
 		if(certificates == null){
-			throw new EjbcaException("Error no client certificate recieved used for authentication.");
+			throw new EjbcaException(ErrorCode.AUTH_CERT_NOT_RECEIVED, 
+                "Error no client certificate recieved used for authentication.");
 		}
 
 		Admin admin = new Admin(certificates[0]);
@@ -141,7 +143,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			log.error("Error checking if isAdmin: ", e);
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, isAdmin : ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
 		
 		return retval;
@@ -154,17 +156,17 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			try {
 				userdata = getUserAdminSession().findUser(admin, username);
 			} catch (FinderException e) {
-				throw new EjbcaException("Error the  user doesn't seem to exist.");
+				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "Error the  user doesn't seem to exist.");
 			}
 			if(userdata == null){
-				throw new EjbcaException("Error the  user doesn't seem to exist.");
+				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "Error the  user doesn't seem to exist.");
 			}
 			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.VIEW_RIGHTS);
 			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid );		
 		} catch (RemoteException e) {
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		} catch (CreateException e) {
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}
 
 	}
@@ -197,43 +199,48 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			}
 
 		} catch (RemoteException e) {
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		} catch (CreateException e) {
-			throw new EjbcaException(e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}		
 	}
 	
 	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws EjbcaException, ClassCastException, CreateException, NamingException, RemoteException {
 		CAInfo cainfo = getCAAdminSession().getCAInfo(admin,userdata.getCaName());
 		if (cainfo == null) {
-			throw new EjbcaException("Error CA " + userdata.getCaName() + " doesn't exists.");
+			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS,"Error CA " + userdata.getCaName() + " doesn't exists.");
 		}
 		int caid = cainfo.getCAId();
 		if (caid == 0) {
-			throw new EjbcaException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
+			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, 
+                "Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
 		int endentityprofileid = getRAAdminSession().getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
 		if(endentityprofileid == 0){
-			throw new EjbcaException("Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
+			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
+                "Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
 		}
 
 		int certificateprofileid = getCertStoreSession().getCertificateProfileId(admin,userdata.getCertificateProfileName());
 		if(certificateprofileid == 0){
-			throw new EjbcaException("Error Certificate profile " + userdata.getCertificateProfileName() + " doesn't exists.");
+			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
+                "Error Certificate profile " + userdata.getCertificateProfileName() + " doesn't exists.");
 		}
 		
 		int hardtokenissuerid = 0;
 		if(userdata.getHardTokenIssuerName() != null){
          hardtokenissuerid = getHardTokenSession().getHardTokenIssuerId(admin,userdata.getHardTokenIssuerName());
 		   if(hardtokenissuerid == 0){
-			  throw new EjbcaException("Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " doesn't exists.");
+			  throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS,
+                  "Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " doesn't exists.");
 		   }
 		}
 		
 		int tokenid = getTokenId(admin,userdata.getTokenType());
 		if(tokenid == 0){
-			throw new EjbcaException("Error Token Type  " + userdata.getTokenType() + " doesn't exists.");
+			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE,
+                "Error Token Type  " + userdata.getTokenType() + " doesn't exists.");
 		}
 		
 		UserDataVO userdatavo = new UserDataVO(userdata.getUsername(),
@@ -264,21 +271,21 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		if(caname == null){
 			String message = "Error CA id " + userdata.getCAId() + " doesn't exists. User: "+username;
 			log.error(message);
-			throw new EjbcaException(message);
+			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, message);
 		}
 		
 		String endentityprofilename = getRAAdminSession().getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
 		if(endentityprofilename == null){
 			String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " doesn't exists. User: "+username;
 			log.error(message);
-			throw new EjbcaException(message);
+			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, message);
 		}
 
 		String certificateprofilename = getCertStoreSession().getCertificateProfileName(admin,userdata.getCertificateProfileId());
 		if(certificateprofilename == null){
 			String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " doesn't exists. User: "+username;
 			log.error(message);
-			throw new EjbcaException(message);
+			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
 		}
 		
 		String hardtokenissuername = null;
@@ -287,7 +294,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		   if(hardtokenissuername == null){
 			   String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " doesn't exists. User: "+username;
 			   log.error(message);
-			   throw new EjbcaException(message);
+			   throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS, message);
 		   }
 		}
 		
@@ -295,7 +302,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		if(tokenname == null){
 			String message = "Error Token Type id " + userdata.getTokenType() + " doesn't exists. User: "+username;
 			log.error(message);
-			throw new EjbcaException(message);
+			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, message);
 		}										
 		return new UserDataVOWS(userdata.getUsername(),null,false,userdata.getDN(),caname,userdata.getSubjectAltName(),userdata.getEmail(),userdata.getStatus(),tokenname,endentityprofilename,certificateprofilename,hardtokenissuername);
 	}
@@ -330,7 +337,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			}
 		}catch(CertificateEncodingException e){
 			log.error("EJBCA WebService error, getHardToken: ",e);
-			throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
 
 
@@ -351,7 +358,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				}
 				retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
 			}else{
-				throw new EjbcaException("Error: only SwedishEIDHardToken, EnhancedEIDHardToken supported.");
+				throw new EjbcaException(ErrorCode.INTERNAL_ERROR,
+                    "Error: only SwedishEIDHardToken, EnhancedEIDHardToken supported.");
 			}
 
 

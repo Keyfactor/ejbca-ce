@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class FindUserResponse {
 
-    @XmlElement(name = "return", required = true)
+    @XmlElement(name = "return")
     protected List<UserDataVOWS> _return;
 
     /**

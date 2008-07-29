@@ -3,6 +3,7 @@ package org.ejbca.core.protocol.ws.client.gen;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -41,6 +42,7 @@ public class RevokeStatus {
     protected String certificateSN;
     protected String issuerDN;
     protected int reason;
+    @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar revocationDate;
 
     /**
