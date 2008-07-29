@@ -549,12 +549,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * requires approvals and how many
      * @param action one of CAInfo.REQ_APPROVAL_ constants
      * @param caid of the ca to check
-     * @return 0 of no approvals is required othervise the number of approvals
+     * @return 0 of no approvals is required or no such CA exists, othervise the number of approvals
      */
     private int getNumOfApprovalRequired(Admin admin,int action, int caid) {
     	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
     	if (cainfo == null) {
     		log.error("No CA info exists for CA id: "+caid);
+    		return 0;
     	}
     	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo);    	
 	}
