@@ -31,6 +31,9 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -50,6 +53,7 @@ import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
@@ -111,6 +115,7 @@ import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -132,6 +137,11 @@ import org.ejbca.util.keystore.KeyTools;
  * @ejb.transaction type="Required"
  * 
  * @weblogic.enable-call-by-reference True
+ *
+ * @ejb.env-entry
+ *  name="DataSource"
+ *  type="java.lang.String"
+ *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
  * @ejb.env-entry description="Used internally to keystores in database"
  *   name="keyStorePass"
@@ -762,7 +772,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try{
             CADataLocal cadata = cadatahome.findByName(name);
             cainfo = cadata.getCA().getCAInfo();
-            authorizedToCA(admin,cainfo.getCAId());
+            if (!authorizedToCA(admin,cainfo.getCAId())) {
+            	return null;
+            }
             int status = cainfo.getStatus();
             Date expireTime = cainfo.getExpireTime();
             if(status == SecConst.CA_ACTIVE && expireTime.before(new Date())){
@@ -812,7 +824,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     public CAInfo getCAInfo(Admin admin, int caid, boolean doSignTest){
         CAInfo cainfo = null;
         try{
-            authorizedToCA(admin,caid);
+            if (!authorizedToCA(admin,caid)) {
+            	return null;
+            }
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
             String name = ca.getName();
@@ -884,18 +898,25 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection getAvailableCAs(Admin admin){
-		ArrayList returnval = new ArrayList();
-		try{
-			Collection result = cadatahome.findAll();
-			Iterator iter = result.iterator();
-			while(iter.hasNext()){
-				CADataLocal cadata = (CADataLocal) iter.next();
-				if(cadata.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE && cadata.getStatus() != SecConst.CA_EXTERNAL)
-				  returnval.add(cadata.getCaId());
+    	ArrayList al = new ArrayList();
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+			final String sql = "SELECT cAId FROM CAData";
+			ps = con.prepareStatement(sql);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				al.add(rs.getInt(1));
 			}
-		}catch(javax.ejb.FinderException fe){}
-
-		return returnval;
+		} catch (Exception e) {
+			log.error("", e);
+			throw new EJBException(e);
+		} finally {
+			JDBCUtil.close(con, ps, rs);
+		}
+    	return al;
     }
 
 
@@ -2314,6 +2335,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     private boolean authorizedToCA(Admin admin, int caid){
       boolean returnval = false;
+      if (admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
+    	  return true;	// Skip database seach since this is always ok
+      }
       try{
         returnval = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
       }catch(AuthorizationDeniedException e){}
