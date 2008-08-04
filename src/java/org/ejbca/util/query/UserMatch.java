@@ -185,7 +185,10 @@ public class UserMatch extends BasicMatch {
     }
 
     // Private Fields.
+    /** For example UserMatch.MATCH_WITH_USERNAME */
     private int matchwith;
+    /** For example BasicMatch.MATCH_TYPE_EQUALS */
     private int matchtype;
+    /** For example a username */
     private String matchvalue;
 }
