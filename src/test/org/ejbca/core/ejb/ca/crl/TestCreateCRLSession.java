@@ -184,6 +184,7 @@ public class TestCreateCRLSession extends TestCase {
         if (userExists) {
             log.info("User foo already exists, resetting status.");
             UserDataVO userdata = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", caid, null, "foo@anatom.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+            userdata.setStatus(UserDataConstants.STATUS_NEW);
             userdata.setPassword("foo123");
             TestTools.getUserAdminSession().changeUser(admin, userdata, false);
             log.debug("Reset status to NEW");

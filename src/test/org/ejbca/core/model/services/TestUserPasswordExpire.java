@@ -137,8 +137,8 @@ public class TestUserPasswordExpire extends TestCase {
 		config.setWorkerProperties(workerprop);
         TestTools.getServiceSession().changeService(admin, "TestUserPasswordService", config, false);
         
-        // The service will run...
-        Thread.sleep(10000);
+        // The service will run...since there is a random delay of 30 seconds we have to wait a long time
+        Thread.sleep(35000);
         
         // Now the user will be expired
         data = TestTools.getUserAdminSession().findUser(admin,username);
