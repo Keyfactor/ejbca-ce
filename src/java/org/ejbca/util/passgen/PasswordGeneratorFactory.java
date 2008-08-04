@@ -29,12 +29,14 @@ public class PasswordGeneratorFactory {
 	public static final String PASSWORDTYPE_ALLPRINTABLE                 = AllPrintableCharPasswordGenerator.NAME;	
 	public static final String PASSWORDTYPE_NOLOOKALIKELD                 = NoLookALikeLDPasswordGenerator.NAME;	
 	public static final String PASSWORDTYPE_NOSOUNDALIKEENLD                 = NoSoundALikeENLDPasswordGenerator.NAME;	
+	public static final String PASSWORDTYPE_NOTALIKEENLD                 = NoLookOrSoundALikeENLDPasswordGenerator.NAME;	
     
     static final IPasswordGenerator[] classes = { new DigitPasswordGenerator(),
     	                                          new LettersAndDigitsPasswordGenerator(),
     	                                          new AllPrintableCharPasswordGenerator(),
     	                                          new NoLookALikeLDPasswordGenerator(),
-    	                                          new NoSoundALikeENLDPasswordGenerator()};
+    	                                          new NoSoundALikeENLDPasswordGenerator(),
+    	                                          new NoLookOrSoundALikeENLDPasswordGenerator()};
     
     /**
      *  Method returning an instance of the specified IPasswordGenerator class.
