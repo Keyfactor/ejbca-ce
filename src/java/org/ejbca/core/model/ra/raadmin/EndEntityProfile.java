@@ -77,13 +77,44 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Constant values for end entity profile. */
     private static HashMap dataConstants = new HashMap();
 
+
+    // Field constants, used in the map below
+    public static final String USERNAME           = "USERNAME";
+    public static final String PASSWORD           = "PASSWORD";
+    public static final String CLEARTEXTPASSWORD  = "CLEARTEXTPASSWORD";
+    public static final String AUTOGENPASSWORDTYPE           = "AUTOGENPASSWORDTYPE";
+    public static final String AUTOGENPASSWORDLENGTH           = "AUTOGENPASSWORDLENGTH";
+    
+    public static final String EMAIL              = "EMAIL";
+    public static final String ADMINISTRATOR      = "ADMINISTRATOR";
+    public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
+    public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
+    /** A list of available certificate profile names can be retrieved with getAvailableCertificateProfileNames() */
+    public static final String AVAILCERTPROFILES  = "AVAILCERTPROFILES";
+    public static final String DEFKEYSTORE        = "DEFKEYSTORE";
+    public static final String AVAILKEYSTORE      = "AVAILKEYSTORE";
+    public static final String DEFAULTTOKENISSUER = "DEFAULTTOKENISSUER";
+    public static final String AVAILTOKENISSUER   = "AVAILTOKENISSUER";
+    public static final String SENDNOTIFICATION   = "SENDNOTIFICATION";
+    public static final String DEFAULTCA          = "DEFAULTCA";
+    public static final String AVAILCAS           = "AVAILCAS";
+    public static final String STARTTIME          = "STARTTIME";
+    public static final String ENDTIME            = "ENDTIME";
+    /** A maximum value of the (optional) counter specifying how many certificate requests can be processed
+     * before user is finalized (status set to GENERATED). Counter is only used when finishUser is
+     * enabled in the CA (by default it is)
+     */
+    public static final String ALLOWEDREQUESTS    = "ALLOWEDREQUESTS";
+
     // Default values
     // These must be in a strict order that can never change 
     // Custom values configurable in a properties file will start at number 100
     static {
-    	dataConstants.put("USERNAME", new Integer(0));
-    	dataConstants.put("PASSWORD", new Integer(1));
-    	dataConstants.put("CLEARTEXTPASSWORD", new Integer(2));
+    	dataConstants.put(USERNAME, new Integer(0));
+    	dataConstants.put(PASSWORD, new Integer(1));
+    	dataConstants.put(CLEARTEXTPASSWORD, new Integer(2));
+    	dataConstants.put(AUTOGENPASSWORDTYPE, new Integer(95));
+    	dataConstants.put(AUTOGENPASSWORDLENGTH, new Integer(96));
         // DN components
     	/* These are loaded through DnComponents instead
     	dataConstants.put(DnComponents.DNEMAIL, Integer.valueOf(3));
@@ -126,58 +157,32 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	dataConstants.put(DnComponents.COUNTRYOFRESIDENCE, Integer.valueOf(46));
         // Subject directory attributes end
     	 */
-    	dataConstants.put("EMAIL", new Integer(26));
-    	dataConstants.put("ADMINISTRATOR", new Integer(27));
-    	dataConstants.put("KEYRECOVERABLE", new Integer(28));
-    	dataConstants.put("DEFAULTCERTPROFILE", new Integer(29));
-    	dataConstants.put("AVAILCERTPROFILES", new Integer(30));
-    	dataConstants.put("DEFKEYSTORE", new Integer(31));
-    	dataConstants.put("AVAILKEYSTORE", new Integer(32));
-    	dataConstants.put("DEFAULTTOKENISSUER", new Integer(33));
-    	dataConstants.put("AVAILTOKENISSUER", new Integer(34));
-    	dataConstants.put("SENDNOTIFICATION", new Integer(35));
+    	dataConstants.put(EMAIL, new Integer(26));
+    	dataConstants.put(ADMINISTRATOR, new Integer(27));
+    	dataConstants.put(KEYRECOVERABLE, new Integer(28));
+    	dataConstants.put(DEFAULTCERTPROFILE, new Integer(29));
+    	dataConstants.put(AVAILCERTPROFILES, new Integer(30));
+    	dataConstants.put(DEFKEYSTORE, new Integer(31));
+    	dataConstants.put(AVAILKEYSTORE, new Integer(32));
+    	dataConstants.put(DEFAULTTOKENISSUER, new Integer(33));
+    	dataConstants.put(AVAILTOKENISSUER, new Integer(34));
+    	dataConstants.put(SENDNOTIFICATION, new Integer(35));
 
-    	dataConstants.put("DEFAULTCA", new Integer(37));
-    	dataConstants.put("AVAILCAS", new Integer(38));
+    	dataConstants.put(DEFAULTCA, new Integer(37));
+    	dataConstants.put(AVAILCAS, new Integer(38));
     	
     	// Load all DN, altName and directoryAttributes from DnComponents.
     	dataConstants.putAll(DnComponents.getProfilenameIdMap());
     	
-    	dataConstants.put("ALLOWEDREQUESTS", new Integer(97));
-    	dataConstants.put("STARTTIME", new Integer(98));
-    	dataConstants.put("ENDTIME", new Integer(99));
+    	dataConstants.put(ALLOWEDREQUESTS, new Integer(97));
+    	dataConstants.put(STARTTIME, new Integer(98));
+    	dataConstants.put(ENDTIME, new Integer(99));
     }
     // Type of data constants.
     private static final int VALUE      = 0;
     private static final int USE        = 1;
     private static final int ISREQUIRED = 2;
     private static final int MODIFYABLE = 3;
-
-    // Field constants, used in the map above
-    public static final String USERNAME           = "USERNAME";
-    public static final String PASSWORD           = "PASSWORD";
-    public static final String CLEARTEXTPASSWORD  = "CLEARTEXTPASSWORD";
-    
-    public static final String EMAIL              = "EMAIL";
-    public static final String ADMINISTRATOR      = "ADMINISTRATOR";
-    public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
-    public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
-    /** A list of available certificate profile names can be retrieved with getAvailableCertificateProfileNames() */
-    public static final String AVAILCERTPROFILES  = "AVAILCERTPROFILES";
-    public static final String DEFKEYSTORE        = "DEFKEYSTORE";
-    public static final String AVAILKEYSTORE      = "AVAILKEYSTORE";
-    public static final String DEFAULTTOKENISSUER = "DEFAULTTOKENISSUER";
-    public static final String AVAILTOKENISSUER   = "AVAILTOKENISSUER";
-    public static final String SENDNOTIFICATION   = "SENDNOTIFICATION";
-    public static final String DEFAULTCA          = "DEFAULTCA";
-    public static final String AVAILCAS           = "AVAILCAS";
-    public static final String STARTTIME          = "STARTTIME";
-    public static final String ENDTIME            = "ENDTIME";
-    /** A maximum value of the (optional) counter specifying how many certificate requests can be processed
-     * before user is finalized (status set to GENERATED). Counter is only used when finishUser is
-     * enabled in the CA (by default it is)
-     */
-    public static final String ALLOWEDREQUESTS    = "ALLOWEDREQUESTS";
 
     public static final String SPLITCHAR       = ";";
 
@@ -269,6 +274,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
          addField(USERNAME);
          addField(PASSWORD);
+         addField(AUTOGENPASSWORDTYPE);
+         addField(AUTOGENPASSWORDLENGTH);
          addField(DnComponents.COMMONNAME);
          addField(EMAIL);
          addField(DEFAULTCERTPROFILE);
@@ -296,6 +303,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setRequired(ENDTIME,0,false);
          setRequired(ALLOWEDREQUESTS,0,false);
          
+         setValue(AUTOGENPASSWORDLENGTH, 0, "8");
          setValue(DEFAULTCERTPROFILE,0,"1");
          setValue(AVAILCERTPROFILES,0,"1;2;3");
          setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
@@ -585,9 +593,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
     
     public String getAutoGeneratedPasswd(){
-    	return PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);    	
+    	String type = getValue(AUTOGENPASSWORDTYPE, 0);
+    	if (type == null) {
+    		type = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
+    	}
+    	String length = getValue(AUTOGENPASSWORDLENGTH, 0);
+    	return PasswordGeneratorFactory.getInstance(type).getNewPassword(Integer.parseInt(length), Integer.parseInt(length));    	
     }
     
+    public static Collection getAvailablePasswordTypes() {
+        return PasswordGeneratorFactory.getAvailablePasswordTypes();
+    }
+
     // User notifications - begin
     public List getUserNotifications() {
     	List l = (List)data.get(USERNOTIFICATIONS);

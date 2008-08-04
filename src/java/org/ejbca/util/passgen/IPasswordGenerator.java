@@ -29,5 +29,7 @@ public interface IPasswordGenerator {
      */
     
     public abstract String getNewPassword(int minlength, int maxlength);
+
+	public abstract String getName();
    
 }

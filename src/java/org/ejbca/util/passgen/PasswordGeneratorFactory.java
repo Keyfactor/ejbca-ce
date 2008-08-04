@@ -13,6 +13,9 @@
  
 package org.ejbca.util.passgen;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * Factory class creating PasswordGenerators.
  *
@@ -21,14 +24,17 @@ package org.ejbca.util.passgen;
 public class PasswordGeneratorFactory {
     
     
-    public static final int PASSWORDTYPE_DIGITS                       = 0;
-    public static final int PASSWORDTYPE_LETTERSANDDIGITS             = 1;
-	public static final int PASSWORDTYPE_ALLPRINTABLE                 = 2;	
+    public static final String PASSWORDTYPE_DIGITS                       = DigitPasswordGenerator.NAME;
+    public static final String PASSWORDTYPE_LETTERSANDDIGITS             = LettersAndDigitsPasswordGenerator.NAME;
+	public static final String PASSWORDTYPE_ALLPRINTABLE                 = AllPrintableCharPasswordGenerator.NAME;	
+	public static final String PASSWORDTYPE_NOLOOKALIKELD                 = NoLookALikeLDPasswordGenerator.NAME;	
+	public static final String PASSWORDTYPE_NOSOUNDALIKEENLD                 = NoSoundALikeENLDPasswordGenerator.NAME;	
     
     static final IPasswordGenerator[] classes = { new DigitPasswordGenerator(),
     	                                          new LettersAndDigitsPasswordGenerator(),
-    	                                          new AllPrintableCharPasswordGenerator()};
-   
+    	                                          new AllPrintableCharPasswordGenerator(),
+    	                                          new NoLookALikeLDPasswordGenerator(),
+    	                                          new NoSoundALikeENLDPasswordGenerator()};
     
     /**
      *  Method returning an instance of the specified IPasswordGenerator class.
@@ -36,8 +42,22 @@ public class PasswordGeneratorFactory {
      *  @param type should be on of the PasswordGeneratorFactory constants.
      */
     
-    public static IPasswordGenerator getInstance(int type){
-       return classes[type];	    	
+    public static IPasswordGenerator getInstance(String type){
+    	IPasswordGenerator ret = null;
+    	for (int i=0; i<classes.length; i++) {
+    		if (classes[i].getName().equals(type)) {
+    			ret = classes[i];
+    		}
+    	}
+		return ret;
     }
+
+	public static Collection getAvailablePasswordTypes() {
+		ArrayList al = new ArrayList();
+    	for (int i=0; i<classes.length; i++) {
+    		al.add(classes[i].getName());
+    	}
+		return al;
+	}
    
 }

@@ -28,6 +28,10 @@ public class AllPrintableCharPasswordGenerator extends BasePasswordGenerator{
     	                                                      'l','L','z','Z','x','X','c','C','v','V','b','B','n','N','m',
     	                                                      'M'};
         
+	protected static final String NAME = "PWGEN_ALLPRINTABLE";
+    
+	public String getName() { return NAME; }
+	
     public AllPrintableCharPasswordGenerator(){
     	super(USEDCHARS);
     }

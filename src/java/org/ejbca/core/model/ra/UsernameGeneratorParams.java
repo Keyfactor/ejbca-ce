@@ -43,7 +43,7 @@ public class UsernameGeneratorParams {
 	// Generator configuration parameters, with good default values
 	private int mode = MODE_RANDOM;
 	private int randomNameLength = 12;
-	private int randomGeneratorType = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
+	private String randomGeneratorType = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
 	private String dNGeneratorComponent = "CN"; // Can be CN or UID
 	private String prefix = null;
 	private String postfix = null;
@@ -71,10 +71,10 @@ public class UsernameGeneratorParams {
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
 	}
-	public int getRandomGeneratorType() {
+	public String getRandomGeneratorType() {
 		return randomGeneratorType;
 	}
-	public void setRandomGeneratorType(int randomGeneratorType) {
+	public void setRandomGeneratorType(String randomGeneratorType) {
 		this.randomGeneratorType = randomGeneratorType;
 	}
 	public int getRandomNameLength() {

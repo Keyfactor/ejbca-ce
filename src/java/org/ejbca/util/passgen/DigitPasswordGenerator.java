@@ -24,7 +24,9 @@ public class DigitPasswordGenerator extends BasePasswordGenerator{
     
     private static final char[] USEDCHARS = {'1','2','3','4','5','6','7','8','9','0'};
     
-
+	protected static final String NAME = "PWGEN_DIGIT";
+    
+	public String getName() { return NAME; }
     
     public DigitPasswordGenerator(){
     	super(USEDCHARS);

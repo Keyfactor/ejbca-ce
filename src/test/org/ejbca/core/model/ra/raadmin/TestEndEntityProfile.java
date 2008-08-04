@@ -13,18 +13,13 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
+import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * Tests the end entity profile entity bean.
@@ -32,12 +27,7 @@ import org.ejbca.util.dn.DnComponents;
  * @version $Id$
  */
 public class TestEndEntityProfile extends TestCase {
-    private static Logger log = Logger.getLogger(TestEndEntityProfile.class);
-    private IRaAdminSessionRemote cacheAdmin;
-
-
-    private static IRaAdminSessionHome cacheHome;
-
+    private static final Logger log = Logger.getLogger(TestEndEntityProfile.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     /**
@@ -50,36 +40,10 @@ public class TestEndEntityProfile extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IRaAdminSessionHome.JNDI_NAME);
-                cacheHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
-
-            }
-
-            cacheAdmin = cacheHome.create();
-        }
-
-
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
-
 
     /**
      * adds a publishers to the database
@@ -93,7 +57,7 @@ public class TestEndEntityProfile extends TestCase {
             EndEntityProfile profile = new EndEntityProfile();
             profile.addField(DnComponents.ORGANIZATIONUNIT);
 
-            cacheAdmin.addEndEntityProfile(admin, "TEST", profile);
+            TestTools.getRaAdminSession().addEndEntityProfile(admin, "TEST", profile);
 
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
@@ -113,7 +77,7 @@ public class TestEndEntityProfile extends TestCase {
 
         boolean ret = false;
         try {
-            cacheAdmin.renameEndEntityProfile(admin, "TEST", "TEST2");
+            TestTools.getRaAdminSession().renameEndEntityProfile(admin, "TEST", "TEST2");
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
         }
@@ -132,7 +96,7 @@ public class TestEndEntityProfile extends TestCase {
 
         boolean ret = false;
         try {
-            cacheAdmin.cloneEndEntityProfile(admin, "TEST2", "TEST");
+            TestTools.getRaAdminSession().cloneEndEntityProfile(admin, "TEST2", "TEST");
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
         }
@@ -152,12 +116,12 @@ public class TestEndEntityProfile extends TestCase {
 
         boolean ret = false;
 
-        EndEntityProfile profile = cacheAdmin.getEndEntityProfile(admin, "TEST");
+        EndEntityProfile profile = TestTools.getRaAdminSession().getEndEntityProfile(admin, "TEST");
         assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT) == 1);
 
         profile.addField(DnComponents.ORGANIZATIONUNIT);
 
-        cacheAdmin.changeEndEntityProfile(admin, "TEST", profile);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TEST", profile);
         ret = true;
 
         assertTrue("Editing EndEntityProfile failed", ret);
@@ -176,8 +140,8 @@ public class TestEndEntityProfile extends TestCase {
         log.debug(">test05removeEndEntityProfiles()");
         boolean ret = false;
         try {
-            cacheAdmin.removeEndEntityProfile(admin, "TEST");
-            cacheAdmin.removeEndEntityProfile(admin, "TEST2");
+            TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TEST");
+            TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TEST2");
             ret = true;
         } catch (Exception pee) {
         }
@@ -198,9 +162,9 @@ public class TestEndEntityProfile extends TestCase {
         boolean returnValue = true;
     	// Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
-        cacheAdmin.addEndEntityProfile(admin, testProfileName, profile);
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, testProfileName, profile);
         // Add two dynamic fields
-        profile = cacheAdmin.getEndEntityProfile(admin, testProfileName);
+        profile = TestTools.getRaAdminSession().getEndEntityProfile(admin, testProfileName);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.setValue(DnComponents.ORGANIZATIONUNIT, 0, testString1);
@@ -209,19 +173,40 @@ public class TestEndEntityProfile extends TestCase {
         profile.addField(DnComponents.DNSNAME);
         profile.setValue(DnComponents.DNSNAME, 0, testString1);
         profile.setValue(DnComponents.DNSNAME, 1, testString2);
-        cacheAdmin.changeEndEntityProfile(admin, testProfileName, profile);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, testProfileName, profile);
         // Remove first field
-        profile = cacheAdmin.getEndEntityProfile(admin, testProfileName);
+        profile = TestTools.getRaAdminSession().getEndEntityProfile(admin, testProfileName);
         profile.removeField(DnComponents.ORGANIZATIONUNIT, 0);
         profile.removeField(DnComponents.DNSNAME, 0);
-        cacheAdmin.changeEndEntityProfile(admin, testProfileName, profile);
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, testProfileName, profile);
         // Test if changes are what we expected
-        profile = cacheAdmin.getEndEntityProfile(admin, testProfileName);
+        profile = TestTools.getRaAdminSession().getEndEntityProfile(admin, testProfileName);
         returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONUNIT, 0));
         returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
         // Remove profile
-        cacheAdmin.removeEndEntityProfile(admin, testProfileName);
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, testProfileName);
         assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         log.debug("<test06testEndEntityProfilesDynamicFields()");
     } // test06testEndEntityProfilesDynamicFields
+
+    /**
+     * Test if password autogeneration behaves as expected
+     * @throws Exception error
+     */
+    public void test07PasswordAutoGeneration() throws Exception {
+        log.debug(">test07PasswordAutoGeneration()");
+    	// Create testprofile
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.setValue(EndEntityProfile.AUTOGENPASSWORDTYPE, 0, PasswordGeneratorFactory.PASSWORDTYPE_DIGITS);
+        profile.setValue(EndEntityProfile.AUTOGENPASSWORDLENGTH, 0, "13");
+        final String DIGITS = "0123456789";
+        for (int i=0; i<100; i++) {
+            String password = profile.getAutoGeneratedPasswd();
+            assertTrue("Autogenerated password is not of the requested length (was "+ password.length() +".", password.length() == 13);
+            for (int j=0; j<password.length(); j++) {
+            	assertTrue("Password was generated with a improper char '" + password.charAt(j) + "'.", DIGITS.contains("" + password.charAt(j)));
+            }
+        }
+        log.debug("<test07PasswordAutoGeneration()");
+    }
 }

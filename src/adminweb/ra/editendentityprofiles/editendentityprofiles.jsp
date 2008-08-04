@@ -107,6 +107,8 @@
   static final String CHECKBOX_USE_PRINTING          = "checkboxuseprinting";
   static final String CHECKBOX_USE_ALLOWEDRQUESTS    = "checkboxuseallowedrequests";
   
+  static final String SELECT_AUTOPASSWORDTYPE               = "selectautopasswordtype";
+  static final String SELECT_AUTOPASSWORDLENGTH             = "selectautopasswordlength";
   
   static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
   static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecertprofiles";
@@ -342,6 +344,9 @@
              profiledata.setRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_CLEARTEXTPASSWORD))); 
              profiledata.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_CLEARTEXTPASSWORD))); 
              
+             profiledata.setValue(EndEntityProfile.AUTOGENPASSWORDTYPE, 0, request.getParameter(SELECT_AUTOPASSWORDTYPE));
+             profiledata.setValue(EndEntityProfile.AUTOGENPASSWORDLENGTH, 0, request.getParameter(SELECT_AUTOPASSWORDLENGTH));
+
              profiledata.setReverseFieldChecks(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REVERSEFIELDCHECKS)));
 
              numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
