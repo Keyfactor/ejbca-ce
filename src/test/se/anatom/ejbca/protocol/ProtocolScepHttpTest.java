@@ -170,13 +170,7 @@ public class ProtocolScepHttpTest extends TestCase {
         Object obj = ctx.lookup("CAAdminSession");
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
+        setCAID(casession);
         CAInfo cainfo = casession.getCAInfo(admin, caid);
         caname = cainfo.getName();
         Collection certs = cainfo.getCertificateChain();
@@ -625,6 +619,23 @@ public class ProtocolScepHttpTest extends TestCase {
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
         return respBytes;
+    }
+    
+    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
+        Collection caids = casession.getAvailableCAs(admin);
+        Iterator iter = caids.iterator();
+        caid = 0;
+        while (iter.hasNext() && (caid == 0)) {
+            int id = ((Integer) iter.next()).intValue();
+            CAInfo cainfo = casession.getCAInfo(admin, id);
+            // OCSP can only be used with X509 certificates
+            if ( (cainfo.getCAType() == CAInfo.CATYPE_X509) && (cainfo.getStatus() == SecConst.CA_ACTIVE) ) {
+            	caid = id;
+            }
+        } 
+        if (caid == 0) {
+            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }
     }
 
 }

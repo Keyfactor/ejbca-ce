@@ -105,12 +105,17 @@ public class CertRequestHttpTest extends TestCase {
 
     protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
         Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        Iterator iter = caids.iterator();        
+        if (!iter.hasNext()) {
+        	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }
+        while (iter.hasNext()) {
+            caid = ((Integer) iter.next()).intValue();
+            CAInfo cainfo = casession.getCAInfo(admin, caid);
+            if (cainfo.getStatus() == SecConst.CA_ACTIVE) {
+            	break;
+            }
+        } 
     }
     protected void setUp() throws Exception {
         log.debug(">setUp()");

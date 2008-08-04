@@ -191,7 +191,7 @@ public class ProtocolOcspHttpTest extends TestCase {
             int id = ((Integer) iter.next()).intValue();
             CAInfo cainfo = casession.getCAInfo(admin, id);
             // OCSP can only be used with X509 certificates
-            if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
+            if ( (cainfo.getCAType() == CAInfo.CATYPE_X509) && (cainfo.getStatus() == SecConst.CA_ACTIVE) ) {
             	caid = id;
             }
         } 
