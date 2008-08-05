@@ -1127,7 +1127,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("NOTIFICATIONEVENTS") %> <br>&nbsp;
       </td>
       <td width="70%"> 
-        <select name="<%=SELECT_NOTIFICATIONEVENTS + j%>" size="7" multiple disabled>
+        <select name="<%=SELECT_NOTIFICATIONEVENTS + j%>" size="7" multiple readonly>
             <% int[] statuses = ViewEndEntityHelper.statusids;
                String[] statustexts = ViewEndEntityHelper.statustexts;
                Collection evcol = not.getNotificationEventsCollection();
