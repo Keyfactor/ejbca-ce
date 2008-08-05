@@ -120,11 +120,10 @@ public class TestEndEntityProfile extends TestCase {
         assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT) == 1);
 
         profile.addField(DnComponents.ORGANIZATIONUNIT);
+        assertEquals(profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT), 2);
 
+        // Change the profile, if save fails it should throw an exception
         TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TEST", profile);
-        ret = true;
-
-        assertTrue("Editing EndEntityProfile failed", ret);
 
 
         log.debug("<test04EditEndEntityProfile()");
@@ -183,9 +182,9 @@ public class TestEndEntityProfile extends TestCase {
         profile = TestTools.getRaAdminSession().getEndEntityProfile(admin, testProfileName);
         returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONUNIT, 0));
         returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
+        assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         // Remove profile
         TestTools.getRaAdminSession().removeEndEntityProfile(admin, testProfileName);
-        assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         log.debug("<test06testEndEntityProfilesDynamicFields()");
     } // test06testEndEntityProfilesDynamicFields
 
@@ -209,4 +208,32 @@ public class TestEndEntityProfile extends TestCase {
         }
         log.debug("<test07PasswordAutoGeneration()");
     }
+
+    /**
+     * Test if field ids behave as expected
+     * @throws Exception error
+     */
+    public void test08FieldIds() throws Exception {
+        log.debug(">test08FieldIds()");
+        EndEntityProfile profile = new EndEntityProfile();
+        
+        // Simple one that is guaranteed to succeed.
+        assertEquals(0, profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT));
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        assertEquals(1, profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT));
+
+        // Newer one
+        assertEquals(0, profile.getNumberOfField(DnComponents.TELEPHONENUMBER));
+        profile.addField(DnComponents.TELEPHONENUMBER);
+        assertEquals(1, profile.getNumberOfField(DnComponents.TELEPHONENUMBER));
+        
+        // One with high numbers
+        assertEquals(1, profile.getNumberOfField(EndEntityProfile.STARTTIME));
+        profile.addField(EndEntityProfile.STARTTIME);
+        assertEquals(2, profile.getNumberOfField(EndEntityProfile.STARTTIME));
+        
+        
+        log.debug("<test08FieldIds()");
+    }
+
 }

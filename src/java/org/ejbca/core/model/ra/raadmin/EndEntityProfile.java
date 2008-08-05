@@ -82,8 +82,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final String USERNAME           = "USERNAME";
     public static final String PASSWORD           = "PASSWORD";
     public static final String CLEARTEXTPASSWORD  = "CLEARTEXTPASSWORD";
-    public static final String AUTOGENPASSWORDTYPE           = "AUTOGENPASSWORDTYPE";
-    public static final String AUTOGENPASSWORDLENGTH           = "AUTOGENPASSWORDLENGTH";
+    public static final String AUTOGENPASSWORDTYPE   = "AUTOGENPASSWORDTYPE";
+    public static final String AUTOGENPASSWORDLENGTH = "AUTOGENPASSWORDLENGTH";
     
     public static final String EMAIL              = "EMAIL";
     public static final String ADMINISTRATOR      = "ADMINISTRATOR";
@@ -212,17 +212,26 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     private void init(boolean emptyprofile){
-      if(emptyprofile){
-        // initialize profile data
-        ArrayList numberoffields = new ArrayList(dataConstants.size());
-        for(int i =0; i < dataConstants.size(); i++){
+    	// Find out the max value in dataConstants
+        int max = 0;
+        Collection<Integer> ids = dataConstants.values();
+        for (Integer i : ids) {
+			if (max < i) {
+				max = i;
+			}
+		}
+        // Common initialization of profile
+        log.debug("The highest number in dataConstants is: "+max);
+        ArrayList numberoffields = new ArrayList(max);
+        for(int i =0; i <= max; i++){
           numberoffields.add(new Integer(0));
         }
         data.put(NUMBERARRAY,numberoffields);
         data.put(SUBJECTDNFIELDORDER,new ArrayList());
         data.put(SUBJECTALTNAMEFIELDORDER,new ArrayList());
         data.put(SUBJECTDIRATTRFIELDORDER,new ArrayList());
-
+        
+      if(emptyprofile){
         Set keySet = dataConstants.keySet();
         Iterator iter = keySet.iterator();
         while (iter.hasNext()) {
@@ -262,16 +271,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setUse(ALLOWEDREQUESTS,0,false);
       }else{
          // initialize profile data
-         ArrayList numberoffields = new ArrayList(dataConstants.size());
-         for(int i =0; i < dataConstants.size(); i++){
-           numberoffields.add(new Integer(0));
-         }
-
-         data.put(NUMBERARRAY,numberoffields);
-         data.put(SUBJECTDNFIELDORDER,new ArrayList());
-         data.put(SUBJECTALTNAMEFIELDORDER,new ArrayList());
-         data.put(SUBJECTDIRATTRFIELDORDER,new ArrayList());
-
          addField(USERNAME);
          addField(PASSWORD);
          addField(AUTOGENPASSWORDTYPE);
@@ -361,7 +360,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * @param number is the number of field.
      */
     public void removeField(int parameter, int number){
-      // Remove field and move all fileds above.
+      // Remove field and move all file ids above.
       int size =  getNumberOfField(parameter);
 
       if(size>0){
@@ -423,11 +422,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * Function that returns the number of one kind of field.
      *
      */
-    public int getNumberOfField(String parameter){
+    protected int getNumberOfField(String parameter){
     	return getNumberOfField(getParameterNumber(parameter));
     }
-    public int getNumberOfField(int parameter){
-    	ArrayList arr = (ArrayList)data.get(NUMBERARRAY);
+    private int getNumberOfField(int parameter){
+    	ArrayList arr = checkAndUpgradeWithNewFields(parameter);
+    	return ((Integer) arr.get(parameter)).intValue();
+    }
+
+	private ArrayList checkAndUpgradeWithNewFields(int parameter) {
+		ArrayList arr = (ArrayList)data.get(NUMBERARRAY);
     	// This is an automatic upgrade function, if we have dynamically added new fields
     	if (parameter >= arr.size()) {
 			String msg = intres.getLocalizedMessage("ra.eeprofileaddfield", new Integer(parameter));
@@ -437,8 +441,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		}
             data.put(NUMBERARRAY,arr);
     	}
-    	return ((Integer) arr.get(parameter)).intValue();
-    }
+		return arr;
+	}
+    
 
     public void setValue(int parameter, int number, String value) {
         if(value !=null){
@@ -1204,14 +1209,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       return clone;
     }
 
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
+    /** Implementation of UpgradableDataHashMap function upgrade. */
     public void upgrade() {
-        log.debug(">upgrade");
+        log.debug(">upgrade");        
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			String msg = intres.getLocalizedMessage("ra.eeprofileupgrade", new Float(getVersion()));
             log.info(msg);
@@ -1715,6 +1720,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
 
+    /** Number array keeps track of how many fields there are of a specific type, for example 2 OranizationUnits, 0 TelephoneNumber */
     private static final String NUMBERARRAY               = "NUMBERARRAY";
     private static final String SUBJECTDNFIELDORDER       = "SUBJECTDNFIELDORDER";
     private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
