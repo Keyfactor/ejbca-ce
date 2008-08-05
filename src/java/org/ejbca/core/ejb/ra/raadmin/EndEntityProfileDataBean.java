@@ -142,9 +142,9 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
     }
 
     /** We have an internal method for this read operation with a side-effect. 
-     * This is because getCertificateProfile() is a read-only method, so the possible side-effect of upgrade will not happen,
+     * This is because getProfile() is a read-only method, so the possible side-effect of upgrade will not happen,
      * and therefore this internal method can be called from another non-read-only method, upgradeProfile().
-     * @return CertificateProfile
+     * @return EndEntityProfile
      */
     private EndEntityProfile readAndUpgradeProfileInternal() {
         EndEntityProfile returnval = new EndEntityProfile();
@@ -157,6 +157,9 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
         if (Float.compare(oldversion, returnval.getVersion()) != 0) {
         	// Save new data versions differ
         	setProfile(returnval);
+        	if (log.isDebugEnabled()) {
+            	log.debug("Saved upgraded profile, old version="+oldversion+", new version="+returnval.getVersion());        		
+        	}
         }
         return returnval;
     }
