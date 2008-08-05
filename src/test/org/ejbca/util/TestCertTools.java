@@ -601,6 +601,10 @@ public class TestCertTools extends TestCase {
 		assertEquals(StringTools.strip(bcdn23),
 				"DN=qualf,CN=Foo,OU=FooOU,O=Foo,C=SE");
 
+		String dn24 = "telephonenumber=08555-666,businesscategory=Surf boards,postaladdress=Stockholm,postalcode=11122,CN=foo,CN=bar, O=CN, O=C, C=CN";
+		assertEquals(CertTools.stringToBCDNString(dn24),
+				"TelephoneNumber=08555-666,PostalAddress=Stockholm,BusinessCategory=Surf boards,PostalCode=11122,CN=foo,CN=bar,O=CN,O=C,C=CN");
+
 		log.debug("<test02StringToBCDNString()");
 	}
 

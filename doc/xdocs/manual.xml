@@ -3575,7 +3575,7 @@ authorityRevocationList;binary:
 </source>
 <p>
 To configure OpenLDAP (version 2.2.5) to include the 'inetOrgPerson' you
-must add the following lines to slapd.conf:
+must add the following lines to slapd.conf. This is already the default in recent releases:
 </p>
 <source>
 include         /usr/local/etc/openldap/schema/cosine.schema

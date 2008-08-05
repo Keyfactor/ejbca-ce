@@ -75,12 +75,15 @@ public class DnComponents {
         oids.put("unstructuredaddress", X509Name.UnstructuredAddress); //unstructuredAddress
         oids.put("postalcode", X509Name.POSTAL_CODE);
         oids.put("businesscategory", X509Name.BUSINESS_CATEGORY);
+        oids.put("postaladdress", X509Name.POSTAL_ADDRESS);
+        oids.put("telephonenumber", X509Name.TELEPHONE_NUMBER);
+        
     }
     /** Default values used when constructing DN strings that are put in the database
      * 
      */
     private static String[] dNObjectsForward = {
-        "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
+        "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     // Default values    
@@ -90,29 +93,31 @@ public class DnComponents {
      * These maps and constants are used in the admin-GUI and in End Entity profiles
      */
 
-    /** These constants can be used when reffering to standard, build in components 
+    /** These constants can be used when referring to standard, build in components 
      * 
      */
     // DN components
-    public static final String DNEMAIL            = "DNEMAIL";
-    public static final String DNQUALIFIER        = "DN";
-    public static final String UID                = "UID";
-    public static final String COMMONNAME         = "COMMONNAME";
-    public static final String SN                 = "SN";
-    public static final String GIVENNAME          = "GIVENNAME";
-    public static final String INITIALS           = "INITIALS";
-    public static final String SURNAME            = "SURNAME";
-    public static final String TITLE              = "TITLE";
-    public static final String ORGANIZATIONUNIT   = "ORGANIZATIONUNIT";
-    public static final String ORGANIZATION       = "ORGANIZATION";
-    public static final String LOCALE             = "LOCALE";
-    public static final String STATE              = "STATE";
-    public static final String DOMAINCOMPONENT    = "DOMAINCOMPONENT";
-    public static final String COUNTRY            = "COUNTRY";
+    public static final String DNEMAIL             = "DNEMAIL";
+    public static final String DNQUALIFIER         = "DN";
+    public static final String UID                 = "UID";
+    public static final String COMMONNAME          = "COMMONNAME";
+    public static final String SN                  = "SN";
+    public static final String GIVENNAME           = "GIVENNAME";
+    public static final String INITIALS            = "INITIALS";
+    public static final String SURNAME             = "SURNAME";
+    public static final String TITLE               = "TITLE";
+    public static final String ORGANIZATIONUNIT    = "ORGANIZATIONUNIT";
+    public static final String ORGANIZATION        = "ORGANIZATION";
+    public static final String LOCALE              = "LOCALE";
+    public static final String STATE               = "STATE";
+    public static final String DOMAINCOMPONENT     = "DOMAINCOMPONENT";
+    public static final String COUNTRY             = "COUNTRY";
     public static final String UNSTRUCTUREDADDRESS = "UNSTRUCTUREDADDRESS";
     public static final String UNSTRUCTUREDNAME    = "UNSTRUCTUREDNAME";
-    public static final String POSTALCODE = "POSTALCODE";
+    public static final String POSTALCODE          = "POSTALCODE";
     public static final String BUSINESSCATEGORY    = "BUSINESSCATEGORY";
+    public static final String POSTALADDRESS       = "POSTALADDRESS";
+    public static final String TELEPHONENUMBER     = "TELEPHONENUMBER";
     
     // AltNames
     public static final String RFC822NAME         = "RFC822NAME";
@@ -166,7 +171,9 @@ public class DnComponents {
         DnComponents.load();
     }
     /** This property is true if reverse DN order should be used. Default value is false (forward order).
-     * This setting is changed from ejbca.properties
+     * This setting is changed from ejbca.properties, but should NOT be used, since there
+     * is nowadays a configuration setting for the CA instead.
+     * @deprecated use soft configuration on CA instead
      */
     private static final boolean reverseOrder = BooleanUtils.toBoolean("@certtools.dnorderreverse@");
     
@@ -269,7 +276,7 @@ public class DnComponents {
     	return profileNameIdMap;
     	
     }
-    /** A function that takes an fieldid pointing to a coresponding id in UserView and DnFieldExctractor.
+    /** A function that takes an fieldId pointing to a corresponding id in UserView and DnFieldExctractor.
      *  For example : profileFieldIdToUserFieldIdMapper(EndEntityProfile.COMMONNAME) returns DnFieldExctractor.COMMONNAME.
      *
      *  Should only be used with subjectDN, Subject Alternative Names and subject directory attribute fields.

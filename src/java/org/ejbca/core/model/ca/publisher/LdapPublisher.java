@@ -87,13 +87,13 @@ public class LdapPublisher extends BasePublisher {
 
 	// Default Values
 
-	protected static final String HOSTNAMES                 = "hostname";
+	protected static final String HOSTNAMES                = "hostname";
 	protected static final String USESSL                   = "usessl";
 	protected static final String PORT                     = "port";
 	protected static final String BASEDN                   = "baswdn";
 	protected static final String LOGINDN                  = "logindn";
 	protected static final String LOGINPASSWORD            = "loginpassword";
-	protected static final String TIMEOUT            = "timeout";
+	protected static final String TIMEOUT                  = "timeout";
 	protected static final String CREATENONEXISTING        = "createnonexisting";
 	protected static final String MODIFYEXISTING           = "modifyexisting"; 
 	protected static final String ADDNONEXISTINGATTR       = "addnonexistingattr"; 
@@ -110,8 +110,10 @@ public class LdapPublisher extends BasePublisher {
 	protected static final String REMOVEREVOKED            = "removerevoked";    
 	protected static final String REMOVEUSERONCERTREVOKE   = "removeusersoncertrevoke";    
 	protected static final String CREATEINTERMEDIATENODES  = "createintermediatenodes";
+	
+	/** Arrays used to extract attributes to store in LDAP */
 	protected static final String[] MATCHINGEXTRAATTRIBUTES    = {"CN","L","OU"};
-	protected static final String[] MATCHINGPERSONALATTRIBUTES = {"ST","O","uid","initials","title","postalCode","businessCategory"};
+	protected static final String[] MATCHINGPERSONALATTRIBUTES = {"ST","O","uid","initials","title","postalCode","businessCategory","postalAddress","telephoneNumber"};
 
 
 	public LdapPublisher(){
