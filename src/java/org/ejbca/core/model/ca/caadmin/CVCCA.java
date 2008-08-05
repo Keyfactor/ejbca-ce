@@ -78,7 +78,7 @@ public class CVCCA extends CA implements Serializable {
 	private static final InternalResources intres = InternalResources.getInstance();
 
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
-	public static final float LATEST_VERSION = 1;
+	public static final float LATEST_VERSION = 2;
 
     // protected fields for properties specific to this type of CA.
 
@@ -437,6 +437,8 @@ public class CVCCA extends CA implements Serializable {
             log.info("Upgrading CVCCA with version "+getVersion());
 
 			// Put upgrade code here...
+            
+            // v1->v2 is only an upgrade in order to upgrade CA token
 
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}  

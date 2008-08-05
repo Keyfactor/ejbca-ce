@@ -123,7 +123,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 17;
+    public static final float LATEST_VERSION = 18;
 
     /** key ID used for identifier of key used for key recovery encryption */
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
@@ -830,6 +830,7 @@ public class X509CA extends CA implements Serializable {
             if (data.get(INCLUDEINHEALTHCHECK) == null) {
                 setIncludeInHealthCheck(true); // v16
             }
+            // v17->v18 is only an upgrade in order to upgrade CA token
 
             data.put(VERSION, new Float(LATEST_VERSION));
         }  
