@@ -214,12 +214,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private void init(boolean emptyprofile){
     	// Find out the max value in dataConstants
         int max = 0;
-        Collection<Integer> ids = dataConstants.values();
-        for (Integer i : ids) {
-			if (max < i) {
-				max = i;
-			}
-		}
+        Collection ids = dataConstants.values();
+        Iterator it = ids.iterator();
+        while (it.hasNext()) {
+        	Integer id = (Integer)it.next();
+			if (max < id) {
+				max = id;
+			}        	
+        }
         // Common initialization of profile
         log.debug("The highest number in dataConstants is: "+max);
         ArrayList numberoffields = new ArrayList(max);
