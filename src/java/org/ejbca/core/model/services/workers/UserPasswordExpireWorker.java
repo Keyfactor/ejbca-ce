@@ -119,7 +119,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 				// Create notification emails, if they are configured to be sent
 				if(userData != null){
 					if(isSendToEndUsers()){
-						NotificationParamGen paramGen = new NotificationParamGen(userData);
+						NotificationParamGen paramGen = new NotificationParamGen(userData, (String)null);
 						if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
 							String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
 							log.info(msg);
@@ -132,7 +132,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 					}
 					if(isSendToAdmins()){
 						// Populate admin message        		    
-						NotificationParamGen paramGen = new NotificationParamGen(userData);
+						NotificationParamGen paramGen = new NotificationParamGen(userData, (String)null);
 						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
 						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
 						adminEmailQueue.add(new EmailCertData(username,mailActionInfo));

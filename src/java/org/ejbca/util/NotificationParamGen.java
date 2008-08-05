@@ -97,8 +97,8 @@ public class NotificationParamGen {
   /**
    * Constructor that mainly should be used when generating user data notifications 
    */
-  public NotificationParamGen(UserDataVO user){
-	  populate(user,null,null,null,null,null,null, null,null,null,null,null);
+  public NotificationParamGen(UserDataVO user, String approvalAdminDN){
+	  populate(user,null,null,null,null,null,null, null,null,null,approvalAdminDN,null);
   }
 
   /**

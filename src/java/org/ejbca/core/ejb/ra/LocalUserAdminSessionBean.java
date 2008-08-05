@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra;
 
 import java.awt.print.PrinterException;
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -1509,7 +1510,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
-        debug(">checkIfCertificateBelongToAdmin(" + certificatesnr + ")");
+        debug(">checkIfCertificateBelongToAdmin(" + certificatesnr.toString(16) + ")");
         String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
 
         UserDataLocal data = null;
@@ -1997,7 +1998,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
                         String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
                         Session mailSession = getLocator().getMailSession(mailJndi);
-                        NotificationParamGen paramGen = new NotificationParamGen(data);
+                        // Get the administrators DN from the admin certificate, if one exists
+                        // When approvals is used, this will be the DN of the admin that approves the request
+                        Certificate adminCert = admin.getAdminInformation().getX509Certificate();
+                        String approvalAdminDN = CertTools.getSubjectDN(adminCert);
+                        log.debug("approvalAdminDN: "+approvalAdminDN);
+                        NotificationParamGen paramGen = new NotificationParamGen(data, approvalAdminDN);
                         HashMap params = paramGen.getParams();
 
                         Message msg = new TemplateMimeMessage(params, mailSession);
@@ -2007,6 +2013,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         msg.setContent(not.getNotificationMessage(), "text/plain;charset=ISO-8859-1");
                         msg.setHeader("X-Mailer", "JavaMailer");
                         msg.setSentDate(new Date());
+                        //log.debug("Content: "+msg.getContent().toString());
                         Transport.send(msg);
 
                         String logmsg = intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), rcptemail);
