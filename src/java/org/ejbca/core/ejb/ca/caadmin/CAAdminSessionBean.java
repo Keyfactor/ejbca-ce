@@ -849,9 +849,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 CATokenContainer catoken = ca.getCAToken();
                 tokenstatus = catoken.getCATokenInfo().getCATokenStatus();            	
             } else {
-            	if (log.isDebugEnabled()) {
-                	log.debug("Not making test signature with CAs token. doSignTest="+doSignTest+", CA status="+status+", includeInHealthCheck="+includeInHealthCheck);            		
-            	}
+//            	if (log.isDebugEnabled()) {
+//                	log.debug("Not making test signature with CAs token. doSignTest="+doSignTest+", CA status="+status+", includeInHealthCheck="+includeInHealthCheck);            		
+//            	}
             	tokenstatus = cainfo.getCATokenInfo().getCATokenStatus(); 
             }
             // Set a possible new status in the info value object
