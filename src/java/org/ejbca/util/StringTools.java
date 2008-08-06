@@ -50,7 +50,7 @@ public class StringTools {
 
     // Characters that are not allowed in strings that may be stored in the db
     private static final char[] stripChars = {
-        '\"', '\n', '\r', '\\', ';', '&', '!', '\0', '%', '`', '<', '>', '?',
+        '\"', '\n', '\r', '\\', ';', '!', '\0', '%', '`', '<', '>', '?',
         '$', '~'
     };
     // Characters that are not allowed in strings that may be used in db queries
