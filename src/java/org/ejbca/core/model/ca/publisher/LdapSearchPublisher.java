@@ -34,10 +34,9 @@ public class LdapSearchPublisher extends LdapPublisher {
 		setSearchBaseDN("");
 		setSearchFilter("");
 		
-		// The search publisher should not modify attributes in LDAP, we suggest that this
-		//is done by the application that actually puts the entries there.
-		//LdapSearchPublisher will only store the certificate.
-		ADD_MODIFICATION_ATTRIBUTES = false;
+		// By default the LDAP search publisher should not modify any attributes except the certificate
+		setModifyExistingAttributes(false);
+		setAddNonExistingAttributes(false);
 	}
 	
 	// Public Methods

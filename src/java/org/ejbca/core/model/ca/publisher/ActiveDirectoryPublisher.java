@@ -27,7 +27,6 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
-
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;
@@ -151,11 +150,11 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *
      * @return LDAPAtributeSet created...
      */
-    protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, boolean extra, boolean person, 
+    protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person, 
     		                                   String password, ExtendedInformation extendedinformation) {
     	log.debug("ADPublisher : getAttributeSet");
     	
-        LDAPAttributeSet attributeSet = super.getAttributeSet(cert, objectclass, dn, extra, person, password, extendedinformation);
+        LDAPAttributeSet attributeSet = super.getAttributeSet(cert, objectclass, dn, email, extra, person, password, extendedinformation);
         
         String cn = CertTools.getPartFromDN(dn, "CN");
         // Add AD specific attributes
@@ -238,8 +237,8 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *
      * @return LDAPModificationSet created...
      */
-    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person, boolean overwrite) {
-    	ArrayList modSet = super.getModificationSet(oldEntry, dn, false, person);
+    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, boolean overwrite) {
+    	ArrayList modSet = super.getModificationSet(oldEntry, dn, email, false, person);
 
 		// Modify AD specific attributes
 		

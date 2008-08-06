@@ -187,7 +187,7 @@ public class LdapPublisher extends BasePublisher {
 		String email = CertTools.getEMailAddress((X509Certificate)incert);
 
 		// Check if the entry is already present, we will update it with the new certificate.
-		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn, email);
+		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, email);
 
 		// PART 2: Create LDAP entry
 		LDAPEntry newEntry = null;
@@ -201,20 +201,10 @@ public class LdapPublisher extends BasePublisher {
 
 			if (oldEntry != null) {
 				// TODO: Are we the correct type objectclass?
-				modSet = getModificationSet(oldEntry, certdn, ADD_MODIFICATION_ATTRIBUTES, true);
+				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true);
 			} else {
 				objectclass = getUserObjectClass(); // just used for logging
-				attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, true, true, password, extendedinformation);
-			}
-
-			if (email != null) {
-				//log.debug("Adding email attribute: "+email);
-				LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
-				if (oldEntry != null) {
-					modSet.add(new LDAPModification(LDAPModification.REPLACE, mailAttr));
-				} else {
-					attributeSet.add(mailAttr);
-				}
+				attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, email, true, true, password, extendedinformation);
 			}
 
 			try {
@@ -242,10 +232,10 @@ public class LdapPublisher extends BasePublisher {
 			log.debug("Publishing CA certificate to first available server of " + getHostnames());
 
 			if (oldEntry != null) {
-				modSet = getModificationSet(oldEntry, certdn, false, false);
+				modSet = getModificationSet(oldEntry, certdn, null, false, false);
 			} else {
 				objectclass = getCAObjectClass(); // just used for logging
-				attributeSet = getAttributeSet(incert, getCAObjectClass(), certdn, true, false, password, extendedinformation);
+				attributeSet = getAttributeSet(incert, getCAObjectClass(), certdn, null, true, false, password, extendedinformation);
 			}
 			try {
 				attribute = getCACertAttribute();
@@ -439,9 +429,9 @@ public class LdapPublisher extends BasePublisher {
 		LDAPAttributeSet attributeSet = null;
 
 		if (oldEntry != null) {
-			modSet = getModificationSet(oldEntry, crldn, false, false);
+			modSet = getModificationSet(oldEntry, crldn, null, false, false);
 		} else {
-			attributeSet = getAttributeSet(null, this.getCAObjectClass(), crldn, true, false, null,null);
+			attributeSet = getAttributeSet(null, this.getCAObjectClass(), crldn, null, true, false, null,null);
 		}
 
 		try {
@@ -569,7 +559,7 @@ public class LdapPublisher extends BasePublisher {
 					// Don't try to remove the cert if there does not exist any
 					LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
 					if (oldAttr != null) {
-						modSet = getModificationSet(oldEntry, certdn, false, true);
+						modSet = getModificationSet(oldEntry, certdn, null, false, true);
 						LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
 						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
 					} else {
@@ -1159,6 +1149,7 @@ public class LdapPublisher extends BasePublisher {
 	 * @param cert the certificate to use or null if no cert involved.
 	 * @param objectclass the objectclass the attribute set should be of.
 	 * @param dn dn of the LDAP entry.
+	 * @param email email address for entry, or null
 	 * @param extra if we should add extra attributes except the objectclass to the attributeset.
 	 * @param person true if this is a person-entry, false if it is a CA.
 	 * @param password, currently only used for the AD publisher
@@ -1166,9 +1157,11 @@ public class LdapPublisher extends BasePublisher {
 	 *
 	 * @return LDAPAtributeSet created...
 	 */
-	protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, boolean extra, boolean person,
+	protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person,
 			String password, ExtendedInformation extendedinformation) {
-		log.debug(">getAttributeSet()");
+		if (log.isDebugEnabled()) {
+			log.debug(">getAttributeSet(dn="+dn+", email="+email+")");			
+		}
 		LDAPAttributeSet attributeSet = new LDAPAttributeSet();
 		LDAPAttribute attr = new LDAPAttribute("objectclass");
 		// The full LDAP object tree is divided with ; in the objectclass
@@ -1236,6 +1229,10 @@ public class LdapPublisher extends BasePublisher {
 				if (title != null) {
 					attributeSet.add(new LDAPAttribute("title", title));
 				}
+				if (email != null) {
+					attributeSet.add(new LDAPAttribute("mail", email));											
+				}
+				
 				// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
 				// This is not present in the normal objectClass (inetOrgPerson)
 				// Modifying the schema is as simple as adding serialNumber as MAY in the inetOrgPerson object class in inetorgperson.schema.
@@ -1258,6 +1255,7 @@ public class LdapPublisher extends BasePublisher {
 	 *
 	 * @param oldEntry the objectclass the attribute set should be of.
 	 * @param dn dn of the LDAP entry.
+	 * @param email email address for entry, or null
 	 * @param extra if we should add extra attributes except the objectclass to the
 	 *        modificationset.
 	 * @param pserson true if this is a person-entry, false if it is a CA.
@@ -1265,8 +1263,10 @@ public class LdapPublisher extends BasePublisher {
 	 *
 	 * @return LDAPModificationSet created...
 	 */
-	protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person) {
-		log.debug(">getModificationSet()");
+	protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person) {
+		if (log.isDebugEnabled()) {
+			log.debug(">getModificationSet(dn="+dn+", email="+email+")");			
+		}
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
 		ArrayList modSet = new ArrayList();
@@ -1327,6 +1327,13 @@ public class LdapPublisher extends BasePublisher {
 					LDAPAttribute attr = new LDAPAttribute("givenName", title);
 					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 				}
+				LDAPAttribute oldEmail = oldEntry.getAttribute("mail");
+				if ( ( (email != null) && (oldEmail == null) && addNonExisting) || ( (email != null) && (oldEmail != null ) && modifyExisting) ) {
+					LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
+					modSet.add(new LDAPModification(LDAPModification.REPLACE, mailAttr));											
+				}
+
+				// All generic personal attributes
 				modSet.addAll(getModificationSetFromDN(dn, oldEntry, MATCHINGPERSONALATTRIBUTES));
 				// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
 				// This is not present in the normal objectClass (inetOrgPerson)
