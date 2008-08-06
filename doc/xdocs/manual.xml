@@ -1593,7 +1593,7 @@ If you want to re-send a notification for a user, reset the status to NEW.
 
 <subsection name="Dynamic Substitution Variables">
 <p>
-Parameters that can be used with different usages of email notification.All parameters isn't always set, it depends on the input data.
+Parameters that can be used with different usages of email notification. All parameters isn't always set, it depends on the input data.
 </p><p>
 The following parameters can be set:
 <ul>
@@ -1633,6 +1633,7 @@ Variables used with userdata:
 </li>
 <li>${user.TIMECREATED}             = The time the user was created</li>
 <li>${user.TIMEMODIFIED}            = The time the user was modified</li>
+<li>${approvalAdmin.XX} variables from below can be used to get the administrator who adds an end entity.</li>
 </ul>
 </p><p>
 Variables used with approvals:
