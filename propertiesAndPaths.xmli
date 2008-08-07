@@ -289,7 +289,7 @@
     <property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE,PT" />
     <property name="web.contentencoding" value="UTF-8" />
-    <property name="web.docbaseuri" value="disabled" />
+    <property name="web.docbaseuri" value="internal" />
     <property name="intresources.preferredlanguage" value="EN" />
     <property name="intresources.secondarylanguage" value="SE" />
     <property name="hardtoken.diplaysensitiveinfo" value="true" />

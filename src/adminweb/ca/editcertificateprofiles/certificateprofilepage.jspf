@@ -443,7 +443,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("VALIDITY") %> (<%= ejbcawebbean.getText("DAYS") %>)<br>&nbsp;
+        <%= ejbcawebbean.getText("VALIDITY") %> (<%= ejbcawebbean.getText("DAYS") %>)
+        <%= ejbcawebbean.getHelpReference("/manual.html#Validity") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
@@ -613,7 +614,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLDISTPOINT") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20generation") %> <br>
+        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20Distribution%20Points") %> <br>
         <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br>
         <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br>
         <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br>

@@ -335,35 +335,6 @@ in the certificate and must exactly match the IP in the URI.
 <p>
 A new CA should always issue an (empty) CRL. This is done when the ca is created
 and can also be done by running 'ca.sh/cmd createcrl <i>caname</i>'.
-</p><p>
-Note on CRL Distribution Points (CDPs): it is possible to configure
-multiple URLs for CDPs if they are separated by ';'. 
-For example: 
-<br/>http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
-</p><p>
-The same applies to CRLIssuer, for example: 
-<br/>CN=Foo,C=SE;CN=Bar,C=US
-</p><p>
-Note that you are responsible for the order and encoding of your CRLIssuer, if this is important check it!
-</p><p>
-A CRLDistributionPoint for a CA in EJBCA could look like:
-</p>
-<source>
-http://host:port/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=url-encoded-issuerDN
-</source>
-<p>
-It should also be possible to use an LDAP distribution point, if you have configued a publisher to publish CRLs to LDAP.
-</p>
-<source>
-ldap://yourLdapServer:port_number/cn=CA-test,ou=CRLPUB,dc=mycompany,dc=com?certificateRevocationList
-</source>
-<p>
-(such as the link from the web distribution pages)
-</p>
-<p>
-When defining CRL distribution point and CRL issuer in a certificate profile, you can choose to set the values in either 
-the certificate profile, or in the CA configuration (edit CAs). By having the setting in the CA configuration it is possible to use the same 
-certificate profile for several CAs, otherwise you would have to create a new certificate profile for all CRL distribution points.
 </p>
 <p>
 There are three settings in CA configuration dictating the times when CRL generation is done:
@@ -376,6 +347,71 @@ There are three settings in CA configuration dictating the times when CRL genera
 <p>
 There are at least two ways to have EJBCA to periodically create updated CRLs.
 </p>
+
+<subsection name="CRL Distribution Points">
+<p>
+The CRL Distribution Point (CDP) extension is provided as info for clients verifying a certificate. The value is a URI 
+that points to a CRL that can be used to check if the certificate is revoked. The CRL is issued by the CA. 
+There are different kinds of CRL Distribution Points and currently EJBCA supports a URI.
+</p>
+<p>
+Note that you are responsible for the order and encoding of your CRLIssuer, if this is important check it!
+</p><p>
+A CRLDistributionPoint for a CA in EJBCA could look like:
+</p>
+<source>
+http://host:port/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=url-encoded-issuerDN
+</source>
+<p>
+(such as the link from the web distribution pages)
+</p>
+<p>
+<ul>
+<li>host is the DNS name by which the CA is accessible. Port 8080 is the default port that JBoss listens to, but if you changed the JBoss port, this value should also change.</li>
+<li>url-encoded-issuerDN is the CAs common name as configured when the CA was created. This is the same DN as occurs as Issuer in certificates issued by this CA.</li>
+</ul>
+</p>
+<p>
+When configuring this extension you should take the URI entered and test it in a normal browser, from another machine than the CA, to see that it works before issuing any certificates.
+</p>
+<p>
+It should also be possible to use an LDAP distribution point, if you have configued a publisher to publish CRLs to LDAP.
+</p>
+<source>
+ldap://yourLdapServer:port_number/cn=CA-test,ou=CRLPUB,dc=mycompany,dc=com?certificateRevocationList
+</source>
+<p>
+When defining CRL distribution point and CRL issuer in a certificate profile, you can choose to set the values in either 
+the certificate profile, or in the CA configuration (edit CAs). By having the setting in the CA configuration it is possible to use the same 
+certificate profile for several CAs, otherwise you would have to create a new certificate profile for all CRL distribution points.
+<br/>
+By checking 'Use CA defined CRL Distribution Point' you can configure the CRL distribution point in the edit CA page instead, and use this value 
+in every certificate profile that uses that CA. It is a convenience function, so you don't have to enter the same CDP in all certificate profiles.
+</p>
+<p>
+It is possible to configure
+multiple URLs for CDPs if they are separated by ';'. 
+For example: 
+<br/>http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
+</p><p>
+The same applies to CRLIssuer, for example: 
+<br/>CN=Foo,C=SE;CN=Bar,C=US
+</p>
+</subsection>
+
+<subsection name="CRL Issuer">
+<p>
+According to RFC3280 a CRL issuer is:
+</p>
+<source>
+An optional system to which a CA delegates the publication of certificate revocation lists;
+</source>
+<p>
+The contents of the field in the profile is a DN, like "CN=CRLIssuerForAdminCA1,O=foo,C=SE".
+You have to build the actual CRL Issuer software yourself.
+</p>
+</subsection>
+
 <subsection name="CRL Update service worker">
 <p>
 From EJBCA 3.4 there is a timed service framework in EJBCA. In the Admin-GUI you can go to 
@@ -3980,6 +4016,33 @@ This means that if you have several CAs using ECDSA with 'implicitlyCA', they wi
 You can mix 'implicitlyCA' with named curves any way you like though.
 </p>
 </subsection>
+</section>
+
+<section name="Certificate profiles">
+<subsection name="Validity">
+<p>
+The validity determines the validity in days of certificates, from the time the certificate is issued.
+The field 'notAfter' in the issued certificate will have the value 'now + validity days'.
+</p><p>
+<strong>Allow validity override</strong><br/>
+The check box 'Allow Validity Override' will make it possible to request a specific notAfter date. This is currently possible when using CMP (the CRMF request format), or when using the API to issue certificates.
+</p><p>
+The validity of a certificate is determined as follows:
+<ul>
+<li>The Validity field in the profile specifies the maximum allowed validity, which will be the validity if nothing else is specified.</li>
+<li>If 'Allow validity override' is enabled in the profile the profile value can be overridden with:
+<ul><li>Start and end time specified when adding the end entity, of allowed in the End Entity Profile.</li>
+<li>Requested validity form the certificate request (CMP for example).</li>
+</ul>
+</li>
+</ul>
+</p>
+<p>If the validity is for a CA the certificate profile specifies the maximum validity, but it can be shorter if specified when adding the CA.
+The validity of the CA can never be longer than the value specified in the profile.
+</p>
+</subsection>
+
+
 </section>
 
 <section name="Export and import profiles">

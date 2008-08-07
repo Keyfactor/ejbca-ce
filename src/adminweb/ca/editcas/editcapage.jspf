@@ -566,6 +566,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("VALIDITY") %> (<%= ejbcawebbean.getText("DAYS") %>)
+        <%= ejbcawebbean.getHelpReference("/manual.html#Validity") %> <br>
       </td>
       <td width="50%"> 
         <% if(isexternal || (editca && cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA)){
@@ -745,7 +746,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20generation") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20Distribution%20Points") %>
         <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
       <td width="50%">
@@ -760,7 +761,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTCRLISSUER") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20generation") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20Issuer") %>
       </td>
       <td width="50%">
            <% if(isexternal){

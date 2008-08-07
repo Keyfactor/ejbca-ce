@@ -96,7 +96,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 
 # Show links to the EJBCA documentation. The links can either point to internally deployed
 # documentation on the server or any exteral location like ejbca.org.
-# Default = disabled
+# Default = internal
 #web.docbaseuri=disabled
 #web.docbaseuri=internal
 #web.docbaseuri=http://www.ejbca.org
