@@ -18,6 +18,7 @@ import java.util.Iterator;
 import javax.ejb.EJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
@@ -132,35 +133,32 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		return retval;
 	}
 	
-	private IPublisherSessionLocal publishersession = null;	
-	private IPublisherSessionLocal getPublisherSession(){
-		if(publishersession == null){
-
-			try {
-				Context context = new InitialContext();
-				publishersession = ((IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				  "PublisherSessionLocal"), IPublisherSessionLocalHome.class)).create();
-			} catch (Exception e) {
-				throw new EJBException(e);
-			} 
-			
+	private Context context = null;
+	private Context getContext() throws NamingException {
+		if (context == null) {
+			context = new InitialContext();
 		}
-		
-		return publishersession;
+		return context;
+	}
+	private IPublisherSessionLocal getPublisherSession(){
+		try {
+			Context ctx = getContext();
+			IPublisherSessionLocal publishersession = ((IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup(
+					IPublisherSessionLocalHome.JNDI_NAME), IPublisherSessionLocalHome.class)).create();
+			return publishersession;
+		} catch (Exception e) {
+			throw new EJBException(e);
+		} 
 	}
 	
-	private ICAAdminSessionLocal caadminsession = null;	
-	private ICAAdminSessionLocal getCAAdminSession(){
-		if(caadminsession == null){
-
-			try {
-				Context context = new InitialContext();
-				caadminsession = ((ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				  "CAAdminSessionLocal"), ICAAdminSessionLocalHome.class)).create();
-			} catch (Exception e) {
-				throw new EJBException(e);
-			} 
-		}	
-		return caadminsession;
+	private ICAAdminSessionLocal getCAAdminSession() {
+		try {
+			Context ctx = getContext();
+			ICAAdminSessionLocal caadminsession = ((ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup(
+					ICAAdminSessionLocalHome.JNDI_NAME), ICAAdminSessionLocalHome.class)).create();
+			return caadminsession;
+		} catch (Exception e) {
+			throw new EJBException(e);
+		} 
 	}
 }
