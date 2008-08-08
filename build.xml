@@ -106,7 +106,7 @@
     	<antcall target="doc" />
 		<replace file="${eardd.src}/META-INF/application.xml"
 		token="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/${app.name}/doc&lt;/context-root>&lt;/web>&lt;/module>"/>
-		<war destfile="${docwar}" needxmlfile="false">
+		<war destfile="${docwar}" webxml="${mainsrc}/publicweb/empty_webxml.xml">
             <fileset dir="${doc.src}" />
         </war>
     </target>
