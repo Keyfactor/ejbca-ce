@@ -825,6 +825,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		String email,  int certificateprofileid, boolean administrator, boolean keyrecoverable, boolean sendnotification,
     		int tokentype, int hardwaretokenissuerid, int caid, ExtendedInformation ei)
 			throws UserDoesntFullfillEndEntityProfile {
+    	log.debug(">doesUserFullfillEndEntityProfileWithoutPassword()");
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       if (subjectdnfields.isIllegal()) {
           throw new UserDoesntFullfillEndEntityProfile("Subject DN is illegal.");
@@ -1001,7 +1002,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       String endTime = null;
       if ( ei != null ) {
     	  startTime = ei.getCustomData(EndEntityProfile.STARTTIME);
+    	  log.debug("startTime is: "+startTime);
     	  endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+    	  log.debug("endTime is: "+endTime);
       }
 	  Date now = new Date();
 	  Date startTimeDate = null;
@@ -1034,7 +1037,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  }
     		  long relative = (Long.parseLong(endTimeArray[0])*24*60 + Long.parseLong(endTimeArray[1])*60 +
     				  Long.parseLong(endTimeArray[2])) * 60 * 1000;
-    		  endTimeDate = new Date(startTimeDate.getTime() + relative);
+    		  // If we haven't set a startTime, use "now"
+    		  Date start = (startTimeDate == null) ? new Date(): startTimeDate;
+    		  endTimeDate = new Date(start.getTime() + relative);
     	  } else {
     		  try {
     			  endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(endTime);
@@ -1059,7 +1064,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  throw new UserDoesntFullfillEndEntityProfile("Allowed requests used, but not permitted by profile.");
       }
 
-    } // doesUserFullfillEndEntityProfile
+  	log.debug("<doesUserFullfillEndEntityProfileWithoutPassword()");
+
+    } // doesUserFullfillEndEntityProfileWithoutPassword
     
     /**
      * This function tries to match each field in the profile to a corresponding field in the DN/AN/AD-fields.
