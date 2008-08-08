@@ -238,9 +238,13 @@ public abstract class BaseCAToken implements ICAToken {
         setProvider(jcaProvider);
         mJcaProviderName = jcaProvider.getName(); 
         if (jceProviderClassName != null) {
-        	Provider jceProvider = (Provider)Class.forName(jceProviderClassName).newInstance();
-            setProvider(jceProvider);        	
-            mJceProviderName = jceProvider.getName(); 
+        	try {
+        		Provider jceProvider = (Provider)Class.forName(jceProviderClassName).newInstance();
+        		setProvider(jceProvider);        	
+        		mJceProviderName = jceProvider.getName(); 
+        	} catch (Exception e) {
+        		log.error("Failed to initialize JCE provider. Encryption operations may not work bu we are continuing...", e);
+        	}
         } else {
         	mJceProviderName = null;
         }
@@ -265,7 +269,7 @@ public abstract class BaseCAToken implements ICAToken {
     }
     private void setProvider(Provider prov) {
     	String pName = prov.getName();
-        if (pName.startsWith("Luna")) {
+        if (pName.startsWith("LunaJCA")) {
         	// Luna Java provider does not contain support for RSA/ECB/PKCS1Padding but this is 
         	// the same as the alias below on small amounts of data  
             prov.put("Alg.Alias.Cipher.RSA/NONE/NoPadding","RSA//NoPadding");
