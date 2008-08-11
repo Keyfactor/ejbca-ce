@@ -156,10 +156,12 @@ public class CertTools {
     public static final String GUID = "guid";
     /** ObjectID for upn altName for windows domain controller guid */
     public static final String GUID_OBJECTID = "1.3.6.1.4.1.311.25.1";
-    /** ObjectID for Mircosoft Encrypted File System Certificates */
+    /** ObjectID for Microsoft Encrypted File System Certificates */
     public static final String EFS_OBJECTID = "1.3.6.1.4.1.311.10.3.4";
-    /** ObjectID for Mircosoft Encrypted File System Recovery Certificates */
+    /** ObjectID for Microsoft Encrypted File System Recovery Certificates */
     public static final String EFSR_OBJECTID = "1.3.6.1.4.1.311.10.3.4.1";
+    /** ObjectID for Microsoft Signer of documents */
+    public static final String MS_DOCUMENT_SIGNING_OBJECTID = "1.3.6.1.4.1.311.10.3.12";
     /** Object id id-pkix */
     public static final String id_pkix = "1.3.6.1.5.5.7";
     /** Object id id-kp */
