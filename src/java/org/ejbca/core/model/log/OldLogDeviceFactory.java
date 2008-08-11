@@ -18,7 +18,7 @@ import java.util.Properties;
 
 /**
  * Factory for the old logging device.
- *
+ * @version $Id$
  */
 public class OldLogDeviceFactory {
     /**

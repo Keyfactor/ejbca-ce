@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.model.log;
 
 import java.io.ByteArrayOutputStream;
@@ -22,6 +34,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 
 /**
  * Exports the given log-events as a CMS/PKCS7-file signed by a configured CA with CMS services enabled.
+ * @version $Id$
  */
 public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler, Serializable {
 

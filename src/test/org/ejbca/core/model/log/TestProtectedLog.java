@@ -89,7 +89,7 @@ public class TestProtectedLog extends TestCase {
 		int messageCounter = 0;
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
 				LogConstants.EVENT_INFO_STARTING, LOGMESSAGE+messageCounter++, null);
-		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
 		// Write another and make sure there are no error message
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
@@ -106,9 +106,9 @@ public class TestProtectedLog extends TestCase {
 		Thread.sleep(1100);	// Default interval to search for its own event in database is 1 second.
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
-		assertTrue(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
 		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
-		assertTrue(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
 		// Recover
 		TestTools.getProtectedLogSession().resetEntireLog(false, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
@@ -133,7 +133,7 @@ public class TestProtectedLog extends TestCase {
 		int messageCounter = 0;
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
-		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_LOG, new Date(), null, null,
 				LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Terminating log session for this node.",null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
@@ -144,9 +144,9 @@ public class TestProtectedLog extends TestCase {
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
-		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
 		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
-		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN, ProtectedLogTestAction.getLastActionCause());
 		// Sign unsigned chain so it can be linked in
 		TestTools.getProtectedLogSession().signAllUnsignedChains(false);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
@@ -161,7 +161,7 @@ public class TestProtectedLog extends TestCase {
 		TestTools.getProtectedLogSession().removeNodeChain(TestTools.getProtectedLogSession().findOldestProtectedLogEventRow().getNodeGUID());
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
-		assertTrue(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_MISSING_LOGROW.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
 	}
 
 	/**
@@ -193,7 +193,7 @@ public class TestProtectedLog extends TestCase {
 		int messageCounter = 0;
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
-		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
 		// Activate CMS service
 		X509CAInfo x509cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(internalAdmin, DEFAULT_CA_NAME);
 		assertTrue("The test expects the CA \""+DEFAULT_CA_NAME+"\" to exist.", x509cainfo != null);
@@ -306,10 +306,10 @@ public class TestProtectedLog extends TestCase {
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		try {
 			TestTools.getLogSession().testRollbackInternal(now);
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 		}
 		// TODO: The following test fails on Hypersonic the second time for some reason...
-		assertTrue(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG.equals(ProtectedLogTestAction.getLastActionCause()));
+		assertEquals(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
 		// Verify that event written at time "now" still exists
 		assertTrue("The log event has been rolled back and cannot be found any more..", TestTools.getProtectedLogSession().existsAnyProtectedLogEventByTime(now));
 	}

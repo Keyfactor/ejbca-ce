@@ -24,7 +24,8 @@ import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
 import org.ejbca.util.CertTools;
 
 /**
- * Thread-safe singleton that invokes fowards an export from the export service.  
+ * Thread-safe singleton that invokes forwards an export from the export service.
+ * @version $Id$
  */
 public class ProtectedLogExporter {
 	

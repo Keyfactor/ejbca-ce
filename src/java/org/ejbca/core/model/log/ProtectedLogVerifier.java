@@ -25,7 +25,8 @@ import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 
 /**
- * Thread-safe singleton that invokes fowards a request from the verification service.  
+ * Thread-safe singleton that invokes fowards a request from the verification service.
+ * @version $Id$  
  */
 public class ProtectedLogVerifier {
 
