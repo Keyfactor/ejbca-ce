@@ -993,6 +993,8 @@ public class CertTools {
         ArrayList ret = new ArrayList();
         String beginKey = "-----BEGIN CERTIFICATE-----";
         String endKey = "-----END CERTIFICATE-----";
+        String beginKeyTrust = "-----BEGIN TRUSTED CERTIFICATE-----";
+        String endKeyTrust = "-----END TRUSTED CERTIFICATE-----";
         BufferedReader bufRdr = null;
         ByteArrayOutputStream ostr = null;
         PrintStream opstr = null;
@@ -1003,13 +1005,20 @@ public class CertTools {
 				opstr = new PrintStream(ostr);
 				String temp;
 				while ((temp = bufRdr.readLine()) != null
-						&& !temp.equals(beginKey))
+						&& !(temp.equals(beginKey) || temp.equals(beginKeyTrust)))
 					continue;
-				if (temp == null)
-					throw new IOException("Error in " + certstream.toString()
-							+ ", missing " + beginKey + " boundary");
+				if (temp == null) {
+					if (ret.size() == 0) {
+						// There was no certificate in the file
+						throw new IOException("Error in " + certstream.toString() + ", missing " + beginKey + " boundary");											
+					} else {
+						// There were certificates, but some blank lines or something in the end
+						// anyhow, the file has ended so we can break here.
+						break;
+					}
+				}
 				while ((temp = bufRdr.readLine()) != null
-						&& !temp.equals(endKey))
+						&& !(temp.equals(endKey) || temp.equals(endKeyTrust)))
 					opstr.print(temp);
 				if (temp == null)
 					throw new IOException("Error in " + certstream.toString()
