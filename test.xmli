@@ -181,6 +181,7 @@
                     <include name="**/protocol/cmp/CrmfRequestTest*" />
                 	<include name="**/webdist/WebdistHttpTest*" />
                 	<include name="**/protocol/CertRequestHttpTest*" />
+                	<include name="**/cluster/WebEjbcaHealthCheckTest*" />
                     <!-- Test for standalone OCSP responder -->
                     <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
                 	<!-- Below tests require RA mode and special settings in cmp.properties, see java files -->
