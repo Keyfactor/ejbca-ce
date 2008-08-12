@@ -307,7 +307,8 @@ public class ProtocolScepHttpTest extends TestCase {
         con.getDoOutput();
         con.connect();
         assertEquals("Response code", 200, con.getResponseCode());
-        assertEquals("Content-Type", "application/x-x509-ca-cert", con.getContentType());
+        // Some appserver (Weblogic) responds with "application/x-x509-ca-cert; charset=UTF-8"
+        assertTrue(con.getContentType().startsWith("application/x-x509-ca-cert"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and SCEP requests are small enough
         InputStream in = con.getInputStream();
@@ -345,7 +346,8 @@ public class ProtocolScepHttpTest extends TestCase {
         con.getDoOutput();
         con.connect();
         assertEquals("Response code", 200, con.getResponseCode());
-        assertEquals("Content-Type", "text/plain", con.getContentType());
+        // Some appserver (Weblogic) responds with "text/plain; charset=UTF-8"
+        assertTrue(con.getContentType().startsWith("text/plain"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and SCEP requests are small enough
         InputStream in = con.getInputStream();
@@ -604,7 +606,8 @@ public class ProtocolScepHttpTest extends TestCase {
         }
 
         assertEquals("Response code", 200, con.getResponseCode());
-        assertEquals("Content-Type", "application/x-pki-message", con.getContentType());
+        // Some appserver (Weblogic) responds with "application/x-pki-message; charset=UTF-8"
+        assertTrue(con.getContentType().startsWith("application/x-pki-message"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and SCEP requests are small enough
         InputStream in = con.getInputStream();

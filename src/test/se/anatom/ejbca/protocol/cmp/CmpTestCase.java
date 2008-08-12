@@ -361,7 +361,8 @@ public class CmpTestCase extends TestCase {
         os.close();
 
         assertEquals(con.getResponseCode(), 200);
-        assertEquals("application/pkixcmp", con.getContentType());
+        // Some appserver (Weblogic) responds with "application/pkixcmp; charset=UTF-8"
+        assertTrue(con.getContentType().startsWith("application/pkixcmp"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and CMP requests are small enough
         InputStream in = con.getInputStream();

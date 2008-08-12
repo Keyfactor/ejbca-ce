@@ -158,7 +158,8 @@ public class CertRequestHttpTest extends TestCase {
         os.write("user=reqtest&password=foo123&keylength=2048".getBytes("UTF-8"));
         os.close();
         assertEquals("Response code", 200, con.getResponseCode());
-        assertEquals("Content-Type", "application/x-pkcs12", con.getContentType());
+        // Some appserver (Weblogic) responds with "application/x-pkcs12; charset=UTF-8"
+        assertTrue(con.getContentType().startsWith("application/x-pkcs12"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and PKCS12 requests are small
         InputStream in = con.getInputStream();
