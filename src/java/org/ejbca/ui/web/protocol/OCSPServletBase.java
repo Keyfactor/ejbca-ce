@@ -183,7 +183,7 @@ abstract class OCSPServletBase extends HttpServlet {
 	/** True if requests must be signed by a certificate issued by a list of trusted CA's*/
 	private boolean m_reqRestrictSignatures;
 	private int m_reqRestrictMethod;
-	private int signTrustValidTime = 180;
+	private int m_signTrustValidTime = 180*1000; // 180 seconds calculated as milliseconds
 	/** A list of CA's trusted for issuing certificates for signing requests */
 	private Hashtable mTrustedReqSigIssuers;
 	private Hashtable mTrustedReqSigSigners;
@@ -246,7 +246,7 @@ abstract class OCSPServletBase extends HttpServlet {
 			if (m_log.isDebugEnabled()) {
 				m_log.debug("Loaded "+mTrustedReqSigIssuers == null ? "0":mTrustedReqSigIssuers.size()+" CA-certificates as trusted for OCSP-request signing");        	
 			}
-			m_trustDirValidTo = signTrustValidTime>0 ? new Date().getTime()+signTrustValidTime : Long.MAX_VALUE;;
+			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;;
 		}
 		if(m_reqRestrictMethod == RESTRICTONSIGNER) {
 			if (mTrustedReqSigSigners != null && m_trustDirValidTo > new Date().getTime()) {
@@ -256,7 +256,7 @@ abstract class OCSPServletBase extends HttpServlet {
 			if (m_log.isDebugEnabled()) {
 				m_log.debug("Loaded "+mTrustedReqSigSigners == null ? "0":mTrustedReqSigSigners.size()+" Signer-certificates as trusted for OCSP-request signing");        	
 			}
-			m_trustDirValidTo = signTrustValidTime>0 ? new Date().getTime()+signTrustValidTime : Long.MAX_VALUE;;
+			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;;
 		}
 	}
 
@@ -325,6 +325,20 @@ abstract class OCSPServletBase extends HttpServlet {
 				m_log.error(errorMessage);
 				throw new ServletException(errorMessage);
 			}
+			m_log.debug("ocspSigningCertsValidTime is "+m_valid_time);
+		}
+		{
+			final String sValue = config.getInitParameter("signTrustValidTime");
+			if (StringUtils.isNotEmpty(sValue)) {
+				try {
+					m_signTrustValidTime = Integer.parseInt(sValue)*1000;
+				} catch( NumberFormatException e ) {
+					final String errorMessage = "Servlet param signTrustValidTime not an integer: "+sValue+", using default value: "+m_signTrustValidTime;
+					m_log.warn(errorMessage);
+				}
+			}
+			// If it is empty we'll use the default value of 180
+			m_log.debug("signTrustValidTime is "+m_signTrustValidTime);
 		}
 		// Parameters for OCSP signing (private) key
 		m_sigAlg = config.getInitParameter("SignatureAlgorithm");
@@ -357,10 +371,10 @@ abstract class OCSPServletBase extends HttpServlet {
 					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 					+ "'");
 		}
-		m_reqRestrictSignatures = true;
+		m_reqRestrictSignatures = false;
 		if (!StringUtils.isEmpty(initparam)) {
-			if ((!initparam.equalsIgnoreCase("true")) && (!initparam.equalsIgnoreCase("yes"))) {
-				m_reqRestrictSignatures = false;
+			if ((initparam.equalsIgnoreCase("true")) || (initparam.equalsIgnoreCase("yes"))) {
+				m_reqRestrictSignatures = true;
 			}
 		}
 		if (m_reqRestrictSignatures) {
@@ -625,9 +639,10 @@ abstract class OCSPServletBase extends HttpServlet {
 			try {
 				if (null== req.getRequestorName()) {
 					m_log.debug("Requestorname is null"); 
-				}
-				else {
-					m_log.debug("Requestorname is req.getRequestorName().toString()");
+				} else {
+					if (m_log.isDebugEnabled()) {
+						m_log.debug("Requestorname is: "+req.getRequestorName().toString());						
+					}
 					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REQ_NAME, req.getRequestorName().toString());
 				}
 				loadCertificates();
@@ -666,6 +681,7 @@ abstract class OCSPServletBase extends HttpServlet {
 						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
 					} catch (Exception e ) {
 						// nothing, just keep going
+						// actual verification/authorization of the signature is done below if signature is required.
 					}
 				}
 
@@ -694,8 +710,7 @@ abstract class OCSPServletBase extends HttpServlet {
 								m_log.error(errMsg);
 								throw new SignRequestSignatureException(errMsg);
 							}
-						}
-						else if (m_reqRestrictMethod == RESTRICTONISSUER) {
+						} else if (m_reqRestrictMethod == RESTRICTONISSUER) {
 							X509Certificate signerca = OCSPUtil.findCertificateBySubject(signercertIssuerName, m_cacerts);
 							if ((signerca == null) || (!OCSPUtil.checkCertInList(signerca, mTrustedReqSigIssuers)) ) {
 								String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
