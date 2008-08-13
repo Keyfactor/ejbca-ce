@@ -1,5 +1,3 @@
-<%@ page isErrorPage="true" %>
-
 <%@ include file="header.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
@@ -9,7 +7,7 @@
     <h1 class="title">@EJBCA@ Certificate Enrollment Error</h1>
 
     <c:if test="${isException != null && isException == 'true'}">
-        <h2>An Exception occured!</h2>
+        <h2>An Exception occurred!</h2>
     </c:if>
     <c:choose> 
         <c:when test="${errMsg == null}"> 
