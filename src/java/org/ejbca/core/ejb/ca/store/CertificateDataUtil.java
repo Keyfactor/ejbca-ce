@@ -142,7 +142,7 @@ public class CertificateDataUtil {
         try {
             ArrayList vect;
             // Status 20 = CertificateDataBean.CERT_ACTIVE, 21 = CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION 
-            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE status="+CertificateDataBean.CERT_ACTIVE+" or status="+CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION+" AND ");
+            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE (status="+CertificateDataBean.CERT_ACTIVE+" or status="+CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION+") AND ");
             stmt.append(" type IN (");
             stmt.append(ctypes.toString());
             stmt.append(')');
