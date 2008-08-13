@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.web.protocol;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -30,6 +29,7 @@ import java.util.Iterator;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -545,7 +545,9 @@ abstract class OCSPServletBase extends HttpServlet {
 			return;
 		}
 		// Get the request data
-		BufferedReader in = request.getReader();
+		
+		m_log.debug("Received request of length: "+request.getContentLength());
+        ServletInputStream in = request.getInputStream();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		// This works for small requests, and OCSP requests are small
 		int b = in.read();
