@@ -237,7 +237,10 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         X509Certificate[] chain = null;
         if (includeChain) {
             chain = (X509Certificate[])certChain.toArray(new X509Certificate[0]);
-        }        
+        } else {
+        	chain = new X509Certificate[1];
+        	chain[0] = signerCert;
+        }
         try {
         	PrivateKey privKey = this.ocspsigningkey;
         	if (ocspServiceReq.getPrivKey() != null) {

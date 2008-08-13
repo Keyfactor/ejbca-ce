@@ -105,7 +105,7 @@ import org.ejbca.util.GUIDGenerator;
  *   
  * @web.servlet-init-param description="If set to true the certificate chain will be returned with the OCSP response"
  *   name="includeCertChain"
- *   value="true"
+ *   value="${ocsp.includecertchain}"
  *   
  * @web.servlet-init-param description="If set to true the OCSP responses will be signed directly by the CAs certificate instead of the CAs OCSP responder"
  *   name="useCASigningCert"

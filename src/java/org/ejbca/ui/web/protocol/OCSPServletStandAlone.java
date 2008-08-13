@@ -492,7 +492,13 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         	PublicKey pk = signerCert.getPublicKey();
             String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
             m_log.debug("Signing algorithm: "+sigAlg);
-            final X509Certificate[] chain = request.includeChain() ? mChain : null;
+            X509Certificate[] chain = null;
+            if (request.includeChain()) {
+                chain = mChain;
+            } else {
+            	chain = new X509Certificate[1];
+            	chain[0] = signerCert;
+            }
             try {
                 BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(request, sigAlg, signerCert, mKeyFactory.getKey(), providerName, chain);
                 return new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
