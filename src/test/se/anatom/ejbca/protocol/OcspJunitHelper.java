@@ -55,6 +55,7 @@ public class OcspJunitHelper extends TestCase {
         os.close();
         assertEquals("Response code", 200, con.getResponseCode());
         // Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
+        assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and OCSP requests are small
