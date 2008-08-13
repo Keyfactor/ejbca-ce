@@ -462,12 +462,12 @@ Currently EJBCA works both with Glassfish v1 and v2 with the Derby/JavaDB databa
 <li>Set the envorinment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
   The variable must be available when working with EJBCA.</li> 
 <li>Edit conf/ejbca.properties, you should at least set appserver.type, appserver.home and logging.log4j.config.</li>
-<li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.</li>
-<li>Edit conf/web.properties, you should set desired values and also the http/s ports for your installation.</li>
+<li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database. Derby is supported for Glassfish, and default options for Derby should work.</li>
+<li>Edit conf/web.properties, you should set desired values and also the http/s ports (default 8080 and 8181) for your installation.</li>
 <li>Configuration of ejbcaws and xkms only have to be done in Glassfish v1.<br/>
      On Glassfish v2 it deploys nicely, even though the functionality does not work completely.<br/>
      See https://jira.primekey.se/browse/ECA-607 for details.<br/>
-     Tips how to solve these probles are welcome.)
+     (Tips how to solve these probles are welcome.)
      <ul>
      <li>Edit conf/jaxws.properties and set 'ejbcaws.enabled=false'.</li>
      <li>Edit conf/xkms.properties and set 'xkms.enabled=false'.</li>
@@ -491,11 +491,10 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <li>Start the database: asadmin start-database.</li>
 <li>Create a database and a database user with privileges.
 <pre>
-  > export DERBY_INSTALL=/home/sun/glassfish/javadb
   > cd /home/sun/glassfish/bin
-  > ../javadb/frameworks/NetworkServer/bin/ij.ksh 
-   (This command seems to be deprecated in v2 so use this command instead: 
-    > export DERBY_HOME=/home/sun/glassfish/javadb/; ../javadb/bin/ij)
+  > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/bin/ij   
+   (For glassfish v1 use this command instead: 
+    > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/frameworks/NetworkServer/bin/ij.ksh)
 
   ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
   ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
@@ -503,7 +502,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 </pre></li></ol></li>
 <li>Start the application server: asadmin start-domain<br/>
   The default user/password for the web console is admin/adminadmin.<br/>
-  Access the admingui at http://127.0.0.1:4848/.</li>
+  Access the Glassfish admin console at http://127.0.0.1:4848/.</li>
 <li>Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.<br/>
     When adding a Derby Pool use values: Name=EjbcaPool, Type=javax.sql.DataSource, Vendor=JavaDB.<br/>
     Properties: user=APP, password=APP, DatabaseName=ejbca</li>    
@@ -518,7 +517,8 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <ol>
 <li>Deploy ejbca.ear using:<br/> 
     ./asadmin deploy ../../ejbca/dist/ejbca.ear<br/>
-    The relative path to ejbca.ear depends on where you installed ejbca and glassfish.</li>
+    The relative path to ejbca.ear depends on where you installed ejbca and glassfish.
+    You can check that everything was ok in domains/domain1/logs/server.log.</li>
     
 <li>Install ejbca:<br/>
     ant install</li>
