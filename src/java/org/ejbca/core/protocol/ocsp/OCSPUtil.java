@@ -122,7 +122,12 @@ public class OCSPUtil {
     	returnval = basicRes.generate(sigAlg, signerKey, chain, new Date(), provider );
     	if (m_log.isDebugEnabled()) {
     		m_log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectDN().getName());
-    		RespID respId = new RespID(signerCert.getPublicKey());
+    		RespID respId = null;
+    		if (respIdType == OCSPUtil.RESPONDERIDTYPE_NAME) {
+				respId = new RespID(signerCert.getSubjectX500Principal());    			
+    		} else {
+				respId = new RespID(signerCert.getPublicKey());    			
+    		}
     		if (!returnval.getResponderId().equals(respId)) {
     			m_log.error("Response responderId does not match signer certificate responderId!");
     		}
