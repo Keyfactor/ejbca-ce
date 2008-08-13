@@ -16,7 +16,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -51,16 +50,24 @@ import org.ejbca.util.FileTools;
 
 public class OCSPUtil {
 
+	public static final int RESPONDERIDTYPE_NAME=1;
+	public static final int RESPONDERIDTYPE_KEYHASH=2;
+	
 	private static final Logger m_log = Logger.getLogger(OCSPUtil.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
 
-    public static BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate respondercert) throws OCSPException, NotSupportedException {
+    public static BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate respondercert, int respIdType) throws OCSPException, NotSupportedException {
         if (null == req) {
             throw new IllegalArgumentException();
         }
-        BasicOCSPRespGenerator res = new BasicOCSPRespGenerator(respondercert.getPublicKey());
+        BasicOCSPRespGenerator res = null;
+        if (respIdType == RESPONDERIDTYPE_NAME) {
+        	res = new BasicOCSPRespGenerator(new RespID(respondercert.getSubjectX500Principal()));
+        } else {
+        	res = new BasicOCSPRespGenerator(respondercert.getPublicKey());
+        }
         X509Extensions reqexts = req.getRequestExtensions();
         if (reqexts != null) {
         	X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
@@ -91,11 +98,11 @@ public class OCSPUtil {
         return res;
     }
     
-    public static BasicOCSPResp generateBasicOCSPResp(OCSPCAServiceRequest serviceReq, String sigAlg, X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain) 
+    public static BasicOCSPResp generateBasicOCSPResp(OCSPCAServiceRequest serviceReq, String sigAlg, X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain, int respIdType) 
     throws NotSupportedException, OCSPException, NoSuchProviderException, IllegalArgumentException {
     	BasicOCSPResp returnval = null;
     	BasicOCSPRespGenerator basicRes = null;
-    	basicRes = OCSPUtil.createOCSPResponse(serviceReq.getOCSPrequest(), signerCert);
+    	basicRes = OCSPUtil.createOCSPResponse(serviceReq.getOCSPrequest(), signerCert, respIdType);
     	ArrayList responses = serviceReq.getResponseList();
     	if (responses != null) {
     		Iterator iter = responses.iterator();

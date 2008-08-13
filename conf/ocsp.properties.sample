@@ -8,11 +8,16 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 
 # If set to true the OCSP responses will be signed directly by the CAs certificate instead 
 # of the CAs OCSP responder. Default true.
-ocsp.usecasigningcert=true
+#ocsp.usecasigningcert=true
 
 # If set to false the OCSP responses will only contain the signature certificate, and not the whole certificate chain of the OCSP responder. 
 # Default true.
-ocsp.includecertchain=true
+#ocsp.includecertchain=true
+
+# Defines the ResponderID type as defined in RFC2560. Set to name for the Name type and keyhash for the KeyHash type.
+# Possible values: name, keyhash
+# Default: keyhash 
+#ocsp.responderidtype=keyhash
 
 # Specifies which signature algorithms should be used on OCSP responses. You can specify several algorithm
 # separated by ';'. If RSA keys are used in the OCSP signing certificate, the algorithm with RSA will be used, and

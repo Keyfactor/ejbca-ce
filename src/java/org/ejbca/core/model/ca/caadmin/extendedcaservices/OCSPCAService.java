@@ -247,7 +247,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
             	m_log.debug("Using private key from CA");
         		privKey = ocspServiceReq.getPrivKey();
         	}
-        	BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, ocspServiceReq.getPrivKeyProvider(), chain);
+        	int respIdType = ocspServiceReq.getRespIdType();
+        	BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, ocspServiceReq.getPrivKeyProvider(), chain, respIdType);
             returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
         } catch (OCSPException ocspe) {
             throw new ExtendedCAServiceRequestException(ocspe);

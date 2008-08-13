@@ -500,7 +500,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             	chain[0] = signerCert;
             }
             try {
-                BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(request, sigAlg, signerCert, mKeyFactory.getKey(), providerName, chain);
+            	int respIdType = request.getRespIdType();
+                BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(request, sigAlg, signerCert, mKeyFactory.getKey(), providerName, chain, respIdType);
                 return new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
             } catch (Exception e) {
                 throw new ExtendedCAServiceRequestException(e);

@@ -111,6 +111,10 @@ import org.ejbca.util.GUIDGenerator;
  *   name="useCASigningCert"
  *   value="${ocsp.usecasigningcert}"
  *   
+ * @web.servlet-init-param description="If set to name the OCSP responses will use the Name ResponseId type, if set to keyhash the KeyHash type will be used."
+ *   name="responderIdType"
+ *   value="${ocsp.responderidtype}"
+ *   
  * @web.servlet-init-param description="If true a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as not revoked."
  *   name="nonExistingIsGood"
  *   value="${ocsp.nonexistingisgood}"
@@ -206,6 +210,11 @@ abstract class OCSPServletBase extends HttpServlet {
 	 * will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
 	 */
 	private boolean m_nonExistingIsGood = false;
+	/** Controls which of the two possible types of responderId should be used. See RFC2560 for details.
+	 * Default is to use KeyId, the other possible type is X500name.
+	 */
+	private int	m_respIdType = OCSPUtil.RESPONDERIDTYPE_KEYHASH;
+	
 	/** Configures OCSP extensions, these init-params are optional
 	 */
 	private Collection m_extensionOids = new ArrayList();
@@ -295,7 +304,9 @@ abstract class OCSPServletBase extends HttpServlet {
 		BasicOCSPResp retval = null;
 		{
 			// Call extended CA services to get our OCSP stuff
-			OCSPCAServiceResponse caserviceresp = extendedService(m_adm, getCaid(cacert), new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_useCASigningCert, m_includeChain));
+			OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_useCASigningCert, m_includeChain);
+			ocspservicerequest.setRespIdType(m_respIdType);
+			OCSPCAServiceResponse caserviceresp = extendedService(m_adm, getCaid(cacert), ocspservicerequest);
 			// Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
 			if (m_log.isDebugEnabled()) {
 				Collection coll = caserviceresp.getOCSPSigningCertificateChain();
@@ -418,6 +429,20 @@ abstract class OCSPServletBase extends HttpServlet {
 				m_useCASigningCert = true;
 			}
 		}
+		
+		initparam = config.getInitParameter("responderIdType");
+		if (m_log.isDebugEnabled()) {
+			m_log.debug("Responder Id type : '"
+					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
+					+ "'");
+		}
+		m_respIdType = OCSPUtil.RESPONDERIDTYPE_KEYHASH;
+		if (!StringUtils.isEmpty(initparam)) {
+			if (initparam.equalsIgnoreCase("name")) {
+				m_respIdType = OCSPUtil.RESPONDERIDTYPE_NAME;
+			}
+		}
+		
 		initparam = config.getInitParameter("includeCertChain");
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("Include certificate chain: '"

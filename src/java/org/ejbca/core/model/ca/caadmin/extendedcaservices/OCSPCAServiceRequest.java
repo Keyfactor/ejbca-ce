@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.OCSPReq;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /**
  * Class used when requesting OCSP related services from a CA.  
@@ -38,6 +39,7 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     private boolean useCACert = false;
     private boolean includeChain = true;
     private String privKeyProvider = "BC"; // Default for OCSP responder not using the CAs private key
+    private int respIdType = OCSPUtil.RESPONDERIDTYPE_KEYHASH; // Default to use KeyId
     
     // Parameters that are used when we use the CAs private key to sign responses
     private PrivateKey privKey = null;
@@ -104,5 +106,15 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
 	}
 	public void setPrivKeyProvider(String privKeyProvider) {
 		this.privKeyProvider = privKeyProvider;
+	}
+	/** ResponderIdType from OCSPUtil.RESPONDERIDTYPE_NAME or KEYHASH
+	 */
+	public int getRespIdType() {
+		return respIdType;
+	}
+	/** ResponderIdType from OCSPUtil.RESPONDERIDTYPE_NAME or KEYHASH
+	 */
+	public void setRespIdType(int respIdType) {
+		this.respIdType = respIdType;
 	}
 }
