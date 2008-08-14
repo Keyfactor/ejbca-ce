@@ -169,6 +169,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <delete dir="${ocsp-src.gen}" />
         <delete dir="${ocsp-src.dd}" />
         <delete dir="${ocsp-client.build}" />
+        <delete dir="${healthCheckTest.build}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete dir="${mainbin}/META-INF/" />

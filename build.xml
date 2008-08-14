@@ -763,5 +763,19 @@
 	  </lint4j>
 	</target>
     -->
-	
+
+    <target name="healthCheckTest">
+        <mkdir dir="${healthCheckTest.build}"/>
+        <mkdir dir="${dist.dir}"/>
+        <javac destdir="${healthCheckTest.build}" debug="on">
+            <include name="org/ejbca/ui/cli/HealthCheckTest.java" />
+            <src path="${mainsrc}/java" />
+        </javac>
+        <jar jarfile="${dist.dir}/healthCheckTest.jar">
+            <fileset dir="${healthCheckTest.build}"/>
+            <manifest>
+                <attribute name="Main-Class" value="org.ejbca.ui.cli.HealthCheckTest"/>
+            </manifest>
+        </jar>
+    </target>
 </project>
