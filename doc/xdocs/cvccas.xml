@@ -131,7 +131,8 @@
     <li>A new IS with no old certificate issued must be pre-registered, be in status NEW and use a password.</li>
     <li>An IS with status REVOKED or HISTORICAL can not be enrolled.</li>
     <li>If the request is an authenticated request and the IS have an old valid (in time) certificate (in the EJBCA database) that can verify the outer signature, a new IS certificate is automatically allowed to be enrolled.</li>
-    <li>If the authenticated request can not be verified using an old valid certificate (in the EJBCA database) the user must be in status NEW and use a password.</li>
+    <li>If the authenticated request can not be verified because the outer signature can not be verified at all (invalid signature or no verifying certificate in the EJBCA database), the request is rejected.</li>
+    <li>If the authenticated request can not be verified because the outer signature can be verified but the verifying certificate is not valid, the user must be in status NEW and use a password.</li>
   </ul>
   The complete certificate chain is always returned, with the IS certificate in the first position, DV certificate in the second and CVCA certificate last.
   </p>
@@ -170,13 +171,14 @@
 	  <li>If there are old certificates and the request is an authenticated request (with outer signature):</li>
 	  	<ul>
 	  	<li>If the request uses the same public key as the old certificate the request is denied (AuthorizationDeniedException).</li>
-	  	<li>If the old certificate is not valid any more we will not try to verify the request with it.</li>
+	  	<li>If the old certificate can verify the request but the certificate is not valid we try to process the request as a non-authenticated request.</li>
 	  	<li>If the request can be verified using one of the old <strong>valid</strong> certificates the request is automatically granted and users status is set to new and the password set to the given password.</li>
+	  	<li>If the request can not be verified at all the request is denied (AuthorizationDeniedException).</li>
 	  	</ul>
 	  <li>If there are no old certificates we try to process the request as a non-authenticated request.</li>
   	  </ul>
   <li>If the user does not exist we try to process the request as a non-authenticated request.</li>
-  <li>Processing the request means that we try to authenticate using the password given, and that only works if the users status is NEW.</li>
+  <li>Processing the request as a non-authenticated request means that we try to authenticate using the password given, and that only works if the users status is NEW.</li>
   </ul>
   </p>
   </section>
