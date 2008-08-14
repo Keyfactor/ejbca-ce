@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@page errorPage="errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,org.ejbca.ui.web.RequestHelper" %>
+<%@page errorPage="errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,java.net.InetAddress,java.net.UnknownHostException" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -21,8 +21,17 @@
 </div></H5> 
 
 <H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
+<%
+String hostname = "unknown";
+try {
+        InetAddress addr = InetAddress.getLocalHost();    
+        // Get hostname
+        hostname = addr.getHostName();
+    } catch (UnknownHostException e) {
+    }
+%>
+<div align=left><i><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "+hostname%></i></div> 
 
-<br><br>
 <p><%= ejbcawebbean.getText("EJBCAISAFULLY") + " " + ejbcawebbean.getText("EJBCAISAFULLY2")%></p>
 <p><%= ejbcawebbean.getText("WRITTENEXCLUSIVELY") %></p>
 
