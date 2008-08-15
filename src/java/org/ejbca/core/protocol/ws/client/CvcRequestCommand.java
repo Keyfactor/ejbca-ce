@@ -14,9 +14,12 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.FileOutputStream;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -58,7 +61,9 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	private static final int ARG_ENDENTITYPROFILE   = 8;
 	private static final int ARG_CERTIFICATEPROFILE = 9;
 	private static final int ARG_GENREQ             = 10;
-	private static final int ARG_BASEFILENAME        = 11;
+	private static final int ARG_BASEFILENAME       = 11;
+	private static final int ARG_AUTHSIGNKEY        = 12;
+	private static final int ARG_AUTHSIGNCERT       = 13;
 
 	/**
 	 * Creates a new instance of CvcRequestCommand
@@ -78,7 +83,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {   
-			if(args.length < 12 || args.length > 12){
+			if(args.length < 12 || args.length > 14){
 				getPrintStream().println("Number of argument: "+args.length);
 				usage();
 				System.exit(-1);
@@ -99,6 +104,15 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			String keySpec = args[ARG_KEYSPEC];
 			boolean genrequest = args[ARG_GENREQ].equalsIgnoreCase("true");
 			String basefilename = args[ARG_BASEFILENAME];
+			String authSignKeyFile = null;
+			System.out.println(args.length);
+			if (args.length > (ARG_AUTHSIGNKEY)) {
+				authSignKeyFile = args[ARG_AUTHSIGNKEY];				
+			}
+			String authSignCertFile = null;
+			if (args.length > (ARG_AUTHSIGNCERT)) {
+				authSignCertFile = args[ARG_AUTHSIGNCERT];				
+			}
 
 			getPrintStream().println("Trying to add user:");
 			getPrintStream().println("Username: "+userdata.getUsername());
@@ -130,8 +144,27 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					// We are making a self signed request, so holder ref is same as ca ref
 					HolderReferenceField holderRef = new HolderReferenceField(caRef.getCountry(), caRef.getMnemonic(), caRef.getSequence());
 					CVCertificate request = CertificateGenerator.createRequest(keyPair, signatureAlg, caRef, holderRef);
-					CVCAuthenticatedRequest authRequest = CertificateGenerator.createAuthenticatedRequest(request, keyPair, signatureAlg, caRef);
-					byte[] der = authRequest.getDEREncoded();
+					byte[] der = request.getDEREncoded();
+					if (authSignKeyFile != null) {
+						getPrintStream().println("Reading key from pkcs8 file "+authSignKeyFile+" to create an authenticated request");
+						byte[] keybytes = FileTools.readFiletoBuffer(authSignKeyFile);
+				        KeyFactory keyfact = KeyFactory.getInstance("RSA", "BC");
+				        PrivateKey privKey = keyfact.generatePrivate(new PKCS8EncodedKeySpec(keybytes));
+				        KeyPair authKeyPair = new KeyPair(null, privKey); // We don't need the public key
+						CAReferenceField authCaRef = caRef;
+						if (authSignCertFile != null) {
+							getPrintStream().println("Reading cert from cvcert file "+authSignCertFile+" to create an authenticated request");							
+							byte[] cert = FileTools.readFiletoBuffer(authSignCertFile);
+							CVCObject parsedObject = CvcPrintCommand.getCVCObject(authSignCertFile);
+							CVCertificate authCert = (CVCertificate)parsedObject;
+							String c = authCert.getCertificateBody().getHolderReference().getCountry();
+							String m = authCert.getCertificateBody().getHolderReference().getMnemonic();
+							String s = authCert.getCertificateBody().getHolderReference().getSequence();
+							authCaRef = new CAReferenceField(c, m, s);
+						}
+						CVCAuthenticatedRequest authRequest = CertificateGenerator.createAuthenticatedRequest(request, authKeyPair, signatureAlg, authCaRef);
+						der = authRequest.getDEREncoded();						
+					}
 					cvcreq = new String(Base64.encode(der));
 					// Print the generated request to file
 					FileOutputStream fos = new FileOutputStream(basefilename+".req");
@@ -180,13 +213,15 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 	protected void usage() {
 		getPrintStream().println("Command used to make a CVC request. If user does not exist a new will be created and if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <caname> <signatureAlg> <keyspec (1024/2048)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <basefilename>\n\n");
+		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <caname> <signatureAlg> <keyspec (1024/2048)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <basefilename> [<auth-sign-key>] [<auth-sign-cert>]\n\n");
 		getPrintStream().println("SignatureAlg can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1");
 		getPrintStream().println("DN is of form \"C=SE, CN=ISTEST2\".");
 		getPrintStream().println("Sequence is a sequence number for the public key, recomended form 00001 etc. If 'null' a random 5 number sequence will be generated.");
 		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <basefilename>.req, and the private key to <basefilename>.pkcs8.");
 		getPrintStream().println("If genreq is false a request is read from <reqfilename>.req and sent to the CA, the sequence from the command line is ignored.");
 		getPrintStream().println("The issued certificate is written to <basefilename>.cvcert");
+		getPrintStream().println("auth-sign-key is optional an if given the CVC request is signed by this key to create an authenticated CVC request.");
+		getPrintStream().println("auth-sign-cert is optional an if given the caRef of the authenticated CVC request is taken from this CVC certificate.");
 	}
 
 

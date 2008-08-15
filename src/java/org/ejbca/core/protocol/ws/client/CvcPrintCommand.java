@@ -23,9 +23,7 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
-import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.CvcException;
-import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -86,7 +84,7 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		}
 	}
 
-	private CVCObject getCVCObject(String filename) throws IOException, CvcException, CertificateException {
+	protected static CVCObject getCVCObject(String filename) throws IOException, CvcException, CertificateException {
 		CVCObject ret = null;
 		try {
 			byte[] cvcdata = FileTools.readFiletoBuffer(filename);				
