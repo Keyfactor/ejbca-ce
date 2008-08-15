@@ -91,8 +91,8 @@ public class HealthCheckTest {
             return;
         }
         httpPath = args[0];
-        numberOfThreads = args.length>2 ? Integer.parseInt(args[1].trim()):1;
-        waitTime = args.length>3 ? Integer.parseInt(args[2].trim()):1;
+        numberOfThreads = args.length>1 ? Integer.parseInt(args[1].trim()):1;
+        waitTime = args.length>2 ? Integer.parseInt(args[2].trim()):0;
         try {
             new StressTest(httpPath, numberOfThreads, waitTime);
         } catch (Exception e) {
