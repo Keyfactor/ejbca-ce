@@ -2284,8 +2284,8 @@ Each slot must have been initialized before keys could be generated on the them.
 Here follows an example on how to initialize a slot and generate keys to be used by EJBCA. The password is user1:
 </p>
 <source>
-./p11tool lib=./libcs2_pkcs11.so slot=1 InitToken=officer1
-./p11tool lib=./libcs2_pkcs11.so slot=1 loginSO=officer1 initpin=user1
+./p11tool Slot=1 InitToken=officer1
+./p11tool Slot=1 Label=CVCA LoginSO=officer1 InitPin=user1
 $EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 4096 signKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry signKey.
@@ -2295,6 +2295,11 @@ Creating certificate with entry defaultKey.
 $EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 512 testKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry testKey.
+</source>
+<p>You can view the pkcs11 objects created with the command:
+</p>
+<source>
+./p11tool Slot=1 Login=user1 ListObjects
 </source>
 <p>
 This is a example of a property field when creating the CA:
