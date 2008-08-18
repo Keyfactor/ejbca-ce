@@ -1265,25 +1265,30 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     				// Create cacertificate
     				Certificate cacertificate = null;
+    				String subjectAltName = null;
     				if(cainfo instanceof X509CAInfo){
-    					UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), ((X509CAInfo) cainfo).getSubjectAltName(), null,
-    							0, 0, 0,  cainfo.getCertificateProfileId(), null, null, 0, 0, null);
-    					if(requestmessage instanceof PKCS10RequestMessage){
-    					  ExtendedInformation extInfo = new ExtendedInformation();
-    					  PKCS10CertificationRequest pkcs10 = ((PKCS10RequestMessage) requestmessage).getCertificationRequest();
-    					  extInfo.setCustomData(ExtendedInformation.CUSTOM_PKCS10, new String(Base64.encode(pkcs10.getEncoded()))); 
-    					  cadata.setExtendedinformation(extInfo);
-    					}
-    					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, cainfo.getCertificateProfileId());
-    					String sequence = null;
-    					byte[] ki = requestmessage.getRequestKeyInfo();
-    					if ( (ki != null) && (ki.length > 0) ) {
-        					sequence = new String(ki);    						
-    					}
-    					cacertificate = signca.generateCertificate(cadata, publickey, -1, cainfo.getValidity(), certprofile, sequence);
-    					returnval = new X509ResponseMessage();
-    					returnval.setCertificate(cacertificate);
+    					subjectAltName = ((X509CAInfo) cainfo).getSubjectAltName();
+    			    }
+    				UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), subjectAltName, null,
+    						0, 0, 0,  cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+    				// We can pass the PKCS10 request message as extra parameters
+    				if(requestmessage instanceof PKCS10RequestMessage){
+    					ExtendedInformation extInfo = new ExtendedInformation();
+    					PKCS10CertificationRequest pkcs10 = ((PKCS10RequestMessage) requestmessage).getCertificationRequest();
+    					extInfo.setCustomData(ExtendedInformation.CUSTOM_PKCS10, new String(Base64.encode(pkcs10.getEncoded()))); 
+    					cadata.setExtendedinformation(extInfo);
     				}
+    				CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, cainfo.getCertificateProfileId());
+    				String sequence = null;
+    				byte[] ki = requestmessage.getRequestKeyInfo();
+    				if ( (ki != null) && (ki.length > 0) ) {
+    					sequence = new String(ki);    						
+    				}
+    				cacertificate = signca.generateCertificate(cadata, publickey, -1, cainfo.getValidity(), certprofile, sequence);
+    				// X509ResponseMessage works for both X509 CAs and CVC CAs here...pure luck? I don't think so!
+    				returnval = new X509ResponseMessage();
+    				returnval.setCertificate(cacertificate);
+
     				// Build Certificate Chain
     				Collection rootcachain = signca.getCertificateChain();
     				certchain = new ArrayList();
@@ -1293,12 +1298,19 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				if (!processinternalca) {
     					// If this is an internal CA, we don't create it and set a NULL token, since the CA is already created
         				if(cainfo instanceof X509CAInfo){
-        					// Create X509CA
+        					log.info("Creating a X509 CA (process request)");
         					ca = new X509CA((X509CAInfo) cainfo);
-        					ca.setCertificateChain(certchain);
-        					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
-        					ca.setCAToken(token);
         				}
+        				if(cainfo instanceof CVCCAInfo){
+        					// CVC CA is a special type of CA for EAC electronic passports
+        					log.info("Creating a CVC CA (process request)");
+        					CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
+        					// Create CVCCA
+        					ca = new CVCCA(cvccainfo);
+        				}
+    					ca.setCertificateChain(certchain);
+    					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
+    					ca.setCAToken(token);
 
         				// set status to active
         				cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					

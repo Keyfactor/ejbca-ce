@@ -45,10 +45,13 @@
   static final String HIDDEN_CANAME                        = "hiddencaname";
   static final String HIDDEN_CAID                          = "hiddencaid";
   static final String HIDDEN_CATYPE                        = "hiddencatype";
+  static final String HIDDEN_CATOKEN                       = "hiddencatoken";    
   static final String HIDDEN_CATOKENPATH                   = "hiddencatokenpath";
   static final String HIDDEN_CATOKENTYPE                   = "hiddencatokentype";
   static final String HIDDEN_RENEWKEYS                     = "hiddenrenewkeys";
   static final String HIDDEN_RENEWAUTHCODE                 = "hiddenrenewauthcode";
+  static final String HIDDEN_PROCESSREQUESTDN              = "hiddenprocessrequestdn";  
+  static final String HIDDEN_PROCESSREQUEST                = "hiddenprocessrequest";  
  
 // Buttons used in editcapage.jsp
   static final String BUTTON_SAVE                       = "buttonsave";
@@ -112,8 +115,6 @@
   static final String CHECKBOX_USEPREVIOUSKEY                     = "checkboxusepreviouskey";
   /** Create a link certificate when signign request by CA, primarily used to create CVC link certificates */
   static final String CHECKBOX_CREATELINKCERT                     = "checkboxcreatelinkcert";
-  
-  static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
   
   static final String SELECT_REVOKEREASONS                        = "selectrevokereasons";
   static final String SELECT_CATYPE                               = "selectcatype";  
@@ -1197,7 +1198,20 @@
 
          if(catype != 0 && subjectdn != null && caname != null && 
             certprofileid != 0 && signedby != 0 && validity !=0 ){
-           if(catype == CAInfo.CATYPE_X509){
+        	 CAInfo cainfo = null;
+
+        	 // Parameters common for both X509 and CVC CAs
+             ArrayList approvalsettings = new ArrayList(); 
+             int numofreqapprovals = 1;
+             boolean finishuser = false;
+             ArrayList crlpublishers = new ArrayList(); 
+             int crlperiod = 0;
+             int crlIssueInterval = 0;
+             int crlOverlapTime = 10;
+             int deltacrlperiod = 0;
+
+             
+        	 if(catype == CAInfo.CATYPE_X509){
               // Create a X509 CA
               String subjectaltname = request.getParameter(TEXTFIELD_SUBJECTALTNAME);
               if(subjectaltname == null)
@@ -1228,18 +1242,12 @@
             	  policies.addAll(certprof.getCertificatePolicies());
               }
 
-              int crlperiod = 0;
-              int crlIssueInterval = 0;
-              int crlOverlapTime = 10;
-              int deltacrlperiod = 0;
-
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;              
 
               boolean usecrlnumber = false;
               boolean crlnumbercritical = false;
                                                                       
-              boolean finishuser = false;
               boolean useutf8policytext = false;
               boolean useprintablestringsubjectdn = false;
               boolean useldapdnorder = true;
@@ -1248,13 +1256,10 @@
               }
               boolean usecrldistpointoncrl = false;
               boolean crldistpointoncrlcritical = false;
-              ArrayList crlpublishers = new ArrayList(); 
-              ArrayList approvalsettings = new ArrayList(); 
-              int numofreqapprovals = 1;
                             
              if(!illegaldnoraltname){
                if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
+                 cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, null, description, -1, null,
@@ -1274,19 +1279,46 @@
                                                         usecrldistpointoncrl,
                                                         crldistpointoncrlcritical,
                                                         true);
-                 try{
-                   byte[] req = cabean.getRequestData(); 
-                   IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(req);
-                   java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, certreq);
-                   cabean.saveProcessedCertificate(result);
-                   filemode = CERTGENMODE;   
-                   includefile="displayresult.jspf";
-                 }catch(CAExistsException caee){
-                    caexists = true;
-                 }                  
+               }                               
                }
-             }
-           }
+             } // if(catype == CAInfo.CATYPE_X509)
+            	 
+             if(catype == CAInfo.CATYPE_CVC) {
+        		 // A CVC CA does not have any of the external services OCSP, XKMS, CMS
+        		 ArrayList extendedcaservices = new ArrayList();
+
+                 if(request.getParameter(BUTTON_MAKEREQUEST) != null){
+                     caid = CertTools.stringToBCDNString(subjectdn).hashCode();
+                     signedby = CAInfo.SIGNEDBYEXTERNALCA;
+                 }
+
+                 // Create the CAInfo to be used for either generating the whole CA or making a request
+                 if(!illegaldnoraltname){
+                   if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
+                     cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
+                       certprofileid, validity, 
+                       null, catype, signedby,
+                       null, null, description, -1, null,
+                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+                       finishuser, extendedcaservices,
+                       approvalsettings,
+                       numofreqapprovals,
+                       true);
+                   }
+                 }
+               }  // if(catype == CAInfo.CATYPE_CVC)
+               if (cainfo != null) {
+                   try{
+                       byte[] req = cabean.getRequestData(); 
+                       IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(req);
+                       java.security.cert.Certificate result = cadatahandler.processRequest(cainfo, certreq);
+                       cabean.saveProcessedCertificate(result);
+                       filemode = CERTGENMODE;   
+                       includefile="displayresult.jspf";
+                   }catch(CAExistsException caee){
+                        caexists = true;
+                   }                              	   
+               }
          }
         } 
       }
@@ -1338,12 +1370,16 @@
     	  catype = Integer.parseInt(request.getParameter(SELECT_CATYPE));
           caname = request.getParameter(HIDDEN_CANAME);   
           editca = false;
+          processedsubjectdn = request.getParameter(HIDDEN_PROCESSREQUESTDN);
+          String processrequeststr = request.getParameter(HIDDEN_PROCESSREQUEST);
+          if ( (processrequeststr != null) && (processrequeststr.length() > 0)) {
+              processrequest = Boolean.valueOf(processrequeststr);        	  
+          } 
           includefile="editcapage.jspf";              
       }
       if( action.equals(ACTION_CHOOSE_CATOKENTYPE)){
         
         catokenpath = request.getParameter(SELECT_CATOKEN);  
-        String foo = request.getParameter(HIDDEN_CATYPE);
         catype = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
         caname = request.getParameter(HIDDEN_CANAME);   
         if(catokenpath.equals(SoftCAToken.class.getName())){

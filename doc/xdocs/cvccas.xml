@@ -253,6 +253,36 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   a problem these properties can be modified or set manually.
   </p>
   </section>
+
+  <section name="PEM requests">
+  <p>
+  Processing certificate requests in the Admin-GUI of EJBCA requires a PEM format certificate request.
+  If you receive a binary request converting it to PEM is easy:
+  <ol>
+  <li>Base64 encode the request, for example with openssl base64 -in MY.cvrqst -a -out MY.cvrqst.pem.</li>
+  <li>Add -----BEGIN CERTIFICATE REQUEST----- in the beginning of the file. </li>
+  <li>Add -----END CERTIFICATE REQUEST----- in the end of the file. </li>
+  </ol>
+  Example:
+  </p>
+  <source>
+-----BEGIN CERTIFICATE REQUEST-----
+fyGCAkd/ToIBPV8pAQBCDVNFQ1ZDQVBLMDAwMDF/SYIBFQYKBAB/AAcCAgIBAoGC
+AQDJuBLa1iFXD7WWK6614RvtmiZpgFXiTWkznp5MfusJuNqBuz46zeFAIJcerEtK
+xcHtbOppA5U2FwOtqit0yhkg2XLTEf9zh5ewchSGWujG9yY77BPXfLg3a3iwVyBW
+sED4z4L71hfvByTtkBpz90BFjwMUsiSzkuRwM/2PeThJNm5yDZVjLNFfN7Vdibi6
+7PRh77oQkofk/FvMNVa60u6RsT1urJdM7+5mCvGOs0KoWzFMCdm3rZrIIvWmQBSx
+MPRL42AVDgY/G7df27YMHJZ6psnEYC6n30yw91BFnzhqmDem4xugRnpzq1z0RqFM
+YabWe8NsIBk/k6bFXcheCiqDggMBAAFfIA1DWkRWVEVTVFNFMDAwXzeCAQBqi1o4
+HexB3Mfx5cnjCaRw8qPsC3zxw+bRXB3t1Y1pzA/Ely0HL8/y/SYpXKIs4DtZpCDI
+R4zKDSK3jkv914oVMpM3DqlFdLqY4aAHV4FN5+6BKvbGYZEfips1ba8rPZETLzci
+vKljIrXbf0fVSNhhnCAfM9DxKrlxZP10mLb0cWs5JSGjA2i0DlH18zKKteAOd8gy
+htgSjlz2FnisHnIUlHS1dlLIFABDfbvNS9+WTzNN8JlFi37QpSC+C5Xt8Y4NnGiX
+dMDaR1l15Vn6mNsw9lYaAcIj/EOlZcGocnVXAlhy3MkWk0ue85VbvwgPAfDP1AEF
+8JcqQ6xN7ULMh8xW
+-----END CERTIFICATE REQUEST-----
+  </source>
+  </section>
   
 </body>
 </document>

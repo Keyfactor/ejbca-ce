@@ -423,10 +423,11 @@ function checkallfields(){
         <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
       </td>
     </tr>
-   <% if(!processrequest){ %>
     <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
       <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATYPE %>'>
       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
+      <input type="hidden" name='<%= HIDDEN_PROCESSREQUEST %>' value='<%= processrequest%>'>
+      <input type="hidden" name='<%= HIDDEN_PROCESSREQUESTDN %>' value='<%= processedsubjectdn%>'>
       <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
           <%= ejbcawebbean.getText("TYPEOFCA") %>
@@ -447,6 +448,7 @@ function checkallfields(){
       </tr>
     </form>
 
+   <% if(!processrequest){ %>
     <% if(editca){ %>
         <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">          
@@ -475,7 +477,7 @@ function checkallfields(){
       </tr>
     </form>
     <%   }
-     }%>
+     } // if(!processrequest){ %>
   <form name="ca" method="post" action="<%=THIS_FILENAME %>" ENCTYPE="post">
     <input type="hidden" name='<%= HIDDEN_CATOKENTYPE %>' value='<%=catokentype %>'>
     <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<%=catype %>'>
