@@ -837,11 +837,9 @@ public class TestCertTools extends TestCase {
 		
         Vector dnorder = CertTools.getX509FieldOrder(true);
         X509Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
-		System.out.println(dn4);
 		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
         dnorder = CertTools.getX509FieldOrder(false);
         X509Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
-		System.out.println(dn5);
 		// This ordering is not optimal...
 		assertEquals("DC=domain,DC=tld,CN=toto,CN=titi", dn5.toString());
 
