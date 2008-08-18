@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Vector;
 
 import junit.framework.TestCase;
 
@@ -40,6 +41,7 @@ import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
@@ -829,14 +831,27 @@ public class TestCertTools extends TestCase {
 		log.debug("revdn1: " + revdn1);
 		assertEquals(dn2, revdn1);
 
+		String dn3 = "cn=toto,cn=titi,dc=domain,dc=tld";
+		String revdn3 = CertTools.reverseDN(dn3);
+		assertEquals("dc=tld,dc=domain,cn=titi,cn=toto", revdn3);
+		
+        Vector dnorder = CertTools.getX509FieldOrder(true);
+        X509Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
+		System.out.println(dn4);
+		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
+        dnorder = CertTools.getX509FieldOrder(false);
+        X509Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
+		System.out.println(dn5);
+		// This ordering is not optimal...
+		assertEquals("DC=domain,DC=tld,CN=toto,CN=titi", dn5.toString());
+
 		log.debug("<test09TestReverse()");
 	}
 
 	/**
 	 * Tests the handling of DC components
 	 * 
-	 * @throws Exception
-	 *             if error...
+	 * @throws Exception if error...
 	 */
 	public void test10TestMultipleReversed() throws Exception {
 		log.debug(">test10TestMultipleReversed()");
