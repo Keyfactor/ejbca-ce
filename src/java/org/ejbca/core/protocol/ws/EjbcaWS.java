@@ -400,7 +400,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 			throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
-			EjbcaException, ApprovalException, WaitingForApprovalException {
+			EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException {
 		log.debug(">cvcRequest");
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);

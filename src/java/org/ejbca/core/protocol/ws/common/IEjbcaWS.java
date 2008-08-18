@@ -23,6 +23,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
@@ -212,7 +213,7 @@ public interface IEjbcaWS {
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 	throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
-	EjbcaException, ApprovalException, WaitingForApprovalException;
+	EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException;
 	
 	/**
 	 * Method to use to generate a certificate for a user. The method must be preceded by
