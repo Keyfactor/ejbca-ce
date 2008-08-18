@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.catoken;
 
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
 
 
 /**
@@ -29,6 +30,7 @@ public class CATokenOfflineException extends EjbcaException {
      */
     public CATokenOfflineException() {
         super();
+        super.setErrorCode(ErrorCode.CA_OFFLINE);
     }
     
     
@@ -37,6 +39,6 @@ public class CATokenOfflineException extends EjbcaException {
      * @param msg the detail message.
      */
     public CATokenOfflineException(String msg) {
-        super(msg);
+        super(ErrorCode.CA_OFFLINE, msg);
     }
 }
