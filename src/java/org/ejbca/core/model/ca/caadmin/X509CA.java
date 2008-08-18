@@ -459,7 +459,9 @@ public class X509CA extends CA implements Serializable {
         	converter = new X509DefaultEntryConverter();
         }
         Vector dnorder = CertTools.getX509FieldOrder(getUseLdapDNOrder());
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter, dnorder));
+        X509Name subjectDNName = CertTools.stringToBcX509Name(dn, converter, dnorder);
+        log.debug("Using subjectDN: "+subjectDNName.toString());
+        certgen.setSubjectDN(subjectDNName);
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
         if (isRootCA) {
