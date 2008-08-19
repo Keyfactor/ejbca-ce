@@ -16,13 +16,11 @@ package org.ejbca.ui.web.pub.cluster;
 import java.util.Iterator;
 
 import javax.ejb.EJBException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
@@ -135,31 +133,24 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		return retval;
 	}
 	
-	private Context context = null;
-	private Context getContext() throws NamingException {
-		if (context == null) {
-			context = new InitialContext();
-		}
-		return context;
-	}
 	private IPublisherSessionLocal getPublisherSession(){
 		try {
-			Context ctx = getContext();
-			IPublisherSessionLocal publishersession = ((IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup(
-					IPublisherSessionLocalHome.JNDI_NAME), IPublisherSessionLocalHome.class)).create();
+			IPublisherSessionLocalHome home = (IPublisherSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
+			IPublisherSessionLocal publishersession = home.create();
 			return publishersession;
 		} catch (Exception e) {
+			log.error("Error getting PublisherSession: ", e);
 			throw new EJBException(e);
 		} 
 	}
 	
 	private ICAAdminSessionLocal getCAAdminSession() {
 		try {
-			Context ctx = getContext();
-			ICAAdminSessionLocal caadminsession = ((ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup(
-					ICAAdminSessionLocalHome.JNDI_NAME), ICAAdminSessionLocalHome.class)).create();
+			ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+			ICAAdminSessionLocal caadminsession = home.create();
 			return caadminsession;
 		} catch (Exception e) {
+			log.error("Error getting CAAdminSession: ", e);
 			throw new EJBException(e);
 		} 
 	}
