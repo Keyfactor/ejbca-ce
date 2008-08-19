@@ -284,7 +284,7 @@ public class TestCertificateData extends TestCase {
 
         // Seconds in a year
         long yearmillis = 365 * 24 * 60 * 60 * 1000;
-        long findDateSecs = data.getExpireDate().getTime() - (yearmillis * 100);
+        long findDateSecs = data.getExpireDate().getTime() - (yearmillis * 200);
         Date findDate = new Date(findDateSecs);
 
         log.info("1. Looking for cert with expireDate=" + findDate);
