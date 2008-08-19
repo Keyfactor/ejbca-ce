@@ -101,6 +101,7 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	}
 		
 	private String checkCAs(){
+		log.debug("Checking CAs.");
 		String retval = "";
 		Iterator iter = getCAAdminSession().getAvailableCAs(admin).iterator();
 		while(iter.hasNext()){
@@ -118,6 +119,7 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	}
 	
 	private String checkPublishers(){
+		log.debug("Checking publishers.");
 		String retval = "";
 		Iterator iter = getPublisherSession().getAuthorizedPublisherIds(admin).iterator();
 		while(iter.hasNext()){

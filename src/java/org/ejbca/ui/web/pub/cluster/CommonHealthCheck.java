@@ -56,6 +56,7 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	}
 
 	protected String checkMemory(){
+		log.debug("Checking JVM memory.");
 		String retval = "";
         if(minfreememory >= Runtime.getRuntime().freeMemory()){
           retval = "\nMEM: Error Virtual Memory is about to run out, currently free memory :" + Runtime.getRuntime().freeMemory();	
@@ -65,6 +66,7 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	}
 
 	protected String checkDB(){
+		log.debug("Checking database connection.");
 		String retval = "";
 		try{	
 		  Connection con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
