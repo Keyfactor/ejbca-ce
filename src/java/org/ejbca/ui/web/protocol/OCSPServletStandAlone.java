@@ -33,7 +33,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -46,13 +45,13 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -486,26 +485,16 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             mKeyFactory = f;
             providerName = sName;
         }
-        OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException {
-        	X509Certificate signerCert = mChain[0];
-            final String sigAlgs = request.getSigAlg();
-        	PublicKey pk = signerCert.getPublicKey();
-            String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
-            m_log.debug("Signing algorithm: "+sigAlg);
-            X509Certificate[] chain = null;
-            if (request.includeChain()) {
-                chain = mChain;
-            } else {
-            	chain = new X509Certificate[1];
-            	chain[0] = signerCert;
-            }
-            try {
-            	int respIdType = request.getRespIdType();
-                BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(request, sigAlg, signerCert, mKeyFactory.getKey(), providerName, chain, respIdType);
-                return new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
+        OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException {
+        	PrivateKey privKey;
+			try {
+				privKey = mKeyFactory.getKey();
             } catch (Exception e) {
                 throw new ExtendedCAServiceRequestException(e);
             }
+        	
+            OCSPCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, mChain);
+            return returnval;
         }
         boolean isOK() {
         	try {
@@ -529,7 +518,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
     
     protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
-                                                                                                    ExtendedCAServiceNotActiveException {
+                                                                                                    ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         SigningEntity se =(SigningEntity)mSignEntity.get(new Integer(caid));
         if ( se!=null ) {
             return se.sign(request);            

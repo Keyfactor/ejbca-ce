@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
@@ -14,6 +26,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -43,11 +56,20 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
+/** Class with common methods used by both Internal and External OCSP responders
+ * 
+ * @author tomas
+ * @version $Id$
+ *
+ */
 public class OCSPUtil {
 
 	public static final int RESPONDERIDTYPE_NAME=1;
@@ -141,6 +163,54 @@ public class OCSPUtil {
     	return returnval;
     }
     
+    /**
+     * Method generates an ExtendedCAServiceResponse which is a OCSPCAServiceResponse wrapping the BasicOCSPRespfor usage 
+     * internally in EJBCA.
+     *  
+     * @param ocspServiceReq OCSPCAServiceRequest
+     * @param privKey PrivateKey used to sign the OCSP response
+     * @param providerName Provider for the private key, can be on HSM
+     * @param certChain Certificate chain for signing the OCSP response
+     * @return OCSPCAServiceResponse
+     * @throws IllegalExtendedCAServiceRequestException
+     * @throws ExtendedCAServiceRequestException
+     */
+    public static OCSPCAServiceResponse createOCSPCAServiceResponse(OCSPCAServiceRequest ocspServiceReq, PrivateKey privKey, String providerName, X509Certificate[] certChain)
+    throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceRequestException {
+    	OCSPCAServiceResponse returnval = null;
+    	X509Certificate signerCert = certChain[0];
+    	String sigAlgs = ocspServiceReq.getSigAlg();
+    	PublicKey pk = signerCert.getPublicKey();
+    	String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
+    	m_log.debug("Signing algorithm: "+sigAlg);
+    	boolean includeChain = ocspServiceReq.includeChain();
+    	m_log.debug("Include chain: "+includeChain);
+    	X509Certificate[] chain = null;
+    	if (includeChain) {
+    		chain = certChain;
+    	} else {
+    		chain = new X509Certificate[1];
+    		chain[0] = signerCert;
+    	}
+    	try {
+    		int respIdType = ocspServiceReq.getRespIdType();
+    		BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, providerName, chain, respIdType);
+    		returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
+    	} catch (OCSPException ocspe) {
+    		throw new ExtendedCAServiceRequestException(ocspe);
+    	} catch (NoSuchProviderException nspe) {
+    		throw new ExtendedCAServiceRequestException(nspe);            
+    	} catch (NotSupportedException e) {
+    		m_log.error("Request type not supported: ", e);
+    		throw new IllegalExtendedCAServiceRequestException(e);
+    	} catch (IllegalArgumentException e) {
+    		m_log.error("IllegalArgumentException: ", e);
+    		throw new IllegalExtendedCAServiceRequestException(e);
+    	}
+    	return returnval;
+    } // createOCSPCAServiceResponse
+
+
     /**
      * Returns a signing algorithm to use selecting from a list of possible algorithms.
      * 

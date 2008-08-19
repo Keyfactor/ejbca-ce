@@ -212,55 +212,27 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 */
 	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
         m_log.debug(">extendedService");
-        if (!(request instanceof OCSPCAServiceRequest)) {
-            throw new IllegalExtendedCAServiceRequestException();            
-        }
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
 			String msg = intres.getLocalizedMessage("caservice.notactive");
 			m_log.error(msg);
 			throw new ExtendedCAServiceNotActiveException(msg);                            
         }
-        ExtendedCAServiceResponse returnval = null;
+        if (!(request instanceof OCSPCAServiceRequest)) {
+            throw new IllegalExtendedCAServiceRequestException();            
+        }
         OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
+    	PrivateKey privKey = this.ocspsigningkey;
+    	if (ocspServiceReq.getPrivKey() != null) {
+        	m_log.debug("Using private key from request");
+    		privKey = ocspServiceReq.getPrivKey();
+    	}
+    	String providerName = ocspServiceReq.getPrivKeyProvider();
         List certChain = ocspcertificatechain;
         if (ocspServiceReq.getCertificateChain() != null) {
-        	m_log.debug("Using cert chain from CA");
+        	m_log.debug("Using cert chain from request");
         	certChain = ocspServiceReq.getCertificateChain();
-        }
-    	X509Certificate signerCert = (X509Certificate)certChain.get(0);
-
-        String sigAlgs = ocspServiceReq.getSigAlg();
-    	PublicKey pk = signerCert.getPublicKey();
-        String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
-        m_log.debug("Signing algorithm: "+sigAlg);
-        boolean includeChain = ocspServiceReq.includeChain();
-        X509Certificate[] chain = null;
-        if (includeChain) {
-            chain = (X509Certificate[])certChain.toArray(new X509Certificate[0]);
-        } else {
-        	chain = new X509Certificate[1];
-        	chain[0] = signerCert;
-        }
-        try {
-        	PrivateKey privKey = this.ocspsigningkey;
-        	if (ocspServiceReq.getPrivKey() != null) {
-            	m_log.debug("Using private key from CA");
-        		privKey = ocspServiceReq.getPrivKey();
-        	}
-        	int respIdType = ocspServiceReq.getRespIdType();
-        	BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, ocspServiceReq.getPrivKeyProvider(), chain, respIdType);
-            returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
-        } catch (OCSPException ocspe) {
-            throw new ExtendedCAServiceRequestException(ocspe);
-        } catch (NoSuchProviderException nspe) {
-            throw new ExtendedCAServiceRequestException(nspe);            
-        } catch (NotSupportedException e) {
-        	m_log.error("Request type not supported: ", e);
-        	throw new IllegalExtendedCAServiceRequestException(e);
-		} catch (IllegalArgumentException e) {
-        	m_log.error("IllegalArgumentException: ", e);
-        	throw new IllegalExtendedCAServiceRequestException(e);
-		}
+        }        
+        ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, (X509Certificate[])certChain.toArray(new X509Certificate[0]));
         m_log.debug("<extendedService");		  		
 		return returnval;
 	}
