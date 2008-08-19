@@ -869,11 +869,15 @@ public class CertTools {
     public static synchronized void removeBCProvider() {
         Security.removeProvider("BC");  
         // Also remove the CVC provider
-        Security.removeProvider("CVC");    	
+        Security.removeProvider("CVC");
     }
     public static synchronized void installBCProvider() {
     	// Also install the CVC provider
-    	Security.addProvider(new CVCProvider());
+    	try {
+        	Security.addProvider(new CVCProvider());    		
+    	} catch (Exception e) {
+    		log.info("CVC provider can not be installed, CVC certificate will not work: ", e);
+    	}
     	
         // A flag that ensures that we install the parameters for implcitlyCA only when we have installed a new provider
         boolean installImplicitlyCA = false;
