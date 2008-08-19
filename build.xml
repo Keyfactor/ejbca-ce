@@ -764,17 +764,17 @@
 	</target>
     -->
 
-    <target name="healthCheckTest">
-        <mkdir dir="${healthCheckTest.build}"/>
+    <target name="clientToolBox">
+        <mkdir dir="${clientToolBox.build}"/>
         <mkdir dir="${dist.dir}"/>
-        <javac destdir="${healthCheckTest.build}" debug="on">
-            <include name="org/ejbca/ui/cli/HealthCheckTest.java" />
+        <javac destdir="${clientToolBox.build}" debug="on">
+            <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <src path="${mainsrc}/java" />
         </javac>
-        <jar jarfile="${dist.dir}/healthCheckTest.jar">
-            <fileset dir="${healthCheckTest.build}"/>
+        <jar jarfile="${dist.dir}/clientToolBox.jar">
+            <fileset dir="${clientToolBox.build}"/>
             <manifest>
-                <attribute name="Main-Class" value="org.ejbca.ui.cli.HealthCheckTest"/>
+                <attribute name="Main-Class" value="org.ejbca.ui.cli.ClientToolBox"/>
             </manifest>
         </jar>
     </target>

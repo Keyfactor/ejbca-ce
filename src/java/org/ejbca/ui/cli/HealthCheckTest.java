@@ -17,7 +17,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
  * @author lars
  *
  */
-public class HealthCheckTest {
+class HealthCheckTest extends ClientToolBox {
     static private class StressTest {
         final PerformanceTest performanceTest;
         StressTest( final String httpPath,
@@ -81,23 +81,29 @@ public class HealthCheckTest {
     /**
      * @param args
      */
-    public static void main(String[] args) {
+    @Override
+    void execute(String[] args) {
         final String httpPath;
         final int numberOfThreads;
         final int waitTime;
-        if ( args.length < 1 ) {
-            System.out.println("<http URL> [<number of threads>] [<wait time between eash thread is started>]");
+        if ( args.length < 2 ) {
+            System.out.println(args[0]+" <http URL> [<number of threads>] [<wait time between eash thread is started>]");
             System.out.println("Example: ");
             return;
         }
-        httpPath = args[0];
-        numberOfThreads = args.length>1 ? Integer.parseInt(args[1].trim()):1;
-        waitTime = args.length>2 ? Integer.parseInt(args[2].trim()):0;
+        httpPath = args[1];
+        numberOfThreads = args.length>2 ? Integer.parseInt(args[2].trim()):1;
+        waitTime = args.length>3 ? Integer.parseInt(args[3].trim()):0;
         try {
             new StressTest(httpPath, numberOfThreads, waitTime);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    String getName() {
+        return "healthCheckTest";
     }
 
 }
