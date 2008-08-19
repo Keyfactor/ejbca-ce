@@ -26,7 +26,7 @@ import org.ejbca.util.keystore.KeyStoreContainer;
  * @version $Id$
  *
  */
-public class HSMKeyTool {
+public class HSMKeyTool extends ClientToolBox {
 //    private static String CREATE_CA_SWITCH = "createca";
     private static final String ENCRYPT_SWITCH = "encrypt";
     private static final String DECRYPT_SWITCH = "decrypt";
@@ -42,7 +42,8 @@ public class HSMKeyTool {
     /**
      * @param args
      */
-    public static void main(String[] args) {
+    @Override
+    public void execute(String[] args) {
         try {
             final boolean isP11 = args.length>4 && KeyStoreContainer.isP11(args[4]);
             final String sKeyStore =  isP11 ? "<slot number. start with \'i\' to indicate index in list>" : "<keystore ID>";
@@ -153,5 +154,12 @@ public class HSMKeyTool {
         } catch (Throwable e) {
             e.printStackTrace(System.err);
         }
+    }
+    @Override
+    String getName() {
+        return "HSMKeyTool";
+    }
+    public static void main(String args[]) {
+        new HSMKeyTool().execute(args);
     }
 }

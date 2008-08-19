@@ -19,7 +19,7 @@ public abstract class ClientToolBox {
      * @param args
      */
     public static void main(String[] args) {
-        final ClientToolBox toolBox[] = { new HealthCheckTest() };
+        final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool() };
         if ( args.length<1 ) {
             System.err.println("You must specify which tool to use as first argument.");
             System.err.println("These tools are awailable:");
