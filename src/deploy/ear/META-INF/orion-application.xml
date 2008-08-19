@@ -12,6 +12,7 @@
 	<web-module id="adminweb" path="adminweb.war" />
 	<web-module id="ejbcaws" path="ejbcaws.war" />
 	<web-module id="xkms" path="xkms.war" />
+	<web-module id="doc" path="doc.war" />
 	<persistence path="persistence" />
 	<imported-shared-libraries>
 	    <!--
