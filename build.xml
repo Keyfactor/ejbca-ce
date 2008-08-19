@@ -766,26 +766,30 @@
 
     <target name="clientToolBox">
         <mkdir dir="${clientToolBox.build}"/>
-        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${clientToolBox-dist.dir}"/>
+        <copy todir="${clientToolBox-dist.dir}/lib">
+            <fileset dir="${lib}">
+                <include name="log4j.jar"/>
+                <include name="bcprov-jdk${java.ver}.jar"/>
+                <include name="commons-lang-2.4.jar"/>
+                <include name="bcmail-jdk${java.ver}.jar"/>
+                <include name="cert-cvc.jar"/>
+                <include name="ldap.jar"/>
+                <include name="jline-0.9.94.jar"/>
+            </fileset>
+        </copy>
         <javac destdir="${clientToolBox.build}" debug="on">
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <classpath>
-                <fileset dir="lib">
-                    <include name="log4j.jar"/>
-                    <include name="bcprov-jdk${java.ver}.jar"/>
-                    <include name="commons-lang-2.4.jar"/>
-                    <include name="bcmail-jdk${java.ver}.jar"/>
-                    <include name="cert-cvc.jar"/>
-                    <include name="ldap.jar"/>
-                    <include name="jline-0.9.94.jar"/>
-                </fileset>
+                <fileset dir="${clientToolBox-dist.dir}/lib" />
             </classpath>
             <src path="${mainsrc}/java" />
         </javac>
-        <jar jarfile="${dist.dir}/clientToolBox.jar">
+        <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
             <fileset dir="${clientToolBox.build}"/>
             <manifest>
                 <attribute name="Main-Class" value="org.ejbca.ui.cli.ClientToolBox"/>
+                <attribute name="Class-Path" value="lib/bcprov-jdk${java.ver}.jar lib/log4j.jar lib/commons-lang-2.4.jar"/>
             </manifest>
         </jar>
     </target>

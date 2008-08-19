@@ -164,6 +164,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <delete dir="${ocsp-build}" />
         <delete dir="${dist.dir}" />
         <delete dir="${ocsp-dist.dir}" />
+        <delete dir="${clientToolBox-dist.dir}" />
         <delete dir="${src.gen}" />
         <delete dir="${src.dd}" />
         <delete dir="${ocsp-src.gen}" />

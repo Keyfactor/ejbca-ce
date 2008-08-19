@@ -47,7 +47,7 @@ public class HSMKeyTool extends ClientToolBox {
         try {
             final boolean isP11 = args.length>4 && KeyStoreContainer.isP11(args[4]);
             final String sKeyStore =  isP11 ? "<slot number. start with \'i\' to indicate index in list>" : "<keystore ID>";
-            final String commandString = args[0] + " " + args[1] + (isP11 ? " <shared library name> " : " ");
+            final String commandString = args.length>1 ? args[0] + " " + args[1] + (isP11 ? " <shared library name> " : " ") : null;
             /*if ( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_CA_SWITCH)) {
                 try {
                     new HwCaInitCommand(args).execute();
