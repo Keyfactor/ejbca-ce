@@ -1087,7 +1087,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             		if (req.getUsername() != null) {
             			cadata = getCAFromUsername(admin, req);
                     } else {
-                        throw new CADoesntExistsException();
+                        String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", dn, "null");        	
+                        throw new CADoesntExistsException(msg);
                     }
             	}
             } else if (req.getUsername() != null) {
