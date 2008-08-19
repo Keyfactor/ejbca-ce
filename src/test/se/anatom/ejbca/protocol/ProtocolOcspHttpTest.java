@@ -268,7 +268,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
-        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        assertEquals("No of SingleResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 
         CertificateID certId = singleResp.getCertID();
@@ -520,7 +520,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
-        assertEquals("No of SingResps should be 2.", 2, singleResps.length);
+        assertEquals("No of SingleResps should be 2.", 2, singleResps.length);
         SingleResp singleResp1 = singleResps[0];
 
         CertificateID certId = singleResp1.getCertID();
