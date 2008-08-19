@@ -48,19 +48,21 @@ public class TestDnComponents extends TestCase {
 
     public void test01CheckObjects() throws Exception {
         String[] s = DnComponents.getDnObjects();
-        assertEquals(23, s.length);
-        assertEquals("businesscategory",s[0]);
-        assertEquals("postalcode",s[1]);
-        assertEquals("unstructuredaddress",s[2]);
-        assertEquals("unstructuredname",s[3]);
-        assertEquals("dn",s[7]);
-        assertEquals("uid",s[8]);
-        assertEquals("cn",s[9]);
-        assertEquals("t",s[16]);
-        assertEquals("c",s[22]);
+        assertEquals(25, s.length);
+        assertEquals("telephonenumber",s[0]);
+        assertEquals("businesscategory",s[2]);
+        assertEquals("postalcode",s[3]);
+        assertEquals("unstructuredaddress",s[4]);
+        assertEquals("unstructuredname",s[5]);
+        assertEquals("dn",s[9]);
+        assertEquals("uid",s[10]);
+        assertEquals("cn",s[11]);
+        assertEquals("t",s[18]);
+        assertEquals("c",s[24]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
-        assertEquals(23, s1.length);
+        assertEquals(25, s1.length);
+        assertEquals("telephonenumber",s1[24]);
         assertEquals("businesscategory",s1[22]);
         assertEquals("postalcode",s1[21]);
         assertEquals("unstructuredaddress",s1[20]);
@@ -71,15 +73,15 @@ public class TestDnComponents extends TestCase {
         assertEquals("c",s1[0]);
 
         String[] s2 = DnComponents.getDnObjects();
-        assertEquals(23, s2.length);
-        assertEquals("businesscategory",s2[0]);
-        assertEquals("postalcode",s2[1]);
-        assertEquals("unstructuredaddress",s2[2]);
-        assertEquals("unstructuredname",s2[3]);
-        assertEquals("uid",s2[8]);
-        assertEquals("cn",s2[9]);
-        assertEquals("t",s2[16]);
-        assertEquals("c",s2[22]);
+        assertEquals(25, s2.length);
+        assertEquals("businesscategory",s2[2]);
+        assertEquals("postalcode",s2[3]);
+        assertEquals("unstructuredaddress",s2[4]);
+        assertEquals("unstructuredname",s2[5]);
+        assertEquals("uid",s2[10]);
+        assertEquals("cn",s2[11]);
+        assertEquals("t",s2[18]);
+        assertEquals("c",s2[24]);
 
     }
     public void test02() {

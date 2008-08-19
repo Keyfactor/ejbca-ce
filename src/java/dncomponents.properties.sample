@@ -3,8 +3,8 @@
 #
 telephonenumber=2.5.4.20
 postaladdress=2.5.4.16
-postalcode=2.5.4.17
 businesscategory=2.5.4.15
+postalcode=2.5.4.17
 unstructuredaddress=1.2.840.113549.1.9.8
 unstructuredname=1.2.840.113549.1.9.2
 emailaddress=1.2.840.113549.1.9.1
