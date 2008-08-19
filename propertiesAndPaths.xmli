@@ -69,7 +69,7 @@
     <property name="build" value="${bin}/classes" />
     <property name="ocsp-build" location="${bin}/ocsp-classes"/>
     <property name="ocsp-client.build" location="${bin}/ocspclient" />
-    <property name="healthCheckTest.build" location="${bin}/healthCheckTest-classes" />
+    <property name="clientToolBox.build" location="${bin}/clientToolBox-classes" />
     <property name="lib" value="lib" />
     <property name="preprocessed" value="${tmp}/preprocessed"/>
     <property name="mainsrc" value="src"/>
