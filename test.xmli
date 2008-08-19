@@ -35,7 +35,7 @@
                     <include name="org/ejbca/util/**/Test*" />
                     <include name="org/ejbca/core/model/ca/certextensions/Test*" />
                     <include name="se/anatom/ejbca/util/**/Test*" />
-                    <include name="**/protocol/Test*" />
+                    <include name="**/protocol/**/Test*" />
                     <include name="**/ra/Test*" />
                     <include name="**/userdatasource/Test*" />
                     <include name="**/raadmin/Test*" />
