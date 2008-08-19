@@ -1688,10 +1688,10 @@ public class CommonEjbcaWSTest extends TestCase {
         thrown = false;
         try {
     		certenv =  ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(authRequestRenewFalse.getDEREncoded())));        	
-        } catch (EjbcaException_Exception e) {
+        } catch (AuthorizationDeniedException_Exception e) {
         	thrown = true;
         	String msg = e.getMessage();
-        	assertTrue(msg.contains("NEW, FAILED or INPROCESS required"));
+        	assertTrue(msg.contains("No old certificate"));
         }
         assertTrue(thrown);
         
