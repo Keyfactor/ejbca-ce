@@ -13,7 +13,8 @@ Some very notable changes are:
 - Improved documentation for more HSMs, Admin-GUI, etc.
 - Improvements for other app servers apart from JBoss.
 - MS document signing extended key usage, and tool for importing certificates from MS CA. 
-- Lots and lots of small bugfixes.  
+- Lots and lots of small bugfixes. 
+- Updated translations. 
 
 Read the changelog for details.
 

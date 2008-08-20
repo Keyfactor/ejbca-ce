@@ -26,15 +26,15 @@
   </section>
   <section name="Latest Release">
     <note>
-    EJBCA 3.6.1 is now available for <a
+    EJBCA 3.6.2 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     <br/>
-    SHA1 checksum: ac2def7c4072f357eccae9ab5c953b39c87585b7 
+    SHA1 checksum: dd2f1836fc5e732c26484e87f2dfd1c22efd44cc 
     <br/><br/>
-    External RA API 3.6.0 is now available for <a
+    External RA API 3.6.2 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
     <br/>
-    SHA1 checksum: ed4ca78dcabc7136fff43f3c3265f542463a9044
+    SHA1 checksum: 0fd80cd37dff650b51683be2867e8b0a52047faa
     <br/><br/>
     Cert-cvc library 1.2.6 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=283747">download</a>.
