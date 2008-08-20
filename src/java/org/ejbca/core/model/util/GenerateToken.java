@@ -115,21 +115,24 @@ public class GenerateToken {
     	}
 
         // Verify CA-certificate
-    	if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
+    	Certificate rootcert = cachain[cachain.length - 1];
+    	if (CertTools.isSelfSigned(rootcert)) {
     		try {
-    			cachain[cachain.length - 1].verify(cachain[cachain.length - 1].getPublicKey());
+    			rootcert.verify(rootcert.getPublicKey());
     		} catch (GeneralSecurityException se) {
-    			throw new Exception("RootCA certificate does not verify");
+    			throw new Exception("RootCA certificate does not verify, issuerDN: "+CertTools.getIssuerDN(rootcert)+", subjectDN: "+CertTools.getSubjectDN(rootcert));
     		}
     	} else {
-    		throw new Exception("RootCA certificate not self-signed");
+    		throw new Exception("RootCA certificate not self-signed, issuerDN: "+CertTools.getIssuerDN(rootcert)+", subjectDN: "+CertTools.getSubjectDN(rootcert));
     	}
 
         // Verify that the user-certificate is signed by our CA
+    	Certificate cacert = cachain[0];
     	try {
-    		cert.verify(cachain[0].getPublicKey());
+    		cert.verify(cacert.getPublicKey());
     	} catch (GeneralSecurityException se) {
-    		throw new Exception("Generated certificate does not verify using CA-certificate.");
+    		throw new Exception("Generated certificate does not verify using CA-certificate, issuerDN: "+CertTools.getIssuerDN(cert)+", subjectDN: "+CertTools.getSubjectDN(cert)+
+    				"caIssuerDN: "+CertTools.getIssuerDN(cacert)+", caSubjectDN: "+CertTools.getSubjectDN(cacert));
     	}
 
     	if (savekeys) {
