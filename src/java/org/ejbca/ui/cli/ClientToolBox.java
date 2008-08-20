@@ -9,8 +9,17 @@ package org.ejbca.ui.cli;
  */
 public abstract class ClientToolBox {
 
+    /**
+     * @param args
+     */
     abstract void execute(String[] args);
+    /**
+     * @return
+     */
     abstract String getName();
+    /**
+     * @param args
+     */
     void executeIfSelected(String args[]) {
         if (args[0].equalsIgnoreCase(getName()))
             execute(args);
@@ -19,7 +28,7 @@ public abstract class ClientToolBox {
      * @param args
      */
     public static void main(String[] args) {
-        final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool() };
+        final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool(), new PKCS11HSMKeyTool(), new NCipherHSMKeyTool() };
         if ( args.length<1 ) {
             System.err.println("You must specify which tool to use as first argument.");
             System.err.println("These tools are awailable:");

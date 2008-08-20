@@ -135,9 +135,9 @@ public abstract class KeyStoreContainer {
     		throw new IllegalArgumentException("This getInstance only available for PKCS#11 providers.");
     	}
     }
-
+    public static String KEYSTORE_TYPE_PKCS11 = "pkcs11";
     public static boolean isP11(String keyStoreType) {
-        return keyStoreType.toLowerCase().indexOf("pkcs11") >= 0;
+        return keyStoreType.toLowerCase().indexOf(KEYSTORE_TYPE_PKCS11) >= 0;
     }
     KeyStoreContainer( KeyStore _keyStore,
                        String _providerName,

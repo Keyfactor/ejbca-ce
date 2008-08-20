@@ -39,15 +39,40 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String MOVE_SWITCH = "move";
     private static final String CERT_REQ = "certreq";
     private static final String INSTALL_CERT = "installcert";
+
+    String getProviderParameterDescription() {
+        return "<signature provider name> <crypto provider name (use null if same as signature)> <keystore provider name>";
+    }
+    String getKeyStoreDescription() {
+        return "keystore ID";
+    }
+    void generateComment(){
+        return;
+    }
+    boolean doCreateKeyStore() {
+        return true;
+    }
+    boolean doModuleProtection() {
+        return false;
+    }
+    void setModuleProtection() {
+        return;
+    }
+    void createKeyStore(String args[]) throws Exception {
+        if( args.length > 1 && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
+            if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH))
+                setModuleProtection();
+            KeyStoreContainer.getInstance(args[4], args[2], args[3], null, null, null).storeKeyStore();
+            return;
+        }
+    }
     /**
      * @param args
      */
     @Override
     public void execute(String[] args) {
         try {
-            final boolean isP11 = args.length>4 && KeyStoreContainer.isP11(args[4]);
-            final String sKeyStore =  isP11 ? "<slot number. start with \'i\' to indicate index in list>" : "<keystore ID>";
-            final String commandString = args.length>1 ? args[0] + " " + args[1] + (isP11 ? " <shared library name> " : " ") : null;
+            final String commandString = args.length>1 ? args[0]+" "+args[1]+" "+getProviderParameterDescription()+" " : null;
             /*if ( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_CA_SWITCH)) {
                 try {
                     new HwCaInitCommand(args).execute();
@@ -60,12 +85,11 @@ public class HSMKeyTool extends ClientToolBox {
             } else */
             if ( args.length > 1 && args[1].toLowerCase().trim().contains(GENERATE_SWITCH) ) {
                 if ( args.length < 6 ) {
-                    System.err.println(commandString + "<key size> <key entry name> " + '['+sKeyStore+']');
-                    if ( isP11 )
-                        System.err.println("If <slot number> is omitted then <the shared library name> will specify the sun config file.");
+                    System.err.println(commandString + "<key size> <key entry name> " + '['+'<'+getKeyStoreDescription()+'>'+']');
+                    generateComment();
                 } else {
                     if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
-                        System.setProperty("protect", "module");
+                        setModuleProtection();
                     }
                     KeyStoreContainer store = KeyStoreContainer.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null, null);
                     String keyEntryName = args.length>6 ? args[6] :"myKey";
@@ -75,7 +99,7 @@ public class HSMKeyTool extends ClientToolBox {
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
                 if ( args.length < 6 ) {
-                    System.err.println(commandString + sKeyStore + " [<key entry name>]");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<key entry name>]");
                 } else {
                 	String alias = args.length>6 ? args[6] : null;
                     System.err.println("Deleting certificate with alias "+alias+'.');
@@ -84,39 +108,38 @@ public class HSMKeyTool extends ClientToolBox {
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(CERT_REQ)) {
                 if ( args.length < 7 )
-                    System.err.println(commandString + sKeyStore + " <key entry name>");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name>");
                 else
                     KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
                 if ( args.length < 7 )
-                    System.err.println(commandString + sKeyStore + " <certificate in PEM format>");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate in PEM format>");
                 else
                     KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).installCertificate(args[6]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
                 if ( args.length < 9 )
-                    System.err.println(commandString + sKeyStore + " <input file> <output file> <key alias>");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 else
                     KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
                 if ( args.length < 9 )
-                    System.err.println(commandString + sKeyStore + " <input file> <output file> <key alias>");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 else
                     KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 6 )
-                    System.err.println(commandString + sKeyStore + " [<# of tests or threads>] [alias for stress test] [type of stress test]");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<# of tests or threads>] [alias for stress test] [type of stress test]");
                 else
                     KeyStoreContainerTest.test(args[2], args[3], args[4], args[5],
                                                args.length>6 ? Integer.parseInt(args[6].trim()) : 1, args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null);
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
                 if ( args.length < 7 ) {
-                    System.err.println(commandString +
-                                       (isP11 ? "<from slot number> <to slot number>" : "<from keystore ID> <to keystore ID>"));
+                    System.err.println(commandString + "<from "+getKeyStoreDescription()+"> <to "+getKeyStoreDescription()+'>');
                 } else {
                 	String fromId = args[5];                	
                 	String toId = args[6];
@@ -124,28 +147,22 @@ public class HSMKeyTool extends ClientToolBox {
                     KeyStoreContainer.move(args[2], args[3], args[4], fromId, toId, null);
                 }
                 return;
-            } else if ( !isP11 ){
-                if( args.length > 1 && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
-                    if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH))
-                        System.setProperty("protect", "module");
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], null, null, null).storeKeyStore();
-                    return;
-                }
-            }
+            } else
+                createKeyStore(args);
             PrintWriter pw = new PrintWriter(System.err);
             pw.println("Use one of following commands: ");
 //            pw.println("  "+args[0]+" "+CREATE_CA_SWITCH);
             pw.println("  "+args[0]+" "+GENERATE_SWITCH);
-            if ( !isP11 ){
+            if ( doModuleProtection() )
                 pw.println("  "+args[0]+" "+GENERATE_MODULE_SWITCH);
-            }
             pw.println("  "+args[0]+" "+CERT_REQ);
             pw.println("  "+args[0]+" "+INSTALL_CERT);
             pw.println("  "+args[0]+" "+DELETE_SWITCH);
             pw.println("  "+args[0]+" "+TEST_SWITCH);
-            if ( !isP11 ){
+            if ( doCreateKeyStore() ){
                 pw.println("  "+args[0]+" "+CREATE_KEYSTORE_SWITCH);
-                pw.println("  "+args[0]+" "+CREATE_KEYSTORE_MODULE_SWITCH);
+                if ( doModuleProtection() )
+                    pw.println("  "+args[0]+" "+CREATE_KEYSTORE_MODULE_SWITCH);
             }
             pw.println("  "+args[0]+" "+ENCRYPT_SWITCH);
             pw.println("  "+args[0]+" "+DECRYPT_SWITCH);
