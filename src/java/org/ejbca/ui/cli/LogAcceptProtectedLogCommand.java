@@ -19,6 +19,11 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
 public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
 	
 	public static final String COMMAND_NAME = "accept";
