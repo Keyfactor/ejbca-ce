@@ -23,7 +23,8 @@ import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
- * @author lars
+ * Used to test the EJBCA health check servet.
+ * @author primelars
  * @version $Id$
  *
  */
@@ -88,8 +89,8 @@ class HealthCheckTest extends ClientToolBox {
         }
     }
 
-    /**
-     * @param args
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
     void execute(String[] args) {
@@ -111,6 +112,9 @@ class HealthCheckTest extends ClientToolBox {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.ClientToolBox#getName()
+     */
     @Override
     String getName() {
         return "healthCheckTest";

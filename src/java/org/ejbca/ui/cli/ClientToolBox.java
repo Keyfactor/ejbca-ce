@@ -13,31 +13,36 @@
 package org.ejbca.ui.cli;
 
 /**
- * @author lars
+ * Extend this class for each new tool you want to add and add the new extended class to the toolBox array in {@link #main(String[])}
+ * @author primelars
  * @version $Id$
  *
  */
 public abstract class ClientToolBox {
 
     /**
-     * @param args
+     * Execute the command issued from the command line.
+     * @param args from command line
      */
     abstract void execute(String[] args);
     /**
-     * @return
+     * @return the name of the tool.
      */
     abstract String getName();
     /**
-     * @param args
+     * Check if this tool should be executed.
+     * @param args Command line from the user.
      */
     void executeIfSelected(String args[]) {
         if (args[0].equalsIgnoreCase(getName()))
             execute(args);
     }
     /**
-     * @param args
+     * 
+     * @param args The arguments issued by the user. First argument selects the tool to use.
      */
     public static void main(String[] args) {
+        // each new tool must be added to the array
         final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool(), new PKCS11HSMKeyTool(), new NCipherHSMKeyTool() };
         if ( args.length<1 ) {
             System.err.println("You must specify which tool to use as first argument.");

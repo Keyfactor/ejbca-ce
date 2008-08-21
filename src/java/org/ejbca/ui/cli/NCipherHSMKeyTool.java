@@ -16,12 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author lars
+ * To be used for a nCipher HSM with JCA keys.
+ * @author primelars
  * @version $Id$
  *
  */
 public class NCipherHSMKeyTool extends HSMKeyTool {
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#execute(java.lang.String[])
+     */
     @Override
     public void execute(String[] args) {
         if (args.length<2) {
@@ -29,31 +33,43 @@ public class NCipherHSMKeyTool extends HSMKeyTool {
             return;
         }
         final List<String> lArgs = new ArrayList<String>();
-        lArgs.add(args[0]);
-        lArgs.add(args[1]);
-        lArgs.add("com.ncipher.provider.km.nCipherKM");
-        lArgs.add("com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt");
-        lArgs.add("nCipher.sworld");
-        for ( int i=2; i<args.length; i++)
+        lArgs.add(args[0]);// toolname
+        lArgs.add(args[1]);// keytool command
+        lArgs.add("com.ncipher.provider.km.nCipherKM"); // signature provider
+        lArgs.add("com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt");// decryption provider
+        lArgs.add("nCipher.sworld");// keystore implementation name
+        for ( int i=2; i<args.length; i++) // rest of the arguments
             lArgs.add(args[i]);
         super.execute(lArgs.toArray(new String[]{}));
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#getName()
+     */
     @Override
     String getName() {
         return "NCipherHSMKeyTool";
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#getProviderParameterDescription()
+     */
     @Override
     String getProviderParameterDescription() {
         return "";
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#doModuleProtection()
+     */
     @Override
     boolean doModuleProtection() {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#setModuleProtection()
+     */
     @Override
     void setModuleProtection() {
         System.setProperty("protect", "module");

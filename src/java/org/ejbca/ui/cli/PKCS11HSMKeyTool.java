@@ -18,12 +18,17 @@ import java.util.List;
 import org.ejbca.util.keystore.KeyStoreContainer;
 
 /**
- * @author lars
- * @version @Id$
+ * Used for p11 HSMs.
+ * 
+ * @author primelars
+ * @version $Id$
  *
  */
 public class PKCS11HSMKeyTool extends HSMKeyTool {
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#execute(java.lang.String[])
+     */
     @Override
     public void execute(String[] args) {
         if (args.length<3) {
@@ -31,36 +36,51 @@ public class PKCS11HSMKeyTool extends HSMKeyTool {
             return;
         }
         final List<String> lArgs = new ArrayList<String>();
-        lArgs.add(args[0]);
-        lArgs.add(args[1]);
-        lArgs.add(args[2]); // library name
-        lArgs.add("null");
+        lArgs.add(args[0]);// toolname
+        lArgs.add(args[1]);// keytool command
+        lArgs.add(args[2]);// signature provider contains the p11 shared lib.
+        lArgs.add("null");// decryption provider not uses
         lArgs.add(KeyStoreContainer.KEYSTORE_TYPE_PKCS11);
-        for ( int i=3; i<args.length; i++)
+        for ( int i=3; i<args.length; i++) // rest of the arguments
             lArgs.add(args[i]);
         super.execute(lArgs.toArray(new String[]{}));
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#getName()
+     */
     @Override
     String getName() {
         return "PKCS11HSMKeyTool";
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#getProviderParameterDescription()
+     */
     @Override
     String getProviderParameterDescription() {
         return "<shared library name>";
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#getKeyStoreDescription()
+     */
     @Override
     String getKeyStoreDescription() {
         return "slot number. start with \'i\' to indicate index in list";
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#generateComment()
+     */
     @Override
     void generateComment() {
         System.err.println("If <slot number> is omitted then <the shared library name> will specify the sun config file.");
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.HSMKeyTool#doCreateKeyStore()
+     */
     @Override
     boolean doCreateKeyStore() {
         return false;

@@ -22,7 +22,9 @@ import org.ejbca.util.keystore.KeyStoreContainer;
 
 
 /**
- * @author lars
+ * Manages a key store on a HSM. This class may be extended by a class specific for a typical HSM.
+ * 
+ * @author primelars
  * @version $Id$
  *
  */
@@ -40,24 +42,50 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String CERT_REQ = "certreq";
     private static final String INSTALL_CERT = "installcert";
 
+    /**
+     * To be overided if the HSM implementation knows the value of some parameters.
+     * @return description of parameters common to all commands.
+     */
     String getProviderParameterDescription() {
         return "<signature provider name> <crypto provider name (use null if same as signature)> <keystore provider name>";
     }
+    /**
+     * @return description of the keystore id.
+     */
     String getKeyStoreDescription() {
         return "keystore ID";
     }
+    /**
+     * The HSM may overide to print an extra comment for the generate command.
+     */
     void generateComment(){
         return;
     }
+    /**
+     * HSMs not capable to create a keystore should overide this method and return false.
+     * @return true if the HSM is capable to create a keystore.
+     */
     boolean doCreateKeyStore() {
         return true;
     }
+    /**
+     * HSMs capable of module protection should overide this method and return true.
+     * @return true if the HSDM is capable of module protection.
+     */
     boolean doModuleProtection() {
         return false;
     }
+    /**
+     * HSMs capable of module protection should overide this method.
+     */
     void setModuleProtection() {
         return;
     }
+    /**
+     * HSMs not capable to create a key store should overide with a method doing nothing
+     * @param args command line arguments from user
+     * @throws Exception
+     */
     void createKeyStore(String args[]) throws Exception {
         if( args.length > 1 && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
             if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH))
@@ -66,8 +94,8 @@ public class HSMKeyTool extends ClientToolBox {
             return;
         }
     }
-    /**
-     * @param args
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
     public void execute(String[] args) {
@@ -172,11 +200,11 @@ public class HSMKeyTool extends ClientToolBox {
             e.printStackTrace(System.err);
         }
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.ClientToolBox#getName()
+     */
     @Override
     String getName() {
         return "HSMKeyTool";
-    }
-    public static void main(String args[]) {
-        new HSMKeyTool().execute(args);
     }
 }
