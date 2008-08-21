@@ -766,7 +766,6 @@
 
     <target name="clientToolBox">
         <mkdir dir="${clientToolBox.build}"/>
-        <mkdir dir="${clientToolBox-dist.dir}"/>
         <copy todir="${clientToolBox-dist.dir}/lib">
             <fileset dir="${lib}">
                 <include name="log4j.jar"/>
@@ -778,6 +777,13 @@
                 <include name="jline-0.9.94.jar"/>
             </fileset>
         </copy>
+        <copy todir="${clientToolBox-dist.dir}">
+            <fileset dir="${mainsrc}/clientToolBox"/>
+        </copy>
+        <chmod file="${clientToolBox-dist.dir}/toolBox.sh" perm="a+rx"/>
+        <copy todir="${clientToolBox-dist.dir}/properties">
+            <fileset file="${mainbin}/log4j.properties"/>
+        </copy>
         <javac destdir="${clientToolBox.build}" debug="on">
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <classpath>
@@ -787,10 +793,6 @@
         </javac>
         <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
             <fileset dir="${clientToolBox.build}"/>
-            <manifest>
-                <attribute name="Main-Class" value="org.ejbca.ui.cli.ClientToolBox"/>
-                <attribute name="Class-Path" value="lib/bcprov-jdk${java.ver}.jar lib/log4j.jar lib/commons-lang-2.4.jar"/>
-            </manifest>
         </jar>
     </target>
 </project>
