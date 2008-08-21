@@ -495,14 +495,17 @@ abstract class OCSPServletBase extends HttpServlet {
 		String timezone = config.getInitParameter("logTimeZone");
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("Is time zone set??: '"
-					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
+					+ (StringUtils.isEmpty(initparam) ? "<not set>" : timezone)
 					+ "'");
 		}
-		
-		
-		config.getInitParameter("logDateFormat");
+
 		String logDateFormat = config.getInitParameter("logDateFormat");
-		
+		if (m_log.isDebugEnabled()) {
+			m_log.debug("Is date format set??: '"
+					+ (StringUtils.isEmpty(initparam) ? "<not set>" : logDateFormat)
+					+ "'");
+		}
+
 		if (mDoAuditLog==true) { // If we are not going to do any logging we wont bother setting it up
 			String auditLogPattern = config.getInitParameter("auditLogPattern");
 			if (m_log.isDebugEnabled()) {
