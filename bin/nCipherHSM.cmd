@@ -36,6 +36,6 @@ rem Add nfast's JARs to classpath
 set CLASSES=%CLASSES%;%NFAST_JARS%\rsaprivenc.jar;%NFAST_JARS%\nfjava.jar;%NFAST_JARS%\kmjava.jar;%NFAST_JARS%\kmcsp.jar;%NFAST_JARS%\jutils.jar
 
 rem Finally run java
-echo "%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.HSMKeyTool %0 %1 com.ncipher.provider.km.nCipherKM com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt nCipher.sworld %2 %3 %4 %5 %6
+echo "%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox NCipherHSMKeyTool %1 %2 %3 %4 %5 %6
 
-"%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.HSMKeyTool %0 %1 com.ncipher.provider.km.nCipherKM com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt nCipher.sworld %2 %3 %4 %5 %6
+"%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox NCipherHSMKeyTool %1 %2 %3 %4 %5 %6

@@ -40,6 +40,5 @@ if [ -d ${NFAST_JARS} ] ; then
 fi
 
 # Finally run java
-set -x
-${JAVACMD} -cp ${CLASSES} org.ejbca.ui.cli.HSMKeyTool ${@}
-
+#set -x
+${JAVACMD} -cp ${CLASSES} org.ejbca.ui.cli.ClientToolBox ${@}

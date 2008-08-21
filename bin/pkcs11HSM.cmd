@@ -24,23 +24,11 @@ set CLASSES=%CLASSES%;%EJBCA_HOME%\tmp\bin\classes
 rem use this instead if you want build from eclipse
 rem CLASSES=$CLASSES:$EJBCA_HOME/out/classes
 
-rem Prepare arguments
-set ARGS=%0 %1 %2
-if "%1" == "" (
-echo foo
-   set ARGS=%0 dummy dummy
-)
-
-if "%2" == "" (
-echo foo
-   set ARGS=%0 %1 dummy
-)
-
 rem Finally run java
 
 rem Finally run java
-echo "%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.HSMKeyTool %ARGS% null pkcs11 %3 %4 %5 %6
+echo "%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool %1 %2 %3 %4 %5 %6
 
-"%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.HSMKeyTool %ARGS% null pkcs11 %3 %4 %5 %6
+"%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool %1 %2 %3 %4 %5 %6
 
-rem $JAVA_HOME/bin/java -cp $CLASSES org.ejbca.ui.cli.HSMKeyTool $args
+rem $JAVACMD -cp $CLASSES org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool ${@}

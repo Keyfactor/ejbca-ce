@@ -40,23 +40,6 @@ CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
 # use this instead if you want build from eclipse
 #CLASSES=$CLASSES:$EJBCA_HOME/out/classes
 
-# Prepare arguments
-if [ -z $1 ]; then
-  args="`basename $0` dummy dummy"
-else
-  #command name
-  args="`basename $0` $1"
-  shift
-  if [ -z $1 ]; then
-  	args="$args dummy"
-  else
-    #shared library name
-    args="$args $1"
-    shift
-  fi
-fi
-args="$args null pkcs11 $@"
-
 # Finally run java
 #set -x
-$JAVACMD -cp $CLASSES org.ejbca.ui.cli.HSMKeyTool $args
+$JAVACMD -cp $CLASSES org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool ${@}
