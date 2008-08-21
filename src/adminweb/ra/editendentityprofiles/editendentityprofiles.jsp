@@ -71,6 +71,7 @@
   static final String CHECKBOX_USE_ENDTIME                = "checkboxuseendtime";
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrelativeendtime";
   static final String CHECKBOX_MODIFYABLE_ENDTIME         = "checkboxmodifyableendtime";
+  static final String CHECKBOX_ALLOW_MERGEDN_WEBSERVICES = "checkboxallowmergednwebservices";
   
   
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
@@ -141,7 +142,6 @@
   static final String BUTTON_DELETESUBJECTDIRATTR           = "buttondeletesubjectdirattr";
   static final String BUTTON_ADDSUBJECTDIRATTR              = "buttonaddsubjectdirattr";
   static final String CHECKBOX_SELECTSUBJECTDIRATTR         = "checkboxselectsubjectdirattr";
-
   static final String SELECT_TYPE                         = "selecttype";
   
   public static final String FILE_TEMPLATE             = "filetemplate";
@@ -331,6 +331,8 @@
                profiledata = ejbcarabean.getEndEntityProfile(profile);
              }
              // Save changes.
+             profiledata.setAllowMergeDnWebServices(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_ALLOW_MERGEDN_WEBSERVICES)));
+             
              profiledata.setValue(EndEntityProfile.USERNAME , 0, request.getParameter(TEXTFIELD_USERNAME));
              profiledata.setRequired(EndEntityProfile.USERNAME, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_USERNAME)));
              profiledata.setModifyable(EndEntityProfile.USERNAME, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_USERNAME)));

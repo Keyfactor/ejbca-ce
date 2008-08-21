@@ -35,6 +35,7 @@ import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
@@ -77,6 +78,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataFiller;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
@@ -89,11 +91,12 @@ import org.ejbca.util.NotificationParamGen;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.TemplateMimeMessage;
+import org.ejbca.util.dn.DistinguishedName;
+import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
-
 
 
 /**
@@ -411,7 +414,32 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ADDUSER = {
 		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest",null),
 	};
-	
+	/**
+     * addUserFromWS is called from EjbcaWS
+     * if profile specifies merge data from profile to user we merge them before calling addUser
+     *
+     * @param admin                 the administrator pwrforming the action
+     * @param userdata 	            a UserDataVO object, the fields status, timecreated and timemodified will not be used.
+     * @param clearpwd              true if the password will be stored in clear form in the db, otherwise it is
+     *                              hashed.
+     * @throws AuthorizationDeniedException if administrator isn't authorized to add user
+     * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
+     * @throws DuplicateKeyException if user already exists
+     * @throws ApprovalException if an approval already is waiting for specified action 
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  
+     * 
+     * @ejb.interface-method
+     */
+	public void addUserFromWS(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException,
+			UserDoesntFullfillEndEntityProfile, DuplicateKeyException,
+			ApprovalException, WaitingForApprovalException {
+		int profileId = userdata.getEndEntityProfileId();
+		EndEntityProfile profile = raadminsession.getEndEntityProfile(admin,profileId);
+		if (profile.getAllowMergeDnWebServices()) {
+			userdata = UserDataFiller.fillUserDataWithDefaultValues(userdata,profile);
+		}	
+		addUser(admin, userdata, clearpwd);
+	}
     /**
      * Implements IUserAdminSession::addUser.
      * Implements a mechanism that uses UserDataEntity Bean. 
@@ -619,15 +647,73 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
+    	changeUser(admin, userdata,clearpwd, false);
+    }
+	/**
+     * Implements IUserAdminSession::changeUser.. 
+     *
+     * @param admin                 the administrator performing the action
+     * @param userdata 	            a UserDataVO object,  timecreated and timemodified will not be used.
+     * @param clearpwd              true if the password will be stored in clear form in the db, otherwise it is
+     *                              hashed.
+     * @param fromWebService    	The service is called from webService
+     *                              
+     * @throws AuthorizationDeniedException if administrator isn't authorized to add user
+     * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
+     * @throws ApprovalException if an approval already is waiting for specified action 
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
+
+     * @ejb.interface-method
+     */
+    public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromWebService)
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(userdata.getDN());
         dn = StringTools.strip(dn);
+        String altName = userdata.getSubjectAltName();    
         String newpassword = userdata.getPassword();
         int type = userdata.getType();
         debug(">changeUser(" + userdata.getUsername() + ", " + dn + ", " + userdata.getEmail() + ")");
         int oldstatus;
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
+        UserDataPK pk = new UserDataPK(userdata.getUsername());
 
+        // if required, we merge the existing user dn into the dn provided by the web service.
+        if (fromWebService && profile.getAllowMergeDnWebServices()) {
+			UserDataLocal userDataLocal = null;
+			try {
+				userDataLocal = home.findByPrimaryKey(pk);
+			} catch (Exception e) {
+				String msg = intres.getLocalizedMessage("ra.erroreditentity", userdata.getUsername());
+				logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+				error("ChangeUser:", e);
+				throw new EJBException(e);
+			}
+
+			if (userDataLocal != null) {
+				if (userDataLocal.getSubjectDN() != null) {
+					try {
+						dn = (new DistinguishedName(userDataLocal.getSubjectDN())).mergeDN(new DistinguishedName(dn), true, false, "").toString();
+					} catch (InvalidNameException e) {
+						log.debug("Invalid dn. We make it empty");
+						dn = "";
+					}
+				}
+				if (userDataLocal.getSubjectAltName() != null) {
+					try {
+						//SubjectAltName is not mandatory so
+						if(altName==null) {
+							altName="";
+						}
+						altName = (new DistinguishedName(userDataLocal.getSubjectAltName()))
+                             .mergeDN(new DistinguishedName(altName), true, profile.getUse(DnComponents.RFC822NAME, 0), userdata.getEmail()).toString();
+					} catch (InvalidNameException e) {
+						log.debug("Invalid altName. We make it empty");
+						altName = "";
+					}
+				}
+			}
+		}
         if (profile.useAutoGeneratedPasswd() && userdata.getPassword() != null) {
             // special case used to signal regeneraton of password
             newpassword = profile.getAutoGeneratedPasswd();
@@ -636,7 +722,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         // Check if user fulfills it's profile.
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             try {
-                profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, userdata.getSubjectAltName(), userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(),
+                profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, altName, userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(),
                         (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
@@ -677,10 +763,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }   
         
         try {
-            UserDataPK pk = new UserDataPK(userdata.getUsername());
             UserDataLocal data1 = home.findByPrimaryKey(pk);
             data1.setDN(dn);
-            data1.setSubjectAltName(userdata.getSubjectAltName());
+            data1.setSubjectAltName(altName);
             data1.setSubjectEmail(userdata.getEmail());
             data1.setCaId(userdata.getCAId());
             data1.setType(type);

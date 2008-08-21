@@ -60,7 +60,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 9;
+    public static final float LATEST_VERSION = 10;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -289,7 +289,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(DEFAULTCA);         
          addField(STARTTIME);         
          addField(ENDTIME);         
-         addField(ALLOWEDREQUESTS);         
+         addField(ALLOWEDREQUESTS);
          
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
@@ -674,6 +674,21 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	data.put(REVERSEFFIELDCHECKS, new Boolean(reverse));
     }
     
+    /**
+     * @return indication if allows profile DN should merged to webservices.
+     * default is false.
+     */
+    public boolean getAllowMergeDnWebServices(){
+    	if(data.get(ALLOW_MERGEDN_WEBSERVICES) == null){
+    		return false;
+    	}
+    	
+    	return ((Boolean) data.get(ALLOW_MERGEDN_WEBSERVICES)).booleanValue();
+    }
+    
+    public void setAllowMergeDnWebServices(boolean merge){
+    	data.put(ALLOW_MERGEDN_WEBSERVICES, new Boolean(merge));
+    }
     /**
      * @return indicationg printing of userdata should be done
      * default is false.
@@ -1341,6 +1356,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setModifyable(ALLOWEDREQUESTS, 0, true);            	
             }
 
+            // Support for allowed requests in profile version 10
+            if (getVersion() < 10) {
+                setAllowMergeDnWebServices(false);
+            }
+
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.debug("<upgrade");
@@ -1739,6 +1759,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
     private static final String REVERSEFFIELDCHECKS = "REVERSEFFIELDCHECKS"; 
+    private static final String ALLOW_MERGEDN_WEBSERVICES = "ALLOW_MERGEDN_WEBSERVICES";
     
     private static final String PRINTINGUSE            = "PRINTINGUSE";
     private static final String PRINTINGDEFAULT        = "PRINTINGDEFAULT";

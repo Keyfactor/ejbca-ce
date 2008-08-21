@@ -146,6 +146,7 @@ function checkallfields(){
       <% } %>
       document.editprofile.<%= CHECKBOX_REQUIRED_SENDNOTIFICATION %>.disabled = false;
       document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
+      document.editprofile.<%= CHECKBOX_ALLOW_MERGEDN_WEBSERVICES %>.disabled = false;
     }
 
      return illegalfields == 0;  
@@ -1057,6 +1058,19 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
    <% } %>
+   <tr id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp; 
+      </td>
+      <td width="25%"  align="right"> 
+         <%= ejbcawebbean.getText("ALLOWMERGEDNWEBSERVICES") %> 
+         <%= ejbcawebbean.getHelpReference("/manual.html#Configuring%20Web%20Services%20behavior") %>
+      </td>
+      <td width="70%">         
+      	<input type="checkbox" name="<%=CHECKBOX_ALLOW_MERGEDN_WEBSERVICES %>" value="<%=CHECKBOX_VALUE %>"                
+           <% if(profiledata.getAllowMergeDnWebServices()) out.write("CHECKED"); %>>
+      </td>
+	</tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;

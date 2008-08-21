@@ -1119,6 +1119,22 @@ See the sample file for details of how to configure the Web Service interface.
 </p>
 </subsection>
 
+<subsection name="Configuring Web Services behavior">
+<p>
+    If the end entity profile informations must be used to define default values when you create a user, the flag "Allow 
+    merge DN Webservices" must be checked in the end entity profile.
+</p>
+<p>
+    If multiple instances of a component exist, the merge is done from end to begin, and the remaining values of this component type will be placed at the end. 
+    For example, if you want to merge :
+    <code>dn=cn=foo,..., dc=dc1, ..., dc=dc2, ...</code>
+    with
+    <code>dn=..., dc=mdc1, ..., dc=mdc2, ..., dc=mdc3, ...</code>
+    the result will be :
+    <code>dn=cn=foo, ..., dc=mdc1, ..., dc=mdc2, ..., dc=mdc3, ...</code>
+</p>
+</subsection>
+
 <subsection name="Using the Web Services CLI">
 <p>
 When building EJBCA, a Web Service CLI tool is also generated. The tool is placed

@@ -178,10 +178,10 @@ public class EjbcaWS implements IEjbcaWS {
 		  
 		  if(ejbhelper.getUserAdminSession().findUser(admin, userdatavo.getUsername()) != null){
 			  log.debug("User " + userdata.getUsername() + " exists, update the userdata." );
-			  ejbhelper.getUserAdminSession().changeUser(admin,userdatavo,userdata.getClearPwd());
+			  ejbhelper.getUserAdminSession().changeUser(admin,userdatavo,userdata.getClearPwd(), true);
 		  }else{
 			  log.debug("New User " + userdata.getUsername() + ", adding userdata." );
-			  ejbhelper.getUserAdminSession().addUser(admin,userdatavo,userdata.getClearPwd());
+			  ejbhelper.getUserAdminSession().addUserFromWS(admin,userdatavo,userdata.getClearPwd());
 		  }
 		}catch(UserDoesntFullfillEndEntityProfile e){
 			log.debug("UserDoesntFullfillEndEntityProfile: "+e.getMessage());
