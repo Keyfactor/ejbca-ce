@@ -17,6 +17,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
@@ -32,14 +33,18 @@ import org.apache.log4j.Logger;
  * @author thamwickenberg
  * @version $Id$
  */
-public abstract class PatternLogger { 
+public abstract class PatternLogger {
 	public static final String LOG_TIME="LOG_TIME";// The Date and time the request.
+	public static final String LOG_ID="LOG_ID"; //An integer identifying a log entry for a request
+	public static final String SESSION_ID = "SESSION_ID"; //A random 32 bit number identifying a log entry for a request
+
 	protected HashMap valuepairs= new HashMap();
 	private StringBuffer logmessage = new StringBuffer();
 	private Matcher m;
 	private String orderString;
 	private Logger logger;
 	private String logDateFormat;
+	private String timeZone;
 	
 	/**
 	 * 
@@ -53,6 +58,15 @@ public abstract class PatternLogger {
 		this.orderString=orderString;
 		this.logger = logger;
 		this.logDateFormat = logDateFormat;
+		this.timeZone = null;
+	}
+	
+	public PatternLogger(Matcher m, String orderString, Logger logger, String logDateFormat, String timeZone) {
+		this .m = m;
+		this.orderString=orderString;
+		this.logger = logger;
+		this.logDateFormat = logDateFormat;
+		this.timeZone =timeZone;
 	}
 	
 	/**
@@ -85,7 +99,11 @@ public abstract class PatternLogger {
 
 	protected void cleanParams() {
 		DateFormat dateformat = new SimpleDateFormat(logDateFormat); 
+		if (timeZone != null) {
+			dateformat.setTimeZone(TimeZone.getTimeZone(timeZone));
+		}
 		paramPut(LOG_TIME, dateformat.format(new Date()));
+
 	}
 	/**
 	 * method that makes sure that a "" is inserted instead of null

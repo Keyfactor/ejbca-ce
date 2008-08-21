@@ -240,6 +240,7 @@
     <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA"/>
     <property name="ocsp.signaturerequired" value="false"/>
     <property name="ocsp.restrictsignatures" value="false"/>
+    <property name="ocsp.restrictsignaturesbymethod" value="issuer"/>
     <property name="ocsp.signtrustvalidtime" value="180"/>
     <property name="ocsp.extensionoid" value=""/>
     <property name="ocsp.extensionclass" value=""/>
@@ -253,6 +254,14 @@
     <property name="ocsp.p11.sharedLibrary" value=""/>
     <property name="ocsp.p11.p11password" value="foo123"/>
     <property name="ocsp.p11.slot" value="i1"/>
+    <property name="ocsp.trx-log" value="false"/>
+    <property name="ocsp.log-date" value="yyyy-MM-dd:HH:mm:ss:z"/>
+    <property name="ocsp.log-timezone" value="GMT"/>
+    <property name="ocsp.trx-log-pattern" value="\$$\{(.+?)\}"/>
+    <property name="ocsp.trx-log-order" value="$${SESSION_ID};$${LOG_ID};$${STATUS};$${REQ_NAME}'$${CLIENT_IP}';'$${SIGN_ISSUER_NAME_DN}';'$${SIGN_SUBJECT_NAME}';$${SIGN_SERIAL_NO};'$${LOG_TIME}';$${NUM_CERT_ID};0;0;0;0;0;0;0;'$${ISSUER_NAME_DN}';$${ISSUER_NAME_HASH};$${ISSUER_KEY};$${DIGEST_ALGOR};$${SERIAL_NOHEX};$${CERT_STATUS}"/>
+    <property name="ocsp.audit-log" value="false"/>
+    <property name="ocsp.audit-log-pattern" value="\$$\{(.+?)\}"/>
+    <property name="ocsp.audit-log-order" value="SESSION_ID:$${SESSION_ID};LOG ID:$${LOG_ID};'$${LOG_TIME}';TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n'$${OCSPREQUEST}';\nOCSP RESPONSE:\n'$${OCSPRESPONSE}';\nSTATUS:${STATUS}"/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />

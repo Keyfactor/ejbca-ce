@@ -301,7 +301,8 @@ Use ocsp.trx-log-order to specify what information should be logged and in what 
 If you want your log to display all of the values available you only have to uncomment it. 
 
 Available values for the transaction log are:
-LOG_ID, A random 32 bit number identifying a log entry for a request
+LOG_ID, An integer identifying that starts from 1 and is increased for every received request.
+SESSION_ID A random 32 Byte long String generated when the OCSP-responder is started
 STATUS, The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;
 										TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;
 CLIENT_IP, IP of the client making the request
@@ -320,7 +321,8 @@ CERT_STATUS, The requested certificate revocation status.
 3. The audit log logs entire requests and responses. This can be useful when requests and responses are signed because the information can be used 
 to verify requests and responses afterwards.
 Audit logging is configured in the same way as transaction logging. Valid values for account loggin are:
-LOG_ID, A random 32 bit number identifying a log entry for a request
+LOG_ID, An integer identifying that starts from 1 and is increased for every received request.
+SESSION_ID A random 32 Byte long String generated when the OCSP-responder is started
 OCSPREQUEST, The byte[] ocsp-request that came with the http-request
 OCSPRESPONSE, The byte[] ocsp-response that was included in the http-response
 

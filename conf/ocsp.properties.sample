@@ -54,7 +54,6 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Specifies a directory with CA's which are allowed
 # If signatures are restricted and required only requests signed by a certificate issued by a CA in this directory is accepted.
 #
-# Default: nothing
 # ocsp.signtrustdir=~/signtrustdir
 
 # Specifies an interval in seconds in which the server reloads certificates from the signtrustdir
@@ -221,23 +220,34 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
 # Specifies if transaction logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
 # Change below to true if you want transaction information to be logged
-# ocsp.trx-log = false
+# Default: false
+# ocsp.trx-log = true
 
 # Configure how time of logging in auditlog will be output
-# ocsp.trx-log-date = yyyy-MM-dd:HH:mm:ss
+# Default: yyyy-MM-dd:HH:mm:ss:z
+# ocsp.log-date = yyyy-MM-dd:HH:mm:ss:z
 
-# A pattern for use with ocsp.audit-order to replace constants with values during logging
+# Configure which time zone will be used for logging
+# Default: GMT
+# ocsp.log-timezone = GMT
+
+# A pattern for use with ocsp.trx-log-order to replace constants with values during logging
+# Default: \\$\\{(.+?)\\}
 # ocsp.trx-log-pattern = \\$\\{(.+?)\\}
 
-# Use ocsp.audit-order to specify what information should be logged and in what order. You can also configure what characters you want in between
-# ocsp.trx-log-order = ${LOG_ID};${STATUS};\\"${CLIENT_IP}\\";\\"${SIGN_ISSUER_NAME_DN}\\";\\"${SIGN_SUBJECT_NAME}\\";${SIGN_SERIAL_NO};\\"${LOG_TIME}\\";${NUM_CERT_ID};0;0;0;0;0;0;0;\\"${ISSUER_NAME_DN}\\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NO};${CERT_STATUS}
+# Use ocsp.trx-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
+# Default: ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}\\"${CLIENT_IP}\\";\\"${SIGN_ISSUER_NAME_DN}\\";\\"${SIGN_SUBJECT_NAME}\\";${SIGN_SERIAL_NO};\\"${LOG_TIME}\\";${NUM_CERT_ID};0;0;0;0;0;0;0;\\"${ISSUER_NAME_DN}\\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
+# ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}\\"${CLIENT_IP}\\";\\"${SIGN_ISSUER_NAME_DN}\\";\\"${SIGN_SUBJECT_NAME}\\";${SIGN_SERIAL_NO};\\"${LOG_TIME}\\";${NUM_CERT_ID};0;0;0;0;0;0;0;\\"${ISSUER_NAME_DN}\\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
 
 # Audit logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
 # change ocsp.trxlog to true of you want audit logging turned on
-# ocsp.audit-log = false 
+# Default: false
+# ocsp.audit-log = true
 
 A pattern for use with ocsp.audit-order to replace constants with values during logging
+# Default: \\$\\{(.+?)\\}
 # ocsp.audit-log-pattern = \\$\\{(.+?)\\}
 
 # Use ocsp.audit-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
-# ocsp.audit-log-order = LOG ID:${LOG_ID};\nOCSP REQUEST:\n\\"${OCSPREQUEST}\\";\nOCSP RESPONSE:\n\\"${OCSPRESPONSE}\\"\n
+# Default: ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};\\"${LOG_TIME}\\";TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n\\"${OCSPREQUEST}\\";\nOCSP RESPONSE:\n\\"${OCSPRESPONSE}\\";\nSTATUS:${STATUS}
+# ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};\\"${LOG_TIME}\\";TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n\\"${OCSPREQUEST}\\";\nOCSP RESPONSE:\n\\"${OCSPRESPONSE}\\";\nSTATUS:${STATUS}
