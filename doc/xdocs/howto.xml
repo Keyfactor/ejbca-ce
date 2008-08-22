@@ -395,9 +395,9 @@ NameVirtualHost *:443
   <ul>
 	<li>Use mod_auth_kerb on a Apache2 web server proxy to validate the requesters identity using Kerberos.</li>
 	<li>A login VBS-Script creates a certificate request that is sent to the proxy using IE-components.</li>
-	<li>A Servlet protected by the proxy receives the requstes and creates a new cert</li>
+	<li>A Servlet protected by the proxy receives the requests and creates a new cert.</li>
 	<li>The new certificate will use information from the request (UPN and CertificateTemplate) and read.</li>
-	<li>information from active directory (CN,DC etc)</li>
+	<li>information from active directory (CN,DC etc).</li>
 	<li>Autoenrollment should be configurable in the Admin GUI.</li>
   </ul>
   <subsection name="Current status and known issues">
@@ -661,7 +661,7 @@ $klist -e
 ** Output here should match the one from ktpass.exe **
 </source>
   <p>
-	Verify that the keytab can be used
+	Verify that the keytab can be used:
   </p>
 <source>
 $kdestroy
@@ -1128,7 +1128,7 @@ Windows Registry Editor Version 5.00
   </subsection>
   <subsection name="References">
   <ul>
-  	<li>Kerberos authentication on Apache2, http://www.grolmsnet.de/kerbtut/.</li>
+  	<li>Kerberos authentication on Apache2, http://www.grolmsnet.de/kerbtut/</li>
   	<li>MS Certificate requests, http://technet2.microsoft.com/WindowsServer/en/library/008acdeb-0650-4063-a9a2-1258b3229d4f1033.mspx</li>
   </ul>
   </subsection>
