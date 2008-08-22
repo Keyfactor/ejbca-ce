@@ -42,109 +42,112 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
  *
  * @version $Id$
  */
-public class Ocsp {
-    final private PerformanceTest performanceTest;
-    final private String ocspurl;
-    final private Certificate cacert;
-    final private SerialNrs serialNrs;
-    final private String keyStoreFileName;
-    final private String keyStorePassword;
-    private class MyCommandFactory implements CommandFactory {
-        MyCommandFactory() {
-            super();
+public class Ocsp extends ClientToolBox {
+    private class StressTest {
+        final PerformanceTest performanceTest;
+        final String ocspurl;
+        final Certificate cacert;
+        final SerialNrs serialNrs;
+        final String keyStoreFileName;
+        final String keyStorePassword;
+        private class MyCommandFactory implements CommandFactory {
+            MyCommandFactory() {
+                super();
+            }
+            public Command[] getCommands() throws Exception {
+                return new Command[]{new Lookup()};
+            }
         }
-        public Command[] getCommands() throws Exception {
-            return new Command[]{new Lookup()};
-        }
-    }
-    private class SerialNrs {
-        final private List<BigInteger> vSerialNrs;
-        private SerialNrs(String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
-            final InputStream is = new BufferedInputStream(new FileInputStream(fileName));
-            is.mark(1);
-            this.vSerialNrs = new ArrayList<BigInteger>();
-            try {
-                ObjectInput oi = null;
-                while( true ) {
-                    for ( int i=100; oi==null && i>0; i--) {
-                        is.reset();
-                        try {
-                            is.mark(i);
-                            oi = new ObjectInputStream(is);
-                        } catch( StreamCorruptedException e) {
+        private class SerialNrs {
+            final private List<BigInteger> vSerialNrs;
+            SerialNrs(String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
+                final InputStream is = new BufferedInputStream(new FileInputStream(fileName));
+                is.mark(1);
+                this.vSerialNrs = new ArrayList<BigInteger>();
+                try {
+                    ObjectInput oi = null;
+                    while( true ) {
+                        for ( int i=100; oi==null && i>0; i--) {
                             is.reset();
-                            is.read();
+                            try {
+                                is.mark(i);
+                                oi = new ObjectInputStream(is);
+                            } catch( StreamCorruptedException e) {
+                                is.reset();
+                                is.read();
+                            }
+                        }
+                        if ( oi==null )
+                            break;
+                        try {
+                            is.mark(100);
+                            vSerialNrs.add((BigInteger)oi.readObject());
+                        } catch( StreamCorruptedException e ) {
+                            oi=null;
                         }
                     }
-                    if ( oi==null )
-                        break;
-                    try {
-                        is.mark(100);
-                        vSerialNrs.add((BigInteger)oi.readObject());
-                    } catch( StreamCorruptedException e ) {
-                        oi=null;
-                    }
+                } catch( EOFException e) {/* do nothing*/}
+                System.out.println("Number of certificates in list: "+this.vSerialNrs.size());
+            }
+            BigInteger getRandom() {
+                return vSerialNrs.get(performanceTest.getRandom().nextInt(vSerialNrs.size()));
+            }
+        }
+        private class Lookup implements Command {
+            private final OCSPUnidClient client;
+            Lookup() throws Exception {
+                this.client = OCSPUnidClient.getOCSPUnidClient(keyStoreFileName, keyStorePassword, ocspurl, keyStoreFileName!=null, false);
+            }
+            public boolean doIt() throws Exception {
+                OCSPUnidResponse response = client.lookup(serialNrs.getRandom(),
+                                                          cacert);
+                if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
+                    performanceTest.getLog().error("Error querying OCSP server. Error code is: "+response.getErrorCode());
+                    return false;
                 }
-            } catch( EOFException e) {}
-            System.out.println("Number of certificates in list: "+this.vSerialNrs.size());
-        }
-        BigInteger getRandom() {
-            return vSerialNrs.get(performanceTest.getRandom().nextInt(vSerialNrs.size()));
-        }
-    }
-    private class Lookup implements Command {
-        private final OCSPUnidClient client;
-        Lookup() throws Exception {
-            this.client = OCSPUnidClient.getOCSPUnidClient(keyStoreFileName, keyStorePassword, ocspurl, keyStoreFileName!=null, false);
-        }
-        public boolean doIt() throws Exception {
-            OCSPUnidResponse response = client.lookup(serialNrs.getRandom(),
-                                                      cacert);
-            if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
-                performanceTest.getLog().error("Error querying OCSP server. Error code is: "+response.getErrorCode());
-                return false;
+                if (response.getHttpReturnCode() != 200) {
+                    performanceTest.getLog().error("Http return code is: "+response.getHttpReturnCode());
+                    return false;
+                }
+                performanceTest.getLog().info("OCSP return value is: "+response.getStatus());
+                return true;
             }
-            if (response.getHttpReturnCode() != 200) {
-                performanceTest.getLog().error("Http return code is: "+response.getHttpReturnCode());
-                return false;
+            public String getJobTimeDescription() {
+                return "OCSP lookup";
             }
-            performanceTest.getLog().info("OCSP return value is: "+response.getStatus());
-            return true;
         }
-        public String getJobTimeDescription() {
-            return "OCSP lookup";
+        StressTest(String args[]) throws Exception {
+            if ( args.length<7 ) {
+                System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<request signing keystore file>] [<request signing password>]");
+                System.exit(1);
+            }
+            this.ocspurl = args[2];
+            this.serialNrs = new SerialNrs(args[3]);
+            this.cacert = getCertFromPemFile(args[4]);
+            final int numberOfThreads = Integer.parseInt(args[5]);
+            final int waitTime = Integer.parseInt(args[6]);
+            if( args.length>7 )
+                this.keyStoreFileName = args[7];
+            else
+                this.keyStoreFileName = null;
+            if( args.length>8 )
+                this.keyStorePassword = args[8];
+            else
+                this.keyStorePassword = null;
+            this.performanceTest = new PerformanceTest();
+            this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
         }
     }
-    private Ocsp(String args[]) throws Exception {
-        if ( args.length<6 ) {
-            System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<request signing keystore file>] [<request signing password>]");
-           System.exit(1);
-        }
-        this.ocspurl = args[1];
-        this.serialNrs = new SerialNrs(args[2]);
-        this.cacert = getCertFromPemFile(args[3]);
-        final int numberOfThreads = Integer.parseInt(args[4]);
-        final int waitTime = Integer.parseInt(args[5]);
-        if( args.length>6 )
-            this.keyStoreFileName = args[6];
-        else
-            this.keyStoreFileName = null;
-        if( args.length>7 )
-            this.keyStorePassword = args[7];
-        else
-            this.keyStorePassword = null;
-        this.performanceTest = new PerformanceTest();
-        this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
-    }
-    private static Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
+    static Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
         byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
                                                  "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
         return CertTools.getCertfromByteArray(bytes);
     }
-    /**
-     * @param args command line arguments
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
-    public static void main(String[] args) {
+    @Override
+    void execute(String[] args) {
         try {
             CertTools.installBCProvider();
 
@@ -154,22 +157,22 @@ public class Ocsp {
             final String certfilename;
             final String cacertfilename;
             boolean signRequest = false;
-            if ( args.length>0 && args[0].equals("stress") ) {
-                new Ocsp(args);
+            if ( args.length>1 && args[1].equals("stress") ) {
+                new StressTest(args);
                 return;
-            } else if (args.length == 5) {
-                ksfilename = args[0];
-                kspwd = args[1];
-                ocspurl = args[2].equals("null") ? null : args[2];
-                certfilename = args[3];
-                cacertfilename = args[4];            	
+            } else if (args.length == 6) {
+                ksfilename = args[1];
+                kspwd = args[2];
+                ocspurl = args[3].equals("null") ? null : args[3];
+                certfilename = args[4];
+                cacertfilename = args[5];            	
                 signRequest = true;
-            } else if (args.length == 3) {
+            } else if (args.length == 4) {
                 ksfilename = null;
                 kspwd = null;
-                ocspurl = args[0].equals("null") ? null : args[0];
-                certfilename = args[1];
-                cacertfilename = args[2];
+                ocspurl = args[1].equals("null") ? null : args[1];
+                certfilename = args[2];
+                cacertfilename = args[3];
             } else {
                 System.out.println("Usage 1: OCSP KeyStoreFilename Password, OCSPUrl CertificateFileName CA-certificateFileName");
                 System.out.println("Usage 2: OCSP OCSPUrl CertificateFileName CA-certificateFileName");
@@ -217,5 +220,22 @@ public class Ocsp {
             e.printStackTrace();
             System.exit(-1);
         }
+    }
+    /**
+     * @param args command line arguments
+     */
+    public static void main(String[] args) {
+        final List<String> lArgs = new ArrayList<String>();
+        lArgs.add("dummy");
+        for ( int i=0; i<args.length; i++) // remove first argument
+            lArgs.add(args[i]);
+        new Ocsp().execute(lArgs.toArray(new String[]{}));
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.ClientToolBox#getName()
+     */
+    @Override
+    String getName() {
+        return "OCSP";
     }
 }

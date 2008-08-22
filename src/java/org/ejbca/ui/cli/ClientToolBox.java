@@ -33,9 +33,12 @@ public abstract class ClientToolBox {
      * Check if this tool should be executed.
      * @param args Command line from the user.
      */
-    void executeIfSelected(String args[]) {
-        if (args[0].equalsIgnoreCase(getName()))
+    boolean executeIfSelected(String args[]) {
+        if (args[0].equalsIgnoreCase(getName())) {
             execute(args);
+            return true;
+        }
+        return false;
     }
     /**
      * 
@@ -43,16 +46,15 @@ public abstract class ClientToolBox {
      */
     public static void main(String[] args) {
         // each new tool must be added to the array
-        final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool(), new PKCS11HSMKeyTool(), new NCipherHSMKeyTool() };
-        if ( args.length<1 ) {
-            System.err.println("You must specify which tool to use as first argument.");
-            System.err.println("These tools are awailable:");
-            for ( int i=0; i<toolBox.length; i++)
-                System.err.println(" - "+toolBox[i].getName());
-            return;
+        final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool(), new PKCS11HSMKeyTool(), new NCipherHSMKeyTool(), new Ocsp() };
+        for ( int i=0; args.length>0 && i<toolBox.length; i++) {
+            if ( toolBox[i].executeIfSelected(args) )
+                return;
         }
+        System.err.println("You must specify which tool to use as first argument.");
+        System.err.println("These tools are awailable:");
         for ( int i=0; i<toolBox.length; i++)
-            toolBox[i].executeIfSelected(args);
+            System.err.println(" - "+toolBox[i].getName());
     }
 
 }

@@ -509,7 +509,7 @@
                 <attribute name="Main-Class" value="org.ejbca.ui.cli.Ocsp" />
         	  </manifest>
             <fileset dir="${ocsp-client.build}"/>
-        	<fileset dir="${src}/java">
+        	<fileset dir="${mainsrc}/java">
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
         	</fileset>	
@@ -793,6 +793,10 @@
         </javac>
         <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
             <fileset dir="${clientToolBox.build}"/>
+            <fileset dir="${mainsrc}/java">
+                <include name="dncomponents.properties"/>
+                <include name="profilemappings.properties"/>
+            </fileset>  
         </jar>
     </target>
 </project>
