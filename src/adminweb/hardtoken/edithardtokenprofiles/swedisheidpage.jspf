@@ -7,7 +7,7 @@
 			                  SwedishEIDProfile.PINTYPE_AUTHENC_SAME_AS_SIGN};
 
   String[] signpintexts    = {"ASCIINUMERIC","UTF8","ISO95641"};
-  String[] authencpintexts = {"ASCIINUMERIC","UFT8","ISO95641", "SAMEASSIGNCERT"};
+  String[] authencpintexts = {"ASCIINUMERIC","UTF8","ISO95641", "SAMEASSIGNCERT"};
 
   String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
 
