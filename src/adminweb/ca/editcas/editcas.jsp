@@ -1373,7 +1373,7 @@
           processedsubjectdn = request.getParameter(HIDDEN_PROCESSREQUESTDN);
           String processrequeststr = request.getParameter(HIDDEN_PROCESSREQUEST);
           if ( (processrequeststr != null) && (processrequeststr.length() > 0)) {
-              processrequest = Boolean.valueOf(processrequeststr);        	  
+              processrequest = Boolean.valueOf(processrequeststr).booleanValue();        	  
           } 
           includefile="editcapage.jspf";              
       }
