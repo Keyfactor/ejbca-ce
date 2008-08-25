@@ -41,4 +41,4 @@ fi
 
 # Finally run java
 #set -x
-${JAVACMD} -cp ${CLASSES} org.ejbca.ui.cli.ClientToolBox ${@}
+${JAVACMD} -Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed -cp ${CLASSES} org.ejbca.ui.cli.ClientToolBox ${@}

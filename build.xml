@@ -766,6 +766,15 @@
 
     <target name="clientToolBox">
         <mkdir dir="${clientToolBox.build}"/>
+        <copy todir="${clientToolBox-dist.dir}/endorsed">
+            <fileset dir="${lib}/jaxws">
+                <include name="jaxb*.jar"/>
+                <include name="saaj-*.jar"/>
+                <include name="jaxws-api.jar"/>
+                <include name="jaxws-rt.jar"/>
+                <include name="sjsxp.jar"/>
+            </fileset>
+        </copy>
         <copy todir="${clientToolBox-dist.dir}/lib">
             <fileset dir="${lib}">
                 <include name="log4j.jar"/>
@@ -786,10 +795,13 @@
         </copy>
         <javac destdir="${clientToolBox.build}" debug="on">
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
+            <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
+            <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <classpath>
                 <fileset dir="${clientToolBox-dist.dir}/lib" />
             </classpath>
             <src path="${mainsrc}/java" />
+            <src path="${mainsrc}/jaxws/gen-java/client" />
         </javac>
         <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
             <fileset dir="${clientToolBox.build}"/>
