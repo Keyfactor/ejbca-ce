@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Implements the EJBCA RA WS command line interface
  *
- * @version $Id: EjbcaWsRaCli.java 5585 2008-05-01 20:55:00Z anatom $
+ * @version $Id$
  */
 public class EjbcaWsRaCli extends ClientToolBox {
     /* (non-Javadoc)
