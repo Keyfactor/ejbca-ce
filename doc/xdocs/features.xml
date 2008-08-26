@@ -61,7 +61,7 @@
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
 <li>Supports multiple application servers: JBoss, Weblogic, Glassfish, OC4J, Websphere</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, DB2, MS-SQL, Derby, Sybase, Informix.</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, MS-SQL, Derby, Sybase, Informix.</li>
 </ul>    
 
   </section>
