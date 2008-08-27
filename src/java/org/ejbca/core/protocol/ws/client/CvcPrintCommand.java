@@ -19,6 +19,7 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 
 import org.ejbca.core.protocol.RequestMessageUtils;
+import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -67,13 +68,22 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			getPrintStream().println(parsedObject.getAsText(""));
 			if (args.length > 2) {
 				String verifycert = args[2];
-				getPrintStream().println("Verifying certificate "+filename+" with certificate "+verifycert);
-				CVCertificate cert1 = (CVCertificate)parsedObject;
+				String type = "certificate";
+				if (parsedObject instanceof CVCAuthenticatedRequest) {
+					type = "authenticated request";
+				}
+				getPrintStream().println("Verifying "+type+" "+filename+" with certificate "+verifycert);
 				parsedObject = getCVCObject(verifycert);
 				CVCertificate cert2 = (CVCertificate)parsedObject;
-				CardVerifiableCertificate cvcert = new CardVerifiableCertificate(cert1);
 				try {
-					cvcert.verify(cert2.getCertificateBody().getPublicKey());					
+					if (parsedObject instanceof CVCAuthenticatedRequest) {
+						CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
+						authreq.verify(cert2.getCertificateBody().getPublicKey());											
+					} else {
+						CVCertificate cert1 = (CVCertificate)parsedObject;
+						CardVerifiableCertificate cvcert = new CardVerifiableCertificate(cert1);
+						cvcert.verify(cert2.getCertificateBody().getPublicKey());											
+					}
 					getPrintStream().println("Verification of certificate was successful");
 				} catch (Exception e) {
 					getPrintStream().println("Verification of certificate failed: "+e.getMessage());
