@@ -13,17 +13,29 @@
 
 package org.ejbca.core.model.ra;
 
+import org.ejbca.core.ErrorCode;
+
 /**
  * Exception thrown when a revocation request for an already revoket object is requested.
  */
 public class AlreadyRevokedException extends org.ejbca.core.EjbcaException {
-    /**
+    
+	/**
+     * Creates a new instance of <code>AlreadyRevokedException</code> without detail message.
+     */
+	public AlreadyRevokedException() {
+		super();
+        super.setErrorCode(ErrorCode.ALREADY_REVOKED);
+    }
+	
+	
+	/**
      * Creates a new instance of AlreadyRevokedException
      *
      * @param message error message
      */
     public AlreadyRevokedException(String message) {
-        super(message);
+        super(ErrorCode.ALREADY_REVOKED,message);
     }
-
+    
 }
