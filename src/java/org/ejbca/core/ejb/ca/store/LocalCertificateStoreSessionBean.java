@@ -711,7 +711,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesBySerno(Admin admin, BigInteger serno) {
-        debug(">findCertificateBySerno(),  serno=" + serno);
+        debug(">findCertificatesBySerno(),  serno=" + serno);
         try {
             Collection coll = certHome.findBySerialNumber(serno.toString());
             ArrayList ret = new ArrayList();
@@ -724,7 +724,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
 
-            debug("<findCertificateBySerno(), serno=" + serno);
+            debug("<findCertificatesBySerno(), serno=" + serno);
 
             return ret;
         } catch (javax.ejb.FinderException fe) {
@@ -771,7 +771,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByUsername(Admin admin, String username) {
-        debug(">findCertificateBySerno(),  username=" + username);
+        debug(">findCertificatesByUsername(),  username=" + username);
 
         try {
             // Strip dangerous chars
@@ -788,12 +788,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
 
-            debug("<findCertificateBySerno(), username=" + username);
+            debug("<findCertificatesByUsername(), username=" + username);
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
         }
-    } // findCertificateByUsername
+    } // findCertificatesByUsername
 
     /**
      * @ejb.interface-method
