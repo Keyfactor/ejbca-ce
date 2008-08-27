@@ -16,10 +16,6 @@ package org.ejbca.ui.cli.hardtoken;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import javax.naming.InitialContext;
-
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.log.Admin;
@@ -64,9 +60,6 @@ public class ImportDataCommand extends BaseAdminCommand {
 	       throw new IllegalAdminCommandException(usageText);	       
 	    }	
         try {            
-        	//InitialContext jndicontext = new InitialContext();
-        	InitialContext jndicontext = getInitialContext();
-        	
         	Properties props = new Properties();
         	props.load(new FileInputStream(args[1]));
         	
@@ -77,12 +70,6 @@ public class ImportDataCommand extends BaseAdminCommand {
         			throw new IllegalAdminCommandException(usageText);
         		}
         	}
-        	
-        	IHardTokenSessionHome sessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"),
-        			IHardTokenSessionHome.class);
-        	
-        	IHardTokenSessionRemote session = sessionhome.create();
-        	
         	// Read the significat issuer dn and check that it exists
         	if(props.getProperty("significantissuerdn") == null){
         		throw new IllegalAdminCommandException("Error, the property significantissuerdn isn't set in the propertyfile " + args[1]);
@@ -90,7 +77,7 @@ public class ImportDataCommand extends BaseAdminCommand {
         	
         	String significantIssuerDN = props.getProperty("significantissuerdn");
         	int cAId = significantIssuerDN.hashCode();
-        	if(getCAAdminSessionRemote().getCAInfo(administrator, cAId) == null){
+        	if(getCAAdminSession().getCAInfo(administrator, cAId) == null){
         		throw new IllegalAdminCommandException("Error, the property significantissuerdn '" + significantIssuerDN +  "' doesn't exists as CA in the system.");
         	}
         	
@@ -105,12 +92,12 @@ public class ImportDataCommand extends BaseAdminCommand {
         	try{
         	  while((htd = importer.readHardTokenData()) != null){
         		  try{
-        	         session.addHardToken(administrator, htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
+        	         getHardTokenSession().addHardToken(administrator, htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
         	         getOutputStream().println("Info: Token with SN " + htd.getTokenSN() + " were added to the database.");
         		  }catch(HardTokenExistsException e){
         			  if(force){
-        				  session.removeHardToken(administrator, htd.getTokenSN());
-        				  session.addHardToken(administrator, htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
+        				  getHardTokenSession().removeHardToken(administrator, htd.getTokenSN());
+        				  getHardTokenSession().addHardToken(administrator, htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
         				  getOutputStream().println("Info: Token with SN " + htd.getTokenSN() + " already existed in the database but was OVERWRITTEN.");        				  
         			  }else{
         				  getOutputStream().println("Error: Token with SN " + htd.getTokenSN() + " already exists in the database and is NOT imported.");

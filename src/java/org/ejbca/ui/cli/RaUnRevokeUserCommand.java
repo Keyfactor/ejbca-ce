@@ -58,7 +58,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
 
             String username = args[1];
 
-            UserDataVO data = getAdminSession().findUser(administrator, username);
+            UserDataVO data = getUserAdminSession().findUser(administrator, username);
             getOutputStream().println("Found user:");
             getOutputStream().println("username=" + data.getUsername());
             getOutputStream().println("dn=\"" + data.getDN() + "\"");
@@ -74,7 +74,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             				cert.getSerialNumber()).getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {
             			foundCertificateOnHold = true;
             			try {
-                			getAdminSession().unRevokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username);
+                			getUserAdminSession().unRevokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username);
                         } catch (AlreadyRevokedException e) {
                         	getOutputStream().println("Error : The user was already reactivated while the request executed.");
                         } catch (ApprovalException e) {
@@ -87,7 +87,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             	if (!foundCertificateOnHold) {
                 	getOutputStream().println("No certificates with status 'On hold' were found for this user.");
             	} else {
-	                data = getAdminSession().findUser(administrator, username);
+	                data = getUserAdminSession().findUser(administrator, username);
 	                getOutputStream().println("New status=" + data.getStatus());
             	}
             } catch (AuthorizationDeniedException e) {

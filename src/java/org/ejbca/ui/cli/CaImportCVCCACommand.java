@@ -125,7 +125,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
 	        Certificate[] chain = new Certificate[1];
 	        chain[0] = cacert;
-        	getCAAdminSessionRemote().importCAFromKeys(administrator, caName, "foo123", chain, pubKey, privKey, null, null);
+        	getCAAdminSession().importCAFromKeys(administrator, caName, "foo123", chain, pubKey, privKey, null, null);
         	
         } catch (ErrorAdminCommandException e) {
         	throw e;

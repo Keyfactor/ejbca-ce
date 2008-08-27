@@ -54,7 +54,7 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
             int status = Integer.parseInt(args[2]);
 
             try {
-                getAdminSession().setUserStatus(administrator, username, status);
+                getUserAdminSession().setUserStatus(administrator, username, status);
                 getOutputStream().println("New status for user " + username + " is " + status);
             } catch (AuthorizationDeniedException e) {
                 getOutputStream().println("Error : Not authorized to change userdata.");

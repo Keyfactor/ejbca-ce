@@ -50,18 +50,12 @@ public class RaGetUserCertCommand extends BaseRaAdminCommand {
 
                 return;
             }
-
             final String username = args[1];
-            
-            try {
-                final Collection data = getCertificateStoreSession().findCertificatesByUsername(administrator, username);
-                if (data != null) {
-                    getOutputStream().println(new String(CertTools.getPEMFromCerts(data)));
-                } else {
-                    getOutputStream().println("User '" + username + "' does not exist.");
-                }
-            } catch (AuthorizationDeniedException e) {
-                getOutputStream().println("Error : Not authorized to view user.");
+            final Collection data = getCertificateStoreSession().findCertificatesByUsername(administrator, username);
+            if (data != null) {
+            	getOutputStream().println(new String(CertTools.getPEMFromCerts(data)));
+            } else {
+            	getOutputStream().println("User '" + username + "' does not exist.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

@@ -24,14 +24,9 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.naming.Context;
-
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
@@ -68,7 +63,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         debug(">getCertChain()");
         Collection returnval = new ArrayList();
         try {
-            CAInfo cainfo = this.getCAAdminSessionRemote().getCAInfo(administrator,caname);
+            CAInfo cainfo = this.getCAAdminSession().getCAInfo(administrator,caname);
             if (cainfo != null) {
                 returnval = cainfo.getCertificateChain();
             } 
@@ -122,29 +117,20 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         debug(">createCRL()");
 
         try {
-            Context context = getInitialContext();
-            ICreateCRLSessionHome home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-                        "CreateCRLSession"), ICreateCRLSessionHome.class);
             if(issuerdn != null){
             	if (!deltaCRL) {
-                    home.create().run(administrator, issuerdn);
-                    ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-                              "CertificateStoreSession"), ICertificateStoreSessionHome.class);
-                    ICertificateStoreSessionRemote storeremote = storehome.create();
-                    int number = storeremote.getLastCRLNumber(administrator, issuerdn, false);
+            		getCreateCRLSession().run(administrator, issuerdn);
+                    int number = getCertificateStoreSession().getLastCRLNumber(administrator, issuerdn, false);
                     getOutputStream().println("CRL with number " + number + " generated.");            		
             	} else {
-                    home.create().runDeltaCRL(administrator, issuerdn);
-                    ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-                              "CertificateStoreSession"), ICertificateStoreSessionHome.class);
-                    ICertificateStoreSessionRemote storeremote = storehome.create();
-                    int number = storeremote.getLastCRLNumber(administrator, issuerdn, true);
+            		getCreateCRLSession().runDeltaCRL(administrator, issuerdn);
+                    int number = getCertificateStoreSession().getLastCRLNumber(administrator, issuerdn, true);
                     getOutputStream().println("Delta CRL with number " + number + " generated.");
             	}
             }else{
-            	int createdcrls = home.create().createCRLs(administrator);
+            	int createdcrls = getCreateCRLSession().createCRLs(administrator);
             	getOutputStream().println("  " + createdcrls + " CRLs have been created.");	
-            	int createddeltacrls = home.create().createDeltaCRLs(administrator);
+            	int createddeltacrls = getCreateCRLSession().createDeltaCRLs(administrator);
             	getOutputStream().println("  " + createddeltacrls + " delta CRLs have been created.");	
             }
         } catch (Exception e) {
@@ -155,14 +141,14 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
    } // createCRL
     
    protected String getIssuerDN(String caname) throws Exception{            
-      CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+      CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caname);
       return cainfo.getSubjectDN();  
    }
    
    protected CAInfo getCAInfo(String caname) throws Exception {
 	   CAInfo result;
 	   try {
-		   result = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+		   result = getCAAdminSession().getCAInfo(administrator, caname);
 	   } catch (Exception e) {
 		   debug("Error retriving CA " + caname + " info.", e);
 		   throw new Exception("Error retriving CA " + caname + " info.");

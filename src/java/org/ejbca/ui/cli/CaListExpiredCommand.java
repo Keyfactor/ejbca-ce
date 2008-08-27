@@ -79,13 +79,9 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
     // execute
     private Collection getExpiredCerts(Date findDate) {
         try {
-            Context ctx = getInitialContext();
-            ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup(
-                        "CertificateStoreSession"), ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote store = storehome.create();
             debug("Looking for cert with expireDate=" + findDate);
 
-            Collection certs = store.findCertificatesByExpireTime(administrator, findDate);
+            Collection certs = getCertificateStoreSession().findCertificatesByExpireTime(administrator, findDate);
             debug("Found " + certs.size() + " certs.");
 
             return certs;

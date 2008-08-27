@@ -13,12 +13,7 @@
  
 package org.ejbca.ui.cli;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.CreateException;
-import javax.naming.Context;
-import javax.naming.NamingException;
-
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.upgrade.IUpgradeSessionHome;
 import org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote;
 
@@ -42,10 +37,8 @@ public class Upgrade extends BaseCommand {
         boolean ret = false;
         String database = System.getProperty("ejbcaDB");
         debug("ejbcaDB="+database);
-        
-        String upgradefrom33 = System.getProperty("ejbcaUpgradeFrom33");
-        String upgradefrom31 = System.getProperty("ejbcaUpgradeFrom31");
-        debug("ejbcaUpgradeFrom31="+database);
+        String upgradeFromVersion = System.getProperty("ejbcaUpgradeFromVersion");
+        debug("ejbcaUpgradeFromVersion="+upgradeFromVersion);
         
         // Check pre-requisites
         if (!appServerRunning()) {
@@ -54,28 +47,18 @@ public class Upgrade extends BaseCommand {
         }
        // Upgrade the database
        try {
-          IUpgradeSessionRemote upgradesession = getUpgradeSessionRemote();
-          String[] args = new String[3];
+          String[] args = new String[2];
           args[0] = database;
-          args[1] = upgradefrom33;
-          args[2] = upgradefrom31;
-          ret = upgradesession.upgrade(administrator, args);
+          args[1] = upgradeFromVersion;
+          ret = getUpgradeSession().upgrade(administrator, args);
        } catch (Exception e) {
            error("Can't upgrade: ", e);
            ret = false;
        }
-       
       debug("<upgrade");
       return ret;
     }
 
-    protected IUpgradeSessionRemote getUpgradeSessionRemote() throws NamingException, CreateException, RemoteException {
-        Context ctx = getInitialContext();
-        IUpgradeSessionHome home = (IUpgradeSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UpgradeSession"), IUpgradeSessionHome.class );            
-        IUpgradeSessionRemote upgradesession = home.create();          
-        return upgradesession;
-     }
-    
     /**
      * main Upgrade
      *
@@ -91,7 +74,6 @@ public class Upgrade extends BaseCommand {
             	upgrade.info("Upgrade completed.");   
             }
         } catch (Exception e) {
-            //System.out.println(e.getMessage());
             upgrade.error("Error doing upgrade: ", e);
             System.exit(-1);
         }

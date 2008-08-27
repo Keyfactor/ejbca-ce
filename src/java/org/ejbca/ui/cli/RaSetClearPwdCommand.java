@@ -53,7 +53,7 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
             getOutputStream().println("Setting clear text password " + password + " for user " + username);
 
             try {
-                getAdminSession().setClearTextPassword(administrator, username, password);
+                getUserAdminSession().setClearTextPassword(administrator, username, password);
             } catch (AuthorizationDeniedException e) {
                 getOutputStream().println("Error : Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

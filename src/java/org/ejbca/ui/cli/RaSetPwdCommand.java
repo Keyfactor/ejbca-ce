@@ -53,7 +53,7 @@ public class RaSetPwdCommand extends BaseRaAdminCommand {
                 username);
 
             try {
-                getAdminSession().setPassword(administrator, username, password);
+                getUserAdminSession().setPassword(administrator, username, password);
             } catch (AuthorizationDeniedException e) {
                 getOutputStream().println("Error : Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

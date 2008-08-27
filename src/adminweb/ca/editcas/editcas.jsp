@@ -26,6 +26,7 @@
   static final String ACTION_RENEWCA_MAKEREQUEST          = "renewcamakeresponse";  
   static final String ACTION_RENEWCA_RECIEVERESPONSE      = "renewcarecieveresponse";  
   static final String ACTION_IMPORTCA		              = "importca";
+  static final String ACTION_IMPORTCACERT	              = "importcacert";
 
   static final String CHECKBOX_VALUE           = "true";
 
@@ -38,6 +39,7 @@
   static final String BUTTON_SIGNREQUEST                   = "buttonsignrequest";
   static final String BUTTON_IMPORTCA		               = "buttonimportca";
   static final String BUTTON_EXPORTCA		               = "buttonexportca";
+  static final String BUTTON_IMPORTCACERT	               = "buttonimportcacert";
   
 
   static final String SELECT_CAS                           = "selectcas";
@@ -302,6 +304,10 @@
       if( request.getParameter(BUTTON_IMPORTCA) != null){ 
          // Import CA from p12-file. Start by prompting for file and keystore password.
 		includefile="importca.jspf";
+      }
+      if( request.getParameter(BUTTON_IMPORTCACERT) != null){ 
+         // Import CA from p12-file. Start by prompting for file and keystore password.
+		includefile="importcacert.jspf";
       }
       if( request.getParameter(BUTTON_CREATE_CA) != null){
          // Add profile and display profilespage.
@@ -1429,6 +1435,19 @@
 			}
 		}
       } // ACTION_IMPORTCA
+      if( action.equals(ACTION_IMPORTCACERT) ) {
+		if( !buttoncancel ) {
+	        try {
+	            // Load PEM
+	            cadatahandler.importCACert(importcaname, file);
+			} catch (Exception e) {
+			%> <div style="color: #FF0000;"> <%
+				out.println( e.getMessage() );
+			%> </div> <%
+		        includefile="importcacert.jspf";
+			}
+		}
+      } // ACTION_IMPORTCACERT
     }
   }catch(CATokenOfflineException ctoe){
     catokenoffline = true;
@@ -1455,6 +1474,9 @@
 <%}
   if( includefile.equals("importca.jspf")){ %>
    <%@ include file="importca.jspf" %> 
+<%}
+  if( includefile.equals("importcacert.jspf")){ %>
+   <%@ include file="importcacert.jspf" %> 
 <%}
 
 

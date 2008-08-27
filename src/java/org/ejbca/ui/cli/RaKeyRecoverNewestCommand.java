@@ -49,13 +49,6 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
                 return;
             }
 
-            //InitialContext jndicontext = new InitialContext();
-            InitialContext jndicontext = getInitialContext();
-
-            IKeyRecoverySessionHome keyrecoverysessionhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                        "KeyRecoverySession"), IKeyRecoverySessionHome.class);
-            IKeyRecoverySessionRemote keyrecoverysession = keyrecoverysessionhome.create();
-
             String username = args[1];
 
              boolean usekeyrecovery = getRaAdminSession().loadGlobalConfiguration(administrator).getEnableKeyRecovery();  
@@ -64,18 +57,18 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
                return;                   
              }   
                
-             if(keyrecoverysession.isUserMarked(administrator,username)){
+             if(getKeyRecoverySession().isUserMarked(administrator,username)){
                getOutputStream().println("User is already marked for recovery.");
                return;                     
              }
              
-             UserDataVO userdata = getAdminSession().findUser(administrator, username);
+             UserDataVO userdata = getUserAdminSession().findUser(administrator, username);
              if(userdata == null){
                  getOutputStream().println("Error, The user doesn't exist.");
                  return;
              }
              
-             keyrecoverysession.markNewestAsRecoverable(administrator, username,userdata.getEndEntityProfileId());
+             getKeyRecoverySession().markNewestAsRecoverable(administrator, username,userdata.getEndEntityProfileId());
                      
              getOutputStream().println("Key corresponding to users newest certificate has been marked for recovery.");             
  

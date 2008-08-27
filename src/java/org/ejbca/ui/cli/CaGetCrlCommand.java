@@ -64,10 +64,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
                 }
                 
                 String issuerdn = getIssuerDN(caname);
-				Context context = getInitialContext();
-				ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"),ICertificateStoreSessionHome.class);
-				ICertificateStoreSessionRemote store = storehome.create();
-				byte[] crl = store.getLastCRL(administrator, issuerdn, (deltaSelector > 0));
+				byte[] crl = getCertificateStoreSession().getLastCRL(administrator, issuerdn, (deltaSelector > 0));
 				FileOutputStream fos = new FileOutputStream(outfile);
                 if (pem) {		
                     fos.write(CertTools.getPEMFromCrl(crl));

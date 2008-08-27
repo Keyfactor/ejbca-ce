@@ -52,7 +52,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
             String username = args[1];
 
             try {
-                UserDataVO data = getAdminSession().findUser(administrator, username);
+                UserDataVO data = getUserAdminSession().findUser(administrator, username);
 
                 if (data != null) {
                     getOutputStream().println("Found user:");

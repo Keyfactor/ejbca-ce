@@ -63,7 +63,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
             String inpath = args[1];
             Integer caid = null;
             if (args.length > 2) {
-            	CAInfo ca = getCAAdminSessionRemote().getCAInfo(administrator, args[2]);
+            	CAInfo ca = getCAAdminSession().getCAInfo(administrator, args[2]);
             	if (ca != null) {
             		caid = ca.getCAId();
             	} else {
@@ -180,7 +180,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         availableCAs = "";
                                         for ( String currentCA : cas ) {
                                         	Integer currentCAInt = Integer.parseInt(currentCA);
-                                        	if (getCAAdminSessionRemote().getCAInfo(administrator, currentCAInt) == null) {
+                                        	if (getCAAdminSession().getCAInfo(administrator, currentCAInt) == null) {
                                                 getOutputStream().println("Warning: CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
                                                 if (defaultCA.equals(currentCA)) {
                                                 	defaultCA = "";
@@ -218,7 +218,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         Collection<Integer> cas = cprofile.getAvailableCAs();
                                         ArrayList<Integer> casToRemove = new ArrayList<Integer>();
                                         for (Integer currentCA : cas) {
-                                        	if (currentCA != CertificateProfile.ANYCA && getCAAdminSessionRemote().getCAInfo(administrator, currentCA) == null) {
+                                        	if (currentCA != CertificateProfile.ANYCA && getCAAdminSession().getCAInfo(administrator, currentCA) == null) {
                                         		casToRemove.add(currentCA);
                                         	}
                                         }

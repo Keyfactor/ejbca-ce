@@ -17,7 +17,6 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.util.CertTools;
 
@@ -49,12 +48,11 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
            throw new IllegalAdminCommandException(msg);
         }            
         try {
-            ICAAdminSessionRemote casession = getCAAdminSessionRemote();
-            Collection caids = casession.getAvailableCAs(administrator);
+            Collection caids = getCAAdminSession().getAvailableCAs(administrator);
             Iterator iter = caids.iterator();
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
-                CAInfo ca = casession.getCAInfo(administrator,caid);
+                CAInfo ca = getCAAdminSession().getCAInfo(administrator,caid);
                 Collection certs = ca.getCertificateChain();
                 Iterator ci = certs.iterator();
                 Certificate cacert = null;

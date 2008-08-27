@@ -61,15 +61,15 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
                 getOutputStream().println("Error : Reason must be an integer between 0 and 10 except 7.");
             } else {
-                UserDataVO data = getAdminSession().findUser(administrator, username);
+                UserDataVO data = getUserAdminSession().findUser(administrator, username);
                 getOutputStream().println("Found user:");
                 getOutputStream().println("username=" + data.getUsername());
                 getOutputStream().println("dn=\"" + data.getDN() + "\"");
                 getOutputStream().println("Old status=" + data.getStatus());
                 // Revoke users certificates
                 try {
-                    getAdminSession().revokeUser(administrator, username, reason);
-                    data = getAdminSession().findUser(administrator, username);
+                    getUserAdminSession().revokeUser(administrator, username, reason);
+                    data = getUserAdminSession().findUser(administrator, username);
                     getOutputStream().println("New status=" + data.getStatus());
                 } catch (AuthorizationDeniedException e) {
                     getOutputStream().println("Error : Not authorized to revoke user.");

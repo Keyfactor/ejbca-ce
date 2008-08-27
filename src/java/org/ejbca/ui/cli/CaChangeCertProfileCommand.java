@@ -46,7 +46,7 @@ public class CaChangeCertProfileCommand extends BaseAdminCommand {
 		getOutputStream().print("  Existing CAs: ");
 		try {
 			// Print available CAs
-			Collection<Integer> cas = getCAAdminSessionRemote().getAvailableCAs(administrator);
+			Collection<Integer> cas = getCAAdminSession().getAvailableCAs(administrator);
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {
@@ -54,7 +54,7 @@ public class CaChangeCertProfileCommand extends BaseAdminCommand {
 				} else {
 					getOutputStream().print(", ");
 				}
-				CAInfo info = getCAAdminSessionRemote().getCAInfo(administrator, caid);
+				CAInfo info = getCAAdminSession().getCAInfo(administrator, caid);
 				getOutputStream().print(info.getName());				
 			}
 		} catch (Exception e) {
@@ -100,7 +100,7 @@ public class CaChangeCertProfileCommand extends BaseAdminCommand {
 		try {
 		    final String caName = args[1];
 		    {
-		        final CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caName);
+		        final CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caName);
 		        final String certProfileName = args[2];
 		        debug("Searching for Certificate Profile " + certProfileName);
 		        final int certificateprofileid = getCertificateStoreSession().getCertificateProfileId(administrator, certProfileName);
@@ -109,9 +109,9 @@ public class CaChangeCertProfileCommand extends BaseAdminCommand {
 		            throw new Exception("Certificate Profile '" + certProfileName + "' doesn't exists.");
 		        }
                 cainfo.setCertificateProfileId(certificateprofileid);
-                getCAAdminSessionRemote().editCA(administrator, cainfo);
+                getCAAdminSession().editCA(administrator, cainfo);
 		    }{
-                final CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caName);
+                final CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caName);
 		        getOutputStream().println("Certificate profile for CA changed:");
 		        getOutputStream().println("CA Name: " + caName);
 		        getOutputStream().println("Certificate Profile: " + getCertificateStoreSession().getCertificateProfileName(administrator, cainfo.getCertificateProfileId()));

@@ -16,7 +16,6 @@ package org.ejbca.ui.cli;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.rmi.RemoteException;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -29,25 +28,30 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
-import javax.ejb.CreateException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.InitialContextBuilder;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.ejb.log.IProtectedLogSessionHome;
 import org.ejbca.core.ejb.log.IProtectedLogSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.upgrade.IUpgradeSessionHome;
+import org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -64,23 +68,19 @@ public abstract class BaseCommand {
     /** Log4j instance for actual class */
     private Logger log;
 
-    /** UserAdminSession handle, not static since different object should go to different session beans concurrently */
-    private IUserAdminSessionRemote cacheAdmin = null;
-    /** Handle to AdminSessionHome */
-    private static IUserAdminSessionHome cacheHome = null;
-    /** RaAdminSession handle, not static since different object should go to different session beans concurrently */
-    private IRaAdminSessionRemote raadminsession = null;
-    /** Handle to RaAdminSessionHome */
-    private static IRaAdminSessionHome raadminHomesession = null;    
-    /** CAAdminSession handle, not static since different object should go to different session beans concurrently */
-    private ICAAdminSessionRemote caadminsession = null;
-    /** Handle to CertificateStoreSessionRemote, not static... */
-    private ICertificateStoreSessionRemote certstoresession = null;
-    /** Handle to PublisherSessionRemote, not static... */
-    private IPublisherSessionRemote publishersession = null;
-    /** Handle to ProtectedLogSessionRemote, not static... */
-	private IProtectedLogSessionRemote protectedlogsession = null;
-
+    /** Not static since different object should go to different session beans concurrently */
+    private IUserAdminSessionRemote userAdminSession = null;
+    private IRaAdminSessionRemote raAdminSession = null;
+    private ICAAdminSessionRemote caAdminSession = null;
+    private ICertificateStoreSessionRemote certificateStoreSession = null;
+    private IPublisherSessionRemote publisherSession = null;
+	private IProtectedLogSessionRemote protectedLogSession = null;
+    private IUpgradeSessionRemote upgradeSession = null;
+    private ICreateCRLSessionRemote createCRLSession = null;
+    private IAuthorizationSessionRemote authorizationSession = null;
+    private IHardTokenSessionRemote hardTokenSession = null;
+    private IKeyRecoverySessionRemote keyRecoverySession = null;
+    
 	protected Admin administrator = null;
     
     /** Where print output of commands */
@@ -114,116 +114,203 @@ public abstract class BaseCommand {
     }
 
     /**
-     * Gets InitialContext
-     *
-     * @return InitialContext
+     *@return a reference to a CAAdminSessionBean
      */
-    protected InitialContext getInitialContext() throws NamingException {
-        baseLog.debug(">getInitialContext()");
+    protected ICAAdminSessionRemote getCAAdminSession() {
+    	baseLog.debug(">getCAAdminSession()");
+		try {
+			if (caAdminSession == null) {
+				caAdminSession = ((ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getCAAdminSession()");
+        return caAdminSession;
+     }
 
-        try {
-            InitialContext cacheCtx = InitialContextBuilder.getInstance().getInitialContext();
-            baseLog.debug("<getInitialContext()");
-            return cacheCtx;
-        } catch (NamingException e) {
-            baseLog.error("Can't get InitialContext", e);
-            throw e;
-        }
-    } // getInitialContext
-
-    /** Gets CA admin session
-     *@return ICAAdminSessionRemote
+    /**
+     *@return a reference to a ProtectedLogSessionBean
      */
-    protected ICAAdminSessionRemote getCAAdminSessionRemote() throws Exception{
-        if(caadminsession == null){
-          Context ctx = getInitialContext();
-          ICAAdminSessionHome home = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class );            
-          caadminsession = home.create();          
-        } 
-        return caadminsession;
-     } // getCAAdminSessionRemote
+    protected IProtectedLogSessionRemote getProtectedLogSession() {
+    	baseLog.debug(">getProtectedLogSession()");
+		try {
+			if (protectedLogSession == null) {
+				protectedLogSession = ((IProtectedLogSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IProtectedLogSessionHome.JNDI_NAME, IProtectedLogSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getProtectedLogSession()");
+        return protectedLogSession;
+     }
 
-    /** Gets CA admin session
-     *@return ICAAdminSessionRemote
+    /**
+     *@return a reference to a CertificateStoreSessionBean
      */
-    protected IProtectedLogSessionRemote getProtectedLogSession() throws Exception{
-        if(protectedlogsession == null){
-          Context ctx = getInitialContext();
-          IProtectedLogSessionHome home = (IProtectedLogSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("ProtectedLogSession"), IProtectedLogSessionHome.class );            
-          protectedlogsession = home.create();          
-        } 
-        return protectedlogsession;
-     } // getCAAdminSessionRemote
-
-    /** Gets certificate store session
-     *@return ICertificateStoreSessionRemote
-     */
-    protected ICertificateStoreSessionRemote getCertificateStoreSession() throws Exception{
-        if(certstoresession == null){
-          Context ctx = getInitialContext();
-          ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );            
-          certstoresession = home.create();          
-        } 
-        return certstoresession;
-     } // getCertificateStoreSession
+    protected ICertificateStoreSessionRemote getCertificateStoreSession() {
+    	baseLog.debug(">getCertificateStoreSession()");
+		try {
+			if (certificateStoreSession == null) {
+				certificateStoreSession = ((ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getCertificateStoreSession()");
+        return certificateStoreSession;
+     }
     
-    /** Gets publisher session
-     *@return ICertificateStoreSessionRemote
+    /**
+     *@return a reference to a PublisherSessionBean
      */
-    protected IPublisherSessionRemote getPublisherSession() throws Exception{
-        if(publishersession == null){
-          Context ctx = getInitialContext();
-          IPublisherSessionHome home = (IPublisherSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("PublisherSession"), IPublisherSessionHome.class );            
-          publishersession = home.create();          
-        } 
-        return publishersession;
-     } // getPublisherSession
-    /** Gets user admin session
-     *@return InitialContext
+    protected IPublisherSessionRemote getPublisherSession() {
+    	baseLog.debug(">getPublisherSession()");
+		try {
+			if (publisherSession == null) {
+				publisherSession = ((IPublisherSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IPublisherSessionHome.JNDI_NAME, IPublisherSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getPublisherSession()");
+        return publisherSession;
+     }
+
+    /**
+     *@return a reference to a UserAdminSessionBean
      */
-    protected IUserAdminSessionRemote getAdminSession()
-        throws CreateException, NamingException, RemoteException {
-        debug(">getAdminSession()");
-        try {
-            if (cacheAdmin == null) {
-                if (cacheHome == null) {
-                    Context jndiContext = getInitialContext();
-                    Object obj1 = jndiContext.lookup("UserAdminSession");
-                    cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                            IUserAdminSessionHome.class);
-                }
-                cacheAdmin = cacheHome.create();
-            }
-            debug("<getAdminSession()");
-            return cacheAdmin;
-        } catch (NamingException e) {
-            error("Can't get Admin session", e);
-            throw e;
-        }
-    } // getAdminSession
+    protected IUserAdminSessionRemote getUserAdminSession() {
+    	baseLog.debug(">getUserAdminSession()");
+		try {
+			if (userAdminSession == null) {
+				userAdminSession = ((IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getUserAdminSession()");
+        return userAdminSession;
+    }
     
-    /** Gets ra admin session
-     *@return InitialContext
+    /**
+     *@return a reference to a RaAdminSessionBean
      */
-    protected IRaAdminSessionRemote getRaAdminSession() throws CreateException, NamingException, RemoteException {
-        debug(">getRaAdminSession()");
+    protected IRaAdminSessionRemote getRaAdminSession() {
+    	baseLog.debug(">getRaAdminSession()");
         administrator = new Admin(Admin.TYPE_RA_USER);
-        try {
-            if( raadminsession == null ) {
-                if (raadminHomesession == null) {
-                    Context jndiContext = getInitialContext();
-                    Object obj1 = jndiContext.lookup("RaAdminSession");
-                    raadminHomesession = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
-                }
-                raadminsession = raadminHomesession.create();
-            }
-            debug("<getRaAdminSession()");
-            return  raadminsession;
-        } catch (NamingException e ) {
-            error("Can't get RaAdmin session", e);
-            throw e;
-        }
-    } // getRaAdminSession    
+		try {
+			if (raAdminSession == null) {
+				raAdminSession = ((IRaAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IRaAdminSessionHome.JNDI_NAME, IRaAdminSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getRaAdminSession()");
+        return  raAdminSession;
+    }    
+
+    /**
+     *@return a reference to a UpgradeSessionBean
+     */
+    protected IUpgradeSessionRemote getUpgradeSession() {
+    	baseLog.debug(">getUpgradeSession()");
+		try {
+			if (upgradeSession == null) {
+				upgradeSession = ((IUpgradeSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IUpgradeSessionHome.JNDI_NAME, IUpgradeSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getUpgradeSession()");
+        return upgradeSession;
+     }
+    
+    /**
+     *@return a reference to a CreateCRLSessionBean
+     */
+    protected ICreateCRLSessionRemote getCreateCRLSession() {
+    	baseLog.debug(">getCreateCRLSession()");
+		try {
+			if (createCRLSession == null) {
+				createCRLSession = ((ICreateCRLSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						ICreateCRLSessionHome.JNDI_NAME, ICreateCRLSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getCreateCRLSession()");
+        return createCRLSession;
+     }
+
+    /**
+     *@return a reference to a AuthorizationSessionBean
+     */
+    protected IAuthorizationSessionRemote getAuthorizationSession() {
+    	baseLog.debug(">getAuthorizationSession()");
+		try {
+			if (authorizationSession == null) {
+				authorizationSession = ((IAuthorizationSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IAuthorizationSessionHome.JNDI_NAME, IAuthorizationSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getAuthorizationSession()");
+        return authorizationSession;
+     }
+
+    /**
+     *@return a reference to a HardTokenSessionBean
+     */
+    protected IHardTokenSessionRemote getHardTokenSession() {
+    	baseLog.debug(">getHardTokenSession()");
+		try {
+			if (hardTokenSession == null) {
+				hardTokenSession = ((IHardTokenSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IHardTokenSessionHome.JNDI_NAME, IHardTokenSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getHardTokenSession()");
+        return hardTokenSession;
+     }
+
+    /**
+     *@return a reference to a KeyRecoverySessionBean
+     */
+    protected IKeyRecoverySessionRemote getKeyRecoverySession() {
+    	baseLog.debug(">getKeyRecoverySession()");
+		try {
+			if (keyRecoverySession == null) {
+				keyRecoverySession = ((IKeyRecoverySessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IKeyRecoverySessionHome.JNDI_NAME, IKeyRecoverySessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getKeyRecoverySession()");
+        return keyRecoverySession;
+     }
 
     /**
      * Method checking if the application server is running.
@@ -233,9 +320,7 @@ public abstract class BaseCommand {
     protected boolean appServerRunning() {
         // Check that the application server is running by getting a home interface for user admin session
         try {
-            Context ctx = getInitialContext();
-            ICAAdminSessionHome home = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),ICAAdminSessionHome.class);
-            home.getClass(); // avoid PMD warning :)
+            ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class).getClass(); // avoid PMD warning :)
             return true;
         } catch (Exception e) {
             error("Appserver not running: ", e);

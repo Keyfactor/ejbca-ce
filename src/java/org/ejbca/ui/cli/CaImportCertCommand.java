@@ -15,7 +15,6 @@ package org.ejbca.ui.cli;
 
 import java.io.File;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -55,7 +54,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		
 		getOutputStream().print("  Existing CAs: ");
 		try {
-			Collection cas = getCAAdminSessionRemote().getAvailableCAs(administrator);
+			Collection cas = getCAAdminSession().getAvailableCAs(administrator);
 			boolean first = true;
 			Iterator iter = cas.iterator();
 			while (iter.hasNext()) {
@@ -65,7 +64,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				} else {
 					getOutputStream().print(", ");
 				}
-				CAInfo info = getCAAdminSessionRemote().getCAInfo(administrator, caid);
+				CAInfo info = getCAAdminSession().getCAInfo(administrator, caid);
 				getOutputStream().print(info.getName());
 			}
 		} catch (Exception e) {
@@ -168,7 +167,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			
 			String username = args[1];
 			// Check if username already exists.
-			UserDataVO userdata = getAdminSession().findUser(administrator, username);
+			UserDataVO userdata = getUserAdminSession().findUser(administrator, username);
 			if (userdata != null) {
 				if (userdata.getStatus() != UserDataConstants.STATUS_REVOKED) {
 					throw new Exception("User " + username +
@@ -219,7 +218,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			
 			debug("Loading/updating user " + username);
 			if (userdata == null) {
-				getAdminSession().addUser(administrator,
+				getUserAdminSession().addUser(administrator,
 						username, password,
 						CertTools.getSubjectDN(certificate),
 						subjectAltName, email,
@@ -231,15 +230,15 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
 				if (status == CertificateDataBean.CERT_ACTIVE) {
-					getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_GENERATED);
+					getUserAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_GENERATED);
 				}
 				else {
-					getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_REVOKED);
+					getUserAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_REVOKED);
 				}
 				getOutputStream().println("User '" + args[1] + "' has been added.");
 			}
 			else {
-				getAdminSession().changeUser(administrator,
+				getUserAdminSession().changeUser(administrator,
 						username, password,
 						CertTools.getSubjectDN(certificate),
 						subjectAltName, email,

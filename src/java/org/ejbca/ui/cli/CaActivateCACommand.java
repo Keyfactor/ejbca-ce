@@ -57,7 +57,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             String authorizationcode = args[2];
                         
             // Get the CAs info and id
-            CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+            CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caname);
             if(cainfo == null){
             	getOutputStream().println("Error: CA " + caname + " cannot be found");	
             	return;            	
@@ -67,7 +67,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             if ( (cainfo.getStatus() == SecConst.CA_OFFLINE) || 
             		(cainfo.getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE) ) {
             	try {
-                	getCAAdminSessionRemote().activateCAToken(administrator, cainfo.getCAId(), authorizationcode);            		
+                	getCAAdminSession().activateCAToken(administrator, cainfo.getCAId(), authorizationcode);            		
             	} catch (UnmarshalException e) {
             		// If we gat a classnotfound we are probably getting an error back from the token, 
             		// with a class we don't have here at the CLI. It is probably invalid PIN

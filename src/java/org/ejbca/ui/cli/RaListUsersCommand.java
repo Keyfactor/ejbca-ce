@@ -53,14 +53,14 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             int status = Integer.parseInt(args[1]);
             Collection coll = null;
             if (status==0) {
-                coll = getAdminSession().findAllUsersByStatus(administrator, 10);
-                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 11));
-                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 20));
-                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 30));
-                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 40));
-                coll.addAll(getAdminSession().findAllUsersByStatus(administrator, 50));
+                coll = getUserAdminSession().findAllUsersByStatus(administrator, 10);
+                coll.addAll(getUserAdminSession().findAllUsersByStatus(administrator, 11));
+                coll.addAll(getUserAdminSession().findAllUsersByStatus(administrator, 20));
+                coll.addAll(getUserAdminSession().findAllUsersByStatus(administrator, 30));
+                coll.addAll(getUserAdminSession().findAllUsersByStatus(administrator, 40));
+                coll.addAll(getUserAdminSession().findAllUsersByStatus(administrator, 50));
             } else {
-                coll = getAdminSession().findAllUsersByStatus(administrator, status);
+                coll = getUserAdminSession().findAllUsersByStatus(administrator, status);
             }
             Iterator iter = coll.iterator();
 

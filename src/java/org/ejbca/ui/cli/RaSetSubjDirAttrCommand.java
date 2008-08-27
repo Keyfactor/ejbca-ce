@@ -60,11 +60,11 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
             getOutputStream().println("Setting subject directory attributes '" + attributes + "' for user " + username);
 
             try {
-            	UserDataVO uservo = getAdminSession().findUser(administrator, username);
+            	UserDataVO uservo = getUserAdminSession().findUser(administrator, username);
             	ExtendedInformation ext = uservo.getExtendedinformation();
             	ext.setSubjectDirectoryAttributes(attributes);
             	uservo.setExtendedinformation(ext);
-            	getAdminSession().changeUser(administrator, uservo, false);
+            	getUserAdminSession().changeUser(administrator, uservo, false);
             } catch (AuthorizationDeniedException e) {
                 getOutputStream().println("Error : Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -136,10 +135,9 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
 			                                 );
             
             getOutputStream().println("Creating CA...");
-            ICAAdminSessionRemote remote = getCAAdminSessionRemote();
-            remote.createCA(this.administrator, cainfo);
+            getCAAdminSession().createCA(this.administrator, cainfo);
             
-            CAInfo newInfo = remote.getCAInfo(this.administrator, caname);
+            CAInfo newInfo = getCAAdminSession().getCAInfo(this.administrator, caname);
             int caid = newInfo.getCAId();
             getOutputStream().println("CAId for created CA: " + caid);
               

@@ -46,19 +46,9 @@ public class SetupSetBaseURLCommand extends BaseAdminCommand {
 	       		                                                               "Example: setup setbaseurl localhost ejbca \n\n");	       
 	    }	
         try {            
-        	//InitialContext jndicontext = new InitialContext();
-        	InitialContext jndicontext = getInitialContext();
-        	
         	String computername = args[1];
         	String applicationpath = args[2];
-        	IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
-        			IRaAdminSessionHome.class);
-        	
-        	IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
-        	
-        	raadminsession.initGlobalConfigurationBaseURL(new Admin(Admin.TYPE_CACOMMANDLINE_USER), computername, applicationpath);
-        	
-        	
+        	getRaAdminSession().initGlobalConfigurationBaseURL(new Admin(Admin.TYPE_CACOMMANDLINE_USER), computername, applicationpath);
         } catch (Exception e) {
         	throw new ErrorAdminCommandException(e);            
         }

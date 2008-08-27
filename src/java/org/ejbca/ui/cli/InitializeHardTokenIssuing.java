@@ -75,15 +75,6 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 	
 	private static final String ADMINTOKENENDENTITYPROFILE = "Administration Token End Entity Profile";
 		
-	private IRaAdminSessionRemote raadminsession;
-	private IAuthorizationSessionRemote authorizationsession;
-	private IHardTokenSessionRemote hardtokensession;
-	private IUserAdminSessionRemote useradminsession;
-
-	private ICAAdminSessionRemote caadminsession;
-    
-	
-	
 	public InitializeHardTokenIssuing(String[]  args){
 	  super(args, Admin.TYPE_CACOMMANDLINE_USER, "cli");
 	}			
@@ -131,9 +122,9 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
      * @throws Exception
      */
 	private void configureGlobalConfiguration() throws Exception{
-	  GlobalConfiguration config = getRAAdminSession().loadGlobalConfiguration(administrator);
+	  GlobalConfiguration config = getRaAdminSession().loadGlobalConfiguration(administrator);
 	  config.setIssueHardwareTokens(true);
-	  this.getRAAdminSession().saveGlobalConfiguration(administrator, config);
+	  this.getRaAdminSession().saveGlobalConfiguration(administrator, config);
 	}
 	
     /**
@@ -221,7 +212,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 	  profile.setValue(EndEntityProfile.ADMINISTRATOR,0,EndEntityProfile.TRUE);
 	  	  
 	  // Save Profile
-	  this.getRAAdminSession().addEndEntityProfile(administrator, ADMINTOKENENDENTITYPROFILE, profile);
+	  this.getRaAdminSession().addEndEntityProfile(administrator, ADMINTOKENENDENTITYPROFILE, profile);
 	}
 	
     /**
@@ -230,7 +221,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
      * @throws Exception
      */
 	private void createSuperAdminTokenUser(int caid) throws Exception{
-		int endentityprofileid = getRAAdminSession().getEndEntityProfileId(administrator, ADMINTOKENENDENTITYPROFILE); 
+		int endentityprofileid = getRaAdminSession().getEndEntityProfileId(administrator, ADMINTOKENENDENTITYPROFILE); 
 		int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
 		int tokenid = getHardTokenSession().getHardTokenProfileId(administrator, ADMINTOKENPROFILENAME);
 		int hardtokenissuerid = getHardTokenSession().getHardTokenIssuerId(administrator, ISSUERALIAS);
@@ -251,90 +242,4 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 		getAuthorizationSession().addAdminEntities(administrator, "Temporary Super Administrator Group", caid, adminentities);		
 	}
 	
-	
-	private IHardTokenSessionRemote getHardTokenSession() throws Exception{
-		debug(">getHardTokenSession()");
-        try {
-            if( hardtokensession == null ) {                
-               Context jndiContext = getInitialContext();
-               Object obj1 = jndiContext.lookup("HardTokenSession");
-               IHardTokenSessionHome homesession = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);                
-               hardtokensession = homesession.create();
-            }
-            debug("<getHardTokenSession()");
-            return  hardtokensession;
-        } catch (NamingException e ) {
-            error("Can't get hardtoken session", e);
-            throw e;
-        }
-	}
-	
-	private IRaAdminSessionRemote getRAAdminSession() throws Exception{
-		debug(">getRaAdminSession()");
-        try {
-            if( raadminsession == null ) {                
-               Context jndiContext = getInitialContext();
-               Object obj1 = jndiContext.lookup("RaAdminSession");
-               IRaAdminSessionHome raadminHomesession = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);                
-                raadminsession = raadminHomesession.create();
-            }
-            debug("<getRaAdminSession()");
-            return  raadminsession;
-        } catch (NamingException e ) {
-            error("Can't get RaAdmin session", e);
-            throw e;
-        }		
-	}
-	
-	private IAuthorizationSessionRemote getAuthorizationSession() throws Exception{
-		debug(">getAuthorizationSession()");
-        try {
-            if( authorizationsession == null ) {                
-               Context jndiContext = getInitialContext();
-               Object obj1 = jndiContext.lookup("AuthorizationSession");
-               IAuthorizationSessionHome homesession = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IAuthorizationSessionHome.class);                
-               authorizationsession = homesession.create();
-            }
-            debug("<getAuthorizationSession()");
-            return  authorizationsession;
-        } catch (NamingException e ) {
-            error("Can't get authorization session", e);
-            throw e;
-        }	
-	}
-	
-	private IUserAdminSessionRemote getUserAdminSession() throws Exception{
-		debug(">getUserAdminSession()");
-        try {
-            if( useradminsession == null ) {                
-               Context jndiContext = getInitialContext();
-               Object obj1 = jndiContext.lookup("UserAdminSession");
-               IUserAdminSessionHome homesession = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);                
-               useradminsession = homesession.create();
-            }
-            debug("<getUserAdminSession()");
-            return  useradminsession;
-        } catch (NamingException e ) {
-            error("Can't get user admin session", e);
-            throw e;
-        }	
-	}
-	
-	private ICAAdminSessionRemote getCAAdminSession() throws Exception{
-		debug(">getCAAdminSession()");
-        try {
-            if( caadminsession == null ) {                
-               Context jndiContext = getInitialContext();
-               Object obj1 = jndiContext.lookup("CAAdminSession");
-               ICAAdminSessionHome homesession = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);                
-               caadminsession = homesession.create();
-            }
-            debug("<getCAAdminSession()");
-            return  caadminsession;
-        } catch (NamingException e ) {
-            error("Can't get user admin session", e);
-            throw e;
-        }	
-	}
-			
 }

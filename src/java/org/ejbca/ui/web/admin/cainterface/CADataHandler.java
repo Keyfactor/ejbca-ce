@@ -104,6 +104,15 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
+  public void importCACert(String caname, InputStream pemFile) throws Exception {
+	  Collection certs = CertTools.getCertsFromPEM(pemFile);
+	  caadminsession.importCACertificate(administrator, caname, certs);
+	  info.cAsEdited();
+  }
+
+  /**
+   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
+   */
   public void editCA(CAInfo cainfo) throws AuthorizationDeniedException{
     caadminsession.editCA(administrator, cainfo);  
     info.cAsEdited();

@@ -32,7 +32,7 @@ public class ca extends BaseCommand {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: CA info | init | listcas | getrootcert | createcrl | getcrl |  listexpired | exportprofiles | importprofiles | exportca | importca | importcvca | importcert | republish | activateca | deactivateca | changecertprofile");
+                    "Usage: CA info | init | listcas | getrootcert | createcrl | getcrl |  listexpired | exportprofiles | importprofiles | exportca | importca | importcacert | importcvca | importcert | republish | activateca | deactivateca | changecertprofile");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());            

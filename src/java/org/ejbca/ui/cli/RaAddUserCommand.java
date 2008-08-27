@@ -19,27 +19,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.ejb.FinderException;
-import javax.naming.InitialContext;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-
-
-
 
 /**
  * Adds a user to the database.
@@ -74,55 +61,29 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            InitialContext jndicontext = getInitialContext();
-
-            Object obj1 = jndicontext.lookup("CertificateStoreSession");
-            ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
-
-            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
-                                                                                 IRaAdminSessionHome.class);
-
-            IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
-
-
-            ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("CAAdminSession"),
-                                                                                 ICAAdminSessionHome.class);
-            ICAAdminSessionRemote caadminsession = caadminsessionhome.create();                       
-
-            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("AuthorizationSession"),
-                                                                                 IAuthorizationSessionHome.class);
-            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();                       
-            
-            
-            GlobalConfiguration globalconfiguration = raadminsession.loadGlobalConfiguration(administrator);
+            GlobalConfiguration globalconfiguration = getRaAdminSession().loadGlobalConfiguration(administrator);
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;
             Collection authorizedhardtokenprofiles   = null;
             HashMap hardtokenprofileidtonamemap = null;            
 
-            IHardTokenSessionRemote hardtokensession=null;
             if(usehardtokens){  
-              IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"),
-                                                                                 IHardTokenSessionHome.class);
-              hardtokensession = hardtokensessionhome.create();
-              hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray(new String[0]);             
+              hardtokenissueraliases = (String[]) getHardTokenSession().getHardTokenIssuerAliases(administrator).toArray(new String[0]);             
 
-              authorizedhardtokenprofiles = hardtokensession.getAuthorizedHardTokenProfileIds(administrator);
-              hardtokenprofileidtonamemap = hardtokensession.getHardTokenProfileIdToNameMap(administrator);
+              authorizedhardtokenprofiles = getHardTokenSession().getAuthorizedHardTokenProfileIds(administrator);
+              hardtokenprofileidtonamemap = getHardTokenSession().getHardTokenProfileIdToNameMap(administrator);
             }  
             
             if ( (args.length < 9) || (args.length > 12) ) {
-                Collection certprofileids = certificatesession.getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ENDENTITY);
-                HashMap certificateprofileidtonamemap = certificatesession.getCertificateProfileIdToNameMap(administrator);
+                Collection certprofileids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ENDENTITY);
+                HashMap certificateprofileidtonamemap = getCertificateStoreSession().getCertificateProfileIdToNameMap(administrator);
                 
-                Collection endentityprofileids =  raadminsession.getAuthorizedEndEntityProfileIds(administrator);
-                HashMap endentityprofileidtonamemap = raadminsession.getEndEntityProfileIdToNameMap(administrator);
+                Collection endentityprofileids =  getRaAdminSession().getAuthorizedEndEntityProfileIds(administrator);
+                HashMap endentityprofileidtonamemap = getRaAdminSession().getEndEntityProfileIdToNameMap(administrator);
                 
-                Collection caids = authorizationsession.getAuthorizedCAIds(administrator);
-                HashMap caidtonamemap = caadminsession.getCAIdToNameMap(administrator);
+                Collection caids = getAuthorizationSession().getAuthorizedCAIds(administrator);
+                HashMap caidtonamemap = getCAAdminSession().getCAIdToNameMap(administrator);
                 
                 if( usehardtokens)
                   getOutputStream().println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] [<hardtokenissuer>]");
@@ -225,30 +186,30 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             int caid = 0;
             try{
-              caid = caadminsession.getCAInfo(administrator, caname).getCAId();
+              caid = getCAAdminSession().getCAInfo(administrator, caname).getCAId();
             }catch(Exception e){               
             }
             
             if(args.length > 9){
               // Use certificate type, no end entity profile.
-              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[9]);
+              certificatetypeid = getCertificateStoreSession().getCertificateProfileId(administrator, args[9]);
               getOutputStream().println("Using certificate profile: "+args[9]+", with id: "+certificatetypeid);
             }
 
             if(args.length > 10){
               // Use certificate type and end entity profile.
-              profileid = raadminsession.getEndEntityProfileId(administrator, args[10]);
+              profileid = getRaAdminSession().getEndEntityProfileId(administrator, args[10]);
               getOutputStream().println("Using entity profile: "+args[10]+", with id: "+profileid);
             }
 
             if(args.length == 12 && usehardtokens){
               // Use certificate type, end entity profile and hardtokenisseur.
-              hardtokenissuerid = hardtokensession.getHardTokenIssuerId(administrator,args[11]);
+              hardtokenissuerid = getHardTokenSession().getHardTokenIssuerId(administrator,args[11]);
               usehardtokenissuer = true;
               getOutputStream().println("Using hard token issuer: "+args[11]+", with id: "+hardtokenissuerid);
             }
             
-            int tokenid =getTokenId(administrator, tokenname, usehardtokens, hardtokensession);
+            int tokenid =getTokenId(administrator, tokenname, usehardtokens, getHardTokenSession());
             if (tokenid == 0) {
                 getOutputStream().println("Error : Invalid token id.");
                 error = true;
@@ -290,7 +251,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             // Check if username already exists.
             try {
-                if (getAdminSession().findUser(administrator, username) != null) {
+                if (getUserAdminSession().findUser(administrator, username) != null) {
                     getOutputStream().println("Error : User already exists in the database.");
                     error = true;
                 }
@@ -317,7 +278,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               if (email.toUpperCase().equals("NULL"))
                   email = null;
               try{
-                getAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
+                getUserAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
                                          type, tokenid, hardtokenissuerid, caid);
                 getOutputStream().println("User '"+username+"' has been added.");
                 getOutputStream().println();

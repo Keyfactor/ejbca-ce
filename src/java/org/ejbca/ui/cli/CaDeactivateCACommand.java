@@ -51,14 +51,14 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             String caname = args[1];
                         
             // Get the CAs info and id
-            CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+            CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caname);
             if(cainfo == null){
             	getOutputStream().println("Error: CA " + caname + " cannot be found");	
             	return;            	
             }
                         
             if(cainfo.getStatus() == SecConst.CA_ACTIVE){
-              getCAAdminSessionRemote().deactivateCAToken(administrator, cainfo.getCAId());                        
+              getCAAdminSession().deactivateCAToken(administrator, cainfo.getCAId());                        
             }else{
             	getOutputStream().println("Error: CA or CAToken must be active to be put offline.");
             }

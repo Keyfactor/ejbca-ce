@@ -16,12 +16,6 @@ package org.ejbca.ui.cli;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
-import javax.naming.InitialContext;
-
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.model.ra.UserDataVO;
 
 /**
@@ -53,20 +47,6 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
                 return;
             }
 
-            //InitialContext jndicontext = new InitialContext();
-            InitialContext jndicontext = getInitialContext();
-
-            Object obj1 = jndicontext.lookup("CertificateStoreSession");
-            ICertificateStoreSessionHome certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    ICertificateStoreSessionHome.class);
-            ICertificateStoreSessionRemote certificatesession = certificatesessionhome.create();
-
-            obj1 = jndicontext.lookup("KeyRecoverySession");
-
-            IKeyRecoverySessionHome keyrecoverysessionhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                        "KeyRecoverySession"), IKeyRecoverySessionHome.class);
-            IKeyRecoverySessionRemote keyrecoverysession = keyrecoverysessionhome.create();
-
             BigInteger certificatesn = new BigInteger(args[1], 16);
             String issuerdn = args[2];
 
@@ -76,7 +56,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
                return;                   
              }   
               
-             X509Certificate cert = (X509Certificate) certificatesession.findCertificateByIssuerAndSerno(
+             X509Certificate cert = (X509Certificate) getCertificateStoreSession().findCertificateByIssuerAndSerno(
                                                                              administrator, issuerdn, 
                                                                              certificatesn);
               
@@ -85,25 +65,25 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
                return;              
              }
               
-             String username = certificatesession.findUsernameByCertSerno(administrator, certificatesn, issuerdn);
+             String username = getCertificateStoreSession().findUsernameByCertSerno(administrator, certificatesn, issuerdn);
               
-             if(!keyrecoverysession.existsKeys(administrator,cert)){
+             if(!getKeyRecoverySession().existsKeys(administrator,cert)){
                getOutputStream().println("Specified keys doesn't exist in database.");
                return;                  
              }
               
-             if(keyrecoverysession.isUserMarked(administrator,username)){
+             if(getKeyRecoverySession().isUserMarked(administrator,username)){
                getOutputStream().println("User is already marked for recovery.");
                return;                     
              }
              
-             UserDataVO userdata = getAdminSession().findUser(administrator, username);
+             UserDataVO userdata = getUserAdminSession().findUser(administrator, username);
              if(userdata == null){
                  getOutputStream().println("Error, The user doesn't exist.");
                  return;
              }
   
-             keyrecoverysession.markAsRecoverable(administrator, 
+             getKeyRecoverySession().markAsRecoverable(administrator, 
                                                   cert, userdata.getEndEntityProfileId());
                       
  

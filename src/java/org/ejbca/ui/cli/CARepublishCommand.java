@@ -66,7 +66,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             }
                         
             // Get the CAs info and id
-            CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+            CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caname);
             if ( cainfo == null ) {
             	getOutputStream().println("CA with name '" + caname + "' does not exist.");
             	return;
@@ -100,7 +100,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             }
             
             // Get all users for this CA
-            Collection coll = getAdminSession().findAllUsersByCaId(administrator, cainfo.getCAId());
+            Collection coll = getUserAdminSession().findAllUsersByCaId(administrator, cainfo.getCAId());
             Iterator iter = coll.iterator();
             while (iter.hasNext()) {
                 UserDataVO data = (UserDataVO) iter.next();

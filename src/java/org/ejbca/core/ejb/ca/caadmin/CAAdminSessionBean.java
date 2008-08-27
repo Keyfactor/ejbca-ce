@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
@@ -29,6 +30,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.sql.Connection;
@@ -40,6 +42,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -113,9 +116,11 @@ import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
+import org.ejbca.cvc.CVCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
+import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -1344,6 +1349,109 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     	return returnval;
     } // processRequest
+    
+    /**
+     *  Add an external CA's certificate as a CA
+     *   
+     * @ejb.interface-method
+     */
+    public void importCACertificate(Admin admin, String caname, Collection certificates) throws CreateException {
+    	Certificate caCertificate = (Certificate) certificates.iterator().next();
+    	CA ca = null;
+    	CAInfo cainfo = null;
+
+    	// Parameters common for both X509 and CVC CAs
+    	ArrayList approvalsettings = new ArrayList(); 
+    	int numofreqapprovals = 1;
+    	boolean finishuser = false;
+    	ArrayList crlpublishers = new ArrayList(); 
+    	int crlperiod = 0;
+    	int crlIssueInterval = 0;
+    	int crlOverlapTime = 10;
+    	int deltacrlperiod = 0;
+    	int certprofileid = CertTools.isSelfSigned(caCertificate) ? SecConst.CERTPROFILE_FIXED_ROOTCA : SecConst.CERTPROFILE_FIXED_SUBCA;
+    	String subjectdn = CertTools.getSubjectDN(caCertificate);
+    	int validity = 0;
+    	int signedby = CertTools.isSelfSigned(caCertificate) ? CAInfo.SELFSIGNED : CAInfo.SIGNEDBYEXTERNALCA;
+    	String description = "CA created by certificate import.";
+    	log.info("Preparing to import of CA with Subject DN " + subjectdn);
+
+    	if (caCertificate instanceof X509Certificate) {
+    		X509Certificate x509CaCertificate = (X509Certificate) caCertificate;
+    		String subjectaltname = null;
+    		try {
+    			subjectaltname = CertTools.getSubjectAlternativeName(x509CaCertificate);
+    		} catch (CertificateParsingException e) {
+    			log.error("", e);
+    		} catch (IOException e) {
+    			log.error("", e);
+    		}
+
+    		// Process certificate policies. 
+    		ArrayList policies = new ArrayList();
+    		CertificateProfile certprof = getCertificateStoreSession().getCertificateProfile(admin, certprofileid);
+    		if (certprof.getCertificatePolicies() != null && certprof.getCertificatePolicies().size() > 0) {
+    			policies.addAll(certprof.getCertificatePolicies());
+    		}
+
+    		boolean useauthoritykeyidentifier = false;
+    		boolean authoritykeyidentifiercritical = false;              
+
+    		boolean usecrlnumber = false;
+    		boolean crlnumbercritical = false;
+
+    		boolean useutf8policytext = false;
+    		boolean useprintablestringsubjectdn = false;
+    		boolean useldapdnorder = !DnComponents.isReverseOrder();
+    		boolean usecrldistpointoncrl = false;
+    		boolean crldistpointoncrlcritical = false;
+
+    		cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_EXTERNAL, new Date(), subjectaltname,
+    				certprofileid, validity, CertTools.getNotAfter(x509CaCertificate), 
+    				CAInfo.CATYPE_X509, signedby,
+    				null, null, description, -1, null,
+    				policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+    				useauthoritykeyidentifier, 
+    				authoritykeyidentifiercritical,
+    				usecrlnumber, 
+    				crlnumbercritical, 
+    				"","","", "", 
+    				finishuser, 
+    				new ArrayList(),
+    				useutf8policytext,
+    				approvalsettings,
+    				numofreqapprovals, 
+    				useprintablestringsubjectdn,
+    				useldapdnorder,
+    				usecrldistpointoncrl,
+    				crldistpointoncrlcritical,
+    				false);
+    	} else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
+    		cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
+    				certprofileid, validity, 
+    				null, CAInfo.CATYPE_CVC, signedby,
+    				null, null, description, -1, null,
+    				crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+    				finishuser, new ArrayList(),
+    				approvalsettings,
+    				numofreqapprovals,
+    				false);
+    	}
+    	if(cainfo instanceof X509CAInfo){
+    		log.info("Creating a X509 CA (process request)");
+    		ca = new X509CA((X509CAInfo) cainfo);
+    	} else if(cainfo instanceof CVCCAInfo){
+    		// CVC CA is a special type of CA for EAC electronic passports
+    		log.info("Creating a CVC CA (process request)");
+    		CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
+    		ca = new CVCCA(cvccainfo);
+    	}
+    	ca.setCertificateChain(certificates);
+    	CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
+    	ca.setCAToken(token);
+    	// set status to active
+    	cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
+    }
 
     /**
      *  Renews a existing CA certificate using the same keys as before. Data about new CA is taken

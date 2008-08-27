@@ -18,11 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.naming.Context;
-
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -224,10 +219,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 );
             
             getOutputStream().println("Creating CA...");
-            ICAAdminSessionRemote remote = getCAAdminSessionRemote();
-            remote.createCA(administrator, cainfo);
+            getCAAdminSession().createCA(administrator, cainfo);
             
-            CAInfo newInfo = remote.getCAInfo(administrator, caname);
+            CAInfo newInfo = getCAAdminSession().getCAInfo(administrator, caname);
             int caid = newInfo.getCAId();
             getOutputStream().println("CAId for created CA: " + caid);
               
@@ -242,9 +236,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
     
     private void initAuthorizationModule(int caid) throws Exception{
       getOutputStream().println("Initalizing Temporary Authorization Module.");  
-      Context context = getInitialContext();
-      IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);   
-      IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();  
-      authorizationsession.initialize(administrator, caid);
+      getAuthorizationSession().initialize(administrator, caid);
     } // initAuthorizationModule
 }

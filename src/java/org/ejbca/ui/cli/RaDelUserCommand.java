@@ -50,7 +50,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
 
             if ((inp == 121) || (inp == 89)) {
                 try {
-                    getAdminSession().deleteUser(administrator, username);
+                    getUserAdminSession().deleteUser(administrator, username);
                     getOutputStream().println("Deleted user " + username);
                 } catch (AuthorizationDeniedException e) {
                     getOutputStream().println("Error : Not authorized to remove user.");

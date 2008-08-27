@@ -48,7 +48,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            Collection coll = getAdminSession().findAllUsersByStatus(administrator,
+            Collection coll = getUserAdminSession().findAllUsersByStatus(administrator,
                     UserDataConstants.STATUS_NEW);
             Iterator iter = coll.iterator();
 

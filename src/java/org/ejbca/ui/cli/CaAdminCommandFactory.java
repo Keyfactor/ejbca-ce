@@ -58,6 +58,8 @@ public class CaAdminCommandFactory {
             return new CaExportCACommand(args);
         } else if (args[0].equals("importca")) {
             return new CaImportCACommand(args);
+        } else if (args[0].equals("importcacert")) {
+            return new CaImportCACertCommand(args);
         } else if (args[0].equals("importcvca")) {
             return new CaImportCVCCACommand(args);
         } else if (args[0].equals("importcert")) {
