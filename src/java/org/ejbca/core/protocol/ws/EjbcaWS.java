@@ -439,7 +439,7 @@ public class EjbcaWS implements IEjbcaWS {
 						while (iterator.hasNext()) {
 							java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
 							try {
-								// Only allow renewal if the old certificate is valid
+								    // Only allow renewal if the old certificate is valid
 									// Check to see that the inner signature does not also verify using the old certificate
 									// because that means the same keys were used, and that is not allowed according to the EU policy
 									CVCertificate innerreq = authreq.getRequest();
@@ -452,7 +452,9 @@ public class EjbcaWS implements IEjbcaWS {
 									} catch (SignatureException e) {
 										// It was good if the verification failed
 									}
-									log.debug("Trying to verify the outer signature with an old certificate");
+									if (log.isDebugEnabled()) {
+										log.debug("Trying to verify the outer signature with an old certificate, fp: "+CertTools.getFingerprintAsString(cert));										
+									}
 									authreq.verify(cert.getPublicKey());
 									log.debug("Verified outer signature");
 									// Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
