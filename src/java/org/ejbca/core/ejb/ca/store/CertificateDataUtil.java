@@ -94,11 +94,21 @@ public class CertificateDataUtil {
             Certificate ret = null;
             if (coll != null) {
                 if (coll.size() > 1)
-                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, "Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
+                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_DATABASE, "Possible error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber, is it CVC certificates?"
                             + serno.toString(16) + ".");
                 Iterator iter = coll.iterator();
+                Certificate cert = null;
+                // There are several certs, we will try to find the latest issued one
                 if (iter.hasNext()) {
-                    ret = ((CertificateDataLocal) iter.next()).getCertificate();
+                    cert = ((CertificateDataLocal) iter.next()).getCertificate();
+                    if (ret != null) {
+                    	if (CertTools.getNotBefore(cert).after(CertTools.getNotBefore(ret))) {
+                    		// cert is never than ret
+                    		ret = cert;
+                    	}
+                    } else {
+                    	ret = cert;
+                    }
                 }
             }
             if (adapter.getLogger().isDebugEnabled()) {

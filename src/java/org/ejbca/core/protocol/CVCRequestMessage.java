@@ -186,14 +186,15 @@ public class CVCRequestMessage implements IRequestMessage {
     }
 
     /**
-     * Gets the number (of CA cert) from IssuerAndSerialNumber. Combined with getIssuerDN to identify
-     * the CA-certificate of the CA the request is targeted for.
+     * Could get the sequence (of CVC cert). For CVC certificate this does not combine well with getIssuerDN to identify
+     * the CA-certificate of the CA the request is targeted for, so it always return null.
      *
-     * @return serial number of CA certificate for CA issuing CRL or null.
+     * @return null.
      */
     public BigInteger getSerialNo() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-        return CertTools.getSerialNumber(cc);
+    	//CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
+        //return CertTools.getSerialNumber(cc);
+    	return null;
     }
     
     /**
