@@ -774,7 +774,7 @@
                 <include name="jaxws-rt.jar"/>
                 <include name="sjsxp.jar"/>
                 <include name="jsr181-api.jar"/>
-                <include name="jsr173-api.jar"/>
+                <include name="jsr173_api.jar"/>
                 <include name="activation.jar"/>
             </fileset>
         </copy>
