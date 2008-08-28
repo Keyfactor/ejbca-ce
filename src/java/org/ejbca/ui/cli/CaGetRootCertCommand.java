@@ -14,7 +14,7 @@
 package org.ejbca.ui.cli;
 
 import java.io.FileOutputStream;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 
 import org.ejbca.util.CertTools;
@@ -62,7 +62,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
         try {
             ArrayList chain = new ArrayList(getCertChain(caname));
             if (chain.size() > 0) {
-                X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
+                Certificate rootcert = (Certificate)chain.get(chain.size()-1);
  
                 FileOutputStream fos = new FileOutputStream(filename);
                 if (pem) {		
