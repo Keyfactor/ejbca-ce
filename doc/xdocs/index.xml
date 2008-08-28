@@ -7,6 +7,8 @@
 
 <body>
   <section name="News">
+  <p><strong>EJBCA with EAC ePassport support if now out!</strong>
+  </p>
   <note>
   We are very proud to announce this initial release of the Cert-cvc library developed by the 
   Swedish National Police Board and kindly donated to the EJBCA project.
@@ -26,15 +28,15 @@
   </section>
   <section name="Latest Release">
     <note>
-    EJBCA 3.6.2 is now available for <a
+    EJBCA 3.7.0 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     <br/>
-    SHA1 checksum: dd2f1836fc5e732c26484e87f2dfd1c22efd44cc 
+    SHA1 checksum: 0e7c4cf641fa03e6ccc2973aecaf7685042d50c6 
     <br/><br/>
-    External RA API 3.6.2 is now available for <a
+    External RA API 3.7.0 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
     <br/>
-    SHA1 checksum: 0fd80cd37dff650b51683be2867e8b0a52047faa
+    SHA1 checksum: 708d3c40aa226939a58148116e11e13edf9127fd
     <br/><br/>
     Cert-cvc library 1.2.6 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=283747">download</a>.
