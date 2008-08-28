@@ -773,6 +773,7 @@
                 <include name="jaxws-api.jar"/>
                 <include name="jaxws-rt.jar"/>
                 <include name="sjsxp.jar"/>
+                <include name="jsr181-api.jar"/>
             </fileset>
         </copy>
         <copy todir="${clientToolBox-dist.dir}/lib">
@@ -799,6 +800,7 @@
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <classpath>
                 <fileset dir="${clientToolBox-dist.dir}/lib" />
+                <fileset dir="${clientToolBox-dist.dir}/endorsed" />
             </classpath>
             <src path="${mainsrc}/java" />
             <src path="${mainsrc}/jaxws/gen-java/client" />
