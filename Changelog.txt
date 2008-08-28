@@ -1,6 +1,32 @@
+3.7.0, 2008-08-28
+---
+New Feature
+    * [ECA-792] - Support for CV Certificates (CVC) for EU EAC ePassports
+    * [ECA-811] - Possible to create certificate request from any CA
+    * [ECA-825] - WS-API call to get users last cert and chain
+    * [ECA-827] - Service to renew CAs
+    * [ECA-830] - Possible to use IAIK PKCS#11 provider instead of Sun
+    * [ECA-920] - Client tool box.
+
+Improvement
+    * [ECA-819] - New WS-API call to get EJBCA version
+    * [ECA-871] - Enhance error management in EJBCA web services.
+    * [ECA-893] - Able to use TelephoneNumber and PostalAddress in DN and publish to LDAP attributes
+    * [ECA-915] - Display hostname on admin-GUI
+    * [ECA-923] - Use of EEP informations when using WS editUser.
+    * [ECA-929] - Handle error code if certificate revocation has been invoked twice.
+
+Bug
+    * [ECA-813] - Upgraded profiles not saved until edited
+    * [ECA-829] - Advanced mode for log viewer is not working
+    * [ECA-832] - syscheck script sc_08_crl_from_web.sh shell problem
+    * [ECA-839] - Problem activating CA tokens for expired CAs
+    * [ECA-879] - Failure to create a new CA due to CRL creation failure
+    * [ECA-921] - EjbcaHealthCheck does not work on OC4J
+    * [ECA-924] - Language variable misspelled (name="UTF8")
+
 3.6.2, 2008-08-20
 ---
-
 New Feature
     * [ECA-348] - Option to generate non-exportable private keys in IE
     * [ECA-739] - Accounting log on OCSP responder

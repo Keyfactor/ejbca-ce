@@ -1,3 +1,23 @@
+EJBCA 3.7.0
+-----------
+This is a major release, particularly focusing on support for CVC certificates as used in EU EAC ePassport PKI.
+Read the changelog for details.
+
+Notable changes in no specific order:
+- Support for CV Certificates (CVC) for EU EAC ePassports, you can now build a CVC PKI for EU ePassport using EJBCA.
+- Upgrade of jaxb jars using for Webservice API, and new WS-API calls.
+- Support for error codes in Exceptions from Webservice API.
+- New service to automatically renew expiring CAs.
+- Possible to use IAIK PKCS#11 provider as well as Sun PKCS#11.
+- Client Tool box with client CLI tools easy to deploy stand-alone on other machines.
+- Minor fixes and enhancements.
+
+For upgrade instructions, please see UPGRADE. 
+There are no database upgrades in this release.
+
+Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
+EJBCA 3.6.x to 3.7.0. Use the full package from EJBCA 3.7.0 and follow the upgrade instructions in UPGRADE.
+
 EJBCA 3.6.2
 -----------
 This is a minor release but with a record amount of fixes for a point release. New features, improvements and a lot of bugfixes 

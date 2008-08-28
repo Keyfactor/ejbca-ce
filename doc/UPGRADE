@@ -5,19 +5,43 @@ UPGRADE
 
 This document describes procedures needed to upgrade from one 
 version of EJBCA to a new version.
-Upgrades within a major version, from 3.4.1 to 3.4.2 for example, are 
+Upgrades within a major version, from 3.6.1 to 3.6.2 for example, are 
 usually plug-in upgrades and can be made simply by deploying the new 
 software. See doc/RELEASE_NOTES for info about such upgrades.
 
 If you use the patch file to upgrade use a command like:
 - Have old version of ejbca unzipped to directory ejbca.
 - Go to directory ejbca and apply patch with:
-- patch --strip=0 -u < ../patch-341_342.txt
+- patch --strip=0 -u < ../patch-361_362.txt
 (change name of patch file depending on which version you are upgrading)
 
 After this you must do:
 - ant clean
 - ant deploy
+
+From EJBCA 3.6.x to EJBCA 3.7.x
+-------------------------------
+Upgrade from EJBCA 3.6.x to 3.7.x is a plug-in upgrade.
+
+If you are upgrading a cluster, you should run the upgrade process with only one node running,
+and then simply update the software on the other nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Copy the directory 'p12' from the earlier installation. 
+
+3. Shut down JBoss and do 'ant bootstrap' with the new version.
+
+4. Start up JBoss.
+
+5. Go into the admin-GUI and verify you settings.
+
+You should be able to upgrade from EJBCA 3.1.x directly to 3.7.x, by following the same instructions
+as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
+Also see instructions below for additional issues when upgrading all the way from a much older version.
+
+If you are using PrimeCardHSM you need to upgrade to a new version, matching EJBCA 3.7.
 
 From EJBCA 3.6.x to EJBCA 3.6.x
 -------------------------------
