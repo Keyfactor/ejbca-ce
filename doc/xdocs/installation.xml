@@ -16,7 +16,7 @@ The EJBCA Homepage can be found at http://ejbca.org/.
 Information about contacting the EJBCA team, contributing to
 EJBCA, etc can be found through the Homepage.
 </p><p>
-More documentation can also be found on the homepage and on the documentation site http://docs.primekey.se/.
+More documentation can also be found on the homepage and on the wiki site http://wiki.ejbca.org/.
 </p><p>
 EJBCA is completely written in Java and should as such run on any
 platform where a J2EE server runs. Development and testing is
