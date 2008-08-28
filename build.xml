@@ -774,6 +774,8 @@
                 <include name="jaxws-rt.jar"/>
                 <include name="sjsxp.jar"/>
                 <include name="jsr181-api.jar"/>
+                <include name="jsr173-api.jar"/>
+                <include name="activation.jar"/>
             </fileset>
         </copy>
         <copy todir="${clientToolBox-dist.dir}/lib">
