@@ -790,6 +790,7 @@
             </fileset>
         </copy>
         <copy todir="${clientToolBox-dist.dir}">
+            <fileset file="${mainsrc}/jaxws/cli/ejbcawsracli.properties"/>
             <fileset dir="${mainsrc}/clientToolBox"/>
         </copy>
         <chmod file="${clientToolBox-dist.dir}/toolBox.sh" perm="a+rx"/>
