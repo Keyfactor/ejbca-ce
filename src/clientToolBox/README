@@ -6,10 +6,11 @@ ant clientToolBox
 
 The building will produce the "clientToolBox-dist" directory.
 
-All tools in the box is listed by a call with no arguments to "toolBox.sh" in this directory.
+All tools in the box is listed by a call with no arguments to "ejbcaClientToolBox.sh" in this directory.
 Then just give any of the tools as argument and then you will get further instructions about this tool.
 
 The toolbox may be used from any directory (you don't have to be in clientToolBox-dist when starting it).
+You could put clientToolBox-dist in the PATH if you just want write "ejbcaClientToolBox.sh" when using a tool.
 
 The EjbcaWsRaCli tool needs a file named ejbcawsracli.properties in the current directory when started. Just copy the file with the same name from clientToolBox-dist to you directory and modify it after your needs.
 

@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # 
-# Create a key via a PKCS#11 device # 
-# Example:
+# Toolbox for EJBCA clients # 
 #
 
 if [ -z ${TOOLBOX_HOME} ] ; then
