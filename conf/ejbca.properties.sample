@@ -77,7 +77,7 @@ ca.keytype=RSA
 
 # Default signing algorithm.
 # Available algorithms are:
-# SHA1WithRSA, SHA1WithECDSA, SHA256WithRSA, SHA256WithECDSA.
+# SHA1WithRSA, SHA1WithECDSA, SHA256WithRSA, SHA1WithECDSA, SHA256WithECDSA.
 ca.signaturealgorithm=SHA1WithRSA
 
 # The validity in days for the CA, only digits.

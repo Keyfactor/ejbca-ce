@@ -3976,6 +3976,23 @@ Nist curves:
 <li>B-409</li>
 <li>B-571</li>
 </ul>
+Teletrust curves:
+<ul>
+<li>brainpoolp160r1</li>
+<li>brainpoolp160t1</li>
+<li>brainpoolp192r1</li>
+<li>brainpoolp192t1</li>
+<li>brainpoolp224r1</li>
+<li>brainpoolp224t1</li>
+<li>brainpoolp256r1</li>
+<li>brainpoolp256t1</li>
+<li>brainpoolp320r1</li>
+<li>brainpoolp320t1</li>
+<li>brainpoolp384r1</li>
+<li>brainpoolp384t1</li>
+<li>brainpoolp512r1</li>
+<li>brainpoolp512t1</li>
+</ul>
 </p>
 </subsection>
 <subsection name="ImplicitlyCA curves">
