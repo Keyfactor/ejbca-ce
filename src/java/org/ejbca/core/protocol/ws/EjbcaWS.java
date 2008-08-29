@@ -50,6 +50,7 @@ import javax.jws.WebService;
 import javax.naming.NamingException;
 import javax.xml.ws.WebServiceContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -126,16 +127,19 @@ import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.cvc.AlgorithmUtil;
+import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCPublicKey;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
@@ -419,34 +423,36 @@ public class EjbcaWS implements IEjbcaWS {
 				if ( (status == UserDataConstants.STATUS_REVOKED) || (status == UserDataConstants.STATUS_HISTORICAL) ) {
 					throw new AuthorizationDeniedException("User '"+username+"' is revoked.");
 				}
-				Collection certs = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin, username);
-				// certs contains certificates ordered with last expire date first. Last expire date should be last issued cert
-				if (certs != null) {
-					log.debug("Found "+certs.size()+" old certificates for user "+username);
-					// We will only use the latest cert
-					Iterator iterator = certs.iterator(); 
-					// We have to iterate over available user certificates, because we don't know which on signed the old one
-					// and cv certificates have very coarse grained validity periods so we can't really know which one is the latest one
-					// if 2 certificates are issued the same day.
-					CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(cvcreq.getBytes()));
-					if (parsedObject instanceof CVCAuthenticatedRequest) {
-						CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
-						CVCPublicKey cvcKey = authreq.getRequest().getCertificateBody().getPublicKey();
-			            String algorithm = AlgorithmUtil.getAlgorithmName(cvcKey.getObjectIdentifier());
-			            log.debug("Received request has a public key with algorithm: "+algorithm);
-						String holderRef = authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated();
-						boolean verifiedOuter = false; // So we can throw an error if we could not verify
-						while (iterator.hasNext()) {
-							java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
-							try {
-								    // Only allow renewal if the old certificate is valid
+				CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(cvcreq.getBytes()));
+				if (parsedObject instanceof CVCAuthenticatedRequest) {
+					CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
+					CVCPublicKey cvcKey = authreq.getRequest().getCertificateBody().getPublicKey();
+					String algorithm = AlgorithmUtil.getAlgorithmName(cvcKey.getObjectIdentifier());
+					log.debug("Received request has a public key with algorithm: "+algorithm);
+					HolderReferenceField holderRef = authreq.getRequest().getCertificateBody().getHolderReference();
+					CAReferenceField caRef = authreq.getAuthorityReference();
+					boolean verifiedOuter = false; // So we can throw an error if we could not verify
+					if (StringUtils.equals(holderRef.getMnemonic(), caRef.getMnemonic()) && StringUtils.equals(holderRef.getCountry(), caRef.getCountry())) {
+						log.debug("Authenticated request is self signed, we will try to verify it using user's old certificate.");
+						Collection certs = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin, username);
+						// certs contains certificates ordered with last expire date first. Last expire date should be last issued cert
+						// We have to iterate over available user certificates, because we don't know which on signed the old one
+						// and cv certificates have very coarse grained validity periods so we can't really know which one is the latest one
+						// if 2 certificates are issued the same day.
+						if (certs != null) {
+							log.debug("Found "+certs.size()+" old certificates for user "+username);
+							Iterator iterator = certs.iterator(); 
+							while (iterator.hasNext()) {
+								java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
+								try {
+									// Only allow renewal if the old certificate is valid
 									// Check to see that the inner signature does not also verify using the old certificate
 									// because that means the same keys were used, and that is not allowed according to the EU policy
 									CVCertificate innerreq = authreq.getRequest();
 									CardVerifiableCertificate innercert = new CardVerifiableCertificate(innerreq);
 									try {
 										innercert.verify(cert.getPublicKey());										
-										String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef);            	
+										String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef.getConcatenated());            	
 										log.info(msg);
 										throw new AuthorizationDeniedException(msg);
 									} catch (SignatureException e) {
@@ -459,59 +465,92 @@ public class EjbcaWS implements IEjbcaWS {
 									log.debug("Verified outer signature");
 									// Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
 									verifiedOuter = true; 
-									try {
-										// Check validity of the certificate after verifying the signature
-										CertTools.checkValidity(cert, new Date());
-										log.debug("The verifying certificate was valid");
-										// Verification succeeded, lets set user status to new, the password as passed in and proceed
-										String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
-										log.info(msg);
-										ejbhelper.getUserAdminSession().setPassword(admin, username, password);
-										ejbhelper.getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+									if (checkValidityAndSetUserPassword(admin, ejbhelper, cert, username, password)) {
 										// If we managed to verify the certificate we will break out of the loop									
-										break;																		
-									} catch (CertificateNotYetValidException e) {
-										// If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request  
-										log.debug("Certificate we try to verify outer signature with is not yet valid");
-									} catch (CertificateExpiredException e) {									
-										log.debug("Certificate we try to verify outer signature with has expired");
+										break;
 									}
-						    // If verification of outer signature fails because the signature is invalid we will break and deny the request...with a message
-							} catch (InvalidKeyException e) {
-								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.warn(msg, e);
-							} catch (CertificateException e) {
-								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.warn(msg, e);
-							} catch (NoSuchAlgorithmException e) {
-								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.info(msg, e);
-							} catch (NoSuchProviderException e) {
-								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-								log.warn(msg, e);
-							} catch (SignatureException e) {
-								// Failing to verify the outer signature will be normal, since we must try all old certificates
-								if (log.isDebugEnabled()) {
-									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, e.getMessage());            	
-									log.debug(msg);									
+									
+									// If verification of outer signature fails because the signature is invalid we will break and deny the request...with a message
+								} catch (InvalidKeyException e) {
+									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+									log.warn(msg, e);
+								} catch (CertificateException e) {
+									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+									log.warn(msg, e);
+								} catch (NoSuchAlgorithmException e) {
+									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+									log.info(msg, e);
+								} catch (NoSuchProviderException e) {
+									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+									log.warn(msg, e);
+								} catch (SignatureException e) {
+									// Failing to verify the outer signature will be normal, since we must try all old certificates
+									if (log.isDebugEnabled()) {
+										String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+										log.debug(msg);									
+									}
 								}
 							}
+							// if verification failed because the old cert was not valid, continue processing as usual, using the sent in username/password hoping the
+							// status is NEW and password is correct.
+
 						}
-						// if verification failed because the old cert was not valid, continue processing as usual, using the sent in username/password hoping the
+						// If there are no old certificate, continue processing as usual, using the sent in username/password hoping the
 						// status is NEW and password is correct.
-						
-						// if verification failed because we could not verify the outer signature at all it is an error
-						if (!verifiedOuter) {
-							String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef, "No old certificate found that could authenticate request.");            	
-							log.info(msg);
-							throw new AuthorizationDeniedException(msg);
+					} else { // if (StringUtils.equals(holderRef, caRef))
+						// Subject and issuerDN is CN=Mnemonic,C=Country
+						String dn = "CN="+caRef.getMnemonic()+",C="+caRef.getCountry();
+						log.debug("Authenticated request is not self signed, we will try to verify it using a CVCA certificate: "+dn);
+						CAInfo info = ejbhelper.getCAAdminSession().getCAInfo(admin, CertTools.stringToBCDNString(dn).hashCode());
+						Collection certs = info.getCertificateChain();
+						if (certs != null) {
+							log.debug("Found "+certs.size()+" certificates in chain for CA with DN: "+dn);							
+						}
+						Iterator iterator = certs.iterator();
+						if (iterator.hasNext()) {
+							// The CA certificate is first in chain
+							java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
+							if (log.isDebugEnabled()) {
+								log.debug("Trying to verify the outer signature with a CVCA certificate, fp: "+CertTools.getFingerprintAsString(cert));										
+							}
+							try {
+								authreq.verify(cert.getPublicKey());
+								log.debug("Verified outer signature");
+								verifiedOuter = true; 
+								// Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
+								if (!checkValidityAndSetUserPassword(admin, ejbhelper, cert, username, password)) {
+									// If the CA certificate was not valid, we are not happy									
+									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "CA certificate not valid for CA: "+info.getCAId());            	
+									log.info(msg);
+									throw new AuthorizationDeniedException(msg);
+								}							
+							} catch (InvalidKeyException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+								log.warn(msg, e);
+							} catch (CertificateException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+								log.warn(msg, e);
+							} catch (NoSuchAlgorithmException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+								log.warn(msg, e);
+							} catch (NoSuchProviderException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+								log.warn(msg, e);
+							} catch (SignatureException e) {
+								String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+								log.warn(msg, e);
+							}
 						}
 					}
-					// If it is not an authenticated request, with an outer signature, continue processing as usual, 
-					// using the sent in username/password hoping the status is NEW and password is correct. 
-				}
-				// If there are no old certificate, continue processing as usual, using the sent in username/password hoping the
-				// status is NEW and password is correct.
+					// if verification failed because we could not verify the outer signature at all it is an error
+					if (!verifiedOuter) {
+						String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "No old certificate found that could authenticate request.");            	
+						log.info(msg);
+						throw new AuthorizationDeniedException(msg);
+					}
+				} // if (parsedObject instanceof CVCAuthenticatedRequest)
+				// If it is not an authenticated request, with an outer signature, continue processing as usual, 
+				// using the sent in username/password hoping the status is NEW and password is correct. 
 			} else {
 				// If there are no old user, continue processing as usual... it will fail
 				log.debug("No existing user with username: "+username);
@@ -564,6 +603,28 @@ public class EjbcaWS implements IEjbcaWS {
 		}		
 	}
 
+	private boolean checkValidityAndSetUserPassword(Admin admin, EjbcaWSHelper ejbhelper, java.security.cert.Certificate cert, String username, String password) throws RemoteException, ServiceLocatorException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, CreateException, ApprovalException, WaitingForApprovalException {
+		boolean ret = false;
+		try {
+			// Check validity of the certificate after verifying the signature
+			CertTools.checkValidity(cert, new Date());
+			log.debug("The verifying certificate was valid");
+			// Verification succeeded, lets set user status to new, the password as passed in and proceed
+			String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
+			log.info(msg);
+			ejbhelper.getUserAdminSession().setPassword(admin, username, password);
+			ejbhelper.getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+			// If we managed to verify the certificate we will break out of the loop									
+			ret = true;															
+		} catch (CertificateNotYetValidException e) {
+			// If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request  
+			log.debug("Certificate we try to verify outer signature with is not yet valid");
+		} catch (CertificateExpiredException e) {									
+			log.debug("Certificate we try to verify outer signature with has expired");
+		}
+		return ret;
+	}
+	
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Request(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */

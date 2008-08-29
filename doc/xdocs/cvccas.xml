@@ -45,6 +45,8 @@
   For the CVCA you select 'Signed by=Self Signed' and 'Certificate Profile=ROOTCA'.
   </p>
   <p>To create a DV you select 'Signed by=Name of CVCCA' and 'Certificate Profile=SUBCA'.</p>
+  <p>You can import a CVCA certificate from another country as an 'External CA' using 'Edit Certificate Authorities->Import CA certificate'. 
+  When a CA has been imported, this CA certificate can authenticate CVC requests from foreign DVs.</p>
   </section>
 
   <section name="CVC Sequence">
@@ -222,6 +224,9 @@
   Where the received request is stored in a file 'hollandreq.req'.<br/>
   Where your CVCA is called CVCAPK in EJBCA and using algorithm SHA256WithRSA with 2048 bit keys.
   </p> 
+  <p>
+  If the request is an authenticated request signed by a CVCA and that CVCA has been imported in EJBCA, the request will be verified and granted. 
+  </p>
   
   </section>
     
