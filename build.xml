@@ -793,10 +793,18 @@
             <fileset file="${mainsrc}/jaxws/cli/ejbcawsracli.properties"/>
             <fileset dir="${mainsrc}/clientToolBox"/>
         </copy>
-        <chmod file="${clientToolBox-dist.dir}/toolBox.sh" perm="a+rx"/>
+        <chmod file="${clientToolBox-dist.dir}/*.sh" perm="a+rx"/>
         <copy todir="${clientToolBox-dist.dir}/properties">
             <fileset file="${mainbin}/log4j.properties"/>
         </copy>
+        <copy todir="${src.java}">
+            <fileset dir="${mainsrc}/java" />
+        </copy>
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>               
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>               
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@web.docbaseuri@" value="${web.docbaseuri}"/>               
         <javac destdir="${clientToolBox.build}" debug="on">
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
@@ -805,11 +813,14 @@
                 <fileset dir="${clientToolBox-dist.dir}/lib" />
                 <fileset dir="${clientToolBox-dist.dir}/endorsed" />
             </classpath>
-            <src path="${mainsrc}/java" />
+            <src path="${src.java}" />
             <src path="${mainsrc}/jaxws/gen-java/client" />
         </javac>
         <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
             <fileset dir="${clientToolBox.build}"/>
+            <fileset dir="${mainsrc}">
+                <include name="intresources/**"/>
+            </fileset>
             <fileset dir="${mainsrc}/java">
                 <include name="dncomponents.properties"/>
                 <include name="profilemappings.properties"/>
