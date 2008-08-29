@@ -150,7 +150,7 @@ public class CACertReqServlet extends HttpServlet {
 				out += "\n-----END CERTIFICATE REQUEST-----\n";
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
-                String filename = "pkcs10certificaterequest.pem";
+                String filename = "certificaterequest.pem";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/octet-stream");
                 res.setContentLength(out.length());
