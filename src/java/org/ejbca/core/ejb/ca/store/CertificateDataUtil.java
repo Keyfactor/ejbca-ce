@@ -93,9 +93,10 @@ public class CertificateDataUtil {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             Certificate ret = null;
             if (coll != null) {
-                if (coll.size() > 1)
-                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_DATABASE, "Possible error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber, is it CVC certificates?"
-                            + serno.toString(16) + ".");
+                if (coll.size() > 1) {
+                	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
+                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_DATABASE, msg);	
+                }
                 Iterator iter = coll.iterator();
                 Certificate cert = null;
                 // There are several certs, we will try to find the latest issued one
