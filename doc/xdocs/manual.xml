@@ -33,6 +33,29 @@ bin/ejbca.sh ra adduser
 etc etc
 </source>
 </subsection>
+<subsection name="EJBCA client toolbox">
+<p>
+There are also a set of different tools that could be used without an EJBCA.
+</p><p>
+Build these tools with:
+</p><source>
+ant clientToolBox
+</source><p>
+The directory './clientToolBox-dist' is then created. You may then move this directory to any location.
+</p><p>
+To use any of the tools just call 'ejbcaClientToolBox.sh' in this directory. You may call the script from any location.
+</p><p>
+If you put the directory in your PATH then you just have to write 'ejbcaClientToolBox.sh' to call it.
+</p><p>
+If you call the script without any arguments you get a list of all valid first arguments which specifies the tool to use. Example:
+</p><source>
+ejbcaClientToolBox.sh
+</source><p>
+Then just one argument gives help about the specified tool. Example:
+</p><source>
+ejbcaClientToolBox.sh ocsp
+</source>
+</subsection>
 <subsection name="Backup and restore of EJBCA">
 <p>
 To backup an EJBCA installation you need to:
