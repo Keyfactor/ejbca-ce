@@ -24,6 +24,9 @@
       <li>SHA256WithRSA - id-TA-RSA-v1-5-SHA-256</li>
       <li>SHA1WithRSAAndMGF1 - id-TA-RSA-PSS-SHA-1</li>
       <li>SHA256WithRSAAndMGF1 - id-TA-RSA-PSS-SHA-256</li>
+      <li>SHA1WithECDSA - id-TA-ECDSA_SHA_1</li>
+      <li>SHA224WithECDSA - id-TA-ECDSA_SHA_224</li>
+      <li>SHA256WithECDSA - id-TA-ECDSA_SHA_256</li>
     </ul>
     </p>
     <p>
@@ -207,6 +210,19 @@
   Usage : cvcprint &lt;filename&gt; [verifycert]
   ...
   </source> 
+  <p>
+  An example command to receive a request from a foreign DV could look like:
+  </p>
+  <source>
+  ./cvcwscli.sh cvcrequest holland foo123 "CN=dv,C=NL" SE001 CVCAPK SHA256WithRSA 2048 DV DV false hollandreq
+  </source>
+  <p>
+  Where an End entity profile, DV, is created with CN and C as required DN fields, and DV as available certificate profiles.<br/>
+  Where a Certificate profile, DV, is created of type SubCA.<br/>
+  Where the received request is stored in a file 'hollandreq.req'.<br/>
+  Where your CVCA is called CVCAPK in EJBCA and using algorithm SHA256WithRSA with 2048 bit keys.
+  </p> 
+  
   </section>
     
   <section name="Importing CAs">
