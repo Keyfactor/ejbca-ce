@@ -131,7 +131,7 @@ public class CVCCA extends CA implements Serializable {
 	/**
 	 * @see CA#createRequest(Collection, String)
 	 */
-	public byte[] createRequest(Collection attributes, String signAlg) throws CATokenOfflineException {
+	public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert) throws CATokenOfflineException {
 
 		byte[] ret = null;
 		// Create a CVC request. 
@@ -159,7 +159,21 @@ public class CVCCA extends CA implements Serializable {
 				}
 			}
 			HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
-			CAReferenceField caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());
+			CAReferenceField caRef = null;
+			if (cacert != null) {
+				if (cacert instanceof CardVerifiableCertificate) {
+					CardVerifiableCertificate cvcacert = (CardVerifiableCertificate) cacert;
+					try {
+						HolderReferenceField href = cvcacert.getCVCertificate().getCertificateBody().getHolderReference();
+						caRef = new CAReferenceField(href.getCountry(), href.getMnemonic(), href.getSequence());
+					} catch (NoSuchFieldException e) {
+						log.debug("CA certificate does not contain a Holder reference to use as CARef in request.");
+					}
+					
+				}
+			} else {
+				caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());				
+			}
 			log.debug("Creating request with signature alg: "+signAlg+", using provider "+catoken.getProvider());
 			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, catoken.getProvider());
 			ret = request.getDEREncoded();

@@ -537,9 +537,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param attributes PKCS10 attributes to be included in the request, a Collection of DEREncodable objects, ready to put in the request. Can be null.
      * @param signAlg the signature algorithm used by the CA
+     * @param cacert the CAcertficate the request is targeted for, may be used or ignored by implementation depending on the request type created.
      * @return byte array with binary encoded request
      */
-    public abstract byte[] createRequest(Collection attributes, String signAlg) throws CATokenOfflineException;
+    public abstract byte[] createRequest(Collection attributes, String signAlg, Certificate cacert) throws CATokenOfflineException;
 
     /** Signs a certificate signature request CSR), that can be sent to an external CA. This signature can be use to authenticate the 
      * original request. mainly used for CVC CAs where the CVC requests is created and (self)signed by the DV and then the CVCA

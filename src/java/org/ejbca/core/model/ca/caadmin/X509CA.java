@@ -368,7 +368,7 @@ public class X509CA extends CA implements Serializable {
     /**
      * @see CA#createRequest(Collection, String)
      */
-    public byte[] createRequest(Collection attributes, String signAlg) throws CATokenOfflineException {
+    public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert) throws CATokenOfflineException {
     	ASN1Set attrset = new DERSet();
     	if (attributes != null) {
     		log.debug("Adding attributes in the request");

@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
@@ -42,7 +41,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -116,7 +114,6 @@ import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
-import org.ejbca.cvc.CVCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -929,8 +926,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
      *  Creates a certificate request that should be sent to External Root CA for processing.
      *
      *  @param admin the administrator performing the action
-     *  @caid id of the CA that should create the request 
-     *  @param rootcertificates A Collection of rootcertificates.
+     *  @param caid id of the CA that should create the request 
+     *  @param cachain A Collection of CA-certificates.
      *  @param setstatustowaiting should be set true when creating new CAs and false for renewing old CAs
      *  @param keystorepass password used when regenerating keys, can be null if regenerateKeys is false.
      *  @param regenerateKeys if renewing a CA this is used to also generate a new KeyPair.
@@ -979,8 +976,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
         			// In order to generate a certificate with this keystore we must make sure it is activated
         			ca.getCAToken().activate(keystorepass);
         		}
-
-            	returnval = ca.createRequest(null, signAlg);            	
+        		Iterator iter = chain.iterator();
+        		Certificate cacert = null;
+        		if (iter.hasNext()) {
+            		cacert = (Certificate)iter.next();        			
+        		}
+            	returnval = ca.createRequest(null, signAlg, cacert);            	
 
             	// Set statuses if it should be set.
             	if (setstatustowaiting || regenerateKeys){
