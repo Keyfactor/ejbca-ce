@@ -113,7 +113,7 @@ public class KeyTools {
         		// The parameters were already installed when we installed the provider
         		// We just make sure that ecSpec == null here
         	} else {
-        		log.debug("Generating named curve ECDSA key pair");
+        		log.debug("Generating named curve ECDSA key pair: "+keySpec);
             	// We have EC keys
             	ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);        		
         	}
