@@ -2546,7 +2546,7 @@ public class CertTools {
      * The list of certificates should only contain one root certificate.
      *
      * @param certlist
-     * @return the certificatepath
+     * @return the certificatepath with the root CA at the end
      * @throws InvalidAlgorithmParameterException 
      * @throws NoSuchProviderException 
      * @throws NoSuchAlgorithmException 
@@ -2618,7 +2618,7 @@ public class CertTools {
     }
 
     /**
-     * Method ordering a list of certificate into a certificate path with the CA at the end.
+     * Method ordering a list of certificate into a certificate path with the root CA at the end.
      * Does not check validity or verification of any kind, just ordering by issuerdn.
      * @param certlist list of certificates to order.
      * @return Collection with certificatechain.
