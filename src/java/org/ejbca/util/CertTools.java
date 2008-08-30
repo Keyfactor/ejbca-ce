@@ -2300,10 +2300,12 @@ public class CertTools {
 				}
 			}
 		} else {
-			if (certSignatureAlgorithm.indexOf("256") == -1) {
-				signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_ECDSA;
-			} else {
+			if (certSignatureAlgorithm.indexOf("256") != -1) {
 				signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;
+			} else if (certSignatureAlgorithm.indexOf("224") != -1) {
+				signatureAlgorithm = CATokenInfo.SIGALG_SHA224_WITH_ECDSA;
+			} else {
+				signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_ECDSA;
 			}
 		}
 		log.debug("getSignatureAlgorithm: "+signatureAlgorithm);
