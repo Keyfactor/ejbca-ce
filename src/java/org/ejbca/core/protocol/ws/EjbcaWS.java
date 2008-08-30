@@ -135,6 +135,7 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
+import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.Base64;
@@ -450,8 +451,28 @@ public class EjbcaWS implements IEjbcaWS {
 									// because that means the same keys were used, and that is not allowed according to the EU policy
 									CVCertificate innerreq = authreq.getRequest();
 									CardVerifiableCertificate innercert = new CardVerifiableCertificate(innerreq);
+									PublicKey pk = cert.getPublicKey();
 									try {
-										innercert.verify(cert.getPublicKey());										
+										if (pk instanceof PublicKeyEC) {
+											// The public key of IS and DV certificate do not have any EC parameters so we have to do some magic to get a complete EC public key
+											// First get to the CVCA certificate that has the parameters
+											CAInfo info = ejbhelper.getCAAdminSession().getCAInfo(admin, CertTools.getIssuerDN(cert).hashCode());
+											Collection cacerts = info.getCertificateChain();
+											if (cacerts != null) {
+												log.debug("Found CA certificate chain of length: "+cacerts.size());
+												// Get the last cert in the chain, it is the CVCA cert
+												Iterator i = cacerts.iterator();
+												java.security.cert.Certificate cvcacert = null;
+												while (i.hasNext()) {
+													cvcacert = (java.security.cert.Certificate)i.next();
+												}
+												if (cvcacert != null) {
+													// Do the magic adding of parameters, if they don't exist in the pk
+													pk = KeyTools.getECPublicKeyWithParams(pk, cvcacert.getPublicKey());
+												}
+											}											
+										}
+										innercert.verify(pk);										
 										String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef.getConcatenated());            	
 										log.info(msg);
 										throw new AuthorizationDeniedException(msg);
@@ -461,7 +482,7 @@ public class EjbcaWS implements IEjbcaWS {
 									if (log.isDebugEnabled()) {
 										log.debug("Trying to verify the outer signature with an old certificate, fp: "+CertTools.getFingerprintAsString(cert));										
 									}
-									authreq.verify(cert.getPublicKey());
+									authreq.verify(pk);
 									log.debug("Verified outer signature");
 									// Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
 									verifiedOuter = true; 
@@ -471,6 +492,9 @@ public class EjbcaWS implements IEjbcaWS {
 									}
 									
 									// If verification of outer signature fails because the signature is invalid we will break and deny the request...with a message
+								} catch (InvalidKeySpecException e) {
+									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+									log.warn(msg, e);
 								} catch (InvalidKeyException e) {
 									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
 									log.warn(msg, e);
@@ -514,6 +538,7 @@ public class EjbcaWS implements IEjbcaWS {
 								log.debug("Trying to verify the outer signature with a CVCA certificate, fp: "+CertTools.getFingerprintAsString(cert));										
 							}
 							try {
+								// The CVCA certificate always contains the full key parameters, no need to du any EC curve parameter magic here
 								authreq.verify(cert.getPublicKey());
 								log.debug("Verified outer signature");
 								verifiedOuter = true; 

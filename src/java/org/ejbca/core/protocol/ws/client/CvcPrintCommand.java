@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.IOException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Collection;
@@ -30,6 +31,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 /**
@@ -73,16 +75,25 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 					type = "authenticated request";
 				}
 				getPrintStream().println("Verifying "+type+" "+filename+" with certificate "+verifycert);
-				parsedObject = getCVCObject(verifycert);
-				CVCertificate cert2 = (CVCertificate)parsedObject;
+				CVCObject parsedVerifyObject = getCVCObject(verifycert);
+				CVCertificate cert2 = (CVCertificate)parsedVerifyObject;
+				PublicKey pk = cert2.getCertificateBody().getPublicKey();
+				if (args.length > 3) {
+					// we have an additional curve name
+					String cvcacert = args[3];
+					getPrintStream().println("Using CVCA certificate "+cvcacert+" for EC parameters.");
+					CVCObject parsedCvcaObject = getCVCObject(cvcacert);
+					CVCertificate cvca = (CVCertificate)parsedCvcaObject;
+					pk = KeyTools.getECPublicKeyWithParams(pk, cvca.getCertificateBody().getPublicKey());
+				}
 				try {
 					if (parsedObject instanceof CVCAuthenticatedRequest) {
 						CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
-						authreq.verify(cert2.getCertificateBody().getPublicKey());											
+						authreq.verify(pk);											
 					} else {
 						CVCertificate cert1 = (CVCertificate)parsedObject;
 						CardVerifiableCertificate cvcert = new CardVerifiableCertificate(cert1);
-						cvcert.verify(cert2.getCertificateBody().getPublicKey());											
+						cvcert.verify(pk);											
 					}
 					getPrintStream().println("Verification of certificate was successful");
 				} catch (Exception e) {
@@ -117,8 +128,9 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 
 	protected void usage() {
 		getPrintStream().println("Command used to pretty print a CVC certificate or request.");
-		getPrintStream().println("Usage : cvcprint <filename> [verifycert]\n\n");
+		getPrintStream().println("Usage : cvcprint <filename> [verifycert] [CVCA-certificate for EC params]\n\n");
 		getPrintStream().println("If adding the optional parameter verifycert the program tries to verify a certifcate given as filename with the certificate given as verifycert.");
+		getPrintStream().println("If verifying an IS cert with a DV cert no curve parameters exist in the public key in the certificate, you can therefore add the CVCA certificate to complete the public key.");
 	}
 
 

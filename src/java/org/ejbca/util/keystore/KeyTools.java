@@ -42,6 +42,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
@@ -61,7 +62,10 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
@@ -97,6 +101,7 @@ public class KeyTools {
      * 
      * @return KeyPair the generated keypair
      * @throws InvalidAlgorithmParameterException 
+     * @see org.ejbca.core.model.ca.catoken.CATokenConstants#KEYALGORITHM_RSA
      */
     public static KeyPair genKeys(String keySpec, String keyAlg)
         throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
@@ -135,6 +140,60 @@ public class KeyTools {
 
         return keys;
     } // genKeys
+
+    /** An ECDSA key can be stripped of the curve parameters so it only contains the public point, and this is not enough to 
+     * use the key for verification. However, if we know the curve name we can fill in the curve parameters and get a usable EC public key 
+     * 
+     * @param pk PublicKey that might miss parameters, of parameters are there we do not touch the public key just return it unchanged
+     * @param keySpec name of curve for example brainpoolp224r1
+     * @return PublicKey with parameters from the named curve
+     * @throws NoSuchProviderException 
+     * @throws NoSuchAlgorithmException 
+     * @throws InvalidKeySpecException 
+     */
+    public static PublicKey getECPublicKeyWithParams(PublicKey pk, String keySpec) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+    	PublicKey ret = pk;
+    	if ( (pk instanceof PublicKeyEC) && (keySpec != null) ) {
+    		PublicKeyEC pkec = (PublicKeyEC) pk;
+    		// The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
+    		ECParameterSpec spec = pkec.getParams();
+    		if (spec == null) {
+    			// we did not have the parameter specs, lets create them because we know which curve we are using
+    			org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(keySpec);
+    			java.security.spec.ECPoint p = pkec.getW();
+    			org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p, false);
+    			ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
+		        KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
+    	        pk = keyfact.generatePublic(pubKey);
+    		}
+    	} 
+    	return pk;
+    }
+    public static PublicKey getECPublicKeyWithParams(PublicKey pk, PublicKey pkwithparams) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+    	PublicKey ret = pk;
+    	if ( (pk instanceof PublicKeyEC) && (pkwithparams instanceof PublicKeyEC) ) {
+    		PublicKeyEC pkec = (PublicKeyEC) pk;
+    		// The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
+    		ECParameterSpec spec = pkec.getParams();
+    		if (spec == null) {
+        		PublicKeyEC pkecp = (PublicKeyEC) pkwithparams;
+        		ECParameterSpec pkspec = pkecp.getParams();
+        		if (pkspec != null) {
+        			org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec, false);
+        			java.security.spec.ECPoint p = pkec.getW();
+        			org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
+        			ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
+    		        KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
+        	        pk = keyfact.generatePublic(pubKey);        			
+        		} else {
+        			log.info("pkwithparams does not have any params.");
+        		}
+    		}
+    	} else {
+    		log.info("Either pk or pkwithparams is not a PublicKeyEC: "+pk.toString()+", "+pkwithparams.toString());
+    	}
+    	return pk;
+    }
 
     /**
      * Gets the key length of supported keys

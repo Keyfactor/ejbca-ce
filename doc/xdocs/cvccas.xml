@@ -211,22 +211,54 @@
   ejbca/dist/ejbcawscli> ./cvcwscli.sh cvcprint
   Usage : cvcprint &lt;filename&gt; [verifycert]
   ...
-  </source> 
+  </source>
+  
+  <subsection name="CLI authentication and privileges"> 
   <p>
+  The CLI uses client certificate authentication, and as such is allowed to perform administrative tasks in EJBCA as long as your
+  client certificate has the correct RA administrator privileges in EJBCA.<br/>
+  Because of this unauthenticated requests entered using the CLI is directly granted and end entities created, since you as an administrator 
+  have approved this request.<br/>
+  Authenticated requests however are verified and granted or rejected based on the verification of the outer signature on the request.
+  </p>
+  </subsection>
+  
+  <subsection name="CLI examples"> 
+  <p>
+  <strong>1.</strong><br/>
   An example command to receive a request from a foreign DV could look like:
   </p>
   <source>
   ./cvcwscli.sh cvcrequest holland foo123 "CN=dv,C=NL" SE001 CVCAPK SHA256WithRSA 2048 DV DV false hollandreq
   </source>
   <p>
+  Where your CVCA is called CVCAPK in EJBCA and uses algorithm SHA256WithRSA with 2048 bit keys.<br/>
   Where an End entity profile, DV, is created with CN and C as required DN fields, and DV as available certificate profiles.<br/>
   Where a Certificate profile, DV, is created of type SubCA.<br/>
-  Where the received request is stored in a file 'hollandreq.req'.<br/>
-  Where your CVCA is called CVCAPK in EJBCA and using algorithm SHA256WithRSA with 2048 bit keys.
+  Where the received request is stored in a file 'hollandreq.cvrqst'.
+  </p> 
+  <p>
+  If the request is an authenticated request signed by a CVCA and that CVCA has been imported in EJBCA (Edit Certificate Authorities->Import CA certificate), the request will be verified and granted. 
+  </p>
+  <p>
+  <strong>2.</strong><br/>
+  An example command to generate keys and a request for an IS using SHA224WithECDSA and brainpoolp224r1 curve:
+  </p>
+  <source>
+  ./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 DV-BrainPool SHA224WithECDSA brainpoolp224r1 IS IS true isbrainpool
+  </source>
+  <p>
+  Where your DV is called DV-BrainPool in EJBCA and uses algorithm SHA224WithECDSA with brainpoolp224r1 curve.
+  Where an End entity profile, IS, is created with CN and C as required DN fields, and IS as available certificate profiles.<br/>
+  Where a Certificate profile, IS, is created of type EndEntity.<br/>
+  Where the generated request is stored in a file 'isbrainpool.cvrqst', the generated private key in 'isbrainpool.pkcs8'.<br/>
+  The issued IS certificate is stored in file 'isbrainpool.cvcert'.
   </p> 
   <p>
   If the request is an authenticated request signed by a CVCA and that CVCA has been imported in EJBCA, the request will be verified and granted. 
   </p>
+  
+  </subsection>
   
   </section>
     
