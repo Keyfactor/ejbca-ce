@@ -936,14 +936,16 @@ public class TestCAs extends TestCase {
 		cardcert = (CardVerifiableCertificate)req;
 		reqcert = cardcert.getCVCertificate();
         assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getHolderReference().getConcatenated());
-        assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
+        // This request is made from the DV targeted for the DV, so the old DV certificate will be the holder ref.
+        // Normally you would target an external CA, and thus send in it's cachain. The caRef would be the external CAs holderRef.
+        assertEquals("SETESTDV-D00001", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
         
         // Get the DVs certificate request signed by the CVCA
         byte[] authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), request, false, false);
 		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
         CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
-        assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getAuthorityReference().getConcatenated());
         assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated());
+        assertEquals("SETESTDV-D00001", authreq.getRequest().getCertificateBody().getAuthorityReference().getConcatenated());
         assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getConcatenated());
 
         // Get the DVs certificate request signed by the CVCA creating a link certificate.

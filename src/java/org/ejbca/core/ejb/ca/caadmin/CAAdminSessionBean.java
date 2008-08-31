@@ -976,6 +976,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         			// In order to generate a certificate with this keystore we must make sure it is activated
         			ca.getCAToken().activate(keystorepass);
         		}
+        		// The CA certificate signing this request is the first in the certificate chain
         		Iterator iter = chain.iterator();
         		Certificate cacert = null;
         		if (iter.hasNext()) {
