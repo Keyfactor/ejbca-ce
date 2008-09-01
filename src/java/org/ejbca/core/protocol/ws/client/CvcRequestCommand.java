@@ -18,19 +18,10 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.ECPointUtil;
-import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECFieldElement;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
@@ -43,7 +34,6 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
-import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -152,9 +142,10 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						sequence = RandomStringUtils.randomNumeric(5);
 						getPrintStream().println("No sequence given, using random 5 number sequence: "+sequence);
 					}
-					CAReferenceField caRef = new CAReferenceField(country,mnemonic,sequence);
+					//CAReferenceField caRef = new CAReferenceField(country,mnemonic,sequence);
+					CAReferenceField caRef = null; // Don't create a caRef in the self signed request
 					// We are making a self signed request, so holder ref is same as ca ref
-					HolderReferenceField holderRef = new HolderReferenceField(caRef.getCountry(), caRef.getMnemonic(), caRef.getSequence());
+					HolderReferenceField holderRef = new HolderReferenceField(country,mnemonic,sequence);
 					CVCertificate request = CertificateGenerator.createRequest(keyPair, signatureAlg, caRef, holderRef);
 					byte[] der = request.getDEREncoded();
 					if (authSignKeyFile != null) {
@@ -163,11 +154,11 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				        KeyFactory keyfact = KeyFactory.getInstance(keytype, "BC");
 				        PrivateKey privKey = keyfact.generatePrivate(new PKCS8EncodedKeySpec(keybytes));
 				        KeyPair authKeyPair = new KeyPair(null, privKey); // We don't need the public key
-						CAReferenceField authCaRef = caRef;
+				        // Default caRef if we do not pass in a certificate to get caRef from
+						CAReferenceField authCaRef = new CAReferenceField(country,mnemonic,sequence);
 						CVCertificate authCert = null;
 						if (authSignCertFile != null) {
 							getPrintStream().println("Reading cert from cvcert file "+authSignCertFile+" to create an authenticated request");							
-							byte[] cert = FileTools.readFiletoBuffer(authSignCertFile);
 							CVCObject parsedObject = CvcPrintCommand.getCVCObject(authSignCertFile);
 							authCert = (CVCertificate)parsedObject;
 							String c = authCert.getCertificateBody().getHolderReference().getCountry();
