@@ -354,6 +354,163 @@ in the certificate and must exactly match the IP in the URI.
 </subsection>
 </section>
 
+<section name="Certificate profiles">
+<subsection name="Validity">
+<p>
+The validity determines the validity in days of certificates, from the time the certificate is issued.
+The field 'notAfter' in the issued certificate will have the value 'now + validity days'.
+</p><p>
+<strong>Allow validity override</strong><br/>
+The check box 'Allow Validity Override' will make it possible to request a specific notAfter date. This is currently possible when using CMP (the CRMF request format), or when using the API to issue certificates.
+</p><p>
+The validity of a certificate is determined as follows:
+<ul>
+<li>The Validity field in the profile specifies the maximum allowed validity, which will be the validity if nothing else is specified.</li>
+<li>If 'Allow validity override' is enabled in the profile the profile value can be overridden with:
+<ul><li>Start and end time specified when adding the end entity, of allowed in the End Entity Profile.</li>
+<li>Requested validity form the certificate request (CMP for example).</li>
+</ul>
+</li>
+</ul>
+</p>
+<p>If the validity is for a CA the certificate profile specifies the maximum validity, but it can be shorter if specified when adding the CA.
+The validity of the CA can never be longer than the value specified in the profile.
+</p>
+</subsection>
+
+</section>
+
+<section name="Export and import profiles">
+<p>
+Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
+or in the same instance after removal of the old ones. 
+</p><p>
+When exporting profiles (bin/ejbca.sh ca exportprofiles), all profiles will be exported to the specified directory. The 
+exported files will be given unique names containing profile name and profile id.
+When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
+directory will be imported.
+</p><p>
+Fixed profiles will not be exported or imported. If a profiles with the same name as the one being imported already
+exist, the profiles will not be imported. References to publishers with unknown id will be dropped.
+</p><p>
+Import of profiles try to keep the same profile id. If it already exist a profile with the same id in the database, 
+it will try to choose another and change any (end entity profile to certificate profile) reference during later imports.
+The reason the id is kept is that there are references to the profile id from users belonging to the profile.
+</p><p>
+During import on a new EJBCA instance where CAs that are referenced from the profiles don't exist, a default CA has to be
+specified on command line. Two CAs are concidered identical in this context if they have the same subject DN.
+</p></section>
+
+<section name="Managing CAs">
+
+<subsection name="Creating CAs">
+<p>
+Creating CAs can be made using the Admin-GUI or the command line interface. The recommended way is using the Admin-GUI, since it gives more control of all
+parameters.
+</p>
+<strong>Using CLI</strong>
+<p>You can create CAs using the cli command:
+</p>
+<source>
+ejbca.sh ca init
+</source>
+<p>
+Issuing the command will give usage instructions.
+</p>
+<strong>Using Admin-GUI</strong>
+<p>Creating CAs in the Admin-GUI is done by selecting 'Edit Certificate Authorities' in the menu, entering a new CA name in the text field and clicking 'Create'.
+</p>
+<subsubsection name="Type of CA">
+<p>
+Type of CA can be either X509 or CVC. <br/>
+An X509 CA is a <i>normal</i> CA for secure email, login, web authentication, VPN etc etc.<br/>
+A CVC CA is a CA issuing CV certificates, which are special certificates for EU EAC ePassports. CVC CAs are described in depth in the document about <a href="cvccas.html">CVC CAs</a>.
+</p>
+</subsubsection>
+
+</subsection>
+<subsection name="Export and import CAs">
+<p>
+Under certain circumstances, it can be wise to backup the CA's signature and encryption keys. Remember to protect the backup in the same way
+as the CA itself.
+</p>
+<p>
+Soft token CAs can be exported and backed up. CAs with the keys on a HSM can naturally not be exported through EJBCA. Use the HSMs methods to back up such keys.
+</p><p>
+Soft token CAs can be imported using both the CLI and admin-GUI, while HSM CAs can only be imported using the CLI.  
+</p>
+<subsubsection name="Using command line interface">
+<p>
+To export a CA named "TestCA" to the PKCS#12-file "/path/TestCA.p12" with password "foo123" enter the following
+from the $EJBCA_HOME directory:
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca exportca TestCA ./TestCA.p12
+Using JBoss JNDI provider...
+Enter keystore password: foo123
+[user@host ejbca]$ 
+</source>
+<p>
+To import the backup keys for "TestCA" later, enter the following from the $EJBCA_HOME directory:
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca importca TestCA /path/TestCA.p12 SignatureKeyAlias EncryptionKeyAlias
+Using JBoss JNDI provider...
+Enter keystore password: foo123
+[user@host ejbca]$ 
+</source>
+<p>
+Enter the command:
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca importca
+</source>
+<p>
+to get usage instructions how to import HSM CAs.
+</p>
+</subsubsection>
+<subsubsection name="Using admin-GUI">
+<p>To be able to export and import the CA's keys using the admin-GUI, you have to have superadministrator access.
+Make sure that .p12 files are not automatically saved to an unsuitable place by your browser.
+before you do an export.
+</p>
+<p>To export a the CA's keys, do the following:
+<ul>
+<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
+<li>Select the CA you want to export and press the "Edit"-button.</li>
+<li>Go to the line where the help-text say "CA export requires the keystore password".</li>
+<li>Enter the keystore password in the box to the right of the help-text.</li>
+<li>Press the "Export CA keystore.."-button.</li>
+<li>The PKCS#12-file will be downloaded by your browser to the location you select.</li>
+</ul>
+</p>
+<p>To import a CA's keys, do the following:
+<ul>
+<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
+<li>Press the "Import CA keystore.."-button.</li>
+<li>Fill out the form with the CA's name, full pathname to the PKCS#12-file and keystore password.</li>
+<li>Keep the two "Alias.."-fields to the default value, if you used EJBCA to export the CA's keys.</li>
+<li>Press the "Import CA keystore"-button.</li>
+</ul>
+</p>
+</subsubsection>
+</subsection>
+
+</section>
+
+
+<section name="Import users">
+<p>
+Users from another CA can be imported with the CLI command:
+</p>
+<source>
+bin/ejbca.sh ca importcert
+</source>
+<p>
+You have to give several parameters to the command. Running the command without parameters will print instructions.
+</p>
+</section>
+
 <section name="CRL generation">
 <p>
 A new CA should always issue an (empty) CRL. This is done when the ca is created
@@ -4082,132 +4239,6 @@ You can mix 'implicitlyCA' with named curves any way you like though.
 </subsection>
 </section>
 
-<section name="Certificate profiles">
-<subsection name="Validity">
-<p>
-The validity determines the validity in days of certificates, from the time the certificate is issued.
-The field 'notAfter' in the issued certificate will have the value 'now + validity days'.
-</p><p>
-<strong>Allow validity override</strong><br/>
-The check box 'Allow Validity Override' will make it possible to request a specific notAfter date. This is currently possible when using CMP (the CRMF request format), or when using the API to issue certificates.
-</p><p>
-The validity of a certificate is determined as follows:
-<ul>
-<li>The Validity field in the profile specifies the maximum allowed validity, which will be the validity if nothing else is specified.</li>
-<li>If 'Allow validity override' is enabled in the profile the profile value can be overridden with:
-<ul><li>Start and end time specified when adding the end entity, of allowed in the End Entity Profile.</li>
-<li>Requested validity form the certificate request (CMP for example).</li>
-</ul>
-</li>
-</ul>
-</p>
-<p>If the validity is for a CA the certificate profile specifies the maximum validity, but it can be shorter if specified when adding the CA.
-The validity of the CA can never be longer than the value specified in the profile.
-</p>
-</subsection>
-
-
-</section>
-
-<section name="Export and import profiles">
-<p>
-Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
-or in the same instance after removal of the old ones. 
-</p><p>
-When exporting profiles (bin/ejbca.sh ca exportprofiles), all profiles will be exported to the specified directory. The 
-exported files will be given unique names containing profile name and profile id.
-When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
-directory will be imported.
-</p><p>
-Fixed profiles will not be exported or imported. If a profiles with the same name as the one being imported already
-exist, the profiles will not be imported. References to publishers with unknown id will be dropped.
-</p><p>
-Import of profiles try to keep the same profile id. If it already exist a profile with the same id in the database, 
-it will try to choose another and change any (end entity profile to certificate profile) reference during later imports.
-The reason the id is kept is that there are references to the profile id from users belonging to the profile.
-</p><p>
-During import on a new EJBCA instance where CAs that are referenced from the profiles don't exist, a default CA has to be
-specified on command line. Two CAs are concidered identical in this context if they have the same subject DN.
-</p></section>
-
-<section name="Export and import CAs">
-<p>
-Under certain circumstances, it can be wise to backup the CA's signature and encryption keys. Remember to protect the backup in the same way
-as the CA itself.
-</p>
-<p>
-Soft token CAs can be exported and backed up. CAs with the keys on a HSM can naturally not be exported through EJBCA. Use the HSMs methods to back up such keys.
-</p><p>
-Soft token CAs can be imported using both the CLI and admin-GUI, while HSM CAs can only be imported using the CLI.  
-</p>
-<subsection name="Using command line interface">
-<p>
-To export a CA named "TestCA" to the PKCS#12-file "/path/TestCA.p12" with password "foo123" enter the following
-from the $EJBCA_HOME directory:
-</p>
-<source>
-[user@host ejbca]$ bin/ejbca.sh ca exportca TestCA ./TestCA.p12
-Using JBoss JNDI provider...
-Enter keystore password: foo123
-[user@host ejbca]$ 
-</source>
-<p>
-To import the backup keys for "TestCA" later, enter the following from the $EJBCA_HOME directory:
-</p>
-<source>
-[user@host ejbca]$ bin/ejbca.sh ca importca TestCA /path/TestCA.p12 SignatureKeyAlias EncryptionKeyAlias
-Using JBoss JNDI provider...
-Enter keystore password: foo123
-[user@host ejbca]$ 
-</source>
-<p>
-Enter the command:
-</p>
-<source>
-[user@host ejbca]$ bin/ejbca.sh ca importca
-</source>
-<p>
-to get usage instructions how to import HSM CAs.
-</p>
-</subsection>
-<subsection name="Using admin-GUI">
-<p>To be able to export and import the CA's keys using the admin-GUI, you have to have superadministrator access.
-Make sure that .p12 files are not automatically saved to an unsuitable place by your browser.
-before you do an export.
-</p>
-<p>To export a the CA's keys, do the following:
-<ul>
-<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
-<li>Select the CA you want to export and press the "Edit"-button.</li>
-<li>Go to the line where the help-text say "CA export requires the keystore password".</li>
-<li>Enter the keystore password in the box to the right of the help-text.</li>
-<li>Press the "Export CA keystore.."-button.</li>
-<li>The PKCS#12-file will be downloaded by your browser to the location you select.</li>
-</ul>
-</p>
-<p>To import a CA's keys, do the following:
-<ul>
-<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
-<li>Press the "Import CA keystore.."-button.</li>
-<li>Fill out the form with the CA's name, full pathname to the PKCS#12-file and keystore password.</li>
-<li>Keep the two "Alias.."-fields to the default value, if you used EJBCA to export the CA's keys.</li>
-<li>Press the "Import CA keystore"-button.</li>
-</ul>
-</p>
-</subsection>
-</section>
-
-<section name="Import users">
-<p>
-Users from another CA can be imported with the CLI command:
-</p>
-<source>
-bin/ejbca.sh ca importcert
-</source>
-<p>
-You have to give several parameters to the command. Running the command without parameters will print instructions.
-</p>
-</section>
 <section name="Internationalization">
 <p>
 To customize EJBCA admin GUI for your languages special characters you will probably have to 
