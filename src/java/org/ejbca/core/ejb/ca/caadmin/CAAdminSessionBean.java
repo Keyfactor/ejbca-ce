@@ -1453,6 +1453,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	ca.setCAToken(token);
     	// set status to active
     	cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
+		// Publish CA certificates.
+	    getSignSession().publishCACertificate(admin, certificates, null);
     }
 
     /**
