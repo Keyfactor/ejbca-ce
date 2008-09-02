@@ -230,7 +230,6 @@ public class DemoCertReqServlet extends HttpServlet {
     newuser.setUsername(username);
     newuser.setDN(dn);
     newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
-    newuser.setAdministrator(false);
     newuser.setKeyRecoverable(false);
     newuser.setSendNotification(false);
     

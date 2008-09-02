@@ -86,7 +86,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final String AUTOGENPASSWORDLENGTH = "AUTOGENPASSWORDLENGTH";
     
     public static final String EMAIL              = "EMAIL";
-    public static final String ADMINISTRATOR      = "ADMINISTRATOR";
     public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
     public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
     /** A list of available certificate profile names can be retrieved with getAvailableCertificateProfileNames() */
@@ -158,7 +157,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         // Subject directory attributes end
     	 */
     	dataConstants.put(EMAIL, new Integer(26));
-    	dataConstants.put(ADMINISTRATOR, new Integer(27));
+    	//dataConstants.put(ADMINISTRATOR, new Integer(27));		// Dropped from EJBCA 3.8.0, but older installations might still use this index
     	dataConstants.put(KEYRECOVERABLE, new Integer(28));
     	dataConstants.put(DEFAULTCERTPROFILE, new Integer(29));
     	dataConstants.put(AVAILCERTPROFILES, new Integer(30));
@@ -802,7 +801,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         
     
     public void doesUserFullfillEndEntityProfile(String username, String password, String dn, String subjectaltname, String subjectdirattr, String email,  int certificateprofileid,
-                                                 boolean clearpwd, boolean administrator, boolean keyrecoverable, boolean sendnotification,
+                                                 boolean clearpwd, boolean keyrecoverable, boolean sendnotification,
                                                  int tokentype, int hardwaretokenissuerid, int caid, ExtendedInformation ei)
        throws UserDoesntFullfillEndEntityProfile{
 
@@ -832,12 +831,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
 
       doesUserFullfillEndEntityProfileWithoutPassword(username, dn, subjectaltname, subjectdirattr, email,
-    		  certificateprofileid, administrator, keyrecoverable, sendnotification, tokentype, hardwaretokenissuerid, caid, ei);
+    		  certificateprofileid, keyrecoverable, sendnotification, tokentype, hardwaretokenissuerid, caid, ei);
 
     }
 
     public void doesUserFullfillEndEntityProfileWithoutPassword(String username,  String dn, String subjectaltname, String subjectdirattr,
-    		String email,  int certificateprofileid, boolean administrator, boolean keyrecoverable, boolean sendnotification,
+    		String email,  int certificateprofileid, boolean keyrecoverable, boolean sendnotification,
     		int tokentype, int hardwaretokenissuerid, int caid, ExtendedInformation ei)
 			throws UserDoesntFullfillEndEntityProfile {
     	log.debug(">doesUserFullfillEndEntityProfileWithoutPassword()");
@@ -903,16 +902,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  }
       }
 
-   // Check for administrator flag.
-      if(!getUse(ADMINISTRATOR,0) &&  administrator)
-          throw new UserDoesntFullfillEndEntityProfile("Administrator cannot be set.");
-
-      if(isRequired(ADMINISTRATOR,0)){
-        if(getValue(ADMINISTRATOR,0).equals(TRUE) && !administrator)
-           throw new UserDoesntFullfillEndEntityProfile("Administrator flag is required.");
-        if(getValue(ADMINISTRATOR,0).equals(FALSE) && administrator)
-           throw new UserDoesntFullfillEndEntityProfile("Administrator flag cannot be set in current end entity profile.");
-      }
    // Check for keyrecoverable flag.
       if(!getUse(KEYRECOVERABLE,0) &&  keyrecoverable)
           throw new UserDoesntFullfillEndEntityProfile("Key Recoverable cannot be used.");

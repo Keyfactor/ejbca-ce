@@ -96,7 +96,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			admin = new Admin(certificates[0]);
 			// Check that user have the administrator flag set.
 			if(!allowNonAdmins){
-				getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
+				getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
 				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
 			}
 
@@ -135,7 +135,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 		Admin admin = new Admin(certificates[0]);
 		try{
-			getUserAdminSession().checkIfCertificateBelongToAdmin(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
+			getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
 			getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
 			retval = true;
 		}catch(AuthorizationDeniedException e){

@@ -484,7 +484,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             // Check if user fulfills it's profile.
             try {
                 profile.doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), dn, userdata.getSubjectAltName(), userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(), clearpwd,
-                        (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
+                        (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", profileName, dn, udfp.getMessage());            	
@@ -723,7 +723,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             try {
                 profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, altName, userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(),
-                        (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
+                        (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(userdata.getEndEntityProfileId()), dn, udfp.getMessage());            	
@@ -1587,43 +1587,28 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     } // findUserBySubjectDN
 
     /**
-     * Method that checks if user with specified users certificate exists in database and is set as administrator.
+     * Method that checks if user with specified users certificate exists in database
      *
      * @param subjectdn
-     * @throws AuthorizationDeniedException if user isn't an administrator.
+     * @throws AuthorizationDeniedException if user doesn't exist
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
-        debug(">checkIfCertificateBelongToAdmin(" + certificatesnr.toString(16) + ")");
+    public void checkIfCertificateBelongToUser(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
+        debug(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
         String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
-
-        UserDataLocal data = null;
         if (username != null) {
             UserDataPK pk = new UserDataPK(username);
             try {
-                data = home.findByPrimaryKey(pk);
+            	home.findByPrimaryKey(pk);
             } catch (FinderException e) {
-                log.debug("Cannot find user with username='" + username + "'");
-            }
-        }
-
-        if (data != null) {
-            int type = data.getType();
-            if ((type & SecConst.USER_ADMINISTRATOR) == 0) {
-                String msg = intres.getLocalizedMessage("ra.errorcertnoadmin", issuerdn, certificatesnr.toString(16));
-                logsession.log(admin, data.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN, msg);
+                String msg = intres.getLocalizedMessage("ra.errorcertnouser", issuerdn, certificatesnr.toString(16));
+                logsession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN, msg);
                 throw new AuthorizationDeniedException(msg);
             }
-        } else {
-            String msg = intres.getLocalizedMessage("ra.errorcertnouser", issuerdn, certificatesnr.toString(16));
-            logsession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN, msg);
-            throw new AuthorizationDeniedException(msg);
         }
-
-        debug("<checkIfCertificateBelongToAdmin()");
-    } // checkIfCertificateBelongToAdmin
-
+        debug("<checkIfCertificateBelongToUser()");
+    }
 
     /**
      * Finds all users with a specified status.

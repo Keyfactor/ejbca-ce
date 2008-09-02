@@ -206,11 +206,6 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 	  profile.setValue(EndEntityProfile.DEFAULTTOKENISSUER,0,"" + hardtokenissuerid);
       profile.setValue(EndEntityProfile.AVAILTOKENISSUER,0,"" + hardtokenissuerid);
 	  
-	  // Set Administrator Flag
-	  profile.setUse(EndEntityProfile.ADMINISTRATOR,0,true);
-	  profile.setRequired(EndEntityProfile.ADMINISTRATOR,0,true);
-	  profile.setValue(EndEntityProfile.ADMINISTRATOR,0,EndEntityProfile.TRUE);
-	  	  
 	  // Save Profile
 	  this.getRaAdminSession().addEndEntityProfile(administrator, ADMINTOKENENDENTITYPROFILE, profile);
 	}

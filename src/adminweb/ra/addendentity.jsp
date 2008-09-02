@@ -50,7 +50,6 @@
   static final String CHECKBOX_SUBJECTDN                  = "checkboxsubjectdn";
   static final String CHECKBOX_SUBJECTALTNAME             = "checkboxsubjectaltname";
   static final String CHECKBOX_SUBJECTDIRATTR             = "checkboxsubjectdirattr";
-  static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
   static final String CHECKBOX_PRINT                      = "checkboxprint";
@@ -62,7 +61,6 @@
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
   static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR    = "checkboxrequiredsubjectdirattr";
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
-  static final String CHECKBOX_REQUIRED_ADMINISTRATOR     = "checkboxrequiredadministrator";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
   static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrequiredstarttime";
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
@@ -407,18 +405,6 @@
           	 ExtendedInformation ei = newuser.getExtendedInformation();
            	 ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
            	 newuser.setExtendedInformation(ei);
-           }
-
-           value = request.getParameter(CHECKBOX_ADMINISTRATOR);
-           if(value !=null){
-             if(value.equals(CHECKBOX_VALUE)){
-               newuser.setAdministrator(true);   
-               oldprofile.setValue(EndEntityProfile.ADMINISTRATOR, 0, EndEntityProfile.TRUE);  
-             }
-             else{
-               newuser.setAdministrator(false);  
-               oldprofile.setValue(EndEntityProfile.ADMINISTRATOR, 0, EndEntityProfile.FALSE); 
-             }
            }
            value = request.getParameter(CHECKBOX_KEYRECOVERABLE);
            if(value !=null){
@@ -954,8 +940,6 @@ function checkallfields(){
     if(illegalfields == 0){
       <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%> 
       document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
-      <% } if(profile.getUse(EndEntityProfile.ADMINISTRATOR,0)){%> 
-      document.adduser.<%= CHECKBOX_ADMINISTRATOR %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){%> 
       document.adduser.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){%> 
@@ -1457,7 +1441,7 @@ function checkallfields(){
 	 <td></td>
        </tr>
        <% } %>
-       <% if( profile.getUse(EndEntityProfile.ADMINISTRATOR,0) || usekeyrecovery){ %>
+       <% if(usekeyrecovery){ %>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText("TYPES") %></td>
@@ -1491,23 +1475,6 @@ function checkallfields(){
             </select>
          </td>
        </tr>
-       <%} %>
-       
-      <% if(profile.getUse(EndEntityProfile.ADMINISTRATOR,0)){ %>
-    <tr  id="Row<%=(row++)%2%>"> 
-      <td></td>
-      <td  align="right"> 
-        <%= ejbcawebbean.getText("ADMINISTRATOR") %> <br>
-      </td>
-      <td > 
-        <input type="checkbox" name="<%=CHECKBOX_ADMINISTRATOR%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.ADMINISTRATOR,0).equals(EndEntityProfile.TRUE))
-                                                                                                                 out.write(" CHECKED "); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.ADMINISTRATOR,0))
-                                                                                                                 out.write(" disabled='true' "); 
-                                                                                                             %>> 
-      </td>
-      <td></td>
-    </tr>
       <%} if(usekeyrecovery){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td></td>

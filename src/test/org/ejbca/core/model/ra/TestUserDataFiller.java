@@ -32,7 +32,6 @@ public class TestUserDataFiller extends TestCase {
         profile = new EndEntityProfile();
         profile.addField(EndEntityProfile.USERNAME);//0
         profile.addField(EndEntityProfile.PASSWORD);//1
-        profile.addField(EndEntityProfile.ADMINISTRATOR);//27
         profile.addField(EndEntityProfile.CLEARTEXTPASSWORD);//2
         profile.addField(EndEntityProfile.KEYRECOVERABLE);//28
         profile.addField(EndEntityProfile.SENDNOTIFICATION);//35
@@ -41,7 +40,6 @@ public class TestUserDataFiller extends TestCase {
         profile.addField(DnComponents.ORGANIZATION);//12
         profile.setValue(EndEntityProfile.USERNAME, 0, "defaultUserName");
         profile.setValue(EndEntityProfile.PASSWORD, 0, "defaultPassword");
-        profile.setValue(EndEntityProfile.ADMINISTRATOR, 0, "false");
         profile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, "true");
         profile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, "false");
         profile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, "false");

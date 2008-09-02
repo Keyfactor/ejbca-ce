@@ -230,7 +230,6 @@ public class AdminCertReqServlet extends HttpServlet {
         
         newuser.setSubjectDN(dn);
         newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
-        newuser.setAdministrator(false);
         newuser.setKeyRecoverable(false);
         
         String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign

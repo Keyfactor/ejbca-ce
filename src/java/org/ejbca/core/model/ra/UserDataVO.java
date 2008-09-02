@@ -170,10 +170,16 @@ public class UserDataVO implements Serializable {
     public int getHardTokenIssuerId() {return this.hardtokenissuerid;}
     public void setHardTokenIssuerId(int hardtokenissuerid) { this.hardtokenissuerid=hardtokenissuerid;}
 
+    /**
+     * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
+     */
     public boolean getAdministrator(){
       return (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR;
     }
 
+    /**
+     * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
+     */
     public void setAdministrator(boolean administrator){
       if(administrator)
         type = type | SecConst.USER_ADMINISTRATOR;

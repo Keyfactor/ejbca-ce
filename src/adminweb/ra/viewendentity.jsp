@@ -199,7 +199,7 @@
          </td> 
        </tr>
        <% } 
-       if( viewendentityhelper.profile.getUse(EndEntityProfile.ADMINISTRATOR,0) || (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
+       if( (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) || viewendentityhelper.profile.getUsePrinting() ){
         %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
@@ -207,17 +207,6 @@
 	 <td>
          </td>
        </tr>
-      <% } if(viewendentityhelper.profile.getUse(EndEntityProfile.ADMINISTRATOR,0)){ %>
-    <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
-      <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
-        <%= ejbcawebbean.getText("ADMINISTRATOR") %> <br>
-      </td>
-      <td > 
-        <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_ADMINISTRATOR%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="12"
-                <%if(viewendentityhelper.userdata.getAdministrator())
-                   out.write("CHECKED");%> disabled="true"> 
-      </td>
-    </tr>
       <% } if(viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
       <td  align="right" width="<%=viewendentityhelper.columnwidth%>"> 

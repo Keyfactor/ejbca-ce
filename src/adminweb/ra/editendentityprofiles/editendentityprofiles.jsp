@@ -59,7 +59,6 @@
   static final String TEXTAREA_NOTIFICATIONMESSAGE  = "textareanotificationmessage";
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
-  static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_REUSECERTIFICATE           = "checkboxreusecertificate";
   static final String CHECKBOX_REVERSEFIELDCHECKS         = "checkboxreversefieldchecks";
@@ -81,7 +80,6 @@
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
   static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR    = "checkboxrequiredsubjectdirattr";
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
-  static final String CHECKBOX_REQUIRED_ADMINISTRATOR     = "checkboxrequiredadministrator";
   static final String CHECKBOX_REQUIRED_SENDNOTIFICATION  = "checkboxrequiredsendnotification";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
   static final String CHECKBOX_REQUIRED_PRINTING          = "checkboxrequiredprinting";
@@ -101,7 +99,6 @@
   static final String CHECKBOX_USE_SUBJECTDN         = "checkboxusesubjectdn";
   static final String CHECKBOX_USE_SUBJECTALTNAME    = "checkboxusesubjectaltname";
   static final String CHECKBOX_USE_EMAIL             = "checkboxuseemail";
-  static final String CHECKBOX_USE_ADMINISTRATOR     = "checkboxuseadministrator";
   static final String CHECKBOX_USE_KEYRECOVERABLE    = "checkboxusekeyrecoverable";
   static final String CHECKBOX_USE_SENDNOTIFICATION  = "checkboxusesendnotification";
   static final String CHECKBOX_USE_HARDTOKENISSUERS  = "checkboxusehardtokenissuers";
@@ -393,14 +390,6 @@
              profiledata.setModifyable(EndEntityProfile.EMAIL, 0,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_EMAIL))); 
              profiledata.setUse(EndEntityProfile.EMAIL, 0,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_EMAIL))); 
  
-             if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_ADMINISTRATOR)))
-               profiledata.setValue(EndEntityProfile.ADMINISTRATOR, 0 ,EndEntityProfile.TRUE);
-             else
-               profiledata.setValue(EndEntityProfile.ADMINISTRATOR, 0 ,EndEntityProfile.FALSE);
-
-             profiledata.setRequired(EndEntityProfile.ADMINISTRATOR, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_ADMINISTRATOR)));
-             profiledata.setUse(EndEntityProfile.ADMINISTRATOR, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_ADMINISTRATOR))); 
-
              if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_KEYRECOVERABLE)))
                profiledata.setValue(EndEntityProfile.KEYRECOVERABLE, 0 ,EndEntityProfile.TRUE);
              else

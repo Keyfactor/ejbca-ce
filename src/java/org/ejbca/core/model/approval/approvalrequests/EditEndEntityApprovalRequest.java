@@ -134,7 +134,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",ApprovalRequestHelper.getCertificateProfileName(admin,newuserdata.getCertificateProfileId()),true,false));
 		retval.add(ApprovalRequestHelper.getTokenName(admin,newuserdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,newuserdata.getHardTokenIssuerId())));
-		retval.add(new ApprovalDataText("ADMINISTRATOR",newuserdata.getAdministrator() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("STATUS",(String) UserDataConstants.STATUS_TEXT.get(new Integer(newuserdata.getStatus())),true,true));
@@ -162,7 +161,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",ApprovalRequestHelper.getCertificateProfileName(admin,orguserdata.getCertificateProfileId()),true,false));
 		retval.add(ApprovalRequestHelper.getTokenName(admin,orguserdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,orguserdata.getHardTokenIssuerId())));
-		retval.add(new ApprovalDataText("ADMINISTRATOR",orguserdata.getAdministrator() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",orguserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",orguserdata.getSendNotification() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("STATUS",(String) UserDataConstants.STATUS_TEXT.get(new Integer(orguserdata.getStatus())),true,true));

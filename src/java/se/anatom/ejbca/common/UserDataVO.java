@@ -120,17 +120,6 @@ public class UserDataVO implements Serializable {
     public int getHardTokenIssuerId() {return this.hardtokenissuerid;}
     public void setHardTokenIssuerId(int hardtokenissuerid) { this.hardtokenissuerid=hardtokenissuerid;}
 
-    public boolean getAdministrator(){
-      return (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR;
-    }
-
-    public void setAdministrator(boolean administrator){
-      if(administrator)
-        type = type | SecConst.USER_ADMINISTRATOR;
-      else
-        type = type & (~SecConst.USER_ADMINISTRATOR);
-    }
-
     public boolean getKeyRecoverable(){
       return (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE;
     }

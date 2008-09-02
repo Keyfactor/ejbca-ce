@@ -101,10 +101,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
                 if (usekeyrecovery) {
                     getOutputStream().println(
-                        "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; KEYRECOVERABLE=128; SENDNOTIFICATION=256; PRINTUSERDATA=512");
+                        "Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256; PRINTUSERDATA=512");
                 } else {
                     getOutputStream().println(
-                        "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; SENDNOTIFICATION=256; PRINTUSERDATA=512");
+                        "Type (mask): INVALID=0; END-USER=1; SENDNOTIFICATION=256; PRINTUSERDATA=512");
                 }
 
                 getOutputStream().print("Existing tokens      : " + USERGENERATED + ", " +

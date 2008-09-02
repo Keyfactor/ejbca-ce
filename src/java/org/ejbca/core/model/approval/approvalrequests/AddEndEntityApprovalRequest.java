@@ -123,7 +123,6 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",ApprovalRequestHelper.getCertificateProfileName(admin,userdata.getCertificateProfileId()),true,false));
 		retval.add(ApprovalRequestHelper.getTokenName(admin,userdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,userdata.getHardTokenIssuerId())));
-		retval.add(new ApprovalDataText("ADMINISTRATOR",userdata.getAdministrator() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",userdata.getSendNotification() ? "YES" : "NO",true,true));		
 		return retval;

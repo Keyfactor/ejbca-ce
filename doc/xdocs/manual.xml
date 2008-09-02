@@ -1431,13 +1431,11 @@ Sample code can be taken from:
 <subsection name="Accessrules required when using the Web Service API">
 <p>
 All the calls requires HTTPS client authentication. The keystore used
-must be set up as a regular administrator with the administrator flag set
-and access rules according to the following:
+must be set up as a regular administrator and access rules according to the following:
 </p><p>
 Common for all calls (except isAuthorized, existsHardToken, isApproved that only needs a valid trusted certificate):
 </p>
 <ul>
-<li>Administrator flag set</li>
 <li>/administrator</li>
 <li>/ca/'related CA'</li>
 </ul>
@@ -4891,7 +4889,7 @@ Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin
 and the RAADMIN bit (temporarily CN=SuperAdmin gives adminrights).
 </p>
 <source>
-bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null65 2
+bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 2
 bin/ejbca.sh ra setclearpwd raadmin foo123
 bin/ejbca.sh batch
 </source>

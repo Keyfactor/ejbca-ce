@@ -90,8 +90,6 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public int getStatus() {return userdata.getStatus();}
     public void setType(int type) {userdata.setType(type);}
     public int getType() {return userdata.getType();}
-    public void setAdministrator(boolean admin) {userdata.setAdministrator(admin);}
-    public boolean getAdministrator() {return userdata.getAdministrator();}
     public void setKeyRecoverable(boolean keyrecoverable) {userdata.setKeyRecoverable(keyrecoverable);}
     public boolean getKeyRecoverable() {return userdata.getKeyRecoverable();}
     public void setSendNotification(boolean sendnotification) {userdata.setSendNotification(sendnotification);}
