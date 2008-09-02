@@ -4922,6 +4922,20 @@ keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass f
 keytool -import -trustcacerts -file ca.der -keystore p12/truststore.jks -storepass changeit
 ant deploy
 </source>
+<subsection name="Character limitations">
+<p>
+Since the Admin GUI still uses some JSP and EJBCA at some occasions uses string concatenation
+to build SQL querys, we have to ban some characters to avoid XSS-attacks and SQL-injections:
+</p>
+<code>
+\"  \n \r \\ ; ! \0 % ` &lt; &gt; ? $ ~
+</code>
+<p>
+(\n is newline, \r is carriage return, \\ is backslash, \0 is null)
+</p><p>
+These characters will be replaced by /. ',' can be escaped ,'\,'. 
+</p>
+</subsection>
 </section>
 
 
