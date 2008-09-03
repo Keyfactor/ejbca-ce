@@ -410,14 +410,12 @@ public class InformationMemory implements java.io.Serializable {
     public TreeMap getAuthorizedAdminGroups(){
       if(authgroups == null){
         authgroups = new TreeMap();
-        HashMap caidtoname = getCAIdToNameMap(); 
         Iterator iter = this.authorizationsession.getAuthorizedAdminGroupNames(administrator).iterator();
         while(iter.hasNext()){
           AdminGroup admingroup = (AdminGroup) iter.next();	
-          authgroups.put(admingroup.getAdminGroupName() + ", CA: " + caidtoname.get(new Integer(admingroup.getCAId())),new Integer(admingroup.getAdminGroupId()));
+          authgroups.put(admingroup.getAdminGroupName(),new Integer(admingroup.getAdminGroupId()));
         }              		
       }
-    	
       return authgroups;	 
     }
 

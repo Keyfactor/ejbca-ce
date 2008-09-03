@@ -26,19 +26,20 @@ import java.io.Serializable;
  */
 public class AdminGroup implements Serializable, Comparable {
                                
+    public static final String DEFAULTGROUPNAME = "DEFAULT";
+    public static final String PUBLICWEBGROUPNAME = "Public Web Users";
+    public static final String TEMPSUPERADMINGROUP = "Temporary Super Administrator Group";
     
     /** Creates a new instance of AdminGroup */
-    public AdminGroup(String admingroupname, int caid) {      
+    public AdminGroup(String admingroupname) {      
       this.admingroupname=admingroupname;
-      this.caid=caid;  
       accessrules = new ArrayList();
       adminentities = new ArrayList();
     }
 
-    public AdminGroup(int admingroupid, String admingroupname, int caid, ArrayList accessrules, ArrayList adminentities){
+    public AdminGroup(int admingroupid, String admingroupname, ArrayList accessrules, ArrayList adminentities){
       this.admingroupid=admingroupid;
       this.admingroupname=admingroupname;
-      this.caid=caid;
       this.accessrules=accessrules;
       this.adminentities=adminentities;
     }
@@ -64,10 +65,6 @@ public class AdminGroup implements Serializable, Comparable {
       return adminentities;
     }
     
-    public int getCAId(){
-      return this.caid;
-    }
-    
     public int getAdminGroupId(){
       return this.admingroupid;	
     }
@@ -86,7 +83,7 @@ public class AdminGroup implements Serializable, Comparable {
         Iterator iter = availableaccessrules.iterator();
         while(iter.hasNext()){
           String availableaccessrule = (String) iter.next();   
-          result=java.util.Collections.binarySearch(accessrules,new AccessRule(availableaccessrule, 0, false));
+          result = Collections.binarySearch(accessrules,new AccessRule(availableaccessrule, 0, false));
           if(result < 0){
             // Access rule isn't in use.
             nonusedaccessrules.add(availableaccessrule);
@@ -96,10 +93,28 @@ public class AdminGroup implements Serializable, Comparable {
       return nonusedaccessrules;
     }
     
+    /** Method that given an array of available access rules returns which isn't already
+     * in use by the rule set. */
+    public Collection nonUsedAccessRuleObjects(Collection availableaccessrules){
+      ArrayList nonusedaccessrules = new ArrayList();
+      int result;
+      Collections.sort(accessrules);
+      if(availableaccessrules != null){
+        Iterator iter = availableaccessrules.iterator();
+        while(iter.hasNext()){
+          String availableaccessrule = (String) iter.next();   
+          result = Collections.binarySearch(accessrules,new AccessRule(availableaccessrule, 0, false));
+          if(result < 0){
+            // Access rule isn't in use.
+            nonusedaccessrules.add(new AccessRule(availableaccessrule, 0, false));
+          }
+        }
+      }
+      return nonusedaccessrules;
+    }
+    
  
     public int compareTo(Object o) {
-        if(caid != ((AdminGroup) o).getCAId())
-            return caid - ((AdminGroup) o).getCAId();
         return admingroupname.compareTo(((AdminGroup)o).getAdminGroupName());              
     }
     
@@ -108,7 +123,6 @@ public class AdminGroup implements Serializable, Comparable {
     // Private fields
     private int       admingroupid;
     private String    admingroupname;
-    private int       caid;
     private ArrayList accessrules;
     private ArrayList adminentities;
  }

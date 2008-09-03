@@ -50,7 +50,7 @@
   final String SERVICES_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
   
   final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
-                                                  + "/administratorprivileges.jsp";
+                                                  + "/administratorprivileges.jsf";
   
   final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl()+"index.jsp";
   

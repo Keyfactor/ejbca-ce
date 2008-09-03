@@ -271,6 +271,7 @@ public class DNFieldExtractor implements java.io.Serializable {
         Integer ret = (Integer)fieldnumbers.get(new Integer(field));
         if (ret == null) {
         	log.error("Not finding fieldnumber value for "+field);
+        	return 0;
         }
         return ret.intValue();
     }

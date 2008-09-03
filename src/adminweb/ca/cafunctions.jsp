@@ -109,6 +109,9 @@ function getPasswordAndSubmit(formname) {
        String caname = (String) iter.next();  
        int caid = ((Integer) canames.get(caname)).intValue();
        org.ejbca.ui.web.admin.cainterface.CAInfoView cainfo = cabean.getCAInfo(caid);
+       if (cainfo == null) {
+         continue;	// We are obviously not authorized to this CA
+       }
        String subjectdn = cainfo.getCAInfo().getSubjectDN();
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
        int chainsize = certificatechain.length;

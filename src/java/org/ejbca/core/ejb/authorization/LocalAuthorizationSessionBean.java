@@ -223,8 +223,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
     private String[] customaccessrules = null;
 
-    private static final String DEFAULTGROUPNAME = "DEFAULT";
-    protected static final String PUBLICWEBGROUPNAME = "Public Web Users"; // protected so it's available for unit tests
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -366,14 +364,13 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             Collection result = admingrouphome.findAll();
             if (result.size() == 0) {
                 // Authorization table is empty, fill with default and special admingroups.
-                String admingroupname = "Temporary Super Administrator Group";
-                addAdminGroup(admin, admingroupname, caid);
+                addAdminGroup(admin, AdminGroup.TEMPSUPERADMINGROUP);
                 ArrayList adminentities = new ArrayList();
                 adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, "SuperAdmin", caid));
-                addAdminEntities(admin, admingroupname, caid, adminentities);
+                addAdminEntities(admin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
                 ArrayList accessrules = new ArrayList();
-                accessrules.add(new AccessRule("/super_administrator", AccessRule.RULE_ACCEPT, false));
-                addAccessRules(admin, admingroupname, caid, accessrules);
+                accessrules.add(new AccessRule(AvailableAccessRules.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));
+                addAccessRules(admin, AdminGroup.TEMPSUPERADMINGROUP, accessrules);
             }
         } catch (FinderException e) {
         	debug("initialize: FinderEx, findAll failed.");
@@ -381,12 +378,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         // Add Special Admin Group
         // Special admin group is a group that is not authenticated with client certificate, such as batch tool etc
         try {
-            admingrouphome.findByGroupNameAndCAId(DEFAULTGROUPNAME, LogConstants.INTERNALCAID);
+            admingrouphome.findByGroupName(AdminGroup.DEFAULTGROUPNAME);
         } catch (FinderException e) {
         	debug("initialize: FinderEx, add default group.");
             // Add Default Special Admin Group
             try {
-                AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), DEFAULTGROUPNAME, LogConstants.INTERNALCAID);
+                AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), AdminGroup.DEFAULTGROUPNAME);
 
                 ArrayList adminentities = new ArrayList();
                 adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN));
@@ -396,16 +393,16 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 agdl.addAdminEntities(adminentities);
 
                 ArrayList accessrules = new ArrayList();
-                accessrules.add(new AccessRule("/administrator", AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule("/super_administrator", AccessRule.RULE_ACCEPT, false));
+                accessrules.add(new AccessRule(AvailableAccessRules.ROLE_ADMINISTRATOR, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));
 
-                accessrules.add(new AccessRule("/ca_functionality", AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule("/ra_functionality", AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule("/log_functionality", AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule("/system_functionality", AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule("/hardtoken_functionality", AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule("/ca", AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule("/endentityprofilesrules", AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_CAFUNCTIONALTY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_RAFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_LOGFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_SYSTEMFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.HARDTOKEN_HARDTOKENFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.CABASE, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AvailableAccessRules.ENDENTITYPROFILEBASE, AccessRule.RULE_ACCEPT, true));
 
                 agdl.addAccessRules(accessrules);
 
@@ -416,20 +413,18 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         }
         // Add Public Web Group
         try {
-            AdminGroupDataLocal agl = admingrouphome.findByGroupNameAndCAId(PUBLICWEBGROUPNAME, caid);
+            AdminGroupDataLocal agl = admingrouphome.findByGroupName(AdminGroup.PUBLICWEBGROUPNAME);
             removeAndAddDefaultPublicWebGroupRules(agl);
         } catch (FinderException e) {
-        	debug("initialize: FinderEx, can't find public web group for caid "+caid);
-        	debug("initialize: FinderEx, create public web group for caid "+caid);
+        	debug("initialize: FinderEx, can't find public web group");
         	try {
-                AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), PUBLICWEBGROUPNAME, caid);
+                AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), AdminGroup.PUBLICWEBGROUPNAME);
                 addDefaultPublicWebGroupRules(agdl);
                 signalForAuthorizationTreeUpdate();
             } catch (CreateException ce) {
             	error("initialize continues after Exception: ", ce);
             }
         }
-
     	if (log.isDebugEnabled()) {
     		log.debug("<initialize, caid: "+caid);
     	}
@@ -437,21 +432,21 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
 
 	private void addDefaultPublicWebGroupRules(AdminGroupDataLocal agdl) {
-    	debug("create public web group for caid "+agdl.getCaId());
+    	debug("create public web group");
 		ArrayList adminentities = new ArrayList();
 		adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_PUBLICWEBUSER));
 		agdl.addAdminEntities(adminentities);
 
 		ArrayList accessrules = new ArrayList();
-		accessrules.add(new AccessRule("/public_web_user", AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AvailableAccessRules.ROLE_PUBLICWEBUSER, AccessRule.RULE_ACCEPT, false));
 
-		accessrules.add(new AccessRule("/ca_functionality/basic_functions", AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule("/ca_functionality/view_certificate", AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule("/ca_functionality/create_certificate", AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule("/ca_functionality/store_certificate", AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule("/ra_functionality/view_end_entity", AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule("/ca", AccessRule.RULE_ACCEPT, true));
-		accessrules.add(new AccessRule("/endentityprofilesrules", AccessRule.RULE_ACCEPT, true));
+		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_CABASICFUNCTIONS, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_VIEWCERTIFICATE, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_CREATECERTIFICATE, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_STORECERTIFICATE, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_VIEWENDENTITY, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AvailableAccessRules.CABASE, AccessRule.RULE_ACCEPT, true));
+		accessrules.add(new AccessRule(AvailableAccessRules.ENDENTITYPROFILEBASE, AccessRule.RULE_ACCEPT, true));
 
 		agdl.addAccessRules(accessrules);
 	}
@@ -461,7 +456,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     private void removeAndAddDefaultPublicWebGroupRules(AdminGroupDataLocal agl) {
     	if (log.isDebugEnabled()) {
-    		debug("Removing old and adding new accessrules and admin entitites to admin group "+agl.getAdminGroupName()+" for caid "+agl.getCaId());
+    		debug("Removing old and adding new accessrules and admin entitites to admin group "+agl.getAdminGroupName());
     	}
         removeEntitiesAndRulesFromGroup(agl);
         addDefaultPublicWebGroupRules(agl);
@@ -565,18 +560,17 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @throws AdminGroupExistsException if admingroup already exists.
      * @ejb.interface-method view-type="both"
      */
-    public void addAdminGroup(Admin admin, String admingroupname, int caid) throws AdminGroupExistsException {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
-
+    public void addAdminGroup(Admin admin, String admingroupname) throws AdminGroupExistsException {
+        if (!(admingroupname.equals(AdminGroup.DEFAULTGROUPNAME))) {
             boolean success = true;
             try {
-                admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
+                admingrouphome.findByGroupName(admingroupname);
                 success = false;
             } catch (FinderException e) {
             }
             if (success) {
                 try {
-                    admingrouphome.create(new Integer(findFreeAdminGroupId()), admingroupname, caid);
+                    admingrouphome.create(new Integer(findFreeAdminGroupId()), admingroupname);
                     success = true;
                 } catch (CreateException e) {
             		String msg = intres.getLocalizedMessage("authorization.erroraddadmingroup", admingroupname);            	
@@ -584,14 +578,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                     success = false;
                 }
             }
-
-
             if (success) {
         		String msg = intres.getLocalizedMessage("authorization.admingroupadded", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } else {
         		String msg = intres.getLocalizedMessage("authorization.erroraddadmingroup", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
                 throw new AdminGroupExistsException();
             }
         }
@@ -602,31 +594,31 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void removeAdminGroup(Admin admin, String admingroupname, int caid) {
+    public void removeAdminGroup(Admin admin, String admingroupname) {
     	if (log.isDebugEnabled()) {
-    		debug("Removing admin group "+admingroupname+" for caid "+caid);
+    		debug("Removing admin group "+admingroupname);
     	}
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
+        if (!(admingroupname.equals(AdminGroup.DEFAULTGROUPNAME))) {
             try {
-                AdminGroupDataLocal agl = admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
+                AdminGroupDataLocal agl = admingrouphome.findByGroupName(admingroupname);
                 removeEntitiesAndRulesFromGroup(agl);
 
                 agl.remove();
                 signalForAuthorizationTreeUpdate();
 
         		String msg = intres.getLocalizedMessage("authorization.admingroupremoved", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
         		String msg = intres.getLocalizedMessage("authorization.errorremoveadmingroup", admingroupname);            	
                 error(msg, e);
-                getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
+                getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // removeAdminGroup
 
 
 	private void removeEntitiesAndRulesFromGroup(AdminGroupDataLocal agl) {
-    	debug("removing entities and rules for caid "+agl.getCaId());
+    	debug("removing entities and rules for "+agl.getAdminGroupName());
 		// Remove groups user entities.
 		agl.removeAdminEntities(agl.getAdminEntityObjects());
 
@@ -645,21 +637,20 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @throws AdminGroupExistsException if admingroup already exists.
      * @ejb.interface-method view-type="both"
      */
-    public void renameAdminGroup(Admin admin, String oldname, int caid, String newname) throws AdminGroupExistsException {
-        if (!(oldname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
+    public void renameAdminGroup(Admin admin, String oldname, String newname) throws AdminGroupExistsException {
+        if (!(oldname.equals(AdminGroup.DEFAULTGROUPNAME))) {
             boolean success = false;
             AdminGroupDataLocal agl = null;
             try {
-                agl = admingrouphome.findByGroupNameAndCAId(newname, caid);
+                agl = admingrouphome.findByGroupName(newname);
                 throw new AdminGroupExistsException();
             } catch (FinderException e) {
                 success = true;
             }
             if (success) {
                 try {
-                    agl = admingrouphome.findByGroupNameAndCAId(oldname, caid);
+                    agl = admingrouphome.findByGroupName(oldname);
                     agl.setAdminGroupName(newname);
-                    agl.setCaId(caid);
                     signalForAuthorizationTreeUpdate();
                 } catch (Exception e) {
                     error("Can't rename admingroup: ", e);
@@ -669,10 +660,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
             if (success) {
         		String msg = intres.getLocalizedMessage("authorization.admingrouprenamed", oldname, newname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } else {
         		String msg = intres.getLocalizedMessage("authorization.errorrenameadmingroup", oldname, newname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);            	
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);            	
             }
         }
     } // renameAdminGroup
@@ -685,10 +676,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
 
-    public AdminGroup getAdminGroup(Admin admin, String admingroupname, int caid) {
+    public AdminGroup getAdminGroup(Admin admin, String admingroupname) {
         AdminGroup returnval = null;
         try {
-            returnval = (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).getAdminGroup();
+            returnval = (admingrouphome.findByGroupName(admingroupname)).getAdminGroup();
         } catch (Exception e) {
             error("Can't get admingroup: ", e);
         }
@@ -755,8 +746,18 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
                 ArrayList groupcaids = new ArrayList();
                 if (!issuperadmin) {
-                    // Is admin authorized to group caid.
-                    if (authorizedcaids.contains(new Integer(agdl.getCaId()))) {
+                    // Is admin authorized to all group caid. This is true if admin is authorized to all CAs used by the different admins.
+                	Collection admins = agdl.getAdminEntityObjects();
+                	Iterator adminsIterator = admins.iterator();
+                	boolean onlyAuthorizedCAIds = true;
+                	while (adminsIterator.hasNext()) {
+                		AdminEntity adminEntity = (AdminEntity) adminsIterator.next();
+                		if (!authorizedcaids.contains(adminEntity.getCaId())) {
+                			onlyAuthorizedCAIds = false;
+                			break;
+                		}
+                	}
+                    if (onlyAuthorizedCAIds) {
                         authtogroup = true;
                         // check access rules
                         Iterator iter = agdl.getAccessRuleObjects().iterator();
@@ -785,8 +786,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 allauthorized = authorizedcaids.containsAll(groupcaids);
 
                 if (issuperadmin || ((allauthorized || carecursive) && authtogroup && !superadmingroup)) {
-                    if (!agdl.getAdminGroupName().equals(PUBLICWEBGROUPNAME) && !(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCaId() == LogConstants.INTERNALCAID))
+                    if (!agdl.getAdminGroupName().equals(AdminGroup.PUBLICWEBGROUPNAME) && !(agdl.getAdminGroupName().equals(AdminGroup.DEFAULTGROUPNAME))) {
                         returnval.add(agdl.getAdminGroupNames());
+                    }
                 }
             }
         } catch (FinderException e) {
@@ -799,17 +801,17 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void addAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
+    public void addAccessRules(Admin admin, String admingroupname, Collection accessrules) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
-                (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAccessRules(accessrules);
+                (admingrouphome.findByGroupName(admingroupname)).addAccessRules(accessrules);
                 signalForAuthorizationTreeUpdate();               
         		String msg = intres.getLocalizedMessage("authorization.accessrulesadded", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
         		String msg = intres.getLocalizedMessage("authorization.erroraddaccessrules", admingroupname);            	
                 error(msg, e);
-                getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
+                getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // addAccessRules
@@ -820,17 +822,17 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void removeAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
+    public void removeAccessRules(Admin admin, String admingroupname, Collection accessrules) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
-                (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAccessRules(accessrules);
+                (admingrouphome.findByGroupName(admingroupname)).removeAccessRules(accessrules);
                 signalForAuthorizationTreeUpdate();
         		String msg = intres.getLocalizedMessage("authorization.accessrulesremoved", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
         		String msg = intres.getLocalizedMessage("authorization.errorremoveaccessrules", admingroupname);            	
             	error(msg, e);
-            	getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+            	getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // removeAccessRules
@@ -840,10 +842,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void replaceAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
+    public void replaceAccessRules(Admin admin, String admingroupname, Collection accessrules) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
-                AdminGroupDataLocal agdl = admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
+                AdminGroupDataLocal agdl = admingrouphome.findByGroupName(admingroupname);
                 Collection currentrules = agdl.getAdminGroup().getAccessRules();
                 ArrayList removerules = new ArrayList();
                 Iterator iter = currentrules.iterator();
@@ -854,11 +856,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 agdl.addAccessRules(accessrules);
                 signalForAuthorizationTreeUpdate();
         		String msg = intres.getLocalizedMessage("authorization.accessrulesreplaced", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
         		String msg = intres.getLocalizedMessage("authorization.errorreplaceaccessrules", admingroupname);            	
             	error(msg, e);
-            	getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+            	getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // replaceAccessRules
@@ -869,17 +871,17 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
 
-    public void addAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
+    public void addAdminEntities(Admin admin, String admingroupname, Collection adminentities) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
-                (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAdminEntities(adminentities);
+                (admingrouphome.findByGroupName(admingroupname)).addAdminEntities(adminentities);
                 signalForAuthorizationTreeUpdate();
         		String msg = intres.getLocalizedMessage("authorization.adminadded", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
         		String msg = intres.getLocalizedMessage("authorization.erroraddadmin", admingroupname);            	
             	error(msg, e);
-            	getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
+            	getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // addAdminEntity
@@ -890,21 +892,42 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void removeAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
+    public void removeAdminEntities(Admin admin, String admingroupname, Collection adminentities) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
-                (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAdminEntities(adminentities);
+                (admingrouphome.findByGroupName(admingroupname)).removeAdminEntities(adminentities);
                 signalForAuthorizationTreeUpdate();
         		String msg = intres.getLocalizedMessage("authorization.adminremoved", admingroupname);            	
-        		getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+        		getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
         		String msg = intres.getLocalizedMessage("authorization.errorremoveadmin", admingroupname);            	
             	error(msg, e);
-            	getLogSession().log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
+            	getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // removeAdminEntity
 
+    /**
+     * @throws AuthorizationDeniedException if administrator isn't authorized to all issuers of the admin certificates in this group
+     *  
+     * @ejb.interface-method view-type="both"
+     */
+    public void isAuthorizedToGroup(Admin administrator, String admingroupname) throws AuthorizationDeniedException {
+    	ArrayList al = new ArrayList();	//<int>
+    	try {
+    		AdminGroupDataLocal adminGroupData = admingrouphome.findByGroupName(admingroupname);
+    		Iterator i = adminGroupData.getAdminEntityObjects().iterator();
+    		while (i.hasNext()) {
+    			int currentCaId = ((AdminEntity) i.next()).getCaId();
+    			if (!al.contains(currentCaId)) {
+    				isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + currentCaId);
+        			al.add(currentCaId);
+    			}
+    		}
+    	} catch (FinderException e) {
+    		error("", e);
+    	}
+    }
 
     /**
      * Method used to collect an administrators available access rules based on which rule
@@ -1016,7 +1039,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
 
     /**
-     * Help function to existsCAInRules, checks if caid axists among admingroups.
+     * Help function to existsCAInRules, checks if caid axists among entities in admingroups.
      */
     private boolean existsCAInAdminGroups(int caid) {
         debug(">existsCAInAdminGroups()");
@@ -1027,7 +1050,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         try {
             // Construct SQL query.
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from AdminGroupData where cAId = ?");
+            ps = con.prepareStatement("select COUNT(*) from AdminEntityData where cAId = ?");
 			ps.setInt(1, caid);
             // Execute query.
             rs = ps.executeQuery();

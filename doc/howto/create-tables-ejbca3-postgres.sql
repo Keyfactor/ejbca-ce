@@ -22,6 +22,7 @@ CREATE TABLE adminentitydata (
   matchType INT4 NOT NULL, 
   matchValue TEXT, 
   AdminGroupData_adminEntities INT4, 
+  cAId INT4 NOT NULL, 
 CONSTRAINT pk_adminentitydata PRIMARY KEY (pK)
 );
    

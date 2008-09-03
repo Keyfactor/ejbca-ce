@@ -28,15 +28,20 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 
-import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.authorization.AdminEntityDataLocal;
+import org.ejbca.core.ejb.authorization.AdminGroupDataLocal;
+import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.log.LogConfigurationDataLocal;
 import org.ejbca.core.ejb.log.LogConfigurationDataLocalHome;
+import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
@@ -103,6 +108,16 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="Admin Groups"
+ *   view-type="local"
+ *   ref-name="ejb/AdminGroupDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome"
+ *   business="org.ejbca.core.ejb.authorization.AdminGroupDataLocal"
+ *   link="AdminGroupData"
+ *
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -202,68 +217,56 @@ public class UpgradeSessionBean extends BaseSessionBean {
             debug("Database type="+dbtype);
         }
 
-        boolean upgradefrom33 = false;
+        int oldVersion = Integer.MAX_VALUE;
         if (args.length > 1) {
-        	String u = args[1];
-        	if (StringUtils.equalsIgnoreCase(u, "yes")) {
-        		upgradefrom33 = true;
-        	}
+            debug("Upgrading from version="+args[1]);
+        	String[] oldVersionArray = args[1].split("\\x2E");	// Split around the '.'-char
+        	oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
         }
 
-        boolean upgradefrom31 = false;
-        if (args.length > 2) {
-        	String u = args[2];
-        	if (StringUtils.equalsIgnoreCase(u, "yes")) {
-        		upgradefrom31 = true;
-        	}
-        }
-
-        // Upgrade small database change between ejbca 3.5.x and 3.6.x
-        if (!migradeDatabase36(dbtype)) {
-        	// Ignore errors and continue, perhaps we have already done this manually
-        	// return false;
-        }
-        
-        // If we are not upgrading from EJBCA 3.3.x we can stop here
-        if (!upgradefrom33) {
-        	return true;
-        }
-        
-        // Upgrade small database change between ejbca 3.3.x and 3.4.x
-        if (!migradeDatabase33(dbtype)) {
-        	// Ignore errors and continue, perhaps we have already done this manually
-        	// return false;
-        }
-
-        // If we are not upgrading from EJBCA 3.1.x we can stop here
-        if (!upgradefrom31) {
-        	return true;
-        }
-        
-        if (!preCheck()) {
-        	info("preCheck failed, no upgrade performed.");
-            return false;
-        }
-
-        if (!migradeDatabase31(dbtype)) {
-        	return false;
-        }
-
-        if (!upgradeHardTokenClassPath()) {
-        	return false;
-        }
-        if (!upgradeUserDataVO()) {
-            return false;
-        }
-        ArrayList datas = logConfStep1();
-        // If we got some datas, we have something to upgrade, otherwise we don't
-        if (datas != null) {
-            if (!logConfStep2(datas)) {
+        // Upgrade database change between ejbca 3.1.x and 3.2.x if needed
+        if (oldVersion <= 301) {
+            if (!preCheck()) {
+            	info("preCheck failed, no upgrade performed.");
                 return false;
             }
-            if (!logConfStep3(datas)) {
+            if (!migrateDatabase31(dbtype)) {
+            	return false;
+            }
+            if (!upgradeHardTokenClassPath()) {
+            	return false;
+            }
+            if (!upgradeUserDataVO()) {
                 return false;
             }
+            ArrayList datas = logConfStep1();
+            // If we got some datas, we have something to upgrade, otherwise we don't
+            if (datas != null) {
+                if (!logConfStep2(datas)) {
+                    return false;
+                }
+                if (!logConfStep3(datas)) {
+                    return false;
+                }
+            }
+        }
+        // Upgrade database change between ejbca 3.3.x and 3.4.x if needed
+        if (oldVersion <= 303) {
+        	if (!migrateDatabase33(dbtype)) {
+        		return false;
+        	}
+        }
+    	// Upgrade database change between ejbca 3.5.x and 3.6.x if needed
+        if (oldVersion <= 305) {
+        	if (!migrateDatabase36(dbtype)) {
+        		return false;
+        	}
+        }
+    	// Upgrade database change between ejbca 3.7.x and 3.8.x if needed
+        if (oldVersion <= 307) {
+        	if (!migrateDatabase38(dbtype)) {
+        		return false;
+        	}
         }
         debug("<upgrade()");
         return true;
@@ -298,7 +301,6 @@ public class UpgradeSessionBean extends BaseSessionBean {
         } finally {
             JDBCUtil.close(con);
         }
-        error("(this is not an error) Finished migrating database.");
         return true;
 	}
 
@@ -307,7 +309,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @jboss.method-attributes transaction-timeout="3600"
      * 
      */
-	public boolean migradeDatabase31(String dbtype) {
+	public boolean migrateDatabase31(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.1.x to ejbca 3.2.x");
 		boolean ret = migradeDatabase("/31_32/31_32-upgrade-"+dbtype+".sql");
         error("(this is not an error) Finished migrating database.");
@@ -318,9 +320,9 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @jboss.method-attributes transaction-timeout="3600"
      * 
      */
-	public boolean migradeDatabase36(String dbtype) {
-		error("(this is not an error) Starting upgrade from ejbca 3.5.x to ejbca 3.6.x");
-		boolean ret = migradeDatabase("/35_36/35_36-upgrade-"+dbtype+".sql");
+	public boolean migrateDatabase33(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.3.x to ejbca 3.4.x");
+		boolean ret = migradeDatabase("/33_34/33_34-upgrade-"+dbtype+".sql");
         error("(this is not an error) Finished migrating database.");
         return ret;
 	}
@@ -329,9 +331,84 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @jboss.method-attributes transaction-timeout="3600"
      * 
      */
-	public boolean migradeDatabase33(String dbtype) {
-		error("(this is not an error) Starting upgrade from ejbca 3.3.x to ejbca 3.4.x");
-		boolean ret = migradeDatabase("/33_34/33_34-upgrade-"+dbtype+".sql");
+	public boolean migrateDatabase36(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.5.x to ejbca 3.6.x");
+		boolean ret = migradeDatabase("/35_36/35_36-upgrade-"+dbtype+".sql");
+        error("(this is not an error) Finished migrating database.");
+        return ret;
+	}
+    /** 
+     * This upgrade will move the CA Id from the admin groups, to each administrator
+     * Admingroups with similar names will be renamed with the CA Id as postfix to avoid collisions
+     * Also removes the CAId from access rules primary key (since only group name is neccesary now) 
+     * 
+     * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     */
+	public boolean migrateDatabase38(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.7.x to ejbca 3.8.x");
+		boolean ret = migradeDatabase("/37_38/37_38-upgrade-"+dbtype+".sql");
+		
+		AdminGroupDataLocalHome adminGroupHome = (AdminGroupDataLocalHome) ServiceLocator.getInstance().getLocalHome(AdminGroupDataLocalHome.COMP_NAME);
+		// Change the name of AdminGroups with conflicting names
+		try {
+			Collection adminGroupDatas = adminGroupHome.findAll();
+			Iterator i = adminGroupDatas.iterator();
+			ArrayList groupNames = new ArrayList();	// <String>
+			while (i.hasNext()) {
+				AdminGroupDataLocal adminGroupData = (AdminGroupDataLocal) i.next();
+				String currentName = adminGroupData.getAdminGroupName();
+				if (groupNames.contains(currentName)) {
+					if (currentName.equals(AdminGroup.PUBLICWEBGROUPNAME)) {
+						// We don't need a group for each CA and longer
+						try {
+							adminGroupData.remove();
+						} catch (EJBException e) {
+							log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
+						} catch (RemoveException e) {
+							log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
+						}
+					} else {
+						// Conflicting name. We need to change it.
+						adminGroupData.setAdminGroupName(currentName + "_" + getCaAdminSession().getCAIdToNameMap(administrator).get(adminGroupData.getCaId()));
+					}
+				} else {
+					groupNames.add(currentName);
+				}
+			}
+		} catch (FinderException e) {
+			throw new EJBException(e);	// There should be at least one group..
+		}
+		// Read the CA Id from each AdminGroup and write it to each entity
+		try {
+			Collection adminGroupDatas = adminGroupHome.findAll();
+			Iterator i = adminGroupDatas.iterator();
+			while (i.hasNext()) {
+				AdminGroupDataLocal adminGroupData = (AdminGroupDataLocal) i.next();
+				Collection adminEntityObjects = adminGroupData.getAdminEntitesForUpgrade();
+				Iterator i2 = adminEntityObjects.iterator();
+				while (i2.hasNext()) {
+					AdminEntityDataLocal adminEntityData = (AdminEntityDataLocal) i2.next();
+					adminEntityData.setCaId(adminGroupData.getCaId());
+				}
+			}
+		} catch (FinderException e) {
+			throw new EJBException(e);	// There should be at least one group..
+		}
+		// Update access rules to not use a caid in the primary key
+		try {
+			Collection adminGroupDatas = adminGroupHome.findAll();
+			Iterator i = adminGroupDatas.iterator();
+			while (i.hasNext()) {
+				AdminGroupDataLocal adminGroupData = (AdminGroupDataLocal) i.next();
+				Collection accessRules = adminGroupData.getAccessRuleObjects();
+				adminGroupData.removeAccessRulesObjects(accessRules);
+				adminGroupData.addAccessRules(accessRules);
+			}
+		} catch (FinderException e) {
+			throw new EJBException(e);	// There should be at least one group..
+		}
+	
         error("(this is not an error) Finished migrating database.");
         return ret;
 	}

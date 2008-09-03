@@ -243,6 +243,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <fileset dir="${src.java}">
                 <include name="**/*Bean.java" />
                 <exclude name="**/BaseEntityBean.java" />
+                <exclude name="**/AdminGroupsManagedBean.java" />
                 <exclude name="**/BaseSessionBean.java" />
                 <exclude name="**/CertificateFinderBean.java" />
             </fileset>

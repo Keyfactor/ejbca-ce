@@ -50,6 +50,8 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionHome;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 import org.ejbca.core.ejb.upgrade.IUpgradeSessionHome;
 import org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote;
 import org.ejbca.core.model.log.Admin;
@@ -80,6 +82,7 @@ public abstract class BaseCommand {
     private IAuthorizationSessionRemote authorizationSession = null;
     private IHardTokenSessionRemote hardTokenSession = null;
     private IKeyRecoverySessionRemote keyRecoverySession = null;
+    private IUserDataSourceSessionRemote userDataSourceSession = null;
     
 	protected Admin administrator = null;
     
@@ -311,6 +314,24 @@ public abstract class BaseCommand {
 		baseLog.debug("<getKeyRecoverySession()");
         return keyRecoverySession;
      }
+    
+    /**
+     *@return a reference to a UserDataSourceSessionBean
+     */
+    public IUserDataSourceSessionRemote getUserDataSourceSession(){
+    	baseLog.debug(">getUserDataSourceSession()");
+		try {
+			if (userDataSourceSession == null) {
+				userDataSourceSession = ((IUserDataSourceSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IUserDataSourceSessionHome.JNDI_NAME, IUserDataSourceSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.debug("<getUserDataSourceSession()");
+        return userDataSourceSession;
+    }
 
     /**
      * Method checking if the application server is running.

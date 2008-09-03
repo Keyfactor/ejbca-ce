@@ -27,7 +27,6 @@ import javax.naming.Context;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.approval.IApprovalSessionHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
@@ -42,7 +41,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.TestApprovalSession;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -59,13 +57,14 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 
 public class TestRevocationApproval extends TestCase {
 
-    private static Logger log = Logger.getLogger(TestApprovalSession.class);
+    //private static Logger log = Logger.getLogger(TestRevocationApproval.class);
 
     private static IApprovalSessionRemote approvalSession;
     private static IAuthorizationSessionRemote authorizationSession;
@@ -81,7 +80,7 @@ public class TestRevocationApproval extends TestCase {
     private static Admin approvingAdmin = null;
     private static ArrayList adminentities;
     
-    private static int caid = "CN=TEST".hashCode();
+    private static int caid = TestTools.getTestCAId();
     private int approvalCAID;
 
 	protected void setUp() throws Exception {
@@ -105,13 +104,6 @@ public class TestRevocationApproval extends TestCase {
 		CertTools.installBCProvider();
 		adminUsername = genRandomUserName("revocationTestAdmin");
 		requestingAdminUsername = genRandomUserName("revocationTestRequestingAdmin");
-		Iterator iter = authorizationSession.getAuthorizedAdminGroupNames(internalAdmin).iterator();
-	    while (iter.hasNext()) {
-	    	AdminGroup group = (AdminGroup) iter.next();
-	    	if (group.getAdminGroupName().equals("Temporary Super Administrator Group")) {
-	    		caid = group.getCAId();
-	    	}
-	    }
 		UserDataVO userdata = new UserDataVO(adminUsername,"CN="+adminUsername,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
 				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
 		userdata.setPassword("foo123");
@@ -127,7 +119,7 @@ public class TestRevocationApproval extends TestCase {
 		adminentities = new ArrayList();
 		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminUsername,caid));	
 		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,requestingAdminUsername,caid));
-		authorizationSession.addAdminEntities(internalAdmin, "Temporary Super Administrator Group", caid, adminentities);
+		authorizationSession.addAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
 		authorizationSession.forceRuleUpdate(internalAdmin);
 		X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, adminUsername).iterator().next();
 		X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, requestingAdminUsername).iterator().next();
@@ -142,7 +134,7 @@ public class TestRevocationApproval extends TestCase {
 		super.tearDown();
 		userAdminSession.deleteUser(internalAdmin, adminUsername);
 		userAdminSession.deleteUser(internalAdmin, requestingAdminUsername);
-		authorizationSession.removeAdminEntities(internalAdmin, "Temporary Super Administrator Group", caid, adminentities);					
+		authorizationSession.removeAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);					
 		caAdminSession.removeCA(internalAdmin, approvalCAID);
 	}
 

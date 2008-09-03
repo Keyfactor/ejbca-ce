@@ -95,6 +95,12 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
     public abstract String       getMatchValue();
 
     /**
+     * @ejb.persistence column-name="cAId"
+     * @ejb.interface-method view-type="local"
+    */
+    public abstract Integer getCaId();
+
+    /**
 	 */
     public abstract void setMatchWith(int matchwith);
 
@@ -106,14 +112,17 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
 	 */
     public abstract void setMatchValue(String matchvalue);
 
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setCaId(Integer caid);
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public AdminEntity getAdminEntity(int caid){
-      return new AdminEntity(getMatchWith(), getMatchType(), getMatchValue(), caid);
+    public AdminEntity getAdminEntity(){
+      return new AdminEntity(getMatchWith(), getMatchType(), getMatchValue(), getCaId());
     }
-
 
 	/**
 	 *
@@ -125,6 +134,7 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
         setMatchWith(matchwith);
         setMatchType(matchtype);
         setMatchValue(matchvalue);
+        setCaId(caid);
         log.debug("Created admin entity "+ matchvalue);
         return ret;
     }

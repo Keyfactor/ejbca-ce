@@ -212,7 +212,7 @@ public class AvailableAccessRules {
 
       insertUserDataSourceAccessRules(admin, accessrules);
       
-      insertAvailableCAAccessRules(accessrules);
+      insertAvailableCAAccessRules(admin, accessrules);
       
       insertCustomAccessRules(admin, accessrules);
       
@@ -319,14 +319,19 @@ public class AvailableAccessRules {
     /**
      * Method that adds all authorized CA access rules.
      */
-    private void insertAvailableCAAccessRules(ArrayList accessrules){
+    private void insertAvailableCAAccessRules(Admin admin, ArrayList accessrules){
       // Add All Authorized CAs
-      if(issuperadministrator)	
-        accessrules.add(CABASE);
-      Iterator iter = authorizedcaids.iterator();
-      while(iter.hasNext()){
-        accessrules.add(CAPREFIX + ((Integer) iter.next()).intValue());  
-      }
+      //if(issuperadministrator)
+    	try {
+			if (authorizer.isAuthorizedNoLog(admin, CABASE)) {
+			    accessrules.add(CABASE);
+			}
+		} catch (AuthorizationDeniedException e) {
+		}
+		Iterator iter = authorizedcaids.iterator();
+		while(iter.hasNext()){
+			accessrules.add(CAPREFIX + ((Integer) iter.next()).intValue());  
+		}
     }
     
     /**

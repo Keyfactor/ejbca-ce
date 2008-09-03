@@ -32,6 +32,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminEntity;
+import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
@@ -101,7 +102,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 	private void runSetup(String caname) throws Exception{
 		getOutputStream().println("Adding Hard Token Super Administrator .....\n\n");
 		int caid = this.getCAAdminSession().getCAInfo(administrator, caname).getCAId();
-		int admingroupid  = getAuthorizationSession().getAdminGroup(administrator, "Temporary Super Administrator Group", caid).getAdminGroupId();
+		int admingroupid  = getAuthorizationSession().getAdminGroup(administrator, AdminGroup.TEMPSUPERADMINGROUP).getAdminGroupId();
 		
 		configureGlobalConfiguration();
 		createAdministratorTokenProfile();
@@ -234,7 +235,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 	private void addSuperAdminTokenUserToTemporarySuperAdminGroup(int caid) throws Exception{		
 		ArrayList adminentities = new ArrayList();
 		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,SUPERADMINTOKENNAME,caid));		
-		getAuthorizationSession().addAdminEntities(administrator, "Temporary Super Administrator Group", caid, adminentities);		
+		getAuthorizationSession().addAdminEntities(administrator, "Temporary Super Administrator Group", adminentities);		
 	}
 	
 }

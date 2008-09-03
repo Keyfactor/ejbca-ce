@@ -100,3 +100,9 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #web.docbaseuri=disabled
 #web.docbaseuri=internal
 #web.docbaseuri=http://www.ejbca.org
+
+# Require administrator certificates to be available in database for revocation
+# checks. Set this to false, if you want to be able to use admin certificates
+# issued by external CAs.
+# Default: true
+#web.reqcertindb=true

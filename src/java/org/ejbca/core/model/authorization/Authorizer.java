@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
@@ -191,16 +192,20 @@ public class Authorizer extends Object implements java.io.Serializable {
             throw new AuthenticationFailedException("Your certificate vality has expired.");
         }
         
-        // TODO
-        // Vertify Signature on cert?
-        // Check if certificate is revoked.
-        RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
-        if (revinfo == null) {
-            // Certificate missing
-            throw new AuthenticationFailedException("Your certificate cannot be found in database.");
-        } else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
-            // Certificate revoked
-            throw new AuthenticationFailedException("Your certificate have been revoked.");
+        if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+            // TODO
+            // Vertify Signature on cert?
+            // Check if certificate is revoked.
+            RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
+            if (revinfo == null) {
+                // Certificate missing
+                throw new AuthenticationFailedException("Your certificate cannot be found in database.");
+            } else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
+                // Certificate revoked
+                throw new AuthenticationFailedException("Your certificate have been revoked.");
+            }
+        } else {
+        	// TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
         }
     }
     

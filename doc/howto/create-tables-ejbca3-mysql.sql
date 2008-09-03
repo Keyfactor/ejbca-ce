@@ -19,6 +19,7 @@ CREATE TABLE AdminEntityData (
     matchType int(11) NOT NULL DEFAULT '0',
     matchValue varchar(250) binary NULL DEFAULT NULL,
     `AdminGroupData_adminEntities` int(11) NULL DEFAULT NULL,
+    cAId int(11) NOT NULL DEFAULT '0',
     PRIMARY KEY (pK)
 );
 

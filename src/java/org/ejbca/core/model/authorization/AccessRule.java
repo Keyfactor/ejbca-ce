@@ -32,9 +32,12 @@ import java.io.Serializable;
  */
 public class AccessRule implements Serializable, Comparable {
     // Public rule constants. 
+    public static final int RULE_NOTUSED = 0;
     public static final int RULE_ACCEPT = 1;
     public static final int RULE_DECLINE = 2;
     
+    public static final String[] RULE_TEXTS = {"UNUSED", "ACCEPT", "DECLINE"};
+	
     /** Creates a new instance of AccessRule */
     public AccessRule(String accessrule, int rule, boolean recursive ) {
         this.accessrule=accessrule.trim();

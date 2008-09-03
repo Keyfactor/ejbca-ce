@@ -67,18 +67,17 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
     /**
      * Returns the current role of the administrator group.
-     * One of the BasicRuleSet ROLE_constants
-     * 
+     *
+     * @return one of the BasicAccessRuleSet ROLE_constants
      */
-    
     public int getCurrentRole(){
     	return currentrole;
     }
 
     /**
      * Returns a Collection of basic roles the administrator is authorized to configure.
-     * @return a Collection of BasicRuleSet.ROLE_constants (Integer)
-     * 
+     *
+     * @return a Collection of BasicAccessRuleSet.ROLE_constants (Integer)
      */   
     public Collection getAvailableRoles(){
     	return availableroles;

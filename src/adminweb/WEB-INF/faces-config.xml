@@ -45,7 +45,24 @@
     	<managed-bean-class>org.ejbca.ui.web.admin.cainterface.CAActivationMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>adminGroupsManagedBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.administratorprivileges.AdminGroupsManagedBean</managed-bean-class>
+    	<managed-bean-scope>request</managed-bean-scope>
+    	<managed-property>
+            <property-name>currentAdminGroup</property-name>
+            <value>#{param.currentAdminGroup}</value>
+        </managed-property>
+  </managed-bean>
   
+  <validator>
+        <validator-id>legalCharsValidator</validator-id>
+        <validator-class>org.ejbca.ui.web.admin.LegalCharsValidator</validator-class>
+  </validator>
+  <validator>
+        <validator-id>hexSerialNumberValidator</validator-id>
+        <validator-class>org.ejbca.ui.web.admin.administratorprivileges.HexSerialNumberValidator</validator-class>
+  </validator>
   
   <navigation-rule>
     <from-view-id>approval/approveactionlist.jsp</from-view-id>

@@ -17,12 +17,10 @@ a:hover#menu {color: black}
 #Row0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 #Row1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
 
-
 td#InfoRow0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 td#InfoRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #ccffcc }
 td#ErrorRow0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 td#ErrorRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #ffcccc }
-
 
 tr#LogTextRow0 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
@@ -34,3 +32,21 @@ tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Ge
 .subheader {
 	color: black;  font-size: medium;  font-weight: bold
 }
+
+.listHeader { color: black; font-size: 14pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; font-weight: bold; text-align: left; }
+.listRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; text-align: left; background-color: white; }
+.listRow2 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; text-align: left; background-color: #e5ecff; }
+
+.leftColumn { vertical-align: top; text-align: right; width: 50%; }
+
+.rulesColumn1 { text-align: left; width: 70%; }
+.rulesColumn2 { text-align: left; width: 15%; }
+
+.caColumn { text-align: left; width: 20%; }
+.withColumn { text-align: left; width: 35%; }
+.typeColumn { text-align: left; width: 20%; }
+.valueColumn { text-align: left; width: 20%; }
+.commandColumn { text-align: left; width: 5%; }
+
+.commandLink { font-size: 10pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: 0.4cm; margin-right: 0.4cm; }
+.commandButton { vertical-align: bottom; font-size: 10pt; margin-left: 0.4cm; margin-right: 0.4cm; }

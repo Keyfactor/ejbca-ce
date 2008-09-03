@@ -54,17 +54,6 @@ public class TestApprovalSession extends TestCase {
 		adminusername2 = adminusername1 + "2";
 		reqadminusername = "req" + adminusername1;
 		
-        
-        Collection admingroups = TestTools.getAuthorizationSession().getAuthorizedAdminGroupNames(intadmin);
-        Iterator iter = admingroups.iterator();
-        while(iter.hasNext()){
-        	AdminGroup group = (AdminGroup) iter.next();
-        	if(group.getAdminGroupName().equals("Temporary Super Administrator Group")){
-        		caid = group.getCAId();
-        		
-        	}
-        }
-		
 		UserDataVO userdata = new UserDataVO(adminusername1,"CN="+adminusername1,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
 				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
 		userdata.setPassword("foo123");
@@ -94,7 +83,7 @@ public class TestApprovalSession extends TestCase {
 		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminusername1,caid));	
 		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminusername2,caid));
 		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,reqadminusername,caid));
-		TestTools.getAuthorizationSession().addAdminEntities(intadmin, "Temporary Super Administrator Group", caid, adminentities);
+		TestTools.getAuthorizationSession().addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
 		
 		TestTools.getAuthorizationSession().forceRuleUpdate(intadmin);
 		
@@ -492,6 +481,6 @@ public class TestApprovalSession extends TestCase {
 		TestTools.getUserAdminSession().deleteUser(intadmin, adminusername1);
 		TestTools.getUserAdminSession().deleteUser(intadmin, adminusername2);
 		TestTools.getUserAdminSession().deleteUser(intadmin, reqadminusername);
-		TestTools.getAuthorizationSession().removeAdminEntities(intadmin, "Temporary Super Administrator Group", caid, adminentities);					
+		TestTools.getAuthorizationSession().removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);					
 	}
 }

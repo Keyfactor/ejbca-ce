@@ -352,6 +352,41 @@ hostname. In this case, the iPAddress subjectAltName must be present
 in the certificate and must exactly match the IP in the URI.
 </source>
 </subsection>
+<subsection name="Administrators">
+<p>
+An EJBCA Administrator is identified by information in the client SSL
+certificate. The information is validated in the following steps:
+<ol>
+<li>During the SSL handshake with the application server, the issuer of the
+client certificate is verified with a list of trusted CA certificates known as
+the 'truststore'.</li>
+<li>EJBCA verfies that the client certificate exists in the database and that
+it's not revoked. (Configurable in web.properties.)</li>
+<li>EJBCA tries to match the information in the certificate with the all the
+administrators in the different administrator groups.</li>
+<li>If a match is found, the access rules for this group is given to the
+administrator.</li>
+</ol>
+</p><p>
+Administrator privileges is configured through "Edit Administrator
+Privileges" in the Admin GUI or by using the CLI. If you have locked yourself
+out of the GUI, the CLI can add another admin certificate to allow continued
+operations.
+</p><p>
+To use a certificate issued by an external CA as Administrator:
+<ol>
+<li>Add the CA-certificate p12/truststore.jks with "keytool -import
+-trustcacerts -file externalca.pem -keystore p12/truststore.jks -storepass
+changeit -alias externalca"</li>
+<li>Redeploy EJBCA and restart the application server to make sure the new
+truststore is in use</li>
+<li>Import the CA-certificate under "Admin GUI - Edit Certificate Authorities
+ - Import CA Certificate.." or use the CLI</li>
+<li>Add the Administrator to the desired Administrator group under "Admin GUI
+ - Edit Administrator Privileges"</li>
+</ol>
+</p>
+</subsection>
 </section>
 
 <section name="Certificate profiles">

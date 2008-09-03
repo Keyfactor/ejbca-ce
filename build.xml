@@ -260,7 +260,7 @@
         	    <exclude name="org/ejbca/core/protocol/ws/**"/>
             </fileset>
             <fileset dir="${ejbca.home}">
-				<include name="conf/**"/>
+				<include name="conf/**/*.properties"/>
 			</fileset>	
             <fileset dir="${src}/upgrade"/>
             <fileset dir="${tmp}/caTokenClasses">
@@ -553,17 +553,11 @@
     <!-- ========================================================================== -->
     <target name="upgrade">
         <!-- Get input -->
-        <!-- <input message="Type of system:" validargs="unix,windows" addproperty="ejbca.OS" />
-        <input message="Hostname for adminweb (default 127.0.0.1):" addproperty="ejbca.URL" defaultvalue="127.0.0.1" /> -->
-        <input message="Type of database:" validargs="mysql,oracle,db2,mssql2000,postgres,sapdb,sybase,hsqldb" addproperty="ejbca.DB" /> 
-        <input message="Are you upgrading all the way from EJBCA 3.3.x?:" validargs="yes,no" addproperty="ejbca.upgradefrom33" /> 
-        <input message="Are you upgrading all the way from EJBCA 3.1.x?:" validargs="yes,no" addproperty="ejbca.upgradefrom31" /> 
-        <!-- <input message="Data source (default java:/EjbcaDS):" addproperty="ejbca.DS" defaultvalue="java:/EjbcaDS" /> -->
+        <input message="Which version of EJBCA are you upgrading from:" addproperty="ejbca.upgradefromversion"
+        	validargs="3.1.x,3.2.x,3.3.x,3.4.x,3.5.x,3.6.x,3.7.x"/> 
         <java classname="org.ejbca.ui.cli.Upgrade" fork="true">
-            <!-- <sysproperty key="ejbcaDS" value="${ejbca.DS}" /> -->
-            <sysproperty key="ejbcaDB" value="${ejbca.DB}" />
-            <sysproperty key="ejbcaUpgradeFrom33" value="${ejbca.upgradefrom33}" />
-            <sysproperty key="ejbcaUpgradeFrom31" value="${ejbca.upgradefrom31}" />
+            <sysproperty key="ejbcaDB" value="${database.name}" />
+            <sysproperty key="ejbcaUpgradeFromVersion" value="${ejbca.upgradefromversion}" />
             <classpath>
                 <pathelement location="./bin" />
                 <pathelement location="${build}" />

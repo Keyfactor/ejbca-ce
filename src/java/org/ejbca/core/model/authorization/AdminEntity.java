@@ -13,8 +13,10 @@
  
 package org.ejbca.core.model.authorization;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.util.regex.Pattern;
 
 import org.ejbca.util.CertTools;
@@ -33,7 +35,8 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * @version $Id$
  */
 public class AdminEntity implements Serializable, Comparable {
-    // Special Users. (Constants cannot have 0 value).
+
+	// Special Users. (Constants cannot have 0 value).
     public static final int SPECIALADMIN_PUBLICWEBUSER             = 2000;
     public static final int SPECIALADMIN_CACOMMANDLINEADMIN        = 2001;
     public static final int SPECIALADMIN_RAADMIN                   = 2002;
@@ -62,6 +65,15 @@ public class AdminEntity implements Serializable, Comparable {
     public static final int WITH_UID               = 9;
     public static final int WITH_DNSERIALNUMBER    = 10;
     public static final int WITH_SERIALNUMBER      = 11;
+    public static final int WITH_DNEMAIL      = 12;
+    public static final int WITH_RFC822NAME      = 13;
+    public static final int WITH_UPN      = 14;
+    
+	public static final String[] MATCHWITHTEXTS = {"", "WITHCOUNTRY", "WITHDOMAINCOMPONENT", "WITHSTATE", "WITHLOCATION", 
+        "WITHORGANIZATION", "WITHORGANIZATIONUNIT", "WITHTITLE", 
+        "WITHCOMMONNAME", "WITHUID", "WITHDNSERIALNUMBER", "WITHSERIALNUMBER", "WITHDNEMAIL", "WITHRFC822NAME", "WITHUPN"}; 
+
+	public static final String[] MATCHTYPETEXTS = {"EQUALCASE", "EQUALCASEINS", "NOTEQUALCASE", "NOTEQUALCASEINS"};
 
     private static final Pattern serialPattern =
       Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
@@ -99,15 +111,23 @@ public class AdminEntity implements Serializable, Comparable {
         //String serialnumber = certificate.getSerialNumber().toString(16);
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
 
+        String anString = null;
+        try {
+			anString = CertTools.getSubjectAlternativeName(certificate);
+		} catch (CertificateParsingException e) { // Ignore
+		} catch (IOException e) { // Ignore
+		}
+
         int parameter;
         int size=0;
         String[] clientstrings=null;
-       
 
         // First check that issuers match.
         if(this.caid == admincaid){
           // Determine part of certificate to match with.
           DNFieldExtractor dn = new DNFieldExtractor(certstring,DNFieldExtractor.TYPE_SUBJECTDN);
+          DNFieldExtractor an = new DNFieldExtractor(anString,DNFieldExtractor.TYPE_SUBJECTALTNAME);
+          DNFieldExtractor usedExtractor = dn; 
           if(matchwith == WITH_SERIALNUMBER){
             if(certificate!=null){
               switch(matchtype){
@@ -158,14 +178,25 @@ public class AdminEntity implements Serializable, Comparable {
                 parameter = DNFieldExtractor.CN;
                 break;
               case WITH_UID:
-                parameter = DNFieldExtractor.UID;
-                break;
+                  parameter = DNFieldExtractor.UID;
+                  break;
+              case WITH_DNEMAIL:
+                  parameter = DNFieldExtractor.E;
+                  break;
+              case WITH_RFC822NAME:
+                  parameter = DNFieldExtractor.RFC822NAME;
+                  usedExtractor = an;
+                  break;
+              case WITH_UPN:
+                  parameter = DNFieldExtractor.UPN;
+                  usedExtractor = an;
+                  break;
               default:
             }
-            size = dn.getNumberOfFields(parameter);
+            size = usedExtractor.getNumberOfFields(parameter);
             clientstrings = new String[size];
             for(int i=0; i < size; i++){
-              clientstrings[i] = dn.getField(parameter,i);
+              clientstrings[i] = usedExtractor.getField(parameter,i);
             }
 
             // Determine how to match.
@@ -260,6 +291,14 @@ public class AdminEntity implements Serializable, Comparable {
      public int compareTo(Object obj) {
       return matchvalue.compareTo(((AdminEntity)obj).getMatchValue());
     }
+     
+     public int getCaId() {
+    	 return caid;
+     }
+
+     public void setCaId(int caid) {
+    	 this.caid = caid;
+     }
 
     // Private methods.
 

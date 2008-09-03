@@ -232,4 +232,28 @@ function trim(s) {
   }
   return s;
 }
+
+// Prompt user for input, validate it for illegal chars and write it to a field
+function getInputToField(fieldname, infotext, infovalidchars) {
+	var input = prompt(infotext,"");
+	if ( input != null && "" != input) {
+		document.getElementById(fieldname).value = input;
+		if (checkfieldforlegalchars(document.getElementById(fieldname), infovalidchars)) {
+			return true;
+		}
+		document.getElementById(fieldname).value = '';
+	}
+	return false;
+}
+
+// Validate and write the 'input' to a field
+function getInsertIntoField(fieldname, input, infovalidchars) {
+	if ( input != null && "" != input) {
+		document.getElementById(fieldname).value = input;
+		if (checkfieldforlegalchars(document.getElementById(fieldname), infovalidchars)) {
+			return true;
+		}
+	}
+	return false;
+}
 -->

@@ -80,28 +80,26 @@ public class AuthorizationDataHandler implements java.io.Serializable {
 
     // Methods used with admingroup data
         /** Method to add a new admingroup to the administrator priviledges data.*/
-    public void addAdminGroup(String name, int caid) throws AdminGroupExistsException, AuthorizationDeniedException{
+    public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException{
 		// Authorized to edit administrative priviledges
 	  authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges");
-		// Authorized to given CA.
-	  authorizationsession.isAuthorized(administrator, AvailableAccessRules.CAPREFIX + caid);
-      authorizationsession.addAdminGroup(administrator, name,caid);
+      authorizationsession.addAdminGroup(administrator, name);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
 
     /** Method to remove a admingroup.*/
-    public void removeAdminGroup(String name, int caid) throws AuthorizationDeniedException{
-      authorizedToEditAdministratorPrivileges(name, caid);
-      authorizationsession.removeAdminGroup(administrator, name,caid);
+    public void removeAdminGroup(String name) throws AuthorizationDeniedException{
+      authorizedToEditAdministratorPrivileges(name);
+      authorizationsession.removeAdminGroup(administrator, name);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
 
     /** Method to rename a admingroup. */
-    public void renameAdminGroup(String oldname, String newname, int caid) throws AdminGroupExistsException, AuthorizationDeniedException{
-      authorizedToEditAdministratorPrivileges(oldname, caid);
-      authorizationsession.renameAdminGroup(administrator, oldname, caid, newname);
+    public void renameAdminGroup(String oldname, String newname) throws AdminGroupExistsException, AuthorizationDeniedException{
+      authorizedToEditAdministratorPrivileges(oldname);
+      authorizationsession.renameAdminGroup(administrator, oldname, newname);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
@@ -124,10 +122,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @throws AuthorizationDeniedException if admininstrator isn't authorized to 
      * access admingroup.
      */
-    public AdminGroup getAdminGroup(String admingroupname, int caid) throws AuthorizationDeniedException {
-      authorizedToEditAdministratorPrivileges(admingroupname, caid);
-      
-      return authorizationsession.getAdminGroup(administrator, admingroupname, caid);
+    public AdminGroup getAdminGroup(String admingroupname) throws AuthorizationDeniedException {
+      authorizedToEditAdministratorPrivileges(admingroupname);
+      return authorizationsession.getAdminGroup(administrator, admingroupname);
     }
 
     /** 
@@ -135,10 +132,10 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA
      * or when administrator tries to add accessrules he isn't authorized to.
      */
-    public void addAccessRules(String admingroupname, int caid, Collection accessrules) throws AuthorizationDeniedException{
-      authorizedToEditAdministratorPrivileges(admingroupname, caid);
+    public void addAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException{
+      authorizedToEditAdministratorPrivileges(admingroupname);
       authorizedToAddAccessRules(accessrules);
-      authorizationsession.addAccessRules(administrator, admingroupname, caid, accessrules);
+      authorizationsession.addAccessRules(administrator, admingroupname, accessrules);
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -148,9 +145,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @param accessrules a Collection of String containing accesssrules to remove.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
      */
-    public void removeAccessRules(String admingroupname,int caid, Collection accessrules) throws AuthorizationDeniedException {
-      authorizedToEditAdministratorPrivileges(admingroupname, caid);
-      authorizationsession.removeAccessRules(administrator, admingroupname, caid, accessrules);
+    public void removeAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException {
+      authorizedToEditAdministratorPrivileges(admingroupname);
+      authorizationsession.removeAccessRules(administrator, admingroupname, accessrules);
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -160,9 +157,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @param accessrules a Collection of String containing accesssrules to replace.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
      */
-    public void replaceAccessRules(String admingroupname,int caid, Collection accessrules) throws AuthorizationDeniedException {
-    	authorizedToEditAdministratorPrivileges(admingroupname, caid);
-    	authorizationsession.replaceAccessRules(administrator, admingroupname, caid, accessrules);
+    public void replaceAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException {
+    	authorizedToEditAdministratorPrivileges(admingroupname);
+    	authorizationsession.replaceAccessRules(administrator, admingroupname, accessrules);
     	informationmemory.administrativePriviledgesEdited();
     }
     
@@ -182,10 +179,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs 
        * administrative priviledges.
        */
-    public void addAdminEntities(String admingroupname, int caid, Collection adminentities) throws AuthorizationDeniedException{
-      authorizedToEditAdministratorPrivileges(admingroupname, caid);	  
-	       
-      authorizationsession.addAdminEntities(administrator, admingroupname, caid, adminentities);    
+    public void addAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
+      authorizedToEditAdministratorPrivileges(admingroupname);	  
+      authorizationsession.addAdminEntities(administrator, admingroupname, adminentities);    
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -196,27 +192,26 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs 
        * administrative priviledges.
        */
-    public void removeAdminEntities(String admingroupname, int caid, Collection adminentities) throws AuthorizationDeniedException{
-      authorizedToEditAdministratorPrivileges(admingroupname, caid);
-      authorizationsession.removeAdminEntities(administrator, admingroupname, caid, adminentities);     
+    public void removeAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
+      authorizedToEditAdministratorPrivileges(admingroupname);
+      authorizationsession.removeAdminEntities(administrator, admingroupname, adminentities);     
       informationmemory.administrativePriviledgesEdited();
     }
 
 
-    private void authorizedToEditAdministratorPrivileges(String admingroup, int caid) throws AuthorizationDeniedException{
+    private void authorizedToEditAdministratorPrivileges(String admingroup) throws AuthorizationDeniedException{
        // Authorized to edit administrative priviledges
-      authorizationsession.isAuthorizedNoLog(administrator, "/system_functionality/edit_administrator_privileges");
-      // Authorized to given CA.
-      authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + caid);     
+      authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.REGULAR_EDITADMINISTRATORPRIVILEDGES);
+      // Authorized to group
+      authorizationsession.isAuthorizedToGroup(administrator, admingroup);
       // Check if admin group is among available admin groups
       Iterator iter = getAdminGroupNames().iterator();
       boolean exists = false;
       while(iter.hasNext()){
         AdminGroup next = (AdminGroup) iter.next();  
-        if(next.getAdminGroupName().equals(admingroup) && next.getCAId() == caid)
+        if(next.getAdminGroupName().equals(admingroup))
           exists = true;
       }
-      
       if(!exists)
         throw new AuthorizationDeniedException("Admingroup not among authorized admingroups.");  
     }

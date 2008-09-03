@@ -19,6 +19,8 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceSessionLocal;
 import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -51,7 +53,7 @@ public class EjbcaJSFHelper  {
 	private ICAAdminSessionLocal caadminsession;
 	private IApprovalSessionLocal approvalsession;
 	private IServiceSessionLocal servicesession;
-
+	private IUserDataSourceSessionLocal userdatasourcesession;
 	
 	private FacesContext ctx = FacesContext.getCurrentInstance();
 	  
@@ -244,5 +246,19 @@ public class EjbcaJSFHelper  {
     		}
     	}
     	return servicesession;
-    } 
+    }
+    
+    public IUserDataSourceSessionLocal getUserDataSourceSession(){
+		if(userdatasourcesession  == null){ 
+    		ServiceLocator locator = ServiceLocator.getInstance();
+    		IUserDataSourceSessionLocalHome userdatasourcesessionhome = (IUserDataSourceSessionLocalHome) locator.getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
+    		try {
+    			userdatasourcesession = userdatasourcesessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}
+    	}
+    	return userdatasourcesession;
+    }
+
 }

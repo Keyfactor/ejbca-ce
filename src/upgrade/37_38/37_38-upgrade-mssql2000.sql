@@ -1,0 +1,1 @@
+ALTER TABLE AdminEntityData ADD cAId bigint NOT NULL DEFAULT 0;

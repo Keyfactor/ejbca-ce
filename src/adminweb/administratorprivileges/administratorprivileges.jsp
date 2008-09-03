@@ -1,274 +1,101 @@
+<%
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
+ // Original version by Philip Vendil.
+ 
+%>
+<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
+<%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
+<%@ taglib uri="http://myfaces.apache.org/tomahawk" prefix="t" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@page errorPage="/errorpage.jsp" import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration
-               ,org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler,
-                org.ejbca.ui.web.admin.configuration.AccessRulesView, org.ejbca.core.model.authorization.*,
-                org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, java.util.*"%>
+<%@page errorPage="/errorpage.jsp" import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration" %>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
-<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
-<%! // Declarations  
-  static final String ACTION                        = "action";
-  static final String ACTION_EDIT_GROUPS            = "editgroup";
-  static final String ACTION_EDIT_ACCESSRULES       = "editaccessrules";
-  static final String ACTION_EDIT_ADMINENTITIES     = "editadminentities";
-  static final String ACTION_EDIT_BASICACCESSRULES  = "editbasicaccessrules";
-  
-  static final String MODE                          = "mode"; 
-  static final String MODE_BASIC                    = "modebasic"; 
-  static final String MODE_ADVANCED                 = "modeadvanced";
-
-  static final String BUTTON_EDIT_ADMINS        = "buttoneditadmins"; 
-  static final String BUTTON_EDIT_ACCESSRULES  = "buttoneditaccessrules";
-  static final String BUTTON_DELETE_ADMINGROUP  = "buttondeleteadmingroup"; 
-  static final String BUTTON_ADD_ADMINGROUP     = "buttonaddadmingroup"; 
-  static final String BUTTON_RENAME_SELECTED   = "buttonrenameselected"; 
-
-
-  static final String SELECT_ADMINGROUPS        = "selectedadmingroups";
-  static final String SELECT_CA                 = "selectca";
-  static final String TEXTFIELD_GROUPNAME       = "textfieldadmingroupname";
-  static final String HIDDEN_GROUPNAME          = "hiddenadmingroupname";
-
-
-
- // Used in editaccessrules.jsp
-  static final String BUTTON_ADD_ACCESSRULES      = "addaccessrules"; 
-  static final String BUTTON_DELETE_ACCESSRULES   = "deleteaccessrules"; 
-
-  static final String CHECKBOX_DELETEROW    = "checkboxdeleterow";
-  static final String CHECKBOX_ADDROW       = "checkboxaddrow"; 
-  static final String CHECKBOX_RECURSIVEROW = "checkboxrecursiverow";
-  static final String CHECKBOX_VALUE        = "true";
-  static final String HIDDEN_DELETEROW      = "hiddendeleterow";
-  static final String HIDDEN_ADDRESOURCE    = "hiddenaddresource";
-  static final String SELECT_ADDRULE        = "selectaddrule";
-  static final String SELECT_MODE           = "selectmode";
-
-// Used in editbasicaccessrules.jsp
-  static final String BUTTON_SAVE           = "buttonsave"; 
-  static final String BUTTON_CANCEL         = "buttoncancel";
-
-  static final String SELECT_ROLE               = "selectrole";
-  static final String SELECT_CAS                = "selectcas";
-  static final String SELECT_ENDENTITYRULES     = "selectendentityrules";
-  static final String SELECT_ENDENTITYPROFILES  = "selectendentityprofiles";
-  static final String SELECT_OTHER              = "selectother";
-
-// Used in editadminentities.jsp
-  static final String BUTTON_ADD_ADMINENTITY      = "buttonaddadminentity"; 
-  static final String BUTTON_DELETE_ADMINENTITIES = "buttondeleteadminentities"; 
-
-  static final String SELECT_MATCHWITH           = "selectmatchwith";
-  static final String SELECT_MATCHTYPE           = "selectmatchtype";
-  static final String TEXTFIELD_MATCHVALUE       = "textfieldmatchvalue";
-  static final String CHECKBOX_DELETE_ADMINENTITY = "checkboxdeleteadminentity";
-  static final String HIDDEN_MATCHWITH           = "hiddenmatchwith";
-  static final String HIDDEN_MATCHTYPE           = "hiddenmatchtype";
-  static final String HIDDEN_MATCHVALUE          = "hiddenmatchvalue";
-
-  static final int    ADMINGROUPNAME             = 0;
-  static final int    CAID                       = 1;
-
+<%
+	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/system_functionality/edit_administrator_privileges"); 
 %>
-<% 
-  boolean admingroupexists = false;
 
-  String[] admingroup = null;
-  // Initialize environment
-  String includefile = "editadmingroups.jspf";
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/system_functionality/edit_administrator_privileges"); 
-                                            cabean.initialize(request, ejbcawebbean);       
-                                            rabean.initialize(request, ejbcawebbean); 
- 
-  String THIS_FILENAME            =  globalconfiguration.getAuthorizationPath()  + "/administratorprivileges.jsp";
-  AuthorizationDataHandler adh    = ejbcawebbean.getAuthorizationDataHandler(); 
-  HashMap  caidtonamemap  = cabean.getCAIdToNameMap();
-  int caid = 0;
-%>
 <html>
+<f:view>
 <head>
-  <title><%= globalconfiguration .getEjbcaTitle() %></title>
+  <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
+  <script language="javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
 
-<%  // Determine action 
-  RequestHelper.setDefaultCharacterEncoding(request);
-  if( request.getParameter(ACTION) != null){
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_GROUPS)){
-      if( request.getParameter(BUTTON_EDIT_ADMINS) != null && request.getParameter(SELECT_ADMINGROUPS) != null){
-          // Display adminentity jsp page.
-         admingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
-         if(admingroup != null){
-           if(!admingroup[ADMINGROUPNAME].equals("")){ 
-              caid = Integer.parseInt(admingroup[CAID]); 
-              includefile="editadminentities.jspf"; 
-           }
-           else{ 
-             admingroup= null;
-           }  
-         }
-        if(admingroup == null){   
-          includefile="editadmingroups.jspf";     
-        }
-      }
-      if( request.getParameter(BUTTON_EDIT_ACCESSRULES) != null && request.getParameter(SELECT_ADMINGROUPS) != null) {
-          // Display access rules jsp page.
-         admingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
-         if(admingroup != null){
-           if(!admingroup[ADMINGROUPNAME].trim().equals("")){
-             caid = Integer.parseInt(admingroup[CAID]);
-             includefile="editaccessrules.jspf";
-           }
-           else{ 
-            admingroup= null;
-           } 
-         }
-         if(admingroup == null){  
-           includefile="editadmingroups.jspf";     
-         }
-      }
-      if( request.getParameter(BUTTON_DELETE_ADMINGROUP) != null && request.getParameter(SELECT_ADMINGROUPS) != null) {
-          // Delete admingroup and display main group editing page. 
-          admingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
-          if(admingroup != null){
-            if(!admingroup[ADMINGROUPNAME].trim().equals("")){       
-              adh.removeAdminGroup(admingroup[ADMINGROUPNAME], Integer.parseInt(admingroup[CAID]));
-            }
-          }
-          includefile="editadmingroups.jspf";             
-      }
-      if( request.getParameter(BUTTON_RENAME_SELECTED) != null && request.getParameter(SELECT_ADMINGROUPS) != null){ 
-         // Rename selected admingroup and display main group editing page.
-       String newadmingroup = request.getParameter(TEXTFIELD_GROUPNAME);
-       String[] oldadmingroup = request.getParameter(SELECT_ADMINGROUPS).split(";");
-       if(oldadmingroup != null && newadmingroup != null){
-         if(!newadmingroup.trim().equals("") && !oldadmingroup[ADMINGROUPNAME].trim().equals("")){    
-             try{
-               adh.renameAdminGroup(oldadmingroup[ADMINGROUPNAME], newadmingroup, Integer.parseInt(oldadmingroup[CAID]));
-             }catch(AdminGroupExistsException e){ admingroupexists = true;}
-         }
-       }      
-          includefile="editadmingroups.jspf"; 
-      }
-      if( request.getParameter(BUTTON_ADD_ADMINGROUP) != null){
-         // Add admingroup and display main group editing page.
-         String admingroupname = request.getParameter(TEXTFIELD_GROUPNAME);
-         caid = Integer.parseInt(request.getParameter(SELECT_CA));
-         if(admingroupname != null){
-           if(!admingroupname.trim().equals("") && admingroupname.indexOf(';') == -1){
-             try{
-               adh.addAdminGroup(admingroupname.trim(), caid);
-             }catch(AdminGroupExistsException e){ admingroupexists = true; }
-           }      
-         }
-         includefile="editadmingroups.jspf"; 
-      }
-    }
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_ACCESSRULES)){
-         // Display edit access rules page.
-       admingroup = request.getParameter(HIDDEN_GROUPNAME).split(";");
-       if(admingroup != null){
-         if(!admingroup[ADMINGROUPNAME].trim().equals("")){
-             caid = Integer.parseInt(admingroup[CAID]);
-             includefile="editaccessrules.jspf";
-             if(request.getParameter(MODE) != null && request.getParameter(MODE).equals(MODE_BASIC)){
+<div align="center">
+	<p><H1><h:outputText value="#{web.text.ADMINPRIVILEGES}" /></H1></p>
+	<p><h:messages layout="table" errorClass="alert"/></p>
 
-                if(request.getParameter(BUTTON_SAVE) != null){
-                  // get role
-                  int role = Integer.parseInt(request.getParameter(SELECT_ROLE));
-                  // get currentcas
-                  ArrayList currentcas = new ArrayList();
-                  String[] values = request.getParameterValues(SELECT_CAS);
-                  if(values != null){
-                    for(int i=0;i < values.length; i++){
-                      currentcas.add(new Integer(values[i]));
-                    }
-                  }  
-                  // get current end entity rules
-                  ArrayList currentententityrules = new ArrayList();
-                  values = request.getParameterValues(SELECT_ENDENTITYRULES);
-                  if(values != null){
-                    for(int i=0;i < values.length; i++){
-                      currentententityrules.add(new Integer(values[i]));
-                    } 
-                  }
-                  // get current end entity profiles
-                  ArrayList currentententityprofiles = new ArrayList();
-                  values = request.getParameterValues(SELECT_ENDENTITYPROFILES);
-                  if(values != null){
-                    for(int i=0;i < values.length; i++){
-                      currentententityprofiles.add(new Integer(values[i]));
-                    }
-                  } 
-                  // get other rules
-                  ArrayList currentother = new ArrayList();
-                  values = request.getParameterValues(SELECT_OTHER);
-                  if(values != null){
-                    for(int i=0;i < values.length; i++){
-                       currentother.add(new Integer(values[i]));
-                    } 
-                  }
+	<h:form id="groupList">
+	<h:inputHidden id="newGroupName" value="#{adminGroupsManagedBean.newAdminGroupName}">
+		 <f:validator validatorId="legalCharsValidator" />
+	</h:inputHidden>
+	<h:inputHidden id="currentAdminGroup" value="#{adminGroupsManagedBean.currentAdminGroup}">
+		 <f:validator validatorId="legalCharsValidator" />
+	</h:inputHidden>
+	<h:dataTable value="#{adminGroupsManagedBean.adminGroups}" var="adminGroup"
+		headerClass="listHeader" rowClasses="listRow1,listRow2">
+		<f:facet name="header">
+			<h:outputText value="#{web.text.CURRENTADMINGROUPS}" />
+		</f:facet>
+		<h:column>
+			<h:outputText value="#{adminGroup.adminGroupName}"/>
+		</h:column>
+		<h:column>
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentAdminGroup=#{adminGroup.adminGroupName}"
+				styleClass="commandLink" title="#{web.text.EDITADMINS}">
+				<h:outputText value="#{web.text.ADMINS}"/>
+			</h:outputLink>
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentAdminGroup=#{adminGroup.adminGroupName}"
+				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{!adminGroupsManagedBean.basicRuleSetForEach.forceAdvanced}">
+				<h:outputText value="#{web.text.ACCESSRULES}"/>
+			</h:outputLink>
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentAdminGroup=#{adminGroup.adminGroupName}"
+				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{adminGroupsManagedBean.basicRuleSetForEach.forceAdvanced}">
+				<h:outputText value="#{web.text.ACCESSRULES}"/>
+			</h:outputLink>
+		</h:column>
+		<h:column>
+			<h:commandLink action="#{adminGroupsManagedBean.renameGroup}"
+				onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('groupList:currentAdminGroup','#{adminGroup.adminGroupName}', '#{web.text.ONLYCHARACTERS}');"
+				styleClass="commandLink" title="#{web.text.RENAMEADMINGROUP}">
+				<h:outputText value="#{web.text.RENAME}"/>
+			</h:commandLink>
+			<h:commandLink action="#{adminGroupsManagedBean.deleteGroup}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('groupList:currentAdminGroup','#{adminGroup.adminGroupName}', '#{web.text.ONLYCHARACTERS}');"
+				styleClass="commandLink" title="#{web.text.DELETEGROUP}">
+				<h:outputText value="#{web.text.DELETE}"/>
+			</h:commandLink>
+		</h:column>
+	</h:dataTable>
+	<p style="text-align: center;">
+	<h:commandLink action="#{adminGroupsManagedBean.addGroup}" styleClass="commandLink" title="#{web.text.ADDADMINGROUP}"
+		onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}');" >
+		<h:outputText value="#{web.text.ADD}"/>
+	</h:commandLink>
+	</p>
+	</h:form >
+</div>
 
-                  BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(role, currentcas, currentententityrules, currentententityprofiles,currentother);
-                   
-                  adh.replaceAccessRules(admingroup[ADMINGROUPNAME],caid,barsd.getCurrentAdvancedRuleSet());  
-
-                  includefile="editadmingroups.jspf";    
-                }
-                if(request.getParameter(BUTTON_SAVE) != null){
-                  includefile="editadmingroups.jspf";    
-                }
-             }
-      
-         
-         }
-         else{ 
-            admingroup= null;
-          } 
-        }
-        if(admingroup == null){            
-          includefile="editadmingroups.jspf";    
-        }
-    }
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_ADMINENTITIES)){
-         // Display edit admin entity page.
-       admingroup = request.getParameter(HIDDEN_GROUPNAME).split(";");
-       if(admingroup != null){
-         if(!admingroup[ADMINGROUPNAME].trim().equals("")){
-           caid = Integer.parseInt(admingroup[CAID]);
-           includefile="editadminentities.jspf"; 
-         }
-          else{ 
-            admingroup= null;
-          } 
-        }
-        if(admingroup == null){ 
-          includefile="editadmingroups.jspf"; 
-        }
-     }
-  }
-
- // Include page
-  if( includefile.equals("editadmingroups.jspf")){ %>
-   <%@ include file="editadmingroups.jspf" %>
-<%}
-  if( includefile.equals("editadminentities.jspf")){ %>
-   <%@ include file="editadminentities.jspf" %> 
-<%}
-  if( includefile.equals("editaccessrules.jspf")){ %>
-    <%@ include file="editaccessrules.jspf" %>
-<%}
-
-   // Include Footer 
-   String footurl =   globalconfiguration .getFootBanner(); %>
-   
-  <jsp:include page="<%= footurl %>" />
+<%	// Include Footer 
+	String footurl = globalconfiguration.getFootBanner(); %>
+	<jsp:include page="<%= footurl %>" />
 
 </body>
+</f:view>
 </html>

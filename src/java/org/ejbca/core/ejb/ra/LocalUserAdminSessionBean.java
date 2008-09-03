@@ -38,6 +38,7 @@ import javax.mail.internet.InternetAddress;
 import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
@@ -1596,6 +1597,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      */
     public void checkIfCertificateBelongToUser(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
         debug(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
+        if (!WebConfiguration.getRequireAdminCertificateInDatabase()) {
+        	debug("<checkIfCertificateBelongToAdmin Configured to ignore if cert belongs to admin.");
+        	return;
+        }
         String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
         if (username != null) {
             UserDataPK pk = new UserDataPK(username);
