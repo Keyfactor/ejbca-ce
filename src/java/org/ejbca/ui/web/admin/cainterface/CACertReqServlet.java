@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -61,6 +62,7 @@ public class CACertReqServlet extends HttpServlet {
     private static final String COMMAND_CERTREQ = "certreq";
 	private static final String COMMAND_CERT           = "cert";    
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
+    private static final String FORMAT_PROPERTY_NAME = "format";
 	
 	private ISignSessionLocal signsession = null;
    
@@ -133,28 +135,35 @@ public class CACertReqServlet extends HttpServlet {
 		}        
                 
         
-        String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
         RequestHelper.setDefaultCharacterEncoding(req);
-        command = req.getParameter(COMMAND_PROPERTY_NAME);
+        String command = req.getParameter(COMMAND_PROPERTY_NAME);
+        String format = req.getParameter(FORMAT_PROPERTY_NAME);
         if (command == null)
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CERTREQ)) {
             try {
                 
             	byte[] request = cabean.getRequestData();
-				byte[] b64certreq = org.ejbca.util.Base64.encode(request);
-				String out = "-----BEGIN CERTIFICATE REQUEST-----\n";
-				out += new String(b64certreq);
-				out += "\n-----END CERTIFICATE REQUEST-----\n";
+                String filename = "certificaterequest.req";
+                int length = request.length;
+                byte[] outbytes = request;
+            	if (!StringUtils.equals(format, "binary")) {
+    				byte[] b64certreq = org.ejbca.util.Base64.encode(request);
+    				String out = "-----BEGIN CERTIFICATE REQUEST-----\n";
+    				out += new String(b64certreq);
+    				out += "\n-----END CERTIFICATE REQUEST-----\n";
+    				length = out.length();
+                    filename = "certificaterequest.pem";
+                    outbytes = out.getBytes();
+            	}
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
-                String filename = "certificaterequest.pem";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/octet-stream");
-                res.setContentLength(out.length());
-                res.getOutputStream().write(out.getBytes());
+                res.setContentLength(length);
+                res.getOutputStream().write(outbytes);
         		String iMsg = intres.getLocalizedMessage("certreq.sentlatestcertreq", remoteAddr);
                 log.info(iMsg);
             } catch (Exception e) {
@@ -166,9 +175,13 @@ public class CACertReqServlet extends HttpServlet {
         }
 		if (command.equalsIgnoreCase(COMMAND_CERT)) {
 			 try {
-			 	Certificate cert = cabean.getProcessedCertificate();			 	
-				byte[] b64cert = org.ejbca.util.Base64.encode(cert.getEncoded());	
-				RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);							
+			 	Certificate cert = cabean.getProcessedCertificate();
+            	if (!StringUtils.equals(format, "binary")) {
+    				byte[] b64cert = org.ejbca.util.Base64.encode(cert.getEncoded());	
+    				RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);							
+            	} else {
+            		RequestHelper.sendBinaryBytes(cert.getEncoded(), res, "application/octet-stream", "cert.crt");
+            	}
 			 } catch (Exception e) {
 				 String errMsg = intres.getLocalizedMessage("certreq.errorsendcert", remoteAddr, e.getMessage());
                  log.error(errMsg, e);
