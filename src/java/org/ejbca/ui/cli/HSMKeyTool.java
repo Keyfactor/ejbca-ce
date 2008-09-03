@@ -18,6 +18,8 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 
 import org.ejbca.util.keystore.KeyStoreContainer;
+import org.ejbca.util.keystore.KeyStoreContainerBase;
+import org.ejbca.util.keystore.KeyStoreContainerFactory;
 
 
 
@@ -90,7 +92,7 @@ public class HSMKeyTool extends ClientToolBox {
         if( args.length > 1 && args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_SWITCH)) {
             if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH))
                 setModuleProtection();
-            KeyStoreContainer.getInstance(args[4], args[2], args[3], null, null, null).storeKeyStore();
+            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], null, null, null).storeKeyStore();
             return;
         }
     }
@@ -119,9 +121,9 @@ public class HSMKeyTool extends ClientToolBox {
                     if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
                         setModuleProtection();
                     }
-                    KeyStoreContainer store = KeyStoreContainer.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null, null);
+                    KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null, null);
                     String keyEntryName = args.length>6 ? args[6] :"myKey";
-                    store.generate(Integer.parseInt(args[5].trim()), keyEntryName);
+                    store.generate(args[5], keyEntryName);
                     System.err.println("Created certificate with entry "+keyEntryName+'.');
                 }
                 return;
@@ -131,32 +133,32 @@ public class HSMKeyTool extends ClientToolBox {
                 } else {
                 	String alias = args.length>6 ? args[6] : null;
                     System.err.println("Deleting certificate with alias "+alias+'.');
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).delete(alias);
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).delete(alias);
                 }
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(CERT_REQ)) {
                 if ( args.length < 7 )
                     System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6]);
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
                 if ( args.length < 7 )
                     System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate in PEM format>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).installCertificate(args[6]);
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).installCertificate(args[6]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
                 if ( args.length < 9 )
                     System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
                 if ( args.length < 9 )
                     System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 else
-                    KeyStoreContainer.getInstance(args[4], args[2], args[3], args[5], null, null).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 6 )
@@ -172,7 +174,7 @@ public class HSMKeyTool extends ClientToolBox {
                 	String fromId = args[5];                	
                 	String toId = args[6];
                     System.err.println("Moving entry with alias '"+fromId+"' to alias '"+toId+'.');
-                    KeyStoreContainer.move(args[2], args[3], args[4], fromId, toId, null);
+                    KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, null);
                 }
                 return;
             } else

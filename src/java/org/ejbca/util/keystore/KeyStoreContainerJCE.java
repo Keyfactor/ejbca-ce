@@ -15,17 +15,13 @@ package org.ejbca.util.keystore;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.ui.cli.util.PasswordReader;
@@ -34,107 +30,116 @@ import org.ejbca.ui.cli.util.PasswordReader;
  * 
  * @version $Id$
  */
-public class KeyStoreContainerJCE extends KeyStoreContainer {
-	private final PasswordReader passwordReader;
-	private char passPhraseGetSetEntry[] = null;
-	private KeyStoreContainerJCE( final KeyStore _keyStore,
-			final String _providerName,
-			final String _ecryptProviderName,
-			final byte storeID[],
-			final PasswordReader _passwordReader) throws NoSuchAlgorithmException, CertificateException, IOException{
-		super( _keyStore, _providerName, _ecryptProviderName );
-		this.passwordReader = _passwordReader!=null ? _passwordReader : new ConsolePasswordReader();
-		load(storeID);
-	}
+public class KeyStoreContainerJCE extends KeyStoreContainerBase {
+    private final PasswordReader passwordReader;
+    private char passPhraseGetSetEntry[] = null;
+    private KeyStoreContainerJCE( final KeyStore _keyStore,
+                                  final String _providerName,
+                                  final String _ecryptProviderName,
+                                  final byte storeID[],
+                                  final PasswordReader _passwordReader) throws Exception {
+        super( _keyStore, _providerName, _ecryptProviderName );
+        this.passwordReader = _passwordReader!=null ? _passwordReader : new ConsolePasswordReader();
+        load(storeID);
+    }
 
-	/** Use KeyStoreContainer.getInstance to get an instance of this class
-	 * @see KeyStoreContainer#getInstance(String, String, String, String)
-	 */
-	static KeyStoreContainer getInstance(final String keyStoreType,
-			final String providerClassName,
-			final String encryptProviderClassName,
-			final byte storeID[]) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-		return getIt( keyStoreType,
-				providerClassName,
-				encryptProviderClassName,
-				storeID,
-				null );
-	}
-	static KeyStoreContainer getIt(final String keyStoreType,
-			final String providerClassName,
-			final String encryptProviderClassName,
-			final byte storeID[],
-			final PasswordReader passwordReader) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-		final String providerName = getProviderName(providerClassName);
-		final String ecryptProviderName; {
-			String tmp;
-			try {
-				tmp = getProviderName(encryptProviderClassName);
-			} catch( ClassNotFoundException e ) {
-				tmp = providerName;
-			}
-			ecryptProviderName = tmp;
-		}
-		System.err.println("Creating KeyStore of type "+keyStoreType+" with provider "+providerName+(storeID!=null ? (" with ID "+new String(storeID)) : "")+'.');
-		final KeyStore keyStore = KeyStore.getInstance(keyStoreType, providerName);
-		return new KeyStoreContainerJCE( keyStore,
-				providerName,
-				ecryptProviderName,
-				storeID,
-				passwordReader);
-	}
-	private void setPassWord(boolean isKeystoreException) throws IOException {
-		System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
-		final char result[] = passwordReader.readPassword();
-		if ( isKeystoreException ) {
-			this.passPhraseGetSetEntry = result;
-		} else {
-			setPassPhraseLoadSave(result);
-		}
-	}
-	protected void load(byte storeID[]) throws NoSuchAlgorithmException, CertificateException, IOException {
-		try {
-			loadHelper(storeID);
-		} catch( IOException e ) {
-			setPassWord(false);
-			loadHelper(storeID);
-		}
-	}
-	private void loadHelper(byte storeID[]) throws NoSuchAlgorithmException, CertificateException, IOException {
-		this.keyStore.load(storeID!=null ? new ByteArrayInputStream(storeID):null, getPassPhraseLoadSave());
-	}
-	private static String getProviderName( String className ) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-		Provider provider = (Provider)Class.forName(className).getConstructor(new Class[0]).newInstance(new Object[0]);
-		Security.addProvider(provider);
-		return provider.getName();
-	}
-	public char[] getPassPhraseGetSetEntry() {
-		return passPhraseGetSetEntry;
-	}
-	public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-		System.err.println("Next line will contain the identity identifying the keystore:");
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		this.keyStore.store(baos, getPassPhraseLoadSave());
-		System.out.print(new String(baos.toByteArray()));
-		System.out.flush();
-		System.err.println();
-		return baos.toByteArray();
-	}
-	void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
-		try {
-			this.keyStore.setKeyEntry(alias, key, this.passPhraseGetSetEntry, chain);
-		} catch (KeyStoreException e) {
-			setPassWord(true);
-			this.keyStore.setKeyEntry(alias, key, this.passPhraseGetSetEntry, chain);
-		}
-	}
-	public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
-		try {
-			return this.keyStore.getKey(alias, this.passPhraseGetSetEntry);
-		} catch (UnrecoverableKeyException e1) {
-			setPassWord(true);
-			return this.keyStore.getKey(alias, this.passPhraseGetSetEntry );
-		}
-	}
+    /** Use KeyStoreContainer.getInstance to get an instance of this class
+     * @see KeyStoreContainer#getInstance(String, String, String, String)
+     */
+    static KeyStoreContainer getInstance(final String keyStoreType,
+                                         final String providerClassName,
+                                         final String encryptProviderClassName,
+                                         final byte storeID[]) throws Exception {
+        return getIt( keyStoreType,
+                      providerClassName,
+                      encryptProviderClassName,
+                      storeID,
+                      null );
+    }
+    static KeyStoreContainer getIt(final String keyStoreType,
+                                   final String providerClassName,
+                                   final String encryptProviderClassName,
+                                   final byte storeID[],
+                                   final PasswordReader passwordReader) throws Exception {
+        final String providerName = getProviderName(providerClassName);
+        final String ecryptProviderName; {
+            String tmp;
+            try {
+                tmp = getProviderName(encryptProviderClassName);
+            } catch( ClassNotFoundException e ) {
+                tmp = providerName;
+            }
+            ecryptProviderName = tmp;
+        }
+        System.err.println("Creating KeyStore of type "+keyStoreType+" with provider "+providerName+(storeID!=null ? (" with ID "+new String(storeID)) : "")+'.');
+        final KeyStore keyStore = KeyStore.getInstance(keyStoreType, providerName);
+        return new KeyStoreContainerJCE( keyStore,
+                                         providerName,
+                                         ecryptProviderName,
+                                         storeID,
+                                         passwordReader);
+    }
+    private void setPassWord(boolean isKeystoreException) throws IOException {
+        System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
+        final char result[] = this.passwordReader.readPassword();
+        if ( isKeystoreException ) {
+            this.passPhraseGetSetEntry = result;
+        } else {
+            setPassPhraseLoadSave(result);
+        }
+    }
+    protected void load(byte storeID[]) throws Exception {
+        try {
+            loadHelper(storeID);
+        } catch( IOException e ) {
+            setPassWord(false);
+            loadHelper(storeID);
+        }
+    }
+    private void loadHelper(byte storeID[]) throws Exception, IOException {
+        this.keyStore.load(storeID!=null ? new ByteArrayInputStream(storeID):null, getPassPhraseLoadSave());
+    }
+    private static String getProviderName( String className ) throws Exception {
+        Provider provider = (Provider)Class.forName(className).getConstructor(new Class[0]).newInstance(new Object[0]);
+        Security.addProvider(provider);
+        return provider.getName();
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#getPassPhraseGetSetEntry()
+     */
+    public char[] getPassPhraseGetSetEntry() {
+        return this.passPhraseGetSetEntry;
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#storeKeyStore()
+     */
+    public byte[] storeKeyStore() throws Exception {
+        System.err.println("Next line will contain the identity identifying the keystore:");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        this.keyStore.store(baos, getPassPhraseLoadSave());
+        System.out.print(new String(baos.toByteArray()));
+        System.out.flush();
+        System.err.println();
+        return baos.toByteArray();
+    }
+    void setKeyEntry(String alias, Key key, Certificate chain[]) throws Exception {
+        try {
+            this.keyStore.setKeyEntry(alias, key, this.passPhraseGetSetEntry, chain);
+        } catch (KeyStoreException e) {
+            setPassWord(true);
+            this.keyStore.setKeyEntry(alias, key, this.passPhraseGetSetEntry, chain);
+        }
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#getKey(java.lang.String)
+     */
+    public Key getKey(String alias) throws Exception {
+        try {
+            return this.keyStore.getKey(alias, this.passPhraseGetSetEntry);
+        } catch (UnrecoverableKeyException e1) {
+            setPassWord(true);
+            return this.keyStore.getKey(alias, this.passPhraseGetSetEntry );
+        }
+    }
 
 }

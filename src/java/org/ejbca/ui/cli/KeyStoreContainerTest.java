@@ -31,6 +31,7 @@ import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.keystore.KeyStoreContainer;
+import org.ejbca.util.keystore.KeyStoreContainerFactory;
 
 /**
  * 
@@ -47,8 +48,8 @@ class KeyStoreContainerTest {
         this.alias = a;
         this.keyPair = kp;
         this.providerName = pn;
-        this.modulusLength = ((RSAKey)keyPair.getPublic()).getModulus().bitLength();
-        this.byteLength = (modulusLength+7)/8-11;
+        this.modulusLength = ((RSAKey)this.keyPair.getPublic()).getModulus().bitLength();
+        this.byteLength = (this.modulusLength+7)/8-11;
     }
     static void test(final String providerClassName,
                      final String encryptProviderClassName,
@@ -135,7 +136,7 @@ class KeyStoreContainerTest {
         KeyStoreContainer keyStore = null;
         while( keyStore==null ) {
             try {
-                keyStore = KeyStoreContainer.getInstance(keyStoreType, providerName,
+                keyStore = KeyStoreContainerFactory.getInstance(keyStoreType, providerName,
                                                    encryptProviderClassName, storeID, null, null);
             } catch( Throwable t ) {
                 t.printStackTrace(System.err);
@@ -154,7 +155,7 @@ class KeyStoreContainerTest {
     }
     class Crypto implements Test {
         final private String testS = "   01 0123456789   02 0123456789   03 0123456789   04 0123456789   05 0123456789   06 0123456789   07 0123456789   08 0123456789   09 0123456789   10 0123456789   11 0123456789   12 0123456789   13 0123456789   14 0123456789   15 0123456789   16 0123456789   17 0123456789   18 0123456789   19 0123456789   20 0123456789   21 0123456789   22 0123456789   23 0123456789   24 0123456789   25 0123456789   26 0123456789   27 0123456789   28 0123456789   29 0123456789   30 0123456789   31 0123456789   32 0123456789   33 0123456789   34 0123456789   35 0123456789   36 0123456789   37 0123456789";
-        final private byte original[] = testS.substring(0, byteLength).getBytes();
+        final private byte original[] = this.testS.substring(0, KeyStoreContainerTest.this.byteLength).getBytes();
         final private String pkcs1Padding="RSA/ECB/PKCS1Padding";
 //      final String noPadding="RSA/ECB/NoPadding";
         private byte encoded[];
@@ -163,29 +164,29 @@ class KeyStoreContainerTest {
         private Cipher cipherDeCryption;
         private boolean result;
         public void prepare() throws Exception {
-            cipherEnCryption = Cipher.getInstance(pkcs1Padding);
-            cipherEnCryption.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
-            encoded = cipherEnCryption.doFinal(original);
-            cipherDeCryption = Cipher.getInstance(pkcs1Padding, providerName);
-            cipherDeCryption.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+            this.cipherEnCryption = Cipher.getInstance(this.pkcs1Padding);
+            this.cipherEnCryption.init(Cipher.ENCRYPT_MODE, KeyStoreContainerTest.this.keyPair.getPublic());
+            this.encoded = this.cipherEnCryption.doFinal(this.original);
+            this.cipherDeCryption = Cipher.getInstance(this.pkcs1Padding, KeyStoreContainerTest.this.providerName);
+            this.cipherDeCryption.init(Cipher.DECRYPT_MODE, KeyStoreContainerTest.this.keyPair.getPrivate());
         }
         public void doOperation() throws Exception {
-            decoded = cipherDeCryption.doFinal(encoded);
+            this.decoded = this.cipherDeCryption.doFinal(this.encoded);
         }
         public boolean verify() {
-            result = Arrays.equals(original, decoded);
-            return result;
+            this.result = Arrays.equals(this.original, this.decoded);
+            return this.result;
         }
         public void printInfo(PrintStream ps) {
-            ps.print("encryption provider: "+cipherEnCryption!=null ? cipherEnCryption.getProvider() : "not initialized");
-            ps.print("; decryption provider: "+cipherDeCryption!=null ? cipherDeCryption.getProvider() : "not initialized");
-            ps.print("; modulus length: "+modulusLength+"; byte length "+byteLength);
-            if ( result ) {
+            ps.print("encryption provider: "+this.cipherEnCryption!=null ? this.cipherEnCryption.getProvider() : "not initialized");
+            ps.print("; decryption provider: "+this.cipherDeCryption!=null ? this.cipherDeCryption.getProvider() : "not initialized");
+            ps.print("; modulus length: "+KeyStoreContainerTest.this.modulusLength+"; byte length "+KeyStoreContainerTest.this.byteLength);
+            if ( this.result ) {
                 ps.println(". The docoded byte string is equal to the original!");
             } else {
                 ps.println("The original and the decoded byte array differs!");
-                ps.println("Original: \""+new String(original)+'\"');
-                ps.println("Decoded: \""+new String(decoded)+'\"');
+                ps.println("Original: \""+new String(this.original)+'\"');
+                ps.println("Decoded: \""+new String(this.decoded)+'\"');
             }
         }
         public String getOperation() {
@@ -199,26 +200,26 @@ class KeyStoreContainerTest {
         private Signature signature;
         private boolean result;
         public void prepare() throws Exception {
-            signature = Signature.getInstance(sigAlgName, providerName);
-            signature.initSign( keyPair.getPrivate() );
-            signature.update( signInput );
+            this.signature = Signature.getInstance(this.sigAlgName, KeyStoreContainerTest.this.providerName);
+            this.signature.initSign( KeyStoreContainerTest.this.keyPair.getPrivate() );
+            this.signature.update( this.signInput );
         }
         public void doOperation() throws Exception {
-            signBA = signature.sign();
+            this.signBA = this.signature.sign();
         }
         public boolean verify() throws Exception {
 
-            Signature verifySignature = Signature.getInstance(sigAlgName);
-            verifySignature.initVerify(keyPair.getPublic());
-            verifySignature.update(signInput);
-            result = verifySignature.verify(signBA);
-            return result;
+            Signature verifySignature = Signature.getInstance(this.sigAlgName);
+            verifySignature.initVerify(KeyStoreContainerTest.this.keyPair.getPublic());
+            verifySignature.update(this.signInput);
+            this.result = verifySignature.verify(this.signBA);
+            return this.result;
         }
         public void printInfo(PrintStream ps) {
-            ps.println("Signature test of key "+alias+
-                       ": signature length " + signBA.length +
-                       "; first byte " + Integer.toHexString(0xff&signBA[0]) +
-                       "; verifying " + result);
+            ps.println("Signature test of key "+KeyStoreContainerTest.this.alias+
+                       ": signature length " + this.signBA.length +
+                       "; first byte " + Integer.toHexString(0xff&this.signBA[0]) +
+                       "; verifying " + this.result);
         }
         public String getOperation() {
             return "sign";
@@ -242,11 +243,11 @@ class KeyStoreContainerTest {
                 this.test = _test;
             }
             public boolean doIt() throws Exception {
-                test.prepare();
+                this.test.prepare();
                 return true;
             }
             public String getJobTimeDescription() {
-                return test.getOperation() + " preparation";
+                return this.test.getOperation() + " preparation";
             }
         }
         private class DoOperation implements Command {
@@ -255,11 +256,11 @@ class KeyStoreContainerTest {
                 this.test = _test;
             }
             public boolean doIt() throws Exception {
-                test.doOperation();
+                this.test.doOperation();
                 return true;
             }
             public String getJobTimeDescription() {
-                return test.getOperation() + " operation";
+                return this.test.getOperation() + " operation";
             }
         }
         private class Verify implements Command {
@@ -268,17 +269,17 @@ class KeyStoreContainerTest {
                 this.test = _test;
             }
             public boolean doIt() throws Exception {
-                final boolean isOK = test.verify();
+                final boolean isOK = this.test.verify();
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                test.printInfo(new PrintStream(baos,true));
+                this.test.printInfo(new PrintStream(baos,true));
                 if ( isOK )
-                    performanceTest.getLog().info(baos.toString());
+                    StressTest.this.performanceTest.getLog().info(baos.toString());
                 else
-                    performanceTest.getLog().error(baos.toString());
+                    StressTest.this.performanceTest.getLog().error(baos.toString());
                 return isOK;
             }
             public String getJobTimeDescription() {
-                return test.getOperation() + " verify";
+                return this.test.getOperation() + " verify";
             }
         }
         private class MyCommandFactory implements CommandFactory {
@@ -288,7 +289,7 @@ class KeyStoreContainerTest {
                 this.isSignTest = _isSignTest;
             }
             public Command[] getCommands() throws Exception {
-                final Test test = isSignTest ? new Sign() : new Crypto();
+                final Test test = this.isSignTest ? new Sign() : new Crypto();
                 return new Command[]{new Prepare(test), new DoOperation(test), new Verify(test)};
             }
         }
@@ -310,13 +311,13 @@ class KeyStoreContainerTest {
             return totalTime;
         }
         void doIt() throws Exception {
-            totalDecryptTime += test(new Crypto());
-            totalSignTime += test(new Sign());
-            nrOfTests++;
-            final long nanoNumber = nrOfTests*(long)1000000000;
-            System.out.print(alias+" key statistics. Signings per second: ");
-            System.out.print(""+(nanoNumber+totalSignTime/2)/totalSignTime+" Decryptions per second: ");
-            System.out.println(""+(nanoNumber+totalDecryptTime/2)/totalDecryptTime);
+            this.totalDecryptTime += test(new Crypto());
+            this.totalSignTime += test(new Sign());
+            this.nrOfTests++;
+            final long nanoNumber = this.nrOfTests*(long)1000000000;
+            System.out.print(this.alias+" key statistics. Signings per second: ");
+            System.out.print(""+(nanoNumber+this.totalSignTime/2)/this.totalSignTime+" Decryptions per second: ");
+            System.out.println(""+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
         }
 
     }

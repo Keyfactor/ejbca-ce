@@ -15,18 +15,12 @@ package org.ejbca.util.keystore;
 import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
-import java.security.UnrecoverableKeyException;
 import java.security.KeyStore.CallbackHandlerProtection;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
 
@@ -34,80 +28,83 @@ import org.apache.log4j.Logger;
  * 
  * @version $Id$
  */
-public class KeyStoreContainerP11 extends KeyStoreContainer {
+public class KeyStoreContainerP11 extends KeyStoreContainerBase {
     private static final Logger log = Logger.getLogger(KeyStoreContainerP11.class);
-    
+
     /** The name of Suns textcallbackhandler (for pkcs11) implementation */
     private static final String SUNTEXTCBHANDLERCLASS = "com.sun.security.auth.callback.TextCallbackHandler";
 
-	private KeyStoreContainerP11( KeyStore _keyStore,
-			String _providerName,
-			String _ecryptProviderName) throws NoSuchAlgorithmException, CertificateException, IOException{
-		super( _keyStore, _providerName, _ecryptProviderName );
-		load();
-	}
-	protected void load() throws NoSuchAlgorithmException, CertificateException, IOException {
-		this.keyStore.load(null, null);
-	}
-	
-	/** Use KeyStoreContainer.getInstance to get an instance of this class
-	 * @see KeyStoreContainer#getInstance(String, String, String, String)
-	 */
-	static KeyStoreContainer getInstance(final String slot,
-			final String libName,
-			final boolean isIx,
-			final String attributesFile,
-			final KeyStore.ProtectionParameter protectionParameter) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-		Provider provider = KeyTools.getP11Provider(slot, libName, isIx, attributesFile);
-		final String providerName = provider.getName();
-		log.debug("Adding provider with name: "+providerName);
-		Security.addProvider(provider);
-		
-		return getInstance(providerName, protectionParameter);
-	}
-	/** Use KeyStoreContainer.getInstance to get an instance of this class
-	 * @see KeyStoreContainer#getInstance(String, String, String, String)
-	 */
-	static KeyStoreContainer getInstance(final String providerName,
-			final KeyStore.ProtectionParameter protectionParameter) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-		// Make a default password callback handler, if we don't specify one on the command line
-		KeyStore.ProtectionParameter pp = protectionParameter;
-		if (pp == null) {
-			CallbackHandler cbh = null;
-			try {
-				// We will construct the PKCS11 text callback handler (sun.security...) using reflection, because 
-				// the sun class does not exist on other JDKs than sun, and we want to be able to compile everything on i.e. IBM JDK.
-				//   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
-				final Class implClass = Class.forName(SUNTEXTCBHANDLERCLASS);
-				cbh = (CallbackHandler)implClass.newInstance();
-			} catch (Exception e) {
-				IOException ioe = new IOException("Error constructing pkcs11 text callback handler: "+e.getMessage());
-				ioe.initCause(e);
-				throw ioe;
-			} 
-			// The above code replaces the single line:
-			//final CallbackHandler cbh = new TextCallbackHandler();        	
-			pp = new CallbackHandlerProtection(cbh);        	
-		}
-		Provider provider = Security.getProvider(providerName);
-		KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider, pp);
-		final KeyStore keyStore = builder.getKeyStore();
-		return new KeyStoreContainerP11( keyStore, providerName, providerName );
-	}
-	
-	public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-		char[] authCode = getPassPhraseLoadSave();
-		this.keyStore.store(null, authCode);
-		return new byte[0];
-	}
-	void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
-		this.keyStore.setKeyEntry(alias, key, null, chain);
-	}
-	public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
-		return this.keyStore.getKey(alias, null);
-	}
-	public char[] getPassPhraseGetSetEntry() {
-		return null;
-	}
+    private KeyStoreContainerP11( KeyStore _keyStore,
+                                  String _providerName ) throws Exception, IOException{
+        super( _keyStore, _providerName, _providerName );
+        load();
+    }
+    protected void load() throws Exception, IOException {
+        this.keyStore.load(null, null);
+    }
+
+    /** Use KeyStoreContainer.getInstance to get an instance of this class
+     * @see KeyStoreContainer#getInstance(String, String, String, String)
+     */
+    static KeyStoreContainer getInstance(final String slot,
+                                         final String libName,
+                                         final boolean isIx,
+                                         final String attributesFile,
+                                         final KeyStore.ProtectionParameter protectionParameter) throws Exception, IOException {
+        Provider provider = KeyTools.getP11Provider(slot, libName, isIx, attributesFile);
+        final String providerName = provider.getName();
+        log.debug("Adding provider with name: "+providerName);
+        Security.addProvider(provider);
+
+        return getInstance(providerName, protectionParameter);
+    }
+    /** Use KeyStoreContainer.getInstance to get an instance of this class
+     * @see KeyStoreContainer#getInstance(String, String, String, String)
+     */
+    static KeyStoreContainer getInstance(final String providerName,
+                                         final KeyStore.ProtectionParameter protectionParameter) throws Exception, IOException {
+        // Make a default password callback handler, if we don't specify one on the command line
+        KeyStore.ProtectionParameter pp = protectionParameter;
+        if (pp == null) {
+            CallbackHandler cbh = null;
+            try {
+                // We will construct the PKCS11 text callback handler (sun.security...) using reflection, because 
+                // the sun class does not exist on other JDKs than sun, and we want to be able to compile everything on i.e. IBM JDK.
+                //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
+                final Class<?> implClass = Class.forName(SUNTEXTCBHANDLERCLASS);
+                cbh = (CallbackHandler)implClass.newInstance();
+            } catch (Exception e) {
+                IOException ioe = new IOException("Error constructing pkcs11 text callback handler: "+e.getMessage());
+                ioe.initCause(e);
+                throw ioe;
+            } 
+            // The above code replaces the single line:
+            //final CallbackHandler cbh = new TextCallbackHandler();        	
+            pp = new CallbackHandlerProtection(cbh);        	
+        }
+        Provider provider = Security.getProvider(providerName);
+        KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider, pp);
+        final KeyStore keyStore = builder.getKeyStore();
+        return new KeyStoreContainerP11( keyStore, providerName );
+    }
+
+    @Override
+    public byte[] storeKeyStore() throws Exception, IOException {
+        char[] authCode = getPassPhraseLoadSave();
+        this.keyStore.store(null, authCode);
+        return new byte[0];
+    }
+    @Override
+    void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, Exception {
+        this.keyStore.setKeyEntry(alias, key, null, chain);
+    }
+    @Override
+    public Key getKey(String alias) throws Exception, IOException {
+        return this.keyStore.getKey(alias, null);
+    }
+    @Override
+    public char[] getPassPhraseGetSetEntry() {
+        return null;
+    }
 
 }

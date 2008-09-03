@@ -40,6 +40,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyStoreContainer;
+import org.ejbca.util.keystore.KeyStoreContainerFactory;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -425,7 +426,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 				}
 	            final KeyStore.PasswordProtection pwp =new KeyStore.PasswordProtection(authCode);
 	            
-				KeyStoreContainer cont = KeyStoreContainer.getInstance(KeyStoreContainer.KEYSTORE_TYPE_PKCS11, token.getProvider(), pwp);
+				KeyStoreContainer cont = KeyStoreContainerFactory.getInstance(KeyStoreContainer.KEYSTORE_TYPE_PKCS11, token.getProvider(), pwp);
 				cont.setPassPhraseLoadSave(authCode);
 				cont.generate(keysize, newKeyLabel);
 				// Set properties so that we will start using the new key
