@@ -604,7 +604,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		type = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
     	}
     	String length = getValue(AUTOGENPASSWORDLENGTH, 0);
-    	return PasswordGeneratorFactory.getInstance(type).getNewPassword(Integer.parseInt(length), Integer.parseInt(length));    	
+    	if (length == null) {
+    		length = "8";
+    	}
+    	int pwdlen = 8;
+    	try {
+        	pwdlen = Integer.parseInt(length);    		
+    	} catch (NumberFormatException e) {
+    		log.info("NumberFormatException parsing AUTOGENPASSWORDLENGTH, using default value of 8: ", e);
+    	}
+    	return PasswordGeneratorFactory.getInstance(type).getNewPassword(pwdlen, pwdlen);    	
     }
     
     public static Collection getAvailablePasswordTypes() {
