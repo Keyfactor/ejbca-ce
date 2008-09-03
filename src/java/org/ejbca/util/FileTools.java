@@ -94,8 +94,22 @@ public class FileTools {
      */
     public static byte[] readFiletoBuffer(String file)
         throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
         InputStream in = new FileInputStream(file);
+        return readInputStreamtoBuffer(in);
+    } // readFiletoBuffer
+
+    /**
+     * Helpfunction to read an InputStream to a byte array.
+     *
+     * @param file filename of file.
+     *
+     * @return byte[] containing the contents of the file.
+     *
+     * @throws IOException if the file does not exist or cannot be read.
+     */
+    public static byte[] readInputStreamtoBuffer(InputStream in)
+        throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         int len = 0;
         byte[] buf = new byte[1024];
 
@@ -107,8 +121,8 @@ public class FileTools {
         os.close();
 
         return os.toByteArray();
-    } // readFiletoBuffer
-    
+    } // readInputStreamtoBuffer
+
     /**
      * Sort the files by name with directories first.
      */

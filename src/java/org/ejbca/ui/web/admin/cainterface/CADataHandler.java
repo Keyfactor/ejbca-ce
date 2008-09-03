@@ -13,6 +13,8 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.security.cert.CertPathValidatorException;
@@ -52,6 +54,7 @@ import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FileTools;
 
 /**
  * A class help administrating CAs. 
@@ -197,9 +200,17 @@ public class CADataHandler implements Serializable {
    */  
   public void receiveResponse(int caid, InputStream is) throws Exception{
 	  try {
-		  Collection certs = CertTools.getCertsFromPEM(is);
-		  Iterator iter = certs.iterator();
-		  Certificate cert = (Certificate) iter.next();
+		  Certificate cert = null;
+		  byte[] certbytes = FileTools.readInputStreamtoBuffer(is);
+		  try {
+			  Collection certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+			  Iterator iter = certs.iterator();
+			  cert = (Certificate) iter.next();			  
+		  } catch (IOException e) {
+			  log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
+			  // See if it is a single binary certificate
+			  cert = CertTools.getCertfromByteArray(certbytes);
+		  }
 		  X509ResponseMessage resmes = new X509ResponseMessage();
 		  resmes.setCertificate(cert);
 		  caadminsession.receiveResponse(administrator, caid, resmes);
