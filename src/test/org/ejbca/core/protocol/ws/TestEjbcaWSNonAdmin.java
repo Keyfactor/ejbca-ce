@@ -287,18 +287,9 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 		
 		adminusername1 = genRandomUserName();
  		
+		CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
+		caid = cainfo.getCAId();
              
-        Collection admingroups = auth.getAuthorizedAdminGroupNames(intadmin);
-        Iterator iter = admingroups.iterator();
-        
-        while(iter.hasNext()){
-        	AdminGroup group = (AdminGroup) iter.next();
-        	if(group.getAdminGroupName().equals("Temporary Super Administrator Group")){
-        		caid = group.getCAId();
-        		
-        	}
-        }
-		
 		UserDataVO userdata = new UserDataVO(adminusername1,"CN="+adminusername1,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
 				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
 		userdata.setPassword("foo123");
@@ -313,7 +304,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
         
         adminentities = new ArrayList();
 		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminusername1,caid));	
-		auth.addAdminEntities(intadmin, "Temporary Super Administrator Group", caid, adminentities);
+		auth.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
 		
 		auth.forceRuleUpdate(intadmin);
 		
@@ -351,7 +342,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
     
     protected void removeApprovalAdmins() throws Exception {
 		user.deleteUser(intadmin, adminusername1);
-		auth.removeAdminEntities(intadmin, "Temporary Super Administrator Group", caid, adminentities);					
+		auth.removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);					
 		
 	}
 }

@@ -137,6 +137,7 @@ public class CommonEjbcaWSTest extends TestCase {
     protected final static String wsTestAdminUsername = "wstest";
 	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
     protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+	protected final static String HOSTNAME = "localhost";
     
     protected String getAdminCAName() {
     	return "AdminCA1";
@@ -150,8 +151,9 @@ public class CommonEjbcaWSTest extends TestCase {
 		CertTools.installBCProvider();
 		
         if(new File("p12/wstest.jks").exists()){
+        	
 
-        	String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
+        	String urlstr = "https://" + HOSTNAME + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
 
         	System.out.println("Contacting webservice at " + urlstr);                       
 
@@ -175,7 +177,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		
         if(new File("p12/wsnonadmintest.jks").exists()){
 
-        	String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
+        	String urlstr = "https://" + HOSTNAME + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
 
         	System.out.println("Contacting webservice at " + urlstr);                       
 
@@ -322,7 +324,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			userAdded = true;
 
 			boolean adminExists = false;
-			AdminGroup admingroup = getAuthSession().getAdminGroup(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId());
+			AdminGroup admingroup = getAuthSession().getAdminGroup(intAdmin, AdminGroup.TEMPSUPERADMINGROUP);
 			Iterator iter = admingroup.getAdminEntities().iterator();
 			while(iter.hasNext()){
 				AdminEntity adminEntity = (AdminEntity) iter.next();
@@ -334,7 +336,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			if(!adminExists){
 				ArrayList list = new ArrayList();
 				list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,wsTestAdminUsername,cainfo.getCAId()));
-				getAuthSession().addAdminEntities(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId(), list);
+				getAuthSession().addAdminEntities(intAdmin, AdminGroup.TEMPSUPERADMINGROUP, list);
 				getAuthSession().forceRuleUpdate(intAdmin);
 			}
 			
@@ -1942,14 +1944,14 @@ public class CommonEjbcaWSTest extends TestCase {
 		if (getUserAdminSession().existsUser(intAdmin, wsTestAdminUsername)) {
 			// Remove from admin group
 			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
-			AdminGroup admingroup = getAuthSession().getAdminGroup(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId());
+			AdminGroup admingroup = getAuthSession().getAdminGroup(intAdmin, AdminGroup.TEMPSUPERADMINGROUP);
 			Iterator iter = admingroup.getAdminEntities().iterator();
 			while(iter.hasNext()){
 				AdminEntity adminEntity = (AdminEntity) iter.next();
 				if(adminEntity.getMatchValue().equals(wsTestAdminUsername)){
 					ArrayList<AdminEntity> list = new ArrayList<AdminEntity>();
 					list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASE,wsTestAdminUsername,cainfo.getCAId()));
-					getAuthSession().removeAdminEntities(intAdmin, "Temporary Super Administrator Group", cainfo.getCAId(), list);
+					getAuthSession().removeAdminEntities(intAdmin, AdminGroup.TEMPSUPERADMINGROUP, list);
 					getAuthSession().forceRuleUpdate(intAdmin);
 				}
 			}
