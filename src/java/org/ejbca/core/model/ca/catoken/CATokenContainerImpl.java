@@ -345,30 +345,46 @@ public class CATokenContainerImpl extends CATokenContainer {
 			keystore.load(null, null);
 
 			// Generate signature keys.
-			KeyPair signkeys = KeyTools.genKeys(info.getSignKeySpec(), info.getSignKeyAlgorithm());
+			KeyPair newsignkeys = KeyTools.genKeys(info.getSignKeySpec(), info.getSignKeyAlgorithm());
 			// generate dummy certificate
 			Certificate[] certchain = new Certificate[1];
-			certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, signkeys.getPrivate(), signkeys.getPublic(), info.getSignatureAlgorithm(), true);
+			certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, newsignkeys.getPrivate(), newsignkeys.getPublic(), info.getSignatureAlgorithm(), true);
 
-			keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS,signkeys.getPrivate(),null, certchain);             
+			keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS,newsignkeys.getPrivate(),null, certchain);             
 
 			PublicKey pubEnc = null;
 			PrivateKey privEnc = null;
+			PublicKey previousPubSign = null;
+			PrivateKey previousPrivSign = null;
+			
 			if (!renew) {
+				log.debug("We are generating initial keys.");
 				// Generate encryption keys.  
 				// Encryption keys must be RSA still
 				KeyPair enckeys = KeyTools.genKeys(info.getEncKeySpec(), info.getEncKeyAlgorithm());
 				pubEnc = enckeys.getPublic();
 				privEnc = enckeys.getPrivate();
 			} else {
+				log.debug("We are renewing keys.");
 				// Get the already existing keys
 				ICAToken token = getCAToken();
 				pubEnc = token.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
 				privEnc = token.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+				previousPubSign = token.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+				previousPrivSign = token.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
 			}
 			// generate dummy certificate
 			certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, privEnc, pubEnc, info.getEncryptionAlgorithm(), true);
-			keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS, privEnc, null, certchain);			
+			keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS, privEnc, null, certchain);	
+			Properties properties = getProperties();
+			if (previousPrivSign != null) {
+				log.debug("Setting previousprivatesignkeyalias in soft CA token.");
+				// If we have an old key (i.e. generating new keys, we will store the old one as "previous"
+				certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, previousPrivSign, previousPubSign, info.getSignatureAlgorithm(), true);				
+				keystore.setKeyEntry(SoftCAToken.PREVIOUSPRIVATESIGNKEYALIAS,previousPrivSign,null, certchain);   
+				// Now this keystore should have this previous key
+				properties.setProperty(KeyStrings.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, SoftCAToken.PREVIOUSPRIVATESIGNKEYALIAS);
+			}
 			
 			// Store the key store
 			java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -380,7 +396,10 @@ public class CATokenContainerImpl extends CATokenContainer {
 			data.put(ENCKEYSPEC, info.getEncKeySpec());
 			data.put(ENCKEYALGORITHM, info.getEncKeyAlgorithm());
 			data.put(ENCRYPTIONALGORITHM, info.getEncryptionAlgorithm());
-			
+			// Set previous sequence so we can create link certificates
+			properties.setProperty(ICAToken.PREVIOUS_SEQUENCE_PROPERTY, oldSequence);
+			setProperties(properties);
+
 			// Finally reset the token so it will be re-read when we want to use it
 			this.catoken = null;
 			String msg = intres.getLocalizedMessage("catoken.generatedkeys", "Soft");

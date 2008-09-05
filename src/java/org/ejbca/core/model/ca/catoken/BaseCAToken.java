@@ -117,19 +117,31 @@ public abstract class BaseCAToken implements ICAToken {
             PrivateKey privateK =
                 (PrivateKey)keyStore.getKey(keyAliases[i],
                                             (authCode!=null && authCode.length()>0)? authCode.toCharArray():null);
-            PublicKey publicK = readPublicKey(keyStore, keyAliases[i]);
-            KeyPair keyPair = new KeyPair(publicK, privateK);
-            mTmp.put(keyAliases[i], keyPair);
+            if (privateK == null) {
+                log.error("Can not read private key with alias '"+keyAliases[i]+"' from keystore, got null. If the key was generated after the latest application server start then restart the application server.");
+        		if (log.isDebugEnabled()) {
+        			for (int j=0; j<keyAliases.length;j++) {
+        				log.debug("Existing alias: "+keyAliases[j]);
+        			}
+        		}            	
+            } else {
+                PublicKey publicK = readPublicKey(keyStore, keyAliases[i]);
+                if ( (publicK != null) && (privateK != null) ) {
+                    KeyPair keyPair = new KeyPair(publicK, privateK);
+                    mTmp.put(keyAliases[i], keyPair);            	
+                }            	
+            }
         }
         for ( int i=0; i<keyAliases.length; i++ ) {
             KeyPair pair = mTmp.get(keyAliases[i]);
             log.debug("Testing keys with alias "+keyAliases[i]);
             if (pair == null) {
-                log.debug("No keys with alias "+keyAliases[i]+" exists.");
-            }
-            testKey(pair);
-            if (log.isDebugEnabled()) {
-                log.debug("Key with alias "+keyAliases[i]+" tested.");            	
+                log.info("No keys with alias "+keyAliases[i]+" exists.");
+            } else {
+                testKey(pair);
+                if (log.isDebugEnabled()) {
+                    log.debug("Key with alias "+keyAliases[i]+" tested.");            	
+                }            	
             }
         }
         mKeys = mTmp;

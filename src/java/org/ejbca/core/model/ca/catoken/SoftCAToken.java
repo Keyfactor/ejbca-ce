@@ -47,8 +47,9 @@ public class SoftCAToken extends BaseCAToken {
     private static final String  PROVIDER = "BC";
 
     protected static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";
+    protected static final String PREVIOUSPRIVATESIGNKEYALIAS = "previousprivatesignkeyalias";
     protected static final String PRIVATEDECKEYALIAS = "privatedeckeyalias";
-
+    
     /** Cache for holding the keystore data that has been read from the database. Requires a password to activate */
     private byte[] keyStoreData = null;
     
@@ -69,6 +70,7 @@ public class SoftCAToken extends BaseCAToken {
     	//    defaultKey PRIVATEDECKEYALIAS (privatedeckeyalias)
     	//    certSignKey PRIVATESIGNKEYALIAS (privatesignkeyalias)
     	//    crlSignKey PRIVATESIGNKEYALIAS (privatesignkeyalias)
+    	// It may also have previousCertSignKey PREVIOUSPRIVATESIGNKEYALIAS (previousprivatesignkeyalias)
     	if (properties == null) {
     		properties = new Properties();
     	}
