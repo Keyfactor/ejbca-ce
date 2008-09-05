@@ -37,6 +37,7 @@ import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyStoreContainer;
@@ -315,8 +316,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 
 	/**
 	 * Method that generates the keys that will be used by the CAToken.
-	 * Only available for initial generation of Soft CA Tokens so far. 
-	 * For PKCS11 tokens the method can be used to generate new Certificate signing keys. 
+	 * The method can be used to generate keys for an initial CA token or to renew Certificate signing keys. 
 	 * 
 	 * @param authenticationCode the password used to encrypt the keystore, later needed to activate CA Token
 	 * @param renew flag indicating if the keys are renewed instead of created fresh. Renewing keys does not 
@@ -469,13 +469,26 @@ public class CATokenContainerImpl extends CATokenContainer {
 		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
 		keystore.load(null,null);
 
+		// The CAs certificate is first in chain
+		Certificate cacert = caSignatureCertChain[0]; 
 		// Assume that the same hash algorithm is used for signing that was used to sign this CA cert
-		String signatureAlgorithm = CertTools.getSignatureAlgorithm(caSignatureCertChain[0]);
+		String signatureAlgorithm = CertTools.getSignatureAlgorithm(cacert);
 		String keyAlg = null;
 		if ( publickey instanceof RSAPublicKey ) {
 			keyAlg  = CATokenInfo.KEYALGORITHM_RSA;
 		} else {
 			keyAlg = CATokenInfo.KEYALGORITHM_ECDSA;
+		}
+		// If this is a CVC CA we need to find out the sequence
+		if (cacert instanceof CardVerifiableCertificate) {
+			CardVerifiableCertificate cvccacert = (CardVerifiableCertificate) cacert;
+			log.debug("Getting sequence from holderRef in CV certificate.");
+			String sequence = cvccacert.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
+			log.debug("Setting sequence "+sequence);
+			setSequence(sequence);
+		} else {
+			log.debug("Setting default sequence 00000");
+			setSequence("00000");
 		}
 
 		// import sign keys.
