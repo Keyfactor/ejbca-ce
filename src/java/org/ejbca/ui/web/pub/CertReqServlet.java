@@ -243,10 +243,10 @@ public class CertReqServlet extends HttpServlet {
                     	Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
                     	adminsession.changeUser(tempadmin, data, clearpwd);            		            			
             		} else {
-                		log.error("Requested certificate profile is not allowed in end entity profile, using default: "+certprofile);
+                		log.error("Requested certificate profile ("+certprofile+") is not allowed in end entity profile, using default: "+certprofile);
             		}
             	} else {
-            		log.error("Requested certificate profile name does not exist, using default: "+certprofile);
+            		log.error("Requested certificate profile ("+certprofile+") name does not exist, using default: "+certprofile);
             	}
             }
 
