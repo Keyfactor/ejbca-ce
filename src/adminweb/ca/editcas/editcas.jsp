@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.util.FileTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
+<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.util.FileTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.caadmin.CVCCAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
@@ -19,6 +19,7 @@
   static final String ACTION_CHOOSE_CATYPE                = "choosecatype";
   static final String ACTION_CHOOSE_CATOKENTYPE           = "choosecatokentype";
   static final String ACTION_MAKEREQUEST                  = "makerequest";
+  static final String ACTION_MAKECROSSREQUEST             = "makecrossrequest";
   static final String ACTION_SIGNREQUEST                  = "signrequest";
   static final String ACTION_RECEIVERESPONSE              = "receiveresponse";
   static final String ACTION_PROCESSREQUEST               = "processrequest";
@@ -140,6 +141,7 @@
   static final int    RECIEVERESPONSEMODE = 1;
   static final int    PROCESSREQUESTMODE  = 2;   
   static final int    SIGNREQUESTMODE     = 3;   
+  static final int    MAKECROSSREQUESTMODE = 4;   
   
   static final int    CERTREQGENMODE      = 0;
   static final int    CERTGENMODE         = 1;
@@ -1036,18 +1038,10 @@
              // Make Request Button Pushed down, this will create a certificate request but not do anything
              // else with the CA. For creating cross-certificate requests of similar.
              if(request.getParameter(BUTTON_MAKEREQUEST) != null){
-               try{
-                 caid = Integer.parseInt(request.getParameter(HIDDEN_CAID));
                  caname = request.getParameter(HIDDEN_CANAME);
-                 Collection certchain = cabean.getCAInfo(caid).getCertificateChain();
-                 byte[] certreq = cadatahandler.makeRequest(caid, certchain, false, null, false);
-                 cabean.saveRequestData(certreq);     
-                 filemode = CERTREQGENMODE;
-                 includefile = "displayresult.jspf";
-               } catch(Exception e){   
-                 includefile="choosecapage.jspf";
-                 errorrecievingfile = true; 
-               } 
+                 cabean.saveRequestInfo(cainfo);                
+                 filemode = MAKECROSSREQUESTMODE;
+                 includefile="recievefile.jspf"; 
              }             
          } 
        }
@@ -1057,12 +1051,21 @@
          includefile="choosecapage.jspf"; 
        }               
 
-         
-      }
+     } // if( action.equals(ACTION_EDIT_CA)){
+    	
       if( action.equals(ACTION_MAKEREQUEST)){         
        if(!buttoncancel){
          try{
-           Collection certchain = CertTools.getCertsFromPEM(file);           
+       	   Collection certchain = null;
+           byte[] certbytes = FileTools.readInputStreamtoBuffer(file);
+           try {
+     	       certchain = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+           } catch (IOException ioe) {
+         	  // Maybe it's just a sinlge binary CA cert
+         	  Certificate cert = CertTools.getCertfromByteArray(certbytes);
+         	  certchain = new ArrayList();
+         	  certchain.add(cert);
+           }
            try{
              CAInfo cainfo = cabean.getRequestInfo();              
              cadatahandler.createCA(cainfo);                           
@@ -1099,6 +1102,30 @@
        }
       }
 
+      if( action.equals(ACTION_MAKECROSSREQUEST)){         
+          if(!buttoncancel){
+              try{
+            	  Collection certchain = null;
+                  byte[] certbytes = FileTools.readInputStreamtoBuffer(file);
+                  try {
+            	       certchain = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+                  } catch (IOException ioe) {
+                	  // Maybe it's just a sinlge binary CA cert
+                	  Certificate cert = CertTools.getCertfromByteArray(certbytes);
+                	  certchain = new ArrayList();
+                	  certchain.add(cert);
+                  }
+                  byte[] certreq = cadatahandler.makeRequest(caid, certchain, false, null, false);
+                  cabean.saveRequestData(certreq);     
+                  filemode = CERTREQGENMODE;
+                  includefile = "displayresult.jspf";
+                } catch(Exception e){   
+                  includefile="choosecapage.jspf";
+                  errorrecievingfile = true; 
+                } 
+          }
+      }
+      
       if( action.equals(ACTION_RECEIVERESPONSE)){        
         if(!buttoncancel){
           try{                                                                                     
@@ -1304,7 +1331,7 @@
                    try{
                        byte[] req = cabean.getRequestData(); 
                        IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(req);
-                       java.security.cert.Certificate result = cadatahandler.processRequest(cainfo, certreq);
+                       Certificate result = cadatahandler.processRequest(cainfo, certreq);
                        cabean.saveProcessedCertificate(result);
                        filemode = CERTGENMODE;   
                        includefile="displayresult.jspf";
