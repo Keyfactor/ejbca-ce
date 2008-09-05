@@ -120,8 +120,14 @@
   </p>
   <p>
   to create CVCA link certificates the same approach is done. First renew the CVCA (generating new keys), which creates a new self-signed CVCA certificate internally. 
-  Download the new self-signed CVCA certificate (for example from Basic Functions). After this you can create a link certificate by going into 'Sign Certificate Request' 
-  for the CVCA and signing the certificate with 'Use previous key' and 'Create link certificate'.
+  Download the new self-signed CVCA certificate (for example from Basic Functions). After this you can create a link certificate by typing the CVCAs name in the text field 
+  in 'Edit Certificate Authorities' and clicking 'Sign Certificate Request'. Upload the new CVCA certificate and  
+  select 'Use previous key' and 'Create link certificate'.
+  </p>
+  <p>
+  The reason for this cumbersome and a bit clumsy way to create link certificates is that issuing a link certificate can actually be made to
+  switch CA completely, new keys, new algorithms and new Country/Mnemonic. Therefore you can use this approach to create a link certificate from you
+  old CVCA to a completely new one.
   </p>
   </section>
   
@@ -264,7 +270,7 @@
     
   <section name="Importing CAs">
   <p>For test purposes you may receive a private key and a CV certificate for the CVCA trust point used by the passport manufacturer when creating 
-  specimen passports. To test your process and inspection systems you can import a CVCA (with soft keystore) in EJBCA if you have a PKCS#8 private key and a CV certificate iwth the public key.
+  specimen passports. To test your process and inspection systems you can import a CVCA (with soft keystore) in EJBCA if you have a PKCS#8 private key and a CV certificate with the public key.
   </p>
   <p>bin/ejbca.sh ca importcvca
   </p>
@@ -288,6 +294,8 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   Depending on the algorithms you choose you have different options and difficulties. Using PKCS#11 the Sun PKCS#11 provider only supports
   RSA with PKCS1 padding (SHA256WithRSA), and not PSS (SHA256WIthRSAAndMGF1). If you want to use the PSS algorithms you need to use the IAIK PKCS#11 provider.
   See the User's Guide for instructions how to use the IAIK PKCS#11 provider. 
+  <br/>
+  The same goes for ECC, check with your HSM vendor about support for ECC. 
   </p>
   <p>
   Currently tested HSMs are:
