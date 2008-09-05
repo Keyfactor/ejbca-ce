@@ -60,10 +60,10 @@ public class RequestMessageUtils {
 	public static IRequestMessage parseRequestMessage(byte[] request) throws IOException {
 		IRequestMessage ret = null;
 		try {
-			ret = genPKCS10RequestMessageFromPEM(request);			
+			ret = genPKCS10RequestMessage(request);			
 		} catch (IllegalArgumentException e) {
 			log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
-			ret = genCVCRequestMessageFromPEM(request);
+			ret = genCVCRequestMessage(request);
 		}
 		return ret;
 	}
@@ -114,21 +114,32 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static PKCS10RequestMessage genPKCS10RequestMessageFromPEM(byte[] b64Encoded) throws IOException { 
-		byte[] buffer = getRequestBytes(b64Encoded); 
+	public static PKCS10RequestMessage genPKCS10RequestMessage(byte[] bytes) throws IOException {
+		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;
-		}	  
+		}		
 		return new PKCS10RequestMessage(buffer);
 	} // genPKCS10RequestMessageFromPEM
 
-	public static CVCRequestMessage genCVCRequestMessageFromPEM(byte[] b64Encoded) throws IOException { 
-		byte[] buffer = getRequestBytes(b64Encoded); 
+	public static CVCRequestMessage genCVCRequestMessage(byte[] bytes) throws IOException { 
+		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;
-		}	  
+		}		
 		return new CVCRequestMessage(buffer);
 	} // genCvcRequestMessageFromPEM
+	
+	private static byte[] getDecodedBytes(byte[] bytes) {
+		byte[] buffer = null;
+		try {
+			 buffer = getRequestBytes(bytes); 
+		} catch (IOException e) {
+			log.debug("Message not base64 encoded? Trying as binary: "+e.getMessage());
+			buffer = bytes;
+		}
+		return buffer;
+	}
 
 	public static byte[] getRequestBytes(byte[] b64Encoded) throws IOException {
 		byte[] buffer = null;
@@ -145,9 +156,13 @@ public class RequestMessageUtils {
 				buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
 			} catch (IOException ioe) {
 				// IE PKCS10 Base64 coded request
-				buffer = Base64.decode(b64Encoded);
-				if (buffer == null) {
-					throw new IOException("Base64 decode of buffer returns null");
+				try {
+					buffer = Base64.decode(b64Encoded);
+					if (buffer == null) {
+						throw new IOException("Base64 decode of buffer returns null");
+					}					
+				} catch (ArrayIndexOutOfBoundsException ae) {
+					throw new IOException("Base64 decode fails, message not base64 encoded: "+ae.getMessage());
 				}
 			}
 		}

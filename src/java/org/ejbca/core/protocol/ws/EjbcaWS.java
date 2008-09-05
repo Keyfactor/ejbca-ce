@@ -692,7 +692,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 			IRequestMessage imsg = null;
 			if (reqType == REQTYPE_PKCS10) {				
-				IRequestMessage pkcs10req=RequestMessageUtils.genPKCS10RequestMessageFromPEM(req.getBytes());
+				IRequestMessage pkcs10req=RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
 				PublicKey pubKey = pkcs10req.getRequestPublicKey();
 				imsg = new SimpleRequestMessage(pubKey, username, password);
 			}

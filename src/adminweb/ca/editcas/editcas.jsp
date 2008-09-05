@@ -1,11 +1,11 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
+<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.util.FileTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.caadmin.CVCCAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy" %>
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView" %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -336,9 +336,12 @@
           if(caname != null){
             caname = caname.trim();
             if(!caname.equals("")){
-              caid = cabean.getCAInfo(caname).getCAInfo().getCAId();
-              filemode = SIGNREQUESTMODE;
-              includefile="recievefile.jspf";               
+              CAInfoView reqcainfo = cabean.getCAInfo(caname);
+              if (reqcainfo != null) {
+                  caid = reqcainfo.getCAInfo().getCAId();
+                  filemode = SIGNREQUESTMODE;
+                  includefile="recievefile.jspf";            	  
+              }
             }      
           }                        
        }
@@ -1116,28 +1119,21 @@
       if( action.equals(ACTION_SIGNREQUEST)){       
           if(!buttoncancel){
             try{           
-              BufferedReader bufRdr = new BufferedReader(new InputStreamReader(file));
-              while (bufRdr.ready()) {
-               ByteArrayOutputStream ostr = new ByteArrayOutputStream();
-               PrintStream opstr = new PrintStream(ostr);
-               String temp;
-               while ((temp = bufRdr.readLine()) != null){            
-                 opstr.print(temp + "\n");                
-               }  
-               opstr.close();                
-                                    
-               boolean previouskey = false;
-               if(usepreviouskey != null)
-            	   previouskey = usepreviouskey.equals(CHECKBOX_VALUE);         
-               boolean createlinkcertificate = false;
-               if(createlinkcert != null)
-            	   createlinkcertificate = createlinkcert.equals(CHECKBOX_VALUE);         
-               byte[] reqbytes = ostr.toByteArray();
-               byte[] signedreq = cadatahandler.signRequest(caid, reqbytes, previouskey, createlinkcertificate);                                
-               cabean.saveRequestData(signedreq);     
-               filemode = CERTREQGENMODE;
-               includefile = "displayresult.jspf";
-              }
+                byte[] reqbytes = FileTools.readInputStreamtoBuffer(file);
+                if (reqbytes != null) {                                    
+	               boolean previouskey = false;
+	               if(usepreviouskey != null) {
+	            	   previouskey = usepreviouskey.equals(CHECKBOX_VALUE);
+	               }
+	               boolean createlinkcertificate = false;
+	               if(createlinkcert != null) {
+	            	   createlinkcertificate = createlinkcert.equals(CHECKBOX_VALUE);
+	               }
+	               byte[] signedreq = cadatahandler.signRequest(caid, reqbytes, previouskey, createlinkcertificate);                                
+	               cabean.saveRequestData(signedreq);     
+	               filemode = CERTREQGENMODE;
+	               includefile = "displayresult.jspf";
+                }
             }catch(Exception e){                      
               errorrecievingfile = true; 
             } 
@@ -1147,26 +1143,17 @@
       if( action.equals(ACTION_PROCESSREQUEST)){       
        if(!buttoncancel){
          try{           
-           BufferedReader bufRdr = new BufferedReader(new InputStreamReader(file));
-           while (bufRdr.ready()) {
-            ByteArrayOutputStream ostr = new ByteArrayOutputStream();
-            PrintStream opstr = new PrintStream(ostr);
-            String temp;
-            while ((temp = bufRdr.readLine()) != null){            
-              opstr.print(temp + "\n");                
-            }  
-            opstr.close();                
-                                 
-            byte[] reqbytes = ostr.toByteArray();
-            IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(reqbytes);
+             byte[] reqbytes = FileTools.readInputStreamtoBuffer(file);
+             if (reqbytes != null) {
+            	 IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(reqbytes);
 
-             if (certreq != null) {    
-               cabean.saveRequestData(reqbytes);                                
-               processedsubjectdn = certreq.getRequestDN();
-               processrequest = true;
-               includefile="editcapage.jspf";
+                 if (certreq != null) {    
+                   cabean.saveRequestData(reqbytes);                                
+                   processedsubjectdn = certreq.getRequestDN();
+                   processrequest = true;
+                   includefile="editcapage.jspf";
+                 }            	 
              }
-           }
          }catch(Exception e){                      
            errorrecievingfile = true; 
          } 

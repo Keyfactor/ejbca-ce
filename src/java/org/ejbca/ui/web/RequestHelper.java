@@ -161,7 +161,7 @@ public class RequestHelper {
         String username, String password, int resulttype, boolean doSplitLines) throws Exception {
         byte[] result = null;	
         Certificate cert=null;
-		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessageFromPEM(b64Encoded);
+		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
         IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(X509ResponseMessage.class.getName()));
