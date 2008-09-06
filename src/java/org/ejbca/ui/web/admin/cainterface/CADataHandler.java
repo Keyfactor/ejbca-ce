@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -107,8 +108,18 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
-  public void importCACert(String caname, InputStream pemFile) throws Exception {
-	  Collection certs = CertTools.getCertsFromPEM(pemFile);
+  public void importCACert(String caname, InputStream is) throws Exception {
+	  Collection certs = null;
+	  byte[] certbytes = FileTools.readInputStreamtoBuffer(is);
+	  try {
+		  certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+	  } catch (IOException e) {
+		  log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
+		  // See if it is a single binary certificate
+		  Certificate cert = CertTools.getCertfromByteArray(certbytes);
+		  certs = new ArrayList();
+		  certs.add(cert);
+	  }
 	  caadminsession.importCACertificate(administrator, caname, certs);
 	  info.cAsEdited();
   }
