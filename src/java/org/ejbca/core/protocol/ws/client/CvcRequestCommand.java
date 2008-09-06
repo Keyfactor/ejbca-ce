@@ -22,10 +22,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
-import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
@@ -55,15 +53,12 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	private static final int ARG_PASSWORD           = 2;
 	private static final int ARG_SUBJECTDN          = 3;
 	private static final int ARG_SEQUENCE           = 4;
-	private static final int ARG_CA                 = 5;
-	private static final int ARG_SIGNALG            = 6;
-	private static final int ARG_KEYSPEC            = 7;
-	private static final int ARG_ENDENTITYPROFILE   = 8;
-	private static final int ARG_CERTIFICATEPROFILE = 9;
-	private static final int ARG_GENREQ             = 10;
-	private static final int ARG_BASEFILENAME       = 11;
-	private static final int ARG_AUTHSIGNKEY        = 12;
-	private static final int ARG_AUTHSIGNCERT       = 13;
+	private static final int ARG_SIGNALG            = 5;
+	private static final int ARG_KEYSPEC            = 6;
+	private static final int ARG_GENREQ             = 7;
+	private static final int ARG_BASEFILENAME       = 8;
+	private static final int ARG_AUTHSIGNKEY        = 9;
+	private static final int ARG_AUTHSIGNCERT       = 10;
 
 	/**
 	 * Creates a new instance of CvcRequestCommand
@@ -83,23 +78,16 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {   
-			if(args.length < 12 || args.length > 14){
+			if(args.length < 9 || args.length > 11){
 				getPrintStream().println("Number of arguments: "+args.length);
 				usage();
 				System.exit(-1);
 			}
 
-			UserDataVOWS userdata = new UserDataVOWS();
-			userdata.setUsername(args[ARG_USERNAME]);
-			userdata.setPassword(args[ARG_PASSWORD]);
-			userdata.setClearPwd(false);
-			userdata.setSubjectDN(args[ARG_SUBJECTDN]);
+			String username = args[ARG_USERNAME];
+			String userpassword = args[ARG_PASSWORD];
+			String dn = args[ARG_SUBJECTDN];
 			String sequence = args[ARG_SEQUENCE];
-			userdata.setCaName(args[ARG_CA]);
-			userdata.setEndEntityProfileName(args[ARG_ENDENTITYPROFILE]);
-			userdata.setCertificateProfileName(args[ARG_CERTIFICATEPROFILE]);
-			userdata.setTokenType("USERGENERATED");
-			userdata.setStatus(UserDataConstants.STATUS_NEW);
 			String signatureAlg = args[ARG_SIGNALG];
 			String keySpec = args[ARG_KEYSPEC];
 			boolean genrequest = args[ARG_GENREQ].equalsIgnoreCase("true");
@@ -113,15 +101,12 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				authSignCertFile = args[ARG_AUTHSIGNCERT];				
 			}
 
-			getPrintStream().println("Trying to add user:");
-			getPrintStream().println("Username: "+userdata.getUsername());
-			getPrintStream().println("Subject name: "+userdata.getSubjectDN());
+			getPrintStream().println("Enrolling user:");
+			getPrintStream().println("Username: "+username);
+			getPrintStream().println("Subject name: "+dn);
 			getPrintStream().println("Sequence: "+sequence);
-			getPrintStream().println("CA Name: "+userdata.getCaName());                        
 			getPrintStream().println("Signature algorithm: "+signatureAlg);                        
 			getPrintStream().println("Key spec: "+keySpec);                        
-			getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
-			getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
 
 			try{
 				CertTools.installBCProvider();
@@ -135,7 +120,6 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						keytype = "ECDSA";
 					}
 					KeyPair keyPair = KeyTools.genKeys(keySpec, keytype);
-					String dn = userdata.getSubjectDN();
 					String country = CertTools.getPartFromDN(dn, "C");
 					String mnemonic = CertTools.getPartFromDN(dn, "CN");
 					if (sequence.equalsIgnoreCase("null")) {
@@ -193,12 +177,14 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				}
 				
 				// Edit a user, creating it if it does not exist
-				getEjbcaRAWS().editUser(userdata);
-				// Use the request and request a certificate
-				List<Certificate> resp = getEjbcaRAWS().cvcRequest(userdata.getUsername(), userdata.getPassword(), cvcreq);
-
-				getPrintStream().println("CVC request submitted for user '"+userdata.getUsername()+"'.");
+				// Actually don't do that, leverage the existing commands and force to use the editUser command instead.
+				// This also makes this CLI exactly represent the actual WS-API call 
+				// getEjbcaRAWS().editUser(userdata);
+				
+				getPrintStream().println("Submitting CVC request for user '"+username+"'.");
 				getPrintStream().println();              
+				// Use the request and request a certificate
+				List<Certificate> resp = getEjbcaRAWS().cvcRequest(username, userpassword, cvcreq);
 
 				// Handle the response
 				Certificate cert = resp.get(0);
@@ -222,12 +208,12 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	}
 
 	protected void usage() {
-		getPrintStream().println("Command used to make a CVC request. If user does not exist a new will be created and if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <caname> <signatureAlg> <keyspec (1024/2048/curve)> <endentityprofilename> <certificateprofilename> <genreq=true|false> <basefilename> [<auth-sign-key>] [<auth-sign-cert>]\n\n");
-		getPrintStream().println("SignatureAlg can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA1WithECDSA, SHA224WithECDSA, SHA256WithECDSA");
-		getPrintStream().println("Keyspec is 1024, 2048 etc for RSA keys and the name of a named curve for ECDSA, see User Guide for supported curves.");
-		getPrintStream().println("DN is of form \"C=SE, CN=ISTEST2\", where SE is the country and ISTEST2 the mnemonic.");
-		getPrintStream().println("Sequence is a sequence number for the public key, recomended form 00001 etc. If 'null' a random 5 number sequence will be generated.");
+		getPrintStream().println("Command used to make a CVC request. A user must exist, add one with 'ejbcawsracli.sh edituser'.");
+		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <signatureAlg> <keyspec (1024/2048/curve)><genreq=true|false> <basefilename> [<auth-sign-key>] [<auth-sign-cert>]\n\n");
+		getPrintStream().println("SignatureAlg is used when generating a request and can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA1WithECDSA, SHA224WithECDSA, SHA256WithECDSA");
+		getPrintStream().println("Keyspec is used when generating a request and is 1024, 2048 etc for RSA keys and the name of a named curve for ECDSA, see User Guide for supported curves.");
+		getPrintStream().println("DN is used when generating a request and is of form \"C=SE, CN=ISTEST2\", where SE is the country and ISTEST2 the mnemonic.");
+		getPrintStream().println("Sequence is used when generating a request and is a sequence number for the public key, recomended form 00001 etc. If 'null' a random 5 number sequence will be generated.");
 		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <basefilename>.cvrqst, and the private key to <basefilename>.pkcs8.");
 		getPrintStream().println("If genreq is false a request is read from <reqfilename>.cvrqst and sent to the CA, the sequence from the command line is ignored.");
 		getPrintStream().println("The issued certificate is written to <basefilename>.cvcert\n");

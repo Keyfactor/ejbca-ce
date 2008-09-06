@@ -223,35 +223,50 @@
   <p>
   The CLI uses client certificate authentication, and as such is allowed to perform administrative tasks in EJBCA as long as your
   client certificate has the correct RA administrator privileges in EJBCA.<br/>
-  Because of this unauthenticated requests entered using the CLI is directly granted and end entities created, since you as an administrator 
-  have approved this request.<br/>
-  Authenticated requests however are verified and granted or rejected based on the verification of the outer signature on the request.
+  To issue certificates for a request, an end entity must first be added in EJBCA. Unauthenticated requests entered using the CLI is authenticated using a one-time password set during entity registration.
+  <br/>
+  Authenticated requests however are verified and granted or rejected based on the verification of the outer signature on the request. 
+  If an end entity already exists, and have a previously issued certificate, the previous certificate can authenticate the request and automatically grant it.
+  <br/>For DV requests, authenticated with a CVCA certificate, the CVCA certificate instead of a previously issued certificate can authenticate the request. 
   </p>
   </subsection>
   
   <subsection name="CLI examples"> 
   <p>
   <strong>1.</strong><br/>
-  An example command to receive a request from a foreign DV could look like:
+  Example command to receive a request from a foreign DV could look like:
   </p>
   <source>
-  ./cvcwscli.sh cvcrequest holland foo123 "CN=dv,C=NL" SE001 CVCAPK SHA256WithRSA 2048 DV DV false hollandreq
+./ejbcawsracli.sh edituser dv-de foo123 false "CN=dvca,C=DE" NULL NULL CVCAPK 1 USERGENERATED NEW DV DV  
+  </source>  
+  <source>
+./cvcwscli.sh cvcrequest dv-de foo123 "CN=dvca,C=DE" SE001 SHA256WithRSA 2048 false dedv
   </source>
   <p>
   Where your CVCA is called CVCAPK in EJBCA and uses algorithm SHA256WithRSA with 2048 bit keys.<br/>
   Where an End entity profile, DV, is created with CN and C as required DN fields, and DV as available certificate profiles.<br/>
   Where a Certificate profile, DV, is created of type SubCA.<br/>
-  Where the received request is stored in a file 'hollandreq.cvrqst'.
+  Where the received request is stored in a file 'dedv.cvrqst'.
+  </p>
+  <p>The first command adds the end entity in EJBCA and only has to be made the first time. foo123 is the one-time password set to authenticate the request.
   </p> 
   <p>
-  If the request is an authenticated request signed by a CVCA and that CVCA has been imported in EJBCA (Edit Certificate Authorities->Import CA certificate), the request will be verified and granted. 
+  If the request is an authenticated request signed by a CVCA and that CVCA has been imported in EJBCA (Edit Certificate Authorities->Import CA certificate), the request will be verified and granted.
+  For authenticated request the one-time password is not used. 
   </p>
   <p>
   <strong>2.</strong><br/>
   An example command to generate keys and a request for an IS using SHA224WithECDSA and brainpoolp224r1 curve:
   </p>
   <source>
-  ./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 DV-BrainPool SHA224WithECDSA brainpoolp224r1 IS IS true isbrainpool
+./ejbcawsracli.sh edituser isbrainpool47 foo123 false "CN=ISBPOOL47,C=SE" NULL NULL DV-BrainPool 1 USERGENERATED NEW IS IS
+  </source>
+  <p>This command adds the IS as end end entity in EJBCA. It only has to be done the first time, or if the IS previous certificates expire.
+  When using authenticated requests these are used instead of the one-time password, but if the previous certificate expires, a new one-time password is
+  needed to authenticate the request.
+  </p> 
+  <source>
+./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL47" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpool
   </source>
   <p>
   Where your DV is called DV-BrainPool in EJBCA and uses algorithm SHA224WithECDSA with brainpoolp224r1 curve.
@@ -263,7 +278,15 @@
   <p>
   If the request is an authenticated request signed by a CVCA and that CVCA has been imported in EJBCA, the request will be verified and granted. 
   </p>
-  
+  <p>
+  To create an authenticated request for this user you can issue the following command, which authenticates the new request with the old key and certificate. 
+  </p>  
+  <source>
+./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL47" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpoolnew isbrainpool.pkcs8 isbrainpool.cvcert
+  </source>
+  <p>
+  The request will be automatically granted (the password passed will be ignored) and the new certificate will be written to 'isbrainpoolnew.cvcert'.
+  </p>  
   </subsection>
   
   </section>
