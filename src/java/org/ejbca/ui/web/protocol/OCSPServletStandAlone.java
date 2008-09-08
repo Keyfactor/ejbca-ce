@@ -68,7 +68,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @web.servlet name = "OCSP"
  *              display-name = "OCSPServletStandAlone"
  *              description="Answers OCSP requests"
- *              load-on-startup = "99"
+ *              load-on-startup = "1"
  *
  * @web.servlet-mapping url-pattern = "/ocsp"
  *
