@@ -273,7 +273,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         final Provider provider = KeyTools.getP11Provider(mSlot, mSharedLibrary, mIsIndex, null);
         Security.addProvider( provider );
 
-        final PasswordProtection pwp =new PasswordProtection( (mP11Password!=null && mP11Password.length()>0)? mStorePassword.toCharArray():null );
+        final PasswordProtection pwp =new PasswordProtection( (mP11Password!=null && mP11Password.length()>0)? mP11Password.toCharArray():null );
         final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider, pwp);
         final KeyStore keyStore = builder.getKeyStore();
         m_log.debug("Loading key from slot '"+mSlot+"' using pin.");
