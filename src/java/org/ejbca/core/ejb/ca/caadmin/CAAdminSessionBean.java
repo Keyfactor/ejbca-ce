@@ -435,7 +435,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
         // Certificate chain
     	Collection certificatechain = null;
-    	String sequence = catoken.getCATokenInfo().getSequence(); // get from CAtoken to make sure it is fresh
+    	String sequence = catoken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
         if(cainfo.getSignedBy() == CAInfo.SELFSIGNED){
         	try{
         		// create selfsigned certificate
@@ -1526,7 +1526,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     							0, 0, 0, ca.getCertificateProfileId(), null, null, 0, 0 ,null);
 
     					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
-    					String sequence = caToken.getCATokenInfo().getSequence(); // get from CAtoken to make sure it is fresh
+    					String sequence = caToken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
     					cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile, sequence);
     					// Build Certificate Chain
     					cachain = new ArrayList();
@@ -1550,7 +1550,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     								0,0,0, ca.getCertificateProfileId(), null, null, 0,0, null);
 
     						CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
-        					String sequence = caToken.getCATokenInfo().getSequence(); // get from CAtoken to make sure it is fresh
+        					String sequence = caToken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
     						cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile, sequence);
     						// Build Certificate Chain
     						Collection rootcachain = signca.getCertificateChain();

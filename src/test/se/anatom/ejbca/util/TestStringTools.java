@@ -90,7 +90,7 @@ public class TestStringTools extends TestCase {
         String s2 = StringTools.getBase64String(b1);
         assertEquals(s2,s1);
 
-        s1 = "C=SE, O=ÅÄÖ, CN=åäö";
+        s1 = "C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½";
         b1 = StringTools.putBase64String(s1);
         s2 = StringTools.getBase64String(b1);
         assertEquals(s2,s1);
@@ -105,5 +105,17 @@ public class TestStringTools extends TestCase {
         String enc = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
         String dec = StringTools.pbeDecryptStringWithSha256Aes192(enc);
         assertEquals("foo123", dec);
+    }
+    public void testKeySequence() throws Exception {
+    	String oldSeq = "00001";
+    	assertEquals("00002", StringTools.incrementKeySequence(oldSeq));
+    	oldSeq = "92002";
+    	assertEquals("92003", StringTools.incrementKeySequence(oldSeq));
+    	oldSeq = "SE201";
+    	assertEquals("SE202", StringTools.incrementKeySequence(oldSeq));
+    	oldSeq = "SEFO1";
+    	assertEquals("SEFO2", StringTools.incrementKeySequence(oldSeq));
+    	oldSeq = "SEBAR";
+    	assertEquals("SEBAR", StringTools.incrementKeySequence(oldSeq));
     }
 }

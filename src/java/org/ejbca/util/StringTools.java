@@ -19,6 +19,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.DecimalFormat;
 import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
@@ -30,6 +31,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.Digest;
@@ -386,5 +388,39 @@ public class StringTools {
         byte[] dec = c.doFinal(Hex.decode(in.getBytes("UTF-8")));
         return new String(dec);
     }
-    
+
+    public static String incrementKeySequence(String oldSequence) {
+    	log.debug(">incrementKeySequence: "+ oldSequence);
+    	// If the sequence does not contain any number in it at all, we can only return the same
+		String ret = oldSequence; 
+    	// A sequence can be 00001, or SE001 for example
+		// Here we will strip any sequence number at the end of the key label and add the new sequence there
+		StringBuffer buf = new StringBuffer();
+		for (int i = oldSequence.length()-1; i >= 0; i--) {
+			char c = oldSequence.charAt(i);		
+			if (CharUtils.isAsciiNumeric(c)) {
+				buf.insert(0, c);						
+			} else {
+				break; // at first non numeric character we break
+			}
+		}
+		int restlen = oldSequence.length() - buf.length();
+		String rest = oldSequence.substring(0, restlen);
+
+		String intStr = buf.toString();
+		if (StringUtils.isNotEmpty(intStr)) {
+	    	Integer seq = Integer.valueOf(intStr);
+	    	seq = seq + 1;
+	    	// We want this to be the same number of numbers as we converted and incremented 
+	    	DecimalFormat df = new DecimalFormat("0000000000".substring(0,intStr.length()));
+	    	String fseq = df.format(seq);
+			System.out.println(fseq);
+	    	ret = rest + fseq;
+	    	log.debug("<incrementKeySequence: "+ ret);			
+		} else {
+			log.info("incrementKeySequence - Sequence does not contain any nummeric part: "+ret);
+		}
+    	return ret;
+    }
+
 } // StringTools

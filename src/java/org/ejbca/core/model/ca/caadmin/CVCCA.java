@@ -143,7 +143,7 @@ public class CVCCA extends CA implements Serializable {
 			String subject = getCAInfo().getSubjectDN();
 			String country = CertTools.getPartFromDN(subject, "C");
 			String mnemonic = CertTools.getPartFromDN(subject, "CN");
-			String seq = getCAToken().getCATokenInfo().getSequence(); 
+			String seq = getCAToken().getCATokenInfo().getKeySequence(); 
 			if (seq == null) {
 				log.info("No sequence found in ca token info, using random 5 number sequence.");
 				seq = RandomStringUtils.randomNumeric(5);

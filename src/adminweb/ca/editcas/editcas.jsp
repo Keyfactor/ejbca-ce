@@ -74,6 +74,7 @@
   static final String BUTTON_GENCADEFINEDFRESHESTCRL    = "checkboxgeneratecadefinedfresherstcrl";
   static final String BUTTON_GENDEFAULTOCSPLOCATOR      = "checkbexgeneratedefaultocsplocator";
 
+  static final String TEXTFIELD_KEYSEQUENCE           = "textfieldkeysequence";
   static final String TEXTFIELD_SUBJECTDN             = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";  
   static final String TEXTFIELD_CRLPERIOD             = "textfieldcrlperiod";
@@ -404,6 +405,11 @@
             catoken.setAuthenticationCode(authenticationcode);
          }
 
+         String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+         if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
+           sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
+         catoken.setKeySequence(sequence);
+         
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
@@ -789,6 +795,10 @@
             catoken.setProperties(properties);
          }
 
+         String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+         if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
+           sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
+         catoken.setKeySequence(sequence);
           
          String description = request.getParameter(TEXTFIELD_DESCRIPTION);        
          if(description == null){

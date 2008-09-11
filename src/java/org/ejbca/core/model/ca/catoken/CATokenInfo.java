@@ -69,11 +69,11 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
     /**
      * Method to retrieve the sequence of keys
      */
-    public String getSequence(){ return sequence; }
+    public String getKeySequence(){ return sequence; }
 	/** Sequence of the signature keys 
 	 * @param sequence 
 	 */
-    public void setSequence(String sequence){ this.sequence=sequence;}
+    public void setKeySequence(String sequence){ this.sequence=sequence;}
     
 	/**
 	 * @return Returns the authentication code.

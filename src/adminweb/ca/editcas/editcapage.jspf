@@ -502,6 +502,19 @@ function checkallfields(){
 <%}  %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("KEYSEQUENCE") %>
+      </td>
+      <td width="50%"> 
+        <% String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+           if (catokeninfo != null) {
+        	   sequence = catokeninfo.getKeySequence();
+           }%>
+        <input type="text" name="<%=TEXTFIELD_KEYSEQUENCE%>" size="10" <% out.write(" value='"+sequence+"'"); %> maxlength="10">
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SUBJECTDN") %>
       </td>
       <td width="50%"> 

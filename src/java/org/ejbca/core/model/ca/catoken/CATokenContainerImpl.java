@@ -22,7 +22,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPublicKey;
-import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,6 +39,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyStoreContainer;
 import org.ejbca.util.keystore.KeyStoreContainerFactory;
 import org.ejbca.util.keystore.KeyTools;
@@ -168,7 +168,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		info.setClassPath(getClassPath());
 		info.setProperties(getPropertyData());
 		info.setSignatureAlgorithm(getSignatureAlgorithm());
-		info.setSequence(getSequence());
+		info.setKeySequence(getKeySequence());
 
 		// Set status of the CA token
 		int status = ICAToken.STATUS_OFFLINE;
@@ -215,8 +215,8 @@ public class CATokenContainerImpl extends CATokenContainer {
 			this.setPropertyData(newprops);				
 			changed = true;
 		}
-		if (catokeninfo.getSequence() != null) {
-			this.setSequence(catokeninfo.getSequence());
+		if (catokeninfo.getKeySequence() != null) {
+			this.setKeySequence(catokeninfo.getKeySequence());
 		}
 		if (catokeninfo instanceof NullCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_NULL");
@@ -327,15 +327,11 @@ public class CATokenContainerImpl extends CATokenContainer {
 		CATokenInfo catokeninfo = getCATokenInfo();
 		
 		// First we start by setting a new sequence for our new keys
-		String oldSequence = getSequence();
+		String oldSequence = getKeySequence();
 		log.debug("Current sequence: "+oldSequence);
-		Integer seq = Integer.valueOf(oldSequence);
-		seq = seq + 1;
-		// We want this to be (at least) 5 digits, as required by CVC
-		DecimalFormat df = new DecimalFormat("00000");
-		String fseq = df.format(seq);
-		log.debug("Setting new sequence: "+fseq);
-		setSequence(fseq);
+		String newSequence = StringTools.incrementKeySequence(oldSequence);
+		log.debug("Setting new sequence: "+newSequence);
+		setKeySequence(newSequence);
 		
 		// Then we can move on to actually generating the keys
 		if (catokeninfo instanceof SoftCATokenInfo) {
@@ -425,7 +421,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 				}
 				String end = buf.toString();
 				String chompedLabel = StringUtils.removeEnd(keyLabel, end);
-				String newKeyLabel = chompedLabel+seq;
+				String newKeyLabel = chompedLabel+newSequence;
 				log.debug("New key label is: "+newKeyLabel);
 				int keysize = KeyTools.getKeyLength(pubK);
 				String alg = pubK.getAlgorithm();
@@ -504,10 +500,10 @@ public class CATokenContainerImpl extends CATokenContainer {
 			log.debug("Getting sequence from holderRef in CV certificate.");
 			String sequence = cvccacert.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
 			log.debug("Setting sequence "+sequence);
-			setSequence(sequence);
+			setKeySequence(sequence);
 		} else {
-			log.debug("Setting default sequence 00000");
-			setSequence("00000");
+			log.debug("Setting default sequence "+CATokenConstants.DEFAULT_KEYSEQUENCE);
+			setKeySequence(CATokenConstants.DEFAULT_KEYSEQUENCE);
 		}
 
 		// import sign keys.
@@ -606,10 +602,10 @@ public class CATokenContainerImpl extends CATokenContainer {
 	/**
 	 *  Returns the Sequence, that is a sequence that is updated when keys are re-generated 
 	 */    
-	private String getSequence(){
+	private String getKeySequence(){
 		Object seq = data.get(SEQUENCE);
 		if (seq == null) {
-			seq = new String("00000");
+			seq = new String(CATokenConstants.DEFAULT_KEYSEQUENCE);
 		}
 		return (String)seq;
 	}
@@ -617,7 +613,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 	/**
 	 *  Sets the SignatureAlgoritm
 	 */        
-	private void setSequence(String sequence){
+	private void setKeySequence(String sequence){
 		data.put(SEQUENCE, sequence);	
 	}
 	
@@ -714,7 +710,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 			}
 
 			if (data.get(SEQUENCE) == null) {
-				String sequence = "00000";
+				String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
 				log.info("Adding new sequence to CA Token data: "+sequence);
 				data.put(SEQUENCE, sequence);
 			}
