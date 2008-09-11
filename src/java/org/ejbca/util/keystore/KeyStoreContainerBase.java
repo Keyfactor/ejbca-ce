@@ -132,8 +132,6 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         final PublicKey publicKey = keyPair.getPublic();
         if ( publicKey==null )
             throw new Exception("Public key is null");
-        if ( publicKey instanceof ECPublicKey )
-            log.debug(((ECPublicKey)publicKey).getW());
         cg.setPublicKey(publicKey);
         cg.setNotBefore(firstDate);
         cg.setNotAfter(lastDate);
