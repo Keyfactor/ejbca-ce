@@ -3,7 +3,6 @@ package org.ejbca.core.model.log;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -303,6 +302,7 @@ public class TestProtectedLog extends TestCase {
 		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
 		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
 		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getLogSession().setTestDeviceOnLogSession(ProtectedLogDeviceFactory.class, properties);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		try {
 			TestTools.getLogSession().testRollbackInternal(now);
@@ -312,6 +312,7 @@ public class TestProtectedLog extends TestCase {
 		assertEquals(ERROR_NONEMPTY, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
 		// Verify that event written at time "now" still exists
 		assertTrue("The log event has been rolled back and cannot be found any more..", TestTools.getProtectedLogSession().existsAnyProtectedLogEventByTime(now));
+		TestTools.getLogSession().restoreTestDeviceOnLogSession();
 	}
 	
 	public void test99RemoveTestCA() throws Exception {

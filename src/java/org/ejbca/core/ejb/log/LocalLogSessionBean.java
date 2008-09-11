@@ -290,7 +290,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
     private Properties testDeviceProperties = null;
 
     /**
-     * Replace existing devices with new ones. Used for testing.
+     * Replace existing devices with a new one.
+     * Used for testing, since the JUnit has to inject a mock xxxLogDevice.
+     * 
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -323,7 +325,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
     }
     
     /**
-     * Replace test device with original ones. Used for testing.
+     * Replace existing devices with a new one in this LogSessionBean.
+     * Used for testing, since the JUnit has to inject a mock xxxLogDevice.
+     * 
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -343,6 +347,33 @@ public class LocalLogSessionBean extends BaseSessionBean {
     	}
     }
 
+    /**
+     * Replace existing devices with a new one in this beans LogSession reference.
+     * Used for testing, since the JUnit has to inject a mock ProtectedLogDevice
+     * in both the instance accessed remotly and also the local instance accessed
+     * by this bean to be able to use the container managed transations.
+     * 
+     * @ejb.interface-method view-type="remote"
+     * @ejb.transaction type="Supports"
+     */
+    public void setTestDeviceOnLogSession(Class implClass, Properties properties) {
+    	getLogSession().setTestDevice(implClass, properties);
+    }
+
+    /**
+     * Replace existing devices with the original ones in this beans LogSession reference.
+     * Used for testing, since the JUnit has to inject a mock ProtectedLogDevice
+     * in both the instance accessed remotly and also the local instance accessed
+     * by this bean to be able to use the container managed transations.
+     * 
+     * @ejb.interface-method view-type="remote"
+     * @ejb.transaction type="Supports"
+     */
+    public void restoreTestDeviceOnLogSession() {
+    	getLogSession().restoreTestDevice();
+    }
+
+    
     /**
      * Session beans main function. Takes care of the logging functionality.
      *
