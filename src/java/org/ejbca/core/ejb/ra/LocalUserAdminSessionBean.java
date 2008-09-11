@@ -1587,7 +1587,20 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         return returnval;
     } // findUserBySubjectDN
 
-    /**
+   	/**
+     * Method that checks if user with specified users certificate exists in database
+     * @deprecated This method no longer verifies the admin-flag of end entities since this feature was dropped in EJBCA 3.8.0 
+     *
+     * @param subjectdn
+     * @throws AuthorizationDeniedException if user doesn't exist
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
+    	checkIfCertificateBelongToUser(admin, certificatesnr, issuerdn);
+    }
+
+   	/**
      * Method that checks if user with specified users certificate exists in database
      *
      * @param subjectdn
@@ -1598,7 +1611,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     public void checkIfCertificateBelongToUser(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
         debug(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
         if (!WebConfiguration.getRequireAdminCertificateInDatabase()) {
-        	debug("<checkIfCertificateBelongToAdmin Configured to ignore if cert belongs to admin.");
+        	debug("<checkIfCertificateBelongToUser Configured to ignore if cert belongs to user.");
         	return;
         }
         String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
