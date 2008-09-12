@@ -51,7 +51,10 @@
 
   <section name="CVC Sequence">
   <p>The sequence in the holder reference of EAC CVC certificates should identify a public key. For CAs created and managed by EJBCA this sequence is
-  an automatic property in the CA token. It starts with 00001 and is increased when new keys are generated (renew CA with checkbox to renew keys checked).
+  normally an automatic property in the CA token. It starts with 00001 and is increased when new keys are generated (renew CA with checkbox to renew keys checked).
+  <br/>
+  You can also set a specific value for the initial sequence, which will then be increased when renewing keys, or you can change the sequence at any time. 
+  See section about Key sequence in User guide for more information. 
   </p>
   <p>For entity (IS and DV) requests that are received, the sequence in the issued certificates are taken from the request. The entity knows best 
   how to index it's keys.

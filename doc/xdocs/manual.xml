@@ -457,9 +457,21 @@ Issuing the command will give usage instructions.
 </p>
 <subsubsection name="Type of CA">
 <p>
-Type of CA can be either X509 or CVC. <br/>
+Type of CA can be either X509 or <a href="cvccas.html">CVC</a>. <br/>
 An X509 CA is a <i>normal</i> CA for secure email, login, web authentication, VPN etc etc.<br/>
-A CVC CA is a CA issuing CV certificates, which are special certificates for EU EAC ePassports. CVC CAs are described in depth in the document about <a href="cvccas.html">CVC CAs</a>.
+A CVC CA is a CA issuing CV certificates, which are special certificates for EU EAC ePassports. CVC CAs are described in depth in the document about <a href="cvccas.html">CVC</a> CAs.
+</p>
+</subsubsection>
+<subsubsection name="Key sequence">
+<p>
+Key sequence is mostly important for <a href="cvccas.html">CVC</a> CAs. <br/>
+The key sequence is an enumeration of the key pair for CVC CAs, it should be a number or a combination of letters and number in the end. For example 00001, 98653 or SE002. 
+For CVC CAs the sequence is always 5 letters. 
+When renewing keys for HSMs using the Admin-GUI, the new signing key label will be the old label with the new key sequence in the end.
+When renewing keys for HSMs using the Admin-GUI the key sequence is automatically increased.<br/>
+For X.509 CAs the key sequence should not be important, except for key labels when renewing keys.
+<br/>
+If you are unsure of the key sequence you can safely leave it to be handled automatically.
 </p>
 </subsubsection>
 

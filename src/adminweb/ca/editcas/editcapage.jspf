@@ -502,7 +502,7 @@ function checkallfields(){
 <%}  %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("KEYSEQUENCE") %>
+        <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/manual.html#Key%20sequence") %>
       </td>
       <td width="50%"> 
         <% String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
