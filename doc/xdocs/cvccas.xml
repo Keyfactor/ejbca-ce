@@ -18,7 +18,7 @@
     </p>
     You can also set up a Country Signing CA, which is a regular X.509 CA. 
     <p>
-    Currently EJBCA supports RSA keys in CV certificates with the follwing algorithms:
+    EJBCA supports RSA and ECC keys in CV certificates with the following algorithms:
     <ul>
       <li>SHA1WithRSA - id-TA-RSA-v1-5-SHA-1</li>
       <li>SHA256WithRSA - id-TA-RSA-v1-5-SHA-256</li>
@@ -65,7 +65,7 @@
   <p>
   <ul>
   <li>When issuing a CV certificate using a Root CA profile the EAC role will be CVCA.</li>
-  <li>When issuing a CV certificate using a Sub CA profile the EAC role will be DV-D if the country is the same as the country of the CVCA and DV-f if the country is not the same as the CVCA.</li>
+  <li>When issuing a CV certificate using a Sub CA profile the EAC role will be DV-D if the country is the same as the country of the CVCA and DV-F if the country is not the same as the CVCA.</li>
   <li>When issuing a CV certificate using an End Entity profile the EAC role will be IS.</li>
   </ul>
   </p>
