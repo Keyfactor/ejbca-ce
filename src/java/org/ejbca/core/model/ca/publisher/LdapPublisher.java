@@ -708,8 +708,10 @@ public class LdapPublisher extends BasePublisher {
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
 				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-				// try to read the old object
-				entry = lc.read(getBaseDN());			
+				// try to read the base object
+				String baseDN = getBaseDN();
+				log.debug("Trying to read top node '"+baseDN+"'");
+				entry = lc.read(baseDN);			
 				if(entry == null) {
 					String msg = intres.getLocalizedMessage("publisher.errornobinddn");
 					throw new PublisherConnectionException(msg);
