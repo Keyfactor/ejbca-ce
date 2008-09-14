@@ -710,11 +710,11 @@ public class LdapPublisher extends BasePublisher {
 				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
 				// try to read the old object
 				entry = lc.read(getBaseDN());			
-				log.debug("Entry" + entry.toString());
 				if(entry == null) {
 					String msg = intres.getLocalizedMessage("publisher.errornobinddn");
 					throw new PublisherConnectionException(msg);
 				}
+				log.debug("Entry" + entry.toString());
 			} catch (LDAPException e) {
 				connectionFailed = true;
 				if (servers.hasNext()) {
