@@ -339,6 +339,18 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   Normally these properties are set completely automatically when you generate new keys from the Admin GUI. If keys are generated manually, or if there is 
   a problem these properties can be modified or set manually.
   </p>
+  
+  <subsection name="Generating keys">
+  <p>
+  Generating keys on an HSM can be done with the tool <i>pkcs11HSM.sh</i>.
+  </p>
+  <source>
+bin/pkcs11HSM.sh generate /etc/utimaco/libcs2_pkcs11.so secp160r1 signKey 1  
+  </source>
+  <p>See User Guide for more general information about generating keys.
+  For supported curves, see your HSM documentation. For example for Utimaco it can be found in chapter 8 of CS_AdminGuide.pdf.</p>
+  <p>Note that the Java PKCS#11 provider may not support all curves that your HSM supports.</p>
+  </subsection>
   </section>
 
   <section name="PEM requests">

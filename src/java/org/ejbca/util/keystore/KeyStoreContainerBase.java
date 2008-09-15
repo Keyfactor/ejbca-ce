@@ -30,7 +30,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Collection;
@@ -150,6 +149,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             kpg.initialize(new ECGenParameterSpec(name));
         } catch( InvalidAlgorithmParameterException e ) {
             log.debug("EC name "+name+" not supported.");
+            throw e;
         }
         final byte result[] = generate(kpg, keyEntryName, "SHA1withECDSA");
         log.debug("<generate: curve name "+name+", keyEntryName "+keyEntryName);
