@@ -42,4 +42,4 @@ CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
 
 # Finally run java
 #set -x
-$JAVACMD -cp $CLASSES org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool ${@}
+$JAVACMD -cp $CLASSES org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool "${@}"
