@@ -350,6 +350,7 @@ bin/pkcs11HSM.sh generate /etc/utimaco/libcs2_pkcs11.so secp160r1 signKey 1
   <p>See User Guide for more general information about generating keys.
   For supported curves, see your HSM documentation. For example for Utimaco it can be found in chapter 8 of CS_AdminGuide.pdf.</p>
   <p>Note that the Java PKCS#11 provider may not support all curves that your HSM supports.</p>
+  <p>To generate keys using the pkcs11HSM.sh tool, a patch for JDK is needed due to a bug. This patch will later be included in the official JDK.</p>
   </subsection>
   </section>
 
