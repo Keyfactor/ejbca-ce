@@ -1074,7 +1074,7 @@ function checkallfields(){
         <% } %>   
        <% if(!processrequest){ 
             String disabledStr = "disabled";
-            if (editca) {
+            if (editca && !isexternal) {
               disabledStr = "";
             } %>
     <tr  id="Row<%=row++%2%>"> 

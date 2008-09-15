@@ -405,10 +405,12 @@
             catoken.setAuthenticationCode(authenticationcode);
          }
 
-         String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
-         if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
-           sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
-         catoken.setKeySequence(sequence);
+         if (catokentype != CATokenInfo.CATOKENTYPE_NULL) {
+             String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+             if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
+               sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
+             catoken.setKeySequence(sequence);        	 
+         }
          
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
@@ -795,10 +797,12 @@
             catoken.setProperties(properties);
          }
 
-         String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
-         if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
-           sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
-         catoken.setKeySequence(sequence);
+         if (catokentype != CATokenInfo.CATOKENTYPE_NULL) {
+             String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+             if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
+               sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
+             catoken.setKeySequence(sequence);        	 
+         }
           
          String description = request.getParameter(TEXTFIELD_DESCRIPTION);        
          if(description == null){
