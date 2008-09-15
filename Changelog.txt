@@ -1,3 +1,17 @@
+3.8.0, 2008-09-15
+---
+New Feature
+    * [ECA-904] - Add a CLI subcommand to add an administrator in an admin group using the serial number
+    * [ECA-935] - Restructure administrator validation to allow admins using externally issued certificates
+
+Improvement
+    * [ECA-936] - Drop administrator flag in end entities
+    * [ECA-937] - Allow use of emailAddress in Admin interface
+
+Bug
+    * [ECA-664] - Adding Administrator Access rule; username with not-allowed character is possible
+    * [ECA-882] - Add Administrator - cert serial number not checked
+
 3.7.1, 2008-09-15
 ---
 
