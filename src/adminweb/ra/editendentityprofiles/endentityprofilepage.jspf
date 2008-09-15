@@ -530,7 +530,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="70%"> 
         <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) { %>
-				Use entity e-mail field
+				<%= ejbcawebbean.getText("USEENTITYEMAILFIELD") %>
 				<input type="checkbox" name="<%=CHECKBOX_USE_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" 
 		           <%	if ( profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) ) {
 		                	out.write(" CHECKED ");
