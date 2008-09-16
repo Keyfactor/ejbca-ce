@@ -145,12 +145,16 @@ public class CertificateFinderBean {
 	public boolean getOcspEnabled() throws RemoteException {
 		CAInfo caInfo = getCAInfo();
 		boolean active = false;
-		Iterator iter = caInfo.getExtendedCAServiceInfos().iterator();
-		while(iter.hasNext()){
-	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
-	      if(next instanceof OCSPCAServiceInfo){
-	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-	      }
+		if (caInfo != null) {
+			Iterator iter = caInfo.getExtendedCAServiceInfos().iterator();
+			while(iter.hasNext()){
+		      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
+		      if(next instanceof OCSPCAServiceInfo){
+		      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+		      }
+			}			
+		} else {
+			log.debug("getOcspEnabled: caInfo is null");
 		}
 		return active;
 	}
