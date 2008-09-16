@@ -414,7 +414,6 @@ public class StringTools {
 	    	// We want this to be the same number of numbers as we converted and incremented 
 	    	DecimalFormat df = new DecimalFormat("0000000000".substring(0,intStr.length()));
 	    	String fseq = df.format(seq);
-			System.out.println(fseq);
 	    	ret = rest + fseq;
 	    	log.debug("<incrementKeySequence: "+ ret);			
 		} else {
