@@ -362,6 +362,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
 					if (currentName.equals(AdminGroup.PUBLICWEBGROUPNAME)) {
 						// We don't need a group for each CA and longer
 						try {
+							adminGroupData.removeAccessRulesObjects(adminGroupData.getAccessRuleObjects());
+							adminGroupData.removeAdminEntities(adminGroupData.getAdminEntityObjects());
 							adminGroupData.remove();
 						} catch (EJBException e) {
 							log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
