@@ -112,8 +112,10 @@ public class CertRequestHttpTest extends TestCase {
         while (iter.hasNext()) {
             caid = ((Integer) iter.next()).intValue();
             CAInfo cainfo = casession.getCAInfo(admin, caid);
-            if (cainfo.getStatus() == SecConst.CA_ACTIVE) {
-            	break;
+            if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
+                if (cainfo.getStatus() == SecConst.CA_ACTIVE) {
+                	break;
+                }            	
             }
         } 
     }
