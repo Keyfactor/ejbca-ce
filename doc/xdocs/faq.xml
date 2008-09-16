@@ -4,8 +4,8 @@
   <properties>
     <title>FAQ</title>
   </properties>
-  <faqsection title="About this FAQ">
-    <faq>
+  <faqsection title="General">
+    <faq id="heapSpaceError">
      <question>
       I get an error with "Java heap space" when building EJBCA (during ant bootstrap).
       </question>
@@ -29,7 +29,7 @@
       </answer>    
     </faq>
     
-        <faq>
+    <faq id="SHA256inIE">
      <question>
       SHA256 certs fails integrity check in IE
       </question>
@@ -43,7 +43,7 @@
       </answer>
     </faq>
     
-    <faq>
+    <faq id="strangeErrors">
       <question>
       I get strange errors during 'ant bootstrap' or 'ant install'.
       </question>
@@ -65,7 +65,7 @@
       </answer>
     </faq>
     
-    <faq>
+    <faq id="errorsDuringBuild">
       <question>During the build process I get errors like:
       BUILD FAILED
       /usr/ejbca/build.xml:789: java.lang.ExceptionInInitializerError
@@ -135,7 +135,7 @@ fi
       </p>
       </answer>
     </faq>
-    <faq>
+    <faq id="jbossServiceWin">
       <question>How can I run JBoss as a service in Windows?</question>
       <answer>
 	      <p>There is documentation over at JBoss for several different options:
@@ -149,7 +149,7 @@ fi
 	      </p>
       </answer>
     </faq>
-    <faq>
+    <faq id="PKCS10DNIgnored">
       <question>Enroll manually for a server - why are my PKCS10  DN fields Ignored?</question>
       <answer>
         <p>
@@ -163,7 +163,7 @@ fi
         </p>
       </answer>
     </faq>
-    <faq>
+    <faq id="logFileLocation">
       <question>Where is the log file stored for tracking errors and debug information?</question>
       <answer>
         <p>
@@ -171,7 +171,7 @@ fi
         </p>
       </answer>
     </faq>
-    <faq>
+    <faq id="logLevelJBoss">
       <question>How do I configure log level in JBoss?</question>
       <answer>
         <p>
@@ -203,7 +203,7 @@ you can get nice logging with only the things you are interested in logged to th
       </answer>
     </faq>
     
-    <faq>
+    <faq id="addingStaticPages">
       <question>I want to add my own static pages under http://hostname:8080/ejbca/ ?</question>
       <answer>
         <p>
@@ -212,7 +212,7 @@ you can get nice logging with only the things you are interested in logged to th
       </answer>
     </faq>
     
-    <faq>
+    <faq id="errorEstablish">
       <question>I get an error message when accessing the admin-GUI, "Could not establish an encrypted connection because your certificate was rejected ... Error code: -12224"?</question>
       <answer>
         <p>
@@ -264,7 +264,7 @@ keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_H
 	</p>
       </answer>
     </faq>
-    <faq>
+    <faq id="blankPage">
       <question>I get a blank page on the admiweb after start?</question>
       <answer>
         <p>
@@ -276,7 +276,7 @@ keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_H
       </answer>
     </faq>
     
-    <faq>
+    <faq id="jceLimitation">
       <question>When running 'ant install' or creating JKS or PKCS12 files you can't use longer 
 password than 7 characters. Anything longer gives an error?</question>
       <answer>
@@ -309,7 +309,7 @@ JAVA_HOME/jre/lib/security/cacerts. Preferably the same user as is used to run t
         </p>
       </answer>
     </faq>
-    <faq>
+    <faq id="alterHypersonic">
       <question>How do I connect to, and alter data in the built-in 'Hypersonic SQL' database.</question>
       <answer>
         <p>
@@ -334,15 +334,15 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
  </p>
  </answer>
  </faq>
-    <faq>
+    <faq id="errorClsid">
       <question>When enrolling for certificates with IE, the enrollment controll (clsid) is incorrect.</question>
 	  <answer><p>Microsoft changed the enrollment controll due to secrity issues. Look in 'src/publicweb/publicweb/anrol/apply/apply_exp.jspf' for more information.</p></answer>
 	</faq>
-    <faq>
+    <faq id="errorOCV">
       <question>I get the error "Object Class Violation : (65)" when publishing certificates in LDAP</question>
 	  <answer><p>You LDAP object class may require some fields in the DN that you have not entered. Some schemas require the DN-attribute SN for instance.</p></answer>
 	</faq>
-    <faq>
+    <faq id="errorUserStatus">
       <question>Why do I get the exception/error: User foo has status '40', NEW, FAILED or INPROCESS required.; nested exception is: javax.ejb.EJBException:null</question>
 	  <answer><p>When using the LocalAuthenticationSession (default) all users have a STATUS. The status lifecycle
 	  beginns with NEW and ends with REVOKED. Only when the status is NEW, FAILED or INPROCESS is it possible
@@ -356,7 +356,7 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
 	</p>
 	</answer>
 	</faq>
-    <faq>
+    <faq id="manipulateKeystore">
       <question>How do I manipulate EJBCA-keystores using Suns 'keytool'?</question>
 	  <answer><p>EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards.
 	  Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
@@ -370,7 +370,7 @@ keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepas
 	  It should be possible to import etc as well using keytool.
 	  </p></answer>
 	</faq>
-    <faq>
+    <faq id="createKeystore">
       <question>How do I make a keystore using keytool with a real certificate from EJBCA?</question>
 	  <answer>
 <source>
@@ -413,13 +413,46 @@ not just for CAs.
 	  </answer>
 	</faq>
 	
-  <faq>
+  <faq id="exportClassification">
       <question>What is EJBCA's export classification in the United States of America?</question>
 	  <answer>
 	    <p>
 	    At the time of writing (26 Feb 2008) EJBCA is approved classified under ECCN code 5D002 and approved for export under License Exception TSU. 
 	    See The <a href="http://www.bis.doc.gov/licensing/exportingbasics.htm">Bureau of Industry and Security website</a> for further details.<br/>
 	    EJBCA actually has the same classification as the Bouncy Castle JCE provider, from which this FAQ text is a rip-off. Thanks BC!
+	    </p>
+	  </answer>
+  </faq>
+  
+  <faq id="passwordEE">
+      <question>When a new end entity is created, where and how is the password stored?</question>
+	  <answer>
+	    <p>
+		A one-time password is stored hashed with SHA-1 in the UserData table
+		in the database. If the checkbox 'clear text password' is checked when
+		adding the user the password is stored in clear text, to be used for
+		server side generation.
+	    </p>
+	  </answer>
+  </faq>
+  
+  <faq id="caKeyStorage">
+      <question>Where are software based CA keys stored in the database?</question>
+	  <answer>
+	    <p>
+		These keys are stored in a PKCS#12 file, encrypted with a password.
+		The PKCS#12 is stored in the database in the CAData table. 
+	    </p>
+	  </answer>
+  </faq>
+  
+  <faq id="keyRecoveryStorage">
+      <question>If I enable key recovery, where are the end entities private keys stored in the database?</question>
+	  <answer>
+	    <p>
+		The private keys for key recovery is stored in the KeyRecoveryData
+		table in the database. The data is encrypted with the CAs encryption
+		key. The private keys are only stored if key recovery is enabled. 
 	    </p>
 	  </answer>
   </faq>
