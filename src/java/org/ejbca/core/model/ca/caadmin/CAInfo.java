@@ -78,6 +78,7 @@ public class CAInfo implements Serializable {
     protected int validity;
     protected Date expiretime;
     protected Date updatetime;
+    /** CATYPE_X509 or CATYPE_CVC */
     protected int catype;
     protected int signedby;
     protected Collection certificatechain;
