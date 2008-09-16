@@ -1,4 +1,4 @@
-3.8.0, 2008-09-15
+3.8.0, 2008-09-23
 ---
 New Feature
     * [ECA-904] - Add a CLI subcommand to add an administrator in an admin group using the serial number
@@ -12,7 +12,7 @@ Bug
     * [ECA-664] - Adding Administrator Access rule; username with not-allowed character is possible
     * [ECA-882] - Add Administrator - cert serial number not checked
 
-3.7.1, 2008-09-15
+3.7.1, 2008-09-16
 ---
 
 New Feature
