@@ -461,6 +461,7 @@ public class TestXKMSKISS extends TestCase {
     	while(iter.hasNext()){
     		UnverifiedKeyBindingType nextKeyBinding = iter.next();
     		keyInfoType = nextKeyBinding.getKeyInfo();
+    		System.out.println("keyInfoType: "+keyInfoType.getContent().size());
     		assertTrue(keyInfoType.getContent().size() > 1 );								
 			JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
 			assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
