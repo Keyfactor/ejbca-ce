@@ -651,6 +651,11 @@
 
             </cmp-field-mapping>
 
+            <cmp-field-mapping>
+                <field-name>caId</field-name>
+                <column-name>CAID</column-name>
+
+            </cmp-field-mapping>
 	    
 
         </entity-mapping>

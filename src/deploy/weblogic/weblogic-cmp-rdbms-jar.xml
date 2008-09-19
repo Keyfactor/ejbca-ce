@@ -934,6 +934,10 @@
          <cmp-field>matchValue</cmp-field>
          <dbms-column>matchValue</dbms-column>
       </field-map>
+      <field-map>
+         <cmp-field>caId</cmp-field>
+         <dbms-column>cAId</dbms-column>
+      </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
