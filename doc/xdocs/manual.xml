@@ -4960,8 +4960,8 @@ Reference: to generate a JKS with keytool
 <source>
 keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=hostname" -storepass foo123
 keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -storepass foo123 -file tomcat.req
-bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null caname null 1 JKS
-bin/ejbca.sh ca processreq tomcat foo123 tomcat.req tomcat.pem
+bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null caname null 1 USERGENERATED
+(go to EJBCA public web and get a 'Server certificate' by pasting the request into the web form and save as tomcat.pem)
 bin/ejbca.sh ca getrootcert ca.der -der
 keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
 keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass foo123
