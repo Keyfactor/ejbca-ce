@@ -678,13 +678,14 @@
                <opm:field name="MATCHVALUE" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>caId</opm:attribute-name>
+               <opm:field name="CAID" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
                <opm:attribute-name>primKey</opm:attribute-name>
                <opm:field name="PK" xsi:type="opm:column"/>
             </opm:attribute-mapping>
-            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>caId</opm:attribute-name>
-               <opm:field name="CAID" xsi:type="opm:column"/>
-            </opm:attribute-mappings>
+         </opm:attribute-mappings>
          <toplink:descriptor-type>independent</toplink:descriptor-type>
          <toplink:instantiation/>
          <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
