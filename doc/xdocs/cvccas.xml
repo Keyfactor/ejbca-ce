@@ -34,7 +34,7 @@
     </p> 
   </section>
   
-  <section name="Creating CVC CAs and DVs">
+  <section name="Creating CVCAs and DVs">
   <p>When creating a CVC CA there are three CA Reference fields in the standard. In EJBCA these are mapped to a DN structure to
   have common handling in EJBCA. The mapping is:
   <ul>
