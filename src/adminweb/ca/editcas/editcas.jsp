@@ -765,7 +765,6 @@
          caname = request.getParameter(HIDDEN_CANAME);
          catype = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          
-         CATokenInfo catoken = null;
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
          // Authentication code if we should be able to activate the CA token after editing
          String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
@@ -773,9 +772,15 @@
         	 authenticationcode = null;
          }
         		 
+         // We need to pick up the old CATokenInfo, so we don't overwrite with default values when we save the CA further down
+         CAInfoView infoView = cadatahandler.getCAInfo(caid);  
+         CATokenInfo catoken = infoView.getCATokenInfo();
+         
          if(catokentype == CATokenInfo.CATOKENTYPE_P12){
            String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
-           catoken = new SoftCATokenInfo();          
+           if (catoken == null) {
+               catoken = new SoftCATokenInfo();                  	   
+           }
            catoken.setAuthenticationCode(authenticationcode);
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
@@ -792,7 +797,9 @@
             String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
             if(catokenpath == null)
               throw new Exception("Error in CATokenData");  
-            catoken = new HardCATokenInfo();                       
+            if (catoken == null) {
+                catoken = new HardCATokenInfo();                       
+            }
             catoken.setAuthenticationCode(authenticationcode);
             catoken.setProperties(properties);
          }

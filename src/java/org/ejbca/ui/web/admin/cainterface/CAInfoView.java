@@ -24,6 +24,7 @@ import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
@@ -211,6 +212,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    public String[] getCAInfoDataText(){ return cainfodatatexts;} 
 
    public CAInfo getCAInfo() { return cainfo;}
+   public CATokenInfo getCATokenInfo() { return cainfo.getCATokenInfo(); }
    public Collection getCertificateChain() { return cainfo.getCertificateChain(); }
    
    public X509Certificate getOCSPSignerCertificate() { return ocspcert;}
