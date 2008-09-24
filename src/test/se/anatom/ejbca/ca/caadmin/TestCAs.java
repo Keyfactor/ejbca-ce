@@ -1067,7 +1067,7 @@ public class TestCAs extends TestCase {
             IResponseMessage resp = TestTools.getCAAdminSession().processRequest(admin, info, msg);
             
             // Receive the signed certificate back on our SubCA
-            TestTools.getCAAdminSession().receiveResponse(admin, info.getCAId(), resp);
+            TestTools.getCAAdminSession().receiveResponse(admin, info.getCAId(), resp, null);
             
             // Check that the CA has the correct certificate chain now
             info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");

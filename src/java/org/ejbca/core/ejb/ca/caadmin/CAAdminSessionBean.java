@@ -956,9 +956,15 @@ public class CAAdminSessionBean extends BaseSessionBean {
             
             try{
             	// Generate new certificate request.
-            	Collection chain = CertTools.createCertChain(cachain);
-            	log.debug("Setting request certificate chain of size: "+chain.size());
-            	ca.setRequestCertificateChain(chain);
+            	Collection chain = null;
+            	if (cachain.size() > 0) {
+                	chain = CertTools.createCertChain(cachain);
+                	log.debug("Setting request certificate chain of size: "+chain.size());
+                	ca.setRequestCertificateChain(chain);            		
+            	} else {
+            		log.debug("Empty request certificate chain parameter.");
+            		chain = new ArrayList();
+            	}
             	String signAlg = "SHA1WithRSA"; // Default algorithm
             	CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
             	if (tinfo != null) {
@@ -1059,12 +1065,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
-     *  Receives a certificate response from an external CA and sets the newly created CAs status to active.
+     * Receives a certificate response from an external CA and sets the newly created CAs status to active.
+     * 
+     * @param admin The administrator performing the action
+     * @param caid  The caid (DN.hashCode()) of the CA that is receiving this response
+     * @param responsemessage X509ResponseMessage with the certificate issued to this CA
+     * @param chain an optional collection with the CA certificate(s), or null. If given the complete chain (except this CAs own certificate must be given)
+     * 
      * @throws EjbcaException 
      *  
      * @ejb.interface-method
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException{
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection cachain) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException{
     	// check authorization
     	Certificate cacert = null;
     	// Check authorization
@@ -1100,12 +1112,25 @@ public class CAAdminSessionBean extends BaseSessionBean {
     					throw new EjbcaException(msg);
     				}
 
-    				ArrayList cachain = new ArrayList();
-    				cachain.add(cacert);
-    				Collection reqchain = ca.getRequestCertificateChain();
-    				log.debug("Picked up request certificate chain of size: "+reqchain.size());
-    				cachain.addAll(reqchain);
-    				Collection chain = CertTools.createCertChain(cachain);
+    				ArrayList tmpchain = new ArrayList();
+    				tmpchain.add(cacert);
+    				// If we have a chain given as parameter, we will use that.
+    				// If no parameter is given we assume that the request chain was stored when the request was created.
+    				Collection reqchain = cachain;
+    				if (reqchain == null) {
+        				reqchain = ca.getRequestCertificateChain();
+    					log.debug("Using pre-stored CA certificate chain.");
+        				if (reqchain == null) {
+        					String msg = intres.getLocalizedMessage("caadmin.errornorequestchain", caid, ca.getSubjectDN());
+        					log.info(msg);
+        					throw new CertPathValidatorException(msg);
+        				}
+    				} else {
+    					log.debug("Using CA certificate chain from parameter.");
+    				}
+    				log.debug("Picked up request certificate chain of size: "+reqchain.size());    					
+    				tmpchain.addAll(reqchain);
+    				Collection chain = CertTools.createCertChain(tmpchain);
     				log.debug("Storing certificate chain of size: "+chain.size());
     				ca.setCertificateChain(chain);
 

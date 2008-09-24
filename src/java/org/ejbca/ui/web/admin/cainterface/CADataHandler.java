@@ -213,10 +213,19 @@ public class CADataHandler implements Serializable {
 	  try {
 		  Certificate cert = null;
 		  byte[] certbytes = FileTools.readInputStreamtoBuffer(is);
+		  Collection cachain = null;
 		  try {
 			  Collection certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
 			  Iterator iter = certs.iterator();
-			  cert = (Certificate) iter.next();			  
+			  cert = (Certificate) iter.next();	
+			  if (iter.hasNext()) {
+				  // There is a complete certificate chain returned here
+				  cachain = new ArrayList();
+				  while (iter.hasNext()) {
+					  Certificate chaincert = (Certificate) iter.next();
+					  cachain.add(chaincert);
+				  }
+			  }
 		  } catch (IOException e) {
 			  log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
 			  // See if it is a single binary certificate
@@ -224,7 +233,7 @@ public class CADataHandler implements Serializable {
 		  }
 		  X509ResponseMessage resmes = new X509ResponseMessage();
 		  resmes.setCertificate(cert);
-		  caadminsession.receiveResponse(administrator, caid, resmes);
+		  caadminsession.receiveResponse(administrator, caid, resmes, cachain);
 		  info.cAsEdited(); 		  
 	  } catch (Exception e) {
 	      // log the error here, since otherwise it may be hidden by web pages...

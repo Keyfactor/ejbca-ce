@@ -144,19 +144,21 @@ In order to have your CA signed by an external CA you have to go through the fol
 <li>Create a new CA in the same way as internal CA:s. But when selecting signing CA, select 'External CA' instead. Now will the 'Certificate Profile', 'Validity', 'Subject Alternative Name' and 'Policy Id' 
 fields become gray and not editable. Fill in the Description and CRL Specific data and click on the 'Make Certificate Request' 
 button in the bottom of the page.</li>
-<li>At the next page called 'Make Certificate Request' you have to upload the external CA certificate chain that you want to sign your CA certificate with. 
+<li>At the next page called 'Make Certificate Request' you can upload the external CA certificate chain that you want to sign your CA certificate with, or you can wait until later by checking 'No CA chain file available'.  
 This file should be in PEM encoding. If there is more than one top CA certificate then should all their certificates be appended into one single file. 
 It should be in plain PEM format without blank lines before or after. An example is below.</li>
 <li>Next, after clicking 'Make Certificate Request' and if everything went successful, should the generated PKCS10 certificate request be displayed that you can copy and paste to the signing CA. There is also the option to download the PEM file if that approach is preferred.</li>
 <li>Now should the signing external CA sign the certificate request and return a certificate. Meanwhile will the newly created CA have a status of 'Waiting for Certificate Response' and will not appear anywhere in the system except in the 'Edit CA' page until it's activated.</li>
-<li>When the Certificate Response has arrived, it must be converted to PEM format if it isn't already so. This can be accomplished with OpenSSL among other tools with the following command if you have received a file in DER encoding (.cer ending):<br/>
-&gt;openssl x509 -inform DER -in filename.cer -outform PEM -out filename.pem</li>
-<li>To activate the new CA, you mark the waiting CA and click on 'Edit' button in the 'Edit CA' page. Go to the bottom of the page and click on 'Receive Certificate Response'. Then upload the received PEM certificate and click again on 'Receive Certificate Response'.</li>
-<li>Now if the received certificate creates a valid certificate chain with the previously uploaded top CA certificates will the status of the CA be set to 'Active'. Observe if you want to activate OCSP functionality for this new CA you have to edit it once again and mark the OCSP functionality as active.</li>
+<li>When the Certificate Response has arrived, it is time to activate the new CA. You mark the waiting CA and click on 'Edit' button in the 'Edit CA' page. Go to the bottom of the page and click on 'Receive Certificate Response'. Then upload the received certificate and click again on 'Receive Certificate Response'.</li>
+<li>Now if the received certificate creates a valid certificate chain with the previously uploaded top CA certificates will the status of the CA be set to 'Active'.</li>
+<li>If you did no upload a certificate chain when the request was created, you can do so now by uploading the complete PEM formatted chain now. The CAs own certificate should be first in the file, followed by the issuing CAs certificate(s). 
+When uploading a chain, the certificates must be converted to PEM format if it isn't already so. This can be accomplished with OpenSSL among other tools with the following command if you have received a file in DER encoding (.cer ending):<br/>
+&gt;openssl x509 -inform DER -in filename.cer -outform PEM -out filename.pem</li> 
+<li>Observe if you want to activate OCSP functionality for this new CA you have to edit it once again and mark the OCSP functionality as active.</li>
 <li>The new externally signed CA is ready to use.</li>
 </ol>
 </p>
-<p>Exmaple of a plain PEM file for uploading as a certificate chain when creating the request from a CA:
+<p>Example of a plain PEM file for uploading as a certificate chain:
 </p>
 <source>
 -----BEGIN CERTIFICATE-----
