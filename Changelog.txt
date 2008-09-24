@@ -1,8 +1,9 @@
-3.8.0, 2008-09-23
+3.8.0, 2008-09-24
 ---
 New Feature
     * [ECA-904] - Add a CLI subcommand to add an administrator in an admin group using the serial number
     * [ECA-935] - Restructure administrator validation to allow admins using externally issued certificates
+    * [ECA-969] - Possible to generate CA PKCS#10 request without giving CA certificate
 
 Improvement
     * [ECA-936] - Drop administrator flag in end entities
@@ -11,6 +12,8 @@ Improvement
 Bug
     * [ECA-664] - Adding Administrator Access rule; username with not-allowed character is possible
     * [ECA-882] - Add Administrator - cert serial number not checked
+    * [ECA-968] - Key length changes when editing CA in admin-GUI
+    * [ECA-970] - LdapPublisher searches for old objects on certDN instead of Ldap DN
 
 3.7.1, 2008-09-16
 ---

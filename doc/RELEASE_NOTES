@@ -5,9 +5,12 @@ not in EJBCA.
 Read the changelog for details.
 
 Notable changes in no specific order:
-- Restructure administrator validation to allow admins using externally issued certificates
-- Add a CLI subcommand to add an administrator in an admin group using the serial number
-
+- Restructure administrator validation to allow admins using externally issued certificates.
+- Add a CLI subcommand to add an administrator in an admin group using the serial number.
+- Drop administrator flag in end entities, it's not needed.
+- Possible to generate CA PKCS#10 request without giving CA certificate.
+- Some bug fixes.  
+  
 For upgrade instructions, please see UPGRADE. 
 There are database upgrades in this release, so read UPGRADE carefully.
 
