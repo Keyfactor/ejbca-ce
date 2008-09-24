@@ -176,7 +176,7 @@ public class LdapPublisher extends BasePublisher {
 			certdn = CertTools.getSubjectDN((X509Certificate) incert);
 			log.debug( "Constructing DN for: " + username);
 			dn = constructLDAPDN(certdn);
-			log.debug("LDAP DN for user " +username +" is " + dn);
+			log.debug("LDAP DN for user " +username +" is '" + dn+"'");
 		} catch (Exception e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
 			log.error(msg, e);            
@@ -187,6 +187,9 @@ public class LdapPublisher extends BasePublisher {
 		String email = CertTools.getEMailAddress((X509Certificate)incert);
 
 		// Check if the entry is already present, we will update it with the new certificate.
+		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the 
+		// search function, and not only the LDAP DN. The regular publisher should only use the LDAP DN though, 
+		// but the searchOldEntity function will take care of that.
 		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, email);
 
 		// PART 2: Create LDAP entry
@@ -636,7 +639,9 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	/** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
-	 *  Aprat from how they find existing users, the publishing works the same.
+	 *  Apart from how they find existing users, the publishing works the same.
+	 *  
+	 *  @param dn the DN from the certificate, can be used to extract search information or a LDAP DN
 	 */
 	protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
 		LDAPEntry oldEntry = null; // return value
@@ -646,6 +651,7 @@ public class LdapPublisher extends BasePublisher {
 		do {
 			connectionFailed = false;
 			String currentServer = (String) servers.next();
+			String ldapdn = constructLDAPDN(dn);
 			try {
 				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
@@ -653,10 +659,11 @@ public class LdapPublisher extends BasePublisher {
 				// authenticate to the server
 				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
 				// try to read the old object
-				oldEntry = lc.read(dn);
+				log.debug("Searching for old entry with DN '" + ldapdn+"'");				
+				oldEntry = lc.read(ldapdn);
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-					log.debug("No old entry exist for '" + dn + "'.");
+					log.debug("No old entry exist for '" + ldapdn + "'.");
 				} else {
 					connectionFailed = true;
 					if (servers.hasNext()) {

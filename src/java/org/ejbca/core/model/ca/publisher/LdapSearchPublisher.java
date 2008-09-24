@@ -44,6 +44,8 @@ public class LdapSearchPublisher extends LdapPublisher {
 
     /** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
      *  Apart from how they find existing users, the publishing works the same.
+     *  
+	 *  @param dn the DN from the certificate, can be used to extract search information or a LDAP DN
      */
     protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
         LDAPEntry oldEntry = null; // return value
