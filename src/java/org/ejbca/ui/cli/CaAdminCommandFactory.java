@@ -72,6 +72,8 @@ public class CaAdminCommandFactory {
             return new CaDeactivateCACommand(args);            
         } else if (args[0].equals("changecertprofile")) {
             return new CaChangeCertProfileCommand(args);
+        } else if (args[0].equals("changecatokensignalg")) {
+            return new CaChangeCATokenSignAlg(args);
         } else {
             return null;
         }

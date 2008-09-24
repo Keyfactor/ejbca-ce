@@ -22,6 +22,7 @@ import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
 
 /**
  * Changes the certificate profile of a CA.
@@ -92,6 +93,7 @@ public class CaChangeCertProfileCommand extends BaseAdminCommand {
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 		debug(">execute()");
+		CertTools.installBCProvider(); // need this for CVC certificate
 		if ( args.length<3 ) {
 			usage();
 			return;

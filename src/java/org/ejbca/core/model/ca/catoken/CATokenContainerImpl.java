@@ -205,8 +205,11 @@ public class CATokenContainerImpl extends CATokenContainer {
 			this.setClassPath(catokeninfo.getClassPath());			
 			this.catoken = null;
 		}
-		if(getSignatureAlgorithm() == null) {
-			this.setSignatureAlgorithm(catokeninfo.getSignatureAlgorithm());			
+		// Possible to change signature algorithm as well
+		String str = catokeninfo.getSignatureAlgorithm();
+		if ( (str != null) && !StringUtils.equals(getSignatureAlgorithm(), str)) {
+			this.setSignatureAlgorithm(str);			
+			changed = true;
 		}
 
 		String props = this.getPropertyData();
@@ -242,7 +245,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 			}
 			SoftCATokenInfo sinfo = (SoftCATokenInfo) catokeninfo;
 			// Below for soft CA tokens
-			String str = sinfo.getSignKeySpec();
+			str = sinfo.getSignKeySpec();
 			if ( (str != null) && !StringUtils.equals((String)data.get(SIGNKEYSPEC), str)) {
 				data.put(SIGNKEYSPEC, str);
 				changed = true;

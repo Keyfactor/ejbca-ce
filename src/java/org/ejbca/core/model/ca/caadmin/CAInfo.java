@@ -125,6 +125,7 @@ public class CAInfo implements Serializable {
      */
     public Collection getCertificateChain(){ return certificatechain;}
     public CATokenInfo getCATokenInfo() {return this.catokeninfo;}
+    public void setCATokenInfo(CATokenInfo catokeninfo) {this.catokeninfo = catokeninfo;}
     
     public String getDescription(){ return this.description;}
     public void setDescription(String description){ this.description = description;}
