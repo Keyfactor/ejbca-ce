@@ -13,8 +13,8 @@
   We are very proud to announce this initial release of the Cert-cvc library developed by the 
   Swedish National Police Board and kindly donated to the EJBCA project.
   <br/>
-  The library handles CVC certificates for EU EAC ePassport PKIs and the initial release is 
-  feature complete for EU EAC ePassports using RSA algorithm.
+  The library handles CVC certificates for EU EAC ePassport PKIs and the current release is 
+  feature complete for EU EAC ePassports using all algorithms.
   <br/>
   The library is freely usable under the LGPL 2.1 (or later) license for all parties interesting 
   in handling CVC certificates, in particular for EU EAC ePassports, and can be downloaded from the EJBCA
