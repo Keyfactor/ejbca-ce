@@ -317,7 +317,7 @@ public class LdapPublisher extends BasePublisher {
 				if (servers.hasNext()) {
 					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
 				} else {
-					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn);
+					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn, e.getMessage());
 					log.error(msg, e);  
 					throw new PublisherException(msg);            
 				}
@@ -495,7 +495,7 @@ public class LdapPublisher extends BasePublisher {
 				if (servers.hasNext()) {
 					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
 				} else {
-					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn);
+					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn, e.getMessage());
 					log.error(msg, e);  
 					throw new PublisherException(msg);            
 				}
@@ -661,6 +661,13 @@ public class LdapPublisher extends BasePublisher {
 				// try to read the old object
 				log.debug("Searching for old entry with DN '" + ldapdn+"'");				
 				oldEntry = lc.read(ldapdn);
+				if (log.isDebugEnabled()) {
+					if (oldEntry != null) {
+						log.debug("Found an old entry with DN '" + ldapdn+"'");
+					} else {
+						log.debug("Did not find an old entry with DN '" + ldapdn+"'");
+					}					
+				}
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
 					log.debug("No old entry exist for '" + ldapdn + "'.");
