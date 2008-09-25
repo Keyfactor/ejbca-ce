@@ -335,15 +335,37 @@ Configuring output files for OCSP logging
 For JBoss you can configure JBOSS_HOME/server/default/conf/jboss-log4j.xml to put the transaction and audit logs in separate files.
 
 -----
+     <appender name="OCSPTRANSACTION" class="org.jboss.logging.appender.RollingFileAppender">
+     <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+     <param name="File" value="${jboss.server.log.dir}/transactions.log"/>
+     <param name="Append" value="false"/>
+     <param name="MaxFileSize" value="500KB"/>
+     <param name="MaxBackupIndex" value="1"/>
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+     </layout>	    
+   </appender>
+
+   <appender name="OCSPAUDIT" class="org.jboss.logging.appender.RollingFileAppender">
+     <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+     <param name="File" value="${jboss.server.log.dir}/audit.log"/>
+     <param name="Append" value="false"/>
+     <param name="MaxFileSize" value="500KB"/>
+     <param name="MaxBackupIndex" value="1"/>
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+     </layout>	    
+   </appender>
+
    <category name="org.ejbca.core.protocol.ocsp.TransactionLogger">
          <priority value="DEBUG"/>
          <appender-ref ref="OCSPTRANSACTION"/>
    </category>
+
    <category name="org.ejbca.core.protocol.ocsp.AuditLogger">
          <priority value="DEBUG"/>
          <appender-ref ref="OCSPAUDIT"/>
-   </category>
+   </category>   
 -----
-Configure Appenders similar to the existing FILE Appender with names OCSPACCOUNT and OCSPAUDIT.
 
 For other application servers you can configure conf/log4j.properties and configure to use that configuration file in conf/ejbca.properties.

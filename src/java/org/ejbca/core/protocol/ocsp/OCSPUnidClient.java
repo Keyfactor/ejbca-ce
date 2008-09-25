@@ -48,6 +48,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -265,10 +266,20 @@ public class OCSPUnidClient {
             }
     	}
 
+		RespID id = brep.getResponderId();
+		DERTaggedObject to = (DERTaggedObject)id.toASN1Object().toASN1Object();
+		RespID respId = null;
         X509Certificate[] chain = brep.getCerts("BC");
-        PublicKey signerPub = chain[0].getPublicKey();
-		RespID respId = new RespID(signerPub);
-		if (!brep.getResponderId().equals(respId)) {
+        X509Certificate cert = chain[0];
+        PublicKey signerPub = cert.getPublicKey();
+		if (to.getTagNo() == 1) {
+			// This is Name
+			respId = new RespID(cert.getSubjectX500Principal());
+		} else {
+			// This is KeyHash
+			respId = new RespID(signerPub);
+		}
+		if (!id.equals(respId)) {
 			// Response responderId does not match signer certificate responderId!
 			ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERID);
 		}
