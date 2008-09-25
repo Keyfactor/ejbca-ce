@@ -338,6 +338,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 		  try{
 			  Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
 			  if (cert != null) {
+			       if (log.isDebugEnabled()) {
+			    	   log.debug("Adding CA certificate from CERTIFICATECHAIN to certificatechain:");
+			    	   log.debug("Cert subjectDN: "+CertTools.getSubjectDN(cert));
+			    	   log.debug("Cert issuerDN: "+CertTools.getIssuerDN(cert));
+			       }				  
 				  this.certificatechain.add(cert);				  
 			  } else {
 				  throw new IllegalArgumentException("Can not create certificate object from: "+b64Cert);
@@ -379,7 +384,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         	   return null;
            }
        }
-       return (Certificate) this.certificatechain.get(0);
+       Certificate ret = (Certificate) certificatechain.get(0);
+       if (log.isDebugEnabled()) {
+    	   log.debug("CA certificate chain is "+certificatechain.size()+" levels deep.");
+    	   log.debug("CA-cert subjectDN: "+CertTools.getSubjectDN(ret));
+    	   log.debug("CA-cert issuerDN: "+CertTools.getIssuerDN(ret));
+       }
+       return ret;
     }
     
 	public boolean  getFinishUser(){return ((Boolean)data.get(FINISHUSER)).booleanValue();}

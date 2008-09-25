@@ -106,6 +106,8 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.dn.DnComponents;
 
+import com.sun.security.auth.X500Principal;
+
 
 
 
@@ -474,10 +476,11 @@ public class X509CA extends CA implements Serializable {
             X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter, dnorder);
             certgen.setIssuerDN(caname);
         } else {
+        	javax.security.auth.x500.X500Principal issuerPrincipal = cacert.getSubjectX500Principal();
         	if (log.isDebugEnabled()) {
-        		log.debug("Using issuer DN directly from the CA certificate");
+        		log.debug("Using issuer DN directly from the CA certificate: "+issuerPrincipal.getName());
         	}
-            certgen.setIssuerDN(cacert.getSubjectX500Principal());        	
+            certgen.setIssuerDN(issuerPrincipal);        	
         }
         certgen.setPublicKey(publicKey);
 
