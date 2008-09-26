@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.util.dn;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.naming.ldap.Rdn;
 import junit.framework.TestCase;
 
@@ -64,7 +66,7 @@ public class TestDistinguishedName extends TestCase {
         final String EXPECTED_DN = "cn=David Galichet,o=Fimasys,email=dgalichet@fimasys.fr,"
             + "g=M,email=david.galichet@fimasys.fr,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
         dn = createNewDN();
-        DistinguishedName newDn = dn.mergeDN(otherDn, false, false, "");
+        DistinguishedName newDn = dn.mergeDN(otherDn, false, null);
 
         assertEquals(EXPECTED_DN, newDn.toString());
     }
@@ -79,7 +81,7 @@ public class TestDistinguishedName extends TestCase {
             + "g=M,email=david.galichet@linagora.com,ou=Linagora Secu,email=dgalichet@linagora.com,l=Paris";
 
         dn = createNewDN();
-        DistinguishedName newDn = dn.mergeDN(otherDn, true, false, "");
+        DistinguishedName newDn = dn.mergeDN(otherDn, true, null);
 
         assertEquals(EXPECTED_DN, newDn.toString());
     }
@@ -92,7 +94,9 @@ public class TestDistinguishedName extends TestCase {
 
         final String EXPECTED = "RFC822NAME=vkn@linagora.com,IPADDRESS=208.77.188.166,UNIFORMRESOURCEID=other.uri";
         subjectAltName = createNewSubjectAltName();
-        DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, false, false, "entitymail@linagora.com");
+        Map dnMap = new HashMap();
+        dnMap.put(DnComponents.RFC822NAME, "entitymail@linagora.com");
+        DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, false, dnMap);
 
         assertEquals(3, altName.size());
 
@@ -107,7 +111,9 @@ public class TestDistinguishedName extends TestCase {
 
     	final String EXPECTED = "RFC822NAME=vkn@linagora.com,IPADDRESS=208.77.188.166,UNIFORMRESOURCEID=other.uri";
         subjectAltName = createNewSubjectAltName();
-        DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, false, true, "entitymail@linagora.com");
+        Map dnMap = new HashMap();
+        dnMap.put(DnComponents.RFC822NAME, "entitymail@linagora.com");
+        DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, false, dnMap);
 
         assertEquals(EXPECTED, altName.toString());
     }
@@ -119,7 +125,8 @@ public class TestDistinguishedName extends TestCase {
 
     	final String EXPECTED = "RFC822NAME=linagora.mail@linagora.com,IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri";
         subjectAltName = createNewSubjectAltName();
-        DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, true, false, "entitymail@linagora.com");
+        Map dnMap = new HashMap();
+        DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, true, dnMap);
 
         assertEquals(EXPECTED, altName.toString());
     }
@@ -128,10 +135,14 @@ public class TestDistinguishedName extends TestCase {
      * This version tests the merge with override.
      */
     public void testMergeSubjectAltNameWithOverrideUsingEntityEmail() throws Exception {
+        final String _OTHER_SUBJECT_ALT_NAME = "IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri";
 
-    	final String EXPECTED = "RFC822NAME=entitymail@linagora.com,IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri";
+    	final String EXPECTED = "IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri,RFC822NAME=entitymail@linagora.com";
+        DistinguishedName san = new DistinguishedName(_OTHER_SUBJECT_ALT_NAME);
         subjectAltName = createNewSubjectAltName();
-        DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, true, true, "entitymail@linagora.com");
+        Map dnMap = new HashMap();
+        dnMap.put(DnComponents.RFC822NAME, "entitymail@linagora.com");
+        DistinguishedName altName = subjectAltName.mergeDN(san, true, dnMap);
 
         assertEquals(EXPECTED, altName.toString());
     }

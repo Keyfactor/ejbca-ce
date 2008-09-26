@@ -19,11 +19,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Collections;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+import org.apache.log4j.Logger;
 
 /** This class aims to be DN representation.
  * It offers facilities to merge two DN.
@@ -32,7 +31,7 @@ import javax.naming.ldap.Rdn;
  */
 public class DistinguishedName extends LdapName {
 
-    Logger logger = Logger.getLogger(DistinguishedName.class.getName());
+	private static final Logger logger = Logger.getLogger(DistinguishedName.class);
 
     /** Public constructor.
      * @param rdns list of relative Distinguished Names.
@@ -72,14 +71,14 @@ public class DistinguishedName extends LdapName {
      * 
      * @param dn the provided DN.
      * @param override override this DN with provided datas.
+     * @param dnMap values that must be inserted in the DN.
      * @return a new DN resulting from the merge.
      */
-    public DistinguishedName mergeDN(DistinguishedName dn, boolean override, boolean useEntityEmailField, String entityEmail) {
+    public DistinguishedName mergeDN(DistinguishedName dn, boolean override, Map dnMap) {
 
-        // count the number of components of the same type.
-        Map componentTypeCount = new HashMap();
+        boolean useEntityEmailField = (dnMap == null ? false : (dnMap.size() > 0));
 
-        logger.log(Level.INFO, "Trying to merge \n" + dn.toString() + "\n with \n" + this.toString());
+        logger.info("Trying to merge \n" + dn.toString() + "\n with \n" + this.toString());
 
         // This list will enclose the resulting list of RDNs.
         List localRdns = new ArrayList();
@@ -115,20 +114,31 @@ public class DistinguishedName extends LdapName {
             if (providedRdnIteratorsMap.containsKey(localRdn.getType())
                     && ((Iterator) providedRdnIteratorsMap.get(localRdn.getType())).hasNext()) {
                 Rdn providedRdn = (Rdn) ((Iterator) providedRdnIteratorsMap.get(localRdn.getType())).next();
-                if (useEntityEmailField && override 
-                        && DnComponents.RFC822NAME.equals(localRdn.getType())) {
-                    try {
-                        localRdns.add(new Rdn(DnComponents.RFC822NAME, entityEmail));
-                     } catch (InvalidNameException e) { 
-                         // Can't occur.
-                     }
-                } else if (override) {
+                if (override) {
                     localRdns.add(providedRdn);
                 } else {
                     localRdns.add(localRdn);
                 }
             } else {
-                localRdns.add(localRdn);
+                if (useEntityEmailField && override) {
+                    boolean finded = false;
+                    for (Iterator dnIt = dnMap.keySet().iterator(); dnIt.hasNext();) {
+                        String key = (String) dnIt.next();
+                        if (translateComponentName((String) dnMap.get(key)).equalsIgnoreCase(localRdn.getType())) {
+                            finded = true;
+                        }
+                    }
+                    if (finded) {
+                        String value = (String) dnMap.get(localRdn.getType().toUpperCase());
+                        try {
+                            localRdns.add(new Rdn(translateComponentName(localRdn.getType().toUpperCase()), value));
+                        } catch (InvalidNameException e) {
+                            // Can't occur.
+                        }
+                    }
+                } else {
+                    localRdns.add(localRdn);
+                }
             }
         }
 
@@ -137,21 +147,33 @@ public class DistinguishedName extends LdapName {
             Iterator rdnIterator = (Iterator) it.next();
             while (rdnIterator.hasNext()) {
                 Rdn providedRdn = (Rdn) rdnIterator.next();
-                if (useEntityEmailField && DnComponents.RFC822NAME.equals(providedRdn.getType())) {
-                    try {
-                        localRdns.add(new Rdn(DnComponents.RFC822NAME, entityEmail));
-                    } catch (InvalidNameException e) {
-                        // can't occur.
+                localRdns.add(providedRdn);
+            }
+        }
+
+        // Add entity data if necessary
+        if (useEntityEmailField) {
+            for (Iterator it = dnMap.keySet().iterator(); it.hasNext();) {
+                boolean finded = false;
+                String compName = (String) it.next();
+                for (Iterator rdnIt = localRdns.iterator(); rdnIt.hasNext();) {
+                    Rdn rdn = (Rdn) rdnIt.next();
+                    if (translateComponentName(compName).equalsIgnoreCase(rdn.getType())) {
+                        finded = true;
                     }
-                } else {
-                    localRdns.add(providedRdn);
+                }
+                if (!finded) {
+                    String value = (String) dnMap.get(compName);
+                    try {
+                        localRdns.add(new Rdn(translateComponentName(compName), value));
+                    } catch (InvalidNameException e) { } // never occurs
                 }
             }
         }
 
         Collections.reverse(localRdns);
 
-        logger.log(Level.INFO, "result :\n" + localRdns);
+        logger.info("result :\n" + localRdns);
 
         // Final step, create a new DN and return it.
         return new DistinguishedName(localRdns);
@@ -195,5 +217,16 @@ public class DistinguishedName extends LdapName {
         } else {
             return null;
         }
+    }
+
+    /** Translate component name (ejbca name -> x509).
+     * @param String name to translate.
+     * @return translated name.
+     */
+    public String translateComponentName(String name) {
+        if (DnComponents.DNEMAIL.equals(name)) {
+            return "E";
+        }
+        return name;
     }
 }

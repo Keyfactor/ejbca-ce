@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import java.util.Map;
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
@@ -692,22 +693,30 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 			}
 
 			if (userDataLocal != null) {
-				if (userDataLocal.getSubjectDN() != null) {
-					try {
-						dn = (new DistinguishedName(userDataLocal.getSubjectDN())).mergeDN(new DistinguishedName(dn), true, false, "").toString();
-					} catch (InvalidNameException e) {
-						log.debug("Invalid dn. We make it empty");
-						dn = "";
-					}
-				}
+                if (userDataLocal.getSubjectDN() != null) {
+                    Map dnMap = new HashMap();
+                    if (profile.getUse(DnComponents.DNEMAIL, 0)) {
+                        dnMap.put(DnComponents.DNEMAIL, userdata.getEmail());
+                    }
+                    try {
+                        dn = (new DistinguishedName(userDataLocal.getSubjectDN())).mergeDN(new DistinguishedName(dn), true, dnMap).toString();
+                    } catch (InvalidNameException e) {
+                        log.debug("Invalid dn. We make it empty");
+                        dn = "";
+                    }
+                }
 				if (userDataLocal.getSubjectAltName() != null) {
+                    Map dnMap = new HashMap();
+                    if (profile.getUse(DnComponents.RFC822NAME, 0)) {
+                        dnMap.put(DnComponents.RFC822NAME, userdata.getEmail());
+                    }
 					try {
 						//SubjectAltName is not mandatory so
 						if(altName==null) {
 							altName="";
 						}
 						altName = (new DistinguishedName(userDataLocal.getSubjectAltName()))
-                             .mergeDN(new DistinguishedName(altName), true, profile.getUse(DnComponents.RFC822NAME, 0), userdata.getEmail()).toString();
+                             .mergeDN(new DistinguishedName(altName), true, dnMap).toString();
 					} catch (InvalidNameException e) {
 						log.debug("Invalid altName. We make it empty");
 						altName = "";

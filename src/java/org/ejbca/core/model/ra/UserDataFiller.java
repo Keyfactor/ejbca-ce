@@ -13,8 +13,10 @@
 package org.ejbca.core.model.ra;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import java.util.Map;
 import javax.ejb.EJBException;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.Rdn;
@@ -71,7 +73,7 @@ public class UserDataFiller {
         
         // Processing Subject DN values
         String subjectDN = userData.getDN();
-        subjectDN = mergeSubjectDnWithDefaultValues(subjectDN, profile);
+        subjectDN = mergeSubjectDnWithDefaultValues(subjectDN, profile, userData.getEmail());
         userData.setDN(subjectDN);
         String subjectAltName = userData.getSubjectAltName();
         subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
@@ -87,9 +89,11 @@ public class UserDataFiller {
     /** This method merge subject DN with data from End entity profile.
      * @param subjectDN user Distinguished Name.
      * @param profile user associated profile.
+     * @param email entity email.
      * @return updated DN.
      */
-    private static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile) {
+    private static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile, 
+            String entityEmail) {
         DistinguishedName profiledn;
         DistinguishedName userdn;
         try {
@@ -125,7 +129,12 @@ public class UserDataFiller {
 			}
 		}
         profiledn = new DistinguishedName(rdnList);
-        return  profiledn.mergeDN(userdn, true, false, "").toString();
+
+        Map dnMap = new HashMap();
+        if (profile.getUse(DnComponents.DNEMAIL, 0)) {
+            dnMap.put(DnComponents.DNEMAIL, entityEmail);
+        }
+        return  profiledn.mergeDN(userdn, true, dnMap).toString();
     }
  
     /**
@@ -174,6 +183,11 @@ public class UserDataFiller {
 			}
 		}
         profileAltName = new DistinguishedName(rdnList);
-        return  profileAltName.mergeDN(userAltName, true, profile.getUse(DnComponents.RFC822NAME, 0), entityEmail).toString();
+
+        Map dnMap = new HashMap();
+        if (profile.getUse(DnComponents.RFC822NAME, 0)) {
+            dnMap.put(DnComponents.RFC822NAME, entityEmail);
+        }
+        return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
     }
 }
