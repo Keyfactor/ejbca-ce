@@ -758,7 +758,7 @@
 	</target>
     -->
 
-    <target name="clientToolBox">
+    <target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
         <mkdir dir="${clientToolBox.build}"/>
         <copy todir="${clientToolBox-dist.dir}/endorsed">
             <fileset dir="${lib}/jaxws">
