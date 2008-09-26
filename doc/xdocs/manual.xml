@@ -3168,7 +3168,21 @@ Hopefully it is possible to use PKCS#11 interface of the HSM instead of using th
 It will better to use PKCS#11 since the Luna java provider is using the PKCS#11
 Using PKCS#11 will change the keygeneration (step 3). The CA creation (step 5) should then be done with the PKCS#11 token.
 </p><p>
-If you have succeeded to create keys without the java provider that could be used with a PKCS#11 token please update this documentation.
+PKCS#11 key pair generation mini-howto from Ricardo Ariel Gorosito:
+<br/>
+1: keypair generation:<br/>
+# cmu gen -slot=1 -modulusBits=2048 -publicExp=65537 -sign=1 -verify=1 -labelPublic="My Public Key" -labelPrivate="My Private Key" -id=123456
+<br/>(ID is a random number, and utilized in certificate import)
+<br/>
+2: CSR generation:<br/>
+# cmu requestCert -slot=1<br/>
+utility list private keys and you need to select the number of "My Private Key"<br/>
+3: certificate import:<br/>
+# cmu import -slot=1 -inputFile=/tmp/yo.crt -label="My Certificate"<br/>
+4: set ID to certificate:<br/>
+# cmu setattribute -id=123456<br/>
+Utility list objects and you need to select the number of "My Certificate". Now, if you open the PKCS11 keystore, see the alias "My Certificate"
+<br/>Note: every time you run "cmu" you are asked for slot password 
 </p><p>
 Follow these steps to create a CA that is using a Luna SA HSM:
 </p>
