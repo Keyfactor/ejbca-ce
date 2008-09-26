@@ -889,7 +889,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *                 If <tt>null</tt> or empty return certificates regardless of
      *                 the issuer.
      * @param type     CERTTYPE_* types from CertificateDataBean
-     * @return Collection Collection of X509Certificate, never <tt>null</tt>
+     * @return Collection Collection of Certificate, never <tt>null</tt>
      * @ejb.interface-method
      */
     public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
