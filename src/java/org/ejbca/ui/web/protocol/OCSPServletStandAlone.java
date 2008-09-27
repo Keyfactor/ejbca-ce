@@ -37,9 +37,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
@@ -271,15 +273,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private boolean loadFromP11HSM(Admin adm) throws Exception {
         if ( this.mSharedLibrary==null || this.mSharedLibrary.length()<1 )
             return false;
-        final ProviderHandler providerHandler = new P11ProviderHandler();
-        final PasswordProtection pwp =new PasswordProtection( (this.mP11Password!=null && this.mP11Password.length()>0)? this.mP11Password.toCharArray():null );
-        final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
-                                                                      Security.getProvider(providerHandler.getProviderName()),
-                                                                      pwp);
-        final KeyStore keyStore = builder.getKeyStore();
-        m_log.debug("Loading key from slot '"+this.mSlot+"' using pin.");
-        keyStore.load(null, null);
-        loadFromKeyStore(adm, keyStore, null, this.mSharedLibrary, providerHandler);
+        final P11ProviderHandler providerHandler = new P11ProviderHandler();
+        final PasswordProtection pwp = providerHandler.getPwd();
+        loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, this.mSharedLibrary, providerHandler);
         pwp.destroy();
         return true;
     }
@@ -328,12 +324,11 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         while( eAlias.hasMoreElements() ) {
             final String alias = (String)eAlias.nextElement();
             try {
-                final PrivateKey key = (PrivateKey)keyStore.getKey(alias, keyPassword!=null ? keyPassword.toCharArray() : null);
                 final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
                 m_log.debug("Trying to load signing keys for signer with subjectDN (EJBCA ordering): "+CertTools.getSubjectDN(cert));
-                
-                if ( key!=null && cert!=null && signTest(key, cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
-                    putSignEntity(new PrivateKeyFactoryKeyStore(key), cert, adm, providerHandler);
+                final PrivateKeyFactory pkf = new PrivateKeyFactoryKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore);
+                if ( pkf.getKey()!=null && cert!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
+                    putSignEntity(pkf, cert, adm, providerHandler);
                 }
             } catch (Exception e) {
                 String errMsg = intres.getLocalizedMessage("ocsp.errorgetalias", alias, errorComment);
@@ -344,6 +339,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private boolean putSignEntity( PrivateKeyFactory keyFactory, X509Certificate cert, Admin adm, ProviderHandler providerHandler ) {
         if ( keyFactory==null || cert==null )
             return false;
+        providerHandler.addKeyFactory(keyFactory);
         X509Certificate[] chain = getCertificateChain(cert, adm);
         if ( chain!=null ) {
             int caid = getCaid(chain[1]);
@@ -386,16 +382,20 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 		boolean isOK();
     }
     private class PrivateKeyFactoryKeyStore implements PrivateKeyFactory {
-        final private PrivateKey privateKey;
-        PrivateKeyFactoryKeyStore( PrivateKey key) {
-            privateKey = key;
+        final private char password[];
+        final private String alias;
+        private PrivateKey privateKey;
+        PrivateKeyFactoryKeyStore( String a, char pw[], KeyStore keyStore) throws Exception {
+            this.alias = a;
+            this.password = pw;
+            this.privateKey = keyStore!=null ? (PrivateKey)keyStore.getKey(this.alias, this.password) : null;
         }
         public PrivateKey getKey() throws Exception {
-            return privateKey;
+            return this.privateKey;
         }
 		public boolean isOK() {
 			// SW checked when initialized
-			return privateKey!=null;
+			return this.privateKey!=null;
 		}
     }
     private class PrivateKeyFactoryCard implements PrivateKeyFactory {
@@ -483,6 +483,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
          */
         String getProviderName();
         /**
+         * @param keyFactory to be updated at reload
+         */
+        void addKeyFactory(PrivateKeyFactory keyFactory);
+        /**
          * start a threads that tryes to reload the provider until it is none
          */
         void reload();
@@ -500,6 +504,12 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         public void reload() {
             // not needed to reload.
         }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#addKeyFactory(org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory)
+         */
+        public void addKeyFactory(PrivateKeyFactory keyFactory) {
+            // do nothing
+        }
     }
     private class SWProviderHandler implements ProviderHandler {
         /* (non-Javadoc)
@@ -514,15 +524,32 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         public void reload() {
             // no use reloading a SW provider
         }
+        public void addKeyFactory(PrivateKeyFactory keyFactory) {
+            // do nothing
+            
+        }
     }
     private class P11ProviderHandler implements ProviderHandler {
         private String name;
+        Set sKeyFacrory = new HashSet();
         P11ProviderHandler() throws IOException {
             Provider provider = KeyTools.getP11Provider(OCSPServletStandAlone.this.mSlot,
                                                         OCSPServletStandAlone.this.mSharedLibrary,
                                                         OCSPServletStandAlone.this.mIsIndex, null);
             Security.addProvider( provider );
             this.name = provider.getName();
+        }
+        public KeyStore getKeyStore(PasswordProtection pwp) throws Exception {
+            final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
+                                                                          Security.getProvider(this.name),
+                                                                          pwp);
+            final KeyStore keyStore = builder.getKeyStore();
+            m_log.debug("Loading key from slot '"+OCSPServletStandAlone.this.mSlot+"' using pin.");
+            keyStore.load(null, null);
+            return keyStore;
+        }
+        public PasswordProtection getPwd() {
+            return new PasswordProtection( (OCSPServletStandAlone.this.mP11Password!=null && OCSPServletStandAlone.this.mP11Password.length()>0)? OCSPServletStandAlone.this.mP11Password.toCharArray():null );
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#getProviderName()
@@ -536,6 +563,12 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         public void reload() {
             // TODO Auto-generated method stub
             
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#addKeyFactory(org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory)
+         */
+        public void addKeyFactory(PrivateKeyFactory keyFactory) {
+            this.sKeyFacrory.add((PrivateKeyFactoryKeyStore)keyFactory);
         }
     }
     private class SigningEntity {
