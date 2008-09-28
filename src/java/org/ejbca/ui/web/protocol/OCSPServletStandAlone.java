@@ -617,19 +617,18 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             Reloader() {
                 // nothing done
             }
-            private void clear() {
-                final Iterator i = P11ProviderHandler.this.sKeyFacrory.iterator();
-                while ( i.hasNext() )
-                    ((PrivateKeyFactory)i.next()).clear();
-                Security.removeProvider(P11ProviderHandler.this.name);
-            }
             /* (non-Javadoc)
              * @see java.lang.Runnable#run()
              */
             public void run() {
-                clear();
                 boolean isNotWorking = true;
                 while ( isNotWorking ) {
+                    Security.removeProvider(P11ProviderHandler.this.name);
+                    {
+                        final Iterator i = P11ProviderHandler.this.sKeyFacrory.iterator();
+                        while ( i.hasNext() )
+                            ((PrivateKeyFactory)i.next()).clear();
+                    }
                     try {
                         synchronized(this) {
                             wait(1000);
@@ -649,7 +648,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                         }
                         isNotWorking = false;
                     } catch (Exception e) {
-                        clear();
+                        // do nothing
                     }
                 }
                 P11ProviderHandler.this.isOK  = true;
@@ -658,9 +657,11 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#reload()
          */
-        public void reload() {
-            new Thread(new Reloader()).start();
-            this.isOK = false;
+        public synchronized void reload() {
+            if ( this.isOK ) {
+                this.isOK = false;
+                new Thread(new Reloader()).start();
+            }
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#addKeyFactory(org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory)
@@ -692,7 +693,12 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 throw new ExtendedCAServiceRequestException(hsmErrorString);
             try {
                 return OCSPUtil.createOCSPCAServiceResponse(request, privKey, this.providerHandler.getProviderName(), this.mChain);
-            } catch( ProviderException e) {
+            } catch( ExtendedCAServiceRequestException e) {
+                this.providerHandler.reload();
+                throw e;
+            } catch( IllegalExtendedCAServiceRequestException e ) {
+                throw e;
+            } catch( Throwable e ) {
                 this.providerHandler.reload();
                 final ExtendedCAServiceRequestException e1 = new ExtendedCAServiceRequestException(hsmErrorString);
                 e1.initCause(e);
