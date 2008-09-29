@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -53,7 +54,6 @@ import org.bouncycastle.ocsp.Req;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.UnknownStatus;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.MalformedRequestException;
 import org.ejbca.core.model.ca.SignRequestException;
@@ -67,6 +67,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.AuditLogger;
+import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.IOCSPExtension;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
@@ -185,7 +186,7 @@ abstract class OCSPServletBase extends HttpServlet {
 	private static final int RESTRICTONSIGNER = 1;
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
-	private Admin m_adm;
+	protected Admin m_adm;
 	private String m_sigAlg;
 	private boolean m_reqMustBeSigned;
 	/** True if requests must be signed by a certificate issued by a list of trusted CA's*/
@@ -195,9 +196,6 @@ abstract class OCSPServletBase extends HttpServlet {
 	/** A list of CA's trusted for issuing certificates for signing requests */
 	private Hashtable mTrustedReqSigIssuers;
 	private Hashtable mTrustedReqSigSigners;
-	Collection m_cacerts = null;
-	/** Cache time counter */
-	private long m_certValidTo = 0;
 	/** String used to identify default responder id, used to generate responses when a request
 	 * for a certificate not signed by a CA on this server is received.
 	 */
@@ -218,6 +216,14 @@ abstract class OCSPServletBase extends HttpServlet {
 	 * Default is to use KeyId, the other possible type is X500name.
 	 */
 	private int	m_respIdType = OCSPUtil.RESPONDERIDTYPE_KEYHASH;
+
+	/** The interval on which new OCSP signing certs and keys are loaded in seconds. */
+	protected int m_valid_time;
+	/** Cache time counter, set and used by loadPrivateKeys (external responder) */
+	protected long mKeysValidTo = 0;
+
+	/** Cache of CA certificates (and chain certs) for CAs handles by this responder */
+	protected CertificateCache m_caCertCache = null;
 	
 	/** Configures OCSP extensions, these init-params are optional
 	 */
@@ -230,26 +236,11 @@ abstract class OCSPServletBase extends HttpServlet {
 	/**
 	 * The interval on which new OCSP signing certs are loaded in seconds.
 	 */
-	private int m_valid_time;
 	private long m_trustDirValidTo;
 	private String m_signTrustDir;
 	private int mTransactionID = 0;
 	private String m_SessionID;
 
-	/** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
-	 */
-	protected synchronized void loadCertificates() throws Exception {
-		// Check if we have a cached collection that is not too old
-		if (m_cacerts != null && m_certValidTo > new Date().getTime()) {
-			return;
-		}
-		m_cacerts = findCertificatesByType(m_adm, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
-		if (m_log.isDebugEnabled()) {
-			m_log.debug("Loaded "+m_cacerts == null ? "0":m_cacerts.size()+" ca certificates");        	
-		}
-		loadPrivateKeys(m_adm);
-		m_certValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;;
-	}
 	
 	protected synchronized void loadTrustDir() throws Exception {
 		// Check if we have a cached collection that is not too old
@@ -277,14 +268,14 @@ abstract class OCSPServletBase extends HttpServlet {
 
 	abstract protected void loadPrivateKeys(Admin adm) throws Exception;
 
-	abstract protected Collection findCertificatesByType(Admin adm, int i, String issuerDN);
-
 	abstract protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuerDN, BigInteger serno);
 
 	abstract protected OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
 	abstract protected RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber);
 
+	/** returns a CertificateCache of appropriate type */
+	abstract protected CertificateCache createCertificateCache(Properties prop);
 
 	/** Generates an EJBCA caid from a CA certificate, or looks up the default responder certificate.
 	 * 
@@ -295,7 +286,7 @@ abstract class OCSPServletBase extends HttpServlet {
 		X509Certificate cert = cacert;
 		if (cacert == null) {
 			m_log.debug("No correct CA-certificate available to sign response, signing with default CA: "+m_defaultResponderId);
-			cert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);    		
+			cert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);    		
 		}
 
 		int result = CertTools.stringToBCDNString(cert.getSubjectDN().toString()).hashCode();
@@ -328,22 +319,8 @@ abstract class OCSPServletBase extends HttpServlet {
 		CertTools.installBCProvider();
         m_SessionID = GUIDGenerator.generateGUID(this);
 		m_adm = new Admin(Admin.TYPE_INTERNALUSER);
-		{
-			final String sValue = config.getInitParameter("ocspSigningCertsValidTime");
-			if (StringUtils.isEmpty(sValue)) {
-				final String errorMessage = "Servlet param ocspSigningCertsValidTime missing";
-				m_log.error(errorMessage);
-				throw new ServletException(errorMessage);
-			}
-			try {
-				m_valid_time = Integer.parseInt(sValue)*1000;
-			} catch( NumberFormatException e ) {
-				final String errorMessage = "Servlet param ocspSigningCertsValidTime not an integer: "+sValue;
-				m_log.error(errorMessage);
-				throw new ServletException(errorMessage);
-			}
-			m_log.debug("ocspSigningCertsValidTime is "+m_valid_time);
-		}
+		
+
 		{
 			final String sValue = config.getInitParameter("signTrustValidTime");
 			if (StringUtils.isNotEmpty(sValue)) {
@@ -588,7 +565,32 @@ abstract class OCSPServletBase extends HttpServlet {
 			}
 			m_extensionMap.put(oid,ext);
 		}
-	}
+		
+		// Finally we load the CA certificates and private keys of this OCSP responder
+		{
+			// Create properties used to set up the CertificateCache
+			Properties cacheProperties = new Properties();
+			
+			final String sValue = config.getInitParameter("ocspSigningCertsValidTime");
+			if (StringUtils.isEmpty(sValue)) {
+				final String errorMessage = "Servlet param ocspSigningCertsValidTime missing";
+				m_log.error(errorMessage);
+				throw new ServletException(errorMessage);
+			}
+			try {
+				m_valid_time = Integer.parseInt(sValue)*1000;
+				m_log.debug("ocspSigningCertsValidTime is "+m_valid_time);
+				cacheProperties.put("ocspSigningCertsValidTime", Integer.valueOf(m_valid_time));
+			} catch( NumberFormatException e ) {
+				final String errorMessage = "Servlet param ocspSigningCertsValidTime not an integer: "+sValue;
+				m_log.error(errorMessage);
+				throw new ServletException(errorMessage);
+			}
+			// Create and load the certificate cache
+			// If this is an internal or external ocsp responder
+			m_caCertCache = createCertificateCache(cacheProperties);
+		}
+	} // init
 
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
@@ -632,7 +634,16 @@ abstract class OCSPServletBase extends HttpServlet {
 			if (StringUtils.equals(remote, "127.0.0.1")) {
 				String iMsg = intres.getLocalizedMessage("ocsp.reloadkeys", remote);
 				m_log.info(iMsg);
-				m_certValidTo = 0;
+				// Reload CA certificates
+				m_caCertCache.forceReload();
+				try {
+					// Also reloas signing keys
+					mKeysValidTo = 0;
+					loadPrivateKeys(m_adm);
+				} catch (Exception e) {
+					m_log.error(e);
+					throw new ServletException(e);
+				}
 			} else {
 				m_log.info("Got reloadKeys command from unauthorized ip: "+remote);
 			}
@@ -689,20 +700,8 @@ abstract class OCSPServletBase extends HttpServlet {
 					}
 					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REQ_NAME, req.getRequestorName().toString());
 				}
-				loadCertificates();
-				if (m_log.isDebugEnabled()) {
-					StringBuffer certInfo = new StringBuffer();
-					Iterator iter = m_cacerts.iterator();
-					while (iter.hasNext()) {
-						Certificate cert = (Certificate) iter.next();
-						certInfo.append(CertTools.getSubjectDN(cert));
-						certInfo.append(',');
-						certInfo.append(CertTools.getSerialNumberAsString(cert));
-						certInfo.append('\n');
-					}
-					m_log.debug("Found the following CA certificates : \n"
-							+ certInfo.toString());
-				}
+				// Make sure our signature keys are updated
+				loadPrivateKeys(m_adm);
 
 				/**
 				 * check the signature if contained in request.
@@ -715,58 +714,52 @@ abstract class OCSPServletBase extends HttpServlet {
 					m_log.debug("Incoming OCSP request is signed : " + req.isSigned());
 				}
 				if (req.isSigned()) {
-					try {
-						X509Certificate signercert = OCSPUtil.checkRequestSignature(request.getRemoteAddr(), req, m_cacerts);
-						String signercertIssuerName = signercert.getIssuerDN().getName();
-						BigInteger signercertSerNo = signercert.getSerialNumber();
-						String signercertSubjectName = signercert.getSubjectDN().getName();
-						if (transactionLogger != null ) transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
-						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, new String(Hex.encode(signercert.getSerialNumber().toByteArray())));
-						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
-					} catch (Exception e ) {
-						// nothing, just keep going
-						// actual verification/authorization of the signature is done below if signature is required.
-					}
-				}
-
-				if (m_reqMustBeSigned) {
-
-					X509Certificate signercert = OCSPUtil.checkRequestSignature(request.getRemoteAddr(), req, m_cacerts);
+					X509Certificate signercert = OCSPUtil.checkRequestSignature(request.getRemoteAddr(), req, m_caCertCache);
 					String signercertIssuerName = signercert.getIssuerDN().getName();
 					BigInteger signercertSerNo = signercert.getSerialNumber();
 					String signercertSubjectName = signercert.getSubjectDN().getName();
-					// If it verifies OK, check if it is revoked
-					RevokedCertInfo rci = isRevoked(m_adm, signercert.getIssuerDN().getName(), signercert.getSerialNumber());
-					// If rci == null it means the certificate does not exist in database, we then treat it as ok,
-					// because it may be so that only revoked certificates is in the (external) OCSP database.
-					if ((rci != null) && rci.isRevoked()) {
-						String serno = signercertSerNo.toString(16);
-						String errMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
-						m_log.error(errMsg);
-						throw new SignRequestSignatureException(errMsg);
-					}
-					
-					if (m_reqRestrictSignatures) {
-						loadTrustDir();
-						if ( m_reqRestrictMethod == RESTRICTONSIGNER) {
-							if (!OCSPUtil.checkCertInList(signercert, mTrustedReqSigSigners)) {
-								String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
-								m_log.error(errMsg);
-								throw new SignRequestSignatureException(errMsg);
+					if (transactionLogger != null ) transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, new String(Hex.encode(signercert.getSerialNumber().toByteArray())));
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
+					if (m_reqMustBeSigned) {
+						// If it verifies OK, check if it is revoked
+						RevokedCertInfo rci = isRevoked(m_adm, signercert.getIssuerDN().getName(), signercert.getSerialNumber());
+						// If rci == null it means the certificate does not exist in database, we then treat it as ok,
+						// because it may be so that only revoked certificates is in the (external) OCSP database.
+						if ((rci != null) && rci.isRevoked()) {
+							String serno = signercertSerNo.toString(16);
+							String errMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
+							m_log.error(errMsg);
+							throw new SignRequestSignatureException(errMsg);
+						}
+
+						if (m_reqRestrictSignatures) {
+							loadTrustDir();
+							if ( m_reqRestrictMethod == RESTRICTONSIGNER) {
+								if (!OCSPUtil.checkCertInList(signercert, mTrustedReqSigSigners)) {
+									String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
+									m_log.error(errMsg);
+									throw new SignRequestSignatureException(errMsg);
+								}
+							} else if (m_reqRestrictMethod == RESTRICTONISSUER) {
+								X509Certificate signerca = m_caCertCache.findLatestBySubjectDN(signercertIssuerName);
+								if ((signerca == null) || (!OCSPUtil.checkCertInList(signerca, mTrustedReqSigIssuers)) ) {
+									String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
+									m_log.error(errMsg);
+									throw new SignRequestSignatureException(errMsg);
+								}
+							} else {
+								throw new Exception("m_reqRestrictMethod="+m_reqRestrictMethod); // there must be an internal error. We do not want to send a response, just to be safe.
 							}
-						} else if (m_reqRestrictMethod == RESTRICTONISSUER) {
-							X509Certificate signerca = OCSPUtil.findCertificateBySubject(signercertIssuerName, m_cacerts);
-							if ((signerca == null) || (!OCSPUtil.checkCertInList(signerca, mTrustedReqSigIssuers)) ) {
-								String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
-								m_log.error(errMsg);
-								throw new SignRequestSignatureException(errMsg);
-							}
-						} else {
-							throw new Exception(); // there must be an internal error. We do not want to send a response, just to be safe.
 						}
 					}
+				} else {
+					if (m_reqMustBeSigned) {
+						// Signature required
+						throw new SignRequestException("Signature required");
+					}
 				}
-
+				
 				// Get the certificate status requests that are inside this OCSP req
 				Req[] requests = req.getRequestList();
 				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, requests.length);
@@ -775,7 +768,7 @@ abstract class OCSPServletBase extends HttpServlet {
 					m_log.error(errMsg);
 					{
 						// All this just so we can create an error response
-						cacert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);
+						cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
 					}
 					throw new MalformedRequestException(errMsg);
 				}
@@ -785,7 +778,7 @@ abstract class OCSPServletBase extends HttpServlet {
 					m_log.error(errMsg);
 					{
 						// All this just so we can create an error response
-						cacert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);
+						cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
 					}
 					throw new MalformedRequestException(errMsg);
 				}
@@ -825,10 +818,10 @@ abstract class OCSPServletBase extends HttpServlet {
 					// We have to look up the ca-certificate for each certId in the request though, as we will check
 					// for revocation on the ca-cert as well when checking for revocation on the certId. 
 					try {
-						cacert = OCSPUtil.findCAByHash(certId, m_cacerts);
+						cacert = m_caCertCache.findByHash(certId);
 						if (cacert == null) {
 							// We could not find certificate for this request so get certificate for default responder
-							cacert = OCSPUtil.findCertificateBySubject(m_defaultResponderId, m_cacerts);
+							cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
 							unknownCA = true;
 						}
 					} catch (OCSPException e) {
@@ -887,7 +880,7 @@ abstract class OCSPServletBase extends HttpServlet {
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
 							// then we return unknown
-							if ( (!m_nonExistingIsGood) || (OCSPUtil.findCAByHash(certId, m_cacerts) == null) ) {
+							if ( (!m_nonExistingIsGood) || (m_caCertCache.findByHash(certId) == null) ) {
 								status = "unknown";
 								certStatus = new UnknownStatus();
 								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "3"); // 1= good 2 = revoked 3 = unknown

@@ -35,12 +35,14 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.ejb.EJBException;
@@ -59,6 +61,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.ocsp.CertificateCache;
+import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
 import org.ejbca.util.CertTools;
@@ -193,13 +197,17 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             if ( mStorePassword==null || mStorePassword.length()==0 )
                 mStorePassword = mKeyPassword;
             mKeystoreDirectoryName = config.getInitParameter("softKeyDirectoryName");
+            m_log.debug("softKeyDirectoryName is: "+mKeystoreDirectoryName);
             if ( mKeystoreDirectoryName!=null && mKeystoreDirectoryName.length()>0 ) {
                 ExtOCSPHealthCheck.setHealtChecker(this);
-                return;
             } else {
         		String errMsg = intres.getLocalizedMessage("ocsp.errornovalidkeys");
             	throw new ServletException(errMsg);
             }
+            
+    		// Load OCSP responders private keys into cache in init to speed things up for the first request
+            loadPrivateKeys(m_adm);	
+            
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -207,6 +215,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             m_log.error(errMsg, e);
             throw new ServletException(e);
         }
+        
     }
     
     /**
@@ -229,13 +238,13 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
         RevokedCertInfo revokedInfo = isRevoked(adm, cert.getIssuerDN().getName(),
                 cert.getSerialNumber());
-		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", cert.getSerialNumber().toString(16), cert.getIssuerDN());
         if ( revokedInfo==null ) {
+    		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", cert.getSerialNumber().toString(16), cert.getIssuerDN());
             m_log.warn(wMsg);
             return null;
         }
         if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
-    		wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", cert.getSerialNumber().toString(16), cert.getIssuerDN());
+    		String wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", cert.getSerialNumber().toString(16), cert.getIssuerDN());
             m_log.warn(wMsg);
             return null;
         }
@@ -244,28 +253,20 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         X509Certificate current = cert;
         while( true ) {
         	list.add(current);
-        	if ( current.getIssuerX500Principal().equals(current.getSubjectX500Principal()) ) {
+        	if ( CertTools.isSelfSigned(current) ) {
         		chain = (X509Certificate[])list.toArray(new X509Certificate[0]);
         		break;
         	}
-        	Iterator j = m_cacerts.iterator();
-        	boolean isNotFound = true;
-        	while( isNotFound && j.hasNext() ) {
-        		X509Certificate target = (X509Certificate)j.next();
-        		if (m_log.isDebugEnabled()) {
-            		m_log.debug( "current issuer '" + current.getIssuerX500Principal() +
-            				"'. target subject: '" + target.getSubjectX500Principal() + "'.");        			
-        		}
-        		if ( current.getIssuerX500Principal().equals(target.getSubjectX500Principal()) ) {
-        			current = target;
-        			isNotFound = false;
-        		}
+        	// Is there a CA certificate?
+        	X509Certificate target = m_caCertCache.findLatestBySubjectDN(current.getIssuerX500Principal().getName());
+        	if (target != null) {
+    			current = target;
+        	} else {
+        		break;        		
         	}
-        	if ( isNotFound )
-        		break;
         }
         if ( chain==null ) {
-    		wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", cert.getSerialNumber().toString(16), cert.getIssuerDN());
+    		String wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", cert.getSerialNumber().toString(16), cert.getIssuerDN());
         	m_log.warn(wMsg);
         }
         return chain;
@@ -357,7 +358,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     	StringWriter sw = new StringWriter();
     	PrintWriter pw = new PrintWriter(sw);
         try {
-			loadCertificates();
+        	loadPrivateKeys(m_adm);
             Iterator i = mSignEntity.values().iterator();
 	    	while ( i.hasNext() ) {
 	    		SigningEntity signingEntity = (SigningEntity)i.next();
@@ -505,14 +506,19 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         else
             m_log.debug("File "+fileName+" has no cert.");
     }
+    
     protected void loadPrivateKeys(Admin adm) throws Exception {
+    	// We will only load private keys if the cache time has run out
+		if ( (mSignEntity != null) && (mSignEntity.size() > 0) && (mKeysValidTo > new Date().getTime()) ) {
+			return;
+		}
         mSignEntity.clear();
         loadFromP11HSM(adm);
         final File dir = mKeystoreDirectoryName!=null ? new File(mKeystoreDirectoryName) : null;
         if ( dir==null || !dir.isDirectory() ) {
             if ( mSignEntity.size()>0 )
                 return;
-            throw new ServletException(dir.getCanonicalPath() + " is not a directory.");
+            throw new ServletException((dir != null ? dir.getCanonicalPath() : dir) + " is not a directory.");
         }
         final File files[] = dir.listFiles();
         if ( files==null || files.length<1 ) {
@@ -527,7 +533,12 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         }
         if ( mSignEntity.size()<1 )
             throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
+        
+        // Update cache time
+    	// If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
+        mKeysValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;;
     }
+    
     private interface ProviderHandler {
         /**
          * @return name of the provider if an provider is available otherwise null
@@ -718,10 +729,6 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         }
     }
 
-    protected Collection findCertificatesByType(Admin adm, int type, String issuerDN) {
-        return getStoreSessionOnlyData().findCertificatesByType(adm, type, issuerDN);
-    }
-
     protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
         return getStoreSessionOnlyData().findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
@@ -738,4 +745,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
         return getStoreSessionOnlyData().isRevoked(adm, name, serialNumber);
     }
+    
+	protected CertificateCache createCertificateCache(Properties prop) {
+		return new CertificateCacheStandalone(prop);
+	}
+
 }

@@ -15,7 +15,7 @@ package org.ejbca.ui.web.protocol;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.util.Collection;
+import java.util.Properties;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
@@ -34,6 +34,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.ocsp.CertificateCache;
+import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -109,10 +111,6 @@ public class OCSPServlet extends OCSPServletBase {
     	return m_signsession;
     }
 
-    protected Collection findCertificatesByType(Admin adm, int i, String issuerDN) {
-        return getStoreSession().findCertificatesByType(adm, i, issuerDN);
-    }
-
     protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
         return getStoreSession().findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
@@ -124,6 +122,10 @@ public class OCSPServlet extends OCSPServletBase {
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
         return getStoreSession().isRevoked(adm, name, serialNumber);
     }
+
+	protected CertificateCache createCertificateCache(Properties prop) {
+		return new CertificateCacheInternal(prop);
+	}
 
     protected void loadPrivateKeys(Admin adm) {
         // not used by this servlet

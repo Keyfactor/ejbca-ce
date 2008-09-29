@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.ObjectNotFoundException;
@@ -88,6 +89,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -401,7 +403,11 @@ public class ProtocolOcspHttpTest extends TestCase {
 
         Collection cacerts = new ArrayList();
         cacerts.add(cacert);
-        X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, cacerts);
+        Properties prop = new Properties();
+        prop.put("ocspResponderType", Integer.valueOf(OCSPUtil.RESPONDER_TYPE_TEST));
+        prop.put("ocspTestCACerts", cacerts);        
+        CertificateCache certcache = new CertificateCache(prop);
+        X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
         assertNotNull(signer);
         assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
         
@@ -409,7 +415,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         req = gen.generate();
         boolean caught = false;
         try {
-        	signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, cacerts);
+        	signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
         } catch (SignRequestException e) {
         	caught = true;
         }
@@ -427,7 +433,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         // Send the request and receive a singleResponse, this response should throw an SignRequestSignatureException
         caught = false;
         try {
-        	signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, cacerts);
+        	signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
         } catch (SignRequestSignatureException e) {
         	caught = true;
         }
