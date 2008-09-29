@@ -14,6 +14,7 @@
 package org.ejbca.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,48 +55,70 @@ public class ConfigurationHolder {
 
 	public static Configuration instance() {
 		if (config == null) {
-	        try {
-	        	// Default values build into jar file, this is last prio used if no of the other sources override this
-	        	URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
-	        	PropertiesConfiguration pc = new PropertiesConfiguration(url);
-	        	String allowexternal = pc.getString(CONFIGALLOWEXTERNAL, "false");
+			// Default values build into jar file, this is last prio used if no of the other sources override this
+			boolean allowexternal = false;
+			try {
+				URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
+				if (url != null) {
+					PropertiesConfiguration pc = new PropertiesConfiguration(url);
+					allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
+					log.info("Allow external re-configuration: " + allowexternal);
+				}
+			} catch (ConfigurationException e) {
+				log.error("Error intializing configuration: ", e);
+			}
+			config = new CompositeConfiguration();
 
-	        	config = new CompositeConfiguration();
-	        	
-	        	// Only add these config sources if we allow external configuration
-	        	if (StringUtils.equals(allowexternal, "true")) {
-		        	// Override with system properties, this is prio 1 if it exists (java -Dscep.test=foo)
-		        	config.addConfiguration(new SystemConfiguration());
-		        	log.info("Added system properties to configuration source (java -Dfoo.prop=bar).");
+			// Only add these config sources if we allow external configuration
+			if (allowexternal) {
+				// Override with system properties, this is prio 1 if it exists (java -Dscep.test=foo)
+				config.addConfiguration(new SystemConfiguration());
+				log.info("Added system properties to configuration source (java -Dfoo.prop=bar).");
 
-		        	// Override with file in "application server home directory"/conf, this is prio 2
-		        	for (int i=0; i<CONFIG_FILES.length; i++) {
-			        	File f1 = new File("conf"+File.separator+CONFIG_FILES[i]);
-			        	pc = new PropertiesConfiguration(f1);
-			        	pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-			        	config.addConfiguration(pc);
-			        	log.info("Added file to configuration source: "+f1.getAbsolutePath());
-		        	}
-		        	// Override with file in "/etc/ejbca/conf/, this is prio 3
-		        	for (int i=0; i<CONFIG_FILES.length; i++) {
-			        	File f2 = new File("/etc/ejbca/conf/" + CONFIG_FILES[i]);
-			        	pc = new PropertiesConfiguration(f2);
-			        	pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-			        	config.addConfiguration(pc);
-			        	log.info("Added file to configuration source: "+f2.getAbsolutePath());	        		
-		        	}
-	        	}
-	        	// Default values build into jar file, this is last prio used if no of the other sources override this
-	        	for (int i=0; i<CONFIG_FILES.length; i++) {
-		        	url = ConfigurationHolder.class.getResource("/conf/" + CONFIG_FILES[i]);
-		        	pc = new PropertiesConfiguration(url);
-		        	config.addConfiguration(pc);
-		        	log.info("Added url to configuration source: "+url);
-	        	}
-	            log.info("Allow external re-configuration: "+allowexternal);
-	        } catch (ConfigurationException e) {
-	        	log.error("Error intializing configuration: ", e);
-	        }
+				// Override with file in "application server home directory"/conf, this is prio 2
+				for (int i=0; i<CONFIG_FILES.length; i++) {
+					File f = null;
+					try {
+						f = new File("conf"+File.separator+CONFIG_FILES[i]);
+						if (f.exists()) {
+							PropertiesConfiguration pc = new PropertiesConfiguration(f);
+							pc.setReloadingStrategy(new FileChangedReloadingStrategy());
+							config.addConfiguration(pc);
+							log.info("Added file to configuration source: "+f.getAbsolutePath());
+						}
+					} catch (ConfigurationException e) {
+						log.error("Failed to load configuration from file " + f.getAbsolutePath());
+					}
+				}
+				// Override with file in "/etc/ejbca/conf/, this is prio 3
+				for (int i=0; i<CONFIG_FILES.length; i++) {
+					File f = null;
+					try {
+						f = new File("/etc/ejbca/conf/" + CONFIG_FILES[i]);
+						if (f.exists()) {
+							PropertiesConfiguration pc = new PropertiesConfiguration(f);
+							pc.setReloadingStrategy(new FileChangedReloadingStrategy());
+							config.addConfiguration(pc);
+							log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
+						}
+					} catch (ConfigurationException e) {
+						log.error("Failed to load configuration from file " + f.getAbsolutePath());
+					}
+				}
+			}
+			// Default values build into jar file, this is last prio used if no of the other sources override this
+			for (int i=0; i<CONFIG_FILES.length; i++) {
+				try {
+					URL url = ConfigurationHolder.class.getResource("/conf/" + CONFIG_FILES[i]);
+					if (url != null) {
+						PropertiesConfiguration pc = new PropertiesConfiguration(url);
+						config.addConfiguration(pc);
+						log.info("Added url to configuration source: " + url);
+					}
+				} catch (ConfigurationException e) {
+					log.error("Failed to load configuration from resource " + "/conf/" + CONFIG_FILES[i], e);
+				}
+			}
 		} 
 		return config;
 	}
