@@ -72,10 +72,6 @@ public class OCSPUtil {
 	public static final int RESPONDERIDTYPE_NAME=1;
 	public static final int RESPONDERIDTYPE_KEYHASH=2;
 	
-	public static final int RESPONDER_TYPE_STANDALONE = 1;
-	public static final int RESPONDER_TYPE_INTERNAL = 2;
-	public static final int RESPONDER_TYPE_TEST = 3;
-
 	private static final Logger m_log = Logger.getLogger(OCSPUtil.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();

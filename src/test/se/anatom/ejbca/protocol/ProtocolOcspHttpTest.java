@@ -404,7 +404,6 @@ public class ProtocolOcspHttpTest extends TestCase {
         Collection cacerts = new ArrayList();
         cacerts.add(cacert);
         Properties prop = new Properties();
-        prop.put("ocspResponderType", Integer.valueOf(OCSPUtil.RESPONDER_TYPE_TEST));
         prop.put("ocspTestCACerts", cacerts);        
         CertificateCache certcache = new CertificateCache(prop);
         X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
