@@ -102,10 +102,10 @@ public class CertificateCache {
 		loadCertificates();
 	}
     
-    /** Returns a certificate from the cache.
+    /** Returns a certificate from the cache. The latest issued certificate for a subjectDN is returned, if more than one exists for this subjectDN in the cache.
      * 
      * @param subjectDN the subjectDN of the certificate requested.
-     * @return Certificate or null if the certificate does not exist in the cache.
+     * @return X509Certificate or null if the certificate does not exist in the cache.
      */
     public X509Certificate findLatestBySubjectDN(String subjectDN) {
         if (null == subjectDN) {
