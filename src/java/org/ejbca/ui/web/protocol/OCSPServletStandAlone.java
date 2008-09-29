@@ -24,7 +24,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.Provider;
-import java.security.ProviderException;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
@@ -640,12 +639,15 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                         while ( i.hasNext() )
                             ((PrivateKeyFactory)i.next()).clear();
                     }
-                    try {
-                        synchronized(this) {
-                            wait(1000);
+                    for (int i=0; i<5; i++) {
+                        try {
+                            synchronized(this) {
+                                wait(100);
+                            }
+                        } catch (InterruptedException e1) {
+                            throw new Error(e1);
                         }
-                    } catch (InterruptedException e1) {
-                        throw new Error(e1);
+                        System.runFinalization();
                     }
                     try {
                         addProvider();
