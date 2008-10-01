@@ -165,11 +165,15 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                     mIsIndex = false;
                 }
                 mP11Password = config.getInitParameter("p11password");
-            } else
+            } else {
                 mSlot = null;
+            }
+			m_log.debug("sharedLibrary is: "+mSharedLibrary);
+
             mKeyPassword = config.getInitParameter("keyPassword");
-            if ( mKeyPassword==null || mKeyPassword.length()==0 )
+            if ( mKeyPassword==null || mKeyPassword.length()==0 ) {
                 throw new ServletException("no keystore password given");
+            }
             mStorePassword = config.getInitParameter("storePassword");
             if ( mCardTokenObject==null ) {
                 final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
@@ -195,6 +199,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             }
             if ( mStorePassword==null || mStorePassword.length()==0 )
                 mStorePassword = mKeyPassword;
+            
             mKeystoreDirectoryName = config.getInitParameter("softKeyDirectoryName");
             m_log.debug("softKeyDirectoryName is: "+mKeystoreDirectoryName);
             if ( mKeystoreDirectoryName!=null && mKeystoreDirectoryName.length()>0 ) {
@@ -271,15 +276,21 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         return chain;
     }
     private boolean loadFromP11HSM(Admin adm) throws Exception {
-        if ( this.mSharedLibrary==null || this.mSharedLibrary.length()<1 )
-            return false;
+    	m_log.debug(">loadFromP11HSM");
+        if ( this.mSharedLibrary==null || this.mSharedLibrary.length()<1 ) {
+        	m_log.debug("<loadFromP11HSM: no shared library");
+            return false;        	
+        }
         final P11ProviderHandler providerHandler = new P11ProviderHandler();
         final PasswordProtection pwp = providerHandler.getPwd();
         loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, this.mSharedLibrary, providerHandler);
         pwp.destroy();
+    	m_log.debug("<loadFromP11HSM");
         return true;
     }
     private boolean loadFromSWKeyStore(Admin adm, String fileName) {
+    	m_log.debug(">loadFromSWKeyStore");
+    	boolean ret = false;
         try {
             KeyStore keyStore;
             try {
@@ -290,11 +301,12 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 keyStore.load(new FileInputStream(fileName), mStorePassword.toCharArray());
             }
             loadFromKeyStore(adm, keyStore, mKeyPassword, fileName, new SWProviderHandler());
+            ret = true;
         } catch( Exception e ) {
             m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
-            return false;
         }
-        return true;
+    	m_log.debug("<loadFromSWKeyStore");
+        return ret;
     }
     private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
         final String sigAlgName = "SHA1withRSA";
@@ -325,10 +337,16 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             final String alias = (String)eAlias.nextElement();
             try {
                 final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
-                m_log.debug("Trying to load signing keys for signer with subjectDN (EJBCA ordering): "+CertTools.getSubjectDN(cert));
+                if (m_log.isDebugEnabled()) {
+                    m_log.debug("Trying to load signing keys for signer with subjectDN (EJBCA ordering) '"+CertTools.getSubjectDN(cert)+"', keystore alias '"+alias+"'");                	
+                }
                 final PrivateKeyFactory pkf = new PrivateKeyFactoryKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore);
                 if ( pkf.getKey()!=null && cert!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
                     putSignEntity(pkf, cert, adm, providerHandler);
+                } else {
+                    if (m_log.isDebugEnabled()) {
+                    	m_log.debug("Not adding a signEntity for: "+CertTools.getSubjectDN(cert));
+                    }
                 }
             } catch (Exception e) {
                 String errMsg = intres.getLocalizedMessage("ocsp.errorgetalias", alias, errorComment);
@@ -343,13 +361,13 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         X509Certificate[] chain = getCertificateChain(cert, adm);
         if ( chain!=null ) {
             int caid = getCaid(chain[1]);
-            m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
             SigningEntity oldSigningEntity = (SigningEntity)mSignEntity.get(new Integer(caid));
             if ( oldSigningEntity!=null && !oldSigningEntity.getCertificateChain().equals(chain) ) {
                 String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
                 m_log.warn(wMsg);
             }
             mSignEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerHandler) );
+            m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
         }
         return true;
     }
@@ -472,6 +490,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         return false;
     }
     private void loadFromKeyCards(Admin adm, String fileName) {
+    	m_log.debug(">loadFromKeyCards");
         final CertificateFactory cf;
         try {
             cf = CertificateFactory.getInstance("X.509");
@@ -491,7 +510,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         } catch( Exception e) {
         }
         if ( fileType==null ) {
-            try {// read concatinated cert in PEM format
+            try {// read concatenated certificate in PEM format
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
                 while (bis.available() > 0) {
                     if ( putSignEntityCard(cf.generateCertificate(bis), adm) )
@@ -500,42 +519,57 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             } catch(Exception e){
             }
         }
-        if ( fileType!=null )
+        if ( fileType!=null ) {
             m_log.debug("Certificate(s) found in file "+fileName+" of "+fileType+".");
-        else
+        } else {
             m_log.debug("File "+fileName+" has no cert.");
+        }
+    	m_log.debug("<loadFromKeyCards");
     }
     
     protected void loadPrivateKeys(Admin adm) throws Exception {
+    	m_log.debug(">loadPrivateKeys");
     	// We will only load private keys if the cache time has run out
 		if ( (mSignEntity != null) && (mSignEntity.size() > 0) && (mKeysValidTo > new Date().getTime()) ) {
+	    	m_log.debug("<loadPrivateKeys: using cache");
 			return;
 		}
         mSignEntity.clear();
         loadFromP11HSM(adm);
         final File dir = mKeystoreDirectoryName!=null ? new File(mKeystoreDirectoryName) : null;
-        if ( dir==null || !dir.isDirectory() ) {
-            if ( mSignEntity.size()>0 )
-                return;
-            throw new ServletException((dir != null ? dir.getCanonicalPath() : dir) + " is not a directory.");
+        if ( dir!=null && dir.isDirectory() ) {
+            final File files[] = dir.listFiles();
+            if ( files!=null && files.length>0 ) {
+                for ( int i=0; i<files.length; i++ ) {
+                    final String fileName = files[i].getCanonicalPath();
+                    if ( !loadFromSWKeyStore(adm, fileName) )
+                        loadFromKeyCards(adm, fileName);
+                }
+            } else {
+            	m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
+                if ( mSignEntity.size()<1 ) {
+                    throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());            	
+                }
+            }
+        } else {
+        	m_log.debug((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
+            if ( mSignEntity.size()<1 ) {
+                throw new ServletException((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
+            }
         }
-        final File files[] = dir.listFiles();
-        if ( files==null || files.length<1 ) {
-            if ( mSignEntity.size()>0 )
-                return;
-            throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());
+        
+        // Hmm, I don't think we can ever get into this if clause
+        if ( mSignEntity.size()<1 ) {
+        	String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
+            throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
         }
-        for ( int i=0; i<files.length; i++ ) {
-            final String fileName = files[i].getCanonicalPath();
-            if ( !loadFromSWKeyStore(adm, fileName) )
-                loadFromKeyCards(adm, fileName);
-        }
-        if ( mSignEntity.size()<1 )
-            throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
+
+        m_log.debug("We have keys, returning");
         
         // Update cache time
     	// If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
-        mKeysValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;;
+        mKeysValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;
+    	m_log.debug("<loadPrivateKeys");
     }
     
     private interface ProviderHandler {

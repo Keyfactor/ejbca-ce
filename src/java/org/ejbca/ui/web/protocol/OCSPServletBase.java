@@ -332,22 +332,27 @@ abstract class OCSPServletBase extends HttpServlet {
 				}
 			}
 			// If it is empty we'll use the default value of 180
-			m_log.debug("signTrustValidTime is "+m_signTrustValidTime);
+			m_log.debug("signTrustValidTime is: "+m_signTrustValidTime);
 		}
+		
 		// Parameters for OCSP signing (private) key
 		m_sigAlg = config.getInitParameter("SignatureAlgorithm");
 		if (StringUtils.isEmpty(m_sigAlg)) {
 			m_log.error("Signature algorithm not defined in initialization parameters.");
 			throw new ServletException("Missing signature algorithm in initialization parameters.");
 		}
+		m_log.debug("SignatureAlgorithm is: "+m_sigAlg);
+		
 		m_defaultResponderId = config.getInitParameter("defaultResponderID");
 		if (StringUtils.isEmpty(m_defaultResponderId)) {
 			m_log.error("Default responder id not defined in initialization parameters.");
 			throw new ServletException("Missing default responder id in initialization parameters.");
 		}
+		m_log.debug("defaultResponderID is: "+m_defaultResponderId);
+		
 		String initparam = config.getInitParameter("enforceRequestSigning");
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("Enforce request signing : '"
+			m_log.debug("Enforce request signing: '"
 					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 					+ "'");
 		}
@@ -361,7 +366,7 @@ abstract class OCSPServletBase extends HttpServlet {
 		
 		initparam = config.getInitParameter("restrictSignatures");
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("Restrict request signing : '"
+			m_log.debug("Restrict request signing: '"
 					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 					+ "'");
 		}
@@ -377,7 +382,7 @@ abstract class OCSPServletBase extends HttpServlet {
 			String restrictMethod = config.getInitParameter("restrictSignaturesByMethod");
 			m_signTrustDir = config.getInitParameter("signTrustDir");
 			if (m_log.isDebugEnabled()) {
-				m_log.debug("Directory containing trusted CA's for request Signing : '"
+				m_log.debug("Directory containing trusted CA's for request Signing: '"
 						+ (StringUtils.isEmpty(initparam) ? "<not set>" : m_signTrustDir)
 						+ "'");
 			}
@@ -401,7 +406,7 @@ abstract class OCSPServletBase extends HttpServlet {
 		}
 		initparam = config.getInitParameter("useCASigningCert");
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("Use CA signing cert : '"
+			m_log.debug("Use CA signing cert: '"
 					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 					+ "'");
 		}
@@ -415,7 +420,7 @@ abstract class OCSPServletBase extends HttpServlet {
 		
 		initparam = config.getInitParameter("responderIdType");
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("Responder Id type : '"
+			m_log.debug("Responder Id type: '"
 					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
 					+ "'");
 		}
@@ -579,7 +584,7 @@ abstract class OCSPServletBase extends HttpServlet {
 			}
 			try {
 				m_valid_time = Integer.parseInt(sValue)*1000;
-				m_log.debug("ocspSigningCertsValidTime is "+m_valid_time);
+				m_log.debug("ocspSigningCertsValidTime is: "+m_valid_time);
 				cacheProperties.put("ocspSigningCertsValidTime", Integer.valueOf(m_valid_time));
 			} catch( NumberFormatException e ) {
 				final String errorMessage = "Servlet param ocspSigningCertsValidTime not an integer: "+sValue;
