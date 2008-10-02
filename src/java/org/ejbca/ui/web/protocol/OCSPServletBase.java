@@ -491,13 +491,13 @@ abstract class OCSPServletBase extends HttpServlet {
 		if (mDoAuditLog==true) { // If we are not going to do any logging we wont bother setting it up
 			String auditLogPattern = config.getInitParameter("auditLogPattern");
 			if (m_log.isDebugEnabled()) {
-				m_log.debug("Pattern used for audit log: '"
+				m_log.debug("Pattern used for auditLogPattern: '"
 						+ (StringUtils.isEmpty(auditLogPattern) ? "<not set>" : auditLogPattern)
 						+ "'");
 			}
 			String auditLogOrder = config.getInitParameter("auditLogOrder");
 			if (m_log.isDebugEnabled()) {
-				m_log.debug("Pattern used for audit log: '"
+				m_log.debug("Pattern used for auditLogOrder: '"
 						+ (StringUtils.isEmpty(auditLogOrder) ? "<not set>" : auditLogOrder)
 						+ "'");
 			}
@@ -520,13 +520,13 @@ abstract class OCSPServletBase extends HttpServlet {
 		if (mDoTransactionLog==true) { // If we are not going to do any logging we wont bother setting it up
 			String transactionLogPattern = config.getInitParameter("transactionLogPattern");
 			if (m_log.isDebugEnabled()) {
-				m_log.debug("Pattern used for account log: '"
+				m_log.debug("Pattern used for transactionLogPattern: '"
 						+ (StringUtils.isEmpty(transactionLogPattern) ? "<not set>" : transactionLogPattern)
 						+ "'");
 			}
 			String transactionLogOrder = config.getInitParameter("transactionLogOrder");
 			if (m_log.isDebugEnabled()) {
-				m_log.debug("Pattern used for account log: '"
+				m_log.debug("Pattern used for transactionLogOrder: '"
 						+ (StringUtils.isEmpty(transactionLogOrder) ? "<not set>" : transactionLogOrder)
 						+ "'");
 			}	

@@ -102,6 +102,21 @@ public class TestCertificateCache extends TestCase {
 		subcert = cache.findLatestBySubjectDN(CertTools.getSubjectDN(testsubcertnew));
 		assertNotNull(subcert);
 		subcert.verify(cert.getPublicKey());
+
+		// Check that the cache works when we have SN in the DN
+		X509Certificate testsnindncert = (X509Certificate)CertTools.getCertfromByteArray(testsnindn);
+		certs.add(testsnindncert);
+		prop.put("ocspTestCACerts", certs);
+		cache = new CertificateCache(prop);
+		cert = cache.findByHash(new CertificateID(CertificateID.HASH_SHA1, testsnindncert, BigInteger.valueOf(0)));
+		assertNotNull(cert);
+		cert.verify(testsnindncert.getPublicKey());
+		System.out.println(testsnindncert.getIssuerDN().getName());
+		cert = cache.findLatestBySubjectDN(testsnindncert.getIssuerDN().getName());
+		assertNotNull(cert);
+		cert.verify(testsnindncert.getPublicKey());
+		
+		
 	}
 
 
@@ -188,4 +203,20 @@ public class TestCertificateCache extends TestCase {
 			"NfseeJcdbQFcjCyruIf2NL+8l8AuZXyLuMQE6/yqxUdNv7gZvrpk5Z+c9ZcseLTl"+
 			"3GHFTxIySlmZCblZbJzQxO5pRz27B2vPJqicA0cmoBxUQK3NHGO+WyQ+ZpZX5vl/"+
 	"+xc=").getBytes());
+
+	private static byte[] testsnindn = Base64
+	.decode(("MIICXjCCAcegAwIBAgIIEI6RN1cBmxQwDQYJKoZIhvcNAQEFBQAwPzEQMA4GA1UE"+
+			"AwwHU04gQ0EgMTEQMA4GA1UEBRMHMTExMTExMTEMMAoGA1UECgwDRm9vMQswCQYD"+
+			"VQQGEwJTRTAeFw0wODEwMDIxNTQ1MDFaFw0xMTEwMTgxNTQ1MDFaMD8xEDAOBgNV"+
+			"BAMMB1NOIENBIDExEDAOBgNVBAUTBzExMTExMTExDDAKBgNVBAoMA0ZvbzELMAkG"+
+			"A1UEBhMCU0UwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAJnxTFM83LaMg9Cv"+
+			"rDVcxTPAiuieTL2YV/RsjhvENJUtSeAll72UEJhILT5D9D4JR8l5OpW3mpD9KpgW"+
+			"2sWdx9YeB9dtqLHwDl5F+Sqrgl8slPz7879MQ8wWdhg0GlvsOHpL17XWcKmi074K"+
+			"YFsCiXoSoeoBfIS0x8pFsBhPinuHAgMBAAGjYzBhMB0GA1UdDgQWBBTNZtbXdtU3"+
+			"Vi40zxr90Xpi1W7OHzAPBgNVHRMBAf8EBTADAQH/MB8GA1UdIwQYMBaAFM1m1td2"+
+			"1TdWLjTPGv3RemLVbs4fMA4GA1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQUFAAOB"+
+			"gQCTYNZ3miZdhQjV8k5IDkX3qVWGW8efvYu9jUIxfXb9cnk1vbx+g4Bv92foYaJz"+
+			"MHJL2dOF0Lr+K5og2OyP5Liu3NpLTHzhyZIrbE84xTiMy6fTOlXddQCg+WpfESk7"+
+	"8oxoBP+ali7cR2Gga1dN+seVKqE16lLohtlbshLUXMjPTA==").getBytes());
+
 }

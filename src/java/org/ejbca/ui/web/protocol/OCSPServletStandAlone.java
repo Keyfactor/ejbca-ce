@@ -262,7 +262,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         		break;
         	}
         	// Is there a CA certificate?
-        	X509Certificate target = m_caCertCache.findLatestBySubjectDN(current.getIssuerX500Principal().getName());
+        	X509Certificate target = m_caCertCache.findLatestBySubjectDN(current.getIssuerDN().getName());
         	if (target != null) {
     			current = target;
         	} else {

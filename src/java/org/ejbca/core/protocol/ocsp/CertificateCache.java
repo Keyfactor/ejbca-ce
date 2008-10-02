@@ -124,7 +124,11 @@ public class CertificateCache {
         
         // Do the actual lookup
     	X509Certificate ret = null;
-        String key = (String)certsFromSubjectDN.get(CertTools.stringToBCDNString(subjectDN));
+    	String dn = CertTools.stringToBCDNString(subjectDN);
+    	if (log.isDebugEnabled()) {
+        	log.debug("Looking for cert in cache: "+dn);    		
+    	}
+        String key = (String)certsFromSubjectDN.get(dn);
         if (key != null) {
         	ret = (X509Certificate)certCache.get(key);
         	if (log.isDebugEnabled()) {
