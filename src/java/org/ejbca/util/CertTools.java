@@ -193,11 +193,13 @@ public class CertTools {
     public static final String id_pda_countryOfResidence = id_pda + ".5"; 
     /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
-    /** New OID for ipsec (rfc4945), replaces old deprecated id_kp_ipsecEndSystem, id_kp_ipsecTunnel and id_kp_ipsecUser */ 
+    /** New extended key usage OID for ipsec (rfc4945), replaces old deprecated id_kp_ipsecEndSystem, id_kp_ipsecTunnel and id_kp_ipsecUser */ 
     public static final String id_kp_ipsecIKE = id_kp + ".17";
-    /** OIDs for SCVP (rfc5055) */ 
+    /** extended key usage OIDs for SCVP (rfc5055) */ 
     public static final String id_kp_scvpServer = id_kp + ".15";
     public static final String id_kp_scvpClient = id_kp + ".16";
+    /** extended key usage OID Intel AMT (out of band) network management */
+    public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
           
     
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };

@@ -97,7 +97,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_ipsecTunnel.getId(), KeyPurposeId.id_kp_ipsecUser.getId(), 
     	KeyPurposeId.id_kp_timeStamping.getId(), KeyPurposeId.id_kp_smartcardlogon.getId(), KeyPurposeId.id_kp_OCSPSigning.getId(),
     	CertTools.EFS_OBJECTID, CertTools.EFSR_OBJECTID, CertTools.id_kp_ipsecIKE,
-    	CertTools.id_kp_scvpServer, CertTools.id_kp_scvpClient, CertTools.MS_DOCUMENT_SIGNING_OBJECTID};
+    	CertTools.id_kp_scvpServer, CertTools.id_kp_scvpClient, CertTools.MS_DOCUMENT_SIGNING_OBJECTID, CertTools.Intel_amt};
 
 	/** Microsoft Template Constants */
 	public static final String MSTEMPL_DOMAINCONTROLLER  = "DomainController";
