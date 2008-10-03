@@ -74,8 +74,9 @@ public class RenewCAWorker extends BaseWorker {
 		while (iter.hasNext()) {
 			Integer caid = Integer.valueOf((String)iter.next());
 			CAInfo info = getCAAdminSession().getCAInfo(getAdmin(), caid.intValue());
-			String caname = info.getName();
+			String caname = null;
 			if (info != null) {
+				caname = info.getName();
 				Date expire = info.getExpireTime(); 
 				log.debug("CA "+caname+" expires on "+expire);
 				if (expire.before(new Date(expiretime))) {
