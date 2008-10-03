@@ -75,6 +75,7 @@ public class UserMatch extends BasicMatch {
                                                          
 
     // Represents the column names in ra userdata table.
+    private static final String MATCH_WITH_USERNAMESTRING = "username";
     private static final String MATCH_WITH_SUBJECTDN = "subjectDN";
     private static final String[] MATCH_WITH_SUBJECTDN_NAMES = {
         "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=",
@@ -139,20 +140,33 @@ public class UserMatch extends BasicMatch {
         			if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
         				returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + matchvalue + "%'";
         			} 
+        		}else {
+        			if(matchwith == MATCH_WITH_USERNAME){
+        				if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+        					returnval = MATCH_WITH_USERNAMESTRING + " = '" + matchvalue + "'";
+        				}
 
-        		}else{
-        			if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-        				// Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
-        				// like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
-        				String stringChar = "'";
-        		        if ((matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_CA) || (matchwith == MATCH_WITH_CERTIFICATEPROFILE) || (matchwith == MATCH_WITH_ENDENTITYPROFILE) || (matchwith == MATCH_WITH_TOKEN)) {
-            				stringChar = "";
-        		        }
-        				returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue + stringChar;
-        			}
+        				if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+        					returnval = MATCH_WITH_USERNAMESTRING + " LIKE '" + matchvalue + "%'";
+        				} 
 
-        			if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
-        				returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
+        				if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+        					returnval = MATCH_WITH_USERNAMESTRING + " LIKE '%" + matchvalue + "%'";
+        				} 
+        			} else {
+        				if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+        					// Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
+        					// like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
+        					String stringChar = "'";
+        					if ((matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_CA) || (matchwith == MATCH_WITH_CERTIFICATEPROFILE) || (matchwith == MATCH_WITH_ENDENTITYPROFILE) || (matchwith == MATCH_WITH_TOKEN)) {
+        						stringChar = "";
+        					}
+        					returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue + stringChar;
+        				}
+
+        				if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+        					returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
+        				}
         			}
         		}
         	}

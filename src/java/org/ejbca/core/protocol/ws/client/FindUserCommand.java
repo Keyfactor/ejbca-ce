@@ -179,10 +179,10 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			}
 		}		
 		if(matchtype.equalsIgnoreCase("CONTAINS")){
-			if(matchwith == org.ejbca.util.query.UserMatch.MATCH_WITH_DN){
-			  return org.ejbca.util.query.UserMatch.MATCH_TYPE_BEGINSWITH;
+			if ( (matchwith == org.ejbca.util.query.UserMatch.MATCH_WITH_DN) || (matchwith == org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME) ) {
+			  return org.ejbca.util.query.UserMatch.MATCH_TYPE_CONTAINS;
 			}else{
-			  getPrintStream().println("Error: Matchtype 'CONTAINS' can only be used with matchwith 'DN'.");
+			  getPrintStream().println("Error: Matchtype 'CONTAINS' can only be used with matchwith 'DN' or 'USERNAME'.");
 			  usage();				
 			  System.exit(-1);
 			}
@@ -237,7 +237,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
         	getPrintStream().print(MATCHWITHTEXTS[i] +", ");
         }
         getPrintStream().println(MATCHWITHTEXTS[MATCHWITHTEXTS.length-1]);
-        getPrintStream().println("Matchtype can be : EQUALS (not DN fields), BEGINSWITH (DN fields), CONTAINS (matchwith complete DN only)");
+        getPrintStream().println("Matchtype can be : EQUALS (not DN fields), BEGINSWITH (DN fields), CONTAINS (matchwith complete DN or USERNAME only)");
     }
 
 
