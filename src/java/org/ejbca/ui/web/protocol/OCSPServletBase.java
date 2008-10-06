@@ -794,7 +794,7 @@ abstract class OCSPServletBase extends HttpServlet {
 
 				// Add standard response extensions
 				Hashtable responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
-
+                if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				// Look over the status requests
 				ArrayList responseList = new ArrayList();
 				for (int i = 0; i < requests.length; i++) {
