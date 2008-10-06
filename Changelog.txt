@@ -15,6 +15,26 @@ Bug
     * [ECA-968] - Key length changes when editing CA in admin-GUI
     * [ECA-970] - LdapPublisher searches for old objects on certDN instead of Ldap DN
 
+3.7.2, 2008-10-06
+---
+New Feature
+    * [ECA-974] - Add Intel AMT extended key usage
+
+Improvement
+    * [ECA-950] - Optimize OCSP servlet
+    * [ECA-973] - external OCSP responder: trying to reload the p11 provider when the HSM removed/disconnected.
+    * [ECA-976] - WS-API, make mathtype contains with with matchwith username
+
+Bug
+    * [ECA-957] - ocspclient.jar cannot handle answers with responderID of type Name.
+    * [ECA-959] - Public web can give NPE in rare conditions
+    * [ECA-960] - reference to "bin/ejbca.sh ca processreq" in manual
+    * [ECA-968] - Key length changes when editing CA in admin-GUI
+    * [ECA-970] - LdapPublisher searches for old objects on certDN instead of Ldap DN
+    * [ECA-975] - CA certificates with SerialNumber in DN does not work with External OCSP
+    * [ECA-977] - Error editing RenewCAWorker if CA has been removed
+    * [ECA-978] - NullPointerException using WS-API to revoke non-existing certificate
+
 3.7.1, 2008-09-16
 ---
 
@@ -73,6 +93,16 @@ Bug
     * [ECA-879] - Failure to create a new CA due to CRL creation failure
     * [ECA-921] - EjbcaHealthCheck does not work on OC4J
     * [ECA-924] - Language variable misspelled (name="UTF8")
+
+3.6.3, 2008-10-06
+---
+Bug
+    * [ECA-952] - Entity Profile : the text "Use entity e-mail field" is not localizable
+    * [ECA-954] - TestProtectedLog fails if ProtectedLogDevice is not enabled in configuration
+    * [ECA-955] - PKCS11 support problem on OCSP responder
+    * [ECA-957] - ocspclient.jar cannot handle answers with responderID of type Name.
+    * [ECA-968] - Key length changes when editing CA in admin-GUI
+    * [ECA-970] - LdapPublisher searches for old objects on certDN instead of Ldap DN
 
 3.6.2, 2008-08-20
 ---
@@ -270,6 +300,16 @@ Bug
     * [ECA-746] - Not possible to renew CA that does not use default keystore pwd or autoaactivation.
     * [ECA-758] - Under some conditions it's not possible to edit rfc822name altname field for user in admin-gui
     * [ECA-766] - Error saving CRL Service on Weblogic 10
+
+3.5.9, 2008-10-06
+---
+Improvement
+    * [ECA-891] - Avoid unnecessary database searches during HealthCheck
+
+Bug
+    * [ECA-886] - Upgrade fails to set internal state of CA expire time for externally signed CAs
+    * [ECA-906] - EjbcaHealthCheck may use same session bean object for concurrent accesses
+    * [ECA-968] - Key length changes when editing CA in admin-GUI
 
 3.5.8, 2008-07-23
 ---

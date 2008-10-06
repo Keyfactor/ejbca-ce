@@ -72,7 +72,7 @@ Simply copy conf/*.properties from the earlier installation (if not using ejbca-
 Merge changes (if there are any) from *.properties.sample into your *.properties.
 Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
 
-Also note the possibility to use 'ejbca-custom' directory in EJBCA 3.5.x, see User's Guide.
+Also note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, see User Guide.
 
 From EJBCA 3.6.x to EJBCA 3.7.x
 -------------------------------

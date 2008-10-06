@@ -17,6 +17,20 @@ There are database upgrades in this release, so read UPGRADE carefully.
 Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
 EJBCA 3.7.x to 3.8.0. Use the full package from EJBCA 3.8.0 and follow the upgrade instructions in UPGRADE.
 
+EJBCA 3.7.2
+-----------
+This is a minor release with focus on fixing making OCSP optimizations, introducing some minor features and fixing a few annoying bugs.
+- Add Intel AMT extended key usage
+- Optimize OCSP servlet
+- external OCSP responder: trying to reload the p11 provider when the HSM removed/disconnected.
+- CA certificates with SerialNumber in DN does not work with External OCSP
+- WS-API, make mathtype contains with with matchwith username
+- Key length changes when editing CA in admin-GUI
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.7.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.7.1
 -----------
 This is a minor release with major focus on enhancements to CVC CA support for EU EAC ePassport PKIs.
@@ -52,6 +66,19 @@ There are no database upgrades in this release.
 
 Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
 EJBCA 3.6.x to 3.7.0. Use the full package from EJBCA 3.7.0 and follow the upgrade instructions in UPGRADE.
+
+EJBCA 3.6.3
+-----------
+This is a minor release, targeted for fixing a few annoying bugs.
+- Upgrade fails to set internal state of CA expire time for externally signed CAs
+- Key length changes when editing CA in admin-GUI
+- TestProtectedLog fails if ProtectedLogDevice is not enabled in configuration
+- PKCS11 support problem on OCSP responder
+- LdapPublisher searches for old objects on certDN instead of Ldap DN
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.6.x. See UPGRADE for the simple instructions.
 
 EJBCA 3.6.2
 -----------
@@ -114,6 +141,16 @@ EJBCA 3.5.x to 3.6.0. Use the full package from EJBCA 3.6.0 and follow the upgra
 For the Oracle database we have made a switch from the deprecated type LONG to CLOB. Do not fear though,
 EJBCA 3.6 still works if you continue to use the LONG data type (i.e. does not make any changes to your database).
 If you decide to migrate, there is a migration sql script in src/upgrade/35_36/oracle-long-to-clob.sql.
+
+EJBCA 3.5.9
+-----------
+This is a minor release, targeted for fixing a few annoying bugs.
+- Upgrade fails to set internal state of CA expire time for externally signed CAs
+- Key length changes when editing CA in admin-GUI
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
 
 EJBCA 3.5.8
 -----------
