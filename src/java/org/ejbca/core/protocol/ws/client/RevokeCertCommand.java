@@ -76,12 +76,16 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
                         
             try{
             	RevokeStatus status =  getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
-            	if(status.getReason() != RevokedCertInfo.NOT_REVOKED){
-            		getPrintStream().println("Error : Certificate is already revoked");
-            		System.exit(-1);
+            	if (status != null) {
+                	if(status.getReason() != RevokedCertInfo.NOT_REVOKED){
+                		getPrintStream().println("Error : Certificate is already revoked");
+                		System.exit(-1);
+                	}
+                	getEjbcaRAWS().revokeCert(issuerdn,certsn,reason);            	         
+                    getPrintStream().println("Certificate revoked successfully");            		
+            	} else {
+            		getPrintStream().println("Certificate does not exist");
             	}
-            	getEjbcaRAWS().revokeCert(issuerdn,certsn,reason);            	         
-                getPrintStream().println("Certificate revoked sucessfully");
             } catch (AuthorizationDeniedException_Exception e) {
             	getPrintStream().println("Error : " + e.getMessage());            
             } catch (AlreadyRevokedException_Exception e) {
