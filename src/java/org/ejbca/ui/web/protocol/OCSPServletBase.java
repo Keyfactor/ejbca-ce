@@ -164,15 +164,15 @@ import org.ejbca.util.GUIDGenerator;
  *   name="auditLogOrder"
  *   value="${ocsp.audit-log-order}"
  *   
- *  @web.servlet-init-param description="When true, an account log will be created."
+ *  @web.servlet-init-param description="When true, a transaction log will be created."
  *   name="transactionLog"
  *   value="${ocsp.trx-log}"
  *   
- *  @web.servlet-init-param description="A String to create a java Pattern to format the account Log."
+ *  @web.servlet-init-param description="A String to create a java Pattern to format the transaction Log."
  *   name="transactionLogPattern"
  *   value="${ocsp.trx-log-pattern}"
  *   
- *  @web.servlet-init-param description="A String which combined with auditLogPattern determines how auditLog output is formatted."
+ *  @web.servlet-init-param description="A String which combined with transactionLogPattern determines how transaction Log output is formatted."
  *   name="transactionLogOrder"
  *   value="${ocsp.trx-log-order}"
  *   
