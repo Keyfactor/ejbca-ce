@@ -666,6 +666,7 @@ abstract class OCSPServletBase extends HttpServlet {
         mTransactionID += 1;
 		TransactionLogger transactionLogger = null;
 		AuditLogger auditLogger = null;
+		Date startTime = new Date();
 		if (mDoTransactionLog) transactionLogger = new TransactionLogger();
 		if (mDoAuditLog)  auditLogger = new AuditLogger();
 		String transactionID = GUIDGenerator.generateGUID(this);
@@ -1031,8 +1032,11 @@ abstract class OCSPServletBase extends HttpServlet {
 				if (transactionLogger != null) transactionLogger.writeln();
 			}
 			byte[] respBytes = ocspresp.getEncoded();
+			if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
+			if (auditLogger != null) auditLogger.paramPut(AuditLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
 			if (auditLogger != null) auditLogger.writeln();
+			if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
 			response.setContentType("application/ocsp-response");
 			//response.setHeader("Content-transfer-encoding", "binary");
 			response.setContentLength(respBytes.length);
