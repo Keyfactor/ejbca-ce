@@ -742,6 +742,9 @@ public class CertTools {
      */
     public static String getSerialNumberAsString(Certificate cert) {
     	String ret = null;
+    	if (cert == null) {
+        	throw new IllegalArgumentException("getSerialNumber: cert is null");    		
+    	}
     	if (cert instanceof X509Certificate) {
 			X509Certificate xcert = (X509Certificate) cert;
 			ret = xcert.getSerialNumber().toString(16).toUpperCase();
@@ -816,6 +819,9 @@ public class CertTools {
     
     public static Date getNotBefore(Certificate cert) {
     	Date ret = null;
+    	if (cert == null) {
+        	throw new IllegalArgumentException("getNotBefore: cert is null");    		
+    	}
     	if (cert instanceof X509Certificate) {
 			X509Certificate xcert = (X509Certificate) cert;
 			ret = xcert.getNotBefore();
@@ -834,6 +840,9 @@ public class CertTools {
 
     public static Date getNotAfter(Certificate cert) {
     	Date ret = null;
+    	if (cert == null) {
+        	throw new IllegalArgumentException("getNotAfter: cert is null");    		
+    	}
     	if (cert instanceof X509Certificate) {
 			X509Certificate xcert = (X509Certificate) cert;
 			ret = xcert.getNotAfter();

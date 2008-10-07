@@ -58,13 +58,17 @@ public class CertificateCache {
     /** Mapping from CertificateID to key in the certs HashMap. */
     private HashMap certsFromSHA1CertId = null;
     
-	/** The interval on which new OCSP signing certs are loaded in seconds. */
+	/** The interval in milliseconds on which new OCSP signing certs are loaded. */
 	private int m_valid_time;
 
 	/** A semaphore used to stop all processing of HashMaps when we are rebuilding the maps, so we will not get any strange effects
 	 * because HashMap is not synchronized
 	 */
 	private boolean rebuildingMaps = false;
+	/** A semaphore used to not start rebuilding the maps while they are beeing read, so we will not get any strange effects
+	 * because HashMap is not synchronized
+	 */
+	private boolean readingMaps = false;
 	
 	/** A collection that can be used to JUnit test this class. Set responder type to OCSPUtil.RESPONDER_TYPE_TEST
 	 * and give a Collection of CA certificate in the initialization properties.
@@ -78,8 +82,9 @@ public class CertificateCache {
 	Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     /**  
-     * @param prop Properties giving initialization parameters. Required parameters are ocspSigningCertsValidTime and ocspResponderType.
-     * prop can be set to null to use default values 0 and OCSPUtil.RESPONDER_TYPE_INTERNAL. 
+     * @param prop Properties giving initialization parameters. Required parameters are ocspSigningCertsValidTime (milliseconds).
+     * prop can be set to null to use default values 0.
+     * Other possible values are ocspTestCACerts for testing.
      */
 	public CertificateCache(Properties prop) {
 		// Default values
@@ -113,7 +118,7 @@ public class CertificateCache {
         }
         loadCertificates(); // refresh cache?
         
-        // Make sure we don't try to read the HashMaps while they are beeing rebuilt
+        // Make sure we don't try to read the HashMaps while they are being rebuilt
         while (rebuildingMaps) {
         	try {
 				Thread.sleep(50);
@@ -122,18 +127,27 @@ public class CertificateCache {
 			}
         }
         
-        // Do the actual lookup
     	X509Certificate ret = null;
-    	String dn = CertTools.stringToBCDNString(subjectDN);
-    	if (log.isDebugEnabled()) {
-        	log.debug("Looking for cert in cache: "+dn);    		
-    	}
-        String key = (String)certsFromSubjectDN.get(dn);
-        if (key != null) {
-        	ret = (X509Certificate)certCache.get(key);
+        try {
+        	// Signal to loadCertificate that we are reading the maps
+        	readingMaps = true;
+
+        	// Do the actual lookup
+        	String dn = CertTools.stringToBCDNString(subjectDN);
         	if (log.isDebugEnabled()) {
-        		log.debug("Found certificate from subjectDN in cache. SubjectDN='"+CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret));
+        		log.debug("Looking for cert in cache: "+dn);    		
         	}
+        	String key = (String)certsFromSubjectDN.get(dn);
+        	if (key != null) {
+        		ret = (X509Certificate)certCache.get(key);
+        		if (log.isDebugEnabled()) {
+        			log.debug("Found certificate from subjectDN in cache. SubjectDN='"+CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret));
+        		}
+        	}
+
+        } finally {
+        	// Make absolutely sure we always reset it to false
+        	readingMaps = false;
         }
         return ret;
     }
@@ -159,70 +173,81 @@ public class CertificateCache {
 				log.info(e);
 			}
         }
-        // See if we have it in one of the certificate caches
-        String key = new String(Hex.encode(certId.getIssuerNameHash()))+new String(Hex.encode(certId.getIssuerKeyHash()));
-        String fp = (String)certsFromSHA1CertId.get(key);
-        if (fp != null) {
-        	X509Certificate ret = (X509Certificate)certCache.get(fp);
-        	if (log.isDebugEnabled()) {
-        		log.debug("Found certificate from CertificateID in cache. SubjectDN='"+CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret));
-        	}
-        	return ret;
-        }
         
-        // If we did not find it in the cache, lets look for it the hard way
-        Set certs = certCache.entrySet();
-        if (null == certs || certs.isEmpty()) {
-    		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
-            log.info(iMsg);
-            return null;
-        }
-        Iterator iter = certs.iterator();
-        while (iter.hasNext()) {
-        	Map.Entry entry = (Map.Entry)iter.next();
-            Certificate cert = (Certificate) entry.getValue();
-            // OCSP only supports X509 certificates
-        	if (cert instanceof X509Certificate) {
-                X509Certificate cacert = (X509Certificate) cert;
-                try {
-                    CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, CertTools.getSerialNumber(cacert));
-                    if (log.isDebugEnabled()) {
-                        log.debug("Comparing the following certificate hashes:\n"
-                                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
-                                + " CA certificate\n"
-                                + "      CA SubjectDN: '" + CertTools.getSubjectDN(cacert) + "'\n"
-                                + "      SerialNumber: '" + CertTools.getSerialNumberAsString(cacert) + "'\n"
-                                + " CA certificate hashes\n"
-                                + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                                + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
-                                + " OCSP certificate hashes\n"
-                                + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
-                                + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
-                    }
-                    if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
-                            && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Found matching CA-cert with:\n"
-                                    + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                                    + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
-                        }
-                        return cacert;
-                    }
-                } catch (OCSPException e) {
-            		String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
-                    log.error(errMsg, e);
-                }        		
-        	} else {
+        try {
+        	// Signal to loadCertificate that we are reading the maps
+        	readingMaps = true;
+
+        	// See if we have it in one of the certificate caches
+        	String key = new String(Hex.encode(certId.getIssuerNameHash()))+new String(Hex.encode(certId.getIssuerKeyHash()));
+        	String fp = (String)certsFromSHA1CertId.get(key);
+        	if (fp != null) {
+        		X509Certificate ret = (X509Certificate)certCache.get(fp);
         		if (log.isDebugEnabled()) {
-            		log.debug("Certificate not an X509 Certificate. Issuer '"+CertTools.getSubjectDN(cert)+"'");        			
+        			log.debug("Found certificate from CertificateID in cache. SubjectDN='"+CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret));
+        		}
+        		return ret;
+        	}
+
+        	// If we did not find it in the cache, lets look for it the hard way
+        	Set certs = certCache.entrySet();
+        	if (null == certs || certs.isEmpty()) {
+        		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
+        		log.info(iMsg);
+        		return null;
+        	}
+        	Iterator iter = certs.iterator();
+        	while (iter.hasNext()) {
+        		Map.Entry entry = (Map.Entry)iter.next();
+        		Certificate cert = (Certificate) entry.getValue();
+        		// OCSP only supports X509 certificates
+        		if (cert instanceof X509Certificate) {
+        			X509Certificate cacert = (X509Certificate) cert;
+        			try {
+        				CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, CertTools.getSerialNumber(cacert));
+        				if (log.isDebugEnabled()) {
+        					log.debug("Comparing the following certificate hashes:\n"
+        							+ " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
+        							+ " CA certificate\n"
+        							+ "      CA SubjectDN: '" + CertTools.getSubjectDN(cacert) + "'\n"
+        							+ "      SerialNumber: '" + CertTools.getSerialNumberAsString(cacert) + "'\n"
+        							+ " CA certificate hashes\n"
+        							+ "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+        							+ "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
+        							+ " OCSP certificate hashes\n"
+        							+ "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+        							+ "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
+        				}
+        				if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
+        						&& (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
+        					if (log.isDebugEnabled()) {
+        						log.debug("Found matching CA-cert with:\n"
+        								+ "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+        								+ "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
+        					}
+        					return cacert;
+        				}
+        			} catch (OCSPException e) {
+        				String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
+        				log.error(errMsg, e);
+        			}        		
+        		} else {
+        			if (log.isDebugEnabled()) {
+        				log.debug("Certificate not an X509 Certificate. Issuer '"+CertTools.getSubjectDN(cert)+"'");        			
+        			}
         		}
         	}
+        	if (log.isDebugEnabled()) {
+        		log.debug("Did not find matching CA-cert for:\n"
+        				+ "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+        				+ "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");            
+        	}
+        	
+        } finally {
+        	// Make absolutely sure we always reset it to false
+        	readingMaps = false;
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Did not find matching CA-cert for:\n"
-                    + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
-                    + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");            
-        }
+
         return null;
     }
     
@@ -233,18 +258,33 @@ public class CertificateCache {
     
     /* private helper methods */
     
-    private void loadCertificates() {
-    	/** Loads CA certificates but holds a cache so it's reloaded only every five minutes (configurable).
-    	 */
+	/** Loads CA certificates but holds a cache so it's reloaded only every five minutes (configurable).
+	 * 
+     * We keep this method as synchronized, it should not take more than a few microseconds to complete is the cache does not have
+     * to be reloaded. If the cache must be reloaded, we must wait for it anyway to not have ConcurrentModificationException.
+     * We also only want one single thread to do the rebuilding.
+     */
+    private synchronized void loadCertificates() {
     	// Check if we have a cached collection that is not too old
     	if (certCache != null && m_certValidTo > new Date().getTime()) {
     		// The other HashMaps are always created as well, if this one is created
     		return;
     	}
     	
-    	// We have to set the semaphore so noone accesses the HashMaps while we are rebuilding them
     	try {
+        	// We have to set the semaphore so no-one tries to read the HashMaps while we are rebuilding them
+    		// Set this to true before we start waiting for 'readingMaps' so we make sure no new threads start reading the maps
         	rebuildingMaps = true;
+        	
+        	// Wait for all read accesses to stop
+            while (readingMaps) {
+            	try {
+    				Thread.sleep(50);
+    			} catch (InterruptedException e) {
+    				log.info(e);
+    			}
+            }
+
         	Collection certs = findCertificatesByType(admin, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
         	if (log.isDebugEnabled()) {
         		log.debug("Loaded "+certs == null ? "0":certs.size()+" ca certificates");        	
@@ -282,30 +322,31 @@ public class CertificateCache {
         		} else {
         			log.debug("Not adding CA certificate of type: "+cert.getType());
         		}
-        	}    		
+        	}
+        	
+        	// Log what we have stored in the cache 
+        	if (log.isDebugEnabled()) {
+        		StringBuffer certInfo = new StringBuffer();
+        		Set keys = certCache.keySet();
+        		Iterator iter = keys.iterator();
+        		while (iter.hasNext()) {
+        			String key = (String)iter.next();
+        			Certificate cert = (Certificate)certCache.get(key);
+        			certInfo.append(CertTools.getSubjectDN(cert));
+        			certInfo.append(',');
+        			certInfo.append(CertTools.getSerialNumberAsString(cert));
+        			certInfo.append('\n');
+        		}
+        		log.debug("Found the following CA certificates : \n"+ certInfo.toString());
+        	}
     	} finally {
     		// Make absolutely sure we always reset it to false
     		rebuildingMaps = false;
     	}
-    		    	
+    	
     	// If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
     	m_certValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;
-
-    	if (log.isDebugEnabled()) {
-    		StringBuffer certInfo = new StringBuffer();
-    		Set keys = certCache.keySet();
-    		Iterator iter = keys.iterator();
-    		while (iter.hasNext()) {
-    			String key = (String)iter.next();
-    			Certificate cert = (Certificate)certCache.get(key);
-    			certInfo.append(CertTools.getSubjectDN(cert));
-    			certInfo.append(',');
-    			certInfo.append(CertTools.getSerialNumberAsString(cert));
-    			certInfo.append('\n');
-    		}
-    		log.debug("Found the following CA certificates : \n"
-    				+ certInfo.toString());
-    	}
+    	
     } // loadCertificates
     
     /**

@@ -18,6 +18,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -119,7 +120,103 @@ public class TestCertificateCache extends TestCase {
 		
 	}
 
+	public static Throwable threadException = null;
+	public void test02loadCertificates() throws Exception {
+		Properties prop = new Properties();
+		prop.put("ocspSigningCertsValidTime", new Integer(1));
+		Collection certs = new ArrayList();
+		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
+		certs.add(testrootcert);
+		X509Certificate testrootnewcert = (X509Certificate)CertTools.getCertfromByteArray(testrootnew);
+		certs.add(testrootnewcert);
+		X509Certificate testsubcert = (X509Certificate)CertTools.getCertfromByteArray(testsub);
+		certs.add(testsubcert);
+		Certificate testcvccert = CertTools.getCertfromByteArray(testcvc);
+		certs.add(testcvccert);
+		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
+		certs.add(testscepcert);
+		prop.put("ocspTestCACerts", certs);
+		CertificateCache cache = new CertificateCache(prop);
 
+		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1");
+		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2");
+		Thread no3 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3");
+		Thread no4 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testcvccert)),"no4");
+		Thread no5 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no5");
+		Thread no11 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1");
+		Thread no22 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2");
+		Thread no33 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3");
+		Thread no44 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testcvccert)),"no4");
+		Thread no55 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no5");
+		CacheExceptionHandler handler = new CacheExceptionHandler();
+		no1.setUncaughtExceptionHandler(handler);
+		no2.setUncaughtExceptionHandler(handler);
+		no3.setUncaughtExceptionHandler(handler);
+		no4.setUncaughtExceptionHandler(handler);
+		no5.setUncaughtExceptionHandler(handler);
+		no11.setUncaughtExceptionHandler(handler);
+		no22.setUncaughtExceptionHandler(handler);
+		no33.setUncaughtExceptionHandler(handler);
+		no44.setUncaughtExceptionHandler(handler);
+		no55.setUncaughtExceptionHandler(handler);
+		long start = new Date().getTime();
+        no1.start();
+        System.out.println("Started no1");
+        no2.start();
+        System.out.println("Started no2");
+        no3.start();
+        System.out.println("Started no3");
+        no4.start();
+        System.out.println("Started no4");
+        no5.start();
+        System.out.println("Started no5");
+        no11.start();
+        System.out.println("Started no11");
+        no22.start();
+        System.out.println("Started no22");
+        no33.start();
+        System.out.println("Started no33");
+        no44.start();
+        System.out.println("Started no44");
+        no55.start();
+        System.out.println("Started no55");
+        no1.join();
+        no2.join();
+        no3.join();
+        no4.join();
+        no5.join();
+        no11.join();
+        no22.join();
+        no33.join();
+        no44.join();
+        no55.join();
+		long end = new Date().getTime();
+		System.out.println("Time consumed: "+(end-start));
+        assertNull(threadException != null?threadException.getMessage():"null", threadException);
+	}
+	
+    // 
+    // Private helper methods
+    //
+	private class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
+		public void uncaughtException(Thread t, Throwable e) {
+			TestCertificateCache.threadException = e;
+		}
+	}
+    private class CacheTester implements Runnable {
+    	private CertificateCache cache = null;
+    	private String dn;
+    	public CacheTester(CertificateCache cache, String lookfor) {
+    		this.cache = cache;
+    		this.dn = lookfor;
+    	}
+    	public void run() {
+    		for (int i=0; i<1000;i++) {
+    			X509Certificate cert = cache.findLatestBySubjectDN(dn);
+    		}    			
+    	}
+    }
+	
 	private static byte[] testroot = Base64
 	.decode(("MIICPDCCAaWgAwIBAgIIV++ss+Mrw5MwDQYJKoZIhvcNAQEFBQAwLjERMA8GA1UE"+
 			"AwwIVGVzdFJvb3QxDDAKBgNVBAoMA0ZvbzELMAkGA1UEBhMCU0UwHhcNMDgwOTI5"+
