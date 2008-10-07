@@ -32,9 +32,9 @@ public class OCSPUnidResponse {
      * These are the return codes defined in the RFC. 
      * The codes are just used for simple access to the OCSP return value. 
      */
-    public static final int OCSP_GOOD = 1;
-    public static final int OCSP_REVOKED = 2;
-    public static final int OCSP_UNKNOWN = 3;
+    public static final int OCSP_GOOD = 0;
+    public static final int OCSP_REVOKED = 1;
+    public static final int OCSP_UNKNOWN = 2;
 
     //
     // Constants for error status

@@ -683,6 +683,8 @@ abstract class OCSPServletBase extends HttpServlet {
 			if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
 			if (transactionLogger != null) transactionLogger.writeln();
 			if (transactionLogger != null) transactionLogger.flush();
+			if (auditLogger != null) auditLogger.paramPut(auditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+			if (auditLogger != null) auditLogger.flush();
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
 			return;
 		}
@@ -796,6 +798,7 @@ abstract class OCSPServletBase extends HttpServlet {
 				// Add standard response extensions
 				Hashtable responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
                 if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+                if (auditLogger!= null) auditLogger.paramPut(auditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				// Look over the status requests
 				ArrayList responseList = new ArrayList();
 				for (int i = 0; i < requests.length; i++) {
@@ -903,7 +906,6 @@ abstract class OCSPServletBase extends HttpServlet {
 									if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
 								} else {
 									certStatus = null;
-									if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
 								}
 								String status = "good";
 								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
