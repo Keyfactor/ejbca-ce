@@ -280,7 +280,7 @@
     <property name="healthcheck.maintenancefile" value="" />
     <property name="healthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
     <property name="ocsphealthcheck.amountfreemem" value="1" />
-    <property name="ocsphealthcheck.dbquery" value="Select 1 From CertificateData" />
+    <property name="ocsphealthcheck.dbquery" value="Select 1 From CertificateData where fingerprint='XX'" />
     <property name="ocsphealthcheck.authorizedips" value="127.0.0.1"/>
     <property name="ocsphealthcheck.maintenancefile" value="" />
     <property name="ocsphealthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
