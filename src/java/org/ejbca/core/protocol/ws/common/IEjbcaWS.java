@@ -641,7 +641,7 @@ public interface IEjbcaWS {
 	 * @return array of NameAndId of available CAs, if no CAs are found will an empty array be returned of size 0, never null. 
 	 * @throws EjbcaException if an error occured
 	 * @see ICAAdminSessionLocal#getAvailableCAs()
-	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+	 * @author Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 */
 	public abstract NameAndId[] getAvailableCAs()
 			throws EjbcaException, AuthorizationDeniedException;
@@ -657,7 +657,7 @@ public interface IEjbcaWS {
 	 * @return array of NameAndId of available end entity profiles, if no profiles are found will an empty array be returned of size 0, never null. 
 	 * @throws EjbcaException if an error occured
 	 * @see IRaAdminSessionLocal#getAuthorizedEndEntityProfileIds()
-	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+	 * @author Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 */
 	public abstract NameAndId[] getAuthorizedEndEntityProfiles()
 			throws EjbcaException, AuthorizationDeniedException;
@@ -673,7 +673,7 @@ public interface IEjbcaWS {
 	 * @param entityProfileId id of an end entity profile where we want to find which certificate profiles are available
 	 * @return array of NameAndId of available certificate profiles, if no profiles are found will an empty array be returned of size 0, never null. 
 	 * @throws EjbcaException if an error occured
-	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+	 * @author Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 */
 	public abstract NameAndId[] getAvailableCertificateProfiles(int entityProfileId) 
 			throws AuthorizationDeniedException, EjbcaException;
@@ -691,7 +691,7 @@ public interface IEjbcaWS {
 	 * @param entityProfileId id of an end entity profile where we want to find which CAs are available
 	 * @return array of NameAndId of available CAs in the specified end entity profile, if no CAs are found will an empty array be returned of size 0, never null. 
 	 * @throws EjbcaException if an error occured
-	 * @author Sébastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+	 * @author Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 */
 	public abstract NameAndId[] getAvailableCAsInProfile(int entityProfileId) 
 			throws AuthorizationDeniedException, EjbcaException;
