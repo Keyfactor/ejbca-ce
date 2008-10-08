@@ -20,6 +20,6 @@ public interface IHealtChecker {
 	/**
 	 * @return
 	 */
-	String healtCheck();
+	String healthCheck();
 
 }

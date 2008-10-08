@@ -37,10 +37,10 @@ import org.ejbca.ui.web.protocol.IHealtChecker;
 public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	
 	private static final Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
-	private static IHealtChecker healtChecker;
+	private static IHealtChecker healthChecker;
 
 	static public void setHealtChecker(IHealtChecker hc) {
-		healtChecker = hc;
+		healthChecker = hc;
 	}
 	
 	public void init(ServletConfig config) {
@@ -72,8 +72,8 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	
 	
 	private String checkOCSPSignTokens(){
-		if ( healtChecker!=null ) {
-			return healtChecker.healtCheck();
+		if ( healthChecker!=null ) {
+			return healthChecker.healthCheck();
 		} else {
 			return "No OCSP token health checker set";
 		}

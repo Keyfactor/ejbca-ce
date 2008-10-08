@@ -16,6 +16,8 @@ package org.ejbca.ui.web.pub.cluster;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Properties;
@@ -86,11 +88,21 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 			log.debug("Maintenance file not specified, node will be monitored");
 			return "";
 		} 
+		InputStream in = null;
 		try {
-			maintenanceProperties.load(new FileInputStream(maintenanceFile));
+			in = new FileInputStream(maintenanceFile);
+			maintenanceProperties.load(in);
 		} catch (IOException e) {
 			log.debug("Could not read Maintenance File. Expected to find file at: "+ maintenanceFile);
 			return "";
+		} finally {
+			if (in != null) {
+				try {
+					in.close();					
+				} catch (IOException e) {
+					log.error("Error closing file: ", e);
+				}
+			}
 		}
 		try {
 			String temp = maintenanceProperties.getProperty(maintenancePropertyName).toString();
@@ -110,14 +122,34 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 			log.debug("Maintenance file not specified, node will be monitored");
 		} else {
 			Properties maintenanceProperties = new Properties();
+			InputStream in = null;
 			try {
-				maintenanceProperties.load(new FileInputStream(maintenanceFile));
+				in = new FileInputStream(maintenanceFile);
+				maintenanceProperties.load(in);
 			} catch (IOException e) {
 				log.debug("Could not read Maintenance File. Expected to find file at: "+ maintenanceFile);
+				OutputStream out = null;
 				try {
-					maintenanceProperties.store(new FileOutputStream("filename.properties"), null);
+					out = new FileOutputStream("filename.properties");
+					maintenanceProperties.store(out, null);
 				} catch (IOException e2) {
 					log.error("Could not create Maintenance File at: "+ maintenanceFile);
+				} finally {
+					if (out != null) {
+						try {
+							out.close();					
+						} catch (IOException oe) {
+							log.error("Error closing file: ", e);
+						}
+					}
+				}
+			} finally {
+				if (in != null) {
+					try {
+						in.close();					
+					} catch (IOException e) {
+						log.error("Error closing file: ", e);
+					}
 				}
 			}
 		}

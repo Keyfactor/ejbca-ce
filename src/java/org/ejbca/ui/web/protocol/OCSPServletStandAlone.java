@@ -371,7 +371,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         }
         return true;
     }
-    public String healtCheck() {
+    public String healthCheck() {
     	StringWriter sw = new StringWriter();
     	PrintWriter pw = new PrintWriter(sw);
         try {
