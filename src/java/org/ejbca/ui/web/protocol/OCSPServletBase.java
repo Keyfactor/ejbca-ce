@@ -978,7 +978,8 @@ abstract class OCSPServletBase extends HttpServlet {
 					// generate the signed response object
 					BasicOCSPResp basicresp = signOCSPResponse(req, responseList, exts, cacert);
 					ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);
-
+					if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				} else {
 					String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
 					m_log.error(errMsg);
@@ -1030,13 +1031,13 @@ abstract class OCSPServletBase extends HttpServlet {
 				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
 				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
 				if (transactionLogger != null) transactionLogger.writeln();
+				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
 			}
 			byte[] respBytes = ocspresp.getEncoded();
-			if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+			
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
 			if (auditLogger != null) auditLogger.writeln();
-			if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
 			response.setContentType("application/ocsp-response");
 			//response.setHeader("Content-transfer-encoding", "binary");
 			response.setContentLength(respBytes.length);
