@@ -20,7 +20,10 @@ fi
 
 if [ -z "$EJBCA_HOME" ] ; then
 	EJBCA_FILE="$0" 
-	EJBCA_HOME=`echo $(dirname $(dirname $EJBCA_FILE))`
+	EJBCA_HOME=`echo $(dirname $EJBCA_FILE)`
+	cd $EJBCA_HOME
+	cd ..
+	EJBCA_HOME=`pwd`
 fi
 
 # Wich command are we running?
