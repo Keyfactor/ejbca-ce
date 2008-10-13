@@ -47,16 +47,16 @@
 
 <section name="About EJBCA">
 <p>
-EJBCA is a fully functional Certificate Authority. Based on J2EE technology it constitutes a robust,
-high performance and component based CA. Both flexible and platform independent, EJBCA can be used
-standalone or integrated in any J2EE application.
+EJBCA is an enterprise class PKI Certificate Authority built on J2EE technology. 
+It is a robust, high performance, platform independent, flexible, and component based CA to be used 
+stand-alone or integrated in other J2EE applications.
 </p>
 <p>
-EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organisation.
+EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organization.
 If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
 but if you want a serious PKI we recommend EJBCA.
 </p>
-<p><strong>EJBCA has everything for your trustcenter. Contact us for more info.</strong>
+<p><strong>EJBCA has everything for your trust center. Contact us for more info.</strong>
 </p>
 <p>
 You can use EJBCA to issue certificates for different purposes such as:
@@ -79,7 +79,7 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Get central trusted Time Stamps for you electronically signed documents.</li>
 <li>Perform central signing of document.</li>
 <li>Sign electronic passport data (MRTD).</li>
-<li>Issue hard tokens (smart cards) and manage the complete lifecycle of cards and certificates.</li>
+<li>Issue hard tokens (smart cards) and manage the complete life cycle of cards and certificates.</li>
 <li>... and many many more ...</li>
 </ul>
 </p>
@@ -136,8 +136,11 @@ If you want to contribute to EJBCA, please see <i><a href="donations.html">Contr
     This development was sponsored by <a href="http://www.utimaco.com/">Utimaco</a>.
     </p>
     <p>
+    New in the HSM support is the <a href="http://www.aepnetworks.com/">AEP</a> Keyper HSM. 
+    </p>
+    <p>
     EJBCA 3.7 contains support for CVC CAs used for EU EAC ePassports. 
-    This development was sponsored and contributed by the <a href="http://www.polisen.se//">Swedish National Police Board</a>.
+    This development was sponsored and contributed by the <a href="http://www.polisen.se/">Swedish National Police Board</a>.
     </p>
 </section>
 </body>
