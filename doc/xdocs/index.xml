@@ -127,7 +127,7 @@ If you want to contribute to EJBCA, please see <i><a href="donations.html">Contr
     </p>
     <p>
     The Marlin Trust Management Organization (MTMO) will be using EJBCA to provide key management services for the commercial 
-    adoption of  Marlin DRM. EJBCA 3.4.0 supports RSA and ECC implementations of the Marlin PKI infrastructure.
+    adoption of Marlin DRM. EJBCA 3.4.0 supports RSA and ECC implementations of the Marlin PKI infrastructure.
     <br/>
     ECC implementation and other improvements were implemented with the support of the MTMO.
     </p>

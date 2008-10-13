@@ -393,10 +393,10 @@ operations.
 </p><p>
 To use a certificate issued by an external CA as Administrator:
 <ol>
-<li>Add the CA-certificate p12/truststore.jks with "keytool -import
+<li>Add the CA-certificate to p12/truststore.jks with "keytool -import
 -trustcacerts -file externalca.pem -keystore p12/truststore.jks -storepass
 changeit -alias externalca"</li>
-<li>Redeploy EJBCA and restart the application server to make sure the new
+<li>Redeploy EJBCA (ant deploy) and restart the application server to make sure the new
 truststore is in use</li>
 <li>Import the CA-certificate under "Admin GUI - Edit Certificate Authorities
  - Import CA Certificate.." or use the CLI</li>
