@@ -26,14 +26,46 @@
 			<c:param name="issuer" value="${ca.subjectDN}" />
 			<c:param name="moz" value="y" />
 		</c:url>
+		
+		<c:url var="derdelta" value="../publicweb/webdist/certdist" >
+			<c:param name="cmd" value="deltacrl" />
+			<c:param name="issuer" value="${ca.subjectDN}" />
+		</c:url>
+		<c:url var="pemdelta" value="../publicweb/webdist/certdist" >
+			<c:param name="cmd" value="deltacrl" />
+			<c:param name="format" value="PEM" />
+			<c:param name="issuer" value="${ca.subjectDN}" />
+		</c:url>
+		<c:url var="mozdelta" value="../publicweb/webdist/certdist" >
+			<c:param name="cmd" value="deltacrl" />
+			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="moz" value="y" />
+		</c:url>
 
 		<hr />
 		<h2>CA: ${ca.name}</h2>
-		<p>The Certificate Revocation List is available in three ways:</p>
+		<p>The Certificate Revocation List is available in three ways:
+		<table>
+		<thead><tr><td>CRL</td><td>Delta CRL</td></tr></thead>
+		<tbody>
+		<tr>
+		<td>
 		<ul>
 		  	<li><a href="${der}">DER format</a></li> 
 		  	<li><a href="${pem}">PEM format</a></li> 
 		  	<li><a href="${moz}">Mozilla/Netscape direct import</a></li>
 		</ul>
+		</td>
+		<td>
+		<ul>
+		  	<li><a href="${derdelta}">DER format</a></li> 
+		  	<li><a href="${pemdelta}">PEM format</a></li> 
+		  	<li><a href="${mozdelta}">Mozilla/Netscape direct import</a></li>
+		</ul>
+		</td>
+		</tr>
+		</tbody>
+		</table>
+		</p>
 	</c:forEach>
 <%@ include file="footer.inc" %>

@@ -57,6 +57,7 @@ import org.ejbca.util.CertTools;
  * <p>The follwing commands are supported:<br>
  * <ul>
  * <li>crl - gets the latest CRL.
+ * <li>deltacrl - gets the latest delta CRL.
  * <li>lastcert - gets latest certificate of a user, takes argument 'subject=<subjectDN>'.
  * <li>listcerts - lists all certificates of a user, takes argument 'subject=<subjectDN>'.
  * <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
@@ -75,6 +76,7 @@ public class CertDistServlet extends HttpServlet {
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";
+    private static final String COMMAND_DELTACRL = "deltacrl"; 
     private static final String COMMAND_REVOKED = "revoked";
     private static final String COMMAND_CERT = "lastcert";
     private static final String COMMAND_LISTCERT = "listcerts";
@@ -190,16 +192,24 @@ public class CertDistServlet extends HttpServlet {
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";
-        if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
+        if ((command.equalsIgnoreCase(COMMAND_CRL) || command.equalsIgnoreCase(COMMAND_DELTACRL)) && issuerdn != null) {
             try {
                 ICertificateStoreSessionLocal store = getStoreSession();
-                byte[] crl = store.getLastCRL(administrator, issuerdn, false);
+                byte[] crl = null;
+                if (command.equalsIgnoreCase(COMMAND_CRL)) {
+                	crl = store.getLastCRL(administrator, issuerdn, false); // CRL
+                } else {
+                	crl = store.getLastCRL(administrator, issuerdn, true); // deltaCRL
+                } 
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
                 String moz = req.getParameter(MOZILLA_PROPERTY);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
+                if (command.equalsIgnoreCase(COMMAND_DELTACRL)) {
+                	filename = "delta_"+filename;
+                }                 
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
                     res.setHeader("Content-disposition", "attachment; filename=\"" +  filename+"\"");                    
                 }
@@ -477,7 +487,7 @@ public class CertDistServlet extends HttpServlet {
                 return;
             }
         } else {
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=cacert | lastcert | listcerts | crl | revoked && issuer=<issuerdn>");
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=cacert | lastcert | listcerts | crl | deltacrl | revoked && issuer=<issuerdn>");
             return;
         }
 

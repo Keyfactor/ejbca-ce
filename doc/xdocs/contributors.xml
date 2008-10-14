@@ -88,6 +88,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Jakob Jenkov, &#x6A;&#x61;&#x6B;&#111;&#98;&#x40;&#106;&#x65;&#x6E;&#x6B;&#111;&#118;&#x2E;&#x63;&#111;&#x6D;, advice on fair thread locking for ProtectedLog synchronization.</li>
 <li>David Galichet, &#x64;&#x61;&#x76;&#105;&#100;&#x2E;&#103;&#x61;&#x6C;&#x69;&#99;&#104;&#x65;&#x74;&#64;&#x6C;&#x69;&#110;&#x61;&#103;&#x6F;&#x72;&#97;&#x2E;&#99;&#111;&#x6D;, add error code on web services. WS user creation uses profile informations</li>
 <li>Vincent Kan, &#x76;&#x6B;&#x61;&#110;&#64;&#x6C;&#105;&#x6E;&#x61;&#x67;&#111;&#114;&#x61;&#x2E;&#99;&#x6F;&#x6D;, WS user creation uses profile informations</li>
+<li>Thomas Noel, &#109;&#97;&#105;&#108;&#116;&#111;:&#x74;&#x68;&#x6F;&#109;&#97;&#x73;&#46;&#x6E;&#x6F;&#x65;&#108;&#43;&#x65;&#x6A;&#98;&#x63;&#x61;&#64;&#x61;&#117;&#x66;&#x2E;&#111;&#x72;&#103;, Retrieve Delta CRL in CertDistServlet.</li>
 </ul>
     </section>
   </body>
