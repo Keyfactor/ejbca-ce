@@ -15,7 +15,9 @@ package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -78,9 +80,10 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class OCSPUnidClient {
 
-	private String httpReqPath;
-	final private KeyStore ks;
-	final private String passphrase;
+    final public static String requestDirectory = "ocspRequests";
+    private String httpReqPath;
+    final private KeyStore ks;
+    final private String passphrase;
     final private PrivateKey signKey;
     final private X509Certificate[] certChain;
     final private X509Extensions extensions;
@@ -194,6 +197,13 @@ public class OCSPUnidClient {
         } else
             req = gen.generate();
 
+        // write request if directory exists.
+        File  ocspReqDir = new File(requestDirectory);
+        if ( ocspReqDir.isDirectory() ) {
+            OutputStream os = new FileOutputStream(new File( ocspReqDir, serialNr.toString()));
+            os.write(req.getEncoded());
+            os.close();
+        }
         // Send the request and receive a BasicResponse
         return sendOCSPPost(req.getEncoded(), cacert, nonce);
 	}

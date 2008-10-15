@@ -120,6 +120,7 @@ public class Ocsp extends ClientToolBox {
             if ( args.length<7 ) {
                 System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<request signing keystore file>] [<request signing password>]");
                 System.out.println("Certificate seial number file is creates using the WS stress command: ./ejbcawsracli.sh stress...");
+                System.out.println("If the directory \"./"+OCSPUnidClient.requestDirectory+"\" exists then a file for each request will be stored in this directory.");
                 System.exit(1);
             }
             this.ocspurl = args[2];
