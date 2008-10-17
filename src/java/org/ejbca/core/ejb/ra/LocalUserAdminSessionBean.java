@@ -2052,6 +2052,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             int profileId = data.getEndEntityProfileId();
             EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
             Collection l = profile.getUserNotifications();
+            debug("Number of user notifications: "+l.size()); 
             Iterator i = l.iterator();
         	String rcptemail = useremail; // Default value
             while (i.hasNext()) {
