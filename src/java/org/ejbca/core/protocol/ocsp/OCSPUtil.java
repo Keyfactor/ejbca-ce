@@ -39,8 +39,14 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.ocsp.OCSPRequest;
+import org.bouncycastle.asn1.ocsp.Signature;
+import org.bouncycastle.asn1.ocsp.TBSRequest;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
@@ -275,10 +281,27 @@ public class OCSPUtil {
     	if (certs.length > 0) {
     		signer = CertTools.getSubjectDN(certs[0]);
     	}
+    	OCSPReq verifyReq = req;
+    	// We have a workaround to handle requests with wrong encoding of the signature, in the wild 
+    	// there are requests which have SHA1 (1.3.14.3.2.26) as signature algorithm instead of SHA1WithRSA
+    	if (StringUtils.equals(req.getSignatureAlgOID(), "1.3.14.3.2.26")) { 
+    		try {
+    			ASN1InputStream in = new ASN1InputStream(req.getTBSRequest());
+    			TBSRequest tbsReq;
+    			tbsReq = new TBSRequest((ASN1Sequence)in.readObject());
+    			DERBitString sigbits = new DERBitString(req.getSignature());
+    			AlgorithmIdentifier algId = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+    			Signature signature = new Signature(algId, sigbits);
+    			verifyReq = new OCSPReq(new OCSPRequest(tbsReq, signature));
+    		} catch (IOException e1) {
+    			m_log.info("unable to convert request for SHA1 workaround: ", e1);
+    		}
+    	}
+    	
         // We must find a cert to verify the signature with...
     	boolean verifyOK = false;
     	for (int i = 0; i < certs.length; i++) {
-    		if (req.verify(certs[i].getPublicKey(), "BC") == true) {
+    		if (verifyReq.verify(certs[i].getPublicKey(), "BC") == true) {
     			signercert = certs[i];
         		signer = CertTools.getSubjectDN(signercert);
     			String signerissuer = CertTools.getIssuerDN(signercert);
