@@ -137,7 +137,7 @@ public class TestDistinguishedName extends TestCase {
     public void testMergeSubjectAltNameWithOverrideUsingEntityEmail() throws Exception {
         final String _OTHER_SUBJECT_ALT_NAME = "IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri";
 
-    	final String EXPECTED = "IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri,RFC822NAME=entitymail@linagora.com";
+    	final String EXPECTED = "RFC822NAME=entitymail@linagora.com,IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri";
         DistinguishedName san = new DistinguishedName(_OTHER_SUBJECT_ALT_NAME);
         subjectAltName = createNewSubjectAltName();
         Map dnMap = new HashMap();

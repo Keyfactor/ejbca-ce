@@ -124,7 +124,7 @@ public class DistinguishedName extends LdapName {
                     boolean finded = false;
                     for (Iterator dnIt = dnMap.keySet().iterator(); dnIt.hasNext();) {
                         String key = (String) dnIt.next();
-                        if (translateComponentName((String) dnMap.get(key)).equalsIgnoreCase(localRdn.getType())) {
+                        if (translateComponentName(key).equalsIgnoreCase(localRdn.getType())) {
                             finded = true;
                         }
                     }
@@ -135,6 +135,8 @@ public class DistinguishedName extends LdapName {
                         } catch (InvalidNameException e) {
                             // Can't occur.
                         }
+                    } else {
+                        localRdns.add(localRdn);
                     }
                 } else {
                     localRdns.add(localRdn);
