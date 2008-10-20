@@ -442,7 +442,7 @@ public class LdapPublisher extends BasePublisher {
 				// It's a delta CRL.
 				LDAPAttribute attr = new LDAPAttribute(getDeltaCRLAttribute(), crl.getEncoded());
 				if (oldEntry != null) {
-					modSet.add(LDAPModification.REPLACE, attr);
+					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 				} else {
 					attributeSet.add(attr);
 				}
