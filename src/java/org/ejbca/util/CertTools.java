@@ -1980,34 +1980,35 @@ public class CertTools {
      */
     public static String getAuthorityInformationAccessOcspUrl(Certificate cert)
         throws CertificateParsingException {
-        if (cert instanceof X509Certificate) {
-			X509Certificate x509cert = (X509Certificate) cert;
-            try {
-                DERObject obj = getExtensionValue(x509cert, X509Extensions.AuthorityInfoAccess.getId());
-                if (obj == null) {
-                    return null;
-                }
-                AuthorityInformationAccess aia = AuthorityInformationAccess.getInstance(obj);
-                AccessDescription[] ad = aia.getAccessDescriptions();
-                if ( (ad == null) || (ad.length < 1) ) {
-                	return null;
-                }
-                if (!ad[0].getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
-                	return null;
-                }
-                GeneralName gn = ad[0].getAccessLocation();
-                if (gn.getTagNo() != 6) {
-                	return null;
-                }
-                DERIA5String str = DERIA5String.getInstance(gn.getDERObject());
-                return str.getString();
-            }
-            catch (Exception e) {
-                log.error("Error parsing AuthorityInformationAccess", e);
-                throw new CertificateParsingException(e.toString());
-            }
-        }
-        return null;
+    	String ret = null;
+    	if (cert instanceof X509Certificate) {
+    		X509Certificate x509cert = (X509Certificate) cert;
+    		try {
+    			DERObject obj = getExtensionValue(x509cert, X509Extensions.AuthorityInfoAccess.getId());
+    			if (obj == null) {
+    				return null;
+    			}
+    			AuthorityInformationAccess aia = AuthorityInformationAccess.getInstance(obj);
+    			AccessDescription[] ad = aia.getAccessDescriptions();
+    			if ( (ad != null) && (ad.length > 0) ) {
+    				for (int i = 0; i < ad.length; i++) {
+    					if (ad[i].getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
+    						GeneralName gn = ad[i].getAccessLocation();
+    						if (gn.getTagNo() == 6) {
+    							DERIA5String str = DERIA5String.getInstance(gn.getDERObject());
+    							ret = str.getString();
+    							break; // no need to go on any further, we got a value
+    						}
+    					}                	
+    				}
+    			}
+    		}
+    		catch (Exception e) {
+    			log.error("Error parsing AuthorityInformationAccess", e);
+    			throw new CertificateParsingException(e.toString());
+    		}
+    	}
+        return ret;
     }
 
     /**
