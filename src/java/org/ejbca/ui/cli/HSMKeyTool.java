@@ -43,6 +43,7 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String MOVE_SWITCH = "move";
     private static final String CERT_REQ = "certreq";
     private static final String INSTALL_CERT = "installcert";
+    private static final String RENAME = "rename";
 
     /**
      * To be overided if the HSM implementation knows the value of some parameters.
@@ -167,6 +168,12 @@ public class HSMKeyTool extends ClientToolBox {
                     KeyStoreContainerTest.test(args[2], args[3], args[4], args[5],
                                                args.length>6 ? Integer.parseInt(args[6].trim()) : 1, args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null);
                 return;
+            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(RENAME)) {
+                if ( args.length < 8 )
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old key alias> <new key alias>");
+                else
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).renameAlias(args[6], args[7]);
+                return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
                 if ( args.length < 7 ) {
                     System.err.println(commandString + "<from "+getKeyStoreDescription()+"> <to "+getKeyStoreDescription()+'>');
@@ -189,6 +196,7 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("  "+args[0]+" "+INSTALL_CERT);
             pw.println("  "+args[0]+" "+DELETE_SWITCH);
             pw.println("  "+args[0]+" "+TEST_SWITCH);
+            pw.println("  "+args[0]+" "+RENAME);
             if ( doCreateKeyStore() ){
                 pw.println("  "+args[0]+" "+CREATE_KEYSTORE_SWITCH);
                 if ( doModuleProtection() )

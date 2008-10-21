@@ -115,6 +115,13 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         }
         return storeKeyStore();
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#renameAlias(java.lang.String, java.lang.String)
+     */
+    public byte[] renameAlias( String oldAlias, String newAlias ) throws Exception {
+        this.keyStore.setEntry(newAlias, this.keyStore.getEntry(oldAlias, null), null);
+        return storeKeyStore();
+    }
     private X509Certificate getSelfCertificate (String myname,
                                                 long validity,
                                                 String sigAlg,

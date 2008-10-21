@@ -45,10 +45,18 @@ public interface KeyStoreContainer {
 
     /**
      * @param alias
-     * @return
+     * @return keystore identifier
      * @throws Exception 
      */
     byte[] delete(String alias) throws Exception;
+
+    /**
+     * @param oldAlias
+     * @param newAlias
+     * @return keystore identifier
+     * @throws Exception
+     */
+    byte[] renameAlias( String oldAlias, String newAlias ) throws Exception;
 
     /**
      * @param string
