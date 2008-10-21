@@ -43,7 +43,7 @@
                 <item name="Contribute to EJBCA"     href="/donations.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
                 <item name="Bug Database"          href="http://jira.primekey.se/"/>
-                <item name="CVS Repositories"      href="http://ejbca.cvs.sourceforge.net/ejbca"/>
+                <item name="SVN Repository"      href="http://ejbca.svn.sourceforge.net/viewvc/ejbca/"/>
             </menu>
 
             <menu name="Continous integration">
