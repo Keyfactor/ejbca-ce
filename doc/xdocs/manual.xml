@@ -5020,6 +5020,49 @@ These characters will be replaced by /. ',' can be escaped ,'\,'.
 </subsection>
 </section>
 
+<section name="Code signing">
+<p>
+Being able to verify the integrity of a release or deployed EAR-archive might be
+required for some setups. Currently both ant targets "ziprelease" and "ca.ear"
+(invoked from "deploy", "bootstrap" and the default target) supports jar-signing
+with the "jarsigner" command included with Java. Note that you still could remove
+files from a signed archive without anyone noticing since the files are signed
+individually. To create a signed ziprelease of EJBCA:
+</p>
+<source>
+ant ziprelease -Dejbca.zipversion=x_y_z -Dsignjar.keystore=p12/releasesigner.jks -Dsignjar.keystorealias=releasesigner -Dsignjar.keystorepass=foo123
+</source>
+<p>
+The certificate used for the signature must have key usage "Digital Signature"
+and extended key usage "Code Signing". The signed archive can be verified using
+the "jarsigner" command and the CA-certificate. This example will output any
+unsigned file or file with a bad signature: 
+</p>
+<source>
+jboss@server:~/ejbca$ jarsigner -verify -keystore p12/truststore.jks -verbose ../ejbca_x_y_z.zip | grep -v "^smk" | grep -v "^ *0"
+
+      246809 Tue Oct 21 13:28:48 CEST 2008 META-INF/MANIFEST.MF
+      246930 Tue Oct 21 13:28:48 CEST 2008 META-INF/RELEASES.SF
+        1859 Tue Oct 21 13:28:48 CEST 2008 META-INF/RELEASES.RSA
+
+  s = signature was verified 
+  m = entry is listed in manifest
+  k = at least one certificate was found in keystore
+  i = at least one certificate was found in identity scope
+
+jar verified.
+</source>
+<p>
+OpenSSL can be used to sign and verify an entire archive, but requires the
+public key from the signing certificate:
+</p>
+<source>
+jboss@server:~/ejbca$ openssl dgst -sha1 -sign p12/pem/releasesigner-Key.pem -out ../ejbca_x_y_z.zip.SHA1withRSA ../ejbca_x_y_z.zip
+jboss@server:~/ejbca$ openssl x509 -inform pem -in p12/pem/releasesigner.pem -pubkey -noout > p12/pem/releasesigner-Pub.pem
+jboss@server:~/ejbca$ openssl dgst -sha1 -verify p12/pem/releasesigner-Pub.pem -signature ../ejbca_x_y_z.zip.SHA1withRSA ../ejbca_x_y_z.zip
+Verified OK
+</source>
+</section>
 
 </body>
 </document>

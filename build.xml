@@ -465,6 +465,9 @@
                 <include name="lib/*.jar" />
             </fileset>
 	</ear>
+    <antcall target="signjar">
+        <param name="signjar.file" value="${caear}"/>
+    </antcall>
     </target>
 
     <!-- =================================================================== -->
@@ -702,9 +705,12 @@
 		    	<include name="**/*.sh" />
 		    </zipfileset>
 		</zip>
+        <antcall target="signjar">
+            <param name="signjar.file" value="../ejbca_${ejbca.zipversion}.zip"/>
+        </antcall>
         <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" forceOverwrite="yes"/>      
         <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
-        <echo message="SHA1 checksum: ${ejbcaSHA1}" />     
+        <echo message="SHA1 checksum: ${ejbcaSHA1}" />
 	</target>
 
     <!-- ======================================================================= -->
@@ -713,6 +719,30 @@
 	<target name="ejbcaversion" description="Output application version string.">
 		<echo>${app.version}</echo>
 	</target>
+
+	<!--
+        Target for signing a JAR (JAR, EAR, WAR or ZIP)
+        parameter: signjar.file=file to sign 
+	-->
+    <target name="signjar">
+        <available file="${signjar.keystore}" property="signjar.keystorepresent" value="true"/>	
+    	<condition property="signjar.message" value="Using keystore ${signjar.keystore}."
+    		else="Specify -Dsignjar.keystore=/path/keystore.jks if you want to sign the release." >
+            <isset property="signjar.keystorepresent" />
+    	</condition>
+    	<echo message="${signjar.message}" />
+        <antcall target="signjar.internal" />
+    </target>
+
+    <target name="signjar.internal" if="signjar.keystorepresent">
+        <echo message="Signing ${signjar.file}" />
+        <input message="Enter alias for keystore ${signjar.keystore}:"
+        	addproperty="signjar.keystorealias" defaultvalue="releasesigner" /> 
+        <input message="Enter password for keystore ${signjar.keystore}:"
+        	addproperty="signjar.keystorepass" defaultvalue="foo123" /> 
+        <signjar keystore="${signjar.keystore}" jar="${signjar.file}"
+        	alias="${signjar.keystorealias}" storepass="${signjar.keystorepass}" />
+    </target>
 
 	<!--
         Target that finds duplicated code. 
