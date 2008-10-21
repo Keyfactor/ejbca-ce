@@ -2915,6 +2915,9 @@ testKey testRoot
 </source>
 <strong>Importing an existing CA or sub-CA to EJBCA.</strong>
 <p>
+Note: you must set JAVA_HOME and possible JDK_HOME for import to work.
+</p>
+<p>
 Importing existing keys is not as safe as generating them in the HSM, since the original key or a copy of the key
 might still be around. The security world has to be initialized in the default FIPS 140-2 Level 2 for this to work.
 First backup and edit $JAVA_HOME/jre/lib/security/java.security and change
