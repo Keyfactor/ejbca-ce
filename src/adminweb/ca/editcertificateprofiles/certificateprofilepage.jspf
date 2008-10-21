@@ -651,13 +651,17 @@ function checkallfields(){
                        out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI()+ "\"");%>>
            <br>
            <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
+           <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint()) {
                       out.write(" disabled "); 
-                    else 
-                      if(!certificateprofiledata.getCRLIssuer().equals(""))
+                    } else {
+                      if(!certificateprofiledata.getCRLIssuer().equals("")) {
                        out.write(" value=\"" + certificateprofiledata.getCRLIssuer() + "\"");
-                      else 
-                       out.write(" value=\"" + globalconfiguration.getStandardCRLIssuer() + "\"");%>>
+                      } else if(certificateprofiledata.getCRLDistributionPointURI().equals("")) {
+                    	  // Only add default CRLIssuer if this was the first time we enabled this checkbox, so both fields are empty
+                          out.write(" value=\"" + globalconfiguration.getStandardCRLIssuer() + "\"");
+                      }
+                    }
+            %>>
       </td>
     </tr>
 
