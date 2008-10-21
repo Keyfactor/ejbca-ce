@@ -7,42 +7,28 @@
 
 <body>
   <section name="News">
-  <p><strong>EJBCA with EAC ePassport support if now out!</strong>
-  </p>
   <note>
-  We are very proud to announce this initial release of the Cert-cvc library developed by the 
-  Swedish National Police Board and kindly donated to the EJBCA project.
-  <br/>
-  The library handles CVC certificates for EU EAC ePassport PKIs and the current release is 
+  <p><strong>EJBCA 3.7.1 and cert-cvc 1.2.8 with EAC ePassport support if now out!</strong>
+  <br/>Visit the <a href="download.html">download</a> section.
+  </p>
+  </note>
+  <note>
+  The cert-cvc library handles CVC certificates for EU EAC ePassport PKIs and the current release is 
   feature complete for EU EAC ePassports using all algorithms.
   <br/>
   The library is freely usable under the LGPL 2.1 (or later) license for all parties interesting 
-  in handling CVC certificates, in particular for EU EAC ePassports, and can be downloaded from the EJBCA
-  project page at <a href="http://sourceforge.net/project/platformdownload.php?group_id=39716">Sourceforge</a>.
+  in handling CVC certificates, in particular for EU EAC ePassports, and can be downloaded below. 
+  The cert-cvc library was donated to the open source by the Swedish National Police Board. 
+  </note>
+  <note>
+  Did you know that EJBCA includes a stand-alone OCSP responder? The responder is scalable with high-performance and can be used
+  also with any other CA than EJBCA. 
   </note>
   <note>
   SafeSign IC provides strong authentication and smart card logon on Windows, Linux and MAC. 
   <br/> 
   For more information or an evaluation kit see the <a href="complimentary.html">complimentary software section</a> or visit <a href="http://www.aeteurope.nl/aet/aet-europe/_www/en/pub/news/aet_promotions/ejbca_promotion.htm">www.aeteurope.com</a>.
   </note>
-  </section>
-  <section name="Latest Release">
-    <note>
-    EJBCA 3.7.1 is now available for <a
-    href="http://downloads.sourceforge.net/ejbca/ejbca_3_7_1.zip">download</a>.
-    <br/>
-    SHA1 checksum: a5f0e543d70244f305ab46e90e65837799e0a948 
-    <br/><br/>
-    External RA API 3.7.1 is now available for <a
-    href="http://downloads.sourceforge.net/ejbca/extra-3_7_1.zip">download</a>.
-    <br/>
-    SHA1 checksum: 062af87e778687587c7858f7b51f984a497e3516
-    <br/><br/>
-    Cert-cvc library 1.2.8 with full RSA and ECC support is now available for <a
-    href="http://downloads.sourceforge.net/ejbca/cert-cvc-1.2.8.zip">download</a>.
-    <br/>
-    SHA1 checksum: 3f2ea917f426609d4d8e8cb00a7d3251163b926b
-    </note>
   </section>
 
 <section name="About EJBCA">
