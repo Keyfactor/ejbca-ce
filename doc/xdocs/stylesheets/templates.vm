@@ -208,7 +208,7 @@
       	<tr>
       	
       	<td>
-      	<img src="images/logotype.png" alt="EJBCA - The J2EE Certificate Authority" border="0"/>
+      	<a href="http://www.ejbca.org/"><img src="images/logotype.png" alt="EJBCA - The J2EE Certificate Authority" border="0"/></a>
       	</td>
       	<td style="text-align:right">
       	<div class="searchcaption">
