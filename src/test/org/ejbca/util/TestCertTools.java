@@ -39,6 +39,7 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
@@ -257,6 +258,24 @@ public class TestCertTools extends TestCase {
 					+ "s7KRRCYjga/Z52XytwwDBLFM9CPZJfyKxZTV9I9i6e0xSn2xEW8NRplY1HOKa/2B"
 					+ "VzvWW9G5").getBytes());
 
+	private static byte[] krb5principalcert = Base64.decode(("MIIDIzCCAgugAwIBAgIIdSCEXyq32cIwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
+			+"AwwIQWRtaW5DQTExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
+			+"HhcNMDgxMDIzMTEyMzAzWhcNMTgwODE2MTQ1MzA2WjAqMQ0wCwYDVQQDDARrcmIx"
+			+"MQwwCgYDVQQKDANGb28xCzAJBgNVBAYTAlNFMIGfMA0GCSqGSIb3DQEBAQUAA4GN"
+			+"ADCBiQKBgQCYkX8BcUXezxG8eKsQT0+lxjUZLeg7EQk0hdiKGsKxhS6BmLpeBOGs"
+			+"HwZgn70zhJj9XLtCQ/o8RJatL/lFtHpVX+RnRdckKDOooLUguxSiO5TK7HlQpsFG"
+			+"8AB7m/jCkIGarh5x6LSL5t1VAMyPh9DFBMXPuC5xAb5SGa6LRXoZ/QIDAQABo4HD"
+			+"MIHAMB0GA1UdDgQWBBTUIo6ZQUrVKoI5GPifVn3KbUGAljAMBgNVHRMBAf8EAjAA"
+			+"MB8GA1UdIwQYMBaAFJJ4HjX7T+tn7b+qJftfhu+tUqNYMA4GA1UdDwEB/wQEAwIF"
+			+"oDAnBgNVHSUEIDAeBggrBgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMEMDcGA1Ud"
+			+"EQQwMC6gLAYGKwYBBQICoCIwIKAHGwVQLkNPTaEVMBOgAwIBAKEMMAobA2ZvbxsD"
+			+"YmFyMA0GCSqGSIb3DQEBBQUAA4IBAQBgQpzPpCUDY6P0XePJSFJ2MGBhgMOVB4SL"
+			+"iHP9biEmqcqELWQcUL5Ylf+/JYxg1kBnk2ZtALgt0adi0ZiZPbM2F5Oq9ZxxB2nY"
+			+"Alat0RwZIY8wAR0DRNXiEs4TMu5LqzvD1U6+vaHYraePBLExo2oxG9TI7gQjj2X+"
+			+"KSxEzOf3+npWo/G7ooDvKpN+w3J//kF4vdM3SQtHQaBkIuCU05Jy16AhvIkLQzq5"
+			+"+a1UI5lIKun3C6NWCSZrE5fFuoax7D+Ofw1Bdxkhvk7DUlHVPdmxb/0hpx8aO64D"
+			+"J626d8c1b25g9hSYslbo2geP2ohV40WW/R1ZjwX6Pd/ip5KuSSzv").getBytes());
+	
 	private static byte[] p10ReqWithAltNames = Base64
 			.decode(("MIICtDCCAZwCAQAwNDELMAkGA1UEBhMCU0UxDDAKBgNVBAoTA1JQUzEXMBUGA1UE"
 					+ "AxMOMTAuMjUyLjI1NS4yMzcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB"
@@ -1327,5 +1346,30 @@ public class TestCertTools extends TestCase {
 		certroot = (Certificate)iter.next();
 		assertEquals("CN=AdminCA1,O=EJBCA TomasLaptop MySQL,C=SE", CertTools.getSubjectDN(certroot));
 		
+	}
+	
+	public void testKrb5PrincipalName() throws Exception {
+		String altName =  "krb5principal=foo/bar@P.SE, upn=upn@u.com";
+		GeneralNames gn = CertTools.getGeneralNamesFromAltName(altName);
+
+		GeneralName[] names = gn.getNames();
+		String ret = CertTools.getGeneralNameString(0, names[1].getName());
+		assertEquals("krb5principal=foo/bar@P.SE", ret);
+
+		altName =  "krb5principal=foo@P.SE";
+		gn = CertTools.getGeneralNamesFromAltName(altName);
+		names = gn.getNames();
+		ret = CertTools.getGeneralNameString(0, names[0].getName());
+		assertEquals("krb5principal=foo@P.SE", ret);
+
+		altName =  "krb5principal=foo/A.SE@P.SE";
+		gn = CertTools.getGeneralNamesFromAltName(altName);
+		names = gn.getNames();
+		ret = CertTools.getGeneralNameString(0, names[0].getName());
+		assertEquals("krb5principal=foo/A.SE@P.SE", ret);
+		
+		Certificate krbcert = CertTools.getCertfromByteArray(krb5principalcert);
+		String s = CertTools.getSubjectAlternativeName(krbcert);
+		assertEquals("krb5principal=foo/bar@P.COM", s);
 	}
 }

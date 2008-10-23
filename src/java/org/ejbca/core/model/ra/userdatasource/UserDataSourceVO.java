@@ -55,7 +55,7 @@ public class UserDataSourceVO implements Serializable {
     	DNFieldExtractor.DC , DNFieldExtractor.C , DNFieldExtractor.UNSTRUCTUREDADDRESS , DNFieldExtractor.UNSTRUCTUREDNAME ,
     	DNFieldExtractor.DNSNAME , DNFieldExtractor.IPADDRESS ,
     	DNFieldExtractor.DIRECTORYNAME, DNFieldExtractor.URI ,
-    	DNFieldExtractor.UPN , DNFieldExtractor.GUID , 
+    	DNFieldExtractor.UPN , DNFieldExtractor.GUID , DNFieldExtractor.KRB5PRINCIPAL,  
     	DNFieldExtractor.DATEOFBIRTH , DNFieldExtractor.PLACEOFBIRTH , DNFieldExtractor.GENDER , DNFieldExtractor.COUNTRYOFCITIZENSHIP ,
     	DNFieldExtractor.COUNTRYOFRESIDENCE 
     };

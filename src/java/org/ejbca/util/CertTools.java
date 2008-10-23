@@ -58,6 +58,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -72,18 +73,22 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DERGeneralString;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -148,6 +153,10 @@ public class CertTools {
     public static final String IPADDR = "iPAddress";
     public static final String DIRECTORYNAME = "directoryName";
 
+    /** Kerberos altName for smart card logon */
+    public static final String KRB5PRINCIPAL = "krb5principal";
+    /** OID for Kerberos altName for smart card logon */
+    public static final String KRB5PRINCIPAL_OBJECTID = "1.3.6.1.5.2.2";
     /** Microsoft altName for windows smart card logon */
     public static final String UPN = "upn";
     /** ObjectID for upn altName for windows smart card logon */
@@ -1479,7 +1488,15 @@ public class CertTools {
     } // getCertificatePolicyId
 
     /**
-     * Gets the Microsoft specific UPN altName.
+     * Gets the Microsoft specific UPN altName (altName, OtherName).
+     * 
+     * UPN is an OtherName Subject Alternative Name:
+     * 
+     * OtherName ::= SEQUENCE {
+     *       type-id    OBJECT IDENTIFIER,
+     *       value      [0] EXPLICIT ANY DEFINED BY type-id }
+     *       
+     * UPN ::= UTF8String
      *
      * @param cert certificate containing the extension
      * @return String with the UPN name or null if the altName does not exist
@@ -1504,6 +1521,7 @@ public class CertTools {
     } // getUPNAltName
 
     /** Helper method for the above method
+     * @param seq the OtherName sequence
      */
     private static String getUPNStringFromSequence(ASN1Sequence seq) {
         if ( seq != null) {                    
@@ -1517,7 +1535,79 @@ public class CertTools {
         }
         return null;
     }
-    
+
+    /** Helper method for getting kerberos 5 principal name (altName, OtherName)
+     * 
+     * Krb5PrincipalName is an OtherName Subject Alternative Name
+     * 
+     * String representation is in form "principalname1/principalname2@realm"
+     * 
+     * KRB5PrincipalName ::= SEQUENCE {
+     *      realm [0] Realm,
+     *      principalName [1] PrincipalName
+     * }
+     * 
+     * Realm ::= KerberosString
+     *
+     * PrincipalName ::= SEQUENCE {
+     *      name-type [0] Int32,
+     *      name-string [1] SEQUENCE OF KerberosString
+     * }
+     *
+     * The new (post-RFC 1510) type KerberosString, defined below, is a
+     * GeneralString that is constrained to contain only characters in IA5String.
+     *
+     * KerberosString ::= GeneralString (IA5String)
+     * 
+     * Int32 ::= INTEGER (-2147483648..2147483647)
+     *                  -- signed values representable in 32 bits 
+     *  
+     * @param seq the OtherName sequence
+     * @return String with the krb5 name in the form of "principal1/principal2@realm" or null if the altName does not exist
+     */
+    protected static String getKrb5PrincipalNameFromSequence(ASN1Sequence seq) {
+    	String ret = null;
+        if ( seq != null) {                    
+            // First in sequence is the object identifier, that we must check
+            DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+            if (id.getId().equals(CertTools.KRB5PRINCIPAL_OBJECTID)) {
+            	// Get the KRB5PrincipalName sequence
+                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                // After encoding in a cert, it is tagged an extra time...
+                DERObject obj = oobj.getObject();
+                if (obj instanceof ASN1TaggedObject) {
+                	obj = ASN1TaggedObject.getInstance(obj).getObject();
+                }
+                ASN1Sequence krb5Seq = ASN1Sequence.getInstance(obj);
+                // Get the Realm tagged as 0
+                ASN1TaggedObject robj = (ASN1TaggedObject) krb5Seq.getObjectAt(0);
+                DERGeneralString realmObj = DERGeneralString.getInstance(robj.getObject());
+                String realm = realmObj.getString();
+                // Get the PrincipalName tagged as 1
+                ASN1TaggedObject pobj = (ASN1TaggedObject) krb5Seq.getObjectAt(1);
+                // This is another sequence of type and name
+                ASN1Sequence nseq = ASN1Sequence.getInstance(pobj.getObject());
+                // Get the name tagged as 1
+                ASN1TaggedObject nobj = (ASN1TaggedObject) nseq.getObjectAt(1);
+                // The name is yet another sequence of GeneralString
+                ASN1Sequence sseq = ASN1Sequence.getInstance(nobj.getObject());
+                Enumeration en = sseq.getObjects();
+                while (en.hasMoreElements()) {
+                	ASN1Object o = (ASN1Object)en.nextElement();
+                    DERGeneralString str = DERGeneralString.getInstance(o);
+                    if (ret != null) {
+                    	ret += "/"+str.getString();
+                    } else {
+                        ret = str.getString();	
+                    }
+                }
+                // Add the realm in the end so we have "principal@realm"
+                ret += "@"+realm;
+            }
+        }
+        return ret;
+    }
+
     /**
      * Gets the Microsoft specific GUID altName, that is encoded as an octect string.
      *
@@ -1632,8 +1722,6 @@ public class CertTools {
         String result = "";
         if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;
-			if (x509cert.getSubjectAlternativeNames() == null)
-				return null;
 			
 			java.util.Collection altNames = x509cert.getSubjectAlternativeNames();
 	        if (altNames == null) {
@@ -1655,6 +1743,11 @@ public class CertTools {
 	                    // OtherName can be something else besides UPN
 	                    if (upn != null) {
 	                        result += append + CertTools.UPN+"="+upn;                        
+	                    } else {
+	                        String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
+	                        if (krb5Principal != null) {
+	                        	result += append + CertTools.KRB5PRINCIPAL+"="+krb5Principal;                        
+	                        }            	
 	                    }
 	                    break;
 	                case 1: result += append + CertTools.EMAIL+"=" + (String)value;
@@ -1754,7 +1847,7 @@ public class CertTools {
             }
         }
                     
-        // UPN is an OtherName
+        // UPN is an OtherName see method getUpn... for asn.1 definition
         ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
         if (!upn.isEmpty()) {            
             Iterator iter = upn.iterator();             
@@ -1786,7 +1879,72 @@ public class CertTools {
             }
         }
         
-    	// To support custom OIDs in altNames, they must be added as an OtherName
+        // Krb5PrincipalName is an OtherName, see method getKrb5Principal...for ASN.1 definition
+        ArrayList krb5principalname =  CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL);
+        if (!krb5principalname.isEmpty()) {            
+            Iterator iter = krb5principalname.iterator();             
+            while (iter.hasNext()) {
+            	// Start by parsing the input string to separate it in different parts
+                String principalString = (String)iter.next();
+                if (log.isDebugEnabled()) {
+                    log.debug("principalString: "+principalString);                	
+                }
+                // The realm is the last part moving back until an @
+                int index = principalString.lastIndexOf('@');
+                String realm = "";
+                if (index > 0) {
+                	realm = principalString.substring(index+1);
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("realm: "+realm);                	
+                }
+                // Now we can have several principals separated by /
+                ArrayList principalarr = new ArrayList();
+                int jndex = 0;
+            	int bindex = 0;
+                while (jndex < index) {
+                	// Loop and add all strings separated by /
+                    jndex = principalString.indexOf('/', bindex);
+                	if (jndex == -1) {
+                		jndex = index;
+                	}
+                	String s = principalString.substring(bindex, jndex);
+                	if (log.isDebugEnabled()) {
+                		log.debug("adding principal name: "+s);                	
+                	}                	
+                	principalarr.add(s);
+                	bindex = jndex+1;
+                }
+                
+                // Now we must construct the rather complex asn.1...
+                ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+                v.add(new DERObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
+
+                // First the Krb5PrincipalName sequence
+                ASN1EncodableVector krb5p = new ASN1EncodableVector();
+                // The realm is the first tagged GeneralString
+                krb5p.add(new DERTaggedObject(true, 0, new DERGeneralString(realm)));
+                // Second is the sequence of principal names, which is at tagged position 1 in the krb5p 
+                ASN1EncodableVector principals = new ASN1EncodableVector();
+                // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
+                principals.add(new DERTaggedObject(true, 0, new DERInteger(0)));
+                // The names themselves are yet another sequence
+                Iterator i = principalarr.iterator();
+                ASN1EncodableVector names = new ASN1EncodableVector();
+                while (i.hasNext()) {
+                    String principalName = (String)i.next();
+                    names.add(new DERGeneralString(principalName));
+                }
+                principals.add(new DERTaggedObject(true, 1, new DERSequence(names)));                	
+                krb5p.add(new DERTaggedObject(true, 1, new DERSequence(principals)));
+                
+                v.add(new DERTaggedObject(true, 0, new DERSequence(krb5p)));
+                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                vec.add(gn);
+            }
+        }
+
+    	// To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
         ArrayList customoids =  CertTools.getCustomOids(altName);
         if (!customoids.isEmpty()) {            
         	Iterator iter = customoids.iterator();
@@ -1839,6 +1997,11 @@ public class CertTools {
             // OtherName can be something else besides UPN
             if (upn != null) {
                 ret = CertTools.UPN+"="+upn;                        
+            } else {
+                String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
+                if (krb5Principal != null) {
+                    ret = CertTools.KRB5PRINCIPAL+"="+krb5Principal;                        
+                }            	
             }
             break;
         case 1: ret = CertTools.EMAIL+"=" + DERIA5String.getInstance(value).getString();

@@ -36,6 +36,8 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int TYPE_SUBJECTALTNAME = 1;
     public static final int TYPE_SUBJECTDIRATTR = 2;
 
+    // Note, these IDs duplicate values in profilemappings.properties
+    
     // Subject DN Fields.
     public static final int E = 0;
     public static final int UID = 1;
@@ -66,6 +68,7 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int REGISTEREDID = 24;
     public static final int UPN = 25;
     public static final int GUID = 26;
+    public static final int KRB5PRINCIPAL = 52;
     
     // Subject Directory Attributes
     public static final int DATEOFBIRTH  = 27;
@@ -178,11 +181,9 @@ public class DNFieldExtractor implements java.io.Serializable {
                             if (type == TYPE_SUBJECTDN) {
                                 dnfields.put(new Integer((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTALTNAME) {
-                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) +
-                                		number.intValue()), rdn);
+                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTDIRATTR) {
-                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) +
-                                		number.intValue()), rdn);
+                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
                             }
                             number = new Integer(number.intValue()+1);
                             fieldnumbers.put(id, number);

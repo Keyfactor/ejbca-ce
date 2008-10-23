@@ -103,10 +103,10 @@ public class TestDnFieldExtractor extends TestCase {
      * @throws Exception error
      */
     public void test01CheckAltNameFields() throws Exception {
-    	String dn = "DnsName=foo.bar.se,rfc822Name=foo@bar.se";
+    	String dn = "DnsName=foo.bar.se,rfc822Name=foo@bar.se,krb5principal=foo/bar@P.COM";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	HashMap i = extractor.getNumberOfFields();
-    	assertEquals(11,i.size());
+    	assertEquals(12,i.size());
         String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);
     	boolean illegal = extractor.isIllegal();
@@ -117,8 +117,12 @@ public class TestDnFieldExtractor extends TestCase {
     	assertEquals("foo@bar.se", email);    	
     	int num = extractor.getNumberOfFields(DNFieldExtractor.RFC822NAME);
     	assertEquals(1, num);
+    	String krb = extractor.getField(DNFieldExtractor.KRB5PRINCIPAL, 0);
+    	assertEquals("foo/bar@P.COM", krb);    	
+    	num = extractor.getNumberOfFields(DNFieldExtractor.KRB5PRINCIPAL);
+    	assertEquals(1, num);
     	
-    	dn = "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1";
+    	dn = "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,krb5principal=foo/bar@P.COM";
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	illegal = extractor.isIllegal();
     	assertFalse(illegal);

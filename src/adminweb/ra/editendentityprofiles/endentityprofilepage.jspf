@@ -496,7 +496,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>
       </td>
       <td width="25%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %> 
+        <%= ejbcawebbean.getHelpReference("/manual.html#Subject%20Alternative%20Names") %> <br>&nbsp;
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTALTNAME %>" size="1" >

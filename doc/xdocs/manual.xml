@@ -433,6 +433,30 @@ The validity of the CA can never be longer than the value specified in the profi
 
 </section>
 
+<section name="End Entity profiles">
+<subsection name="Subject Alternative Names">
+<p>Subject alternative names (altNames) are extra naming items that are not fit to have in the Distinguished Name, such as email, dns, ip address etc.
+There are a number of standard ones, and the possibility to define special ones, which many companies have done for altNames
+such as MS UPN, GUID, Krb5PrincipalName.
+</p>
+<subsubsection name="Krb5 Principal Name">
+<p>The Krb5 principal name is of the form "principal1/principal2@realm", and should be entered as such in the field.
+Example:
+</p>
+<source>tomas@PRIMEKEY.SE
+</source>
+<p>for a normal user in the realm PRIMEKEY.SE.
+<br/>Or:
+</p>
+<source>
+krbtgt/PRIMEKEY.SE@PRIMEKEY.SE
+</source>
+<p>for a kdc.
+</p>
+</subsubsection>
+</subsection>
+</section>
+
 <section name="Export and import profiles">
 <p>
 Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,

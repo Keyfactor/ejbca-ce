@@ -127,6 +127,7 @@ public class DnComponents {
     public static final String DIRECTORYNAME      = "DIRECTORYNAME";
     public static final String UPN                = "UPN";
     public static final String GUID               = "GUID";
+    public static final String KRB5PRINCIPAL      = "KRB5PRINCIPAL";
     // Below are altNames that are not implemented yet
     public static final String OTHERNAME          = "OTHERNAME";
     public static final String X400ADDRESS        = "X400ADDRESS";

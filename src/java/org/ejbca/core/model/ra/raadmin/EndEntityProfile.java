@@ -18,7 +18,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -145,8 +144,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	dataConstants.put(DnComponents.REGISTEREDID, Integer.valueOf(25));
 
     	dataConstants.put(DnComponents.UPN, Integer.valueOf(36));
-
     	dataConstants.put(DnComponents.GUID, Integer.valueOf(41));
+    	dataConstants.put(DnComponents.KRB5PRINCIPAL, Integer.valueOf(52));
     	// Altnames end
         // Subject directory attributes
     	dataConstants.put(DnComponents.DATEOFBIRTH, Integer.valueOf(42));
@@ -335,18 +334,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       ArrayList dns = DnComponents.getDnProfileFields();
       if(dns.contains(param)){
         ArrayList fieldorder = (ArrayList) data.get(SUBJECTDNFIELDORDER);
-        fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
-        Collections.sort(fieldorder);
+        Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
+        fieldorder.add(val);
       }
       ArrayList altNames = DnComponents.getAltNameFields();
       if(altNames.contains(param)) {
         ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
-        fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
+        Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
+        fieldorder.add(val);
       }
       ArrayList dirAttrs = DnComponents.getDirAttrFields();
       if(dirAttrs.contains(param)){
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTDIRATTRFIELDORDER);
-          fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
+          Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
+          fieldorder.add(val);
         }
       incrementFieldnumber(parameter);
     }
@@ -545,8 +546,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public int[] getSubjectAltNameFieldsInOrder(int index){
       int[] returnval = new int[2];
       ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
-      returnval[NUMBER] = ((Integer) fieldorder.get(index)).intValue() % NUMBERBOUNDRARY;
-      returnval[FIELDTYPE] = ((Integer) fieldorder.get(index)).intValue() / NUMBERBOUNDRARY;
+      Integer i = (Integer)fieldorder.get(index);
+      returnval[NUMBER] = i.intValue() % NUMBERBOUNDRARY;
+      returnval[FIELDTYPE] = i.intValue() / NUMBERBOUNDRARY;
 
       return returnval;
     }

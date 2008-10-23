@@ -15,7 +15,6 @@ package org.ejbca.util.dn;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
 import org.ejbca.util.CertTools;
 
 
@@ -25,7 +24,6 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class TestDnComponents extends TestCase {
-    private static Logger log = Logger.getLogger(TestDnComponents.class);
 
     /**
      * Creates a new TestStringTools object.
@@ -37,13 +35,9 @@ public class TestDnComponents extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-        log.debug(">tearDown()");
-        log.debug("<tearDown()");
     }
 
     public void test01CheckObjects() throws Exception {
@@ -86,7 +80,7 @@ public class TestDnComponents extends TestCase {
     }
     public void test02() {
         String dn = CertTools.stringToBCDNString("uri=fff,CN=oid,C=se");
-        System.out.println(dn);
+        assertEquals("CN=oid,C=se", dn);
     }
 
 }
