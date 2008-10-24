@@ -733,6 +733,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 				privKey = this.mKeyFactory.getKey();
                 if ( privKey==null )
                     throw new ExtendedCAServiceRequestException(hsmErrorString);
+            } catch (ExtendedCAServiceRequestException e) {
+                this.providerHandler.reload();
+                throw e;
             } catch (Exception e) {
                 throw new ExtendedCAServiceRequestException(e);
             }
