@@ -29,18 +29,27 @@
       </answer>    
     </faq>
     
-    <faq id="SHA256inIE">
+    <faq id="heapSpaceError">
      <question>
-      SHA256 certs fails integrity check in IE
+      My installation failed for some reason that is now fixed, how do I proceed?
       </question>
       <answer>
       <p>
-      Internet Explorer (at least IE6) does not support SHA256. 
+      The best way to recover is usually o start over from scratch:
       </p>
-      <p>
-      You can have an AdminCA using SHA1 and CAs for other purposes using SHA256.
-      </p>
-      </answer>
+      <ul>
+      <li>Stop JBoss</li>
+      <li>Make sure the database is clean</li>
+      <li>Run "ant clean"</li>
+      <li>Run "ant bootstrap"</li>
+      <li>Start JBoss and check that it starts without problems</li>
+      <li>Run "ant install"</li>
+      <li>Stop JBoss and check that it stops without problems</li>
+      <li>Run "ant deploy"</li>
+      <li>Start JBoss and check that it starts without problems</li>
+      <li>Remove the old superadmin.p12 in you browser and import the newly generated one</li>
+      </ul>
+      </answer>    
     </faq>
     
     <faq id="strangeErrors">
@@ -50,17 +59,14 @@
       <answer>
       <p>
       This is most usually due to a database configuration error. In the server log (JBOSS_HOME/server/default/log/server.log)
-      you will probably see some SQLException errors. You should:
+      you will probably see some SQLException errors. You should then:
       </p>
       <ul>
-      <li>Make sure the settings in conf/ejbca.properties is correct</li>
-      <li>Stop JBoss</li>
-      <li>Drop the old database and create a new one</li>
-      <li>Do 'ant clean' and 'ant bootstrap' again</li>
-      <li>Start JBoss</li>
+      <li>Make sure the settings in conf/database.properties are correct</li>
+      <li>Follow the guidelines from "My installation failed for some reason that is now fixed, how do I proceed?"</li>
       </ul>
       <p>
-      Follow the configuration and troubleshooting section in doc/howto/HOWTO-database.txt.
+      See the configuration and troubleshooting section in doc/howto/HOWTO-database.txt for additional database related information.
       </p>
       </answer>
     </faq>
@@ -135,6 +141,21 @@ fi
       </p>
       </answer>
     </faq>
+
+    <faq id="SHA256inIE">
+     <question>
+      SHA256 certs fails integrity check in IE
+      </question>
+      <answer>
+      <p>
+      Internet Explorer (at least IE6) does not support SHA256. 
+      </p>
+      <p>
+      You can have an AdminCA using SHA1 and CAs for other purposes using SHA256.
+      </p>
+      </answer>
+    </faq>
+
     <faq id="jbossServiceWin">
       <question>How can I run JBoss as a service in Windows?</question>
       <answer>
