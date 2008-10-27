@@ -2420,7 +2420,7 @@ public class CertTools {
       }
  
       return newdn;
-    }
+    } // insertCNPostfix
     
     /** Simple method that looks at the certificate and determines, from EJBCA's standpoint, which signature algorithm it is
      * 
@@ -2485,7 +2485,7 @@ public class CertTools {
 		}
 		log.debug("getSignatureAlgorithm: "+signatureAlgorithm);
 		return signatureAlgorithm;
-    }
+    } // getSignatureAlgorithm
     
     /**
      * class for breaking up an X500 Name into it's component tokens, ala
@@ -2567,7 +2567,7 @@ public class CertTools {
             index = end;
             return buf.toString().trim();
         }
-    }
+    } // BasicX509NameTokenizer
 
     /**
      * Obtains a Vector with the DERObjectIdentifiers for 
@@ -2669,7 +2669,7 @@ public class CertTools {
         X509Name orderedName = new X509Name(newOrdering, newValues, converter);
         
         return orderedName;
-    }
+    } // getOrderedX509Name
     
     
     /**
@@ -2694,10 +2694,8 @@ public class CertTools {
         }
         
       }
-      
       return vRet;
-      
-    }
+    } // getX509NameFields
     
     
     /**
@@ -2715,7 +2713,7 @@ public class CertTools {
     	/** TODO: Validate or restrict the directoryName Fields? */
       
     	return ( "".equals(directoryName) ? null : directoryName );
-    }
+    } // getDirectoryStringFromAltName
     
     
     /**
@@ -2792,7 +2790,7 @@ public class CertTools {
     		}
     	}
     	return returnval;
-    }
+    } // createCertChain
 
     /**
      * Method ordering a list of certificate into a certificate path with the root CA at the end.
@@ -2837,7 +2835,7 @@ public class CertTools {
 
 
     	 return returnval;
-    }
+    } // orderCertificateChain
 
 
 } // CertTools
