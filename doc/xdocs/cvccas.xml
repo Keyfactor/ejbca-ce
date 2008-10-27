@@ -327,7 +327,8 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   Currently tested HSMs are:
   <ul>
   <li>Utimaco</li>
-  <li>Eracom</li>
+  <li>SafeNet</li>
+  <li>nCipher</li>
   </ul>
   </p>
   <p>There are two additional key properties (filled in the CAs token properties) when using a HSM controlling the use of the previous keys.
