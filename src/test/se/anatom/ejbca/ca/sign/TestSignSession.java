@@ -1359,8 +1359,8 @@ public class TestSignSession extends TestCase {
         assertEquals("CN=dnorder, O=PrimeKey, C=SE", dn);
 
         // Clean up
-        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTQC");
-        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTQC");
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTDNORDER");
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTDNORDER");
 
         log.debug("<test22DnOrder()");        
     }
