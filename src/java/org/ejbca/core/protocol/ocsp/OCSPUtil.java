@@ -23,6 +23,8 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
@@ -304,6 +306,7 @@ public class OCSPUtil {
     		if (verifyReq.verify(certs[i].getPublicKey(), "BC") == true) {
     			signercert = certs[i];
         		signer = CertTools.getSubjectDN(signercert);
+        		Date now = new Date();
     			String signerissuer = CertTools.getIssuerDN(signercert);
     			String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
     			m_log.info(infoMsg);
@@ -311,11 +314,29 @@ public class OCSPUtil {
     			// Also check that the signer certificate can be verified by one of the CA-certificates
     			// that we answer for
     			Certificate signerca = cacerts.findLatestBySubjectDN(CertTools.getIssuerDN(certs[i]));
+    			String subject = signer;
+    			String issuer = signerissuer;
     			if (signerca != null) {
     				try {
     					signercert.verify(signerca.getPublicKey());
+    	        		if (m_log.isDebugEnabled()) {
+    	            		m_log.debug("Checking validity. Now: "+now+", signerNotAfter: "+signercert.getNotAfter());        			
+    	        		}
+    	        		CertTools.checkValidity(signercert, now);
+    	        		// Move the error message string to the CA cert
+    	    			subject = CertTools.getSubjectDN(signerca);
+    	    			issuer = CertTools.getIssuerDN(signerca);
+    	        		CertTools.checkValidity(signerca, now);
     				} catch (SignatureException e) {
-    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", signer, signerissuer, e.getMessage());
+    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
+    					m_log.info(infoMsg);
+    					verifyOK = false;
+    				} catch (CertificateNotYetValidException e) {
+    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certnotyetvalid", subject, issuer, e.getMessage());
+    					m_log.info(infoMsg);
+    					verifyOK = false;
+    				} catch (CertificateExpiredException e) {
+    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certexpired", subject, issuer, e.getMessage());
     					m_log.info(infoMsg);
     					verifyOK = false;
     				}                            	
@@ -329,7 +350,7 @@ public class OCSPUtil {
     	}
     	if (!verifyOK) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signer);
-    		m_log.error(errMsg);
+    		m_log.info(errMsg);
     		throw new SignRequestSignatureException(errMsg);
     	}
     	

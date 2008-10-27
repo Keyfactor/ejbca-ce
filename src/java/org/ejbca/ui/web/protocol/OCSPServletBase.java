@@ -995,8 +995,8 @@ abstract class OCSPServletBase extends HttpServlet {
 				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
 				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (SignRequestException e) {
-				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
-				m_log.info(errMsg, e);
+				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+				m_log.info(errMsg); // No need to log the full exception here
 				// generate the signed response object
 				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
 				ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicresp);
@@ -1004,8 +1004,8 @@ abstract class OCSPServletBase extends HttpServlet {
 				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
 				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (SignRequestSignatureException e) {
-				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
-				m_log.info(errMsg, e);
+				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+				m_log.info(errMsg); // No need to log the full exception here
 				// generate the signed response object
 				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
 				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, basicresp);
