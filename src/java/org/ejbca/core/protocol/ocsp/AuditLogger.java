@@ -25,7 +25,7 @@ import org.ejbca.util.PatternLogger;
  * It can be used to store entire ocsp-requests and responses which means the log can be used to verify requests afterwards.
  * 
  * @author tham
- * @version $Id: AuditLogger.java 5751 2008-06-18 09:11:32Z thamwickenberg $
+ * @version $Id$
  */
 public class AuditLogger extends PatternLogger { 
 	private static Pattern PATTERN;
