@@ -1540,7 +1540,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } // cloneCertificateProfile
 
     /**
-     * Removes a certificateprofile from the database.
+     * Removes a certificateprofile from the database, does not throw any errors if the profile does not exist, but it does log a message.
      *
      * @param admin Administrator performing the operation
      * @ejb.transaction type="Required"

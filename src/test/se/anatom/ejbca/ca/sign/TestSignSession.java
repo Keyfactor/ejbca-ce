@@ -1313,6 +1313,58 @@ public class TestSignSession extends TestCase {
         log.debug("<test21CVCertificate()");
     }
 
+    public void test22DnOrder() throws Exception {
+        log.debug(">test22DnOrder()");
+
+        // Create a good certificate profile (good enough), using QC statement
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTDNORDER");
+        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTDNORDER", certprof);
+        int cprofile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"TESTDNORDER");
+
+        // Create a good end entity profile (good enough), allowing multiple UPN names
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTDNORDER");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTDNORDER", profile);
+        int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTDNORDER");
+        
+    	UserDataVO user = new UserDataVO("foo","C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se", SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+    	user.setStatus(UserDataConstants.STATUS_NEW);
+        try {
+            // Change a user that we know...
+            TestTools.getUserAdminSession().changeUser(admin, user, false);
+            log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
+        } catch (RemoteException re) {
+            assertTrue("User foo does not exist, or error changing user", false);
+        } 
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+        String dn = cert.getSubjectDN().getName();
+        // This is the reverse order than what is displayed by openssl
+        assertEquals("C=SE, O=PrimeKey, CN=dnorder", dn);
+
+        // Change to X509 DN order
+        certprof.setUseLdapDnOrder(false);
+        TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTDNORDER", certprof);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+        dn = cert.getSubjectDN().getName();
+        // This is the reverse order than what is displayed by openssl
+        assertEquals("CN=dnorder, O=PrimeKey, C=SE", dn);
+
+        // Clean up
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTQC");
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTQC");
+
+        log.debug("<test22DnOrder()");        
+    }
+
     /**
      * creates new user
      *
@@ -1346,6 +1398,7 @@ public class TestSignSession extends TestCase {
 		TestTools.removeTestCA();
         log.debug("<test99CleanUp()");
     }
+
     
     /**
      * Tests scep message

@@ -46,7 +46,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 28.0;
+    public static final float LATEST_VERSION = (float) 29.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -191,7 +191,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";
     protected static final String USECAISSUERS                   = "usecaissuersuri";
     protected static final String CAISSUERS                      = "caissuers";
-	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
+    protected static final String USELDAPDNORDER                 = "useldapdnorder";
+    protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
 	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
     protected static final String USEQCSTATEMENT                 = "useqcstatement";
     protected static final String USEPKIXQCSYNTAXV2              = "usepkixqcsyntaxv2";
@@ -308,6 +309,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  setUseOCSPServiceLocator(false);	  
 	  setUseDefaultOCSPServiceLocator(false);
 	  setOCSPServiceLocatorURI("");
+
+	  setUseLdapDnOrder(true);	  
 
 	  setUseMicrosoftTemplate(false);	  
 	  setMicrosoftTemplate("");
@@ -629,6 +632,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public ArrayList getExtendedKeyUsage() {
         return (ArrayList) data.get(EXTENDEDKEYUSAGE);
+    }
+
+    public boolean getUseLdapDnOrder(){
+    	boolean ret = true; // Default value is true here
+    	Object o = data.get(USELDAPDNORDER);
+    	if (o != null) {
+    		ret = ((Boolean)o).booleanValue();
+    	}
+    	return ret;	
+    }
+    
+    public void setUseLdapDnOrder(boolean use){
+    	data.put(USELDAPDNORDER, Boolean.valueOf(use));	
     }
 
     public boolean getUseMicrosoftTemplate(){
@@ -1234,6 +1250,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 
                 if (data.get(CVCACCESSRIGHTS) == null) {
                 	setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE); // v28
+                }
+                
+                if (data.get(USELDAPDNORDER) == null) {
+                	setUseLdapDnOrder(true); // v29, default value is true
                 } 
             }
             data.put(VERSION, new Float(LATEST_VERSION));

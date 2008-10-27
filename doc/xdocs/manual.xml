@@ -430,6 +430,28 @@ The validity of a certificate is determined as follows:
 The validity of the CA can never be longer than the value specified in the profile.
 </p>
 </subsection>
+<subsection name="Use LDAP DN order">
+<p>
+In a certificate the order of the CN components can be put in different order depending on wich standard you abide to.
+<br/>
+<ul>
+<li>Ldap DN order: CN=Common Name, O=Organization, C=Country</li>
+<li>X.500 DN order: C=Country, O=Organization, CN=Common name</li>
+</ul>
+In theory the order of the DN should not matter, because comparisons between DNs should be done on the RDN level. 
+In practice DN comparisons is often done using string comparisons, where the string value is depending on the order.
+</p>
+<p> 
+For historical reasons EJBCA uses Ldap DN order. Some applications do require X.500 DN order however and therefore EJBCA gives you the choice.
+There are two places in EJBCA where this can be configured:
+<ul>
+<li>In the Certificate profile (Edit certificate profiles)</li>
+<li>In the CA configuration (Edit Certificate Authorities)</li>
+</ul>
+The relationship between the settings is that they are both evaluated in an OR expression. 
+This means that if both are true the DN will have Ldap DN order, but if any one of them is false the DN will have X.500 order.
+</p>
+</subsection>
 
 </section>
 

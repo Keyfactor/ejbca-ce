@@ -84,6 +84,7 @@
   static final String CHECKBOX_USEOCSPNOCHECK                     = "checkuseocspnocheck";
   static final String CHECKBOX_USEAUTHORITYINFORMATIONACCESS      = "checkuseauthorityinformationaccess";
   static final String CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR      = "checkusedefaultocspservicelocator";
+  static final String CHECKBOX_USELDAPDNORDER                      = "checkuseldapdnorder";
   static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
   static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
   static final String CHECKBOX_USESUBJECTDNSUBSET                 = "checkusesubjectdnsubset";
@@ -607,7 +608,17 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                  certificateprofiledata.setUseFreshestCRL(false);                 
                  certificateprofiledata.setFreshestCRLURI("");
              }
-             
+
+             /* Use LDAP DN oder */
+             use = false;
+             value = request.getParameter(CHECKBOX_USELDAPDNORDER);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUseLdapDnOrder(use);
+             } else{
+                 certificateprofiledata.setUseLdapDnOrder(false);                 
+             }
+
              /* MS Domain controller extension */
              use = false;
              value = request.getParameter(CHECKBOX_USEMSTEMPLATE);

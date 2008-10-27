@@ -460,7 +460,12 @@ public class X509CA extends CA implements Serializable {
         } else {
         	converter = new X509DefaultEntryConverter();
         }
-        Vector dnorder = CertTools.getX509FieldOrder(getUseLdapDNOrder());
+        // Will we use LDAP DN order (CN first) or X500 DN order (CN last) for the subject DN
+        boolean ldapdnorder = true;
+        if ((getUseLdapDNOrder() == false) || (certProfile.getUseLdapDnOrder() == false)) {
+        	ldapdnorder = false;
+        }
+        Vector dnorder = CertTools.getX509FieldOrder(ldapdnorder);
         X509Name subjectDNName = CertTools.stringToBcX509Name(dn, converter, dnorder);
         log.debug("Using subjectDN: "+subjectDNName.toString());
         certgen.setSubjectDN(subjectDNName);
