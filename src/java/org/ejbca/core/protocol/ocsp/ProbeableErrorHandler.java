@@ -45,7 +45,6 @@ public class ProbeableErrorHandler extends org.jboss.logging.util.OnlyOnceErrorH
 			if(lastFailure.after(date) ) {
 				return true;
 			}
-		} else {
 		}
 		return false;
 	}
