@@ -15,6 +15,7 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.cert.Certificate;
@@ -69,9 +70,11 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.AuditLogger;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.IOCSPExtension;
+import org.ejbca.core.protocol.ocsp.ISaferAppenderListener;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
+import org.ejbca.core.protocol.ocsp.ProbeableErrorHandler;
 import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.GUIDGenerator;
@@ -157,6 +160,10 @@ import org.ejbca.util.GUIDGenerator;
  *   name="logTimeZone"
  *   value="${ocsp.log-timezone}"
  *   
+ *  @web.servlet-init-param description="Set to true if you want transactions to be aborted when logging fails"
+ *   name="logSafer"
+ *   value="${ocsp.log-safer}"
+ *   
  *  @web.servlet-init-param description="A String to create a java Pattern to format the audit Log"
  *   name="auditLogPattern"
  *   value="${ocsp.audit-log-pattern}"
@@ -180,13 +187,14 @@ import org.ejbca.util.GUIDGenerator;
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
  * @version  $Id$
  */
-abstract class OCSPServletBase extends HttpServlet { 
+public abstract class OCSPServletBase extends HttpServlet implements ISaferAppenderListener { 
 
 	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
 	private static final int RESTRICTONISSUER = 0;
 	private static final int RESTRICTONSIGNER = 1;
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
+	private  boolean canlog =true;
 	protected Admin m_adm;
 	private String m_sigAlg;
 	private boolean m_reqMustBeSigned;
@@ -241,6 +249,7 @@ abstract class OCSPServletBase extends HttpServlet {
 	private String m_signTrustDir;
 	private int mTransactionID = 0;
 	private String m_SessionID;
+	private boolean mDoSaferLogging;
 
 	
 	protected synchronized void loadTrustDir() throws Exception {
@@ -533,6 +542,31 @@ abstract class OCSPServletBase extends HttpServlet {
 			}	
 			TransactionLogger.configure(transactionLogPattern, transactionLogOrder, logDateFormat, timezone);
 		}
+		// Are we supposed to abort the response if logging is failing?
+		initparam = config.getInitParameter("logSafer");
+		if (m_log.isDebugEnabled()) {
+			m_log.debug("Are we doing safer logging?: '"
+					+ (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
+					+ "'");
+		}
+		mDoSaferLogging = false; // Default is not to abort when logging fails
+		if (!StringUtils.isEmpty(initparam)) {
+			if (initparam.equalsIgnoreCase("true")
+					|| initparam.equalsIgnoreCase("yes")) {
+				mDoSaferLogging = true;
+			}
+		}
+
+        if (mDoSaferLogging==true) {
+            try {
+                final Class implClass = Class.forName("org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
+                Method method = implClass.getMethod("addSubscriber", ISaferAppenderListener.class);
+                method.invoke(null, this); // first object parameter can be null because this is a static method
+                m_log.info("added us as subscriber to org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
+            } catch (Exception e) {
+                m_log.error("Was configured to do safer logging but could not instantiate SaferDailyRollingFileAppender", e);
+            }
+        }
 
 		String extensionOid = null;
 		String extensionClass = null;
@@ -597,6 +631,13 @@ abstract class OCSPServletBase extends HttpServlet {
 			m_caCertCache = createCertificateCache(cacheProperties);
 		}
 	} // init
+	
+	/* (non-Javadoc)
+	 * @see org.ejbca.ui.web.protocol.SaferAppenderInterface#canlog(boolean)
+	 */
+	public void setCanlog(boolean pCanlog) {
+		canlog= pCanlog;
+	}
 
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
@@ -1037,7 +1078,21 @@ abstract class OCSPServletBase extends HttpServlet {
 			
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
+			if (transactionLogger != null) transactionLogger.paramPut(transactionLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
 			if (auditLogger != null) auditLogger.writeln();
+			if (transactionLogger != null) transactionLogger.flush();
+			if (auditLogger != null) auditLogger.flush();
+			if (mDoSaferLogging){
+				// See if the Errorhandler has found any problems
+				if (ProbeableErrorHandler.hasFailedSince(startTime)) {
+					m_log.info("ProbableErrorhandler reported error, cannot answer request");
+					throw new ServletException("Logging failed, unable to answer request");
+				}
+				// See if the Appender has reported any problems
+				if (!canlog) {
+					throw new ServletException("Logging failed, cannot write to logfile. Unable to answer request");
+				}
+			}
 			response.setContentType("application/ocsp-response");
 			//response.setHeader("Content-transfer-encoding", "binary");
 			response.setContentLength(respBytes.length);
@@ -1065,9 +1120,9 @@ abstract class OCSPServletBase extends HttpServlet {
 			throw new ServletException(e);
 		} catch (Exception e ) {
 			m_log.error(e);
+			if (transactionLogger != null) transactionLogger.flush();
+			if (auditLogger != null) auditLogger.flush();
 		}
-		if (transactionLogger != null) transactionLogger.flush();
-		if (auditLogger != null) auditLogger.flush();
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("<service()");
 		}

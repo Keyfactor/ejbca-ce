@@ -367,5 +367,58 @@ For JBoss you can configure JBOSS_HOME/server/default/conf/jboss-log4j.xml to pu
          <appender-ref ref="OCSPAUDIT"/>
    </category>   
 -----
-
 For other application servers you can configure conf/log4j.properties and configure to use that configuration file in conf/ejbca.properties.
+
+
+Safer Log4j Logging
+-------------------
+The default behaviour when logging fails, such as when the destination disk is full or disconnected, is to continue responding as normal
+If you prefer the responder not to send OCSP-responses when logging fails you can use the following configuration:
+
+1. From your EJBCA folder, run: 
+   ant jbosslog4jsafer
+   
+2. Copy jbosslog4jsafer.jar from the dist directory to your JBoss Servers lib directory. For example:
+cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
+
+4. Modify your jboss-log4j.xml file to use the SaferDailyRollingFileAppender and ProbeableErrorHandler. For example:
+	<appender name="OCSPTRANSACTION"
+		class="org.ejbca.appserver.jboss.SaferDailyRollingFileAppender">
+		<errorHandler class="org.ejbca.core.protocol.ocsp.ProbeableErrorHandler" />
+		<param name="File"
+			value="${jboss.server.log.dir}/tempdelete/transactions.log" />
+		<param name="Append" value="true" />
+
+      <!-- Rollover at midnight each day -->
+		<param name="DatePattern" value="'.'yyyy-MM-dd" />
+		<layout class="org.apache.log4j.PatternLayout">
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+			<param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
+		</layout>
+	</appender>
+	<appender name="OCSPAUDIT"
+		class="org.ejbca.appserver.jboss.SaferDailyRollingFileAppender">
+		<errorHandler class="org.ejbca.core.protocol.ocsp.ProbeableErrorHandler" />
+		<param name="File" value="${jboss.server.log.dir}/tempdelete/audit.log" />
+		<param name="Append" value="true" />
+
+      <!-- Rollover at midnight each day -->
+		<param name="DatePattern" value="'.'yyyy-MM-dd" />
+		<layout class="org.apache.log4j.PatternLayout">
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+			<param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
+		</layout>
+	</appender>
+	
+	<logger name="org.ejbca.core.protocol.ocsp.TransactionLogger">
+		<level value="DEBUG" />
+		<appender-ref ref="OCSPTRANSACTION" />
+	</logger>
+	<logger name="org.ejbca.core.protocol.ocsp.AuditLogger">
+		<level value="DEBUG" />
+		<appender-ref ref="OCSPAUDIT" />
+	</logger>  
+
+If you use category instead of logger Log4j will output warnings on startup
+
+5. Start JBoss and you are ready
