@@ -452,7 +452,6 @@ public class ProtocolOcspHttpTest extends TestCase {
         try {
         	signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
         } catch (SignRequestSignatureException e) {
-        	e.printStackTrace();
         	caught = true;
         }
         assertTrue(caught);
