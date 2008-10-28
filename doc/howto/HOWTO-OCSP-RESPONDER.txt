@@ -386,7 +386,7 @@ cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
 		class="org.ejbca.appserver.jboss.SaferDailyRollingFileAppender">
 		<errorHandler class="org.ejbca.core.protocol.ocsp.ProbeableErrorHandler" />
 		<param name="File"
-			value="${jboss.server.log.dir}/tempdelete/transactions.log" />
+			value="${jboss.server.log.dir}/transactions.log" />
 		<param name="Append" value="true" />
 
       <!-- Rollover at midnight each day -->
@@ -399,7 +399,7 @@ cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
 	<appender name="OCSPAUDIT"
 		class="org.ejbca.appserver.jboss.SaferDailyRollingFileAppender">
 		<errorHandler class="org.ejbca.core.protocol.ocsp.ProbeableErrorHandler" />
-		<param name="File" value="${jboss.server.log.dir}/tempdelete/audit.log" />
+		<param name="File" value="${jboss.server.log.dir}/audit.log" />
 		<param name="Append" value="true" />
 
       <!-- Rollover at midnight each day -->
