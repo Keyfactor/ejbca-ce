@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.commons.lang.RandomStringUtils;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
@@ -203,6 +204,10 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			}
 
 		} catch (Exception e) {
+			if (e instanceof EjbcaException_Exception) {
+				EjbcaException_Exception e1 = (EjbcaException_Exception)e;
+				getPrintStream().println("Error code is: "+e1.getFaultInfo().getErrorCode().getInternalErrorCode());
+			}
 			throw new ErrorAdminCommandException(e);
 		}
 	}
