@@ -381,6 +381,8 @@ If you prefer the responder not to send OCSP-responses when logging fails you ca
 2. Copy jbosslog4jsafer.jar from the dist directory to your JBoss Servers lib directory. For example:
 cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
 
+3. set  «ocsp.log-safer = true« in ocsp.properties
+
 4. Modify your jboss-log4j.xml file to use the SaferDailyRollingFileAppender and ProbeableErrorHandler. For example:
 	<appender name="OCSPTRANSACTION"
 		class="org.ejbca.appserver.jboss.SaferDailyRollingFileAppender">
