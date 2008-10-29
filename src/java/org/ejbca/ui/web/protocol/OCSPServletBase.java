@@ -1086,11 +1086,16 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				// See if the Errorhandler has found any problems
 				if (ProbeableErrorHandler.hasFailedSince(startTime)) {
 					m_log.info("ProbableErrorhandler reported error, cannot answer request");
-					throw new ServletException("Logging failed, unable to answer request");
+					BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
+					ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
+					respBytes = ocspresp.getEncoded();
 				}
 				// See if the Appender has reported any problems
 				if (!canlog) {
-					throw new ServletException("Logging failed, cannot write to logfile. Unable to answer request");
+					m_log.info("SaferDailyRollingFileAppender reported error, cannot answer request");
+					BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
+					ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
+					respBytes = ocspresp.getEncoded();
 				}
 			}
 			response.setContentType("application/ocsp-response");
