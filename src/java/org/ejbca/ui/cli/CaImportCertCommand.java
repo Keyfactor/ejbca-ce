@@ -48,10 +48,12 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 	
 	protected void usage() {
 		getOutputStream().println();
-		getOutputStream().println("Usage: importcert <username> <password> <caname> <status> "
+		getOutputStream().println("Usage: importcert <username> <password> <caname> <status> <email> "
 				+ "<certificate file> "
 				+ "[<endentityprofile> | <endentityprofile> <certificateprofile>]");
 		
+		getOutputStream().println("Email can be set to null to try to use the value from the certificate.");
+		getOutputStream().println();
 		getOutputStream().print("  Existing CAs: ");
 		try {
 			Collection cas = getCAAdminSession().getAvailableCAs(administrator);
@@ -138,25 +140,40 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 		//getOutputStream().println("Certificate import tool. V 1.1, (c) 2005 CSITA - University of Genoa (Italy)");
 		debug(">execute()");
-		if ((args.length < 6) || (args.length > 8)) {
+		if ((args.length < 7) || (args.length > 9)) {
 			usage();
 			return;
 		}
 		
 		try {
+			String username = args[1];
+			String password = args[2];
+			String caname = args[3];
+			String active = args[4];
+			String email = args[5];
+			String certfile = args[6];
+			String eeprofile = null;
+			if (args.length > 7) {
+				eeprofile = args[7];
+			}
+			String certificateprofile = null;
+			if (args.length > 8) {
+				certificateprofile = args[8];				
+			}
+			
 			int type = SecConst.USER_ENDUSER;
 			int status;
-			if ("ACTIVE".equalsIgnoreCase(args[4])) {
+			if ("ACTIVE".equalsIgnoreCase(active)) {
 				status = CertificateDataBean.CERT_ACTIVE;
 			}
-			else if ("REVOKED".equalsIgnoreCase(args[4])) {
+			else if ("REVOKED".equalsIgnoreCase(active)) {
 				status = CertificateDataBean.CERT_REVOKED;
 			}
 			else {
 				throw new Exception("Invalid certificate status.");
 			}
 			
-			Certificate certificate = loadcert(args[5]);
+			Certificate certificate = loadcert(certfile);
 			String fingerprint = CertTools.getFingerprintAsString(certificate);
 			if (getCertificateStoreSession().findCertificateByFingerprint(administrator, fingerprint) != null) {
 				throw new Exception("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' is already present.");
@@ -165,7 +182,6 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				status = CertificateDataBean.CERT_EXPIRED;
 			}
 			
-			String username = args[1];
 			// Check if username already exists.
 			UserDataVO userdata = getUserAdminSession().findUser(administrator, username);
 			if (userdata != null) {
@@ -174,38 +190,41 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 					" already exists; only revoked user can be overwrite.");
 				}
 			}
-			String password = args[2];
-			CAInfo cainfo = getCAInfo(args[3]);
 			
-			CertTools.verify(certificate, cainfo.getCertificateChain());
+			//CertTools.verify(certificate, cainfo.getCertificateChain());
 			
-			String email = CertTools.getEMailAddress(certificate);
+			if (email.equalsIgnoreCase("null")) {
+				email = CertTools.getEMailAddress(certificate);				
+			}
 			
 			int endentityprofileid = SecConst.EMPTY_ENDENTITYPROFILE;
-			if (args.length > 6) {
-				debug("Searching for End Entity Profile " + args[6]);
-				endentityprofileid = getRaAdminSession().getEndEntityProfileId(administrator, args[6]);
+			if (eeprofile != null) {
+				debug("Searching for End Entity Profile " + eeprofile);
+				endentityprofileid = getRaAdminSession().getEndEntityProfileId(administrator, eeprofile);
 				if (endentityprofileid == 0) {
-					error("End Entity Profile " + args[6] + " doesn't exists.");
-					throw new Exception("End Entity Profile '" + args[6] + "' doesn't exists.");
+					error("End Entity Profile " + eeprofile + " doesn't exists.");
+					throw new Exception("End Entity Profile '" + eeprofile + "' doesn't exists.");
 				}
 			}
 			
 			int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
-			if (args.length > 7) {
-				debug("Searching for Certificate Profile " + args[7]);
-				certificateprofileid = getCertificateStoreSession().getCertificateProfileId(administrator, args[7]);
+			if (certificateprofile != null) {
+				debug("Searching for Certificate Profile " + certificateprofile);
+				certificateprofileid = getCertificateStoreSession().getCertificateProfileId(administrator, certificateprofile);
 				if (certificateprofileid == SecConst.PROFILE_NO_PROFILE) {
-					error("Certificate Profile " + args[7] + " doesn't exists.");
-					throw new Exception("Certificate Profile '" + args[7] + "' doesn't exists.");
+					error("Certificate Profile " + certificateprofile + " doesn't exists.");
+					throw new Exception("Certificate Profile '" + certificateprofile + "' doesn't exists.");
 				}
 			}
+			
+			CAInfo cainfo = getCAInfo(caname);
 			
 			getOutputStream().println("Trying to add user:");
 			getOutputStream().println("Username: " + username);
 			getOutputStream().println("Password (hashed only): " + password);
+			getOutputStream().println("Email: " + email);
 			getOutputStream().println("DN: " + CertTools.getSubjectDN(certificate));
-			getOutputStream().println("CA Name: " + args[3]);
+			getOutputStream().println("CA Name: " + caname);
 			getOutputStream().println("Certificate Profile: " + getCertificateStoreSession().getCertificateProfileName(administrator, certificateprofileid));
 			getOutputStream().println("End Entity Profile: " +
 					getRaAdminSession().getEndEntityProfileName(administrator, endentityprofileid));
@@ -235,7 +254,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				else {
 					getUserAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_REVOKED);
 				}
-				getOutputStream().println("User '" + args[1] + "' has been added.");
+				getOutputStream().println("User '" + username + "' has been added.");
 			}
 			else {
 				getUserAdminSession().changeUser(administrator,
@@ -252,7 +271,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 								UserDataConstants.STATUS_GENERATED :
 									UserDataConstants.STATUS_REVOKED),
 									cainfo.getCAId());
-				getOutputStream().println("User '" + args[1] + "' has been updated.");
+				getOutputStream().println("User '" + username + "' has been updated.");
 			}
 			
 			getCertificateStoreSession().storeCertificate(administrator,
