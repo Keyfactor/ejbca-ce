@@ -465,7 +465,7 @@ such as MS UPN, GUID, Krb5PrincipalName.
 <p>The Krb5 principal name is of the form "principal1/principal2@realm", and should be entered as such in the field.
 Example:
 </p>
-<source>tomas@PRIMEKEY.SE
+<source>user@PRIMEKEY.SE
 </source>
 <p>for a normal user in the realm PRIMEKEY.SE.
 <br/>Or:
@@ -476,6 +476,16 @@ krbtgt/PRIMEKEY.SE@PRIMEKEY.SE
 <p>for a kdc.
 </p>
 </subsubsection>
+</subsection>
+<subsection name="Certificate Validity">
+<p>
+By setting the Certificate Validity Start Time and End Time you can precisely specify, for a specific end entity, 
+when the certificate will start being valid and when the certificate will cease being valid.
+<br/>
+When selecting to use Certificate Validity Start or End time you will get the possibility to enter these fields when a new end entity is 
+added. You can also specify a default value for the end entity profile. Different formats of specifying the validity time is provided as examples 
+in the end entity profile page.   
+</p>
 </subsection>
 </section>
 
