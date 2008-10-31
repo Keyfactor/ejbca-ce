@@ -15,15 +15,18 @@ Bug
     * [ECA-968] - Key length changes when editing CA in admin-GUI
     * [ECA-970] - LdapPublisher searches for old objects on certDN instead of Ldap DN
 
-3.7.2, 2008-10-06
+3.7.2, 2008-10-31
 ---
 New Feature
     * [ECA-974] - Add Intel AMT extended key usage
+    * [ECA-1005] - Give OCSP error if audit or transaction logging fails
 
 Improvement
     * [ECA-950] - Optimize OCSP servlet
     * [ECA-973] - external OCSP responder: trying to reload the p11 provider when the HSM removed/disconnected.
     * [ECA-976] - WS-API, make mathtype contains with with matchwith username
+    * [ECA-982] - Explicitly close maintenance file in health check
+    * [ECA-989] - add cmd=deltacrl command on CertDistServlet (with patch)
 
 Bug
     * [ECA-957] - ocspclient.jar cannot handle answers with responderID of type Name.
@@ -34,6 +37,13 @@ Bug
     * [ECA-975] - CA certificates with SerialNumber in DN does not work with External OCSP
     * [ECA-977] - Error editing RenewCAWorker if CA has been removed
     * [ECA-978] - NullPointerException using WS-API to revoke non-existing certificate
+    * [ECA-979] - The transactionlogger and auditlogger set incorrect CERT_STATUS and STATUS
+    * [ECA-985] - Wrong default value for OCSP helathcheck database query
+    * [ECA-986] - Can't run ejbca.sh from $EJBCA_HOME/bin
+    * [ECA-995] - getAuthorityInformationAccessOcspUrl in CertTools fails to retrieve OCSP Locator url from AIA for cert with mutliple AIA points
+    * [ECA-997] - Error publishing deltaCRL to LDAP
+    * [ECA-999] - CRLIssuer can not be removed in CDP
+    * [ECA-1009] - Validity of certificates in signed OCSP requests not checked for expiration
 
 3.7.1, 2008-09-16
 ---

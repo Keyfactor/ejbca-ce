@@ -21,11 +21,12 @@ EJBCA 3.7.2
 -----------
 This is a minor release with focus on fixing making OCSP optimizations, introducing some minor features and fixing a few annoying bugs.
 - Add Intel AMT extended key usage
-- Optimize OCSP servlet
-- external OCSP responder: trying to reload the p11 provider when the HSM removed/disconnected.
+- Optimize OCSP servlet for better performance
+- OCSP responder improvements: reload of p11 when connection broken, return error of audit logging fails.
 - CA certificates with SerialNumber in DN does not work with External OCSP
 - WS-API, make mathtype contains with with matchwith username
 - Key length changes when editing CA in admin-GUI
+- Minor GUI fixes.
 
 Read the changelog for details.
 
