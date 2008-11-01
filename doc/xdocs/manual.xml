@@ -407,6 +407,20 @@ truststore is in use</li>
 </subsection>
 </section>
 
+<section name="Certificate- and EndEntity Profiles">
+<p>
+CertificateProfiles define different types of certificates, with 
+regards to DN-contents, extensions etc. We also have 
+EndEntityProfiles, where users are grouped, and you can determine 
+which parts of their DN that is already pre-set, and which can be 
+altered etc. 
+</p><p>
+An EndEntityProfile can be connected to specific CertificateProfiles 
+so users belonging to a specific EndEntityProfile can only get 
+certificates from the specified CertificateProfile.
+</p>
+</section>
+
 <section name="Certificate profiles">
 <subsection name="Validity">
 <p>
@@ -4825,18 +4839,6 @@ If the CA is deployed integrated in another J2EE application,
 this front-end may not be needed.
 </p></subsection>
 
-<subsection name="Certificate- and EndEntity Profiles">
-<p>
-CertificateProfiles define different types of certificates, with 
-regards to DN-contents, extensions etc. We also have 
-EndEntityProfiles, where users are grouped, and you can determine 
-which parts of their DN that is already pre-set, and which can be 
-altered etc. 
-</p><p>
-An EndEntityProfile can be connected to specific CertificateProfiles 
-so users belonging to a specific EndEntityProfile can only get 
-certificates from the specified CertificateProfile.
-</p></subsection>
 </section>
 
 <section name="Customizing EJBCA">
