@@ -16,6 +16,7 @@ package org.ejbca.core.model.ca.certextensions;
 import java.math.BigInteger;
 import java.security.PublicKey;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
@@ -24,6 +25,7 @@ import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -40,9 +42,18 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 'value'    : The value returned
  * 'encoding' : How the value is encoded.
  * 
- * See dokumentation for more information.
+ * Optionally, a new property can be defined:
+ *
+ * 'nvalues' : number of values of type 'encoding'
+ *
+ * Thus, the extension will be of type 'SEQUENCE OF ENCODING'
+ * with a size of nvalues. The members will be:
+ *  'value1', 'value2' and so on.
+ *  
+ * See documentation for more information.
  * 
  * @author Philip Vendil 2007 jan 5
+ * @author Miguel Tormo  2008 oct 24
  *
  * @version $Id$
  */
@@ -59,11 +70,13 @@ public class BasicCertificateExtension extends CertificateExtension {
 	private static String ENCODING_DERUTF8STRING      = "DERUTF8STRING";	 
 	private static String ENCODING_DERIA5STRING       = "DERIA5STRING";	 
 	private static String ENCODING_DERNULL            = "DERNULL";
-	private static String ENCODING_DEROBJECT            = "DEROBJECT";
+	private static String ENCODING_DEROBJECT          = "DEROBJECT";
+	private static String ENCODING_DEROID             = "DERBOJECTIDENTIFIER";
 	
 	// Defined Properties
 	private static String PROPERTY_VALUE    = "value";
 	private static String PROPERTY_ENCODING = "encoding";
+    private static String PROPERTY_NVALUES  = "nvalues";
 	
 	private DEREncodable dEREncodable = null;
 	
@@ -76,54 +89,93 @@ public class BasicCertificateExtension extends CertificateExtension {
 	 * @param certProfile not used
 	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, PublicKey)
 	 */
-	public DEREncodable getValue(UserDataVO userData, CA ca,
-			CertificateProfile certProfile, PublicKey userPublicKey)
-			throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	private DEREncodable parseValue(String encoding, String value) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 
-		if(dEREncodable == null){
-		  String value = getProperties().getProperty(PROPERTY_VALUE);		  
-		  String encoding = getProperties().getProperty(PROPERTY_ENCODING);		  
-		  
-		  if(!encoding.equalsIgnoreCase(ENCODING_DERNULL) && (value == null || value.trim().equals(""))){
-			  throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", new Integer(getId())));
-		  }
-		  
-		  if(encoding.equalsIgnoreCase(ENCODING_DERBITSTRING)){
-			  dEREncodable = parseDERBitString(value);
-		  }else
-			  if(encoding.equalsIgnoreCase(ENCODING_DERINTEGER)){
-				  dEREncodable = parseDERInteger(value);
-			  }else
-				  if(encoding.equalsIgnoreCase(ENCODING_DEROCTETSTRING)){
-					  dEREncodable = parseDEROctetString(value);
-				  }else
-					  if(encoding.equalsIgnoreCase(ENCODING_DERBOOLEAN)){
-						  dEREncodable = parseDERBoolean(value);
-					  }else 
-						  if(encoding.equalsIgnoreCase(ENCODING_DERPRINTABLESTRING)){
-							  dEREncodable = parseDERPrintableString(value);
-						  }else
-							  if(encoding.equalsIgnoreCase(ENCODING_DERUTF8STRING)){
-								  dEREncodable = parseDERUTF8String(value);
-							  }else
-								  if(encoding.equalsIgnoreCase(ENCODING_DERIA5STRING)){
-									  dEREncodable = parseDERIA5String(value);
-								  }else
-									  if(encoding.equalsIgnoreCase(ENCODING_DERNULL)){
-										  dEREncodable = new DERNull();
-									  }else{
-										  if(encoding.equalsIgnoreCase(ENCODING_DEROBJECT)){
-											  dEREncodable = parseHexEncodedDERObject(value);
-										  }else{
-											  throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectenc",new Integer(getId())));
-										  }
-									  }
+		DEREncodable toret = null;
+
+		if(!encoding.equalsIgnoreCase(ENCODING_DERNULL) && (value == null || value.trim().equals(""))){
+			throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", new Integer(getId())));
 		}
-		
+
+		if(encoding.equalsIgnoreCase(ENCODING_DERBITSTRING)){
+			toret = parseDERBitString(value);
+		}else
+			if(encoding.equalsIgnoreCase(ENCODING_DERINTEGER)){
+				toret = parseDERInteger(value);
+			}else
+				if(encoding.equalsIgnoreCase(ENCODING_DEROCTETSTRING)){
+					toret = parseDEROctetString(value);
+				}else
+					if(encoding.equalsIgnoreCase(ENCODING_DERBOOLEAN)){
+						toret = parseDERBoolean(value);
+					}else 
+						if(encoding.equalsIgnoreCase(ENCODING_DEROID)){
+							toret = parseDEROID(value);
+						} else
+							if(encoding.equalsIgnoreCase(ENCODING_DERPRINTABLESTRING)){
+								toret = parseDERPrintableString(value);
+							}else
+								if(encoding.equalsIgnoreCase(ENCODING_DERUTF8STRING)){
+									toret = parseDERUTF8String(value);
+								}else
+									if(encoding.equalsIgnoreCase(ENCODING_DERIA5STRING)){
+										toret = parseDERIA5String(value);
+									}else
+										if(encoding.equalsIgnoreCase(ENCODING_DERNULL)){
+											toret = new DERNull();
+										}else
+											if(encoding.equalsIgnoreCase(ENCODING_DEROBJECT)){
+												toret = parseHexEncodedDERObject(value);
+											}else
+												if(encoding.equalsIgnoreCase(ENCODING_DEROID)){
+													toret = parseDERBoolean(value);
+												}else{
+													throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectenc", encoding, new Integer(getId())));
+												}
+		return toret;
+	}
+
+	public DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey)
+	throws CertificateExtensionException, CertificateExtentionConfigurationException {
+		try {
+			if(dEREncodable == null) {
+				String encoding = getProperties().getProperty(PROPERTY_ENCODING);
+				encoding = StringUtils.trim(encoding); // Ignore any spaces in the end
+				String strnvalues = getProperties().getProperty(PROPERTY_NVALUES);
+				String value = null;
+
+				int nvalues;
+
+				if ( strnvalues == null || strnvalues.trim().equals("") ) {
+					nvalues = 0;
+				} else {
+					nvalues = Integer.parseInt(strnvalues);
+				}
+
+				if (nvalues < 1 ) {
+					value = getProperties().getProperty(PROPERTY_VALUE);
+					if ( value == null || value.trim().equals("") ) {
+						value = getProperties().getProperty(PROPERTY_VALUE+"1");
+					}
+					dEREncodable = parseValue(encoding, value);
+				} else {
+					ASN1EncodableVector ev = new ASN1EncodableVector();
+					for (int i=1; i<=nvalues; i++) {
+						value = getProperties().getProperty(PROPERTY_VALUE+Integer.toString(i));
+						DEREncodable derval = parseValue(encoding, value);
+						ev.add(derval);
+					}
+					dEREncodable = new DERSequence(ev);
+				}
+			}
+		} catch (Exception e) {
+			throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",new Integer(getId())));
+		}
+
 		return dEREncodable;
 	}
 
-	private DEREncodable parseDERBitString(String value) throws CertificateExtentionConfigurationException {
+    private DEREncodable parseDERBitString(String value) throws CertificateExtentionConfigurationException {
 		DEREncodable retval = null;
 		try{
 			BigInteger bigInteger = new BigInteger(value,2);			
@@ -148,6 +200,17 @@ public class BasicCertificateExtension extends CertificateExtension {
 		return retval;
 	}
 	
+    private DEREncodable parseDEROID(String value) throws CertificateExtentionConfigurationException {
+        DEREncodable retval = null;
+        try{
+            retval = new DERObjectIdentifier(value);
+        }catch(Exception e){
+            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue",value,new Integer(getId())));
+        }
+
+        return retval;
+    }
+
 	private DEREncodable parseDERInteger(String value) throws CertificateExtentionConfigurationException {
 		DEREncodable retval = null; 
 		try{
@@ -225,11 +288,16 @@ public class BasicCertificateExtension extends CertificateExtension {
 		}
 	}
 	
-	private DEREncodable parseDERUTF8String(String value) {		
+	private DEREncodable parseDERUTF8String(String value)  {		
 		return new DERUTF8String(value);
 	}
-	private DEREncodable parseDERIA5String(String value) {		
-		return new DERIA5String(value, true);
+	
+	private DEREncodable parseDERIA5String(String value)  throws CertificateExtentionConfigurationException {		
+		try{
+			return new DERIA5String(value, true);
+		}catch(java.lang.IllegalArgumentException e){
+			throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue",value,new Integer(getId())));
+		}
 	}
 
 

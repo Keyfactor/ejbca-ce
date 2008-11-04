@@ -1,6 +1,7 @@
 package org.ejbca.core.model.ca.certextensions;
 
 import java.math.BigInteger;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -10,8 +11,10 @@ import org.bouncycastle.asn1.DERBoolean;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 
 public class TestBasicCertificateExtension extends TestCase {
@@ -219,4 +222,43 @@ public class TestBasicCertificateExtension extends TestCase {
 		assertTrue(exceptionThrown);
 	}
 	
+	public void test09OidExtension() throws Exception{
+		Properties props = new Properties();
+		props.put("id1.property.encoding", "DERBOJECTIDENTIFIER");
+		props.put("id1.property.value", "1.1.1.255.1");
+		
+		BasicCertificateExtension baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", false, props);
+		
+		DEREncodable value = baseExt.getValue(null, null, null, null);
+		assertTrue(value.getClass().toString(),value instanceof DERObjectIdentifier);
+		assertTrue(((DERObjectIdentifier)value).getId(),((DERObjectIdentifier)value).getId().equals("1.1.1.255.1"));        
+	}
+
+	public void test10SequencedExtension() throws Exception{
+		Properties props = new Properties();
+		props.put("id1.property.encoding", "DERUTF8STRING "); // Also test that we ignore spaces in the end here
+		props.put("id1.property.nvalues", "3"); 
+		props.put("id1.property.value1", "foo1");
+		props.put("id1.property.value2", "foo2");
+		props.put("id1.property.value3", "foo3");
+		
+		BasicCertificateExtension baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", false, props);
+		
+		DEREncodable value = baseExt.getValue(null, null, null, null);
+		assertTrue(value.getClass().toString(),value instanceof DERSequence);
+		DERSequence seq = (DERSequence)value;
+		assertEquals(3, seq.size());
+		Enumeration e = seq.getObjects();
+		int i = 1;
+		while(e.hasMoreElements()) {
+			DEREncodable v = (DEREncodable)e.nextElement();
+			assertTrue(v.getClass().toString(),v instanceof DERUTF8String);
+			String str = ((DERUTF8String)v).getString();
+			System.out.println(str);
+			assertEquals(str,"foo"+i++);        
+		}
+	}
+
 }
