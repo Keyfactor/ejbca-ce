@@ -353,6 +353,16 @@ bin/pkcs11HSM.sh generate /etc/utimaco/libcs2_pkcs11.so secp160r1 signKey 1
   <p>Note that the Java PKCS#11 provider may not support all curves that your HSM supports.</p>
   <p>To generate keys using the pkcs11HSM.sh tool, a patch for JDK is needed due to a bug. This patch will later be included in the official JDK.</p>
   </subsection>
+  
+  <subsection name="Sun Java PKCS#11 ECC key issue solved">
+  <p>If you are using the pkcs11HSM.sh tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
+  to stumble on a bug in the JDK which prevents reading of the public key from the HSM. the pkcs11HSM.sh tool needs to read the public key,
+  generate a "dummy" certificate and assign that to the key label, so we have a public key certificate in the keystore retrieved from 
+  the Sun PKCS#11 provider.
+  This bug is present at least up to and including JDK 1.6u10.</p>
+  <p>You can look at this issue in the EJBCA Jira for a solution to the problem: <a href="https://jira.primekey.se/browse/ECA-940">ECA-940</a>
+  </p>
+  </subsection> 
   </section>
 
   <section name="PEM requests">
