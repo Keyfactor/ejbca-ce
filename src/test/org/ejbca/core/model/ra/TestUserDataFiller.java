@@ -60,11 +60,11 @@ public class TestUserDataFiller extends TestCase {
     	userData.setPassword("userPassword");
     	String expectedUserDn="CN=userName,O=linagora,C=fr";
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertTrue(userData.getUsername().equals("userName"));
-    	Assert.assertTrue(userData.getSendNotification()==true);
-    	Assert.assertTrue(userData.getEmail().equals("user@linagora.com"));
-    	Assert.assertTrue(userData.getPassword().equals("userPassword"));
-    	Assert.assertTrue(userData.getDN().equals(expectedUserDn));
+    	Assert.assertEquals("userName", userData.getUsername());
+    	Assert.assertTrue(userData.getSendNotification());
+    	Assert.assertEquals("user@linagora.com", userData.getEmail());
+    	Assert.assertEquals("userPassword", userData.getPassword());
+    	Assert.assertEquals(expectedUserDn, userData.getDN());
     }
     /**
      * userName is merged
@@ -73,7 +73,7 @@ public class TestUserDataFiller extends TestCase {
     	userData.setUsername("");
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
     	Assert.assertTrue(!userData.getUsername().equals("userName"));
-    	Assert.assertTrue(userData.getUsername().equals("defaultUserName"));
+    	Assert.assertEquals("defaultUserName", userData.getUsername());
     }
     /**
      * SendNotification is merged
@@ -81,7 +81,7 @@ public class TestUserDataFiller extends TestCase {
     public void testFillUserDataWithDefaultValuesSendNotification() {
     	profile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, "true");
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertTrue(userData.getSendNotification()==true);
+    	Assert.assertTrue(userData.getSendNotification());
     }
     /**
      * Email is merged
@@ -89,7 +89,7 @@ public class TestUserDataFiller extends TestCase {
     public void testFillUserDataWithDefaultValuesEmail() {
     	userData.setEmail("");
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertTrue(userData.getEmail().equals("defaultMail@linagora.com"));
+    	Assert.assertEquals("defaultMail@linagora.com", userData.getEmail());
     	userData.setEmail("");
     	//Email is not merged because profile's email is not a valid email
     	profile.setValue(EndEntityProfile.EMAIL, 0, "@linagora.com");
@@ -103,6 +103,6 @@ public class TestUserDataFiller extends TestCase {
      */
     public void testFillUserDataWithDefaultValuesPassword() {
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertTrue(userData.getPassword().equals("defaultPassword"));
+    	Assert.assertEquals("defaultPassword", userData.getPassword());
     }
 }
