@@ -628,9 +628,9 @@
 	        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
 	            <exclude name="**/CVS/**" />
 	            <include name="**/appserver/jboss/SaferDailyRollingFileAppender*" />
-	            <include name="**/protocol/ocsp/ProbeableErrorHandler*" />
+	            <include name="**/appserver/jboss/ProbeableErrorHandler*" />
 	        	<include name="**/protocol/ocsp/ISaferAppenderListener*" />
-	           <!-- appserver specific files are built separtely-->
+	            <!-- appserver specific files are built separtely-->
 	            <classpath refid="jbosslog4jsafer.classpath" />
 	            <classpath refid="compile.classpath" />
 	        </javac>
@@ -639,8 +639,8 @@
 	        <copy todir="${jbosslog4jsafer.build}">
 	            <fileset dir="${build}">
 	                <include name="org/ejbca/appserver/jboss/SaferDailyRollingFileAppender.class" />
+	                <include name="org/ejbca/appserver/jboss/ProbeableErrorHandler.class" />
 	            	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.class" />
-	                <include name="org/ejbca/core/protocol/ocsp/ProbeableErrorHandler.class" />
 	                <exclude name="se/anatom/ejbca/**/*Test*" />
 	            </fileset>
 	        </copy>

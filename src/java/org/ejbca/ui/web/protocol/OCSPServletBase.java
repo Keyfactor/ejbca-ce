@@ -15,6 +15,7 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -74,7 +75,6 @@ import org.ejbca.core.protocol.ocsp.ISaferAppenderListener;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
-import org.ejbca.core.protocol.ocsp.ProbeableErrorHandler;
 import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.GUIDGenerator;
@@ -250,6 +250,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private int mTransactionID = 0;
 	private String m_SessionID;
 	private boolean mDoSaferLogging;
+	/** Method gotten through reflection, we put it in a variable so we don't have to use
+	 * reflection every time we use the audit or transaction log */
+	private Method m_errorHandlerMethod = null;
+	private static final String PROBEABLE_ERRORHANDLER_CLASS = "org.ejbca.appserver.jboss.ProbeableErrorHandler";
+	private static final String SAFER_LOG4JAPPENDER_CLASS = "org.ejbca.appserver.jboss.SaferDailyRollingFileAppender";
 
 	
 	protected synchronized void loadTrustDir() throws Exception {
@@ -559,12 +564,15 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 
         if (mDoSaferLogging==true) {
             try {
-                final Class implClass = Class.forName("org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
+                final Class implClass = Class.forName(SAFER_LOG4JAPPENDER_CLASS);
                 Method method = implClass.getMethod("addSubscriber", ISaferAppenderListener.class);
                 method.invoke(null, this); // first object parameter can be null because this is a static method
                 m_log.info("added us as subscriber to org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
+                // create the method object of the static probeable error handler, so we don't have to do this every tim we log
+    			Class errHandlerClass = Class.forName(PROBEABLE_ERRORHANDLER_CLASS);
+    			m_errorHandlerMethod = errHandlerClass.getMethod("hasFailedSince", Date.class);
             } catch (Exception e) {
-                m_log.error("Was configured to do safer logging but could not instantiate SaferDailyRollingFileAppender", e);
+                m_log.error("Was configured to do safer logging but could not instantiate needed classes", e);
             }
         }
 
@@ -636,9 +644,33 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 * @see org.ejbca.ui.web.protocol.SaferAppenderInterface#canlog(boolean)
 	 */
 	public void setCanlog(boolean pCanlog) {
-		canlog= pCanlog;
+		canlog = pCanlog;
 	}
 
+	/** Method that checks with ProbeableErrorHandler if an error has happended since a certain time.
+	 * Uses reflection to call ProbeableErrorHandler because it is dependent on JBoss log4j logging, 
+	 * which is not available on other application servers.
+	 * 
+	 * @param startTime
+	 * @return true or false
+	 */
+	private boolean hasErrorHandlerFailedSince(Date startTime) {
+		boolean ret = false; // Default value false if something goes wrong
+		try {
+			Boolean b = (Boolean)m_errorHandlerMethod.invoke(null, startTime); // first object parameter can be null because this is a static method
+			ret = b.booleanValue();
+		} catch (SecurityException e) {
+			m_log.error(e);
+		} catch (IllegalArgumentException e) {
+			m_log.error(e);
+		} catch (IllegalAccessException e) {
+			m_log.error(e);
+		} catch (InvocationTargetException e) {
+			m_log.error(e);
+		}
+		return ret;
+	}
+	
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
 		m_log.debug(">doPost()");
@@ -1084,7 +1116,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			if (auditLogger != null) auditLogger.flush();
 			if (mDoSaferLogging){
 				// See if the Errorhandler has found any problems
-				if (ProbeableErrorHandler.hasFailedSince(startTime)) {
+				if (hasErrorHandlerFailedSince(startTime)) {
 					m_log.info("ProbableErrorhandler reported error, cannot answer request");
 					BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
 					ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);

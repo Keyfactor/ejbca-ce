@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol.ocsp;
+package org.ejbca.appserver.jboss;
 
 import java.util.Date;
 
