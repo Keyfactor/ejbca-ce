@@ -1,0 +1,90 @@
+
+This Howto describes steps needed when developing for different application servers. 
+This document is only targeted for EJBCA developers.
+
+Glassfish
+=========
+
+Creating deployment descriptors for Glassfish:
+----------------------------------------------
+Whan a new release of EJBCA should be running on glassfish, the deployment descriptors may have to be updated.
+Uncomment the section in compile.xmli to generate sun ejb deployment descriptors. 
+Compare the generated one with src/deploy/sun/sun-ejb-jar.xml, and merge if needed.
+
+* sun-web.xml files must be updated with any new references that exist in the web.xml files.
+
+Of particular interest on Glassfish is that in order for web-apps to call EJBs, the webapp must define a datasource ref,
+both in web.xml and sun-web.xml.
+web.xml
+<resource-ref >
+   <res-ref-name>jdbc/EjbcaDS</res-ref-name>
+   <res-type>javax.sql.DataSource</res-type>
+   <res-auth>Container</res-auth>
+</resource-ref>
+
+sun-web.xml
+<resource-ref>
+    <res-ref-name>jdbc/EjbcaDS</res-ref-name>
+    <jndi-name>jdbc/EjbcaDS</jndi-name>
+</resource-ref>
+
+* sun-ejb-jar.xml must be updated with new beans.
+
+* sun-cmp-mapping.xml must be updated with database changes.
+
+* database schema must be updated.
+Example for MySQL:
+CLASSPATH=../lib/mysql-connector-java-5.0.4-bin.jar:$CLASSPATH 
+./capture-schema -username ejbca -password ejbca -dburl jdbc:mysql://127.0.0.1/ejbca -driver com.mysql.jdbc.Driver -out ejbca-ejb
+
+Example for Derby:
+export CLASSPATH=/home/user/glassfish/javadb/lib/derbyclient.jar:$CLASSPATH 
+./capture-schema -username ejbca -password ejbca -dburl jdbc:derby://127.0.0.1/ejbca -driver org.apache.derby.jdbc.ClientDriver -out ejbca-ejb
+
+Copy the generated ejbca-ejb.dbcschema file to src/deploy/sun/schema/<database>
+
+Weblogic
+========
+
+Creating deployment descriptors for Weblogic 9:
+----------------------------------------------
+
+XDoclet can only make descriptors for Weblogic 8.x, not 9.x.
+In the generated tmp/bin/dd/META-INF/weblogic-cmp-rdbms-jar.xml, remove the DTD line and replace:
+  <weblogic-rdbms-jar>
+with:
+  <weblogic-rdbms-jar xmlns="http://www.bea.com/ns/weblogic/90"
+                    xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.bea.com/ns/weblogic/90
+                                        http://www.bea.com/ns/weblogic/90/weblogic-rdbms20-persistence.xsd">
+
+After this you remove all sections:
+  <weblogic-query>
+  ...
+  </weblogic-query>
+
+Last you remove the options in the end:
+   <order-database-operations>True</order-database-operations>
+   <enable-batch-operations>True</enable-batch-operations>
+   <create-default-dbms-tables>Disabled</create-default-dbms-tables>
+
+And put in the end instead:
+   <database-type>Oracle</database-type>
+
+Voila. Now you have a new file you can put in src/deploy/weblogic.
+
+JBOSS
+=====
+
+JBoss commonly have problems with class loading if several applications are run in one instance of JBoss.
+This will typically manifest itself as ClassCast-, IllegalAccess- or VerifyError Exceptions. 
+The reason is usually that mora than one application is using an external jar file, for example commons-fileupload.jar
+or ldap.jar, possibly using different versions as well.
+
+These links describe how to configure jboss-app.xml, etc and also describe how
+JBoss classloading works.
+
+http://wiki.jboss.org/wiki/Wiki.jsp?page=ClassLoadingConfiguration
+http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
+
