@@ -35,23 +35,23 @@ public class EndUserCertificateProfile extends CertificateProfile{
 
       setType(TYPE_ENDENTITY);
 
-      // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
-      // Default key usage is digitalSignature | keyEncipherment
+      // Standard key usages for end users are: digitalSignature | nonRepudiation, and/or (keyEncipherment or keyAgreement)
+      // Default key usage is digitalSignature | nonRepudiation | keyEncipherment
       // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
+      setKeyUsage(NONREPUDIATION,true);
       setKeyUsage(KEYENCIPHERMENT,true);
       setKeyUsageCritical(true);
 
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();
-      eku.add(new Integer(SERVERAUTH));
       eku.add(new Integer(CLIENTAUTH));
       eku.add(new Integer(EMAILPROTECTION));
       setExtendedKeyUsage(eku);
       setExtendedKeyUsageCritical(false);
-      
+
     }
 
     // Public Methods.
