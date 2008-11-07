@@ -1,6 +1,6 @@
 --
 -- These definitions should work for EJBCA 3.8.x, PostgreSQL 8.1 or 8.2.
--- These definitions are made and tested for Websphere.
+-- These definitions are made and tested for Glassfish.
 --
 
 DROP TABLE ACCESSRULESDATA;
@@ -9,7 +9,7 @@ CREATE TABLE accessrulesdata (
   pK INT4 NOT NULL, 
   accessRule TEXT, 
   rule INT4 NOT NULL, 
-  isRecursive INT2 NOT NULL, 
+  isRecursive boolean NOT NULL, 
   AdminGroupData_accessRules INT4, 
 CONSTRAINT pk_accessrulesdata PRIMARY KEY (pK)
 );
