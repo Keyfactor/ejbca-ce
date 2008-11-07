@@ -340,7 +340,50 @@ public class PKCS10RequestMessage implements IRequestMessage {
     }
 
     public String getRequestAltNames() {
-    	return null;
+        try {
+            if (pkcs10 == null) {
+                init();
+            }
+        } catch (IllegalArgumentException e) {
+            log.error("PKCS10 not inited!");
+            return null;
+        }
+        String ret = null;
+
+        // Get attributes
+        // The altNames is in a regular X509 extension in a a pkcs_9_at_extensionRequest
+        // X509Extension.
+        AttributeTable attributes = null;
+        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
+        if (info != null) {
+        	ASN1Set attrs = info.getAttributes();
+        	if (attrs != null) {
+        		attributes = new AttributeTable(attrs);		
+        	}
+        }
+        if (attributes != null) {
+            // See if we have it embedded in an extension request instead
+            Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            if (attr != null) {
+                log.debug("got request extension");
+                ASN1Set values = attr.getAttrValues();
+                if (values.size() > 0) {
+                    try {
+                        X509Extensions exts = X509Extensions.getInstance(values.getObjectAt(0));
+                		X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+                        if (ext != null) {
+                            // Finally read the value
+                    		ret = CertTools.getAltNameStringFromExtension(ext);        	
+                        } else {
+                        	log.debug("no subject altName extension");
+                        }
+                    } catch (IllegalArgumentException e) {
+                    	log.debug("pkcs_9_extensionRequest does not contain Extensions that it should, ignoring invalid encoded extension request.");
+                    }
+                }
+            }
+        }        
+        return ret;
     }
 
     /**

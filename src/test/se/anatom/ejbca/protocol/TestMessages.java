@@ -20,10 +20,20 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.ScepRequestMessage;
 import org.ejbca.util.Base64;
@@ -274,7 +284,30 @@ public class TestMessages extends TestCase {
         
         log.debug("<test07IEP10()");        
     }
-    
+
+    public void test08AltNameP10() throws Exception {
+    	
+    	// P10 generated with openssl
+        PKCS10RequestMessage msg = new PKCS10RequestMessage(altnamep10);
+
+        boolean ret = msg.verify();
+        assertTrue(ret);
+        String dn = msg.getRequestDN();
+        assertEquals("C=AU,CN=asd,E=asd@sdf.se", dn);
+        String pwd = msg.getPassword();
+        assertEquals("dsfsdf", pwd);
+        String username = msg.getUsername();
+        assertEquals("asd", username);
+        PublicKey pk = msg.getRequestPublicKey();
+        assertNotNull(pk);
+        String alg = pk.getAlgorithm();
+        assertEquals("RSA",alg);
+        
+        // Get altNames if we can find them
+        String altNames = msg.getRequestAltNames();
+        assertEquals("rfc822name=foo@bar.se",altNames);
+    }
+
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDY+ATE4ZB0oKfmXStu8J+do0GhTag6rOGtoydI" +
             "eNX9DdytlsmXDyONKl8746478/3HXdx9rA0RevUizKSataMpDsb3TjprRjzBTvYPZSIfzko6s8g6" +
@@ -482,6 +515,18 @@ public class TestMessages extends TestCase {
             "LxwTYVhXXKG1spaBnebu+T9xZDZqvF9eY1ANJVNSIpNygKmJdhjsJivKFkD9Jz2y" +
             "F/BYZzv618HlvZQj9Sbv7PaODRU4xqGVifa6LllK/572uQdUQj3FTkssqFQAAAAA" +
     "AAAAAA==").getBytes());
+    
+    static byte[] altnamep10 = Base64.decode(("MIIBwjCCASsCAQAwNjELMAkGA1UEBhMCQVUxDDAKBgNVBAMTA2FzZDEZMBcGCSqG"+
+    		"SIb3DQEJARYKYXNkQHNkZi5zZTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA"+
+    		"ymEA1OVfAznYHDoYmKZ1TkNuIqfujryGN3ROrarCA6OdWteWG8IPxZBu1q70CNYz"+
+    		"H7AEasvCncL3PajeltBET4jJ/0vLx/JTttoNRXjyxqIxbcWJ7b9g0IkvF8z2fsfn"+
+    		"CLH5MgFzy8GPj40qxIFRgROafgdgvjhGTPJsxqbRG1cCAwEAAaBMMBUGCSqGSIb3"+
+    		"DQEJBzEIEwZkc2ZzZGYwMwYJKoZIhvcNAQkOMSYwJDAVBgNVHREEDjAMgQpmb29A"+
+    		"YmFyLnNlMAsGA1UdDwQEAwIF4DANBgkqhkiG9w0BAQUFAAOBgQAk+ue+2+KsjZlZ"+
+    		"9b/vtRHp3db/MQVB2qR4LTWbRE5HyexMtI29DCyveDTHmBS6DZej+4XdkkSSihft"+
+    		"zeGs+DWneGZu8YaxLXeyeNEkfCaUmQp6n8CprExxfCZKsGEERrzLcGN4QiaD9RIg"+
+    "INAmCWYYOtX6k4uJLY6gsOO4FD9sAA==").getBytes());
+    
     static byte[] p12 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCCvIwgDCABgkqhkiG9w0BBwGggCSABIIK" +
             "2jCCCtYwggVmBgsqhkiG9w0BDAoBAqCCBPkwggT1MCcGCiqGSIb3DQEMAQMwGQQU" +
             "M9v7H78lfcE5imiW09/BzSilz+0CAWQEggTIq8j9XRSKczoqkW8oBbYpLUM2F3ic" +

@@ -391,6 +391,26 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         return ret;
     }
 
+    public String getRequestAltNames() {
+        log.debug(">getRequestAltNames()");
+        String ret = null;
+        try {
+            if (envData == null) {
+                init();
+                decrypt();
+            }
+            ret = super.getRequestAltNames();
+        } catch (IOException e) {
+            log.error("PKCS7 not inited!");
+        } catch (GeneralSecurityException e) {
+            log.error("Error in PKCS7:", e);
+        } catch (CMSException e) {
+            log.error("Error in PKCS7:", e);
+        }
+        log.debug("<getRequestAltNames()");
+        return ret;
+    }
+
     /**
      * Verifies signatures, popo etc on the request message. If verification fails the request
      * should be considered invalid.
