@@ -17,6 +17,17 @@ There are database upgrades in this release, so read UPGRADE carefully.
 Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
 EJBCA 3.7.x to 3.8.0. Use the full package from EJBCA 3.8.0 and follow the upgrade instructions in UPGRADE.
 
+EJBCA 3.7.3
+-----------
+This is a minor release mainly put out to fix building on Glassfish that broke in 3.7.2.
+- Fix on Glassfish that was broken in 3.7.2
+- Glassfish support for PostgreSQL
+- A couple of trivial fixes.
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.7.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.7.2
 -----------
 This is a minor release with focus on fixing making OCSP optimizations, introducing some minor features and fixing a few annoying bugs.
