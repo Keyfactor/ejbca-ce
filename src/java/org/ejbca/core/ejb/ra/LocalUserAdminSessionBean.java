@@ -2103,12 +2103,18 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         log.debug("approvalAdminDN: "+approvalAdminDN);
                         NotificationParamGen paramGen = new NotificationParamGen(data, approvalAdminDN);
                         HashMap params = paramGen.getParams();
-
+                        /* substitute any $ fields in the receipient and from fields */
+                        String fromemail = not.getNotificationSender();
+                        rcptemail = NotificationParamGen.interpolate(params, rcptemail);
+                        fromemail = NotificationParamGen.interpolate(params, fromemail);
+                        
                         Message msg = new TemplateMimeMessage(params, mailSession);
-                        msg.setFrom(new InternetAddress(not.getNotificationSender()));
+                        msg.setFrom(new InternetAddress(fromemail));
                         msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(rcptemail, false));
+                        /* Note - substitution already happening in TemplateMimeMessage() */ 
                         msg.setSubject(not.getNotificationSubject());
                         msg.setContent(not.getNotificationMessage(), "text/plain;charset=ISO-8859-1");
+                        
                         msg.setHeader("X-Mailer", "JavaMailer");
                         msg.setSentDate(new Date());
                         //log.debug("Content: "+msg.getContent().toString());

@@ -1944,6 +1944,9 @@ for implementation details. Enter a string like "CUSTOM:org.ejbca.MyCustomPlugin
 </ul> 
 </p>
 <p>
+You can also use substitution variable in the notification sender and recipient fields. See samples below.
+</p>
+<p>
 The Notification Events specify which status changes for a user that will trigger a notification.
 The default values are suitable to send an email to a user when he/she should go and pick up a 
 certificate. You can also select for example STATUSGENERATED to send email notifications to an administrator
@@ -2088,6 +2091,38 @@ Variables used with  expiring certificates:
 </ul>
 </p>
 </subsection>
+
+<subsection name="Examples">
+<p>
+In certain circumstances, e.g. when you need to comply with PCI
+or the lighter levels of FIPS-140/160, it may be required to
+configure a 2 step issuance process.
+
+This can by done by using the notifications.
+
+Create 3 email notifications:
+<ol>
+<li>To: USER<br/>
+	Email notification to -just- the user with the URL to
+	pick up the cert and the username. Make clear in
+	the message that he or she will be contacted by
+	the approving admin with the password.
+	</li>
+<li>To: ${approvalAdmin.E}<br/>
+	Email notification to the apporiving admin with 
+	the password (but not the username) and a message
+	which makes clear that this password is to be
+	passed to the user - by phone or f2f (but not
+	by email).
+</li>
+<li>To: ca-team@foo... **<br/>
+	Email notification of the issuing to the auditor
+	mailing lists - without above username/password.
+</li>
+</ol>
+</p>
+</subsection>
+
 </section>
 
 <section name="Printing of User Data">
