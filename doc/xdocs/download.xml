@@ -8,10 +8,10 @@
 <body>
   <section name="Latest Release">
     <note>
-    EJBCA 3.7.3 is now available for <a
-    href="http://downloads.sourceforge.net/ejbca/ejbca_3_7_3.zip">download</a>.
+    EJBCA 3.7.2 is now available for <a
+    href="http://downloads.sourceforge.net/ejbca/ejbca_3_7_2.zip">download</a>.
     <br/>
-    SHA1 checksum: c4e39a390e59e36952f2bf5c077078049de4e567 
+    SHA1 checksum: 9d0911ef3b4b96dcf9e8e6fd50cf6596972c71e0 
     <br/><br/>
     External RA API 3.7.1 is now available for <a
     href="http://downloads.sourceforge.net/ejbca/extra-3_7_1.zip">download</a>.
