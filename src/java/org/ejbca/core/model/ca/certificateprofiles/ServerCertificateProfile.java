@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * ServerCertificateProfile is a class defining the fixed characteristics of a SSL/TLS server certificate type
  *
- * @version $Id: dcarella $
+ * @version $Id: ServerCertificateProfile.java, dcarella $
  */
 public class ServerCertificateProfile extends CertificateProfile{
 

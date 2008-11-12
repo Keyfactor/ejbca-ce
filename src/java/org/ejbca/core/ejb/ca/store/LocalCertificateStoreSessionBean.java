@@ -1697,7 +1697,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 CACertificateProfile.CERTIFICATEPROFILENAME);
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA),
                 RootCACertificateProfile.CERTIFICATEPROFILENAME);
-        
+
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_OCSPSIGNER),
                 OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME);
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_SERVER),
