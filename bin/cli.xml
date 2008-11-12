@@ -122,7 +122,7 @@ appserver.home         : ${appserver.home}
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>
-		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" ${ca.name} null 1 JKS'/>
+		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" ${ca.name} null 1 JKS SERVER'/>
 		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
