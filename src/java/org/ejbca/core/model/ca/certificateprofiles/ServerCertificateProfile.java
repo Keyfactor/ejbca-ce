@@ -16,39 +16,37 @@ package org.ejbca.core.model.ca.certificateprofiles;
 import java.util.ArrayList;
 
 /**
- * EndUserCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
+ * ServerCertificateProfile is a class defining the fixed characteristics of a SSL/TLS server certificate type
  *
- * @version $Id$
+ * @version $Id: dcarella $
  */
-public class EndUserCertificateProfile extends CertificateProfile{
+public class ServerCertificateProfile extends CertificateProfile{
 
     // Public Constants
 
-    public static final String CERTIFICATEPROFILENAME =  "ENDUSER";
+    public static final String CERTIFICATEPROFILENAME =  "SERVER";
 
     // Public Methods
     /** Creates a certificate with the characteristics of an end user. 
      * General options are set in the superclass's default contructor that is called automatically.
      * You can override the general options by defining them again with different parameters here.
      */
-    public EndUserCertificateProfile() {
+    public ServerCertificateProfile() {
 
       setType(TYPE_ENDENTITY);
 
-      // Standard key usages for end users are: digitalSignature | nonRepudiation, and/or (keyEncipherment or keyAgreement)
-      // Default key usage is digitalSignature | nonRepudiation | keyEncipherment
+      // Standard key usages for server are: digitalSignature | (keyEncipherment or keyAgreement)
+      // Default key usage is digitalSignature | keyEncipherment
       // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
-      setKeyUsage(NONREPUDIATION,true);
       setKeyUsage(KEYENCIPHERMENT,true);
       setKeyUsageCritical(true);
 
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();
-      eku.add(new Integer(CLIENTAUTH));
-      eku.add(new Integer(EMAILPROTECTION));
+      eku.add(new Integer(SERVERAUTH));
       setExtendedKeyUsage(eku);
       setExtendedKeyUsageCritical(false);
 
