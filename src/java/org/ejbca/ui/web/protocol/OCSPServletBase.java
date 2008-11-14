@@ -1061,36 +1061,28 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			} catch (MalformedRequestException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.info(errMsg, e);
-				// generate the signed response object
-				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
-				ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicresp);
+				ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, null);	// RFC 2560: responseBytes are not set on error.
 				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
 				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
 				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (SignRequestException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
-				// generate the signed response object
-				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
-				ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicresp);
+				ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, null);	// RFC 2560: responseBytes are not set on error.
 				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
 				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
 				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (SignRequestSignatureException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
-				// generate the signed response object
-				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
-				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, basicresp);
+				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, null);	// RFC 2560: responseBytes are not set on error.
 				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				if (transactionLogger != null) transactionLogger.writeln();
 			} catch (InvalidKeyException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.info(errMsg, e);
-				// generate the signed response object
-				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
-				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, basicresp);
+				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, null);	// RFC 2560: responseBytes are not set on error.
 				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				if (transactionLogger != null) transactionLogger.writeln();
@@ -1099,9 +1091,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					throw (ServletException) e;
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.error(errMsg, e);
-				// generate the signed response object
-				BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
-				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
+				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.
 				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
 				if (transactionLogger != null) transactionLogger.writeln();
 				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
@@ -1110,7 +1100,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
-			if (transactionLogger != null) transactionLogger.paramPut(transactionLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
+			if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
 			if (auditLogger != null) auditLogger.writeln();
 			if (transactionLogger != null) transactionLogger.flush();
 			if (auditLogger != null) auditLogger.flush();
@@ -1118,15 +1108,13 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				// See if the Errorhandler has found any problems
 				if (hasErrorHandlerFailedSince(startTime)) {
 					m_log.info("ProbableErrorhandler reported error, cannot answer request");
-					BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
-					ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
+					ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.
 					respBytes = ocspresp.getEncoded();
 				}
 				// See if the Appender has reported any problems
 				if (!canlog) {
 					m_log.info("SaferDailyRollingFileAppender reported error, cannot answer request");
-					BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
-					ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
+					ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.
 					respBytes = ocspresp.getEncoded();
 				}
 			}
@@ -1136,22 +1124,6 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			response.getOutputStream().write(respBytes);
 			response.getOutputStream().flush();
 		} catch (OCSPException e) {
-			String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
-			m_log.error(errMsg, e);
-			throw new ServletException(e);
-		} catch (IllegalExtendedCAServiceRequestException e) {
-			String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
-			m_log.error(errMsg, e);
-			throw new ServletException(e);
-		} catch (CADoesntExistsException e) {
-			String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
-			m_log.error(errMsg, e);
-			throw new ServletException(e);
-		} catch (ExtendedCAServiceNotActiveException e) {
-			String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
-			m_log.error(errMsg, e);
-			throw new ServletException(e);
-		} catch (ExtendedCAServiceRequestException e) {
 			String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 			m_log.error(errMsg, e);
 			throw new ServletException(e);
