@@ -71,7 +71,8 @@ public class OcspJunitHelper extends TestCase {
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
         assertEquals("Response status not zero.", respCode, response.getStatus());
         if (respCode != 0) {
-        	 return null; // is this really needed? it messes up testing of invalid signatures...
+            assertNull("According to RFC 2560, responseBytes are not set on error.", (BasicOCSPResp) response.getResponseObject());
+            return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
         }
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         X509Certificate[] chain = brep.getCerts("BC");

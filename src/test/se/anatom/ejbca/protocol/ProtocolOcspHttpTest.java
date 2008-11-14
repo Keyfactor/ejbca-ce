@@ -52,6 +52,7 @@ import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
+import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
@@ -557,6 +558,32 @@ public class ProtocolOcspHttpTest extends TestCase {
         status = singleResp2.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
 
+    }
+
+    /**
+     * In compliance with RFC 2560 on "ASN.1 Specification of the OCSP Response": If the value
+     * of responseStatus is one of the error conditions, responseBytes are not set.
+     *  
+     * OCSPResponse ::= SEQUENCE {
+     * responseStatus OCSPResponseStatus,
+     * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
+     */
+    public void test11MalformedReequest() throws Exception {
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        // Add 101 OCSP requests.. the Servlet will consider a request with more than 100 malformed..
+        // This does not mean that we only should allow 100 in the future, just that we if so need to find
+        // another way make the Servlet return OCSPRespGenerator.MALFORMED_REQUEST
+        for (int i=0; i<101; i++) {
+            gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        }
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+        // Send the request and receive null
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPRespGenerator.MALFORMED_REQUEST);
+        assertNull("No SingleResps should be returned.", singleResps);
     }
 
     /**
