@@ -47,7 +47,6 @@ public class EndUserCertificateProfile extends CertificateProfile{
 
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();
-      eku.add(new Integer(SERVERAUTH));		/* dcarella: temporary, to fix the server certificate problem */
       eku.add(new Integer(CLIENTAUTH));
       eku.add(new Integer(EMAILPROTECTION));
       setExtendedKeyUsage(eku);
