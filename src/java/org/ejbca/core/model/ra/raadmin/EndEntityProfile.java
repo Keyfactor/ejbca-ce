@@ -259,8 +259,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setRequired(STARTTIME,0,false);
         setRequired(ENDTIME,0,false);
         setRequired(ALLOWEDREQUESTS,0,false);
-        setValue(DEFAULTCERTPROFILE,0,"1");
-        setValue(AVAILCERTPROFILES,0,"1");
+        setValue(DEFAULTCERTPROFILE,0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);
+        setValue(AVAILCERTPROFILES,0, SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + SecConst.CERTPROFILE_FIXED_OCSPSIGNER + ";" + SecConst.CERTPROFILE_FIXED_SERVER);
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
         setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
         setValue(AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
