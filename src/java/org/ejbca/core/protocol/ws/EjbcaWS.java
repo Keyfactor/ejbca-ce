@@ -1456,25 +1456,23 @@ public class EjbcaWS implements IEjbcaWS {
 					HardTokenDataWS toRevoke = (HardTokenDataWS)htdIter.next();
 					try{
 						if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
-							if(WSConfig.isSetMSLogonOnHold()){
-								// Set all certificates on hold
-								revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
-							}else{
+
 								// Token have extended key usage MS Logon, don't revoke it
 								Iterator revokeCerts = ejbhelper.getHardTokenSession().findCertificatesInHardToken(admin, toRevoke.getHardTokenSN()).iterator();
 
 								while(revokeCerts.hasNext()){
 									X509Certificate next = (X509Certificate) revokeCerts.next();							 
 									try{
-										if(next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[CertificateProfile.SMARTCARDLOGON])){
-											revokeCert(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next).toString(16), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+										if(WSConfig.isSetMSLogonOnHold() || next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[CertificateProfile.SMARTCARDLOGON])){									  
+											ejbhelper.getUserAdminSession().revokeCert(admin,next.getSerialNumber(), CertTools.getIssuerDN(next), userDataWS.getUsername(),  RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
 										}
 									}catch(CertificateParsingException e){
 										log.error(e);
-									}
+									} catch (FinderException e) {
+										log.error(e);
+									}	
 								}
-							}
-
+						
 
 						}else{
 							revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
