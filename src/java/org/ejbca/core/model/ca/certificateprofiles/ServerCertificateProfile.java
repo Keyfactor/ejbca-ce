@@ -27,7 +27,7 @@ public class ServerCertificateProfile extends CertificateProfile{
     public static final String CERTIFICATEPROFILENAME =  "SERVER";
 
     // Public Methods
-    /** Creates a certificate with the characteristics of an end user. 
+    /** Creates a certificate with the characteristics of a SSL/TLS server.
      * General options are set in the superclass's default contructor that is called automatically.
      * You can override the general options by defining them again with different parameters here.
      */
