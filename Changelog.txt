@@ -1,3 +1,18 @@
+3.7.4, 2008-11-18
+---
+New Feature
+    * [ECA-1024] - Substitute email from- and to- as well in user notifications
+
+Improvement
+    * [ECA-1021] - Fix the default ENDUSER Certificate Profile
+    * [ECA-1026] - Create a built-in Server certificate profile
+
+Bug
+    * [ECA-1023] - External RA SCEP service fails on cisco message with wrongly encoded request extension
+    * [ECA-1025] - Missing ErrorCode class in ejbca-util.jar
+    * [ECA-1027] - OCSP should not respond with responseBytes when an error code is sent
+    * [ECA-1029] - OCSP responder should answer with OCSP error MalformedRequest when a badly encoded request is received
+
 3.7.3, 2008-11-07
 ---
 New Feature
@@ -5,7 +20,7 @@ New Feature
 
 Improvement
     * [ECA-1020] - External RA, clarify documentation about signing and encrypting using Scep RA
-    * [ECA-1021] - Fix the default ENDUSER Certificate Profile
+    * [ECA-1021] - Fix the default ENDUSER Certificate Profile (broken patch, EJBCA 3.7.3 withdrawn)
 
 Bug
     * [ECA-1017] - Build on Glassfish broken

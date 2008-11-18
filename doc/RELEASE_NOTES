@@ -17,6 +17,17 @@ There are database upgrades in this release, so read UPGRADE carefully.
 Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
 EJBCA 3.7.x to 3.8.0. Use the full package from EJBCA 3.8.0 and follow the upgrade instructions in UPGRADE.
 
+EJBCA 3.7.4
+-----------
+This is a minor release that replaces 3.7.3 where initial install was broken. It has a few additional fixes from 3.7.3 as well.
+- Substitute email from- and to- as well in user notifications
+- Create a built-in Server certificate profile
+- OCSP improvements
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.7.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.7.3
 -----------
 This is a minor release mainly put out to fix building on Glassfish that broke in 3.7.2.
