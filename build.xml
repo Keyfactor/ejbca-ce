@@ -281,6 +281,7 @@
                 </manifest>
                 <fileset dir="${build}">
                 	<include name="org/ejbca/util/**"/>
+                	<include name="org/ejbca/core/*" /> 
                 	<include name="org/ejbca/core/model/**"/>
                 	<include name="org/ejbca/core/protocol/*"/>
                 	<include name="**/*Exception**"/>
