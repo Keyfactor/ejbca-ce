@@ -40,7 +40,8 @@ import org.ejbca.util.NotificationParamGen;
  * Makes queries about which emails that is about to expire in a given number of days
  * and creates an notification sent to either the end user or the administrator.
  * 
- * @author Philip Vendil
+ * @author Philip Vendil, Tomas Gustavsson
+ * 
  *
  * @version: $Id$
  */
@@ -156,6 +157,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                 sendEmails(adminEmailQueue);
 			}	
 
+		} else {
+			log.debug("No CAs to check");
 		}
 		log.debug("<CertificateExpirationNotifierWorker.work ended");
 	}
