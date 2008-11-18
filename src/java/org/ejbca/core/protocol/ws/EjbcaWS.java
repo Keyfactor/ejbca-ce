@@ -140,7 +140,6 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
@@ -171,15 +170,14 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#editUser(org.ejbca.core.protocol.ws.objects.UserDataVOWS)
 	 */	
 	public void editUser(UserDataVOWS userdata)
-			throws  AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
+			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
 		   	    
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		  Admin admin = ejbhelper.getAdmin(wsContext);
 		  UserDataVO userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
 		  
-		  int caid = userdatavo.getCAId();
-		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +userdatavo.getCAId());
 		  
 		  if(ejbhelper.getUserAdminSession().findUser(admin, userdatavo.getUsername()) != null){
 			  log.debug("User " + userdata.getUsername() + " exists, update the userdata." );
@@ -383,7 +381,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public CertificateResponse crmfRequest(String username, String password,
 			String crmf, String hardTokenSN, String responseType)
-	throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException {
 		
 		return new CertificateResponse(responseType, processCertReq(username, password,
 				crmf, REQTYPE_CRMF, hardTokenSN, responseType));
@@ -394,7 +392,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public CertificateResponse spkacRequest(String username, String password,
 			String spkac, String hardTokenSN, String responseType)
-	throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException {
 		
 		return new CertificateResponse(responseType, processCertReq(username, password,
 				spkac, REQTYPE_SPKAC, hardTokenSN, responseType));
@@ -404,7 +402,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#cvcRequest
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
-			throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 			EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException {
 		log.debug(">cvcRequest");
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
@@ -456,7 +454,7 @@ public class EjbcaWS implements IEjbcaWS {
 										if (pk instanceof PublicKeyEC) {
 											// The public key of IS and DV certificate do not have any EC parameters so we have to do some magic to get a complete EC public key
 											// First get to the CVCA certificate that has the parameters
-											CAInfo info = ejbhelper.getCAAdminSession().getCAInfo(admin, CertTools.getIssuerDN(cert).hashCode());
+											CAInfo info = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(admin, CertTools.getIssuerDN(cert).hashCode());
 											Collection cacerts = info.getCertificateChain();
 											if (cacerts != null) {
 												log.debug("Found CA certificate chain of length: "+cacerts.size());
@@ -525,7 +523,7 @@ public class EjbcaWS implements IEjbcaWS {
 						// Subject and issuerDN is CN=Mnemonic,C=Country
 						String dn = "CN="+caRef.getMnemonic()+",C="+caRef.getCountry();
 						log.debug("Authenticated request is not self signed, we will try to verify it using a CVCA certificate: "+dn);
-						CAInfo info = ejbhelper.getCAAdminSession().getCAInfo(admin, CertTools.stringToBCDNString(dn).hashCode());
+						CAInfo info = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(admin, CertTools.stringToBCDNString(dn).hashCode());
 						if (info != null) {
 							Collection certs = info.getCertificateChain();
 							if (certs != null) {
@@ -598,6 +596,7 @@ public class EjbcaWS implements IEjbcaWS {
 			// Get the certificate chain
 			if (user != null) {
 				int caid = user.getCAId();
+				ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 				Collection certs = ejbhelper.getSignSession().getCertificateChain(admin, caid);
 				Iterator iter = certs.iterator();
 				while (iter.hasNext()) {
@@ -661,7 +660,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public CertificateResponse pkcs10Request(String username, String password,
 			String pkcs10, String hardTokenSN, String responseType)
-			throws AuthorizationDeniedException, NotFoundException,
+			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException {
 		
 		return new CertificateResponse(responseType, processCertReq(username, password,
@@ -673,8 +672,9 @@ public class EjbcaWS implements IEjbcaWS {
 	private static final int REQTYPE_SPKAC = 3;
 	private static final int REQTYPE_CVC = 4;
 	
-	private byte[] processCertReq(String username, String password,
-			String req, int reqType, String hardTokenSN, String responseType) throws AuthorizationDeniedException, NotFoundException, EjbcaException{
+	private byte[] processCertReq(String username, String password, String req, int reqType,
+			String hardTokenSN, String responseType) throws CADoesntExistsException,
+			AuthorizationDeniedException, NotFoundException, EjbcaException {
 		byte[] retval = null;
 
 		try{
@@ -687,6 +687,7 @@ public class EjbcaWS implements IEjbcaWS {
 				throw new NotFoundException("Error: User " + username + " doesn't exist");
 			}
 			int caid = userdata.getCAId();
+			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
 
@@ -784,9 +785,6 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (AuthLoginException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
-		} catch (CADoesntExistsException e) {
-			log.error("EJBCA WebService error, processCertReq : ",e);
-			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e.getMessage());
 		} catch (SignatureException e) {
 			log.error("EJBCA WebService error, processCertReq : ",e);
 			throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());			
@@ -857,7 +855,8 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs12Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public KeyStore pkcs12Req(String username, String password, String hardTokenSN, String keyspec, String keyalg) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+	public KeyStore pkcs12Req(String username, String password, String hardTokenSN, String keyspec, String keyalg)
+		throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException {
 		KeyStore retval = null;
 		
 		try{
@@ -870,6 +869,7 @@ public class EjbcaWS implements IEjbcaWS {
 				  throw new NotFoundException("Error: User " + username + " doesn't exist");
 			  }
 			  int caid = userdata.getCAId();
+			  ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 			  ejbhelper.getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.CAPREFIX +caid);
 
 			  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
@@ -936,9 +936,6 @@ public class EjbcaWS implements IEjbcaWS {
 				// Don't log a bad error for this (user's key length too small)
 				log.debug("EJBCA WebService error, pkcs12Req : ",e);
 			    throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
-			} catch (CADoesntExistsException e) {
-				log.error("EJBCA WebService error, pkcs12Req : ",e);
-			    throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e.getMessage());
 			} catch (RemoteException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
 				throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
@@ -952,17 +949,19 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeCert(java.lang.String, java.lang.String, int)
 	 */
 	
-	public void revokeCert(String issuerDN, String certificateSN, int reason) throws AuthorizationDeniedException,
+	public void revokeCert(String issuerDN, String certificateSN, int reason) throws CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(wsContext);
 
+			int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
+			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
+
 			BigInteger serno = new BigInteger(certificateSN,16);
 			String username = ejbhelper.getCertStoreSession().findUsernameByCertSerno(admin,serno,issuerDN);
 
 			// check that admin is autorized to CA
-			int caid = CertTools.stringToBCDNString(issuerDN).hashCode();		
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);			  
 
 			if(reason == RevokedCertInfo.NOT_REVOKED){
@@ -1003,7 +1002,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeUser(java.lang.String, int, boolean)
 	 */
 	public void revokeUser(String username, int reason, boolean deleteUser)
-			throws AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
+			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
 
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
@@ -1015,6 +1014,7 @@ public class EjbcaWS implements IEjbcaWS {
 				throw new NotFoundException("Error: User " + username + " doesn't exist");
 			}
 			int caid = userdata.getCAId();
+			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);						
 			if (deleteUser) {
 				ejbhelper.getUserAdminSession().revokeAndDeleteUser(admin,username,reason);
@@ -1045,7 +1045,7 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#keyRecoverNewest(java.lang.String)
 	 */
-	public void keyRecoverNewest(String username) throws AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
+	public void keyRecoverNewest(String username) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
 		log.debug(">keyRecoverNewest");
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
@@ -1066,6 +1066,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			// check CAID
 			int caid = userdata.getCAId();
+			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);						
 
 			// Do the work, mark user for key recovery
@@ -1087,12 +1088,12 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeToken(java.lang.String, int)
 	 */
 	public void revokeToken(String hardTokenSN, int reason)
-	throws RemoteException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
+	throws CADoesntExistsException, RemoteException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		revokeToken(ejbhelper.getAdmin(wsContext), hardTokenSN, reason);
 	}
 	
-	private void revokeToken(Admin admin, String hardTokenSN, int reason) throws AuthorizationDeniedException,
+	private void revokeToken(Admin admin, String hardTokenSN, int reason) throws CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, AlreadyRevokedException, ApprovalException, WaitingForApprovalException {
 		ApprovalException lastApprovalException = null;
 		WaitingForApprovalException lastWaitingForApprovalException = null;
@@ -1112,7 +1113,8 @@ public class EjbcaWS implements IEjbcaWS {
 				}
 				
 				// check that admin is authorized to CA
-				int caid = CertTools.getIssuerDN(next).hashCode();		
+				int caid = CertTools.getIssuerDN(next).hashCode();
+				ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 				if(reason == RevokedCertInfo.NOT_REVOKED){
 					String issuerDN = CertTools.getIssuerDN(next);
@@ -1186,7 +1188,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#checkRevokationStatus(java.lang.String, java.lang.String)
 	 */
 	
-	public RevokeStatus checkRevokationStatus(String issuerDN, String certificateSN) throws   AuthorizationDeniedException, EjbcaException {
+	public RevokeStatus checkRevokationStatus(String issuerDN, String certificateSN) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
 		RevokeStatus retval = null;
 
 		try{
@@ -1194,7 +1196,8 @@ public class EjbcaWS implements IEjbcaWS {
 		  Admin admin = ejbhelper.getAdmin(wsContext);		  
 
 		  // check that admin is autorized to CA
-		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();		
+		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
+		  ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 		  
 		  RevokedCertInfo certinfo = ejbhelper.getCertStoreSession().isRevoked(admin,issuerDN,new BigInteger(certificateSN,16));
@@ -1304,7 +1307,8 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#genTokenCertificates(org.ejbca.core.protocol.ws.objects.UserDataVOWS, java.util.List, org.ejbca.core.protocol.ws.objects.HardTokenDataWS)
 	 */
 	
-	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revocePreviousCards) throws AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
+	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revocePreviousCards)
+		throws CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
 		ArrayList<TokenCertificateResponseWS> retval = new ArrayList<TokenCertificateResponseWS>();
 
 		Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -1321,8 +1325,14 @@ public class EjbcaWS implements IEjbcaWS {
 		// Get Significant user Id
 		CAInfo significantcAInfo = null;
 		try {
-			significantcAInfo = ejbhelper.getCAAdminSession().getCAInfo(intAdmin, userDataWS.getCaName());
-		} catch (Exception e) {
+			significantcAInfo = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(intAdmin, userDataWS.getCaName());
+		} catch (RemoteException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+		} catch (ServiceLocatorException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+		} catch (CreateException e) {
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
@@ -1699,7 +1709,8 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @throws ApprovalException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getHardTokenData(java.lang.String)
 	 */
-	public HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates) throws AuthorizationDeniedException, HardTokenDoesntExistsException, EjbcaException,  ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException{
+	public HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
+		throws CADoesntExistsException, AuthorizationDeniedException, HardTokenDoesntExistsException, EjbcaException,  ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException{
 		HardTokenDataWS retval = null;
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(true, wsContext);
@@ -1722,7 +1733,9 @@ public class EjbcaWS implements IEjbcaWS {
 				try {
 					Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 					UserDataVO userData = ejbhelper.getUserAdminSession().findUser(intAdmin, hardTokenData.getUsername());
-					ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),admin,null,WSConfig.getNumberOfWSApprovals(),userData.getCAId(),userData.getEndEntityProfileId());
+					int caid = userData.getCAId();
+					ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
+					ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),admin,null,WSConfig.getNumberOfWSApprovals(),caid,userData.getEndEntityProfileId());
 					int status = ApprovalDataVO.STATUS_REJECTED; 					
 					try{
 					  if(!WSConfig.isApprovalGenTokenCertificates()){
@@ -1827,12 +1840,14 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getHardTokenDatas(java.lang.String)
 	 */
-	public List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates) throws AuthorizationDeniedException, EjbcaException{
+	public List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
+		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		return getHardTokenDatas(ejbhelper.getAdmin(wsContext),username, viewPUKData, onlyValidCertificates);
 	}
 	
-	private List<HardTokenDataWS> getHardTokenDatas(Admin admin, String username, boolean viewPUKData, boolean onlyValidCertificates) throws AuthorizationDeniedException, EjbcaException{
+	private List<HardTokenDataWS> getHardTokenDatas(Admin admin, String username, boolean viewPUKData, boolean onlyValidCertificates)
+		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
 		List<HardTokenDataWS> retval = new  ArrayList<HardTokenDataWS>();
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 
@@ -1843,7 +1858,9 @@ public class EjbcaWS implements IEjbcaWS {
 			Iterator iter = hardtokens.iterator();
 			while(iter.hasNext()){
 				HardTokenData next = (HardTokenData) iter.next();
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + next.getSignificantIssuerDN().hashCode());
+				int caid = next.getSignificantIssuerDN().hashCode();
+				ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
+				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
 				Collection certs = ejbhelper.getHardTokenSession().findCertificatesInHardToken(admin, next.getTokenSN());
 				if(onlyValidCertificates){
 					certs = ejbhelper.returnOnlyValidCertificates(admin, certs);
@@ -1874,12 +1891,13 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#republishCertificate(java.lang.String, java.lang.String)
 	 */
-	public void republishCertificate(String serialNumberInHex,String issuerDN) throws AuthorizationDeniedException, PublisherException, EjbcaException{
+	public void republishCertificate(String serialNumberInHex,String issuerDN) throws CADoesntExistsException, AuthorizationDeniedException, PublisherException, EjbcaException{
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);
 
 		try{
 			String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
+			ejbhelper.getCAAdminSession().verifyExistenceOfCA(bcIssuerDN.hashCode());
 			CertReqHistory certreqhist = ejbhelper.getCertStoreSession().getCertReqHistory(admin,new BigInteger(serialNumberInHex,16), bcIssuerDN);
 			if(certreqhist == null){
 				throw new PublisherException("Error: the  certificate with  serialnumber : " + serialNumberInHex +" and issuerdn " + issuerDN + " couldn't be found in database.");
@@ -1921,7 +1939,8 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#customLog(int, String, String)
 	 */
-	public void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg) throws AuthorizationDeniedException, EjbcaException {
+	public void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg)
+		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);
 
@@ -1945,11 +1964,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 			int caId = admin.getCaId();
 			if(cAName  != null){
-				CAInfo cAInfo = ejbhelper.getCAAdminSession().getCAInfo(admin, cAName);
-				if(cAInfo == null){
-					throw new EjbcaException(ErrorCode.CA_NOT_EXISTS,
-                        "Error given CA Name : " + cAName + " doesn't exists.");
-				}
+				CAInfo cAInfo = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(admin, cAName);
 				caId = cAInfo.getCAId();
 			}
 
@@ -2029,14 +2044,17 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getCertificate(String, String)
 	 */
-	public Certificate getCertificate(String certSNinHex, String issuerDN) throws AuthorizationDeniedException, EjbcaException {
+	public Certificate getCertificate(String certSNinHex, String issuerDN) throws CADoesntExistsException,
+		AuthorizationDeniedException, EjbcaException {
 		Certificate retval = null;
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(true, wsContext);
 		String bcString = CertTools.stringToBCDNString(issuerDN);
+		int caid = bcString.hashCode();
 		try {
+			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + bcString.hashCode());
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
 
 			java.security.cert.Certificate cert = ejbhelper.getCertStoreSession().findCertificateByIssuerAndSerno(admin, issuerDN, new BigInteger(certSNinHex,16));
 			if(cert != null){
@@ -2044,7 +2062,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, getCertificate : ",e);
-		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, getCertificate : ",e);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
@@ -2162,11 +2180,11 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#createCRL(String)
 	 */
-	public void createCRL(String caname) throws ApprovalException, EjbcaException, ApprovalRequestExpiredException{
+	public void createCRL(String caname) throws CADoesntExistsException, ApprovalException, EjbcaException, ApprovalRequestExpiredException{
 		try {
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(true, wsContext);
-			CAInfo info = ejbhelper.getCAAdminSession().getCAInfo(admin, caname);
+			CAInfo info = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(admin, caname);
 			ejbhelper.getCrlSession().run(admin, info.getSubjectDN());
 		} catch (AuthorizationDeniedException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);

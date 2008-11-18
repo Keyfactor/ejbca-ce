@@ -152,6 +152,10 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     public void test31ErrorOnGeneratePkcs12() throws Exception {
     	test31ErrorOnGeneratePkcs12(true);  
     }
+    
+    public void test32OperationOnNonexistingCA() throws Exception {
+        test32OperationOnNonexistingCA(true);  
+    }
 
     public void test99cleanUpAdmins() throws Exception {
     	super.test99cleanUpAdmins();

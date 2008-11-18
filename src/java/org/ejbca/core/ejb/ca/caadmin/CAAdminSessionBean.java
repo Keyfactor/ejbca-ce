@@ -35,6 +35,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -108,6 +109,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.IRequestMessage;
@@ -760,6 +762,27 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }
     } // renamewCA
 
+
+    /**
+     * Returns a value object containing nonsensitive information about a CA give it's name.
+     * @param admin administrator calling the method
+     * @param name human readable name of CA
+     * @return value object
+     * @throws CADoesntExistsException if no such CA exists 
+     * 
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
+     */
+    public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
+    	CAInfo caInfo = getCAInfo(admin, name);
+    	if (caInfo == null) {
+    		String msg = "No CA with name " + name + " was found.";
+    		log.debug(msg);
+    		throw new CADoesntExistsException(msg);
+    	}
+    	return caInfo;
+    }
+
     /**
      * Returns a value object containing nonsensitive information about a CA give it's name.
      * @param admin administrator calling the method
@@ -793,6 +816,28 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }
         return cainfo;
     } // getCAInfo
+
+
+    /**
+     * Returns a value object containing nonsensitive information about a CA give it's CAId.
+     * 
+     * @param admin administrator calling the method
+     * @param caid numerical id of CA (subjectDN.hashCode())
+     * @return value object
+     * @throws CADoesntExistsException if no such CA exists
+     * 
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
+     */
+    public CAInfo getCAInfoOrThrowException(Admin admin, int caid) throws CADoesntExistsException{
+    	CAInfo caInfo = getCAInfo(admin, caid);
+    	if (caInfo == null) {
+    		String msg = "No CA with id " + caid + " was found.";
+    		log.debug(msg);
+    		throw new CADoesntExistsException(msg);
+    	}
+    	return caInfo;
+    }
 
     /**
      * Returns a value object containing nonsensitive information about a CA give it's CAId.
@@ -868,6 +913,41 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }        
         return cainfo;
     } // getCAInfo
+    
+    /**
+     * Verify that a CA exists. (This method does not check admin privileges
+     * and will leak the existance of a CA.)
+     * 
+     * @param caid is the id of the CA
+     * @throws CADoesntExistsException if the CA isn't found
+     * 
+     * @ejb.interface-method
+     */
+    public void verifyExistenceOfCA(int caid) throws CADoesntExistsException {
+    	Connection con = null;
+    	PreparedStatement ps = null;
+    	ResultSet rs = null;
+    	try {
+    		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+    		final String sql = "SELECT cAId FROM CAData WHERE cAId=?";
+    		ps = con.prepareStatement(sql);
+    		ps.setInt(1, caid);
+    		rs = ps.executeQuery();
+    		ps.setFetchSize(1);
+    		ps.setMaxRows(1);
+    		rs = ps.executeQuery();
+    		if (!rs.next()) {
+    			String msg = "No CA with id " + caid + " found.";
+    			log.debug(msg);
+    			throw new CADoesntExistsException(msg);
+    		}
+    	} catch (SQLException e) {
+    		log.error("", e);
+    		throw new EJBException(e);
+		} finally {
+    		JDBCUtil.close(con, ps, rs);
+    	}
+    }
 
     /**
      * Returns a HashMap containing mappings of caid (Integer) to CA name (String) of all CAs in the system.

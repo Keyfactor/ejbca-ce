@@ -48,6 +48,17 @@ public class EjbcaException extends Exception {
     }
 
     /**
+     * Constructor used to create exception with an errorCode. Calls the same default constructor
+     * in the base class <code>Exception</code>.
+     *
+     * @param errorCode defines the cause of the exception.
+     */
+    public EjbcaException(ErrorCode errorCode) {
+        super();
+        this.errorCode = errorCode;
+    }
+
+    /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in
      * baseclass <code>Exception</code>.
      *

@@ -36,6 +36,7 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.hardtoken.HardTokenData;
@@ -205,15 +206,11 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		}		
 	}
 	
-	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws EjbcaException, ClassCastException, CreateException, NamingException, RemoteException {
-		CAInfo cainfo = getCAAdminSession().getCAInfo(admin,userdata.getCaName());
-		if (cainfo == null) {
-			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS,"Error CA " + userdata.getCaName() + " doesn't exists.");
-		}
+	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException, CreateException, NamingException, RemoteException {
+		CAInfo cainfo = getCAAdminSession().getCAInfoOrThrowException(admin,userdata.getCaName());
 		int caid = cainfo.getCAId();
 		if (caid == 0) {
-			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, 
-                "Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
+			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
 		int endentityprofileid = getRAAdminSession().getEndEntityProfileId(admin,userdata.getEndEntityProfileName());

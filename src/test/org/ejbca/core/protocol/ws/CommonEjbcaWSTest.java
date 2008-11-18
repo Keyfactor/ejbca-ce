@@ -77,6 +77,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -137,7 +138,8 @@ public class CommonEjbcaWSTest extends TestCase {
     protected final static String wsTestAdminUsername = "wstest";
 	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
     protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-	protected final static String HOSTNAME = "localhost";
+	protected final static String HOSTNAME = "ca-server";	//"localhost";
+	private static final String BADCANAME = "BadCaName";
     
     protected String getAdminCAName() {
     	return "AdminCA1";
@@ -1729,7 +1731,7 @@ public class CommonEjbcaWSTest extends TestCase {
     		cert = cert2;
     	}
 	}
-
+	
 	protected void test29ErrorOnEditUser(boolean performSetup) throws Exception{
 		if(performSetup){
 		  setUpAdmin();
@@ -1750,10 +1752,10 @@ public class CommonEjbcaWSTest extends TestCase {
         ErrorCode errorCode = null;
 
         ///// Check ErrorCode.CA_NOT_EXISTS /////
-		user1.setCaName("BadCaName");
+		user1.setCaName(BADCANAME);
         try {
             ejbcaraws.editUser(user1);
-        } catch (EjbcaException_Exception e) {
+        } catch (CADoesntExistsException_Exception e) {
             errorCode = e.getFaultInfo().getErrorCode();
         }
         assertNotNull("error code should not be null", errorCode);
@@ -1938,7 +1940,69 @@ public class CommonEjbcaWSTest extends TestCase {
         assertNotNull(errorCode);
 	}
 
-    protected void test99cleanUpAdmins() throws Exception {
+	protected void test32OperationOnNonexistingCA(boolean performSetup) throws Exception{
+		final String MOCKSERIAL = "AABBCCDDAABBCCDD";
+		if(performSetup){
+			setUpAdmin();
+		}
+		// Add a user for this test purpose.
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER32");
+		user1.setPassword("foo1234");
+		user1.setClearPwd(true);
+		user1.setSubjectDN("CN=WSTESTUSER32");
+		user1.setEmail(null);
+		user1.setSubjectAltName(null);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("P12");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+		user1.setCaName(BADCANAME);
+		try {
+	        ejbcaraws.editUser(user1);
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+        // Untested: ejbcaraws.pkcs10Request
+        // Untested: ejbcaraws.pkcs12Req
+		try {
+	        ejbcaraws.revokeCert("CN="+BADCANAME, MOCKSERIAL, RevokedCertInfo.NOT_REVOKED);
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+        // Untested: ejbcaraws.revokeUser
+		// Untested: ejbcaraws.keyRecoverNewest
+		// Untested: ejbcaraws.revokeToken
+		try {
+			ejbcaraws.checkRevokationStatus("CN="+BADCANAME, MOCKSERIAL);
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+		// Untested: ejbcaraws.genTokenCertificates
+		try {
+			UserDataVOWS badUserDataWS = new UserDataVOWS();
+			badUserDataWS.setCaName(BADCANAME);
+			ejbcaraws.genTokenCertificates(badUserDataWS, new ArrayList<TokenCertificateRequestWS>(), null, false, false);
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+		// Untested: ejbcaraws.getHardTokenData
+		// Untested: ejbcaraws.getHardTokenDatas
+		try {
+			ejbcaraws.republishCertificate(MOCKSERIAL, "CN=" + BADCANAME);
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+		try {
+			ejbcaraws.customLog(IEjbcaWS.CUSTOMLOG_LEVEL_ERROR, "prefix", BADCANAME, null, null, "This should not have been logged");
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+		try {
+			ejbcaraws.getCertificate(MOCKSERIAL, "CN=" + BADCANAME);
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+		try {
+			ejbcaraws.createCRL(BADCANAME);
+	        assertTrue("WS did not throw CADoesntExistsException as expected", false);
+		} catch (CADoesntExistsException_Exception e) {	}	// Expected
+	}
+
+	protected void test99cleanUpAdmins() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
 		//getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 		if (getUserAdminSession().existsUser(intAdmin, wsTestAdminUsername)) {

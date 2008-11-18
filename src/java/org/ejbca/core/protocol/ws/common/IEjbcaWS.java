@@ -24,6 +24,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
@@ -106,10 +107,11 @@ public interface IEjbcaWS {
 	 * @param userdata contains all the information about the user about to be added.
 	 * @param clearPwd indicates it the password should be stored in cleartext, requeried
 	 * when creating server generated keystores.
-	 * @throws EjbcaException 
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
+	 * @throws EjbcaException
 	 */
 	public abstract void editUser(UserDataVOWS userdata)
-			throws AuthorizationDeniedException,
+			throws CADoesntExistsException, AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, EjbcaException,
 			ApprovalException, WaitingForApprovalException;
 
@@ -183,10 +185,11 @@ public interface IEjbcaWS {
 	 * @param password the password sent with editUser call
 	 * @param crmf the CRMF request message (only the public key is used.)
 	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 */
 	public abstract CertificateResponse crmfRequest(String username, String password,
 			String crmf, String hardTokenSN, String responseType)
-			throws AuthorizationDeniedException, NotFoundException,
+			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException;
 
 	/** Generate a certificate for a user, works the same as pkcs10Request
@@ -196,10 +199,11 @@ public interface IEjbcaWS {
 	 * @param password the password sent with editUser call
 	 * @param spkac the SPKAC (netscape) request message (only the public key is used.)
 	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 */
 	public abstract CertificateResponse spkacRequest(String username, String password,
 			String spkac, String hardTokenSN, String responseType)
-			throws AuthorizationDeniedException, NotFoundException,
+			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException;
 
 	/** Generate a CV certificate for a user, uses the same authorizations as editUser and pkcs10Request
@@ -210,11 +214,12 @@ public interface IEjbcaWS {
 	 * @param userdata the user data for editing/adding a user
 	 * @param cvcreq Base64 encoded CVC request message
 	 * @return the full certificate chain for the IS, with IS certificate in pos 0, DV in 1, CVCA in 2.
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if administrator is not authorized to edit end entity or if an authenticated request can not be verified
 	 * @throws SignRequestException if the provided request is invalid, for example not containing a username or password 
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
-	throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+	throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 	EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException;
 	
 	/**
@@ -239,12 +244,13 @@ public interface IEjbcaWS {
 	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
 	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
 	 * @return the generated certificate, in either just X509Certificate or PKCS7 
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
 	 */
 	public abstract CertificateResponse pkcs10Request(String username, String password,
 			String pkcs10, String hardTokenSN, String responseType)
-			throws AuthorizationDeniedException, NotFoundException,
+			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException;
 
 	/**
@@ -268,13 +274,14 @@ public interface IEjbcaWS {
 	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in CATokenConstants.org.ejbca.core.model.ca.catoken.KEYALGORITHM_XX.
 	 * @return the generated keystore
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
 	 */
 
 	public abstract KeyStore pkcs12Req(String username, String password,
 			String hardTokenSN, String keyspec, String keyalg)
-			throws AuthorizationDeniedException, NotFoundException,
+			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException;
 
 	/**
@@ -291,6 +298,7 @@ public interface IEjbcaWS {
 	 * @param certificateSN of the certificate to revoke
 	 * @param reason for revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants, 
 	 * or use RevokedCertInfo.NOT_REVOKED to unrevoke a certificate on hold.
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if certificate doesn't exist
 	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
@@ -299,7 +307,7 @@ public interface IEjbcaWS {
 	 */
 
 	public abstract void revokeCert(String issuerDN, String certificateSN,
-			int reason) throws AuthorizationDeniedException, NotFoundException,
+			int reason) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException, ApprovalException, WaitingForApprovalException,
 			AlreadyRevokedException;
 
@@ -318,6 +326,7 @@ public interface IEjbcaWS {
 	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
 	 * or use RevokedCertInfo.NOT_REVOKED to unrevoke a certificate on hold.
 	 * @param deleteUser deletes the users after all the certificates have been revoked.
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if user doesn't exist
 	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
@@ -325,7 +334,7 @@ public interface IEjbcaWS {
 	 * @throws AlreadyRevokedException if the user already was revoked
 	 */
 	public abstract void revokeUser(String username, int reason,
-			boolean deleteUser) throws AuthorizationDeniedException,
+			boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException,
 			WaitingForApprovalException, AlreadyRevokedException;
 
@@ -340,13 +349,15 @@ public interface IEjbcaWS {
 	 * - /ca/<ca of users certificate>
 	 * 
 	 * @param username unique username i EJBCA
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if user doesn't exist
 	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
 	 * @throws ApprovalException if there already exists an approval request for this task
 	 * @throws EjbcaException if there is a configuration or other error
 	 */
-	public abstract void keyRecoverNewest(String username) throws AuthorizationDeniedException,
+	public abstract void keyRecoverNewest(String username) throws
+			CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException,
 			WaitingForApprovalException;
 	
@@ -362,6 +373,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param hardTokenSN of the hardTokenSN
 	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if token doesn't exist
 	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
@@ -370,7 +382,7 @@ public interface IEjbcaWS {
 	 */
 
 	public abstract void revokeToken(String hardTokenSN, int reason)
-			throws RemoteException, AuthorizationDeniedException,
+			throws CADoesntExistsException, RemoteException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException,
 			WaitingForApprovalException, AlreadyRevokedException;
 
@@ -385,12 +397,13 @@ public interface IEjbcaWS {
 	 * @param issuerDN 
 	 * @param certificateSN a hexadecimal string
 	 * @return the revokestatus of null i certificate doesn't exists.
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @see org.ejbca.core.protocol.ws.RevokeStatus
 	 */
 
 	public abstract RevokeStatus checkRevokationStatus(String issuerDN,
-			String certificateSN) throws AuthorizationDeniedException,
+			String certificateSN) throws CADoesntExistsException, AuthorizationDeniedException,
 			EjbcaException;
 
 	/**
@@ -453,6 +466,7 @@ public interface IEjbcaWS {
 	 * @param revocePreviousCards tells the service to revoke old cards issued to this user. If the present card have the label TEMPORARY_CARD
 	 * old cards is set to CERTIFICATE_ONHOLD otherwice UNSPECIFIED.
 	 * @return a List of the generated certificates. 
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if the administrator isn't authorized.
 	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed.
 	 * @throws HardTokenExistsException if the given hardtokensn already exists.
@@ -467,7 +481,7 @@ public interface IEjbcaWS {
 			List<TokenCertificateRequestWS> tokenRequests,
 			HardTokenDataWS hardTokenData,
 			boolean overwriteExistingSN,
-			boolean revocePreviousCards) throws AuthorizationDeniedException,
+			boolean revocePreviousCards) throws CADoesntExistsException, AuthorizationDeniedException,
 			WaitingForApprovalException, HardTokenExistsException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
 			EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException;
@@ -501,6 +515,7 @@ public interface IEjbcaWS {
 	 * @param viewPUKData if PUK data of the hard token should be returned.
 	 * @param boolean onlyValidCertificates of all revoked and expired certificates should be filtered.
 	 * @return the HardTokenData
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws HardTokenDoesntExistsException if the hardtokensn don't exist in database.
 	 * @throws EjbcaException if an exception occured on server side.
 	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
@@ -509,7 +524,7 @@ public interface IEjbcaWS {
 	 * @throws ApprovalRequestExecutionException if the approval request was rejected 
 	 */
 	public abstract HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
-			throws AuthorizationDeniedException,
+			throws CADoesntExistsException, AuthorizationDeniedException,
 			HardTokenDoesntExistsException, EjbcaException, ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException;
 
 	/**
@@ -530,7 +545,7 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException if an exception occured on server side.
 	 */
 	public abstract List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
-			throws AuthorizationDeniedException, EjbcaException;
+			throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
 
 	/**
 	 * Method performing a republication of a selected certificate
@@ -544,12 +559,13 @@ public interface IEjbcaWS {
 	 * 
 	 * @param serialNumberInHex of the certificate to republish
 	 * @param issuerDN of the certificate to republish
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if the administratior isn't authorized to republish
 	 * @throws PublisherException if something went wrong during publication
 	 * @throws EjbcaException if other error occured on the server side.
 	 */
 	public abstract void republishCertificate(String serialNumberInHex,
-			String issuerDN) throws AuthorizationDeniedException,
+			String issuerDN) throws CADoesntExistsException, AuthorizationDeniedException,
 			PublisherException, EjbcaException;
 
 	/**
@@ -582,10 +598,12 @@ public interface IEjbcaWS {
 	 * @param certificate that relates to the log event, use null if no certificate is related
 	 * @param msg message data used in the log comment. The log comment will have
 	 * a syntax of '<type> : <msg'
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if the administrators isn't authorized to log.
 	 * @throws EjbcaException if error occured server side
 	 */		
-	public abstract void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg) throws AuthorizationDeniedException, EjbcaException;
+	public abstract void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg) throws
+		CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
 
 	/**
 	 * Special method used to remove existing used data from a user data source.
@@ -623,10 +641,12 @@ public interface IEjbcaWS {
 	 * @param certSNinHex the certificate serial number in hexadecimal representation
 	 * @param issuerDN the issuer of the certificate
 	 * @return the certificate (in WS representation) or null if certificate couldn't be found.
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if the calling administrator isn't authorized to view the certificate
 	 * @throws EjbcaException if error occured server side
 	 */
-	public abstract Certificate getCertificate(String certSNinHex, String issuerDN)   throws AuthorizationDeniedException, EjbcaException;
+	public abstract Certificate getCertificate(String certSNinHex, String issuerDN) throws
+		CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
 	
 	/**
 	 * Method used to fetch a list of the ids and names of available CAs, i.e. not having status "external" or "waiting for certificate response".
@@ -703,12 +723,13 @@ public interface IEjbcaWS {
 	 * - /ca/<caid>
      *
 	 * @param caname the name in EJBCA of the CA that should have a new CRL generated
+	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws ApprovalException
 	 * @throws EjbcaException if an error occured
 	 * @throws ApprovalRequestExpiredException
 	 */
 	public abstract void createCRL(String caname) 
-			throws ApprovalException, EjbcaException, ApprovalRequestExpiredException;
+			throws CADoesntExistsException, ApprovalException, EjbcaException, ApprovalRequestExpiredException;
 	
 	/** Returns the version of the EJBCA server.
 	 * Authorization requirements:

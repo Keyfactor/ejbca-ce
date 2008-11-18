@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.caadmin;
 
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
 
 
 /**
@@ -28,7 +29,7 @@ public class CADoesntExistsException extends EjbcaException {
      * Creates a new instance of <code>CADoesntExistsException</code> without detail message.
      */
     public CADoesntExistsException() {
-        super();
+        super(ErrorCode.CA_NOT_EXISTS);
     }
         
     /**
@@ -36,7 +37,7 @@ public class CADoesntExistsException extends EjbcaException {
      * @param msg the detail message.
      */
     public CADoesntExistsException(String msg) {
-        super(msg);
+        super(ErrorCode.CA_NOT_EXISTS, msg);
     }
 
     /**
