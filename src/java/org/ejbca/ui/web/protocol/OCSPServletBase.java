@@ -772,8 +772,14 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			OCSPResp ocspresp = null;
 			OCSPRespGenerator res = new OCSPRespGenerator();
 			X509Certificate cacert = null; // CA-certificate used to sign response
-			OCSPReq req = new OCSPReq(reqBytes);
 			try {
+				OCSPReq req = null;
+				try {
+					req = new OCSPReq(reqBytes);					
+				} catch (Exception e) {
+					// When not beeing able to parse the request, we want to send a MalformedRequest back
+					throw new MalformedRequestException(e);
+				}
 				if (null== req.getRequestorName()) {
 					m_log.debug("Requestorname is null"); 
 				} else {

@@ -35,12 +35,13 @@ public class OcspJunitHelper extends TestCase {
 	 * @param ocspPackage
 	 * @param nonce
 	 * @param respCode expected response code, OK = 0, if not 0, response checking will not continue after response code is checked.
+	 * @param httpCode, normally 200 for OK or OCSP error. Can be 400 is more than 1 million bytes is sent for example
 	 * @return a SingleResp or null if respCode != 0
 	 * @throws IOException
 	 * @throws OCSPException
 	 * @throws NoSuchProviderException
 	 */
-    protected SingleResp[] sendOCSPPost(byte[] ocspPackage, String nonce, int respCode) throws IOException, OCSPException, NoSuchProviderException {
+    protected SingleResp[] sendOCSPPost(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException {
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -53,7 +54,10 @@ public class OcspJunitHelper extends TestCase {
         OutputStream os = con.getOutputStream();
         os.write(ocspPackage);
         os.close();
-        assertEquals("Response code", 200, con.getResponseCode());
+        assertEquals("Response code", httpCode, con.getResponseCode());
+        if (con.getResponseCode() != 200) {
+            return null; // if it is an http error code we don't need to test any more
+        }
         // Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
@@ -69,7 +73,7 @@ public class OcspJunitHelper extends TestCase {
         in.close();
         byte[] respBytes = baos.toByteArray();
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
-        assertEquals("Response status not zero.", respCode, response.getStatus());
+        assertEquals("Response status not the expected.", respCode, response.getStatus());
         if (respCode != 0) {
             assertNull("According to RFC 2560, responseBytes are not set on error.", (BasicOCSPResp) response.getResponseObject());
             return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses

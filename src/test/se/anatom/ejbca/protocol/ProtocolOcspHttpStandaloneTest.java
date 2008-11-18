@@ -82,7 +82,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 
@@ -122,7 +122,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 

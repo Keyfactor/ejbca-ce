@@ -28,6 +28,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
@@ -38,6 +39,7 @@ import javax.ejb.DuplicateKeyException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -270,7 +272,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
         assertEquals("No of SingleResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 
@@ -298,7 +300,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 
@@ -324,7 +326,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 
@@ -347,7 +349,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 
@@ -480,7 +482,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
 
@@ -512,7 +514,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
         
@@ -543,7 +545,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         
         
         // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingleResps should be 2.", 2, singleResps.length);
         SingleResp singleResp1 = singleResps[0];
 
@@ -582,8 +584,57 @@ public class ProtocolOcspHttpTest extends TestCase {
         gen.setRequestExtensions(new X509Extensions(exts));
         OCSPReq req = gen.generate();
         // Send the request and receive null
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPRespGenerator.MALFORMED_REQUEST);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200);
         assertNull("No SingleResps should be returned.", singleResps);
+    }
+
+    public void test12CorruptRequests() throws Exception {
+        log.debug(">test12CorruptRequests()");
+
+        // An OCSP request, ocspTestCert is already created in earlier tests
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Request 1
+        //
+        // Send the request and receive a singleResponse
+        byte[] orgbytes = req.getEncoded(); // Save original bytes, so we can make different strange values
+        byte[] bytes = req.getEncoded();
+        // Switch the first byte, now it's a really corrupted request
+        bytes[0]=0x44;
+        SingleResp[] singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // error code 1 means malformed request
+        assertNull("SingleResps should be null.", singleResps);
+
+        // Request 2
+        //
+        // Remove the last byte, should still be quite corrupted
+        bytes = Arrays.copyOf(orgbytes, orgbytes.length-1);
+        singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // error code 1 means malformed request
+        assertNull("SingleResps should be null.", singleResps);
+
+        // Request 3
+        //
+        // more than 1 million bytes
+        bytes = Arrays.copyOf(orgbytes, 1000010);
+        singleResps = helper.sendOCSPPost(bytes, "123456789", 0, 400); // http code 400 is HttpServletResponse.SC_BAD_REQUEST
+        assertNull("SingleResps should be null.", singleResps);
+
+        // Request 4
+        // 
+        //
+        // A completely empty request with no question in it
+        gen = new OCSPReqGenerator();
+        req = gen.generate();
+        bytes = req.getEncoded();
+        singleResps = helper.sendOCSPPost(bytes, "123456789", 1, 200); // 
+        assertNull("SingleResps should be null.", singleResps);
+
+        log.debug("<test12CorruptRequests()");
     }
 
     /**
