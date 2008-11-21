@@ -103,7 +103,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 // Read the file, don't stop completely if one file has errors in it
                 try {
                     byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
-                            "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+                            CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
                     Certificate cert = CertTools.getCertfromByteArray(bytes);
                     String key = CertTools.getIssuerDN(cert)+";"+CertTools.getSerialNumberAsString(cert);
                     trustedCerts.put(key,cert);
@@ -129,7 +129,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
         try {
             byte[] bytes = FileTools.getBytesFromPEM(FileTools
                     .readFiletoBuffer(cacertfile),
-                    "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+                    CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
             cacert = CertTools.getCertfromByteArray(bytes);
         } catch (Exception e) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", "file", "cacertfile", e.getMessage());

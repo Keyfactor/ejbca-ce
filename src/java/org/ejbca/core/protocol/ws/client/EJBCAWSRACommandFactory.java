@@ -69,6 +69,8 @@ public class EJBCAWSRACommandFactory {
             return new CvcRequestCommand(args);
         } else if (args[0].equals("cvcprint")) {
             return new CvcPrintCommand(args);
+        } else if (args[0].equals("cvcpem")) {
+            return new CvcPemCommand(args);
         }
         
         else {

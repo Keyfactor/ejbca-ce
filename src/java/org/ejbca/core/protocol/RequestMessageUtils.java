@@ -20,6 +20,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
 
@@ -42,15 +43,6 @@ public class RequestMessageUtils {
 	static final long serialVersionUID = 3597275157018205139L;
 
 	private static final Logger log = Logger.getLogger(RequestMessageUtils.class);
-
-	public static final String BEGIN_CERTIFICATE_REQUEST  = "-----BEGIN CERTIFICATE REQUEST-----";
-	public static final String END_CERTIFICATE_REQUEST     = "-----END CERTIFICATE REQUEST-----";
-
-	public static final String BEGIN_KEYTOOL_CERTIFICATE_REQUEST  = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-	public static final String END_KEYTOOL_CERTIFICATE_REQUEST  = "-----END NEW CERTIFICATE REQUEST-----";
-
-	public static final String BEGIN_CERTIFICATE                = "-----BEGIN CERTIFICATE-----";
-	public static final String END_CERTIFICATE                    = "-----END CERTIFICATE-----";    
 
 	/** Tries to parse the byte array to create a request message of the correct type.
 	 * Currently handles PKCS10 request messages and CVC request messages.
@@ -145,14 +137,14 @@ public class RequestMessageUtils {
 		byte[] buffer = null;
 		try {
 			// A real PKCS10 PEM request
-			String beginKey = BEGIN_CERTIFICATE_REQUEST;
-			String endKey = END_CERTIFICATE_REQUEST;
+			String beginKey = CertTools.BEGIN_CERTIFICATE_REQUEST;
+			String endKey = CertTools.END_CERTIFICATE_REQUEST;
 			buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
 		} catch (IOException e) {	 	
 			try {
 				// Keytool PKCS10 PEM request
-				String beginKey = BEGIN_KEYTOOL_CERTIFICATE_REQUEST;
-				String endKey = END_KEYTOOL_CERTIFICATE_REQUEST;
+				String beginKey = CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST;
+				String endKey = CertTools.END_KEYTOOL_CERTIFICATE_REQUEST;
 				buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
 			} catch (IOException ioe) {
 				// IE PKCS10 Base64 coded request

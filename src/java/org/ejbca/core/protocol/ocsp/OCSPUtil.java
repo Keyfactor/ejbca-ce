@@ -377,7 +377,7 @@ public class OCSPUtil {
     		// Read the file, don't stop completely if one file has errors in it
     		try {
     			byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
-    					"-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+    					CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
     			X509Certificate  cert = (X509Certificate) CertTools.getCertfromByteArray(bytes);
     			String key =  cert.getIssuerDN()+";"+cert.getSerialNumber().toString(16);
     			trustedCerts.put(key,cert);
