@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.RequestMessageUtils;
@@ -77,6 +78,7 @@ public class RequestHelper {
 	
 	public static final int ENCODED_CERTIFICATE = 1;
 	public static final int ENCODED_PKCS7          = 2;
+	public static final int BINARY_CERTIFICATE = 3;
 	
     /**
      * Creates a new RequestHelper object.
@@ -175,7 +177,30 @@ public class RequestHelper {
         debug.printInsertLineBreaks(cert.toString().getBytes());
         return Base64.encode(result, doSplitLines);
     } //pkcs10CertReq
-    
+
+    /** Handles CVC certificate requests. These are the special certificates for EAC ePassport PKI.
+     * 
+     * @param signsession signsession to get certificate from
+     * @param b64Encoded base64 encoded cvc request message
+     * @param username username of requesting user
+     * @param password password of requesting user
+     * @return Base64 encoded byte[] 
+     * @throws Exception
+     */
+    public byte[] cvcCertRequest(ISignSessionLocal signsession, byte[] b64Encoded, String username, String password) throws Exception {            
+			CVCRequestMessage req = RequestMessageUtils.genCVCRequestMessage(b64Encoded);
+    		req.setUsername(username);
+            req.setPassword(password);
+            // Yes it says X509ResponseMessage, but for CVC it means it just contains the binary certificate blob
+            IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(X509ResponseMessage.class.getName()));
+            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            byte[] result = cert.getEncoded();
+            log.debug("Created CV certificate for " + username);
+            debug.print("<h4>Generated certificate:</h4>");
+            debug.printInsertLineBreaks(cert.toString().getBytes());
+            return Base64.encode(result);
+        } //cvcCertRequest
+
     /**
      * 
      * @param signsession

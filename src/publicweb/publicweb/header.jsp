@@ -33,6 +33,9 @@
               <li>
                 <a href="enrol/keystore.jsp">Create Keystore</a>
               </li>
+              <li>
+                <a href="enrol/cvcert.jsp">Create CV certificate</a>
+              </li>
             </ul>
           </li>  
           <li><div class="menuheader">Retrieve</div>

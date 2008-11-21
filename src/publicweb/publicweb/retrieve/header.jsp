@@ -33,6 +33,9 @@
               <li>
                 <a href="../enrol/keystore.jsp">Create Keystore</a>
               </li>
+              <li>
+                <a href="../enrol/cvcert.jsp">Create CV certificate</a>
+              </li>
             </ul>
           </li>  
           <li><div class="menuheader">Retrieve</div>
@@ -59,6 +62,17 @@
               <li>
               <a href="../adminweb/index.jsp">Administration</a>
             </li>
+              <% if (!"disabled".equalsIgnoreCase("@web.docbaseuri@")) {
+                  if ("internal".equalsIgnoreCase("@web.docbaseuri@")) { %>
+              <li>
+                <a href="../doc/manual.html" target="<%= org.ejbca.core.model.ra.raadmin.GlobalConfiguration.DOCWINDOW %>">Documentation</a>
+              </li>
+              <%  } else { %>
+              <li>
+                <a href="@web.docbaseuri@/manual.html" target="<%= org.ejbca.core.model.ra.raadmin.GlobalConfiguration.DOCWINDOW %>">Documentation</a>
+              </li>
+              <%  }
+                 } %>
             </ul>
           </li>  
         </ul>

@@ -310,6 +310,17 @@ public class CertReqServlet extends HttpServlet {
                       if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
                         RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
                   }
+              } else if (request.getParameter("cvcreq") != null && resulttype != 0) {
+                  // It's a CVC certificate request (EAC ePassports)
+                  byte[] reqBytes=request.getParameter("cvcreq").getBytes();
+                  if (reqBytes != null) {
+                      log.debug("Received CVC request: "+new String(reqBytes));
+                      byte[] b64cert=helper.cvcCertRequest(signsession, reqBytes, username, password);
+                      if(resulttype == RequestHelper.BINARY_CERTIFICATE)  
+                        RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", username+".cvcert");
+                      if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
+                        RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+                  }
               }
             }
         } catch (ObjectNotFoundException oe) {
