@@ -1,10 +1,10 @@
 <%@ include file="header.jsp" %>
 <h1 class="title">Enroll For Server Certificate</h1>
-<p>Please give your username and password, paste the PEM-formated PKCS10 certification request into the field below and
+<p>Please give your username and password, paste the PEM-formated certification request into the field below and
    click OK to fetch your certificate. 
 </p>
 
-<p>A PEM-formatted request is a BASE64 encoded PKCS10 request starting with<br />
+<p>A PEM-formatted request is a BASE64 encoded certificate request starting with<br />
   <code>-----BEGIN CERTIFICATE REQUEST-----</code><br />
   and ending with<br />
   <code>-----END CERTIFICATE REQUEST-----</code>
@@ -17,7 +17,7 @@
 	<input type="text" size="10" name="user" id="user" value="foo" accesskey="u" />
 	<br />
 	<label for="password">Password</label>
-	<input type="text" size="10" name="password" id="password" value="foo123" accesskey="p" />
+	<input type="password" size="10" name="password" id="password" value="foo123" accesskey="p" />
 	<br />
 	<br />
 	<label for="pkcs10req"></label>
