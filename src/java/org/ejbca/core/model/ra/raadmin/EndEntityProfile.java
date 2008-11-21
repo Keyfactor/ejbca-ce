@@ -247,6 +247,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setModifyable(key,0,true);        		
         	}
         }
+        // Add another DC-field since (if used) more than one is always used
+        addField(DnComponents.DOMAINCOMPONENT);
+        setValue(DnComponents.DOMAINCOMPONENT,1,"");
+        setRequired(DnComponents.DOMAINCOMPONENT,1,false);
+        setUse(DnComponents.DOMAINCOMPONENT,1,true);
+        setModifyable(DnComponents.DOMAINCOMPONENT,1,true);
+        // Set required fields
         setRequired(USERNAME,0,true);
         setRequired(PASSWORD,0,true);
         setRequired(DnComponents.COMMONNAME,0,true);
