@@ -21,6 +21,8 @@ After this you must do:
 
 From EJBCA 3.7.x to EJBCA 3.8.x
 -------------------------------
+Note that if using JBoss, you need JBoss 4.2.x or later to run EJBCA 3.8.x. 
+
 From EJBCA 3.8.0 you are able to mix administrators from different CAs in the same Administrator
 Group. This improvement requires a small database change.
 

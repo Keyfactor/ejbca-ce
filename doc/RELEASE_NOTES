@@ -17,6 +17,8 @@ There are database upgrades in this release, so read UPGRADE carefully.
 Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
 EJBCA 3.7.x to 3.8.0. Use the full package from EJBCA 3.8.0 and follow the upgrade instructions in UPGRADE.
 
+Note that if using JBoss, you need JBoss 4.2.x or later to run EJBCA 3.8.x.
+
 EJBCA 3.7.4
 -----------
 This is a minor release that replaces 3.7.3 where initial install was broken. It has a few additional fixes from 3.7.3 as well.
