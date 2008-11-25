@@ -173,6 +173,7 @@ public class CertificateFinderBean {
 	 * @throws RemoteException If a communication error occurs while looking up the info.
 	 */
 	public void lookupRevokedInfo(String issuerDN, String serialNumber, RevokedCertInfo result) throws RemoteException {
+		serialNumber = ("0000000000000000" + serialNumber).substring(serialNumber.length());	// Pad with zeroes up to 16 chars
 		if (log.isDebugEnabled()) {
 			log.debug(">lookupRevokedInfo(" + issuerDN + ", " + serialNumber + ", " + result + ")");
 		}
