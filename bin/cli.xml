@@ -104,11 +104,17 @@ appserver.home         : ${appserver.home}
 		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
 		<property name="trust.password" value="${java.trustpassword}"/>
 		<echo>Adding to or creating keystore: ${trust.keystore}</echo>
-	    <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
-	    <ejbca:keytool arg="-v -alias '${ca.name}' -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
+		<available file="${trust.keystore}" property="javatruststore.file.present"/>
+        <antcall target="ejbca:javatruststore-removeold"/>
 	    <ejbca:keytool arg="-v -alias '${ca.name}' -import -trustcacerts -file '${java.io.tmpdir}/rootca.der' -keystore '${trust.keystore}' -storepass ${trust.password} -noprompt"/>
 	    <delete file="${java.io.tmpdir}/rootca.der"/>
 	</target>
+
+    <target name="ejbca:javatruststore-removeold" if="javatruststore.file.present">
+		<echo>Trying to remove old certificates. Ignore any Exception regarding 'EJBCA-CA'.</echo>
+	    <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
+	    <ejbca:keytool arg="-v -alias '${ca.name}' -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
+    </target>
 
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
         <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..."/>
