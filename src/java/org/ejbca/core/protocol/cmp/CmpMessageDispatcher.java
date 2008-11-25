@@ -38,7 +38,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * ----- 
  * This processes does the following: 
  * 1. receive a CMP message 
- * 2. check wich message type it is 
+ * 2. check which message type it is 
  * 3. dispatch to the correct message handler 
  * 4. send back the response received from the handler 
  * -----
