@@ -503,12 +503,12 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <select name="<%=SELECT_ADDSUBJECTALTNAME %>" size="1" >
             <% 
                String[] subjectaltnamefields = EndEntityProfile.getSubjectAltnameProfileFields();
-               for(int i=0; i < subjectaltnamefields.length; i++){ %>
-                 if (EndEntityProfile.isFieldImplemented(subjectaltnamefields[i])) {
+               for(int i=0; i < subjectaltnamefields.length; i++){
+                 if (EndEntityProfile.isFieldImplemented(subjectaltnamefields[i])) { %>
            <option  value='<%= subjectaltnamefields[i]%>'><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectaltnamefields[i])) %>
            </option>
-                 }
-            <% }%>
+            <%   }
+               }%>
         </select>
         &nbsp;<input type="submit" name="<%= BUTTON_ADDSUBJECTALTNAME %>" value="<%= ejbcawebbean.getText("ADD") %>"> 
       </td> 
