@@ -168,6 +168,7 @@ public class CertReqServlet extends HttpServlet {
         boolean usekeyrecovery = false;
 
         RequestHelper.setDefaultCharacterEncoding(request);
+        String iErrorMessage = null;
         try {
             String username = request.getParameter("user");
             String password = request.getParameter("password");
@@ -205,8 +206,7 @@ public class CertReqServlet extends HttpServlet {
             ISignSessionLocal signsession = getSignSession();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
-    		String iMsg = intres.getLocalizedMessage("certreq.receivedcertreq", username, request.getRemoteAddr());
-            log.info(iMsg);
+            log.info(intres.getLocalizedMessage("certreq.receivedcertreq", username, request.getRemoteAddr()));
             debug.print("Username: " + username);
 
             // Check user
@@ -243,10 +243,12 @@ public class CertReqServlet extends HttpServlet {
                     	Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
                     	adminsession.changeUser(tempadmin, data, clearpwd);            		            			
             		} else {
-                		log.error("Requested certificate profile ("+certprofile+") is not allowed in end entity profile, using default: "+certprofile);
+            			String defaultCertificateProfileName = storesession.getCertificateProfileName(administrator, certificateProfileId);
+                		log.error(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));
             		}
             	} else {
-            		log.error("Requested certificate profile ("+certprofile+") name does not exist, using default: "+certprofile);
+        			String defaultCertificateProfileName = storesession.getCertificateProfileName(administrator, certificateProfileId);
+            		log.error(intres.getLocalizedMessage("certreq.nosuchcertprofile", certprofile, defaultCertificateProfileName));
             	}
             }
 
@@ -324,66 +326,36 @@ public class CertReqServlet extends HttpServlet {
               }
             }
         } catch (ObjectNotFoundException oe) {
-            log.debug("Non existent username!");
-            debug.printMessage("Non existent username!");
-            debug.printMessage(
-                "To generate a certificate a valid username and password must be entered.");
-            debug.printDebugInfo();
-            return;
+        	iErrorMessage = intres.getLocalizedMessage("certreq.nosuchusername");
         } catch (AuthStatusException ase) {
-            log.debug("Wrong user status!");
-            debug.printMessage("Wrong user status!");
-            if (usekeyrecovery) {
-                debug.printMessage(
-                    "To generate a certificate for a user the user must have status new, failed or inprocess.");
-            } else {
-                debug.printMessage(
-                    "To generate a certificate for a user the user must have status new, failed or inprocess.");
-            }
-            debug.printDebugInfo();
-            return;
+        	iErrorMessage = intres.getLocalizedMessage("certreq.wrongstatus");
         } catch (AuthLoginException ale) {
-            log.debug("Wrong password for user!");
-            debug.printMessage("Wrong username or password!");
-            debug.printMessage(
-                "To generate a certificate a valid username and password must be entered.");
-            debug.printDebugInfo();
-            return;
+        	iErrorMessage = intres.getLocalizedMessage("certreq.wrongpassword");
         } catch (SignRequestException re) {
-            log.debug("Invalid request!");
-            debug.printMessage("Invalid request!");
-            debug.printMessage("Please supply a correct request.");
-            debug.printDebugInfo();
-            return;
+        	iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
         } catch (SignRequestSignatureException se) {
-            log.error("Invalid signature on certificate request:", se);
-            debug.printMessage("Invalid signature on certificate request!");
-            debug.printMessage("Please supply a correctly signed request.");
+        	String iMsg = intres.getLocalizedMessage("certreq.invalidsign");
+            log.error(iMsg, se);
+            debug.printMessage(iMsg);
             debug.printDebugInfo();
             return;
         } catch (ArrayIndexOutOfBoundsException ae) {
-            log.debug("Empty or invalid request received.");
-            debug.printMessage("Empty or invalid request!");
-            debug.printMessage("Please supply a correct request.");
-            debug.printDebugInfo();
-            return;
+        	iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
         } catch (org.ejbca.core.model.ca.IllegalKeyException e) {
-            log.debug("Illegal Key received: "+e.getMessage());
-            debug.printMessage("Invalid Key in request: "+e.getMessage());
-            debug.printMessage("Please supply a correct request.");
-            debug.printDebugInfo();
-            return;
+        	iErrorMessage = intres.getLocalizedMessage("certreq.invalidkey", e.getMessage());
         } catch (Exception e) {
         	Throwable e1 = e.getCause();
         	if (e1 instanceof CATokenOfflineException) {
+            	String iMsg = intres.getLocalizedMessage("certreq.catokenoffline", e1.getMessage());
 	            // this is already logged as an error, so no need to log it one more time
-	            debug.printMessage("CA token is off line: "+e1.getMessage());
-	            debug.printMessage("Contact your administrator.");
+	            debug.printMessage(iMsg);
 	            debug.printDebugInfo();
 	            return;				
 			} else {
-	            log.debug("Unknown error occured: ", e);
-	            debug.print("Parameter name and values:\n");
+            	String iMsg = intres.getLocalizedMessage("certreq.errorgeneral", e1.getMessage());
+	            log.debug(iMsg, e);
+            	iMsg = intres.getLocalizedMessage("certreq.parameters", e1.getMessage());
+	            debug.print(iMsg + ":\n");
 	            Enumeration paramNames = request.getParameterNames();
 	            while (paramNames.hasMoreElements()) {
 	                String name = paramNames.nextElement().toString();
@@ -397,6 +369,12 @@ public class CertReqServlet extends HttpServlet {
 	            debug.takeCareOfException(e);
 	            debug.printDebugInfo();
 			}
+        }
+        if (iErrorMessage != null) {
+            log.debug(iErrorMessage);
+            debug.printMessage(iErrorMessage);
+            debug.printDebugInfo();
+            return;
         }
     }
 
@@ -417,7 +395,8 @@ public class CertReqServlet extends HttpServlet {
         response.setHeader("Allow", "POST");
 
         ServletDebug debug = new ServletDebug(request, response);
-        debug.print("The certificate request servlet only handles POST method.");
+    	String iMsg = intres.getLocalizedMessage("certreq.postonly");
+        debug.print(iMsg);
         debug.printDebugInfo();
         log.debug("<doGet()");
     }
@@ -458,11 +437,12 @@ public class CertReqServlet extends HttpServlet {
     	// spaces in the username, IssuerDN or SubjectDN
     	Runtime rt = Runtime.getRuntime();
     	if (rt==null) {
-    		log.error("getRuntime failed. null pointer");
+    		log.error(intres.getLocalizedMessage("certreq.ovpntnoruntime"));
     	} else {
-    		Process p = rt.exec("/usr/local/ejbca/bin/mk_openvpn_" + "windows_installer.sh");
+    		final String script = "/usr/local/ejbca/bin/mk_openvpn_" + "windows_installer.sh";
+    		Process p = rt.exec(script);
     		if (p==null) {
-    			log.error("execution of openvpn windows" + " installer script failed. Null pointer");
+        		log.error(intres.getLocalizedMessage("certreq.ovpntfailedexec", script));
     		} else {
     			OutputStream pstdin = p.getOutputStream();
     			PrintStream stdoutp = new PrintStream(pstdin);
@@ -474,9 +454,9 @@ public class CertReqServlet extends HttpServlet {
     			pstdin.close();
     			int exitVal = p.waitFor();
     			if (exitVal != 0) {
-        			log.error("Openvpn windows installer script exitValue: " + exitVal);    				
+            		log.error(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
     			} else {
-        			log.debug("Openvpn windows installer script exitValue: " + exitVal);    				
+            		log.debug(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
     			}
     		}
     	}
