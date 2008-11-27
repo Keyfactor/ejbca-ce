@@ -29,6 +29,7 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
@@ -75,7 +76,10 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 	private IUserAdminSessionRemote usersession = null;
 	private ICertificateStoreSessionRemote storesession = null;
 	
-	public RevocationMessageHandler(Admin admin, Properties prop) throws CreateException, RemoteException {
+	public RevocationMessageHandler(Admin admin) throws CreateException, RemoteException {
+		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
+		responseProtection = CmpConfiguration.getResponseProtection();
+		/*
 		String str = prop.getProperty("raAuthenticationSecret");
 		if (StringUtils.isNotEmpty(str)) {
 			log.debug("raAuthenticationSecret is not null");
@@ -85,7 +89,8 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 		if (StringUtils.isNotEmpty(str)) {
 			log.debug("responseProtection="+str);
 			responseProtection = str;
-		}			
+		}	
+		*/		
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
 		IUserAdminSessionHome userHome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);

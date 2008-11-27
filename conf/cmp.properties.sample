@@ -133,3 +133,8 @@
 #
 # Default: 
 #cmp.tcp.conffile=
+
+# The TCP bind adress, if TCP transport is enabled. 
+#
+# Default: 0.0.0.0
+#cmp.tcp.bindadress=0.0.0.0

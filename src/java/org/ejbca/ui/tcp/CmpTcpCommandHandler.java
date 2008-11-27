@@ -122,7 +122,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 					// We must use an administrator with rights to create users
 					Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
 
-					CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, CmpTcpConfiguration.instance().getProperties());
+					CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
 					resp = dispatcher.dispatch(msg);
 					if (resp == null) {
 						// unknown error?

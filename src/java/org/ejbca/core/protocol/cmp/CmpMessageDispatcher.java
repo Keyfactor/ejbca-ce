@@ -15,13 +15,12 @@ package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayInputStream;
 import java.rmi.RemoteException;
-import java.util.Properties;
 
 import javax.ejb.CreateException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -64,31 +63,16 @@ public class CmpMessageDispatcher {
 	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 	private String extractUsernameComponent = null;
 	private Admin admin;
-	/** Configuration properties passed from higher class, used to configure message handlers as well */
-	private Properties properties;
 	
-	public CmpMessageDispatcher(Admin adm, Properties prop) {
+	public CmpMessageDispatcher(Admin adm) {
 		this.admin = adm;
-		this.properties = prop;
 		// Install BouncyCastle provider
 		CertTools.installBCProvider();
 		
 		// Read parameters 
-		String str = prop.getProperty("allowRaVerifyPopo");
-		if (StringUtils.equals("true", str)) {
-			log.debug("allowRAVerifyPopo=true");
-			allowRaVerifyPopo = true;
-		}
-		str = prop.getProperty("defaultCA");
-		log.debug("defaultCA="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			defaultCA = str;
-		}
-		str = prop.getProperty("extractUsernameComponent");
-		log.debug("extractUsernameComponent="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			extractUsernameComponent = str;
-		}
+		allowRaVerifyPopo = CmpConfiguration.getAllowRAVerifyPOPO();
+		defaultCA = CmpConfiguration.getDefaultCA();
+		extractUsernameComponent = CmpConfiguration.getExtractUsernameComponent();
 	}
 	
 	/** The message may have been received by any transport protocol, and is passed here in it's binary asn.1 form.
@@ -124,26 +108,26 @@ public class CmpMessageDispatcher {
 			switch (tagno) {
 			case 0:
 				// 0 and 2 are both certificate requests
-				handler = new CrmfMessageHandler(admin, properties);
+				handler = new CrmfMessageHandler(admin);
 				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, properties);
+				handler = new CrmfMessageHandler(admin);
 				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 19:
 				// PKI confirm
-				handler = new ConfirmationMessageHandler(properties);
+				handler = new ConfirmationMessageHandler();
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 24:
 				// Certificate confirmation
-				handler = new ConfirmationMessageHandler(properties);
+				handler = new ConfirmationMessageHandler();
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request
-				handler = new RevocationMessageHandler(admin, properties);
+				handler = new RevocationMessageHandler(admin);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			default:

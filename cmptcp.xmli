@@ -21,26 +21,6 @@
             <fileset dir="${src}/appserver/jboss">
                 <include name="cmptcp-service.xml" />
             </fileset>
-			<filterchain>
-			<tokenfilter>			    
-		        <replacestring from="cmp.allowraverifypopo" to="${cmp.allowraverifypopo}"/>
-		        <replacestring from="cmp.defaultca" to="${cmp.defaultca}"/>
-		        <replacestring from="cmp.extractusernamecomponent" to="${cmp.extractusernamecomponent}"/>
-		        <replacestring from="cmp.operationmode" to="${cmp.operationmode}"/>
-		        <replacestring from="cmp.ra.caname" to="${cmp.ra.caname}"/>
-		        <replacestring from="cmp.ra.endentityprofile" to="${cmp.ra.endentityprofile}"/>
-		        <replacestring from="cmp.ra.certificateprofile" to="${cmp.ra.certificateprofile}"/>
-		        <replacestring from="cmp.ra.namegenerationscheme" to="${cmp.ra.namegenerationscheme}"/>
-		        <replacestring from="cmp.ra.namegenerationparameters" to="${cmp.ra.namegenerationparameters}"/>
-		        <replacestring from="cmp.ra.namegenerationpostfix" to="${cmp.ra.namegenerationpostfix}"/>
-		        <replacestring from="cmp.ra.namegenerationprefix" to="${cmp.ra.namegenerationprefix}"/>
-		        <replacestring from="cmp.ra.authenticationsecret" to="${cmp.ra.authenticationsecret}"/>
-		        <replacestring from="cmp.responseprotection" to="${cmp.responseprotection}"/>
-		        <replacestring from="cmp.tcp.portno" to="${cmp.tcp.portno}"/>
-		        <replacestring from="cmp.tcp.logdir" to="${cmp.tcp.logdir}"/>
-		        <replacestring from="cmp.tcp.conffile" to="${cmp.tcp.conffile}"/>
-			</tokenfilter>
-			</filterchain>
         </copy>
         <copy todir="${cmptcpservice.build}">
             <fileset dir="${build}">

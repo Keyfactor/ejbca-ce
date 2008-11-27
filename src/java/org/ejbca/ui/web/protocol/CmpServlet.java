@@ -148,7 +148,7 @@ public class CmpServlet extends HttpServlet {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 	
-	private Properties properties;
+	//private Properties properties;
 	/**
 	 * Inits the CMP servlet
 	 *
@@ -158,6 +158,7 @@ public class CmpServlet extends HttpServlet {
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
+		/*
 		properties = new Properties();
 		String str = ServiceLocator.getInstance().getString("java:comp/env/allowRaVerifyPopo");
 		if (StringUtils.equals("true", str)) {
@@ -223,7 +224,8 @@ public class CmpServlet extends HttpServlet {
 		if (StringUtils.isNotEmpty(str)) {
 			log.debug("caName="+str);
 			properties.setProperty("caName", str);
-		}		
+		}
+		*/		
 	}
 	
 	/**
@@ -288,7 +290,7 @@ public class CmpServlet extends HttpServlet {
 			}
     		String iMsg = intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr);
 			log.info(iMsg);
-			CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, properties);
+			CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
 			IResponseMessage resp = dispatcher.dispatch(message);
 			// If resp is null, it means we have nothing to send back
 			if (resp != null) {

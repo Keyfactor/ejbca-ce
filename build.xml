@@ -284,6 +284,8 @@
                 	<include name="org/ejbca/core/*" /> 
                 	<include name="org/ejbca/core/model/**"/>
                 	<include name="org/ejbca/core/protocol/*"/>
+                	<include name="org/ejbca/core/protocol/cmp/*"/>
+                	<include name="com/novosec/pkix/asn1/**"/>
                 	<include name="**/*Exception**"/>
                 	<include name="**/SecConst**"/>
                 	<include name="**/IAdminCommand**"/>

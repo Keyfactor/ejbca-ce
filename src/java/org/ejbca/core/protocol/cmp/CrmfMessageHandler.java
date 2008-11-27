@@ -27,6 +27,7 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
@@ -106,7 +107,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 //	private ICertificateStoreSessionLocal storesession = null;
 	
 	
-	public CrmfMessageHandler(Admin admin, Properties prop) throws CreateException, RemoteException {
+	public CrmfMessageHandler(Admin admin) throws CreateException, RemoteException {
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
 		ISignSessionHome signHome = (ISignSessionHome)ServiceLocator.getInstance().getRemoteHome(ISignSessionHome.JNDI_NAME, ISignSessionHome.class);		
@@ -125,11 +126,44 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		this.rasession = raHome.create();
 		this.storesession = storeHome.create();
 
-		String str = prop.getProperty("operationMode");
+/*		String str = prop.getProperty("operationMode");
 		log.debug("operationMode="+str);
-		if (StringUtils.equalsIgnoreCase(str, "ra")) {
+		if (StringUtils.equalsIgnoreCase(str, "ra")) {*/
+		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
 			usernameGeneratorParams = new UsernameGeneratorParams();
+			usernameGeneratorParams.setMode(CmpConfiguration.getRANameGenerationScheme());
+			usernameGeneratorParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters());
+			usernameGeneratorParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix());
+			usernameGeneratorParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
+			raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
+			String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
+			if (StringUtils.equals(endEntityProfile, "KeyId")) {
+				log.info("Using End Entity Profile with same name as KeyId in request.");
+				eeProfileId = -1;
+			} else {
+				eeProfileId = rasession.getEndEntityProfileId(admin, endEntityProfile);
+			}
+			String certificateProfile = CmpConfiguration.getRACertificateProfile();
+			if (StringUtils.equals(certificateProfile, "KeyId")) {
+				log.info("Using Certificate Profile with same name as KeyId in request.");
+				certProfileId = -1;
+			} else {
+				certProfileId = storesession.getCertificateProfileId(admin, certificateProfile);					
+			}
+			String caName = CmpConfiguration.getRACAName();
+			if (StringUtils.equals(caName, "ProfileDefault")) {
+				log.info("Using default CA from End Entity Profile CA when adding users in RA mode.");
+				caId = -1;
+			} else if (StringUtils.equals(caName, "KeyId")) {
+				log.info("Using keyId as CA name when adding users in RA mode.");
+				caId = -2;										
+			} else {
+				CAInfo info = casession.getCAInfo(admin, caName);
+				caId = info.getCAId();					
+			}
+			responseProtection = CmpConfiguration.getResponseProtection();
+			/*
 			str = prop.getProperty("raModeNameGenerationScheme");
 			log.debug("raModeNameGenerationScheme="+str);
 			if (StringUtils.isNotEmpty(str)) {
@@ -189,12 +223,15 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 					caId = info.getCAId();					
 				}
 			}			
+			*/
 		}
+		/*
 		str = prop.getProperty("responseProtection");
 		if (StringUtils.isNotEmpty(str)) {
 			log.debug("responseProtection="+str);
 			responseProtection = str;
-		}			
+		}	
+		*/		
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.debug(">handleMessage");

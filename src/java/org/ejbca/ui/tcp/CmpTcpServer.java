@@ -28,12 +28,12 @@ package org.ejbca.ui.tcp;
 
 import java.io.File;
 import java.net.UnknownHostException;
-import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.config.CmpConfiguration;
 import org.quickserver.net.AppException;
 import org.quickserver.net.server.QuickServer;
 
@@ -46,18 +46,14 @@ public class CmpTcpServer {
 	
 	public static QuickServer myServer = null;
 	
-	public static void init(Properties prop) {
-		CmpTcpConfiguration.instance().init(prop);
-	}
-	
 	public static void start() throws UnknownHostException	{
 		String cmdHandle = "org.ejbca.ui.tcp.CmpTcpCommandHandler";
 		String auth = null;
 
 		myServer = new QuickServer();
 		myServer.setClientAuthenticationHandler(auth);
-		myServer.setBindAddr(CmpTcpConfiguration.instance().getBindHost());
-		myServer.setPort(CmpTcpConfiguration.instance().getPort());
+		myServer.setBindAddr(CmpConfiguration.getTCPBindAdress());
+		myServer.setPort(CmpConfiguration.getTCPPortNumber());
 		myServer.setName("CMP TCP Server v " + VER);
 		if(getQuickServerVersion() >= 1.2) {
 			System.out.println("Using 1.2 feature");
@@ -71,7 +67,7 @@ public class CmpTcpServer {
 		//setup logger to log to file
 		Logger logger = null;
 		FileHandler txtLog = null;
-		String logDir = CmpTcpConfiguration.instance().getLogDir();
+		String logDir = CmpConfiguration.getTCPLogDir();
 		File log = new File(logDir + "/");
 		if(!log.canRead())
 			log.mkdir();
@@ -97,7 +93,7 @@ public class CmpTcpServer {
 		//end of logger code
 
 		try	{
-			String confFile = CmpTcpConfiguration.instance().getConfFile();
+			String confFile = CmpConfiguration.getTCPConfigFile();
 			if (!StringUtils.isEmpty(confFile)) {
 				Object config[] = new Object[] {confFile};
 				if (myServer.initService(config) == false) {

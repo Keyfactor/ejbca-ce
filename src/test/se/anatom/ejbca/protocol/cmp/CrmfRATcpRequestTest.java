@@ -50,7 +50,7 @@ import org.ejbca.util.keystore.KeyTools;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
- * requires setup of the CMP with a tcp listener on port 5547
+ * requires setup of the CMP with a tcp listener on port 5587
  * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
  * @version $Id$

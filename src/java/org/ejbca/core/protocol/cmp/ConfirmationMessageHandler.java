@@ -24,6 +24,7 @@ import javax.ejb.CreateException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.FailInfo;
@@ -47,17 +48,21 @@ public class ConfirmationMessageHandler implements ICmpMessageHandler {
 	/** Parameter used to determine the type of prtection for the response message */
 	private String responseProtection = null;
 	
-	public ConfirmationMessageHandler(Properties prop) throws CreateException {
+	public ConfirmationMessageHandler() throws CreateException {
+		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
+		responseProtection = CmpConfiguration.getResponseProtection();
+		/*
 		String str = prop.getProperty("raAuthenticationSecret");
 		if (StringUtils.isNotEmpty(str)) {
 			log.debug("raAuthenticationSecret is not null");
 			raAuthenticationSecret = str;
-		}			
+		}	
 		str = prop.getProperty("responseProtection");
 		if (StringUtils.isNotEmpty(str)) {
 			log.debug("responseProtection="+str);
 			responseProtection = str;
 		}			
+		*/		
 
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {

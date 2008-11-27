@@ -14,8 +14,9 @@
 package org.ejbca.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,17 +26,16 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
  * This is a singleton. Used to configure common-configuration with our sources.
  * 
  * Use like this:
- *   String value = EjbcaConfiguration.instance().getString("my.conf.property.key"); or
- *   String value = EjbcaConfiguration.instance().getString("my.conf.property.key", "default value");
+ *   String value = ConfigurationHolder.getString("my.conf.property.key"); or
+ *   String value = ConfigurationHolder.getString("my.conf.property.key", "default value");
  * or
- *   String value = EjbcaConfiguration.getExpandedString("my.conf.property.key", "default value");
+ *   String value = ConfigurationHolder.getExpandedString("my.conf.property.key", "default value");
  * to be able to parse values containing ${property}
  * 
  * See in-line comments below for the sources added to the configuration.
@@ -49,7 +49,7 @@ public class ConfigurationHolder {
 	/** This is a singleton so it's not allowed to create an instance explicitly */ 
 	private ConfigurationHolder() {}
 	
-	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties"};
+	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties"};
 
 	public static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
 
@@ -119,10 +119,27 @@ public class ConfigurationHolder {
 					log.error("Failed to load configuration from resource " + "/conf/" + CONFIG_FILES[i], e);
 				}
 			}
-		} 
+		}
 		return config;
 	}
+	
+	/**
+	 * @return the configuration as a regular Properties object
+	 */
+	public static Properties getAsProperties() {
+		Properties properties = new Properties();
+		Iterator i = instance().getKeys();
+		while (i.hasNext()) {
+			String key = (String) i.next();
+			properties.setProperty(key, instance().getString(key));
+		}
+		return properties;
+	}
 
+	public static String getString(String property, String defaultValue) {
+		return instance().getString(property, defaultValue);
+	}
+	
 	/**
 	 * Return a the expanded version of a property. E.g.
 	 *  property1=foo
