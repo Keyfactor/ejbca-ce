@@ -399,7 +399,9 @@ public class StringTools {
     }
 
     public static String incrementKeySequence(String oldSequence) {
-    	log.debug(">incrementKeySequence: "+ oldSequence);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">incrementKeySequence: "+ oldSequence);
+    	}
     	// If the sequence does not contain any number in it at all, we can only return the same
 		String ret = oldSequence; 
     	// A sequence can be 00001, or SE001 for example
@@ -424,7 +426,9 @@ public class StringTools {
 	    	DecimalFormat df = new DecimalFormat("0000000000".substring(0,intStr.length()));
 	    	String fseq = df.format(seq);
 	    	ret = rest + fseq;
-	    	log.debug("<incrementKeySequence: "+ ret);			
+	    	if (log.isTraceEnabled()) {
+		    	log.trace("<incrementKeySequence: "+ ret);			
+	    	}
 		} else {
 			log.info("incrementKeySequence - Sequence does not contain any nummeric part: "+ret);
 		}

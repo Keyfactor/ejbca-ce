@@ -50,9 +50,7 @@ public class TestHardTokenIssuer extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-
+        log.trace(">setUp()");
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
@@ -60,22 +58,18 @@ public class TestHardTokenIssuer extends TestCase {
                 cacheHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
 
             }
-
             cacheAdmin = cacheHome.create();
         }
-
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -86,16 +80,13 @@ public class TestHardTokenIssuer extends TestCase {
      * @throws Exception error
      */
     public void test01AddHardTokenIssuer() throws Exception {
-        log.debug(">test01AddHardTokenIssuer()");
+        log.trace(">test01AddHardTokenIssuer()");
         boolean ret = false;
         HardTokenIssuer issuer = new HardTokenIssuer();
         issuer.setDescription("TEST");
-
         ret = cacheAdmin.addHardTokenIssuer(admin, "TEST", 3, issuer);
-
-
         assertTrue("Creating Hard Token Issuer failed", ret);
-        log.debug("<test01AddHardTokenIssuer()");
+        log.trace("<test01AddHardTokenIssuer()");
     }
 
     /**
@@ -104,13 +95,13 @@ public class TestHardTokenIssuer extends TestCase {
      * @throws Exception error
      */
     public void test02RenameHardTokenIssuer() throws Exception {
-        log.debug(">test02RenameHardTokenIssuer()");
+        log.trace(">test02RenameHardTokenIssuer()");
 
         boolean ret = false;
         ret = cacheAdmin.renameHardTokenIssuer(admin, "TEST", "TEST2", 4);
         assertTrue("Renaming Hard Token Issuer failed", ret);
 
-        log.debug("<test02RenameHardTokenIssuer()");
+        log.trace("<test02RenameHardTokenIssuer()");
     }
 
     /**
@@ -119,14 +110,14 @@ public class TestHardTokenIssuer extends TestCase {
      * @throws Exception error
      */
     public void test03CloneHardTokenIssuer() throws Exception {
-        log.debug(">test03CloneHardTokenIssuer()");
+        log.trace(">test03CloneHardTokenIssuer()");
 
         boolean ret = false;
         ret = cacheAdmin.cloneHardTokenIssuer(admin, "TEST2", "TEST", 4);
 
         assertTrue("Cloning Certificate Profile failed", ret);
 
-        log.debug("<test03CloneHardTokenIssuer()");
+        log.trace("<test03CloneHardTokenIssuer()");
     }
 
 
@@ -136,23 +127,15 @@ public class TestHardTokenIssuer extends TestCase {
      * @throws Exception error
      */
     public void test04EditHardTokenIssuer() throws Exception {
-        log.debug(">test04EditHardTokenIssuer()");
-
+        log.trace(">test04EditHardTokenIssuer()");
         boolean ret = false;
-
         HardTokenIssuerData issuerdata = cacheAdmin.getHardTokenIssuerData(admin, "TEST");
         assertTrue("Retrieving HardTokenIssuer failed", issuerdata.getHardTokenIssuer().getDescription().equals("TEST"));
-
         issuerdata.getHardTokenIssuer().setDescription("TEST2");
-
         ret = cacheAdmin.changeHardTokenIssuer(admin, "TEST", issuerdata.getHardTokenIssuer());
-
         assertTrue("Editing HardTokenIssuer failed", ret);
-
-
-        log.debug("<test04EditHardTokenIssuer()");
+        log.trace("<test04EditHardTokenIssuer()");
     }
-
 
     /**
      * removes all profiles
@@ -160,7 +143,7 @@ public class TestHardTokenIssuer extends TestCase {
      * @throws Exception error
      */
     public void test05removeHardTokenIssuers() throws Exception {
-        log.debug(">test05removeHardTokenIssuers()");
+        log.trace(">test05removeHardTokenIssuers()");
         boolean ret = false;
         try {
             cacheAdmin.removeHardTokenIssuer(admin, "TEST");
@@ -169,8 +152,7 @@ public class TestHardTokenIssuer extends TestCase {
         } catch (Exception pee) {
         }
         assertTrue("Removing Certificate Profile failed", ret);
-
-        log.debug("<test05removeHardTokenIssuers()");
+        log.trace("<test05removeHardTokenIssuers()");
     }
 
 

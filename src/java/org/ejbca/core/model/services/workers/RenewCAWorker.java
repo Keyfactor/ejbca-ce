@@ -58,7 +58,7 @@ public class RenewCAWorker extends BaseWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work() throws ServiceExecutionFailedException {
-		log.debug(">Worker started");
+		log.trace(">Worker started");
 		
 		// Find CAs with expire date that is less than configured number of days 
 		// ahead in the future		
@@ -105,7 +105,7 @@ public class RenewCAWorker extends BaseWorker {
 				log.error(msg);
 			}
 		}
-		log.debug("<Worker ended");
+		log.trace("<Worker ended");
 	}
 	
 	protected boolean isRenewKeys() {

@@ -276,20 +276,20 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         return chain;
     }
     private boolean loadFromP11HSM(Admin adm) throws Exception {
-    	m_log.debug(">loadFromP11HSM");
+    	m_log.trace(">loadFromP11HSM");
         if ( this.mSharedLibrary==null || this.mSharedLibrary.length()<1 ) {
-        	m_log.debug("<loadFromP11HSM: no shared library");
+        	m_log.trace("<loadFromP11HSM: no shared library");
             return false;        	
         }
         final P11ProviderHandler providerHandler = new P11ProviderHandler();
         final PasswordProtection pwp = providerHandler.getPwd();
         loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, this.mSharedLibrary, providerHandler);
         pwp.destroy();
-    	m_log.debug("<loadFromP11HSM");
+    	m_log.trace("<loadFromP11HSM");
         return true;
     }
     private boolean loadFromSWKeyStore(Admin adm, String fileName) {
-    	m_log.debug(">loadFromSWKeyStore");
+    	m_log.trace(">loadFromSWKeyStore");
     	boolean ret = false;
         try {
             KeyStore keyStore;
@@ -305,7 +305,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         } catch( Exception e ) {
             m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
         }
-    	m_log.debug("<loadFromSWKeyStore");
+    	m_log.trace("<loadFromSWKeyStore");
         return ret;
     }
     private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
@@ -490,7 +490,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         return false;
     }
     private void loadFromKeyCards(Admin adm, String fileName) {
-    	m_log.debug(">loadFromKeyCards");
+    	m_log.trace(">loadFromKeyCards");
         final CertificateFactory cf;
         try {
             cf = CertificateFactory.getInstance("X.509");
@@ -524,14 +524,14 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         } else {
             m_log.debug("File "+fileName+" has no cert.");
         }
-    	m_log.debug("<loadFromKeyCards");
+    	m_log.trace("<loadFromKeyCards");
     }
     
     protected void loadPrivateKeys(Admin adm) throws Exception {
-    	m_log.debug(">loadPrivateKeys");
+    	m_log.trace(">loadPrivateKeys");
     	// We will only load private keys if the cache time has run out
 		if ( (mSignEntity != null) && (mSignEntity.size() > 0) && (mKeysValidTo > new Date().getTime()) ) {
-	    	m_log.debug("<loadPrivateKeys: using cache");
+	    	m_log.trace("<loadPrivateKeys: using cache");
 			return;
 		}
         mSignEntity.clear();
@@ -569,7 +569,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         // Update cache time
     	// If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
         mKeysValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;
-    	m_log.debug("<loadPrivateKeys");
+    	m_log.trace("<loadPrivateKeys");
     }
     
     private interface ProviderHandler {

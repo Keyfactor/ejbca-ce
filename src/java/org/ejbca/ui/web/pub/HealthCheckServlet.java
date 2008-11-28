@@ -97,9 +97,9 @@ public class HealthCheckServlet extends HttpServlet {
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-        log.debug(">doPost()");
+        log.trace(">doPost()");
         check(request, response);
-        log.debug("<doPost()");
+        log.trace("<doPost()");
     }
 
     //doPost
@@ -115,9 +115,9 @@ public class HealthCheckServlet extends HttpServlet {
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-        log.debug(">doGet()");
+        log.trace(">doGet()");
         check(request, response);
-        log.debug("<doGet()");
+        log.trace("<doGet()");
     }
     
     private void check(HttpServletRequest request, HttpServletResponse response){

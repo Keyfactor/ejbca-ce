@@ -48,9 +48,9 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         log.setLevel(Level.DEBUG);
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
@@ -62,7 +62,7 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test01fulfillEndEntityProfiles() throws Exception {
-        log.debug(">test01fulfillEndEntityProfiles()");
+        log.trace(">test01fulfillEndEntityProfiles()");
 
         EndEntityProfile profile = new EndEntityProfile();
         
@@ -960,6 +960,6 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	assertTrue("Error: Allowedrequests not checked correctly, should be allowed.", false);
         } 
 
-        log.debug("<test01fulfillEndEntityProfiles()");
+        log.trace("<test01fulfillEndEntityProfiles()");
     } // test01fulfillEndEntityProfiles
 } // TestUserFullfillEndEntityProfile

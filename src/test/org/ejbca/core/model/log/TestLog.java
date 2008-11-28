@@ -56,7 +56,7 @@ public class TestLog extends TestCase {
      * @throws Exception error
      */
     public void test01AddLogConfiguration() throws Exception {
-        log.debug(">test01AddLogConfiguration()");
+        log.trace(">test01AddLogConfiguration()");
         assertTrue("Could not create TestCA.", TestTools.createTestCA());
         
         LogConfiguration logconf = new LogConfiguration();
@@ -69,7 +69,7 @@ public class TestLog extends TestCase {
         assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogConstants.EVENT_INFO_DATABASE).booleanValue());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogConstants.EVENT_ERROR_DATABASE).booleanValue());
 
-        log.debug("<test01AddLogConfiguration()");
+        log.trace("<test01AddLogConfiguration()");
     }
 
     /**
@@ -79,7 +79,7 @@ public class TestLog extends TestCase {
      * @throws Exception error
      */
     public void test02AddAndCheckLogEvents() throws Exception {
-        log.debug(">test02AddAndCheckLogEvents()");
+        log.trace(">test02AddAndCheckLogEvents()");
         TestTools.getLogSession().log(admin, TestTools.getTestCAId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
         Collection logDeviceNames = TestTools.getLogSession().getAvailableLogDevices();
         Iterator iterator = logDeviceNames.iterator();
@@ -110,7 +110,7 @@ public class TestLog extends TestCase {
 	   //assertEquals("foo", str);
 	   int ind = str.indexOf("Test\t");
 	   assertTrue(ind > 0);
-        log.debug("<test02AddAndCheckLogEvents()");
+	   log.trace("<test02AddAndCheckLogEvents()");
     }
     
 	public void test99RemoveTestCA() throws Exception {

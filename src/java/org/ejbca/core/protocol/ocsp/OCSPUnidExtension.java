@@ -147,8 +147,8 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	 * @return X509Extension that will be added to responseExtensions by OCSP responder, or null if an error occurs
 	 */
 	public Hashtable process(HttpServletRequest request, X509Certificate cert, CertificateStatus status) {
-        if (m_log.isDebugEnabled()) {
-            m_log.debug(">process()");            
+        if (m_log.isTraceEnabled()) {
+            m_log.trace(">process()");            
         }
         // Check authorization first
         if (!checkAuthorization(request)) {
@@ -194,9 +194,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
         		errCode = OCSPUnidExtension.ERROR_NO_SERIAL_IN_DN;
         		return null;
         	}
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("<process()");
-            }
+            m_log.trace("<process()");
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {

@@ -101,11 +101,11 @@ public class BatchMakeP12 {
      * @throws NamingException if we can't find jndi name
      */
     public static Context getInitialContext() throws NamingException {
-        log.debug(">GetInitialContext");
+        log.trace(">GetInitialContext");
 
         // jndi.properties must exist in classpath
         Context ctx = InitialContextBuilder.getInstance().getInitialContext();
-        log.debug("<GetInitialContext");
+        log.trace("<GetInitialContext");
 
         return ctx;
     }
@@ -120,7 +120,7 @@ public class BatchMakeP12 {
     public BatchMakeP12()
             throws javax.naming.NamingException, javax.ejb.CreateException, java.rmi.RemoteException,
             java.io.IOException {
-        log.debug(">BatchMakeP12:");
+        log.trace(">BatchMakeP12:");
         
         administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
@@ -147,9 +147,7 @@ public class BatchMakeP12 {
             obj = jndiContext.lookup("KeyRecoverySession");
             keyrecoveryhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IKeyRecoverySessionHome.class);
         }
-
-
-        log.debug("<BatchMakeP12:");
+        log.trace("<BatchMakeP12:");
     } // BatchMakeP12
 
     /**
@@ -159,11 +157,11 @@ public class BatchMakeP12 {
      */
     private Certificate[] getCACertChain(int caid)
             throws Exception {
-        log.debug(">getCACertChain()");
+        log.trace(">getCACertChain()");
 
         ISignSessionRemote ss = signhome.create();
         Certificate[] chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
-        log.debug("<getCACertChain()");
+        log.trace("<getCACertChain()");
 
         return chain;
     } // getCACertificate
@@ -192,8 +190,9 @@ public class BatchMakeP12 {
                                boolean createPEM)
             throws IOException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, CertificateException {
-        log.debug(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
+    	}
         // Where to store it?
         if (mainStoreDir == null) {
             throw new IOException("Can't find directory to store keystore in.");
@@ -219,7 +218,9 @@ public class BatchMakeP12 {
         }
 
         log.debug("Keystore stored in " + keyStoreFilename);
-        log.debug("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
+        if (log.isTraceEnabled()) {
+        	log.trace("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
+        }
     } // storeKeyStore
 
     /**
@@ -241,8 +242,9 @@ public class BatchMakeP12 {
 
     private void createUser(String username, String password, int caid, KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys, X509Certificate orgCert)
             throws Exception {
-        log.debug(">createUser: username=" + username);
-
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createUser: username=" + username);
+    	}
         // Send the certificate request to the CA
         ISignSessionRemote ss = signhome.create();
         
@@ -315,7 +317,9 @@ public class BatchMakeP12 {
         storeKeyStore(ks, username, password, createJKS, createPEM);
 		String iMsg = intres.getLocalizedMessage("batch.createkeystore", username);
         log.info(iMsg);
-        log.debug("<createUser: username=" + username);
+        if (log.isTraceEnabled()) {
+        	log.trace("<createUser: username=" + username);
+        }
     } // createUser
 
     /**
@@ -411,11 +415,11 @@ public class BatchMakeP12 {
      * @throws Exception if something goes wrong...
      */
     public void createAllNew() throws Exception {
-        log.debug(">createAllNew:");
+        log.trace(">createAllNew");
 		String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "NEW");
         log.info(iMsg);
         createAllWithStatus(UserDataConstants.STATUS_NEW);
-        log.debug("<createAllNew:");
+        log.trace("<createAllNew");
     } // createAllNew
 
     /**
@@ -424,11 +428,11 @@ public class BatchMakeP12 {
      * @throws Exception if something goes wrong...
      */
     public void createAllFailed() throws Exception {
-        log.debug(">createAllFailed:");
+        log.trace(">createAllFailed");
 		String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "FAILED");
         log.info(iMsg);
         createAllWithStatus(UserDataConstants.STATUS_FAILED);
-        log.debug("<createAllFailed:");
+        log.trace("<createAllFailed");
     } // createAllFailed
 
     /**
@@ -438,11 +442,11 @@ public class BatchMakeP12 {
      */
     public void createAllKeyRecover() throws Exception {
         if (usekeyrecovery) {
-            log.debug(">createAllKeyRecover:");
+            log.trace(">createAllKeyRecover");
     		String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "KEYRECOVER");
             log.info(iMsg);
             createAllWithStatus(UserDataConstants.STATUS_KEYRECOVERY);
-            log.debug("<createAllKeyRecover:");
+            log.trace("<createAllKeyRecover");
         }
     } // createAllKeyRecover
 
@@ -453,8 +457,9 @@ public class BatchMakeP12 {
      * @throws Exception if something goes wrong...
      */
     public void createAllWithStatus(int status) throws Exception {
-        log.debug(">createAllWithStatus: " + status);
-
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createAllWithStatus: " + status);
+    	}
         ArrayList result;
         IUserAdminSessionRemote admin = adminhome.create();
         boolean stopnow = false;
@@ -523,8 +528,9 @@ public class BatchMakeP12 {
                 log.info(iMsg);
             }
         } while ((result.size() > 0) && !stopnow);
-
-        log.debug("<createAllWithStatus: " + status);
+        if (log.isTraceEnabled()) {
+        	log.trace("<createAllWithStatus: " + status);
+        }
     } // createAllWithStatus
 
     /**
@@ -534,8 +540,9 @@ public class BatchMakeP12 {
      * @throws Exception if the user does not exist or something goes wrong during generation
      */
     public void createUser(String username) throws Exception {
-        log.debug(">createUser(" + username + ")");
-
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createUser(" + username + ")");
+    	}
         IUserAdminSessionRemote admin = adminhome.create();
         UserDataVO data = admin.findUser(administrator, username);
         int status = data.getStatus();
@@ -563,8 +570,9 @@ public class BatchMakeP12 {
                 throw new Exception(errMsg);
             }
         }
-
-        log.debug(">createUser(" + username + ")");
+        if (log.isTraceEnabled()) {
+        	log.trace(">createUser(" + username + ")");
+        }
     } // doit
 
     /**

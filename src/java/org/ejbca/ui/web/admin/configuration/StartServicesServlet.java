@@ -103,13 +103,13 @@ public class StartServicesServlet extends HttpServlet {
 		String iMsg = intres.getLocalizedMessage("startservice.shutdown");
         log.info(iMsg);
         
-        log.debug(">destroy calling ServiceSession.unload");
+        log.trace(">destroy calling ServiceSession.unload");
         try {
 			getServiceHome().create().unload();
 		} catch (Exception e) {
 			log.error(e);
 		}
-        log.debug(">destroy waiting for system services to finish");
+        log.trace(">destroy waiting for system services to finish");
         ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
         if (protectedLogVerifier != null) {
         	protectedLogVerifier.cancelVerificationsPermanently();
@@ -190,20 +190,20 @@ public class StartServicesServlet extends HttpServlet {
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
-        log.debug(">doPost()");
+        log.trace(">doPost()");
         doGet(req, res);
-        log.debug("<doPost()");
+        log.trace("<doPost()");
     } //doPost
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-        log.debug(">doGet()");
+        log.trace(">doGet()");
         String param = req.getParameter("ejbcaInit");
         if (StringUtils.equals(param, "true")) {
         	ejbcaInit();
         } else {        
         	res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Servlet doesn't support requests is only loaded on startup.");
         }
-        log.debug("<doGet()");
+        log.trace("<doGet()");
     } // doGet
 
     private void ejbcaInit() {
@@ -214,7 +214,7 @@ public class StartServicesServlet extends HttpServlet {
         //
         
         // Start with logging, so we are sure to know what is happening later on
-        log.debug(">init initializing log4j");
+        log.trace(">init initializing log4j");
         String configfile = ServiceLocator.getInstance().getString("java:comp/env/LOG4JCONFIG");
         if (!StringUtils.equals(configfile, "false")) {
             // Configure log4j
@@ -246,12 +246,12 @@ public class StartServicesServlet extends HttpServlet {
         log.info(iMsg);
 
         // Reinstall BC-provider to help re-deploys to work
-        log.debug(">init re-installing BC-provider");
+        log.trace(">init re-installing BC-provider");
         CertTools.removeBCProvider();
         CertTools.installBCProvider();
 
         // Run java seed collector, that can take a little time the first time it is run
-        log.debug(">init initializing random seed");
+        log.trace(">init initializing random seed");
         SecureRandom rand = new SecureRandom();
         rand.nextInt();
         
@@ -274,11 +274,11 @@ public class StartServicesServlet extends HttpServlet {
 
         // We have to read CAs into cache (and upgrade them) early, because the log system may use CAs for signing logs
         
-		log.debug(">init CATokenManager");
+		log.trace(">init CATokenManager");
 		CATokenManager.instance();
 		
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
-        log.debug(">init loading CAs into cache");
+        log.trace(">init loading CAs into cache");
         try {
         	ICAAdminSessionLocalHome casessionhome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
         	ICAAdminSessionLocal casession;
@@ -294,7 +294,7 @@ public class StartServicesServlet extends HttpServlet {
         getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
         		LogConstants.EVENT_INFO_STARTING, iMsg);
 
-        log.debug(">init ProtectedLogVerificationService is configured");
+        log.trace(">init ProtectedLogVerificationService is configured");
         try {
         	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
         	if (logProperties != null) {
@@ -330,7 +330,7 @@ public class StartServicesServlet extends HttpServlet {
 			log.error("Error init ProtectedLogVerificationService: ", e);
 		}
 
-        log.debug(">init ProtectedLogExportService is configured");
+        log.trace(">init ProtectedLogExportService is configured");
         try {
         	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
         	if (logProperties != null) {
@@ -366,7 +366,7 @@ public class StartServicesServlet extends HttpServlet {
 			log.error("Error init ProtectedLogExportService: ", e);
 		}
 
-        log.debug(">init calling ServiceSession.load");
+        log.trace(">init calling ServiceSession.load");
         try {
 			getServiceHome().create().load();
 		} catch (Exception e) {
@@ -374,7 +374,7 @@ public class StartServicesServlet extends HttpServlet {
 		}
 		
         // Load Certificate profiles at startup to upgrade them if needed
-        log.debug(">init loading CertificateProfile to check for upgrades");
+        log.trace(">init loading CertificateProfile to check for upgrades");
         try {
         	ICertificateStoreSessionLocalHome certsessionhome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         	ICertificateStoreSessionLocal certsession = certsessionhome.create();
@@ -385,7 +385,7 @@ public class StartServicesServlet extends HttpServlet {
         }
         
         // Load EndEntity profiles at startup to upgrade them if needed
-        log.debug(">init loading EndEntityProfile to check for upgrades");
+        log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
         	IRaAdminSessionLocalHome rasessionhome = (IRaAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
         	IRaAdminSessionLocal rasession = rasessionhome.create();

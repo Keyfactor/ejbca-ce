@@ -250,7 +250,7 @@ public class TestTools {
 	 * @return true if successful
 	 */
 	public static boolean createTestCA(String caName) {
-        log.debug(">createTestCA");
+        log.trace(">createTestCA");
 		// Search for requested CA
         try {
 			CAInfo caInfo = getCAAdminSession().getCAInfo(admin, caName);
@@ -330,7 +330,7 @@ public class TestTools {
 			log.error("", e);
 			return false;
 		}
-        log.debug("<createTestCA");
+        log.trace("<createTestCA");
 		return true;
 	}
 

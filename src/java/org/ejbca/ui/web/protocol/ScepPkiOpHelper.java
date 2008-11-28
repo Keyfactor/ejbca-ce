@@ -48,10 +48,10 @@ public class ScepPkiOpHelper {
      * @param signsession signsession used to request certificates
      */
     public ScepPkiOpHelper(Admin admin, ISignSessionLocal signsession) {
-        log.debug(">ScepPkiOpHelper");
+        log.trace(">ScepPkiOpHelper");
         this.admin = admin;
         this.signsession = signsession;
-        log.debug("<ScepPkiOpHelper");
+        log.trace("<ScepPkiOpHelper");
     }
 
     /**
@@ -66,8 +66,9 @@ public class ScepPkiOpHelper {
             SignRequestException, AuthStatusException, IllegalKeyException,
             SignRequestSignatureException, CADoesntExistsException {
         byte[] ret = null;
-        log.debug(">getRequestMessage(" + msg.length + " bytes)");
-
+        if (log.isTraceEnabled()) {
+        	log.trace(">getRequestMessage(" + msg.length + " bytes)");
+        }
         try {
             reqmsg = new ScepRequestMessage(msg, includeCACert);
 
@@ -99,9 +100,9 @@ public class ScepPkiOpHelper {
         } catch (ClassNotFoundException e) {
             log.error("Error createing response message template: ", e);
         }
-
-        log.debug("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));
-
+        if (log.isTraceEnabled()) {
+        	log.trace("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));
+        }
         return ret;
     }
 }

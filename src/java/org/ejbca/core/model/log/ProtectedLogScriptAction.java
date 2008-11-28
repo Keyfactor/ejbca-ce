@@ -46,7 +46,9 @@ public class ProtectedLogScriptAction implements IProtectedLogAction, Serializab
 	 * @see org.ejbca.core.model.log.IProtectedLogAction
 	 */
 	public void action(String causeIdentifier) {
-		log.debug(">action " + causeIdentifier);
+		if (log.isTraceEnabled()) {
+			log.trace(">action " + causeIdentifier);
+		}
 		if (targetScript == null || targetScript.equals("")) {
 			log.error(intres.getLocalizedMessage(SCRIPTACTION_ERROR_NOTARGET));
 			return;

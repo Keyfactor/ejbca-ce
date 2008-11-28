@@ -73,7 +73,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
 	 */
 	public void init(Properties properties) {
-		log.debug("Initializing GeneralPurposeCustomPublisher");		
+		log.trace(">init");		
 		// Extract system properties
 		crlFailOnErrorCode = properties.getProperty(crlFailOnErrorCodePropertyName, "true").equalsIgnoreCase("true");
 		crlFailOnStandardError = properties.getProperty(crlFailOnStandardErrorPropertyName, "true").equalsIgnoreCase("true");
@@ -97,7 +97,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, int, int)
 	 */
 	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException {
-        log.debug(">storeCertificate, Storing Certificate for user: " + username);	
+        if (log.isTraceEnabled()) {
+        	log.trace(">storeCertificate, Storing Certificate for user: " + username);	
+        }
         // Don't publish non-active certificates
         if (status != CertificateDataBean.CERT_ACTIVE) {
         	return true;
@@ -132,7 +134,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin, byte[], java.lang.String, int)
 	 */
 	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException {
-        log.debug(">storeCRL, Storing CRL");
+        log.trace(">storeCRL, Storing CRL");
         // Verify initialization 
 		if ( crlExternalCommandFileName == null ) {
 			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", crlExternalCommandPropertyName);
@@ -153,7 +155,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#revokeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, int)
 	 */
 	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException {
-        log.debug(">revokeCertificate, Rekoving Certificate");
+        log.trace(">revokeCertificate, Rekoving Certificate");
         // Verify initialization 
 		if ( revokeExternalCommandFileName == null ) {
 			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", revokeExternalCommandPropertyName);
@@ -182,7 +184,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection(org.ejbca.core.model.log.Admin)
 	 */
 	public void testConnection(Admin admin) throws PublisherConnectionException {
-        log.debug("testConnection, Testing connection");
+        log.trace("testConnection, Testing connection");
         // Test if specified commands exist
         if ( crlExternalCommandFileName != null ) {
         	if ( !(new File(crlExternalCommandFileName)).exists() ) {
@@ -211,7 +213,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * Does nothing.
 	 */
 	protected void finalize() throws Throwable {
-        log.debug(">finalize, doing nothing");
+        log.trace(">finalize, doing nothing");
 		super.finalize(); 
 	} // finalize
 	

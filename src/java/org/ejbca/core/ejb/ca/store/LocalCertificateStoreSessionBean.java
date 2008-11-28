@@ -313,8 +313,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
                                     int status, int type) throws CreateException {
-        debug(">storeCertificate(" + cafp + ", " + status + ", " + type + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">storeCertificate(" + cafp + ", " + status + ", " + type + ")");
+    	}
         // Strip dangerous chars
         username = StringTools.strip(username);
 
@@ -334,7 +335,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         	TableProtectSessionLocal protect = protecthome.create();
         	protect.protect(admin, entry);            	
         }
-        debug("<storeCertificate()");
+        log.trace("<storeCertificate()");
         return true;
     } // storeCertificate
 
@@ -353,7 +354,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
-        debug(">storeCRL(" + cafp + ", " + number + ")");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">storeCRL(" + cafp + ", " + number + ")");
+    	}
         try {
         	boolean deltaCRL = deltaCRLIndicator > 0;
         	int lastNo = getLastCRLNumber(admin, issuerDN, deltaCRL);
@@ -370,7 +373,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
             throw new EJBException(e);
         }
-        debug("<storeCRL()");
+        log.trace("<storeCRL()");
         return true;
     } // storeCRL
 
@@ -387,7 +390,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection listAllCertificates(Admin admin, String issuerdn) {
-        debug(">listAllCertificates()");
+    	trace(">listAllCertificates()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
@@ -402,7 +405,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             while (result.next()) {
                 vect.add(result.getString(1));
             }
-            debug("<listAllCertificates()");
+            trace("<listAllCertificates()");
             return vect;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -423,7 +426,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
-    	debug(">listRevokedCertInfo()");
+    	trace(">listRevokedCertInfo()");
 
     	Connection con = null;
     	PreparedStatement ps = null;
@@ -475,7 +478,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     			// Add to the result
     			vect.add(certinfo);
     		}
-    		debug("<listRevokedCertInfo()");
+    		trace("<listRevokedCertInfo()");
     		return vect;
     	} catch (Exception e) {
     		throw new EJBException(e);
@@ -495,7 +498,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) {
-        debug(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
+    	}
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(subjectDN);
         dn = StringTools.strip(dn);
@@ -511,7 +516,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
-            debug("<findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
+        	if (log.isTraceEnabled()) {
+                log.trace("<findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
+        	}
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
@@ -527,7 +534,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesBySubject(Admin admin, String subjectDN) {
-        debug(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "'");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "'");
+    	}
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(subjectDN);
         dn = StringTools.strip(dn);
@@ -541,7 +550,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
-            debug("<findCertificatesBySubject(), dn='" + subjectDN + "'");
+        	if (log.isTraceEnabled()) {
+                log.trace("<findCertificatesBySubject(), dn='" + subjectDN + "'");
+        	}
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
@@ -552,7 +563,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByExpireTime(Admin admin, Date expireTime) {
-        debug(">findCertificatesByExpireTime(), time=" + expireTime);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">findCertificatesByExpireTime(), time=" + expireTime);
+    	}
         // First make expiretime in well know format
         debug("Looking for certs that expire before: " + expireTime);
 
@@ -567,7 +580,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
-            debug("<findCertificatesByExpireTime(), time=" + expireTime);
+        	if (log.isTraceEnabled()) {
+                log.trace("<findCertificatesByExpireTime(), time=" + expireTime);
+        	}
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
@@ -583,7 +598,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
-        debug(">findCertificatesByExpireTimeWithLimit");
+    	trace(">findCertificatesByExpireTimeWithLimit");
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -602,7 +617,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 if (result.getString(1) != null && !result.getString(1).equals(""))
                     returnval.add(result.getString(1));
             }
-            debug("<findCertificatesByExpireTimeWithLimit()");
+            trace("<findCertificatesByExpireTimeWithLimit()");
             return returnval;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -639,7 +654,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection sernos) {
-        debug(">findCertificateByIssuerAndSernos()");
+    	trace(">findCertificateByIssuerAndSernos()");
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -694,7 +709,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
 
-            debug("<findCertificateByIssuerAndSernos()");
+            trace("<findCertificateByIssuerAndSernos()");
             return vect;
         } catch (Exception fe) {
             throw new EJBException(fe);
@@ -712,7 +727,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesBySerno(Admin admin, BigInteger serno) {
-        debug(">findCertificatesBySerno(),  serno=" + serno);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">findCertificatesBySerno(),  serno=" + serno);
+    	}
         try {
             Collection coll = certHome.findBySerialNumber(serno.toString());
             ArrayList ret = new ArrayList();
@@ -725,7 +742,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
 
-            debug("<findCertificatesBySerno(), serno=" + serno);
+        	if (log.isTraceEnabled()) {
+                log.trace("<findCertificatesBySerno(), serno=" + serno);
+        	}
 
             return ret;
         } catch (javax.ejb.FinderException fe) {
@@ -742,8 +761,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) {
-    	if (log.isDebugEnabled()) {
-            debug(">findUsernameByCertSerno(), serno: " + serno.toString(16) + ", issuerdn: " + issuerdn);    		
+    	if (log.isTraceEnabled()) {
+    		log.trace(">findUsernameByCertSerno(), serno: " + serno.toString(16) + ", issuerdn: " + issuerdn);    		
     	}
         String dn = CertTools.stringToBCDNString(issuerdn);
         try {
@@ -756,7 +775,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret = ((CertificateDataLocal) iter.next()).getUsername();
                 }
             }
-            debug("<findUsernameByCertSerno(), ret=" + ret);
+        	if (log.isTraceEnabled()) {
+                log.trace("<findUsernameByCertSerno(), ret=" + ret);
+        	}
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
@@ -772,8 +793,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByUsername(Admin admin, String username) {
-        debug(">findCertificatesByUsername(),  username=" + username);
-
+    	if (log.isTraceEnabled()) {
+        	log.trace(">findCertificatesByUsername(),  username=" + username);
+    	}
         try {
             // Strip dangerous chars
             username = StringTools.strip(username);
@@ -788,8 +810,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
             }
-
-            debug("<findCertificatesByUsername(), username=" + username);
+        	if (log.isTraceEnabled()) {
+                log.trace("<findCertificatesByUsername(), username=" + username);
+        	}
             return ret;
         } catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
@@ -800,14 +823,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public CertificateInfo getCertificateInfo(Admin admin, String fingerprint) {
-        debug(">getCertificateInfo()");
+    	trace(">getCertificateInfo()");
         CertificateInfo ret = null;
 
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = new CertificateInfo(res.getFingerprint(), res.getCaFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
                     res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason());
-            debug("<getCertificateInfo()");
+            trace("<getCertificateInfo()");
         } catch (FinderException fe) {
             // Return null;
         } catch (Exception e) {
@@ -909,7 +932,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void setRevokeStatus(Admin admin, String username, Collection publishers, int reason) {
-        debug(">setRevokeStatus(),  username=" + username);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">setRevokeStatus(),  username=" + username);
+    	}
         // Strip dangerous chars
         username = StringTools.strip(username);
         try {
@@ -926,7 +951,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
             throw new EJBException(e);
         }
-        debug("<setRevokeStatus(),  username=" + username);
+    	if (log.isTraceEnabled()) {
+            log.trace("<setRevokeStatus(),  username=" + username);
+    	}
     } // setRevokeStatus
 
     /**
@@ -940,7 +967,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
-        debug(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
+    	if (log.isTraceEnabled()) {
+        	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
+    	}
         Certificate certificate = null;
         try {
             certificate = (Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
@@ -950,7 +979,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
             throw new EJBException(e);
         }
-        debug("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
+    	if (log.isTraceEnabled()) {
+            log.trace("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
+    	}
     } // setRevokeStatus
 
     /**
@@ -966,8 +997,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	if (certificate == null) {
     		return;
     	}
-    	debug(">setRevokeStatus(Certificate),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
-
+    	if (log.isTraceEnabled()) {
+        	log.trace(">setRevokeStatus(Certificate),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
+    	}
     	CertificateDataPK revpk = new CertificateDataPK();
     	revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
     	CertificateDataLocal rev = certHome.findByPrimaryKey(revpk); 
@@ -1036,8 +1068,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     			error(msg, e);
     		}
     	}
-
-    	debug("<setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumber(certificate).toString(16));
+    	if (log.isTraceEnabled()) {
+        	log.trace("<setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumber(certificate).toString(16));
+    	}
     } // setRevokeStatus
 
     /**
@@ -1211,8 +1244,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
-        debug(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
-
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
+    	}
         try {
             int maxnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
             X509CRL crl = null;
@@ -1222,7 +1256,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             } catch (FinderException e) {
                 crl = null;
             }
-            debug("<getLastCRL()");
+            trace("<getLastCRL()");
             if (crl == null) {
             	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, maxnumber);            	
                 getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
@@ -1248,7 +1282,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
-        debug(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
+    	}
         int crlnumber = 0;
         try {
             crlnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
@@ -1267,7 +1303,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             	}
                 crlinfo = null;
             }
-            debug("<getLastCRLInfo()");
+            trace("<getLastCRLInfo()");
             return crlinfo;
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", issuerdn);            	
@@ -1285,8 +1321,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
-        debug(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
-
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
+    	}
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
@@ -1307,8 +1344,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             int maxnumber = 0;
             if (result.next())
                 maxnumber = result.getInt(1);
-            debug("<getLastCRLNumber(" + maxnumber + ")");
-
+        	if (log.isTraceEnabled()) {
+                log.trace("<getLastCRLNumber(" + maxnumber + ")");
+        	}
             return maxnumber;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -1327,7 +1365,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method     
      */
     public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata){
-        debug(">addCertReqHistData(" + CertTools.getSerialNumberAsString(cert) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">addCertReqHistData(" + CertTools.getSerialNumberAsString(cert) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
+    	}
         try {
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
@@ -1339,7 +1379,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
-        debug("<addCertReqHistData()");    	
+        log.trace("<addCertReqHistData()");    	
     }
     
     /**
@@ -1350,7 +1390,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method  
      */
     public void removeCertReqHistoryData(Admin admin, String certFingerprint){
-    	debug(">removeCertReqHistData(" + certFingerprint + ")");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">removeCertReqHistData(" + certFingerprint + ")");
+    	}
         try {          
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = certFingerprint;
@@ -1362,7 +1404,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
-        debug("<removeCertReqHistData()");       	
+        trace("<removeCertReqHistData()");       	
     }
     
     /**
@@ -1830,7 +1872,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public int getCertificateProfileId(Admin admin, String certificateprofilename) {
-    	log.debug(">getCertificateProfileId: "+certificateprofilename);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getCertificateProfileId: "+certificateprofilename);
+    	}
         int returnval = 0;
 
         if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
@@ -1866,7 +1910,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         } catch (FinderException e) {
         	log.debug("No certificate profile found with name: "+certificateprofilename);
         }
-    	log.debug("<getCertificateProfileId: "+certificateprofilename);
+    	if (log.isTraceEnabled()) {
+        	log.trace("<getCertificateProfileId: "+certificateprofilename);
+    	}
         return returnval;
     } // getCertificateProfileId
 
@@ -1878,7 +1924,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public String getCertificateProfileName(Admin admin, int id) {
-    	log.debug(">getCertificateProfileName: "+id);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getCertificateProfileName: "+id);
+    	}
         String returnval = null;
         // Is id a fixed profile
         if (id < SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
@@ -1920,7 +1968,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             	log.debug("No certificate profile found with id: "+id);
             }
         }
-    	log.debug("<getCertificateProfileName: "+id);
+    	if (log.isTraceEnabled()) {
+        	log.trace("<getCertificateProfileName: "+id);
+    	}
         return returnval;
     } // getCertificateProfileName
 

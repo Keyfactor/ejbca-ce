@@ -1092,7 +1092,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Implementation of UpgradableDataHashMap function upgrade. 
      */
     public void upgrade(){
-        log.debug(">upgrade");
+        log.trace(">upgrade");
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
 			String msg = intres.getLocalizedMessage("certprofile.upgrade", new Float(getVersion()));
@@ -1258,7 +1258,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }
-        log.debug("<upgrade");
+        log.trace("<upgrade");
     }
     
 }

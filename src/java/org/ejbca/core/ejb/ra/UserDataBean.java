@@ -382,11 +382,11 @@ public abstract class UserDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public boolean comparePassword(String password) throws NoSuchAlgorithmException {
-        log.debug(">comparePassword()");
+        log.trace(">comparePassword()");
         if (password == null)
             return false;
 
-        log.debug("<comparePassword()");
+        log.trace("<comparePassword()");
         //log.debug("Newhash="+makePasswordHash(password)+", OldHash="+passwordHash);
         return (makePasswordHash(password).equals(getPasswordHash()));
     }
@@ -403,7 +403,7 @@ public abstract class UserDataBean extends BaseEntityBean {
      */
 
     private String makePasswordHash(String password) throws NoSuchAlgorithmException {
-        log.debug(">makePasswordHash()");
+        log.trace(">makePasswordHash()");
 
         if (password == null)
             return null;
@@ -418,7 +418,7 @@ public abstract class UserDataBean extends BaseEntityBean {
             throw nsae;
         }
 
-        log.debug("<makePasswordHash()");
+        log.trace("<makePasswordHash()");
         return ret;
     }
 

@@ -92,11 +92,11 @@ public class CmpMessageHelper {
 	}
 
     public static byte[] signPKIMessage(PKIMessage myPKIMessage, X509Certificate signCert, PrivateKey signKey, String digestAlg, String provider) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, IOException, CertificateEncodingException {
-		log.debug(">signPKIMessage()");
+		log.trace(">signPKIMessage()");
 		X509CertificateStructure signStruct = X509CertificateStructure.getInstance(new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded())).readObject());
 		CmpMessageHelper.buildCertBasedPKIProtection( myPKIMessage, signStruct, signKey, digestAlg, provider);
 
-		log.debug("<signPKIMessage()");
+		log.trace("<signPKIMessage()");
 		// Return response as byte array 
 		return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
     }
@@ -133,7 +133,7 @@ public class CmpMessageHelper {
 	}
 	
 	public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId, int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
-		log.debug(">protectPKIMessageWithPBE()");
+		log.trace(">protectPKIMessageWithPBE()");
 		// Create the PasswordBased protection of the message
 		PKIHeader head = msg.getHeader();
 		head.setSenderKID(new DEROctetString(keyId.getBytes()));
@@ -187,7 +187,7 @@ public class CmpMessageHelper {
 		// Finally store the protection bytes in the msg
 		ret.setProtection(bs);
 		
-		log.debug("<protectPKIMessageWithPBE()");
+		log.trace("<protectPKIMessageWithPBE()");
 		// Return response as byte array 
 		return CmpMessageHelper.pkiMessageToByteArray(ret);
 	}

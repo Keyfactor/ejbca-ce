@@ -115,7 +115,9 @@ public class CATokenManager {
 	 * @return true if registration went successful, false if the classpath could not be found or the classpath was already registered.
 	 */
 	public synchronized boolean addAvailableCAToken(String classpath, String name, boolean translateable, boolean use) {
-		log.debug(">addAvailableCAToken: "+classpath);
+		if (log.isTraceEnabled()) {
+			log.trace(">addAvailableCAToken: "+classpath);
+		}
 		boolean retval = false;	
 		if (!availablehardcatokens.containsKey(classpath)) {
 			log.debug("CATokenManager registering " + classpath);                
@@ -130,7 +132,9 @@ public class CATokenManager {
 				log.info(msg);
 			}
 		}			
-		log.debug("<addAvailableCAToken: "+classpath);
+		if (log.isTraceEnabled()) {
+			log.trace("<addAvailableCAToken: "+classpath);
+		}
 		return retval;
 	}
     /**

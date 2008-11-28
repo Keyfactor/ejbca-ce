@@ -86,7 +86,7 @@ public class CertificateFinderBean {
 	 * @throws CreateException If session bean creation fails.
 	 */
 	public void initialize(String remoteAddress) throws NamingException, RemoteException, CreateException {
-		log.debug(">initialize()");
+		log.trace(">initialize()");
 	    mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
 	    mSignSession = ((ISignSessionHome) ServiceLocator.getInstance().getRemoteHome(ISignSessionHome.JNDI_NAME, ISignSessionHome.class)).create();
 	    mStoreSession = ((ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class)).create();
@@ -95,7 +95,7 @@ public class CertificateFinderBean {
 	}
 
 	public Collection getAvailableCAs() throws RemoteException {
-		log.debug(">getAvailableCAs()");
+		log.trace(">getAvailableCAs()");
 		return mInitialized ? mCaAdminSession.getAvailableCAs(mAdmin) : null;
 	}
 
@@ -104,22 +104,22 @@ public class CertificateFinderBean {
 	}
 
 	public void setCurrentCA(Integer currentCA) {
-		if (log.isDebugEnabled()) {
-			log.debug(">setCurrentCA(" + currentCA + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">setCurrentCA(" + currentCA + ")");
 		}
 		mCurrentCA = currentCA;
 	}
 
 	public CAInfo getCAInfo() throws RemoteException {
-		if (log.isDebugEnabled()) {
-			log.debug(">getCAInfo() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
+		if (log.isTraceEnabled()) {
+			log.trace(">getCAInfo() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
 		}
 		return mInitialized ? mCaAdminSession.getCAInfo(mAdmin, mCurrentCA) : null;
 	}
 
 	public Collection getCACertificateChain() throws RemoteException {
-		if (log.isDebugEnabled()) {
-			log.debug(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
+		if (log.isTraceEnabled()) {
+			log.trace(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
 		}
 		if (!mInitialized) {
 			return null;
@@ -174,8 +174,8 @@ public class CertificateFinderBean {
 	 */
 	public void lookupRevokedInfo(String issuerDN, String serialNumber, RevokedCertInfo result) throws RemoteException {
 		serialNumber = ("0000000000000000" + serialNumber).substring(serialNumber.length());	// Pad with zeroes up to 16 chars
-		if (log.isDebugEnabled()) {
-			log.debug(">lookupRevokedInfo(" + issuerDN + ", " + serialNumber + ", " + result + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">lookupRevokedInfo(" + issuerDN + ", " + serialNumber + ", " + result + ")");
 		}
 		if (result == null || mInitialized == false) {
 			return; // There's nothing we can do here.
@@ -207,8 +207,8 @@ public class CertificateFinderBean {
 	 */
 	@SuppressWarnings("unchecked")
 	public void lookupCertificatesBySubject(String subject, Collection result) throws RemoteException {
-		if (log.isDebugEnabled()) {
-			log.debug(">lookupCertificatesBySubject(" + subject + ", " + result + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">lookupCertificatesBySubject(" + subject + ", " + result + ")");
 		}
 		if (result == null) {
 			return; // There's nothing we can do here.

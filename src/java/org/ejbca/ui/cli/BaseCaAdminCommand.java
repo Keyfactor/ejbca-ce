@@ -60,7 +60,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
      * @return array of certificates, from ISignSession.getCertificateChain()
      */   
     protected Collection getCertChain(String caname) throws Exception{
-        debug(">getCertChain()");
+        trace(">getCertChain()");
         Collection returnval = new ArrayList();
         try {
             CAInfo cainfo = this.getCAAdminSession().getCAInfo(administrator,caname);
@@ -70,14 +70,14 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         } catch (Exception e) {
             error("Error while getting certfificate chain from CA.", e);
         }
-        debug("<getCertChain()");
+        trace("<getCertChain()");
         return returnval;
     } // getCertChain 
 
     protected void makeCertRequest(String dn, KeyPair rsaKeys, String reqfile)
         throws NoSuchAlgorithmException, IOException, NoSuchProviderException, InvalidKeyException, 
             SignatureException {
-        debug(">makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
+    	trace(">makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
 
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), new DERSet(), rsaKeys.getPrivate());
@@ -110,11 +110,11 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
         os1.close();
         getOutputStream().println("CertificationRequest '" + reqfile + "' generated successfully.");
-        debug("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
+        trace("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     } // makeCertRequest
 
     protected void createCRL(String issuerdn, boolean deltaCRL) {
-        debug(">createCRL()");
+    	trace(">createCRL()");
 
         try {
             if(issuerdn != null){
@@ -137,7 +137,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
             error("Error while getting certficate chain from CA.", e);
         }
 
-        debug(">createCRL()");
+        trace(">createCRL()");
    } // createCRL
     
    protected String getIssuerDN(String caname) throws Exception{            

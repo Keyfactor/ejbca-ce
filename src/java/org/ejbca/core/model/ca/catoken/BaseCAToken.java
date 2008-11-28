@@ -368,8 +368,8 @@ public abstract class BaseCAToken implements ICAToken {
 	 * @see org.ejbca.core.model.ca.caadmin.ICAToken#getCATokenStatus()
 	 */
     public int getCATokenStatus() {    	
-		if (log.isDebugEnabled()) {
-			log.debug(">getCATokenStatus");
+		if (log.isTraceEnabled()) {
+			log.trace(">getCATokenStatus");
 		}
     	autoActivate();
     	int ret = ICAToken.STATUS_OFFLINE;
@@ -406,8 +406,8 @@ public abstract class BaseCAToken implements ICAToken {
             	}
         	}
     	}
-		if (log.isDebugEnabled()) {
-			log.debug("<getCATokenStatus: "+ret);
+		if (log.isTraceEnabled()) {
+			log.trace("<getCATokenStatus: "+ret);
 		}
     	return ret;
     }

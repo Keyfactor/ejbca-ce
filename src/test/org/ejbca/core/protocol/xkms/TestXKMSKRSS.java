@@ -152,14 +152,14 @@ public class TestXKMSKRSS extends TestCase {
 	}
 	
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         CertTools.installBCProvider();
         Random ran = new Random();
         if(baseUsername == null){
           baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
         }
         
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {

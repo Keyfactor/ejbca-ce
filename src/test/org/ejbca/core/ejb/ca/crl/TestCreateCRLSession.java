@@ -84,7 +84,7 @@ public class TestCreateCRLSession extends TestCase {
 	}
 
 	protected void setUp() throws Exception {
-		log.debug(">setUp()");
+		log.trace(">setUp()");
 		CertTools.installBCProvider();
 
 		Collection caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
@@ -96,7 +96,7 @@ public class TestCreateCRLSession extends TestCase {
 		} else {
 			assertTrue("No active CA! Must have at least one active CA to run tests!", false);
 		}
-		log.debug("<setUp()");
+		log.trace("<setUp()");
 	}
 
 	protected void tearDown() throws Exception {
@@ -108,9 +108,9 @@ public class TestCreateCRLSession extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test01CreateNewCRL() throws Exception {
-		log.debug(">test01CreateNewCRL()");
+		log.trace(">test01CreateNewCRL()");
 		TestTools.getCreateCRLSession().run(admin, cadn);
-		log.debug("<test01CreateNewCRL()");
+		log.trace("<test01CreateNewCRL()");
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class TestCreateCRLSession extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test02LastCRL() throws Exception {
-		log.debug(">test02LastCRL()");
+		log.trace(">test02LastCRL()");
 		// Get number of last CRL
 		int number = TestTools.getCertificateStoreSession().getLastCRLNumber(admin, cadn, false);
 		log.debug("Last CRLNumber = " + number);
@@ -135,7 +135,7 @@ public class TestCreateCRLSession extends TestCase {
 		X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
 		BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
 		assertEquals(num.intValue()+1, num1.intValue());
-		log.debug("<test02LastCRL()");
+		log.trace("<test02LastCRL()");
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class TestCreateCRLSession extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test03CheckNumberofRevokedCerts() throws Exception {
-		log.debug(">test03CheckNumberofRevokedCerts()");
+		log.trace(">test03CheckNumberofRevokedCerts()");
 
 		// Get number of last CRL
 		Collection revfp = TestTools.getCertificateStoreSession().listRevokedCertInfo(admin, cadn, -1);
@@ -160,7 +160,7 @@ public class TestCreateCRLSession extends TestCase {
 			revsize = revset.size();
 			assertEquals(revfp.size(), revsize);
 		}
-		log.debug("<test03CheckNumberofRevokedCerts()");
+		log.trace("<test03CheckNumberofRevokedCerts()");
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class TestCreateCRLSession extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test04RevokeAndUnrevoke() throws Exception {
-        log.debug(">test04RevokeAndUnrevoke()");
+        log.trace(">test04RevokeAndUnrevoke()");
 
         // Make user that we know...
         boolean userExists = false;
@@ -289,7 +289,7 @@ public class TestCreateCRLSession extends TestCase {
         	}
         }
         assertTrue(found);
-        log.debug("<test04RevokeAndUnrevoke()");
+        log.trace("<test04RevokeAndUnrevoke()");
     }
 
 	/**
@@ -298,7 +298,7 @@ public class TestCreateCRLSession extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test05CRLPeriodOverflow() throws Exception {
-		log.debug(">test05CRLPeriodOverflow()");
+		log.trace(">test05CRLPeriodOverflow()");
 		// Fetch CAInfo and save CRLPeriod
 		CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
 		int tempCRLPeriod = cainfo.getCRLPeriod();
@@ -399,7 +399,7 @@ public class TestCreateCRLSession extends TestCase {
      * @throws Exception error
      */
     public void test06CRLDistPointOnCRL() throws Exception {
-        log.debug(">test06CRLDistPointOnCRL()");
+        log.trace(">test06CRLDistPointOnCRL()");
 
         final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
         X509CAInfo cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, caid);
@@ -434,14 +434,14 @@ public class TestCreateCRLSession extends TestCase {
         assertNull("CRL has distribution points",
                    x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
 
-        log.debug("<test06CRLDistPointOnCRL()");
+        log.trace("<test06CRLDistPointOnCRL()");
     }
 
     /** Tests the extension Freshest CRL DP.
      * @throws Exception in case of error.
      */
     public void test07CRLFreshestCRL() throws Exception {
-        log.debug(">test07CRLFreshestCRL()");
+        log.trace(">test07CRLFreshestCRL()");
 
         final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
         final String freshestCdpURL = "http://www.ejbca.org/foo/delta.crl";
@@ -469,7 +469,7 @@ public class TestCreateCRLSession extends TestCase {
                      freshestCdpURL,
                      ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint().getName()).getNames()[0].getName()).getString());
 
-        log.debug("<test07CRLFreshestCRL()");
+        log.trace("<test07CRLFreshestCRL()");
     }
 
     // 

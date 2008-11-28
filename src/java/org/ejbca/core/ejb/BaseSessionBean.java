@@ -43,6 +43,25 @@ public class BaseSessionBean implements SessionBean {
     }
 
     /**
+     * Logs a message with priority TRACE
+     *
+     * @param msg Message
+     */
+    public void trace(String msg) {
+        log.trace(msg);
+    }
+
+    /**
+     * Logs a message and an exception with priority TRACE
+     *
+     * @param msg Message
+     * @param t Exception
+     */
+    public void trace(String msg, Throwable t) {
+        log.trace(msg, t);
+    }
+
+    /**
      * Logs a message with priority DEBUG
      *
      * @param msg Message

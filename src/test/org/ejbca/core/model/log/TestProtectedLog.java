@@ -47,7 +47,7 @@ public class TestProtectedLog extends TestCase {
 	}
 
 	protected void setUp() throws Exception {
-		log.debug(">setUp()");
+		log.trace(">setUp()");
 		// Stop services
 		TestTools.getProtectedLogSession().stopServices();
 		// Clear protected log
@@ -55,7 +55,7 @@ public class TestProtectedLog extends TestCase {
 		TestTools.getProtectedLogSession().removeAllExports(true);
 		// Make sure tempfile is removed
 		ProtectedLogTestAction.removeFileInTempDir();
-		log.debug("<setUp()");
+		log.trace("<setUp()");
 	}
 
 	protected void tearDown() throws Exception {

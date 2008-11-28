@@ -104,13 +104,13 @@ public class TestXKMSKISS extends TestCase {
 	private static String dn3;
 	
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         CertTools.installBCProvider();
         Random ran = new Random();
         if(baseUsername == null){
           baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
         }
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
@@ -972,15 +972,6 @@ public class TestXKMSKISS extends TestCase {
     	TestTools.getCertificateStoreSession().removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC");
     }
     
-    
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
-        return ctx;
-    }
     
     private String genUserName() throws Exception {
         // Gen new user

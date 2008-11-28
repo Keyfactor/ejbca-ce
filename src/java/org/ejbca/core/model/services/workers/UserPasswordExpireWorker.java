@@ -90,7 +90,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work() throws ServiceExecutionFailedException {
-		log.debug(">Worker started");
+		log.trace(">Worker started");
 
 		ArrayList userEmailQueue = new ArrayList();
 		ArrayList adminEmailQueue = new ArrayList();
@@ -155,7 +155,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 			sendEmails(adminEmailQueue);
 		}	
 
-		log.debug("<Worker ended");
+		log.trace("<Worker ended");
 	}
 	
 	/** Method that must be implemented by all subclasses to EmailSendingWorker, used to update status of 

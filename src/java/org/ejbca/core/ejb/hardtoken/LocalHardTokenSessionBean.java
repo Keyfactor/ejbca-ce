@@ -360,9 +360,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
 	 */
 	public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException{
-	   debug(">addHardTokenProfile(name: " + name + ")");
-       addHardTokenProfile(admin,findFreeHardTokenProfileId().intValue(),name,profile);
-	   debug("<addHardTokenProfile()");
+		if (log.isTraceEnabled()) {
+			log.trace(">addHardTokenProfile(name: " + name + ")");
+		}
+		addHardTokenProfile(admin,findFreeHardTokenProfileId().intValue(),name,profile);
+		log.trace("<addHardTokenProfile()");
 	} // addHardTokenProfile
 
 
@@ -376,7 +378,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Required"
 	 */
 	public void addHardTokenProfile(Admin admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException{
-	    debug(">addHardTokenProfile(name: " + name + ", id: " + profileid +")");
+		if (log.isTraceEnabled()) {
+		    log.trace(">addHardTokenProfile(name: " + name + ", id: " + profileid +")");
+		}
 	    boolean success=false;
 	    try{
 	        hardtokenprofilehome.findByName(name);
@@ -403,7 +407,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	    
 	    if(!success)
 	        throw new HardTokenProfileExistsException();
-	    debug("<addHardTokenProfile()");
+	    log.trace("<addHardTokenProfile()");
 	} // addHardTokenProfile
 
 	/**
@@ -414,7 +418,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Required"
 	 */
 	public void changeHardTokenProfile(Admin admin, String name, HardTokenProfile profile){
-	   debug(">changeHardTokenProfile(name: " + name + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">changeHardTokenProfile(name: " + name + ")");
+		}
 	   boolean success = false;
 	   try{
 		 HardTokenProfileDataLocal htp = hardtokenprofilehome.findByName(name);
@@ -430,7 +436,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
 	   }
 
-	   debug("<changeHardTokenProfile()");
+	   log.trace("<changeHardTokenProfile()");
 	} // changeHardTokenProfile
 
 	 /**
@@ -442,7 +448,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       * @ejb.transaction type="Required"
 	 */
 	public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException{
-	   debug(">cloneHardTokenProfile(name: " + oldname + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">cloneHardTokenProfile(name: " + oldname + ")");
+		}
 	   HardTokenProfile profiledata = null;
 	   try{
 		 HardTokenProfileDataLocal htp = hardtokenprofilehome.findByName(oldname);
@@ -462,7 +470,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		  throw new EJBException(e);
 	   }
 
-	   debug("<cloneHardTokenProfile()");
+	   log.trace("<cloneHardTokenProfile()");
 	} // cloneHardTokenProfile
 
 	 /**
@@ -473,7 +481,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       * @ejb.transaction type="Required"
 	 */
 	public void removeHardTokenProfile(Admin admin, String name){
-	  debug(">removeHardTokenProfile(name: " + name + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">removeHardTokenProfile(name: " + name + ")");
+		}
 	  try{
 		HardTokenProfileDataLocal htp = hardtokenprofilehome.findByName(name);
 		htp.remove();
@@ -483,7 +493,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           String msg = intres.getLocalizedMessage("hardtoken.errorremoveprofile", name);            	
           getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA,msg,e);
 	  }
-	  debug("<removeHardTokenProfile()");
+	  log.trace("<removeHardTokenProfile()");
 	} // removeHardTokenProfile
 
 	 /**
@@ -495,7 +505,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       * @ejb.transaction type="Required"
 	 */
 	public void renameHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException{
-	   debug(">renameHardTokenProfile(from " + oldname + " to " + newname + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">renameHardTokenProfile(from " + oldname + " to " + newname + ")");
+		}
 	   boolean success = false;
 	   try{
 		  hardtokenprofilehome.findByName(newname);
@@ -517,7 +529,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
        if(!success)
 	     throw new HardTokenProfileExistsException();
-	   debug("<renameHardTokenProfile()");
+	   log.trace("<renameHardTokenProfile()");
 	} // renameHardTokenProfile
 
 	/**
@@ -552,9 +564,6 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		  }
 		}
 	  }catch(FinderException e){}
-
-
-
 	  return returnval;
 	} // getAuthorizedHardTokenProfileIds
 
@@ -650,7 +659,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       * @ejb.interface-method view-type="both"
 	  */
 	public String getHardTokenProfileName(Admin admin, int id){
-	  debug(">getHardTokenProfileName(id: " + id + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">getHardTokenProfileName(id: " + id + ")");
+		}
 	  String returnval = null;
 	  HardTokenProfileDataLocal htp = null;
 	  try{
@@ -660,7 +671,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		}
 	  }catch(FinderException e){}
 
-	  debug("<getHardTokenProfileName()");
+	  log.trace("<getHardTokenProfileName()");
 	  return returnval;
 	} // getHardTokenProfileName
 
@@ -675,7 +686,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      */
 
     public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata){
-       debug(">addHardTokenIssuer(alias: " + alias + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">addHardTokenIssuer(alias: " + alias + ")");
+		}
        boolean returnval=false;
        try{
           hardtokenissuerhome.findByAlias(alias);
@@ -694,7 +707,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
        }
 
-       debug("<addHardTokenIssuer()");
+       log.trace("<addHardTokenIssuer()");
        return returnval;
     } // addHardTokenIssuer
 
@@ -708,7 +721,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      */
 
     public boolean changeHardTokenIssuer(Admin admin, String alias, HardTokenIssuer issuerdata){
-       debug(">changeHardTokenIssuer(alias: " + alias + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">changeHardTokenIssuer(alias: " + alias + ")");
+		}
        boolean returnvalue = false;
        try{
          HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);
@@ -724,7 +739,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
        }
 
-       debug("<changeHardTokenIssuer()");
+       log.trace("<changeHardTokenIssuer()");
        return returnvalue;
     } // changeHardTokenIssuer
 
@@ -737,7 +752,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       * @ejb.transaction type="Required"
      */
     public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, int admingroupid){
-       debug(">cloneHardTokenIssuer(alias: " + oldalias + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">cloneHardTokenIssuer(alias: " + oldalias + ")");
+		}
        HardTokenIssuer issuerdata = null;
        boolean returnval = false;
        try{
@@ -756,7 +773,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           throw new EJBException(e);
        }
 
-       debug("<cloneHardTokenIssuer()");
+       log.trace("<cloneHardTokenIssuer()");
        return returnval;
     } // cloneHardTokenIssuer
 
@@ -768,7 +785,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       * @ejb.transaction type="Required"
      */
     public void removeHardTokenIssuer(Admin admin, String alias){
-      debug(">removeHardTokenIssuer(alias: " + alias + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">removeHardTokenIssuer(alias: " + alias + ")");
+		}
       try{
     	  HardTokenIssuerDataLocal htih = hardtokenissuerhome.findByAlias(alias);
     	  htih.remove();
@@ -778,7 +797,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	  String msg = intres.getLocalizedMessage("hardtoken.errorremoveissuer", alias);            	
     	  getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg,e);
       }
-      debug("<removeHardTokenIssuer()");
+      log.trace("<removeHardTokenIssuer()");
     } // removeHardTokenIssuer
 
      /**
@@ -791,7 +810,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      */
     public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias,
                                          int newadmingroupid){
-       debug(">renameHardTokenIssuer(from " + oldalias + " to " + newalias + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">renameHardTokenIssuer(from " + oldalias + " to " + newalias + ")");
+		}
        boolean returnvalue = false;
        try{
           hardtokenissuerhome.findByAlias(newalias);
@@ -812,7 +833,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);
        }
 
-       debug("<renameHardTokenIssuer()");
+       log.trace("<renameHardTokenIssuer()");
        return returnvalue;
     } // renameHardTokenIssuer
 
@@ -826,16 +847,18 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias){
-      debug(">getAuthorizedToHardTokenIssuer(" +  alias + ")");
-      boolean returnval = false;
-        try{
-
-      	  int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
-		  returnval = getAuthorizationSession().isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
-      	  returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);
-        }catch(FinderException fe){}
-          catch(AuthorizationDeniedException ade){}
-          debug("<getAuthorizedToHardTokenIssuer(" +  returnval + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">getAuthorizedToHardTokenIssuer(" +  alias + ")");
+		}
+		boolean returnval = false;
+		try {
+			int admingroupid = hardtokenissuerhome.findByAlias(alias).getAdminGroupId();
+			returnval = getAuthorizationSession().isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
+			returnval = returnval && authorizationsession.existsAdministratorInGroup(admin, admingroupid);
+		} catch (FinderException fe) {
+		} catch (AuthorizationDeniedException ade) {
+		}
+		log.trace("<getAuthorizedToHardTokenIssuer(" +  returnval + ")");
       return returnval;
     }
 
@@ -847,7 +870,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public Collection getHardTokenIssuerDatas(Admin admin){
-      debug(">getHardTokenIssuerDatas()");
+      log.trace(">getHardTokenIssuerDatas()");
       ArrayList returnval = new ArrayList();
       Collection result = null;
       HardTokenIssuerDataLocal htih = null;
@@ -865,7 +888,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         Collections.sort(returnval);
       }catch(FinderException e){}
 
-      debug("<getHardTokenIssuerDatas()");
+      log.trace("<getHardTokenIssuerDatas()");
       return returnval;
     } // getHardTokenIssuers
 
@@ -877,7 +900,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public Collection getHardTokenIssuerAliases(Admin admin){
-      debug(">getHardTokenIssuerAliases()");
+      log.trace(">getHardTokenIssuerAliases()");
       ArrayList returnval = new ArrayList();
       Collection result = null;
       Collection authorizedhardtokenprofiles = this.getAuthorizedHardTokenProfileIds(admin);
@@ -895,7 +918,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         Collections.sort(returnval);
       }catch(FinderException e){}
 
-      debug("<getHardTokenIssuerAliases()");
+      log.trace("<getHardTokenIssuerAliases()");
       return returnval;
     }// getHardTokenIssuerAliases
 
@@ -907,7 +930,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public TreeMap getHardTokenIssuers(Admin admin){
-      debug(">getHardTokenIssuers()");
+      log.trace(">getHardTokenIssuers()");
       Collection authorizedhardtokenprofiles = this.getAuthorizedHardTokenProfileIds(admin);
       TreeMap returnval = new TreeMap();
       Collection result = null;
@@ -923,7 +946,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         }
       }catch(FinderException e){}
 
-      debug("<getHardTokenIssuers()");
+      log.trace("<getHardTokenIssuers()");
       return returnval;
     } // getHardTokenIssuers
 
@@ -935,7 +958,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public HardTokenIssuerData getHardTokenIssuerData(Admin admin, String alias){
-      debug(">getHardTokenIssuerData(alias: " + alias + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">getHardTokenIssuerData(alias: " + alias + ")");
+		}
       HardTokenIssuerData returnval = null;
       HardTokenIssuerDataLocal htih = null;
       try{
@@ -945,7 +970,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         }
       }catch(FinderException e){}
 
-      debug("<getHardTokenIssuerData()");
+      log.trace("<getHardTokenIssuerData()");
       return returnval;
     } // getHardTokenIssuerData
 
@@ -957,7 +982,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.interface-method view-type="both"
        */
     public HardTokenIssuerData getHardTokenIssuerData(Admin admin, int id){
-      debug(">getHardTokenIssuerData(id: " + id +")" );
+		if (log.isTraceEnabled()) {
+			log.trace(">getHardTokenIssuerData(id: " + id +")" );
+		}
       HardTokenIssuerData returnval = null;
       HardTokenIssuerDataLocal htih = null;
       try{
@@ -967,7 +994,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         }
       }catch(FinderException e){}
 
-      debug("<getHardTokenIssuerData()");
+      log.trace("<getHardTokenIssuerData()");
       return returnval;
     } // getHardTokenIssuerData
 
@@ -980,13 +1007,13 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public int getNumberOfHardTokenIssuers(Admin admin){
-      debug(">getNumberOfHardTokenIssuers()");
+      trace(">getNumberOfHardTokenIssuers()");
       int returnval =0;
       try{
         returnval = (hardtokenissuerhome.findAll()).size();
       }catch(FinderException e){}
 
-      debug("<getNumberOfHardTokenIssuers()");
+      trace("<getNumberOfHardTokenIssuers()");
       return returnval;
     } // getNumberOfHardTokenIssuers
 
@@ -998,7 +1025,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public int getHardTokenIssuerId(Admin admin, String alias){
-      debug(">getHardTokenIssuerId(alias: " + alias + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">getHardTokenIssuerId(alias: " + alias + ")");
+		}
       int returnval = NO_ISSUER;
       HardTokenIssuerDataLocal htih = null;
       try{
@@ -1008,7 +1037,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         }
       }catch(FinderException e){}
 
-      debug("<getHardTokenIssuerId()");
+      log.trace("<getHardTokenIssuerId()");
       return returnval;
     } // getNumberOfHardTokenIssuersId
 
@@ -1020,7 +1049,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.interface-method view-type="both"
        */
     public String getHardTokenIssuerAlias(Admin admin, int id){
-      debug(">getHardTokenIssuerAlias(id: " + id + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">getHardTokenIssuerAlias(id: " + id + ")");
+		}
       String returnval = null;
       HardTokenIssuerDataLocal htih = null;
       try{
@@ -1030,7 +1061,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         }
       }catch(FinderException e){}
 
-      debug("<getHardTokenIssuerAlias()");
+      log.trace("<getHardTokenIssuerAlias()");
       return returnval;
     } // getHardTokenIssuerAlias
 
@@ -1047,7 +1078,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
 
     public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException{
-        debug(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType()+ ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType()+ ")");
+		}
         boolean returnval = false;
         ArrayList availabletokentypes = getHardTokenIssuerData(admin, issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
 
@@ -1060,7 +1093,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         	String msg = intres.getLocalizedMessage("hardtoken.unavailabletoken", userdata.getUsername());            	
         	throw new UnavailableTokenException(msg);
         }
-        debug("<getIsTokenTypeAvailableToIssuer()");
+        log.trace("<getIsTokenTypeAvailableToIssuer()");
     } // getIsTokenTypeAvailableToIssuer
 
        /**
@@ -1080,7 +1113,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.transaction type="Required"
        */
     public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype,  HardToken hardtokendata, Collection certificates, String copyof) throws HardTokenExistsException{
-        debug(">addHardToken(tokensn : " + tokensn + ")");
+		if (log.isTraceEnabled()) {
+	        log.trace(">addHardToken(tokensn : " + tokensn + ")");
+		}
 		String bcdn = CertTools.stringToBCDNString(significantissuerdn);
     	boolean exists = false;
     	try {
@@ -1117,7 +1152,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     		getLogSession().log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,msg);
     		throw new HardTokenExistsException("Tokensn : " + tokensn);    		
     	}
-        debug("<addHardToken()");
+        log.trace("<addHardToken()");
     } // addHardToken
 
        /**
@@ -1133,7 +1168,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.transaction type="Required"
        */
     public void changeHardToken(Admin admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException{
-        debug(">changeHardToken(tokensn : " + tokensn + ")");
+		if (log.isTraceEnabled()) {
+	        log.trace(">changeHardToken(tokensn : " + tokensn + ")");
+		}
         int caid = LogConstants.INTERNALCAID;
         try {
             HardTokenDataLocal htd = hardtokendatahome.findByPrimaryKey(tokensn);
@@ -1149,7 +1186,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         	getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,msg);
         	throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
         }
-        debug("<changeHardToken()");
+        log.trace("<changeHardToken()");
     } // changeHardToken
 
        /**
@@ -1164,7 +1201,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.transaction type="Required"
        */
     public void removeHardToken(Admin admin, String tokensn) throws HardTokenDoesntExistsException{
-      debug(">removeHardToken(tokensn : " + tokensn + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">removeHardToken(tokensn : " + tokensn + ")");
+		}
       int caid = LogConstants.INTERNALCAID;
       try{
         HardTokenDataLocal htd = hardtokendatahome.findByPrimaryKey(tokensn);
@@ -1193,7 +1232,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	  getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,msg);
     	  throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
       }
-      debug("<removeHardToken()");
+      log.trace("<removeHardToken()");
     } // removeHardToken
 
        /**
@@ -1207,7 +1246,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.interface-method view-type="both"
        */
     public boolean existsHardToken(Admin admin, String tokensn){
-       debug(">existsHardToken(tokensn : " + tokensn + ")");
+		if (log.isTraceEnabled()) {
+			log.trace(">existsHardToken(tokensn : " + tokensn + ")");
+		}
        boolean ret = false;
         try {
             hardtokendatahome.findByPrimaryKey(tokensn);
@@ -1217,7 +1258,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         } catch(Exception e){
           throw new EJBException(e);
         }
-       debug("<existsHardToken()");
+       log.trace("<existsHardToken()");
        return ret;
     } // existsHardToken
 
@@ -1232,8 +1273,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public HardTokenData getHardToken(Admin admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException{
-       debug("<getHardToken(tokensn :" + tokensn +")");
-       
+		if (log.isTraceEnabled()) {
+			log.trace("<getHardToken(tokensn :" + tokensn +")");
+		}
        HardTokenData returnval = null;
        HardTokenDataLocal htd = null;
        try{
@@ -1271,7 +1313,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          }
        }catch(FinderException e){}
 
-       debug("<getHardToken()");
+       log.trace("<getHardToken()");
        return returnval;
     } // getHardToken
 
@@ -1286,7 +1328,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @ejb.interface-method view-type="both"
        */
     public Collection getHardTokens(Admin admin, String username, boolean includePUK){
-       debug("<getHardToken(username :" + username +")");
+		if (log.isTraceEnabled()) {
+			log.trace("<getHardToken(username :" + username +")");
+		}
        ArrayList returnval = new ArrayList();
        HardTokenDataLocal htd = null;
        try{
@@ -1326,7 +1370,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          }
        }catch(FinderException e){}
 
-       debug("<getHardToken()");
+       log.trace("<getHardToken()");
        return returnval;
     } // getHardTokens
 
@@ -1341,7 +1385,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      */
 
     public Collection findHardTokenByTokenSerialNumber(Admin admin, String searchpattern){
-    	debug(">findHardTokenByTokenSerialNumber()");
+    	trace(">findHardTokenByTokenSerialNumber()");
     	ArrayList returnval = new ArrayList();
     	Connection con = null;
     	PreparedStatement ps = null;
@@ -1356,7 +1400,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     		while(rs.next() && returnval.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT){
     			returnval.add(rs.getString(1));
     		}
-    		debug("<findHardTokenByTokenSerialNumber()");
+    		trace("<findHardTokenByTokenSerialNumber()");
     		return returnval;
 
     	}catch(Exception e){
@@ -1380,7 +1424,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
     public void addHardTokenCertificateMapping(Admin admin, String tokensn, Certificate certificate){
         String certificatesn = CertTools.getSerialNumberAsString(certificate);
-        debug(">addHardTokenCertificateMapping(certificatesn : "+ certificatesn  +", tokensn : " + tokensn + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">addHardTokenCertificateMapping(certificatesn : "+ certificatesn  +", tokensn : " + tokensn + ")");
+        }
         int caid = CertTools.getIssuerDN(certificate).hashCode();
         String fp = CertTools.getFingerprintAsString(certificate);
         boolean exists = false;
@@ -1406,7 +1452,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     		String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
     		getLogSession().log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);        	
         }
-        debug("<addHardTokenCertificateMapping()");
+        log.trace("<addHardTokenCertificateMapping()");
     } // addHardTokenCertificateMapping
 
       /**
@@ -1422,7 +1468,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
     public void removeHardTokenCertificateMapping(Admin admin, Certificate certificate){
        String certificatesn = CertTools.getSerialNumberAsString(certificate);
-       debug(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
+       if (log.isTraceEnabled()) {
+           log.trace(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
+       }
 	   int caid = CertTools.getIssuerDN(certificate).hashCode();
       try{
         HardTokenCertificateMapLocal htcm =hardtokencertificatemaphome.findByPrimaryKey(CertTools.getFingerprintAsString(certificate));
@@ -1437,7 +1485,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
             throw new EJBException(e);
          }
       }
-      debug("<removeHardTokenCertificateMapping()");
+      log.trace("<removeHardTokenCertificateMapping()");
     } // removeHardTokenCertificateMapping
 
 
@@ -1451,7 +1499,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      */
     private void removeHardTokenCertificateMappings(Admin admin, String tokensn){
-      debug(">removeHardTokenCertificateMappings(tokensn: " + tokensn + ")");
+        if (log.isTraceEnabled()) {
+        	log.trace(">removeHardTokenCertificateMappings(tokensn: " + tokensn + ")");
+        }
 	  int caid = admin.getCaId();
       try{
       	Iterator result = hardtokencertificatemaphome.findByTokenSN(tokensn).iterator();
@@ -1470,7 +1520,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
               throw new EJBException(e);
            }
          }
-         debug("<removeHardTokenCertificateMappings()");
+         log.trace("<removeHardTokenCertificateMappings()");
      } // removeHardTokenCertificateMapping
 
        /**
@@ -1484,7 +1534,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         * @ejb.interface-method view-type="both"
        */
     public Collection findCertificatesInHardToken(Admin admin, String tokensn){
-       debug("<findCertificatesInHardToken(username :" + tokensn +")");
+    	if (log.isTraceEnabled()) {
+        	log.trace("<findCertificatesInHardToken(username :" + tokensn +")");
+        }
        ArrayList returnval = new ArrayList();
        HardTokenCertificateMapLocal htcm = null;
        try{
@@ -1501,7 +1553,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           throw new EJBException(e);
        }
 
-       debug("<findCertificatesInHardToken()");
+       log.trace("<findCertificatesInHardToken()");
        return returnval;
     } // findCertificatesInHardToken
 
@@ -1517,7 +1569,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
       * @ejb.interface-method view-type="both"
      */
   public String findHardTokenByCertificateSNIssuerDN(Admin admin, BigInteger certificatesn, String issuerdn){
-     debug("<findHardTokenByCertificateSNIssuerDN(certificatesn :" + certificatesn + ", issuerdn :" + issuerdn+ ")");
+	  if (log.isTraceEnabled()) {
+		  log.trace("<findHardTokenByCertificateSNIssuerDN(certificatesn :" + certificatesn + ", issuerdn :" + issuerdn+ ")");
+	  }
      String returnval = null;
      HardTokenCertificateMapLocal htcm = null;
      try{
@@ -1532,7 +1586,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         throw new EJBException(e);
      }
 
-     debug("<findHardTokenByCertificateSNIssuerDN()");
+     log.trace("<findHardTokenByCertificateSNIssuerDN()");
      return returnval;
   } // findCertificatesInHardToken
     

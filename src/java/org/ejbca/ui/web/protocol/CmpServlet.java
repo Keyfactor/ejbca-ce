@@ -170,7 +170,7 @@ public class CmpServlet extends HttpServlet {
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
-		log.debug(">doPost()");
+		log.trace(">doPost()");
 		/* 
 		 POST
 		 <binary CMP message>
@@ -184,7 +184,7 @@ public class CmpServlet extends HttpServlet {
 			output.write(buf, 0, n);
 		}
 		service(output.toByteArray(), request.getRemoteAddr(), response);
-		log.debug("<doPost()");
+		log.trace("<doPost()");
 	} //doPost
 	
 	/**
@@ -198,12 +198,12 @@ public class CmpServlet extends HttpServlet {
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws java.io.IOException, ServletException {
-		log.debug(">doGet()");
+		log.trace(">doGet()");
 		
 		log.info("Received un-allowed method GET in CMP servlet: query string=" + request.getQueryString());
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "You can only use POST!");
 		
-		log.debug("<doGet()");
+		log.trace("<doGet()");
 	} // doGet
 	
 	private void service(byte[] message, String remoteAddr, HttpServletResponse response) throws IOException {

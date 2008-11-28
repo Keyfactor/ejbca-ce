@@ -58,7 +58,7 @@ public class TestAuthorizationSession extends TestCase {
      * @throws Exception error
      */
     public void test01Initialize() throws Exception {
-        log.debug(">test01Initialize()");
+        log.trace(">test01Initialize()");
         
         // Initialize with a new CA
         TestTools.getAuthorizationSession().initialize(admin, caid);
@@ -109,13 +109,13 @@ public class TestAuthorizationSession extends TestCase {
         }
         assertFalse(found);
         
-        log.debug("<test01Initialize()");
+        log.trace("<test01Initialize()");
     }
 
     public void test02ExistMethods() throws Exception {
-    	log.debug(">test02ExistMethods");
+    	log.trace(">test02ExistMethods");
     	TestTools.getAuthorizationSession().existsCAInRules(admin, caid);
-    	log.debug("<test02ExistMethods");
+    	log.trace("<test02ExistMethods");
     }
     
 }

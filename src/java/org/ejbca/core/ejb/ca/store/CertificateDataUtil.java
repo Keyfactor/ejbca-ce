@@ -63,13 +63,13 @@ public class CertificateDataUtil {
     public static Certificate findCertificateByFingerprint(Admin admin, String fingerprint,
                                                            CertificateDataLocalHome certHome,
                                                            Adapter adapter) {
-        adapter.debug(">findCertificateByFingerprint()");
+        adapter.getLogger().trace(">findCertificateByFingerprint()");
         Certificate ret = null;
 
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = res.getCertificate();
-            adapter.debug("<findCertificateByFingerprint()");
+            adapter.getLogger().trace("<findCertificateByFingerprint()");
         } catch (FinderException fe) {
             // Return null;
         } catch (Exception e) {
@@ -80,8 +80,8 @@ public class CertificateDataUtil {
     } // findCertificateByFingerprint
 
     public static Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno, CertificateDataLocalHome certHome, Adapter adapter) {
-        if (adapter.getLogger().isDebugEnabled()) {
-        	adapter.debug(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        if (adapter.getLogger().isTraceEnabled()) {
+        	adapter.getLogger().trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -112,8 +112,8 @@ public class CertificateDataUtil {
                     }
                 }
             }
-            if (adapter.getLogger().isDebugEnabled()) {
-            	adapter.debug("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+            if (adapter.getLogger().isTraceEnabled()) {
+            	adapter.getLogger().trace("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
             }
             return ret;
         } catch (Exception fe) {
@@ -124,7 +124,7 @@ public class CertificateDataUtil {
     public static Collection findCertificatesByType(Admin admin, int type, String issuerDN,
                                                     CertificateDataLocalHome certHome,
                                                     Adapter adapter) {
-        adapter.debug(">findCertificatesByType()");
+        adapter.getLogger().trace(">findCertificatesByType()");
         if (null == admin
                 || type <= 0
                 || type > CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ENDENTITY + CertificateDataBean.CERTTYPE_ROOTCA) {
@@ -184,7 +184,7 @@ public class CertificateDataUtil {
                 }
             }
 
-            adapter.debug("<findCertificatesByType()");
+            adapter.getLogger().trace("<findCertificatesByType()");
             return vect;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -195,8 +195,8 @@ public class CertificateDataUtil {
 
     static public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno,
                                             CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
-        if (adapter.getLogger().isDebugEnabled()) {
-            adapter.debug(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        if (adapter.getLogger().isTraceEnabled()) {
+            adapter.getLogger().trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -233,14 +233,14 @@ public class CertificateDataUtil {
                 	if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
                 		revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
                 	}
-                	if (adapter.getLogger().isDebugEnabled()) {
-                		adapter.debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                	if (adapter.getLogger().isTraceEnabled()) {
+                		adapter.getLogger().trace("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
                 	}
                 	return revinfo;
                 }
             }
-            if (adapter.getLogger().isDebugEnabled()) {
-            	adapter.debug("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
+            if (adapter.getLogger().isTraceEnabled()) {
+            	adapter.getLogger().trace("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
             }
         } catch (Exception e) {
             throw new EJBException(e);

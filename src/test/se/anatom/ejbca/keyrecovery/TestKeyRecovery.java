@@ -60,19 +60,19 @@ public class TestKeyRecovery extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         CertTools.installBCProvider();
         assertTrue("Could not create TestCA.", TestTools.createTestCA());
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        //log.debug(">getInitialContext");
+        //log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        //log.debug("<getInitialContext");
+        //log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -83,7 +83,7 @@ public class TestKeyRecovery extends TestCase {
      * @throws Exception error
      */
     public void test01AddKeyPair() throws Exception {
-        log.debug(">test01AddKeyPair()");
+        log.trace(">test01AddKeyPair()");
         // Generate test keypair and certificate.
         try {
 
@@ -108,7 +108,7 @@ public class TestKeyRecovery extends TestCase {
 
         assertTrue("Couldn't save key's in database", TestTools.getKeyRecoverySession().existsKeys(admin, cert));
 
-        log.debug("<test01AddKeyPair()");
+        log.trace("<test01AddKeyPair()");
     }
 
     /**
@@ -117,7 +117,7 @@ public class TestKeyRecovery extends TestCase {
      * @throws Exception error
      */
     public void test02MarkAndRecoverKeyPair() throws Exception {
-        log.debug(">test02MarkAndRecoverKeyPair()");
+        log.trace(">test02MarkAndRecoverKeyPair()");
         CertTools.installBCProvider();
         assertTrue("Couldn't mark user for recovery in database", !TestTools.getKeyRecoverySession().isUserMarked(admin, user));
         TestTools.getKeyRecoverySession().markAsRecoverable(admin, cert,SecConst.EMPTY_ENDENTITYPROFILE);
@@ -126,7 +126,7 @@ public class TestKeyRecovery extends TestCase {
 
         assertTrue("Couldn't recover keys from database", Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
 
-        log.debug("<test02MarkAndRecoverKeyPair()");
+        log.trace("<test02MarkAndRecoverKeyPair()");
     }
 
     /**
@@ -135,12 +135,12 @@ public class TestKeyRecovery extends TestCase {
      * @throws Exception error
      */
     public void test03RemoveKeyPair() throws Exception {
-        log.debug(">test03RemoveKeyPair()");
+        log.trace(">test03RemoveKeyPair()");
         CertTools.installBCProvider();
         TestTools.getKeyRecoverySession().removeKeyRecoveryData(admin, cert);
         assertTrue("Couldn't remove keys from database", !TestTools.getKeyRecoverySession().existsKeys(admin, cert));
 
-        log.debug("<test03RemoveKeyPair()");
+        log.trace("<test03RemoveKeyPair()");
     }
 
     private static String genRandomUserName() {

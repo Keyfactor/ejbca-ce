@@ -38,13 +38,13 @@ public class TestDnFieldExtractor extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-        log.debug("<setUp()");
+        log.trace(">setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-        log.debug(">tearDown()");
-        log.debug("<tearDown()");
+        log.trace(">tearDown()");
+        log.trace("<tearDown()");
     }
 
     /**

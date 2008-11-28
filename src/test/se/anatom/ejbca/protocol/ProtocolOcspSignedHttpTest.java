@@ -145,18 +145,17 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         }
     }
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
-        log.debug("<setUp()");
+        log.trace(">setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -181,7 +180,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test01OcspGood() throws Exception {
-        log.debug(">test02OcspGood()");
+        log.trace(">test02OcspGood()");
 
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
@@ -256,7 +255,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 6, 200);
         assertNull(singleResps);
 
-        log.debug("<test01OcspGood()");
+        log.trace("<test01OcspGood()");
     }
 
 

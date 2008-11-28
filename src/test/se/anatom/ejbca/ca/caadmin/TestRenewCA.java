@@ -54,7 +54,7 @@ public class TestRenewCA extends TestCase {
      * @throws Exception error
      */
     public void test01renewCA() throws Exception {
-        log.debug(">test01renewCA()");
+        log.trace(">test01renewCA()");
 
         X509CAInfo info = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
@@ -77,7 +77,7 @@ public class TestRenewCA extends TestCase {
         byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();
         assertFalse(Arrays.equals(orgkey,newkey));        
         
-        log.debug("<test01renewCA()");
+        log.trace("<test01renewCA()");
     }
 
 	public void test99RemoveTestCA() throws Exception {

@@ -126,7 +126,7 @@ public class TestAutoEnrollServlet extends TestCase {
 	boolean installedBCProvider = false;
 
 	protected void setUp() throws Exception {
-		log.debug(">setUp");
+		log.trace(">setUp");
 		if (!installedBCProvider) {
 			CertTools.installBCProvider();
 			installedBCProvider = true;
@@ -147,19 +147,19 @@ public class TestAutoEnrollServlet extends TestCase {
 			raAdminSession = ((IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
 					context.lookup(IRaAdminSessionHome.JNDI_NAME), IRaAdminSessionHome.class)).create();        
 		}
-		log.debug("<setUp");
+		log.trace("<setUp");
 	}
 
 	protected void tearDown() throws Exception {
-		log.debug(">tearDown");
-		log.debug("<tearDown");
+		log.trace(">tearDown");
+		log.trace("<tearDown");
 	}
 
 	/**
 	 * Test if a User-template certificate request is handled ok. 
 	 */
 	public void test01TestUserRequest() throws Exception {
-		log.debug(">test01TestUserRequest");
+		log.trace(">test01TestUserRequest");
 		String remoteUser = "AETester@COMPANY.LOCAL";
 		X509Certificate cert = doRequest(remoteUser, "User", CERTREQ_USER2_TEMPLATE);
 		assertTrue("Returned certificate with wrong CN", ("CN=AETester".equals(cert.getSubjectDN().getName())));
@@ -175,14 +175,14 @@ public class TestAutoEnrollServlet extends TestCase {
 		assertEquals("OK", getStatus(remoteUser, "User"));
 		cleanUp("AETester", "Autoenroll-User");
 		assertEquals("NO_SUCH_USER", getStatus(remoteUser, "User"));
-		log.debug("<test01TestUserRequest");
+		log.trace("<test01TestUserRequest");
 	}
 
 	/**
 	 * Test if a User-template certificate request is handled ok. 
 	 */
 	public void test02TestMachineRequest() throws Exception {
-		log.debug(">test02TestMachineRequest");
+		log.trace(">test02TestMachineRequest");
 		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	
 		X509Certificate cert = doRequest(remoteUser, "Machine", CERTREQ_MACHINE_TEMPLATE);
 		// Expecting the $-sign to be removed
@@ -197,14 +197,14 @@ public class TestAutoEnrollServlet extends TestCase {
 		}
 		assertTrue(isExtendedKeyUsageCritical);
 		cleanUp("TESTSRV-1", "Autoenroll-Machine");
-		log.debug("<test02TestMachineRequest");
+		log.trace("<test02TestMachineRequest");
 	}
 
 	/**
 	 * Test if a DomainController-template certificate request is handled ok. 
 	 */
 	public void test03TestDomainControllerRequest() throws Exception {
-		log.debug(">test03TestDomainControllerRequest");
+		log.trace(">test03TestDomainControllerRequest");
 		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	
 		X509Certificate cert = doRequest(remoteUser, "DomainController", CERTREQ_DOMAIN_CONTROLLER_TEMPLATE);
 		// Expecting the $-sign to be removed
@@ -219,16 +219,16 @@ public class TestAutoEnrollServlet extends TestCase {
 		}
 		assertTrue(isExtendedKeyUsageCritical);
 		cleanUp("TESTSRV-1", "Autoenroll-DomainController");
-		log.debug("<test03TestDomainControllerRequest");
+		log.trace("<test03TestDomainControllerRequest");
 	}
 
 	/**
 	 * Test if a SmartcardLogon-template certificate request is handled ok. 
 	 */
 	/*public void test04TestSmartcardLogonRequest() throws Exception {
-		log.debug(">test04TestSmartcardLogonRequest");
+		log.trace(">test04TestSmartcardLogonRequest");
 		assertFalse("The test does not exist yet. Write it.", true);
-		log.debug("<test04TestSmartcardLogonRequest");
+		log.trace("<test04TestSmartcardLogonRequest");
 	}*/
 
 	/**

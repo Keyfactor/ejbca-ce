@@ -283,7 +283,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public void addToken(ProtectedLogToken token) {
-		log.debug(">addToken");
+		log.trace(">addToken");
 		try {
 			int tokenType = token.getType();
 			switch (tokenType) {
@@ -307,7 +307,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.error("", e);
 			throw new EJBException(e);
 		}
-		log.debug("<addToken");
+		log.trace("<addToken");
 	}
 
 	/**
@@ -316,7 +316,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogToken getToken(int tokenIdentifier) {
-		log.debug(">getToken");
+		log.trace(">getToken");
 		if (protectedLogTokenCache != null && protectedLogTokenCache.getIdentifier() == tokenIdentifier) {
 			return protectedLogTokenCache;
 		}
@@ -350,7 +350,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.error("", e);
 		}
 		protectedLogTokenCache = protectedLogToken;
-		log.debug("<getToken");
+		log.trace("<getToken");
 		return protectedLogToken;
 	}
 
@@ -358,10 +358,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Encrypt key-data with the issuers certificate.
 	 */
 	private byte[] encryptKeyData(byte[] data, Certificate certificate) throws Exception {
-		log.debug(">encryptKeyData");
+		log.trace(">encryptKeyData");
 		// Use issuing CA for encryption
 		int caid = CertTools.getIssuerDN(certificate).hashCode();
-		log.debug("<encryptKeyData");
+		log.trace("<encryptKeyData");
 		return getCAAdminSession().encryptWithCA(caid, data);
 	}
 
@@ -369,10 +369,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Decrypt key-data with the issuers certificate.
 	 */
 	private byte[] decryptKeyData(byte[] data, Certificate certificate) throws Exception {
-		log.debug("<decryptKeyData");
+		log.trace("<decryptKeyData");
 		// Use issuing CA for decryption
 		int caid = CertTools.getIssuerDN(certificate).hashCode();
-		log.debug("<decryptKeyData");
+		log.trace("<decryptKeyData");
 		return getCAAdminSession().decryptWithCA(caid, data);
 	}
 
@@ -382,7 +382,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void removeTokens(Integer[] tokenIdentifiers) {
-		log.debug(">removeTokens");
+		log.trace(">removeTokens");
 		for (int i=0; i<tokenIdentifiers.length; i++) {
 			try {
 				// Find token
@@ -396,7 +396,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				throw new EJBException(e);
 			}
 		}
-		log.debug("<removeTokens");
+		log.trace("<removeTokens");
 	}
 
 	/**
@@ -405,7 +405,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void addExport(ProtectedLogExportRow protectedLogExportRow) {
-		log.debug(">addExport");
+		log.trace(">addExport");
 		try {
 			getProtectedLogExportData().create(
 					protectedLogExportRow.getTimeOfExport(), protectedLogExportRow.getExportEndTime(), protectedLogExportRow.getExportStartTime(),
@@ -415,7 +415,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.error("", e);
 			throw new EJBException(e);
 		}
-		log.debug("<addExport");
+		log.trace("<addExport");
 	}
 
 	/**
@@ -423,7 +423,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogExportRow getLastExport() {
-		log.debug(">getLastExport");
+		log.trace(">getLastExport");
 		ProtectedLogExportRow protectedLogExportRow = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -444,7 +444,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<getLastExport");
+		log.trace("<getLastExport");
 		return protectedLogExportRow;
 	}
 
@@ -453,7 +453,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogExportRow getLastSignedExport() {
-		log.debug(">getLastSignedExport");
+		log.trace(">getLastSignedExport");
 		ProtectedLogExportRow protectedLogExportRow = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -474,7 +474,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<getLastSignedExport");
+		log.trace("<getLastSignedExport");
 		return protectedLogExportRow;
 	}
 
@@ -484,9 +484,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public void addProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow) {
-		if (log.isDebugEnabled()) {
-			log.debug(">addProtectedLogEventRow");			
-		}
+		log.trace(">addProtectedLogEventRow");			
 		try {
 			getProtectedLogData().create(
 					protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
@@ -501,9 +499,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.error("", e);
 			throw new EJBException(e);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<addProtectedLogEventRow");
-		}
+		log.trace("<addProtectedLogEventRow");
 	}
 
 	/**
@@ -511,9 +507,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventRow getProtectedLogEventRow(ProtectedLogEventIdentifier identifier) {
-		if (log.isDebugEnabled()) {
-			log.debug(">getProtectedLogEventRow");
-		}
+		log.trace(">getProtectedLogEventRow");
 		ProtectedLogEventRow protectedLogEventRow = null;
 		try {
 			if (identifier != null) {
@@ -522,9 +516,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 		} catch (FinderException e) {
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<getProtectedLogEventRow");
-		}
+		log.trace("<getProtectedLogEventRow");
 		return protectedLogEventRow;
 	}
 
@@ -534,9 +526,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier[] findNewestProtectedLogEventsForAllOtherNodes(int nodeToExclude, long newerThan) {
-		if (log.isDebugEnabled()) {
-			log.debug(">findNewestProtectedLogEventsForAllOtherNodes");
-		}
+		log.trace(">findNewestProtectedLogEventsForAllOtherNodes");
 		if (newerThan < 0) {
 			newerThan = 0;
 		}
@@ -548,9 +538,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				protectedLogEventIdentifiers[i] = protectedLogEventRows[i].getEventIdentifier(); 
 			}
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findNewestProtectedLogEventsForAllOtherNodes");
-		}
+		log.trace("<findNewestProtectedLogEventsForAllOtherNodes");
 		return protectedLogEventIdentifiers;
 	}
 
@@ -558,9 +546,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Find the newest ProtectedLogEvent for all nodes except one, that have an eventTime newer than the requested.
 	 */
 	private ProtectedLogEventRow[] findNewestProtectedLogEventsForAllOtherNodesInternal(int nodeToExclude, long newerThan) {
-		if (log.isDebugEnabled()) {
-			log.debug(">findNewestProtectedLogEventsForAllOtherNodesInternal");
-		}
+		log.trace(">findNewestProtectedLogEventsForAllOtherNodesInternal");
 		// TODO: Double check the algo on this one to make it more efficient
 		ProtectedLogEventRow[] protectedLogEventRows = null;
 		try {
@@ -598,9 +584,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Get newest for every one
 		} catch (FinderException e) {
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findNewestProtectedLogEventsForAllOtherNodesInternal");
-		}
+		log.trace("<findNewestProtectedLogEventsForAllOtherNodesInternal");
 		return protectedLogEventRows;
 	}
 
@@ -609,9 +593,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(int nodeGUID) {
-		if (log.isDebugEnabled()) {
-			log.debug(">findNewestProtectedLogEventRow");
-		}
+		log.trace(">findNewestProtectedLogEventRow");
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -633,9 +615,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findNewestProtectedLogEventRow");
-		}
+		log.trace("<findNewestProtectedLogEventRow");
 		return protectedLogEventIdentifier;
 	}
 
@@ -644,9 +624,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findNewestLogEventRow(int nodeGUID) {
-		if (log.isDebugEnabled()) {
-			log.debug(">findNewestLogEventRow");
-		}
+		log.trace(">findNewestLogEventRow");
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -668,9 +646,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findNewestLogEventRow");
-		}
+		log.trace("<findNewestLogEventRow");
 		return protectedLogEventIdentifier;
 	}
 
@@ -687,9 +663,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(boolean isProtected) {
-		if (log.isDebugEnabled()) {
-			log.debug(">findNewestProtectedLogEventRow");
-		}
+		log.trace(">findNewestProtectedLogEventRow");
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -710,9 +684,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findNewestProtectedLogEventRow");
-		}
+		log.trace("<findNewestProtectedLogEventRow");
 		return protectedLogEventIdentifier;
 	}
 
@@ -721,9 +693,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findOldestProtectedLogEventRow() {
-		if (log.isDebugEnabled()) {
-			log.debug(">findOldestProtectedLogEventRow");
-		}
+		log.trace(">findOldestProtectedLogEventRow");
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -744,9 +714,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findOldestProtectedLogEventRow");
-		}
+		log.trace("<findOldestProtectedLogEventRow");
 		return protectedLogEventIdentifier;
 	}
 
@@ -756,9 +724,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findOldestSignedProtectedLogEventRow() {
-		if (log.isDebugEnabled()) {
-			log.debug(">findOldestSignedProtectedLogEventRow");
-		}
+		log.trace(">findOldestSignedProtectedLogEventRow");
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -779,9 +745,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findOldestSignedProtectedLogEventRow");
-		}
+		log.trace("<findOldestSignedProtectedLogEventRow");
 		return protectedLogEventIdentifier;
 	}
 
@@ -790,7 +754,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public Integer[] getNodeGUIDs(long exportStartTime, long exportEndTime) {
-		log.debug(">getNodeGUIDs");
+		log.trace(">getNodeGUIDs");
 		ArrayList nodes = new ArrayList();	// <Integer>
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -811,7 +775,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<getNodeGUIDs");
+		log.trace("<getNodeGUIDs");
 		return (Integer[]) nodes.toArray(new Integer[0]);
 	}
 
@@ -820,7 +784,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public Integer[] getAllNodeGUIDs() {
-		log.debug(">getAllNodeGUIDs");
+		log.trace(">getAllNodeGUIDs");
 		ArrayList nodes = new ArrayList();	// <Integer>
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -839,7 +803,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<getAllNodeGUIDs");
+		log.trace("<getAllNodeGUIDs");
 		return (Integer[]) nodes.toArray(new Integer[0]);
 	}
 
@@ -848,7 +812,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public Integer[] getFullyUnprotectedNodeGUIDs() {
-		log.debug(">getFullyUnprotectedNodeGUIDs");
+		log.trace(">getFullyUnprotectedNodeGUIDs");
 		ArrayList nodes = new ArrayList();	// <Integer>
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -867,7 +831,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<getFullyUnprotectedNodeGUIDs");
+		log.trace("<getFullyUnprotectedNodeGUIDs");
 		return (Integer[]) nodes.toArray(new Integer[0]);
 	}
 
@@ -876,9 +840,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventRow[] findNextProtectedLogEventRows(long exportStartTime, long exportEndTime, int fetchSize) {
-		if (log.isDebugEnabled()) {
-			log.debug(">findNextProtectedLogEventRows");
-		}
+		log.trace(">findNextProtectedLogEventRows");
 		ArrayList protectedLogEventRows = new ArrayList();
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -910,9 +872,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("<findNextProtectedLogEventRows");
-		}
+		log.trace("<findNextProtectedLogEventRows");
 		return (ProtectedLogEventRow[]) protectedLogEventRows.toArray(new ProtectedLogEventRow[0]);
 	}
 
@@ -922,7 +882,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void removeAllUntil(long exportEndTime) {
-		log.debug(">removeAllUntil");
+		log.trace(">removeAllUntil");
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
@@ -937,7 +897,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, null);
 		}
-		log.debug("<removeAllUntil");
+		log.trace("<removeAllUntil");
 	}
 
 	/**
@@ -946,7 +906,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void removeNodeChain(int nodeGUID) {
-		log.debug(">removeNodeChain");
+		log.trace(">removeNodeChain");
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
@@ -961,7 +921,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, null);
 		}
-		log.debug("<removeNodeChain");
+		log.trace("<removeNodeChain");
 	}
 
 	/**
@@ -969,7 +929,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean removeAllExports(boolean removeDeletedToo) {
-		log.debug(">removeAllExports");
+		log.trace(">removeAllExports");
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
@@ -983,7 +943,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, null);
 		}
-		log.debug("<removeAllExports");
+		log.trace("<removeAllExports");
 		return true;
 	}
 
@@ -992,7 +952,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public Integer[] findTokenIndentifiersUsedOnlyUntil(long exportEndTime) {
-		log.debug(">findTokenIndentifiersUsedOnlyUntil");
+		log.trace(">findTokenIndentifiersUsedOnlyUntil");
 		ArrayList protectionKeyIdentifiers = new ArrayList();	//<Integer>
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -1021,7 +981,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.debug("<findTokenIndentifiersUsedOnlyUntil");
+		log.trace("<findTokenIndentifiersUsedOnlyUntil");
 		return (Integer[]) protectionKeyIdentifiers.toArray(new Integer[0]);
 	}
 
@@ -1030,7 +990,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean verifySignature(byte[] data, byte[] signature, Certificate certificate, long timeOfSigning) {
-		log.debug(">verifySignature");
+		log.trace(">verifySignature");
 		boolean verified = false;
 		if (signature == null || data == null) {
 			return false;
@@ -1047,7 +1007,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-		log.debug("<verifySignature returns " + verified);
+		if (log.isTraceEnabled()) {
+			log.trace("<verifySignature returns " + verified);
+		}
 		return verified;
 	}
 
@@ -1056,7 +1018,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean verifyCertificate(Certificate certificate, long timeOfUse) {
-		log.debug("<verifyCertificate");
+		log.trace("<verifyCertificate");
 		boolean verified = false;
 		try {
 			// Verify that this is a certificate signed by a known CA
@@ -1081,7 +1043,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} catch (Exception e) {
 			log.error("",e);
 		}
-		log.debug("<verifyCertificate returns " + verified);
+		if (log.isTraceEnabled()) {
+			log.trace("<verifyCertificate returns " + verified);
+		}
 		return verified;
 	}
 
@@ -1091,7 +1055,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	private ProtectedLogExportRow reserveExport(long atLeastThisOld) {
-		log.debug(">reserveExport");
+		log.trace(">reserveExport");
 		ProtectedLogExportRow protectedLogExportRow = getLastSignedExport();
 		ProtectedLogExportRow unProtectedLogExportRow = getLastExport();
 		if (unProtectedLogExportRow != null) {
@@ -1166,7 +1130,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		}
 		try {
 			getProtectedLogExportData().create(0, exportEndTime, exportStartTime, null, null, null, null, false, null);
-			log.debug("<reserveExport");
+			log.trace("<reserveExport");
 			return getLastExport();
 		} catch (CreateException e) {
 			log.error("", e);
@@ -1180,7 +1144,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	private void completeExport(ProtectedLogExportRow protectedLogExportRow, boolean success) {
-		log.debug(">completeExport");
+		log.trace(">completeExport");
 		try {
 			ProtectedLogExportDataLocal protectedLogExportDataLocal = getProtectedLogExportData().findByExportStartTime(protectedLogExportRow.getExportStartTime());
 			if (success) {
@@ -1198,7 +1162,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.error("", e);
 			throw new EJBException(e);
 		}
-		log.debug("<completeExport");
+		log.trace("<completeExport");
 	}
 
 	/**
@@ -1207,7 +1171,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public Collection performQuery(String sqlQuery) {
-		log.debug(">performQuery");
+		log.trace(">performQuery");
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -1236,7 +1200,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				data.setVerifyResult(verified);
 				returnval.add(data);
 			}
-			log.debug("<performQuery");
+			log.trace("<performQuery");
 			return returnval;
 		} catch (Exception e) {
 			throw new EJBException(e);
@@ -1252,9 +1216,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public int verifyProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow, boolean checkVerifiedSteps) {
-		if (log.isDebugEnabled()) {
-			log.debug(">verifyProtectedLogEventRow");
-		}
+		log.trace(">verifyProtectedLogEventRow");
 		int maxVerificationsSteps = ProtectedLogDevice.getMaxVerificationsSteps();
 		ManualUpdateCache cache = ManualUpdateCache.getNewInstance("LogVerification");
 		ProtectedLogEventRow currentProtectedLogEventRow = protectedLogEventRow;
@@ -1324,9 +1286,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					return -1;
 				}
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("<verifyProtectedLogEventRow");
-			}
+			log.trace("<verifyProtectedLogEventRow");
 		}
 	}
 
@@ -1345,7 +1305,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier verifyEntireLog(ProtectedLogActions protectedLogActions, long freezeThreshold) {
-		log.debug(">verifyProtectedLogEventRow");
+		log.trace(">verifyProtectedLogEventRow");
 		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
 		ArrayList newestProtectedLogEventRows =new ArrayList();	//<ProtectedLogEventRow>
 		ArrayList knownNodeGUIDs =new ArrayList();	//<Integer>
@@ -1602,7 +1562,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 		}
 		// If something is wrong the failed verified ProtectedLogEventRowIdentifier is returned.
-		log.debug("<verifyProtectedLogEventRow");
+		log.trace("<verifyProtectedLogEventRow");
 		return null;
 	}
 
@@ -1612,7 +1572,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public ProtectedLogToken getProtectedLogToken() {
-		log.debug(">getProtectedLogToken");
+		log.trace(">getProtectedLogToken");
 		ProtectedLogToken protectedLogToken = null;
 		try {
 			Properties properties = ProtectedLogDevice.getPropertiesFromInstance();
@@ -1675,7 +1635,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-		log.debug("<getProtectedLogToken");
+		log.trace("<getProtectedLogToken");
 		return protectedLogToken;
 	}
 
@@ -1687,7 +1647,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public boolean signAllUnsignedChains(boolean signAll) {
-		log.debug(">signAllUnsignedChains");
+		log.trace(">signAllUnsignedChains");
 		// Find last unsigned event for all nodes, sorted by time, oldest first
 		Integer[] nodeGUIDs = null;
 		if (signAll) {
@@ -1747,7 +1707,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			addProtectedLogEventRow(newProtectedLogEventRow);
         	log.info(intres.getLocalizedMessage("protectedlog.acceptedchain", currentProtectedLogEventIdentifier.getNodeGUID()));
 		}
-		log.debug("<signAllUnsignedChains");
+		log.trace("<signAllUnsignedChains");
 		return true;
 	}
 
@@ -1758,7 +1718,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public boolean resetEntireLog(boolean export, Properties exportHandlerProperties) {
-		log.debug(">resetEntireLog");
+		log.trace(">resetEntireLog");
 		// Start by disabling services
 		if (!stopServices()) {
 			return false;
@@ -1877,7 +1837,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					removeTokens(tokenIdentifiers);
 				}
 			}
-			log.debug("<resetEntireLog");
+			log.trace("<resetEntireLog");
 			return success;
 		} finally {
 			// Enable services again
@@ -1953,7 +1913,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public boolean exportLog(IProtectedLogExportHandler protectedLogExportHandler, Properties exportHandlerProperties,
 			ProtectedLogActions protectedLogActions, String currentHashAlgorithm, boolean deleteAfterExport, long atLeastThisOld) {
-		log.debug(">exportLog");
+		log.trace(">exportLog");
 		ProtectedLogExportRow reservedProtectedLogExportRow = reserveExport(atLeastThisOld);
 		if (reservedProtectedLogExportRow == null) {
 			return false;
@@ -2071,7 +2031,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				removeTokens(tokenIdentifiers);
 			}
 		}
-		log.debug("<exportLog");
+		log.trace("<exportLog");
 		return true;
 	}
 	

@@ -84,7 +84,7 @@ public class TestSignLotsOfCerts extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
 
         // Install BouncyCastle provider
         CertTools.installBCProvider();
@@ -108,16 +108,16 @@ public class TestSignLotsOfCerts extends TestCase {
 
         keys = genKeys();
 
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -269,7 +269,7 @@ public class TestSignLotsOfCerts extends TestCase {
      * @throws Exception if an error occurs...
      */
     public void test01CreateNewUser() throws Exception {
-        log.debug(">test01CreateNewUser()");
+        log.trace(">test01CreateNewUser()");
         newUser("no1");
         newUser("no2");
         newUser("no3");
@@ -280,7 +280,7 @@ public class TestSignLotsOfCerts extends TestCase {
         newUser("no8");
         newUser("no9");
         newUser("no10");
-        log.debug("<test01CreateNewUser()");
+        log.trace("<test01CreateNewUser()");
     }
 
     /**
@@ -289,7 +289,7 @@ public class TestSignLotsOfCerts extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test03SignLotsOfCerts() throws Exception {
-        log.debug(">test03SignLotsOfCerts()");
+        log.trace(">test03SignLotsOfCerts()");
 
 		long before = System.currentTimeMillis();
         Thread no1 = new Thread(new SignTester(),"no1");
@@ -343,7 +343,7 @@ public class TestSignLotsOfCerts extends TestCase {
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        log.debug("<test03SignLotsOfCerts()");
+        log.trace("<test03SignLotsOfCerts()");
     }
     
     public void test99CleanUp() throws Exception {

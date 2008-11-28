@@ -73,7 +73,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
      * @throws Exception error
      */
     public void test02OcspGood() throws Exception {
-        log.debug(">test02OcspGood()");
+        log.trace(">test02OcspGood()");
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -90,7 +90,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
-        log.debug("<test02OcspGood()");
+        log.trace("<test02OcspGood()");
     }
     private X509Certificate getTestCert( boolean isRevoked ) throws RemoteException, CreateException {
         ICertificateStoreSessionRemote store = storehome.create();
@@ -109,7 +109,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
      * @throws Exception error
      */
     public void test03OcspRevoked() throws Exception {
-        log.debug(">test03OcspRevoked()");
+        log.trace(">test03OcspRevoked()");
         // Now revoke the certificate and try again
         CertificateDataPK pk = new CertificateDataPK();
         final X509Certificate ocspTestCert = getTestCert(true);
@@ -134,7 +134,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
         assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
-        log.debug("<test03OcspRevoked()");
+        log.trace("<test03OcspRevoked()");
     }
 
 }

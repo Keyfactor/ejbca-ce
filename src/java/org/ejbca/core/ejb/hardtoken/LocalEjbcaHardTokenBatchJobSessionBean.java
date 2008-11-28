@@ -172,7 +172,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public UserDataVO getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
-      debug(">getNextHardTokenToGenerate()");
+      log.trace(">getNextHardTokenToGenerate()");
       debug("alias " + alias);
       UserDataVO returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
@@ -222,7 +222,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }
       }
 
-      debug("<getNextHardTokenToGenerate()");
+      log.trace("<getNextHardTokenToGenerate()");
       return returnval;
     }// getNextHardTokenToGenerate
 
@@ -237,7 +237,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public Collection getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException{
-      debug(">getNextHardTokensToGenerate()");
+      log.trace(">getNextHardTokensToGenerate()");
       ArrayList returnval = new ArrayList();
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
@@ -278,7 +278,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
       if(returnval.size()==0)
         returnval=null;
 
-      debug("<getNextHardTokensToGenerate()");
+      log.trace("<getNextHardTokensToGenerate()");
       return returnval;
     }// getNextHardTokensToGenerate
 
@@ -294,7 +294,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException{
-      debug(">getNextHardTokenToGenerateInQueue()");
+      trace(">getNextHardTokenToGenerateInQueue()");
       UserDataVO returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
@@ -333,7 +333,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            JDBCUtil.close(con, ps, rs);
         }
       }
-      debug("<getNextHardTokenToGenerateInQueue()");
+      trace("<getNextHardTokenToGenerateInQueue()");
       return returnval;
     }// getNextHardTokenToGenerateInQueue
 
@@ -348,7 +348,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public int getNumberOfHardTokensToGenerate(Admin admin, String alias){
-      debug(">getNumberOfHardTokensToGenerate()");
+      trace(">getNumberOfHardTokensToGenerate()");
       int count = 0;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
@@ -376,7 +376,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            JDBCUtil.close(con, ps, rs);
         }
       }
-      debug("<getNumberOfHardTokensToGenerate()");
+      trace("<getNumberOfHardTokensToGenerate()");
       return count;
     }// getNumberOfHardTokensToGenerate
 
@@ -389,7 +389,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public boolean checkForHardTokenIssuerId(Admin admin, int hardtokenissuerid){
-        debug(">checkForHardTokenIssuerId(id: " + hardtokenissuerid + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">checkForHardTokenIssuerId(id: " + hardtokenissuerid + ")");
+    	}
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -406,7 +408,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             if(rs.next()){
               count = rs.getInt(1);
             }
-            debug("<checkForHardTokenIssuerId()");
+            log.trace("<checkForHardTokenIssuerId()");
             return count > 0;
 
         }catch(Exception e){

@@ -122,7 +122,7 @@ public class ProtectedLogExporter {
 	
 	// Exports chunk of log
 	synchronized private void run() {
-		log.debug(">run");
+		log.trace(">run");
 		IProtectedLogExportHandler protectedLogExportHandler = null;
 		try {
 			Class implClass = Class.forName(properties.getProperty(CONF_EXPORT_HANDLER, ProtectedLogDummyExportHandler.class.getName()).trim());
@@ -134,6 +134,6 @@ public class ProtectedLogExporter {
 			isRunning = false;
 			isCanceled = false;
 		}
-		log.debug("<run");
+		log.trace("<run");
 	}
 }

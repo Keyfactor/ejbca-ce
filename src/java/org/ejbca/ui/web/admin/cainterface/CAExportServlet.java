@@ -50,9 +50,9 @@ public class CAExportServlet extends HttpServlet {
      * @param res The response.
      */
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
-	    log.debug(">doPost()");
+	    log.trace(">doPost()");
 	    doGet(req, res);
-	    log.debug("<doPost()");
+	    log.trace("<doPost()");
     } //doPost
 
     /**
@@ -63,7 +63,7 @@ public class CAExportServlet extends HttpServlet {
      * @param res The response.
 	 */
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-	    log.debug(">doGet()");
+	    log.trace(">doGet()");
 	    // Check if authorized
 	    EjbcaWebBean ejbcawebbean= (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
 	    if ( ejbcawebbean == null ) {

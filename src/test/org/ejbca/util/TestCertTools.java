@@ -426,9 +426,9 @@ public class TestCertTools extends TestCase {
 	}
 
 	protected void setUp() throws Exception {
-		log.debug(">setUp()");
+		log.trace(">setUp()");
 		CertTools.installBCProvider();
-		log.debug("<setUp()");
+		log.trace("<setUp()");
 	}
 
 	protected void tearDown() throws Exception {
@@ -441,7 +441,7 @@ public class TestCertTools extends TestCase {
 	 *             DOCUMENT ME!
 	 */
 	public void test01GetPartFromDN() throws Exception {
-		log.debug(">test01GetPartFromDN()");
+		log.trace(">test01GetPartFromDN()");
 
 		// We try to examine the general case and some special cases, which we
 		// want to be able to handle
@@ -515,7 +515,7 @@ public class TestCertTools extends TestCase {
 		emails = CertTools.getEmailFromDN(dn15);
 		assertEquals((String) emails.get(0), "bar@primekey.se");
 
-		log.debug("<test01GetPartFromDN()");
+		log.trace("<test01GetPartFromDN()");
 	}
 
 	/**
@@ -525,7 +525,7 @@ public class TestCertTools extends TestCase {
 	 *             DOCUMENT ME!
 	 */
 	public void test02StringToBCDNString() throws Exception {
-		log.debug(">test02StringToBCDNString()");
+		log.trace(">test02StringToBCDNString()");
 
 		// We try to examine the general case and som special cases, which we
 		// want to be able to handle
@@ -627,7 +627,7 @@ public class TestCertTools extends TestCase {
 		assertEquals(CertTools.stringToBCDNString(dn24),
 				"TelephoneNumber=08555-666,PostalAddress=Stockholm,BusinessCategory=Surf boards,PostalCode=11122,CN=foo,CN=bar,O=CN,O=C,C=CN");
 
-		log.debug("<test02StringToBCDNString()");
+		log.trace("<test02StringToBCDNString()");
 	}
 
 	/**
@@ -637,7 +637,7 @@ public class TestCertTools extends TestCase {
 	 *             DOCUMENT ME!
 	 */
 	public void test03AltNames() throws Exception {
-		log.debug(">test03AltNames()");
+		log.trace(">test03AltNames()");
 
 		// We try to examine the general case and som special cases, which we
 		// want to be able to handle
@@ -683,7 +683,7 @@ public class TestCertTools extends TestCase {
 		String val2 = CertTools.getPartFromDN(customAlt, oid2);
 		assertEquals("barfoo", val2);
 
-		log.debug("<test03AltNames()");
+		log.trace("<test03AltNames()");
 	}
 
 	/**
@@ -693,7 +693,7 @@ public class TestCertTools extends TestCase {
 	 *             DOCUMENT ME!
 	 */
 	public void test04DNComponents() throws Exception {
-		log.debug(">test04DNComponents()");
+		log.trace(">test04DNComponents()");
 
 		// We try to examine the general case and som special cases, which we
 		// want to be able to handle
@@ -730,7 +730,7 @@ public class TestCertTools extends TestCase {
 				bcdn1,
 				"CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,2.3.3.3=3333Oid");
 
-		log.debug("<test04DNComponents()");
+		log.trace("<test04DNComponents()");
 	}
 
 	/**
@@ -740,7 +740,7 @@ public class TestCertTools extends TestCase {
 	 *             if error...
 	 */
 	public void test05IntlChars() throws Exception {
-		log.debug(">test05IntlChars()");
+		log.trace(">test05IntlChars()");
 		// We try to examine the general case and som special cases, which we
 		// want to be able to handle
 		String dn1 = "CN=Tomas?????????, O=?????????-Org, OU=??????-Unit, C=SE";
@@ -749,7 +749,7 @@ public class TestCertTools extends TestCase {
 		log.debug("bcdn1: " + bcdn1);
 		assertEquals("CN=Tomas?????????,OU=??????-Unit,O=?????????-Org,C=SE",
 				bcdn1);
-		log.debug("<test05IntlChars()");
+		log.trace("<test05IntlChars()");
 	}
 
 	/**
@@ -759,7 +759,7 @@ public class TestCertTools extends TestCase {
 	 *             if error...
 	 */
 	public void test06CertOps() throws Exception {
-		log.debug(">test06CertOps()");
+		log.trace(">test06CertOps()");
 		Certificate cert = CertTools.getCertfromByteArray(testcert);
 		Certificate gcert = CertTools.getCertfromByteArray(guidcert);
 		assertEquals("Wrong issuerDN", CertTools.getIssuerDN(cert), CertTools
@@ -783,7 +783,7 @@ public class TestCertTools extends TestCase {
 		// FileOutputStream fos = new FileOutputStream("foo.cert");
 		// fos.write(cert.getEncoded());
 		// fos.close();
-		log.debug("<test06CertOps()");
+		log.trace("<test06CertOps()");
 	}
 
 	/**
@@ -793,7 +793,7 @@ public class TestCertTools extends TestCase {
 	 *             if error...
 	 */
 	public void test07TestDC() throws Exception {
-		log.debug(">test07TestDC()");
+		log.trace(">test07TestDC()");
 		// We try to examine the that we handle modern dc components for ldap
 		// correctly
 		String dn1 = "dc=bigcorp,dc=com,dc=se,ou=users,cn=Mike Jackson";
@@ -807,7 +807,7 @@ public class TestCertTools extends TestCase {
 		log.debug("dn2: " + dn2);
 		log.debug("bcdn2: " + bcdn2);
 		assertEquals("CN=Mike Jackson,OU=users,DC=se,DC=bigcorp,DC=com", bcdn2);
-		log.debug("<test07TestDC()");
+		log.trace("<test07TestDC()");
 	}
 
 	/**
@@ -817,7 +817,7 @@ public class TestCertTools extends TestCase {
 	 *             if error...
 	 */
 	public void test08TestUnstructured() throws Exception {
-		log.debug(">test08TestUnstructured()");
+		log.trace(">test08TestUnstructured()");
 		// We try to examine the that we handle modern dc components for ldap
 		// correctly
 		String dn1 = "C=SE,O=PrimeKey,unstructuredName=10.1.1.2,unstructuredAddress=foo.bar.se,cn=test";
@@ -827,7 +827,7 @@ public class TestCertTools extends TestCase {
 		assertEquals(
 				"unstructuredAddress=foo.bar.se,unstructuredName=10.1.1.2,CN=test,O=PrimeKey,C=SE",
 				bcdn1);
-		log.debug("<test08TestUnstructured()");
+		log.trace("<test08TestUnstructured()");
 	}
 
 	/**
@@ -837,7 +837,7 @@ public class TestCertTools extends TestCase {
 	 *             if error...
 	 */
 	public void test09TestReverse() throws Exception {
-		log.debug(">test09TestReverse()");
+		log.trace(">test09TestReverse()");
 		// We try to examine the that we handle modern dc components for ldap
 		// correctly
 		String dn1 = "dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G";
@@ -863,7 +863,7 @@ public class TestCertTools extends TestCase {
 		// This ordering is not optimal...
 		assertEquals("DC=domain,DC=tld,CN=toto,CN=titi", dn5.toString());
 
-		log.debug("<test09TestReverse()");
+		log.trace("<test09TestReverse()");
 	}
 
 	/**
@@ -872,7 +872,7 @@ public class TestCertTools extends TestCase {
 	 * @throws Exception if error...
 	 */
 	public void test10TestMultipleReversed() throws Exception {
-		log.debug(">test10TestMultipleReversed()");
+		log.trace(">test10TestMultipleReversed()");
 		// We try to examine the that we handle modern dc components for ldap
 		// correctly
 		String dn1 = "dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G";
@@ -895,7 +895,7 @@ public class TestCertTools extends TestCase {
 		assertEquals("CN=Foo\',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE", bcdn21);
 		assertEquals("CN=Foo',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE", StringTools
 				.strip(bcdn21));
-		log.debug("<test10TestMultipleReversed()");
+		log.trace("<test10TestMultipleReversed()");
 	}
 
 	/**
@@ -905,7 +905,7 @@ public class TestCertTools extends TestCase {
 	 *             if error...
 	 */
 	public void test11TestInsertCNPostfix() throws Exception {
-		log.debug(">test11TestInsertCNPostfix()");
+		log.trace(">test11TestInsertCNPostfix()");
 
 		// Test the regular case with one CN beging replaced with " (VPN)"
 		// postfix
@@ -943,13 +943,13 @@ public class TestCertTools extends TestCase {
 				"UID=tomas,CN=tomas (VPN),OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com",
 				newdn5);
 
-		log.debug("<test11TestInsertCNPostfix()");
+		log.trace("<test11TestInsertCNPostfix()");
 	}
 
 	/**
 	 */
 	public void test12GetPartsFromDN() throws Exception {
-		log.debug(">test01GetPartFromDN()");
+		log.trace(">test01GetPartFromDN()");
 
 		// We try to examine the general case and som special cases, which we
 		// want to be able to handle
@@ -984,11 +984,11 @@ public class TestCertTools extends TestCase {
 		assertTrue(CertTools.getPartsFromDN(dn2, CertTools.URI1).contains(
 				"http://www.b.se"));
 
-		log.debug("<test12GetPartsFromDN()");
+		log.trace("<test12GetPartsFromDN()");
 	}
 
 	public void test13GetSubjectAltNameString() throws Exception {
-		log.debug(">test13GetSubjectAltNameString()");
+		log.trace(">test13GetSubjectAltNameString()");
 
 		String altNames = CertTools.getSubjectAlternativeName(CertTools
 				.getCertfromByteArray(altNameCert));
@@ -1013,7 +1013,7 @@ public class TestCertTools extends TestCase {
 		assertEquals("www.a.se", name);
 		name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
 		assertEquals("10.1.1.1", name);
-		log.debug("<test13GetSubjectAltNameString()");
+		log.trace("<test13GetSubjectAltNameString()");
 	}
 
 	public void test14QCStatement() throws Exception {
@@ -1052,7 +1052,7 @@ public class TestCertTools extends TestCase {
 
 	public void test16GetSubjectAltNameStringWithDirectoryName()
 			throws Exception {
-		log.debug(">test16GetSubjectAltNameStringWithDirectoryName()");
+		log.trace(">test16GetSubjectAltNameStringWithDirectoryName()");
 
 		Certificate cer = CertTools
 				.getCertfromByteArray(altNameCertWithDirectoryName);
@@ -1116,11 +1116,11 @@ public class TestCertTools extends TestCase {
 		}
 		assertEquals(2, dnscount);
 		assertEquals(2, rfc822count);
-		log.debug("<test16GetSubjectAltNameStringWithDirectoryName()");
+		log.trace("<test16GetSubjectAltNameStringWithDirectoryName()");
 	}
 
 	public void test17SubjectDirectoryAttributes() throws Exception {
-		log.debug(">test17SubjectDirectoryAttributes()");
+		log.trace(">test17SubjectDirectoryAttributes()");
 		Certificate cer = CertTools.getCertfromByteArray(subjDirAttrCert);
 		String ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
 		assertEquals("countryOfCitizenship=TR", ret);
@@ -1129,11 +1129,11 @@ public class TestCertTools extends TestCase {
 		assertEquals(
 				"countryOfResidence=SE, countryOfCitizenship=SE, gender=M, placeOfBirth=Stockholm, dateOfBirth=19710425",
 				ret);
-		log.debug("<test17SubjectDirectoryAttributes()");
+		log.trace("<test17SubjectDirectoryAttributes()");
 	}
 
 	public void test18DNSpaceTrimming() throws Exception {
-		log.debug(">test18DNSpaceTrimming()");
+		log.trace(">test18DNSpaceTrimming()");
 		String dn1 = "CN=CommonName, O= Org,C=SE";
 		String bcdn1 = CertTools.stringToBCDNString(dn1);
 		log.debug("dn1: " + dn1);
@@ -1151,7 +1151,7 @@ public class TestCertTools extends TestCase {
 		log.debug("dn1: " + dn1);
 		log.debug("bcdn1: " + bcdn1);
 		assertEquals("CN=CommonName,O=Org,C=SE", bcdn1);
-		log.debug("<test18DNSpaceTrimming()");
+		log.trace("<test18DNSpaceTrimming()");
 	}
 
 	public void test19getAltNameStringFromExtension() throws Exception {

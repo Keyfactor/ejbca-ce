@@ -51,7 +51,7 @@ public class GenerateToken {
     public KeyStore generateOrKeyRecoverToken(Admin administrator, String username, String password, int caid, String keyspec, 
     		String keyalg, boolean createJKS, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
     throws Exception {
-    	log.debug(">generateOrKeyRecoverToken");
+    	log.trace(">generateOrKeyRecoverToken");
     	KeyRecoveryData keyData = null;
     	KeyPair rsaKeys = null;
     	if (loadkeys) {
@@ -159,7 +159,7 @@ public class GenerateToken {
     		ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
     	}
     	
-    	log.debug("<generateOrKeyRecoverToken");
+    	log.trace("<generateOrKeyRecoverToken");
     	return ks;
     }
 

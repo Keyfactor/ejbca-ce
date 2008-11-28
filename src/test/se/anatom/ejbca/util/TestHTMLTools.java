@@ -39,13 +39,13 @@ public class TestHTMLTools extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-        log.debug("<setUp()");
+        log.trace(">setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-        log.debug(">tearDown()");
-        log.debug("<tearDown()");
+        log.trace(">tearDown()");
+        log.trace("<tearDown()");
     }
 
     public void test01JavascriptEscape() throws Exception {

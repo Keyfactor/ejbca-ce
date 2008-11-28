@@ -66,7 +66,9 @@ public class ProtectedLogMailAction implements IProtectedLogAction, Serializable
 	 * @see org.ejbca.core.model.log.IProtectedLogAction
 	 */
 	public void action(String causeIdentifier) {
-		log.debug(">action " + causeIdentifier + " " + emailAddresses.length);
+		if (log.isTraceEnabled()) {
+			log.trace(">action " + causeIdentifier + " " + emailAddresses.length);
+		}
 		String emailMessage = emailBody + "\n\n" + intres.getLocalizedMessage(MAILACTION_ERROR_CAUSE, causeIdentifier) + " " + intres.getLocalizedMessage(causeIdentifier);
 		for (int i=0; i<emailAddresses.length; i++) {
 			try {

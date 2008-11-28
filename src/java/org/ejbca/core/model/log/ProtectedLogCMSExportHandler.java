@@ -98,7 +98,7 @@ public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler,
 	 * @see org.ejbca.core.model.log.IProtectedLogExportHandler
 	 */
 	public boolean done(String currentHashAlgorithm, byte[] exportedHash, byte[] lastExportedHash) {
-		log.debug(">done");
+		log.trace(">done");
 		try {
 			// Since we write everything at once, it will take up a lot of memory..
 			log.debug("Sending "+baos.size()+" bytes to CMS service..");
@@ -114,7 +114,7 @@ public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler,
 		} catch (Exception e) {
 			log.error(e);
 		}
-		log.debug("<done");
+		log.trace("<done");
 		return false;
 	}
 

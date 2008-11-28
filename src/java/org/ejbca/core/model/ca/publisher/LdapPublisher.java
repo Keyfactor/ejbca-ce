@@ -159,7 +159,9 @@ public class LdapPublisher extends BasePublisher {
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
 	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException{
-		log.debug(">storeCertificate(username="+username+")");
+		if (log.isTraceEnabled()) {
+			log.trace(">storeCertificate(username="+username+")");
+		}
 		// Don't publish non-active certificates
 		if (status != CertificateDataBean.CERT_ACTIVE) {
 			String msg = intres.getLocalizedMessage("publisher.notpublrevoked", new Integer(status));
@@ -335,7 +337,7 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 		} while (connectionFailed && servers.hasNext()) ;
-		log.debug("<storeCertificate()");
+		log.trace("<storeCertificate()");
 		return true;
 
 	}
@@ -520,7 +522,7 @@ public class LdapPublisher extends BasePublisher {
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
 	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException{
-		log.debug(">revokeCertificate()");
+		log.trace(">revokeCertificate()");
 		// Check first if we should do anything then revoking
 		boolean removecert = getRemoveRevokedCertificates();
 		boolean removeuser = getRemoveUsersWhenCertRevoked();
@@ -635,7 +637,7 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 		} while (connectionFailed && servers.hasNext()) ;
-		log.debug("<revokeCertificate()");
+		log.trace("<revokeCertificate()");
 	}
 
 	/** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
@@ -1175,8 +1177,8 @@ public class LdapPublisher extends BasePublisher {
 	 */
 	protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person,
 			String password, ExtendedInformation extendedinformation) {
-		if (log.isDebugEnabled()) {
-			log.debug(">getAttributeSet(dn="+dn+", email="+email+")");			
+		if (log.isTraceEnabled()) {
+			log.trace(">getAttributeSet(dn="+dn+", email="+email+")");			
 		}
 		LDAPAttributeSet attributeSet = new LDAPAttributeSet();
 		LDAPAttribute attr = new LDAPAttribute("objectclass");
@@ -1261,7 +1263,7 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 		}
-		log.debug("<getAttributeSet()");
+		log.trace("<getAttributeSet()");
 		return attributeSet;
 	} // getAttributeSet
 
@@ -1280,8 +1282,8 @@ public class LdapPublisher extends BasePublisher {
 	 * @return LDAPModificationSet created...
 	 */
 	protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person) {
-		if (log.isDebugEnabled()) {
-			log.debug(">getModificationSet(dn="+dn+", email="+email+")");			
+		if (log.isTraceEnabled()) {
+			log.trace(">getModificationSet(dn="+dn+", email="+email+")");			
 		}
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
@@ -1364,7 +1366,7 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 		}
-		log.debug("<getModificationSet()");
+		log.trace("<getModificationSet()");
 		return modSet;
 	} // getModificationSet
 
@@ -1453,7 +1455,7 @@ public class LdapPublisher extends BasePublisher {
 	 * Implemtation of UpgradableDataHashMap function upgrade. 
 	 */
 	public void upgrade() {
-		log.debug(">upgrade");
+		log.trace(">upgrade");
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
 			String msg = intres.getLocalizedMessage("publisher.upgrade", new Float(getVersion()));
@@ -1482,6 +1484,6 @@ public class LdapPublisher extends BasePublisher {
 			}
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}
-		log.debug("<upgrade");
+		log.trace("<upgrade");
 	}
 }

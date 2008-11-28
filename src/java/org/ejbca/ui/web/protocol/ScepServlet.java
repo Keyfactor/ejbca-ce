@@ -124,7 +124,7 @@ public class ScepServlet extends HttpServlet {
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        log.debug(">doPost()");
+        log.trace(">doPost()");
         /* 
          If the remote CA supports it, any of the PKCS#7-encoded SCEP messages
          may be sent via HTTP POST instead of HTTP GET.   This is allowed for
@@ -146,7 +146,7 @@ public class ScepServlet extends HttpServlet {
         }
         String message = new String(Base64.encode(output.toByteArray()));
         service(operation, message, request.getRemoteAddr(), response);
-        log.debug("<doPost()");
+        log.trace("<doPost()");
     } //doPost
 
     /**
@@ -160,7 +160,7 @@ public class ScepServlet extends HttpServlet {
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws java.io.IOException, ServletException {
-        log.debug(">doGet()");
+        log.trace(">doGet()");
 
             log.debug("query string=" + request.getQueryString());
 
@@ -178,7 +178,7 @@ public class ScepServlet extends HttpServlet {
 
             service(operation, message, request.getRemoteAddr(), response);
             
-        log.debug("<doGet()");
+        log.trace("<doGet()");
     } // doGet
 
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response) throws IOException {

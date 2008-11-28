@@ -58,10 +58,8 @@ public class TestHardTokenProfile extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         CertTools.installBCProvider();
-
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
@@ -69,23 +67,18 @@ public class TestHardTokenProfile extends TestCase {
                 cacheHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
 
             }
-
             cacheAdmin = cacheHome.create();
         }
-
-
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -96,7 +89,7 @@ public class TestHardTokenProfile extends TestCase {
      * @throws Exception error
      */
     public void test01AddHardTokenProfile() throws Exception {
-        log.debug(">test01AddHardTokenProfile()");
+        log.trace(">test01AddHardTokenProfile()");
         boolean ret = false;
         try {
             SwedishEIDProfile profile = new SwedishEIDProfile();
@@ -128,7 +121,7 @@ public class TestHardTokenProfile extends TestCase {
         }
 
         assertTrue("Creating Hard Token Profile failed", ret);
-        log.debug("<test01AddHardTokenProfile()");
+        log.trace("<test01AddHardTokenProfile()");
     }
 
     /**
@@ -137,7 +130,7 @@ public class TestHardTokenProfile extends TestCase {
      * @throws Exception error
      */
     public void test02RenameHardTokenProfile() throws Exception {
-        log.debug(">test02RenameHardTokenProfile()");
+        log.trace(">test02RenameHardTokenProfile()");
 
         boolean ret = false;
         try {
@@ -147,7 +140,7 @@ public class TestHardTokenProfile extends TestCase {
         }
         assertTrue("Renaming Hard Token Profile failed", ret);
 
-        log.debug("<test02RenameHardTokenProfile()");
+        log.trace("<test02RenameHardTokenProfile()");
     }
 
     /**
@@ -156,7 +149,7 @@ public class TestHardTokenProfile extends TestCase {
      * @throws Exception error
      */
     public void test03CloneHardTokenProfile() throws Exception {
-        log.debug(">test03CloneHardTokenProfile()");
+        log.trace(">test03CloneHardTokenProfile()");
 
         boolean ret = false;
         try {
@@ -166,7 +159,7 @@ public class TestHardTokenProfile extends TestCase {
         }
         assertTrue("Cloning Hard Token Profile failed", ret);
 
-        log.debug("<test03CloneHardTokenProfile()");
+        log.trace("<test03CloneHardTokenProfile()");
     }
 
 
@@ -176,24 +169,15 @@ public class TestHardTokenProfile extends TestCase {
      * @throws Exception error
      */
     public void test04EditHardTokenProfile() throws Exception {
-        log.debug(">test04EditHardTokenProfile()");
-
+        log.trace(">test04EditHardTokenProfile()");
         boolean ret = false;
-
         HardTokenProfile profile = cacheAdmin.getHardTokenProfile(admin, "ENHTEST");
-
-
         profile.setHardTokenSNPrefix("11111");
-
         cacheAdmin.changeHardTokenProfile(admin, "ENHTEST", profile);
         ret = true;
-
         assertTrue("Editing HardTokenProfile failed", ret);
-
-
-        log.debug("<test04EditHardTokenProfile()");
+        log.trace("<test04EditHardTokenProfile()");
     }
-
 
     /**
      * removes all profiles
@@ -201,7 +185,7 @@ public class TestHardTokenProfile extends TestCase {
      * @throws Exception error
      */
     public void test05removeHardTokenProfiles() throws Exception {
-        log.debug(">test05removeHardTokenProfiles()");
+        log.trace(">test05removeHardTokenProfiles()");
         boolean ret = false;
         try {
             // Remove all except ENHTEST
@@ -213,8 +197,7 @@ public class TestHardTokenProfile extends TestCase {
         } catch (Exception pee) {
         }
         assertTrue("Removing Hard Token Profile failed", ret);
-
-        log.debug("<test05removeHardTokenProfiles()");
+        log.trace("<test05removeHardTokenProfiles()");
     }
 
     private String createSVGData() {

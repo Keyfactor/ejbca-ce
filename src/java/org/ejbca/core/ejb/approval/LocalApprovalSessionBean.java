@@ -347,7 +347,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     * @ejb.interface-method view-type="both"
     */
     public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest) throws ApprovalException{
-    	log.debug(">addApprovalRequest");
+    	log.trace(">addApprovalRequest");
     	int approvalId = approvalRequest.generateApprovalId();
     	
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
@@ -374,7 +374,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 				
 			}
 		}
-		log.debug("<addApprovalRequest");
+		log.trace("<addApprovalRequest");
     }
     
 
@@ -388,7 +388,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
      public void removeApprovalRequest(Admin admin, int id) throws ApprovalException{
-     	log.debug(">removeApprovalRequest");
+     	log.trace(">removeApprovalRequest");
      	
      	
      	try {
@@ -407,7 +407,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		    log.error("Error removing approval request",e);
 		}
 
- 		log.debug("<removeApprovalRequest");
+ 		log.trace("<removeApprovalRequest");
      }
     
     /**
@@ -442,7 +442,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      */
     public void approve(Admin admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, 
                                                                                AuthorizationDeniedException,  ApprovalException, AdminAlreadyApprovedRequestException{
-    	log.debug(">approve");
+    	log.trace(">approve");
     	ApprovalDataLocal adl;
 		try {
 			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId,approval);
@@ -509,7 +509,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Approval with id : " +approvalId +" couldn't execute properly");
 			throw e;
 		}
-		log.debug("<approve");
+		log.trace("<approve");
     }
     
     /**
@@ -543,7 +543,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      */
     public void reject(Admin admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,  
                                                                                AuthorizationDeniedException,  ApprovalException, AdminAlreadyApprovedRequestException{
-    	log.debug(">reject");
+    	log.trace(">reject");
     	ApprovalDataLocal adl;
 		try {
 			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId,approval);
@@ -598,7 +598,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +" have expired.");
 			throw e;
 		}
-		log.debug("<reject");
+		log.trace("<reject");
     }    
 
 
@@ -650,7 +650,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException{
-    	log.debug(">isApproved, approvalId" + approvalId);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">isApproved, approvalId" + approvalId);
+    	}
     	int retval = ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
     	
     	try {
@@ -674,8 +676,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
                 "Approval request with id : " + approvalId + " doesn't exists");
 		}
-    	
-		log.debug("<isApproved, result" + retval);
+    	if (log.isTraceEnabled()) {
+    		log.trace("<isApproved, result" + retval);
+    	}
     	return retval;
     }
     
@@ -717,8 +720,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void markAsStepDone(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException{
-    	log.debug(">markAsStepDone, approvalId" + approvalId + ", step " + step);
-    	    	
+    	if (log.isTraceEnabled()) {
+        	log.trace(">markAsStepDone, approvalId" + approvalId + ", step " + step);
+    	}
     	try {
 			Collection result = approvalHome.findByApprovalId(approvalId);
 			Iterator iter = result.iterator();
@@ -731,8 +735,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
                 "Approval request with id : " + approvalId + " doesn't exists");
 		}
-    	
-		log.debug("<markAsStepDone.");
+		log.trace("<markAsStepDone.");
     }
     
     /**
@@ -744,13 +747,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     public ApprovalDataVO findNonExpiredApprovalRequest(Admin admin, int approvalId){
     	ApprovalDataVO retval = null;
     	ApprovalDataLocal data = findNonExpiredApprovalDataLocal(admin,approvalId);
-
     	if(data != null){
     		retval = data.getApprovalDataVO(); 
     	}
-		
-    	
-    	
     	return retval;    	
     }
     
@@ -787,7 +786,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Collection findApprovalDataVO(Admin admin, int approvalId){
-    	log.debug(">findApprovalDataVO");
+    	log.trace(">findApprovalDataVO");
     	ArrayList retval = new ArrayList();
     	
     	try {
@@ -800,7 +799,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		} catch (FinderException e) {
 		}
 		
-    	log.debug("<findApprovalDataVO");
+    	log.trace("<findApprovalDataVO");
 		return retval;
     }
     
@@ -820,7 +819,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      */
     
     public List query(Admin admin, Query query, int index, int numberofrows) throws IllegalQueryException, AuthorizationDeniedException {
-        debug(">query(): ");
+        trace(">query()");
         
         boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
         boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
@@ -945,22 +944,20 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 
                 	returnData.add(data);
                 }
-            
-            
-            debug("<query()");
+            trace("<query()");
             return returnData;
-
         } catch (Exception e) { 
             throw new EJBException(e);
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-
     } // query 
 
     
     private void sendApprovalNotification(Admin admin, GlobalConfiguration gc, String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest, Approval approval) {
-        debug(">sendNotification approval notification: id="+id);
+    	if (log.isTraceEnabled()) {
+            log.trace(">sendNotification approval notification: id="+id);
+    	}
         try {
         	Admin sendAdmin = admin;
         	if(admin.getAdminType() == Admin.TYPE_CLIENTCERT_USER){
@@ -1039,10 +1036,10 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
                 throw new EJBException(f);
             }
         }
-        debug("<sendNotification approval notification: id="+id);
-		
+    	if (log.isTraceEnabled()) {
+            log.trace("<sendNotification approval notification: id="+id);
+    	}
 	}
- 
     
     private Integer findFreeApprovalId() {
         Random ran = (new Random((new Date()).getTime()));
@@ -1060,6 +1057,5 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         }
         return new Integer(id);
     } // findFreeApprovalId
-
 
 } // LocalApprovalSessionBean

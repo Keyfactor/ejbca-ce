@@ -68,9 +68,9 @@ public class SernoGenerator implements ISernoGenerator {
 	 * Creates a serial number generator using SecureRandom
 	 */
 	protected SernoGenerator() throws Exception {
-		log.debug(">SernoGenerator()");
+		log.trace(">SernoGenerator()");
 		init();
-		log.debug("<SernoGenerator()");
+		log.trace("<SernoGenerator()");
 	}
 
 	private void init() throws NoSuchAlgorithmException {

@@ -510,7 +510,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public Collection query(String deviceName, Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException {
-        debug(">query()");
+        trace(">query()");
     	Collection result = null;
     	Iterator i = logdevices.iterator();
         while (i.hasNext()) {

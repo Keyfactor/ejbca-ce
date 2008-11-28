@@ -30,7 +30,7 @@ public class DummyInterval extends BaseInterval {
 	 * @see org.ejbca.core.model.services.IInterval#getTimeToExecution()
 	 */
 	public long getTimeToExecution() {
-		log.debug(">DummyInterval.performAction");
+		log.trace(">DummyInterval.performAction");
 		return IInterval.DONT_EXECUTE;
 	}
 

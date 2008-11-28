@@ -83,7 +83,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
+        trace(">ejbCreate()");
 
         // Get the URL from the environment from deployment descriptor
         remoteurl = getLocator().getString("java:comp/env/AuthURL");
@@ -94,7 +94,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
 
-        debug("<ejbCreate()");
+        trace("<ejbCreate()");
     }
 
     /**
@@ -109,8 +109,9 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      */
     public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
-        debug(">authenticateUser(" + username + ", hiddenpwd)");
-
+    	if (log.isTraceEnabled()) {
+        	log.trace(">authenticateUser(" + username + ", hiddenpwd)");
+    	}
         UserDataVO ret;
 
         try {
@@ -127,7 +128,9 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         }catch(RemoteException re){
            throw new EJBException(re);
         }
-        debug(">authenticateUser("+username+", hiddenpwd)");
+    	if (log.isTraceEnabled()) {
+            log.trace(">authenticateUser("+username+", hiddenpwd)");
+    	}
         return ret;
     } // authenticateUser
 
@@ -157,8 +160,9 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      */
     private UserDataVO getDNfromRemote(String version, String user, String password)
         throws NamingException, IOException {
-        debug(">getDNfromRemote(" + version + ", " + user + ", " + password + ")");
-
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getDNfromRemote(" + version + ", " + user + ", " + password + ")");
+    	}
         // Connect to url and do our stuff...
         URL url = new URL(remoteurl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -210,13 +214,11 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
             UserDataVO ret = new UserDataVO();
             ret.setDN(dname);
             ret.setEmail(email);
-            debug("<getDNfromRemote");
+            log.trace("<getDNfromRemote");
 
             return ret;
         }
-
-        debug("<getDNfromRemote");
-
+        log.trace("<getDNfromRemote");
         return null;
     } // getDNfromRemote
 } // RemoteAuthenticationSessionBean

@@ -328,7 +328,9 @@ public class CVCCA extends CA implements Serializable {
 			CertificateProfile certProfile,
 			X509Extensions extensions,
 			String sequence) throws Exception{
-		log.debug(">generateCertificate("+notBefore+", "+notAfter+")");
+		if (log.isTraceEnabled()) {
+			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
+		}
 		// Get the fields for the Holder Reference fields
 		// country is taken from C in a DN string, mnemonic from CN in a DN string and seq from SERIALNUMBER in a DN string
 		String country = CertTools.getPartFromDN(subject.getDN(), "C");
@@ -419,7 +421,7 @@ public class CVCCA extends CA implements Serializable {
         // Verify certificate before returning
         retCert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
         
-		log.debug("<generateCertificate()");
+		log.trace("<generateCertificate()");
 		return retCert;                                                                                        
 	}
 

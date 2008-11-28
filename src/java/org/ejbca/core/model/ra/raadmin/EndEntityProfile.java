@@ -857,7 +857,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		String email,  int certificateprofileid, boolean keyrecoverable, boolean sendnotification,
     		int tokentype, int hardwaretokenissuerid, int caid, ExtendedInformation ei)
 			throws UserDoesntFullfillEndEntityProfile {
-    	log.debug(">doesUserFullfillEndEntityProfileWithoutPassword()");
+    	log.trace(">doesUserFullfillEndEntityProfileWithoutPassword()");
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       if (subjectdnfields.isIllegal()) {
           throw new UserDoesntFullfillEndEntityProfile("Subject DN is illegal.");
@@ -1086,7 +1086,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  throw new UserDoesntFullfillEndEntityProfile("Allowed requests used, but not permitted by profile.");
       }
 
-  	log.debug("<doesUserFullfillEndEntityProfileWithoutPassword()");
+  	log.trace("<doesUserFullfillEndEntityProfileWithoutPassword()");
 
     } // doesUserFullfillEndEntityProfileWithoutPassword
     
@@ -1247,7 +1247,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
     public void upgrade() {
-        log.debug(">upgrade");        
+        log.trace(">upgrade");        
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			String msg = intres.getLocalizedMessage("ra.eeprofileupgrade", new Float(getVersion()));
             log.info(msg);
@@ -1370,7 +1370,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
             data.put(VERSION, new Float(LATEST_VERSION));
         }
-        log.debug("<upgrade");
+        log.trace("<upgrade");
     }
 
 

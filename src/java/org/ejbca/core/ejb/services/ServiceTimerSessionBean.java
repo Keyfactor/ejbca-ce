@@ -190,7 +190,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * @param timer
      */
 	public void ejbTimeout(Timer timer) {
-		debug(">ejbTimeout");    		
+		trace(">ejbTimeout");    		
 		Integer timerInfo = (Integer) timer.getInfo();
 		if(timerInfo.equals(SERVICELOADER_ID)){
 			log.debug("Running the internal Service loader.");
@@ -228,7 +228,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 				getLogSession().log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", timerInfo));
 			}
 		}
-		debug("<ejbTimeout");		
+		trace("<ejbTimeout");		
 	}    
     /**
      * Internal method should not be called from external classes, method is public to get automatic transaction handling.

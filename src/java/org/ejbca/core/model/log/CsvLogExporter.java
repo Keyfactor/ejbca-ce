@@ -58,7 +58,7 @@ public class CsvLogExporter implements ILogExporter {
 	 * @see org.ejbca.core.model.log.ILogExporter
 	 */
 	public byte[] export() {
-		log.debug(">export");
+		log.trace(">export");
 		byte[] ret = null;		
 		if (logentries != null) {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -104,7 +104,7 @@ public class CsvLogExporter implements ILogExporter {
 			}
 		}
 		int no = getNoOfEntries();
-		log.debug("<export: "+no+" entries");
+		log.trace("<export: "+no+" entries");
 		return ret;
 	}
 

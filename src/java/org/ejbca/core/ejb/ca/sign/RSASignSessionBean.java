@@ -212,7 +212,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.create-method 
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
+        trace(">ejbCreate()");
 
         try {
             // Install BouncyCastle provider
@@ -242,7 +242,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
 
-        debug("<ejbCreate()");
+        trace("<ejbCreate()");
     }
 
 
@@ -342,7 +342,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      */
     private byte[] createPKCS7(int caId, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
-        debug(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
+    	}
         byte[] returnval = null;
         // get CA
         CADataLocal cadata = null;
@@ -376,7 +378,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
 
         returnval = ca.createPKCS7(cert, includeChain);
-        debug("<createPKCS7()");
+        log.trace("<createPKCS7()");
         return returnval;
     } // createPKCS7
 
@@ -505,7 +507,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        debug(">createCertificate(pk, certType)");
+        trace(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
         Arrays.fill(keyusage, false);
@@ -531,7 +533,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
 
         Certificate ret = createCertificate(admin, username, password, pk, keyusage);
-        debug("<createCertificate(pk, certType)");
+        trace("<createCertificate(pk, certType)");
         return ret;
     } // createCertificate
 
@@ -558,7 +560,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException, CADoesntExistsException {
-        debug(">createCertificate(cert)");
+        trace(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate) incert;
         try {
             // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
@@ -570,7 +572,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new SignRequestSignatureException(msg);
         }
         Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), cert.getKeyUsage());
-        debug("<createCertificate(cert)");
+        trace("<createCertificate(cert)");
         return ret;
     } // createCertificate
 
@@ -670,7 +672,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, NotFoundException {
-        debug(">createCertificate(IRequestMessage)");
+        trace(">createCertificate(IRequestMessage)");
         // Get CA that will receive request
         CADataLocal cadata = null;
         UserDataVO data = null;
@@ -806,7 +808,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
-        debug("<createCertificate(IRequestMessage)");
+        trace("<createCertificate(IRequestMessage)");
         return ret;
     }
     
@@ -834,7 +836,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @see se.anatom.ejbca.protocol.X509ResponseMessage
      */
     public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req,  Class responseClass) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException {
-        debug(">createRequestFailedResponse(IRequestMessage)");
+        trace(">createRequestFailedResponse(IRequestMessage)");
         IResponseMessage ret = null;            
         CADataLocal cadata = null;
         try {
@@ -885,7 +887,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
-        debug("<createRequestFailedResponse(IRequestMessage)");
+        trace("<createRequestFailedResponse(IRequestMessage)");
         return ret;
     }
 
@@ -911,7 +913,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @see se.anatom.ejbca.protocol.X509ResponseMessage
      */
     public IRequestMessage decryptAndVerifyRequest(Admin admin, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
-        debug(">decryptAndVerifyRequest(IRequestMessage)");
+        trace(">decryptAndVerifyRequest(IRequestMessage)");
         // Get CA that will receive request
         CADataLocal cadata = null;
             
@@ -952,7 +954,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
-        debug("<decryptAndVerifyRequest(IRequestMessage)");
+        trace("<decryptAndVerifyRequest(IRequestMessage)");
         return req;
     }
     
@@ -971,7 +973,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException {
-        debug(">getCRL(IRequestMessage)");
+        trace(">getCRL(IRequestMessage)");
         IResponseMessage ret = null;
         ICertificateStoreSessionLocal certificateStore = null;
         try {
@@ -1051,7 +1053,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
-        debug("<getCRL(IRequestMessage)");
+        trace("<getCRL(IRequestMessage)");
         return ret;
     }
     
@@ -1161,7 +1163,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
-        debug(">createCRL()");
+        trace(">createCRL()");
         byte[] crlBytes = null;
         CADataLocal cadata = null;
         try {
@@ -1242,7 +1244,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
             throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
         }
-        debug("<createCRL()");
+        trace("<createCRL()");
         return crlBytes;
     } // createCRL
 
@@ -1358,7 +1360,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * 
      */
     private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        debug(">createCertificate(pk, ku, date)");
+        trace(">createCertificate(pk, ku, date)");
         try {
             // Authorize user and get DN
             UserDataVO data = authUser(admin, username, password);
@@ -1421,7 +1423,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (ca.getFinishUser() == true) {
                 finishUser(admin, username, password);
             }
-            debug("<createCertificate(pk, ku, date)");
+            trace("<createCertificate(pk, ku, date)");
             return cert;
         } catch (ObjectNotFoundException oe) {
             throw oe;
@@ -1451,7 +1453,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws IllegalKeyException if the public key given is invalid
      */
     private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException {
-        debug(">createCertificate(pk, ku, notAfter)");
+        trace(">createCertificate(pk, ku, notAfter)");
         try {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
@@ -1550,7 +1552,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 if (certProfile.getPublisherList() != null)
                     pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, data.getExtendedinformation());
 
-                debug("<createCertificate(pk, ku, notAfter)");
+                trace("<createCertificate(pk, ku, notAfter)");
                 return cert;
             }
         } catch (IllegalKeyException ke) {
@@ -1564,7 +1566,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error(e);
             throw new EJBException(e);
         }
-        debug("<createCertificate(pk, ku)");
+        trace("<createCertificate(pk, ku)");
         log.error("Invalid user type for user " + data.getUsername());
         throw new EJBException("Invalid user type for user " + data.getUsername());
     } // createCertificate

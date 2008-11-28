@@ -55,7 +55,7 @@ public class TestAdminPreference extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
@@ -64,16 +64,16 @@ public class TestAdminPreference extends TestCase {
             }
             cacheAdmin = cacheHome.create();
         }
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -83,7 +83,7 @@ public class TestAdminPreference extends TestCase {
      * @throws Exception error
      */
     public void test01AddAdminPreference() throws Exception {
-        log.debug(">test01AddAdminPreference()");
+        log.trace(">test01AddAdminPreference()");
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
@@ -92,7 +92,7 @@ public class TestAdminPreference extends TestCase {
         assertTrue("Adminpref for "+user+" should not exist", ret);
         ret = this.cacheAdmin.addAdminPreference(administrator, user, pref);
         assertFalse("Adminpref for "+user+" should exist", ret);
-        log.debug("<test01AddAdminPreference()");
+        log.trace("<test01AddAdminPreference()");
     }
 
     /**
@@ -101,7 +101,7 @@ public class TestAdminPreference extends TestCase {
      * @throws Exception error
      */
     public void test02ModifyAdminPreference() throws Exception {
-        log.debug(">test02ModifyAdminPreference()");
+        log.trace(">test02ModifyAdminPreference()");
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
         AdminPreference pref = this.cacheAdmin.getAdminPreference(administrator, user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
@@ -114,7 +114,7 @@ public class TestAdminPreference extends TestCase {
         String newuser = genRandomUserName();
         ret = this.cacheAdmin.changeAdminPreference(administrator, newuser, pref);
         assertFalse("Adminpref for "+newuser+" should not exist", ret);
-        log.debug("<test02ModifyAdminPreference()");
+        log.trace("<test02ModifyAdminPreference()");
     }
 
     private static String genRandomUserName() {

@@ -284,9 +284,11 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      */
 
     public void addService(Admin admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
-        debug(">addService(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">addService(name: " + name + ")");
+    	}
         addService(admin,findFreeServiceId().intValue(),name,serviceConfiguration);
-        debug("<addService()");
+        log.trace("<addService()");
     } // addService
 
 
@@ -300,7 +302,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      */
 
     public void addService(Admin admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
-        debug(">addService(name: " + name + ", id: " + id + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">addService(name: " + name + ", id: " + id + ")");
+    	}
         boolean success = false;
         if(isAuthorizedToEditService(admin,serviceConfiguration)){
         	try {
@@ -328,7 +332,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         }else{
         	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoadd", name));
         }
-        debug("<addService()");
+        log.trace("<addService()");
     } // addService
 
     /**
@@ -341,7 +345,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      */
 
     public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
-        debug(">changeService(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">changeService(name: " + name + ")");
+    	}
         boolean success = false;
         if(isAuthorizedToEditService(admin,serviceConfiguration)){
         	try {
@@ -377,7 +383,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     		}
         }      
         
-        debug("<changeService()");
+        log.trace("<changeService()");
     } // changeService
 
     /**
@@ -388,7 +394,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public void cloneService(Admin admin, String oldname, String newname) throws ServiceExistsException {
-        debug(">cloneService(name: " + oldname + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">cloneService(name: " + oldname + ")");
+    	}
         ServiceConfiguration servicedata = null;
         try {
         	ServiceDataLocal htp = getServiceDataHome().findByName(oldname);
@@ -411,8 +419,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
             error("Error cloning service: ", e);
             throw new EJBException(e);
 		}
-
-        debug("<cloneService()");
+        log.trace("<cloneService()");
     } // cloneService
 
     /**
@@ -422,7 +429,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public boolean removeService(Admin admin, String name) {
-        debug(">removeService(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">removeService(name: " + name + ")");
+    	}
         boolean retval = false;
         try {
         	ServiceDataLocal htp = getServiceDataHome().findByName(name);
@@ -441,8 +450,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         } catch (Exception e) {
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorremovingservice", name), e);
         }
-        debug("<removeService)");
-        
+        log.trace("<removeService)");
         return retval;
     } // removeService
 
@@ -454,7 +462,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public void renameService(Admin admin, String oldname, String newname) throws ServiceExistsException {
-        debug(">renameService(from " + oldname + " to " + newname + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">renameService(from " + oldname + " to " + newname + ")");
+    	}
         boolean success = false;
         try {
         	getServiceDataHome().findByName(newname);
@@ -478,7 +488,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         }
         if (!success)
             throw new ServiceExistsException();
-        debug("<renameService()");
+        log.trace("<renameService()");
     } // renameService
 
     /**
@@ -598,7 +608,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public String getServiceName(Admin admin, int id) {
-        debug(">getServiceName(id: " + id + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">getServiceName(id: " + id + ")");
+    	}
         String returnval = null;
         ServiceDataLocal htp = null;
         try {
@@ -608,8 +620,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
             }
         } catch (FinderException e) {
         }
-
-        debug("<getServiceName()");
+        log.trace("<getServiceName()");
         return returnval;
     } // getServiceName
     
@@ -624,7 +635,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public void activateServiceTimer(Admin admin, String name) {
-    	debug(">activateServiceTimer(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">activateServiceTimer(name: " + name + ")");
+    	}
     	try {
     		ServiceDataLocal htp = getServiceDataHome().findByName(name);
     		ServiceConfiguration serviceConfiguration = htp.serviceConfiguration();
@@ -642,7 +655,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     	} catch (FinderException e) {
     		log.error("Can not find service: "+name);
     	}
-    	debug("<activateServiceTimer()");
+    	log.trace("<activateServiceTimer()");
     } // getServiceName
     
     

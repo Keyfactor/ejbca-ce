@@ -29,7 +29,7 @@ public class Upgrade extends BaseCommand {
     }
     
     public boolean upgrade() {
-        debug(">upgrade");
+        trace(">upgrade");
         
         boolean ret = false;
         String database = System.getProperty("ejbcaDB");
@@ -51,7 +51,7 @@ public class Upgrade extends BaseCommand {
            error("Can't upgrade: ", e);
            ret = false;
        }
-      debug("<upgrade");
+      trace("<upgrade");
       return ret;
     }
 

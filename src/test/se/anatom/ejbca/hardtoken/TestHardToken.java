@@ -79,7 +79,7 @@ public class TestHardToken extends TestCase {
      */
 
     public void test01AddHardToken() throws Exception {
-        log.debug(">test01AddHardToken()");
+        log.trace(">test01AddHardToken()");
       
         GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
         orgEncryptCAId = gc.getHardTokenEncryptCA();
@@ -99,9 +99,7 @@ public class TestHardToken extends TestCase {
 
         TestTools.getHardTokenSession().addHardToken(admin, "2345", "TESTUSER", "CN=TEST", SecConst.TOKEN_TURKISHEID, token2, certs, null);
 
-        
-
-        log.debug("<test01AddHardToken()");
+        log.trace("<test01AddHardToken()");
     }
 
 
@@ -112,7 +110,7 @@ public class TestHardToken extends TestCase {
      */
     
     public void test02EditHardToken() throws Exception {
-        log.debug(">test02EditHardToken()");
+        log.trace(">test02EditHardToken()");
 
         boolean ret = false;
 
@@ -128,12 +126,8 @@ public class TestHardToken extends TestCase {
         ret = true;
 
         assertTrue("Editing HardToken failed", ret);
-
-
-        log.debug("<test02EditHardToken()");
+        log.trace("<test02EditHardToken()");
     }  
-    
-
 
     /**
      * Test that tries to find a hardtokensn from is certificate
@@ -142,7 +136,7 @@ public class TestHardToken extends TestCase {
      */
     
     public void test03FindHardTokenByCertificate() throws Exception {
-        log.debug(">test03FindHardTokenByCertificate()");
+        log.trace(">test03FindHardTokenByCertificate()");
 
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.  
@@ -153,7 +147,7 @@ public class TestHardToken extends TestCase {
 
         assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
 
-        log.debug("<test03FindHardTokenByCertificate()");
+        log.trace("<test03FindHardTokenByCertificate()");
     }
     
     /**
@@ -163,7 +157,7 @@ public class TestHardToken extends TestCase {
      */
     
     public void test04EncryptHardToken() throws Exception {
-        log.debug(">test04EncryptHardToken()");
+        log.trace(">test04EncryptHardToken()");
 
         GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(TestTools.getTestCAId());
@@ -192,7 +186,7 @@ public class TestHardToken extends TestCase {
 
         assertTrue("Retrieving encrypted HardToken failed", swe.getInitialAuthEncPIN().equals("5678"));
 
-        log.debug("<test04EncryptHardToken()");
+        log.trace("<test04EncryptHardToken()");
     }
     
     /**
@@ -202,7 +196,7 @@ public class TestHardToken extends TestCase {
      */
    
     public void test05removeHardTokens() throws Exception {
-        log.debug(">test05removeHardTokens()");
+        log.trace(">test05removeHardTokens()");
         GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
         TestTools.getRaAdminSession().saveGlobalConfiguration(admin, gc);
@@ -216,7 +210,7 @@ public class TestHardToken extends TestCase {
         }
         assertTrue("Removing Hard Token failed", ret);
 
-        log.debug("<test05removeHardTokens()");
+        log.trace("<test05removeHardTokens()");
     }
    
 	public void test99RemoveTestCA() throws Exception {

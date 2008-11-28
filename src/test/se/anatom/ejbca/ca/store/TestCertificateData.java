@@ -72,7 +72,7 @@ public class TestCertificateData extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         CertTools.installBCProvider();
 
         admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -80,16 +80,16 @@ public class TestCertificateData extends TestCase {
         Object obj2 = ctx.lookup("CertificateStoreSession");
         storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);        
         
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -99,7 +99,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test01CreateNewCertRSASha1() throws Exception {
-        log.debug(">test01CreateNewCert()");
+        log.trace(">test01CreateNewCert()");
         // create a key pair and a new self signed certificate
         log.info("Generating a small key pair, might take a few seconds...");
         keyPair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
@@ -121,7 +121,7 @@ public class TestCertificateData extends TestCase {
             assertTrue("Error storing certificate.", false);
             return;
         }
-        log.debug("<test01CreateNewCert()");
+        log.trace("<test01CreateNewCert()");
     }
 
     /**
@@ -130,7 +130,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test02FindAndChange() throws Exception {
-        log.debug(">test02FindAndChange()");
+        log.trace(">test02FindAndChange()");
         String fp = CertTools.getFingerprintAsString(cert);
         ICertificateStoreSessionRemote store = storehome.create();
         try {
@@ -160,7 +160,7 @@ public class TestCertificateData extends TestCase {
             assertTrue("Error getting or revoking certificate.", false);
             return;
         }
-        log.debug("<test02FindAndChange()");
+        log.trace("<test02FindAndChange()");
     }
 
     /**
@@ -169,7 +169,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test03listAndRevoke() throws Exception {
-        log.debug(">test03listAndRevoke()");
+        log.trace(">test03listAndRevoke()");
         ICertificateStoreSessionRemote store = storehome.create();
         String issuerDN = CertTools.getIssuerDN(cert);
         String subjectDN = CertTools.getSubjectDN(cert);
@@ -194,7 +194,7 @@ public class TestCertificateData extends TestCase {
             store.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED);
             log.debug("Revoked cert " + fp);
         }
-        log.debug("<test03listAndRevoke()");
+        log.trace("<test03listAndRevoke()");
     }
 
     /**
@@ -203,7 +203,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test04CheckRevoked() throws Exception {
-        log.debug(">test04CheckRevoked()");
+        log.trace(">test04CheckRevoked()");
 
         ICertificateStoreSessionRemote store = storehome.create();
         String issuerDN = CertTools.getIssuerDN(cert);
@@ -224,7 +224,7 @@ public class TestCertificateData extends TestCase {
             assertTrue(rev.getStatus() == CertificateDataBean.CERT_REVOKED);
         }
 
-        log.debug("<test04CheckRevoked()");
+        log.trace("<test04CheckRevoked()");
     }
 
     /**
@@ -233,7 +233,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test05FindAgain() throws Exception {
-        log.debug(">test05FindAgain()");
+        log.trace(">test05FindAgain()");
 
         String fp = CertTools.getFingerprintAsString(cert);
 
@@ -264,7 +264,7 @@ public class TestCertificateData extends TestCase {
             log.debug(CertTools.getSubjectDN(xcert) + " - " + CertTools.getSerialNumberAsString(xcert));
             //log.debug(certs[i].toString());
         }
-        log.debug("<test05FindAgain()");
+        log.trace("<test05FindAgain()");
     }
 
     /**
@@ -273,7 +273,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test06FindByExpireTime() throws Exception {
-        log.debug(">test06FindByExpireTime()");
+        log.trace(">test06FindByExpireTime()");
 
         ICertificateStoreSessionRemote store = storehome.create();
         String fp = CertTools.getFingerprintAsString(cert);
@@ -308,7 +308,7 @@ public class TestCertificateData extends TestCase {
             assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
         }
 
-        log.debug("<test06FindByExpireTime()");
+        log.trace("<test06FindByExpireTime()");
     }
 
     /**
@@ -317,7 +317,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test07FindByIssuerAndSerno() throws Exception {
-        log.debug(">test07FindByIssuerAndSerno()");
+        log.trace(">test07FindByIssuerAndSerno()");
 
         String issuerDN = CertTools.getIssuerDN(cert);
         ICertificateStoreSessionRemote store = storehome.create();
@@ -330,7 +330,7 @@ public class TestCertificateData extends TestCase {
         assertNotNull("Cant find by issuer and serno", fcert);
 
         //log.debug(fcert.toString());
-        log.debug("<test07FindByIssuerAndSerno()");
+        log.trace("<test07FindByIssuerAndSerno()");
     }
 
     /**
@@ -339,7 +339,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test08IsRevoked() throws Exception {
-        log.debug(">test08IsRevoked()");
+        log.trace(">test08IsRevoked()");
         ICertificateStoreSessionRemote store = storehome.create();
         String fp = CertTools.getFingerprintAsString(cert);
         CertificateInfo data3 = store.getCertificateInfo(admin, fp);
@@ -368,7 +368,7 @@ public class TestCertificateData extends TestCase {
         assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().compareTo(data3.getRevocationDate()) == 0);
         assertTrue("Wrong reason!", revinfo.getReason() == data3.getRevocationReason());
         log.debug("Removed it!");
-        log.debug("<test08IsRevoked()");
+        log.trace("<test08IsRevoked()");
     }
 
     /**
@@ -377,7 +377,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test09addCertReqHist() throws Exception {
-        log.debug(">test09addCertReqHist()");
+        log.trace(">test09addCertReqHist()");
         ICertificateStoreSessionRemote store = storehome.create();
                 
         cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, false);
@@ -396,7 +396,7 @@ public class TestCertificateData extends TestCase {
         
         userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2");
         store.addCertReqHistoryData(admin,cert2, userdata);       
-        log.debug("<test09addCertReqHist()");
+        log.trace("<test09addCertReqHist()");
     }    
 
     /**
@@ -406,7 +406,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test10getCertReqHistByIssuerDNAndSerial() throws Exception {
-        log.debug(">test10getCertReqHistByIssuerDNAndSerial()");
+        log.trace(">test10getCertReqHistByIssuerDNAndSerial()");
         ICertificateStoreSessionRemote store = storehome.create();
         
         CertReqHistory certreqhist = store.getCertReqHistory(admin, cert1.getSerialNumber(),cert1.getIssuerDN().toString());
@@ -417,7 +417,7 @@ public class TestCertificateData extends TestCase {
         assertTrue("Error wrong username.", (userdata.getUsername().equals(username)));
         assertTrue("Error wrong DN.", (userdata.getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")));
        
-        log.debug("<test10getCertReqHistByIssuerDNAndSerial()");
+        log.trace("<test10getCertReqHistByIssuerDNAndSerial()");
     }    
     
     /**
@@ -427,7 +427,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test11getCertReqHistByUsername() throws Exception {
-        log.debug(">test11getCertReqHistByUsername()");
+        log.trace(">test11getCertReqHistByUsername()");
         ICertificateStoreSessionRemote store = storehome.create();
         
         Collection result = store.getCertReqHistory(admin, username);
@@ -439,7 +439,7 @@ public class TestCertificateData extends TestCase {
           assertTrue("Error wrong DN", ((certreqhist.getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1"))|| 
          		(certreqhist.getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2"))));
         }         
-        log.debug("<test11getCertReqHistByUsername()");
+        log.trace("<test11getCertReqHistByUsername()");
     }
     
     /**
@@ -448,7 +448,7 @@ public class TestCertificateData extends TestCase {
      * @throws Exception error
      */
     public void test12removeCertReqHistData() throws Exception {
-        log.debug(">test12removeCertReqHistData()");
+        log.trace(">test12removeCertReqHistData()");
         ICertificateStoreSessionRemote store = storehome.create();
         
         store.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(cert1));
@@ -460,7 +460,7 @@ public class TestCertificateData extends TestCase {
         certreqhist = store.getCertReqHistory(admin, cert2.getSerialNumber(),cert2.getIssuerDN().toString());
         assertNull("Error removing cert req history data, cert2 data is still there", certreqhist);
         
-        log.debug("<test12removeCertReqHistData()");
+        log.trace("<test12removeCertReqHistData()");
     }
     
 }

@@ -211,7 +211,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	 */
 	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
-        m_log.debug(">extendedService");
+        m_log.trace(">extendedService");
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
 			String msg = intres.getLocalizedMessage("caservice.notactive");
 			m_log.error(msg);
@@ -233,7 +233,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         	certChain = ocspServiceReq.getCertificateChain();
         }        
         ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, (X509Certificate[])certChain.toArray(new X509Certificate[0]));
-        m_log.debug("<extendedService");		  		
+        m_log.trace("<extendedService");		  		
 		return returnval;
 	}
 

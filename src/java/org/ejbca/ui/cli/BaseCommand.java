@@ -120,7 +120,7 @@ public abstract class BaseCommand {
      *@return a reference to a CAAdminSessionBean
      */
     protected ICAAdminSessionRemote getCAAdminSession() {
-    	baseLog.debug(">getCAAdminSession()");
+    	baseLog.trace(">getCAAdminSession()");
 		try {
 			if (caAdminSession == null) {
 				caAdminSession = ((ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -130,7 +130,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getCAAdminSession()");
+		baseLog.trace("<getCAAdminSession()");
         return caAdminSession;
      }
 
@@ -138,7 +138,7 @@ public abstract class BaseCommand {
      *@return a reference to a ProtectedLogSessionBean
      */
     protected IProtectedLogSessionRemote getProtectedLogSession() {
-    	baseLog.debug(">getProtectedLogSession()");
+    	baseLog.trace(">getProtectedLogSession()");
 		try {
 			if (protectedLogSession == null) {
 				protectedLogSession = ((IProtectedLogSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -148,7 +148,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getProtectedLogSession()");
+		baseLog.trace("<getProtectedLogSession()");
         return protectedLogSession;
      }
 
@@ -156,7 +156,7 @@ public abstract class BaseCommand {
      *@return a reference to a CertificateStoreSessionBean
      */
     protected ICertificateStoreSessionRemote getCertificateStoreSession() {
-    	baseLog.debug(">getCertificateStoreSession()");
+    	baseLog.trace(">getCertificateStoreSession()");
 		try {
 			if (certificateStoreSession == null) {
 				certificateStoreSession = ((ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -166,7 +166,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getCertificateStoreSession()");
+		baseLog.trace("<getCertificateStoreSession()");
         return certificateStoreSession;
      }
     
@@ -174,7 +174,7 @@ public abstract class BaseCommand {
      *@return a reference to a PublisherSessionBean
      */
     protected IPublisherSessionRemote getPublisherSession() {
-    	baseLog.debug(">getPublisherSession()");
+    	baseLog.trace(">getPublisherSession()");
 		try {
 			if (publisherSession == null) {
 				publisherSession = ((IPublisherSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -184,7 +184,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getPublisherSession()");
+		baseLog.trace("<getPublisherSession()");
         return publisherSession;
      }
 
@@ -192,7 +192,7 @@ public abstract class BaseCommand {
      *@return a reference to a UserAdminSessionBean
      */
     protected IUserAdminSessionRemote getUserAdminSession() {
-    	baseLog.debug(">getUserAdminSession()");
+    	baseLog.trace(">getUserAdminSession()");
 		try {
 			if (userAdminSession == null) {
 				userAdminSession = ((IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -202,7 +202,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getUserAdminSession()");
+		baseLog.trace("<getUserAdminSession()");
         return userAdminSession;
     }
     
@@ -210,7 +210,7 @@ public abstract class BaseCommand {
      *@return a reference to a RaAdminSessionBean
      */
     protected IRaAdminSessionRemote getRaAdminSession() {
-    	baseLog.debug(">getRaAdminSession()");
+    	baseLog.trace(">getRaAdminSession()");
         administrator = new Admin(Admin.TYPE_RA_USER);
 		try {
 			if (raAdminSession == null) {
@@ -221,7 +221,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getRaAdminSession()");
+		baseLog.trace("<getRaAdminSession()");
         return  raAdminSession;
     }    
 
@@ -229,7 +229,7 @@ public abstract class BaseCommand {
      *@return a reference to a UpgradeSessionBean
      */
     protected IUpgradeSessionRemote getUpgradeSession() {
-    	baseLog.debug(">getUpgradeSession()");
+    	baseLog.trace(">getUpgradeSession()");
 		try {
 			if (upgradeSession == null) {
 				upgradeSession = ((IUpgradeSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -239,7 +239,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getUpgradeSession()");
+		baseLog.trace("<getUpgradeSession()");
         return upgradeSession;
      }
     
@@ -247,7 +247,7 @@ public abstract class BaseCommand {
      *@return a reference to a CreateCRLSessionBean
      */
     protected ICreateCRLSessionRemote getCreateCRLSession() {
-    	baseLog.debug(">getCreateCRLSession()");
+    	baseLog.trace(">getCreateCRLSession()");
 		try {
 			if (createCRLSession == null) {
 				createCRLSession = ((ICreateCRLSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -257,7 +257,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getCreateCRLSession()");
+		baseLog.trace("<getCreateCRLSession()");
         return createCRLSession;
      }
 
@@ -265,7 +265,7 @@ public abstract class BaseCommand {
      *@return a reference to a AuthorizationSessionBean
      */
     protected IAuthorizationSessionRemote getAuthorizationSession() {
-    	baseLog.debug(">getAuthorizationSession()");
+    	baseLog.trace(">getAuthorizationSession()");
 		try {
 			if (authorizationSession == null) {
 				authorizationSession = ((IAuthorizationSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -275,7 +275,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getAuthorizationSession()");
+		baseLog.trace("<getAuthorizationSession()");
         return authorizationSession;
      }
 
@@ -283,7 +283,7 @@ public abstract class BaseCommand {
      *@return a reference to a HardTokenSessionBean
      */
     protected IHardTokenSessionRemote getHardTokenSession() {
-    	baseLog.debug(">getHardTokenSession()");
+    	baseLog.trace(">getHardTokenSession()");
 		try {
 			if (hardTokenSession == null) {
 				hardTokenSession = ((IHardTokenSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -293,7 +293,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getHardTokenSession()");
+		baseLog.trace("<getHardTokenSession()");
         return hardTokenSession;
      }
 
@@ -301,7 +301,7 @@ public abstract class BaseCommand {
      *@return a reference to a KeyRecoverySessionBean
      */
     protected IKeyRecoverySessionRemote getKeyRecoverySession() {
-    	baseLog.debug(">getKeyRecoverySession()");
+    	baseLog.trace(">getKeyRecoverySession()");
 		try {
 			if (keyRecoverySession == null) {
 				keyRecoverySession = ((IKeyRecoverySessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -311,7 +311,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getKeyRecoverySession()");
+		baseLog.trace("<getKeyRecoverySession()");
         return keyRecoverySession;
      }
     
@@ -319,7 +319,7 @@ public abstract class BaseCommand {
      *@return a reference to a UserDataSourceSessionBean
      */
     public IUserDataSourceSessionRemote getUserDataSourceSession(){
-    	baseLog.debug(">getUserDataSourceSession()");
+    	baseLog.trace(">getUserDataSourceSession()");
 		try {
 			if (userDataSourceSession == null) {
 				userDataSourceSession = ((IUserDataSourceSessionHome) ServiceLocator.getInstance().getRemoteHome(
@@ -329,7 +329,7 @@ public abstract class BaseCommand {
 			error("", e);
 			throw new RuntimeException(e);
 		}
-		baseLog.debug("<getUserDataSourceSession()");
+		baseLog.trace("<getUserDataSourceSession()");
         return userDataSourceSession;
     }
 
@@ -397,6 +397,25 @@ public abstract class BaseCommand {
         ks.store(baos, "foo1234567890".toCharArray());
         // If we didn't throw an exception, we were succesful
         return true;
+    }
+
+    /**
+     * Logs a message with priority TRACE
+     *
+     * @param msg Message
+     */
+    public void trace(String msg) {
+        log.trace(msg);
+    }
+
+    /**
+     * Logs a message and an exception with priority TRACE
+     *
+     * @param msg Message
+     * @param t Exception
+     */
+    public void trace(String msg, Throwable t) {
+        log.trace(msg, t);
     }
 
     /**

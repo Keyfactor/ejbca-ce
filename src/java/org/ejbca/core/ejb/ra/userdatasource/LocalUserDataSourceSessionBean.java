@@ -280,7 +280,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
     public void testConnection(Admin admin, int userdatasourceid) throws UserDataSourceConnectionException {
-        debug(">testConnection(id: " + userdatasourceid + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">testConnection(id: " + userdatasourceid + ")");
+    	}
         try {
         	UserDataSourceDataLocal pdl = userdatasourcehome.findByPrimaryKey(new Integer(userdatasourceid));
         	BaseUserDataSource userdatasource = pdl.getUserDataSource();
@@ -305,7 +307,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
         }
-        debug("<testConnection(id: " + userdatasourceid + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace("<testConnection(id: " + userdatasourceid + ")");
+    	}
     }
 
     /**
@@ -317,9 +321,11 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      */
 
     public void addUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
-        debug(">addUserDataSource(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">addUserDataSource(name: " + name + ")");
+    	}
         addUserDataSource(admin,findFreeUserDataSourceId().intValue(),name,userdatasource);
-        debug("<addUserDataSource()");
+        log.trace("<addUserDataSource()");
     } // addUserDataSource
 
 
@@ -333,7 +339,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      */
 
     public void addUserDataSource(Admin admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
-        debug(">addUserDataSource(name: " + name + ", id: " + id + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">addUserDataSource(name: " + name + ", id: " + id + ")");
+    	}
         boolean success = false;
         if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
         	try {
@@ -363,7 +371,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
 			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
         	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         }
-        debug("<addUserDataSource()");
+        log.trace("<addUserDataSource()");
     } // addUserDataSource
 
     /**
@@ -374,7 +382,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      */
 
     public void changeUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) {
-        debug(">changeUserDataSource(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">changeUserDataSource(name: " + name + ")");
+    	}
         boolean success = false;
         if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
         	try {
@@ -395,9 +405,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
 			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
         	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         }
-        
-        
-        debug("<changeUserDataSource()");
+        log.trace("<changeUserDataSource()");
     } // changeUserDataSource
 
     /**
@@ -409,7 +417,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void cloneUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
-        debug(">cloneUserDataSource(name: " + oldname + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">cloneUserDataSource(name: " + oldname + ")");
+    	}
         BaseUserDataSource userdatasourcedata = null;
         try {
         	UserDataSourceDataLocal htp = userdatasourcehome.findByName(oldname);
@@ -437,8 +447,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             error(msg, e);
             throw new EJBException(e);
 		}
-
-        debug("<cloneUserDataSource()");
+        log.trace("<cloneUserDataSource()");
     } // cloneUserDataSource
 
     /**
@@ -448,7 +457,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public boolean removeUserDataSource(Admin admin, String name) {
-        debug(">removeUserDataSource(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">removeUserDataSource(name: " + name + ")");
+    	}
         boolean retval = false;
         try {
         	UserDataSourceDataLocal htp = userdatasourcehome.findByName(name);
@@ -466,8 +477,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             String msg = intres.getLocalizedMessage("userdatasource.errorremovesource", name);            	
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg, e);
         }
-        debug("<removeUserDataSource()");
-        
+        log.trace("<removeUserDataSource()");
         return retval;
     } // removeUserDataSource
 
@@ -479,7 +489,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void renameUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
-        debug(">renameUserDataSource(from " + oldname + " to " + newname + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">renameUserDataSource(from " + oldname + " to " + newname + ")");
+    	}
         boolean success = false;
         try {
             userdatasourcehome.findByName(newname);
@@ -507,7 +519,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
 
         if (!success)
             throw new UserDataSourceExistsException();
-        debug("<renameUserDataSource()");
+        log.trace("<renameUserDataSource()");
     } // renameUserDataSource
 
     /**
@@ -673,7 +685,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public String getUserDataSourceName(Admin admin, int id) {
-        debug(">getUserDataSourceName(id: " + id + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">getUserDataSourceName(id: " + id + ")");
+    	}
         String returnval = null;
         UserDataSourceDataLocal htp = null;
         try {
@@ -683,8 +697,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             }
         } catch (FinderException e) {
         }
-
-        debug("<getUserDataSourceName()");
+        log.trace("<getUserDataSourceName()");
         return returnval;
     } // getUserDataSourceName
     

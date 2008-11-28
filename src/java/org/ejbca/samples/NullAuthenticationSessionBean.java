@@ -93,16 +93,14 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
-
+        trace(">ejbCreate()");
         try {
             ILogSessionHome logsessionhome = (ILogSessionHome) getLocator().getLocalHome(ILogSessionHome.COMP_NAME);
             logsession = logsessionhome.create();
         } catch (Exception e) {
             throw new EJBException(e);
         }
-
-        debug("<ejbCreate()");
+        trace("<ejbCreate()");
     }
 
     /**
@@ -118,7 +116,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
      */
     public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
-        debug(">authenticateUser(" + username + ", hiddenpwd)");
+        trace(">authenticateUser(" + username + ", hiddenpwd)");
 
         try {
             // Does the username contain a DN?
@@ -142,7 +140,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 UserDataVO ret = new UserDataVO(username, dn, admin.getCaId(), altName, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE, SecConst.PROFILE_NO_PROFILE, 
                 		                        null, null, SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
                 ret.setPassword(password);
-                debug("<authenticateUser("+username+", hiddenpwd)");
+                trace("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             }
             try{
@@ -168,7 +166,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
      */
     public void finishUser(Admin admin, String username, String password)
         throws ObjectNotFoundException {
-        debug(">finishUser(" + username + ", hiddenpwd)");
-        debug("<finishUser(" + username + ", hiddenpwd)");
+        trace(">finishUser(" + username + ", hiddenpwd)");
+        trace("<finishUser(" + username + ", hiddenpwd)");
     } //finishUser
 }

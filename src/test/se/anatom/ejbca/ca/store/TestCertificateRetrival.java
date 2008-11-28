@@ -92,7 +92,7 @@ public class TestCertificateRetrival extends TestCase {
     private Admin admin;
 
     private static void dumpCertificates(Collection certs) {
-        m_log.debug(">dumpCertificates()");
+        m_log.trace(">dumpCertificates()");
         if (null != certs && !certs.isEmpty()) {
             Iterator iter = certs.iterator();
 
@@ -107,7 +107,7 @@ public class TestCertificateRetrival extends TestCase {
         } else {
             m_log.warn("Certificate collection is empty or NULL.");
         }
-        m_log.debug("<dumpCertificates()");
+        m_log.trace("<dumpCertificates()");
     }
 
     public TestCertificateRetrival(String name) {
@@ -115,16 +115,16 @@ public class TestCertificateRetrival extends TestCase {
     }
 
     private Context getInitialContext() throws NamingException {
-        m_log.debug(">getInitialContext");
+        m_log.trace(">getInitialContext");
 
         Context ctx = new javax.naming.InitialContext();
-        m_log.debug("<getInitialContext");
+        m_log.trace("<getInitialContext");
 
         return ctx;
     }
 
     protected void setUp() throws Exception {
-        m_log.debug(">setUp()");
+        m_log.trace(">setUp()");
         CertTools.installBCProvider();
 
         m_ctx = getInitialContext();
@@ -182,15 +182,15 @@ public class TestCertificateRetrival extends TestCase {
             assertTrue("Error seting up tests: " + e.getMessage(), false);
         }
         admin = new Admin(Admin.TYPE_INTERNALUSER);
-        m_log.debug("<setUp()");
+        m_log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     public void test01AddCertificates() throws Exception {
-        m_log.debug(">test01AddCertificates()");
-        m_log.debug("<test01AddCertificates()");
+        m_log.trace(">test01AddCertificates()");
+        m_log.trace("<test01AddCertificates()");
     }
 
     /**
@@ -198,7 +198,7 @@ public class TestCertificateRetrival extends TestCase {
      * @throws Exception error
      */
     public void test02FindCACertificates() throws Exception {
-        m_log.debug(">test02FindCACertificates()");
+        m_log.trace(">test02FindCACertificates()");
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see
@@ -224,7 +224,7 @@ public class TestCertificateRetrival extends TestCase {
             }
         }
         assertTrue(found);
-        m_log.debug("<test02FindCACertificates()");
+        m_log.trace("<test02FindCACertificates()");
     }
 
     /**
@@ -232,7 +232,7 @@ public class TestCertificateRetrival extends TestCase {
      * @throws Exception error
      */
     public void test03FindEndEntityCertificates() throws Exception {
-        m_log.debug(">test03FindEndEntityCertificates()");
+        m_log.trace(">test03FindEndEntityCertificates()");
 
         ICertificateStoreSessionRemote store = m_storehome.create();
 
@@ -260,7 +260,7 @@ public class TestCertificateRetrival extends TestCase {
         }
         assertTrue(found);
 
-        m_log.debug("<test03FindEndEntityCertificates()");
+        m_log.trace("<test03FindEndEntityCertificates()");
     }
 
     /**
@@ -268,7 +268,7 @@ public class TestCertificateRetrival extends TestCase {
      * @throws Exception error
      */
     public void test04FindRootCertificates() throws Exception {
-        m_log.debug(">test04FindRootCertificates()");
+        m_log.trace(">test04FindRootCertificates()");
 
         ICertificateStoreSessionRemote store = m_storehome.create();
 
@@ -296,7 +296,7 @@ public class TestCertificateRetrival extends TestCase {
         }
         assertTrue(found);
 
-        m_log.debug("<test04FindRootCertificates()");
+        m_log.trace("<test04FindRootCertificates()");
     }
 
     /**
@@ -304,7 +304,7 @@ public class TestCertificateRetrival extends TestCase {
      * @throws Exception error
      */
     public void test05CertificatesByIssuerAndSernos() throws Exception {
-        m_log.debug(">test05CertificatesByIssuerAndSernos()");
+        m_log.trace(">test05CertificatesByIssuerAndSernos()");
         ICertificateStoreSessionRemote store = m_storehome.create();
         Certificate rootcacert;
         Certificate subcacert;
@@ -339,7 +339,7 @@ public class TestCertificateRetrival extends TestCase {
         assertTrue("failed to list certs", certfps.size() == 1);
         assertTrue("Unable to find test certificate."
                 , m_certfps.contains(CertTools.getFingerprintAsString((Certificate)certfps.iterator().next())));
-        m_log.debug("<test05CertificatesByIssuerAndSernos()");
+        m_log.trace("<test05CertificatesByIssuerAndSernos()");
     }
 
     /**
@@ -348,7 +348,7 @@ public class TestCertificateRetrival extends TestCase {
      */
     /* Don't run this test since it can lookup a looot of certs and you will get an OutOfMemoryException
     public void test06RetriveAllCertificates() throws Exception {
-        m_log.debug(">test06CertificatesByIssuer()");
+        m_log.trace(">test06CertificatesByIssuer()");
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see
@@ -362,7 +362,7 @@ public class TestCertificateRetrival extends TestCase {
         while (iter.hasNext()) {
             assertTrue("Unable to find all test certificates.", certfps.contains(iter.next()));
         }
-        m_log.debug("<test06CertificatesByIssuer()");
+        m_log.trace("<test06CertificatesByIssuer()");
     } */
 
     /**
@@ -370,7 +370,7 @@ public class TestCertificateRetrival extends TestCase {
      * @throws Exception error
      */
     public void test07FindCACertificatesWithIssuer() throws Exception {
-        m_log.debug(">test07FindCACertificatesWithIssuer()");
+        m_log.trace(">test07FindCACertificatesWithIssuer()");
 
         ICertificateStoreSessionRemote store = m_storehome.create();
         Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
@@ -390,7 +390,7 @@ public class TestCertificateRetrival extends TestCase {
             }
         }
         assertTrue("Unable to find all test certificates.", found);
-        m_log.debug("<test07FindCACertificatesWithIssuer()");
+        m_log.trace("<test07FindCACertificatesWithIssuer()");
     }
 
     /**
@@ -398,7 +398,7 @@ public class TestCertificateRetrival extends TestCase {
      * @throws Exception error
      */
     public void test08LoadRevocationInfo() throws Exception {
-        m_log.debug(">test08LoadRevocationInfo()");
+        m_log.trace(">test08LoadRevocationInfo()");
 
         ArrayList revstats = new ArrayList();
         Certificate rootcacert;
@@ -431,6 +431,6 @@ public class TestCertificateRetrival extends TestCase {
                     + "   Revocation date   : " + rci.getRevocationDate().toString() + "\n"
                     + "   Revocation reason : " + rci.getReason() + "\n");
         }
-        m_log.debug("<test08LoadRevocationInfo()");
+        m_log.trace("<test08LoadRevocationInfo()");
     }
 }

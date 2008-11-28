@@ -169,9 +169,9 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	}
 	
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 	protected void setUp() throws Exception {

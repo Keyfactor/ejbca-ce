@@ -88,7 +88,7 @@ public class TestCAs extends TestCase {
      * @throws Exception error
      */
     public void test01AddRSACA() throws Exception {
-        log.debug(">test01AddRSACA()");
+        log.trace(">test01AddRSACA()");
         boolean ret = false;
         try {
         	TestTools.removeTestCA();	// We cant be sure this CA was not left over from some other failed test
@@ -178,7 +178,7 @@ public class TestCAs extends TestCase {
         }
 
         assertTrue("Creating RSA CA failed", ret);
-        log.debug("<test01AddRSACA()");
+        log.trace("<test01AddRSACA()");
     }
 
     /**
@@ -187,7 +187,7 @@ public class TestCAs extends TestCase {
      * @throws Exception error
      */
     public void test02RenameCA() throws Exception {
-        log.debug(">test02RenameCA()");
+        log.trace(">test02RenameCA()");
 
         boolean ret = false;
         try {
@@ -198,7 +198,7 @@ public class TestCAs extends TestCase {
         }
         assertTrue("Renaming CA failed", ret);
 
-        log.debug("<test02RenameCA()");
+        log.trace("<test02RenameCA()");
     }
 
 
@@ -208,7 +208,7 @@ public class TestCAs extends TestCase {
      * @throws Exception error
      */
     public void test03EditCA() throws Exception {
-        log.debug(">test03EditCA()");
+        log.trace(">test03EditCA()");
 
         X509CAInfo info = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         info.setCRLPeriod(33);
@@ -216,7 +216,7 @@ public class TestCAs extends TestCase {
         X509CAInfo info2 = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         assertTrue("Editing CA failed", info2.getCRLPeriod() == 33);
 
-        log.debug("<test03EditCA()");
+        log.trace("<test03EditCA()");
     }
 
     /**
@@ -227,7 +227,7 @@ public class TestCAs extends TestCase {
      * @throws Exception error
      */
     public void test04AddECDSACA() throws Exception {
-        log.debug(">test04AddECDSACA()");
+        log.trace(">test04AddECDSACA()");
         boolean ret = false;
         try {
         	TestTools.getAuthorizationSession().initialize(admin, "CN=TESTECDSA".hashCode());
@@ -317,7 +317,7 @@ public class TestCAs extends TestCase {
         }
 
         assertTrue("Creating ECDSA CA failed", ret);
-        log.debug("<test04AddECDSACA()");
+        log.trace("<test04AddECDSACA()");
     }
 
     /**
@@ -328,7 +328,7 @@ public class TestCAs extends TestCase {
      * @throws Exception error
      */
     public void test05AddECDSAImplicitlyCACA() throws Exception {
-        log.debug(">test05AddECDSAImplicitlyCACA()");
+        log.trace(">test05AddECDSAImplicitlyCACA()");
         boolean ret = false;
         try {
         	TestTools.getAuthorizationSession().initialize(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
@@ -419,7 +419,7 @@ public class TestCAs extends TestCase {
         }
 
         assertTrue("Creating ECDSA ImplicitlyCA CA failed", ret);
-        log.debug("<test05AddECDSAImplicitlyCACA()");
+        log.trace("<test05AddECDSAImplicitlyCACA()");
     }
 
     /**
@@ -430,7 +430,7 @@ public class TestCAs extends TestCase {
      * @throws Exception error
      */
     public void test06AddRSASha256WithMGF1CA() throws Exception {
-        log.debug(">test06AddRSASha256WithMGF1CA()");
+        log.trace(">test06AddRSASha256WithMGF1CA()");
         boolean ret = false;
         try {
         	String cadn = "CN=TESTSha256WithMGF1";
@@ -515,11 +515,11 @@ public class TestCAs extends TestCase {
         }
 
         assertTrue("Creating RSA CA failed", ret);
-        log.debug("<test06AddRSASha256WithMGF1CA()");
+        log.trace("<test06AddRSASha256WithMGF1CA()");
     }
 
     public void test07AddRSACA4096() throws Exception {
-        log.debug(">test07AddRSACA4096()");
+        log.trace(">test07AddRSACA4096()");
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
@@ -607,11 +607,11 @@ public class TestCAs extends TestCase {
         }
 
         assertTrue("Creating RSA CA 4096 failed", ret);
-        log.debug("<test07AddRSACA4096()");
+        log.trace("<test07AddRSACA4096()");
     }
 
     public void test08AddRSACAReverseDN() throws Exception {
-        log.debug(">test08AddRSACAReverseDN()");
+        log.trace(">test08AddRSACAReverseDN()");
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
@@ -700,11 +700,11 @@ public class TestCAs extends TestCase {
         }
 
         assertTrue("Creating RSA CA reverse failed", ret);
-        log.debug("<test08AddRSACAReverseDN()");
+        log.trace("<test08AddRSACAReverseDN()");
     }
     
     public void test09AddCVCCA() throws Exception {
-        log.debug(">test09AddCVCCA()");
+        log.trace(">test09AddCVCCA()");
         boolean ret = false;
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("1024");
@@ -978,7 +978,7 @@ public class TestCAs extends TestCase {
         // Sequence must have been updated with 1
         assertEquals("SETESTDV-D00003", holderRef);
 
-        log.debug("<test09AddCVCCA()");
+        log.trace("<test09AddCVCCA()");
     }
 
     /** Test that we can create a SubCA signed by an external RootCA.
@@ -986,7 +986,7 @@ public class TestCAs extends TestCase {
      * @throws Exception
      */
     public void test10RSASignedByExternal() throws Exception {
-        log.debug(">test10RSASignedByExternal()");
+        log.trace(">test10RSASignedByExternal()");
         boolean ret = false;
         CAInfo info =null;
         try {
@@ -1100,7 +1100,7 @@ public class TestCAs extends TestCase {
         assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
         assertTrue("Creating RSA CA (signed by external) failed", ret);
-        log.debug("<test10RSASignedByExternal");
+        log.trace("<test10RSASignedByExternal");
     }
 
 }

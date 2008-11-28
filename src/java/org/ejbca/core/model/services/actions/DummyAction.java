@@ -33,7 +33,7 @@ public class DummyAction extends BaseAction {
 	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
 	 */
 	public void performAction(ActionInfo actionInfo) throws ActionException {
-		log.debug(">DummyAction.performAction");
+		log.trace(">DummyAction.performAction");
 		this.properties.get("somedata");
 		// Do nothing
 	}

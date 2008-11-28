@@ -330,10 +330,10 @@ public class AdminCertReqServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
     {
-        log.debug(">doGet()");
+        log.trace(">doGet()");
         response.setHeader("Allow", "POST");
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The certificate request servlet only handles the POST method.");
-        log.debug("<doGet()");
+        log.trace("<doGet()");
     } // doGet
     
     

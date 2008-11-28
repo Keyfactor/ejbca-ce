@@ -261,7 +261,7 @@ public class RequestHelper {
      */
     public static void sendNewCertToIidClient(byte[] certificate, HttpServletRequest request, OutputStream out, ServletContext sc,
                                                 String responseTemplate, String classid) throws Exception {
-    	log.debug(">sendNewCertToIidClient");
+    	log.trace(">sendNewCertToIidClient");
         if ( certificate.length <= 0 ) {
             log.error("0 length certificate can not be sent to  client!");
             return;
@@ -308,7 +308,7 @@ public class RequestHelper {
         pw.print(sw);
         pw.close();
         out.flush();
-    	log.debug("<sendNewCertToIidClient");
+    	log.trace("<sendNewCertToIidClient");
     } // sendCertificates
     /**
      * Reads template and inserts cert to send back to IE for installation of cert
@@ -370,7 +370,7 @@ public class RequestHelper {
      */
     public static void sendNewCertToNSClient(byte[] certs, HttpServletResponse out)
         throws Exception {
-    	log.debug(">nsCertRequest");
+    	log.trace(">nsCertRequest");
         if (certs.length == 0) {
             log.error("0 length certificate can not be sent to NS client!");
             return;
@@ -384,7 +384,7 @@ public class RequestHelper {
         out.getOutputStream().write(certs);
         log.debug("Sent reply to NS client");
         log.debug(new String(Base64.encode(certs)));
-    	log.debug("<nsCertRequest");
+    	log.trace("<nsCertRequest");
     } // sendNewCertToNSClient
 
     /**

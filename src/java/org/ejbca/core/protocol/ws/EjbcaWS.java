@@ -306,7 +306,9 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public List<Certificate> getLastCertChain(String username) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
 		List<Certificate> retval = new ArrayList<Certificate>();
-		log.debug(">getLastCertChain: "+username);
+		if (log.isTraceEnabled()) {
+			log.trace(">getLastCertChain: "+username);
+		}
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);
 		try {
@@ -371,7 +373,9 @@ public class EjbcaWS implements IEjbcaWS {
 			log.error("EJBCA WebService error, getLastCertChain : ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}		
-		log.debug("<getLastCertChain: "+username);
+		if (log.isTraceEnabled()) {
+			log.trace("<getLastCertChain: "+username);
+		}
 		return retval;
 	}
 
@@ -404,7 +408,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 			EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException {
-		log.debug(">cvcRequest");
+		log.trace(">cvcRequest");
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);
 		
@@ -604,7 +608,7 @@ public class EjbcaWS implements IEjbcaWS {
 					retval.add(new Certificate(cert));
 				}
 			}
-			log.debug("<cvcRequest");
+			log.trace("<cvcRequest");
 			return retval;
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
@@ -1046,7 +1050,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#keyRecoverNewest(java.lang.String)
 	 */
 	public void keyRecoverNewest(String username) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
-		log.debug(">keyRecoverNewest");
+		log.trace(">keyRecoverNewest");
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(wsContext);
@@ -1081,7 +1085,7 @@ public class EjbcaWS implements IEjbcaWS {
 			log.error("EJBCA WebService error, keyRecoverNewest : ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} 
-		log.debug("<keyRecoverNewest");
+		log.trace("<keyRecoverNewest");
 	}
 
 	/**

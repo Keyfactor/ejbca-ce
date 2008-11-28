@@ -149,8 +149,10 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
      */
     public byte[] generateEC( final String name,
                               final String keyEntryName) throws Exception {
+        if (log.isTraceEnabled()) {
+        	log.trace(">generate EC: curve name "+name+", keyEntryName "+keyEntryName);
+        }
         // Generate the EC Keypair
-        log.debug(">generate EC: curve name "+name+", keyEntryName "+keyEntryName);
         final KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", this.providerName);
         try {
             kpg.initialize(new ECGenParameterSpec(name));
@@ -159,7 +161,9 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             throw e;
         }
         final byte result[] = generate(kpg, keyEntryName, "SHA1withECDSA");
-        log.debug("<generate: curve name "+name+", keyEntryName "+keyEntryName);
+        if (log.isTraceEnabled()) {
+        	log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
+        }
         return result;
 
     }
@@ -168,12 +172,16 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
      */
     public byte[] generate( final int keySize,
                             final String keyEntryName) throws Exception {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">generate: keySize "+keySize+", keyEntryName "+keyEntryName);
+    	}
         // Generate the RSA Keypair
-        log.debug(">generate: keySize "+keySize+", keyEntryName "+keyEntryName);
         final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", this.providerName);
         kpg.initialize(keySize);
         final byte result[] = generate(kpg, keyEntryName, "SHA1withRSA");
-        log.debug("<generate: keySize "+keySize+", keyEntryName "+keyEntryName);
+        if (log.isTraceEnabled()) {
+        	log.trace("<generate: keySize "+keySize+", keyEntryName "+keyEntryName);
+        }
         return result;
     }
     /* (non-Javadoc)

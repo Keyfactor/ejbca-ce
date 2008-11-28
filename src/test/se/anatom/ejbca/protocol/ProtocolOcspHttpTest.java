@@ -205,18 +205,17 @@ public class ProtocolOcspHttpTest extends TestCase {
         }
     }
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
-        log.debug("<setUp()");
+        log.trace(">setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -251,7 +250,7 @@ public class ProtocolOcspHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test02OcspGood() throws Exception {
-        log.debug(">test02OcspGood()");
+        log.trace(">test02OcspGood()");
 
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
@@ -280,7 +279,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
-        log.debug("<test02OcspGood()");
+        log.trace("<test02OcspGood()");
     }
 
 
@@ -288,7 +287,7 @@ public class ProtocolOcspHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test03OcspRevoked() throws Exception {
-        log.debug(">test03OcspRevoked()");
+        log.trace(">test03OcspRevoked()");
         // Now revoke the certificate and try again
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
@@ -312,14 +311,14 @@ public class ProtocolOcspHttpTest extends TestCase {
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
         assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
-        log.debug("<test03OcspRevoked()");
+        log.trace("<test03OcspRevoked()");
     }
 
     /** Tests ocsp message
      * @throws Exception error
      */
     public void test04OcspUnknown() throws Exception {
-        log.debug(">test04OcspUnknown()");
+        log.trace(">test04OcspUnknown()");
         // An OCSP request for an unknown certificate (not exist in db)
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
@@ -335,14 +334,14 @@ public class ProtocolOcspHttpTest extends TestCase {
         Object status = singleResp.getCertStatus();
         assertTrue("Status is not Unknown", status instanceof UnknownStatus);
 
-        log.debug("<test04OcspUnknown()");
+        log.trace("<test04OcspUnknown()");
     }
 
     /** Tests ocsp message
      * @throws Exception error
      */
     public void test05OcspUnknownCA() throws Exception {
-        log.debug(">test05OcspUnknownCA()");
+        log.trace(">test05OcspUnknownCA()");
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
@@ -358,7 +357,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         Object status = singleResp.getCertStatus();
         assertTrue("Status is not Unknown", status instanceof UnknownStatus);
 
-        log.debug("<test05OcspUnknownCA()");
+        log.trace("<test05OcspUnknownCA()");
     }
     
     public void test06OcspSendWrongContentType() throws Exception {
@@ -589,7 +588,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     }
 
     public void test12CorruptRequests() throws Exception {
-        log.debug(">test12CorruptRequests()");
+        log.trace(">test12CorruptRequests()");
 
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -634,7 +633,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         singleResps = helper.sendOCSPPost(bytes, "123456789", 1, 200); // 
         assertNull("SingleResps should be null.", singleResps);
 
-        log.debug("<test12CorruptRequests()");
+        log.trace("<test12CorruptRequests()");
     }
 
     /**
@@ -643,14 +642,14 @@ public class ProtocolOcspHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test99RemoveECDSACA() throws Exception {
-        log.debug(">test08RemoveECDSACA()");
+        log.trace(">test08RemoveECDSACA()");
         Context context = getInitialContext();
         Object obj1 = context.lookup("CAAdminSession");
         ICAAdminSessionHome cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
         ICAAdminSessionRemote cacheAdmin = cacheHome.create();
         cacheAdmin.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
         cacheAdmin.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
-        log.debug("<test99RemoveECDSACA()");
+        log.trace("<test99RemoveECDSACA()");
     }
 
     //
@@ -665,7 +664,7 @@ public class ProtocolOcspHttpTest extends TestCase {
      * @throws Exception error
      */
     private X509Certificate addECDSACA(String dn, String keySpec) throws Exception {
-        log.debug(">addECDSACA()");
+        log.trace(">addECDSACA()");
         boolean ret = false;
         X509Certificate cacert = null;
         try {
@@ -764,7 +763,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         }
 
         assertTrue("Creating ECDSA CA failed", ret);
-        log.debug("<addECDSACA()");
+        log.trace("<addECDSACA()");
         return cacert;
     }
     

@@ -154,9 +154,9 @@ public class CertDistServlet extends HttpServlet {
      */
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
-        log.debug(">doPost()");
+        log.trace(">doPost()");
         doGet(req, res);
-        log.debug("<doPost()");
+        log.trace("<doPost()");
     } //doPost
 
 	/**
@@ -169,7 +169,7 @@ public class CertDistServlet extends HttpServlet {
 	 * @throws ServletException error
 	 */
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-        log.debug(">doGet()");
+        log.trace(">doGet()");
 
         String command;
         // Keep this for logging.

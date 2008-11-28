@@ -51,7 +51,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test01AddEndEntityProfile() throws Exception {
-        log.debug(">test01AddEndEntityProfile()");
+        log.trace(">test01AddEndEntityProfile()");
         boolean ret = false;
         try {
             EndEntityProfile profile = new EndEntityProfile();
@@ -64,7 +64,7 @@ public class TestEndEntityProfile extends TestCase {
         }
 
         assertTrue("Creating End Entity Profile failed", ret);
-        log.debug("<test01AddEndEntityProfile()");
+        log.trace("<test01AddEndEntityProfile()");
     }
 
     /**
@@ -73,7 +73,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test02RenameEndEntityProfile() throws Exception {
-        log.debug(">test02RenameEndEntityProfile()");
+        log.trace(">test02RenameEndEntityProfile()");
 
         boolean ret = false;
         try {
@@ -83,7 +83,7 @@ public class TestEndEntityProfile extends TestCase {
         }
         assertTrue("Renaming End Entity Profile failed", ret);
 
-        log.debug("<test02RenameEndEntityProfile()");
+        log.trace("<test02RenameEndEntityProfile()");
     }
 
     /**
@@ -92,7 +92,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test03CloneEndEntityProfile() throws Exception {
-        log.debug(">test03CloneEndEntityProfile()");
+        log.trace(">test03CloneEndEntityProfile()");
 
         boolean ret = false;
         try {
@@ -102,7 +102,7 @@ public class TestEndEntityProfile extends TestCase {
         }
         assertTrue("Cloning End Entity Profile failed", ret);
 
-        log.debug("<test03CloneEndEntityProfile()");
+        log.trace("<test03CloneEndEntityProfile()");
     }
 
 
@@ -112,7 +112,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test04EditEndEntityProfile() throws Exception {
-        log.debug(">test04EditEndEntityProfile()");
+        log.trace(">test04EditEndEntityProfile()");
 
         boolean ret = false;
 
@@ -126,7 +126,7 @@ public class TestEndEntityProfile extends TestCase {
         TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TEST", profile);
 
 
-        log.debug("<test04EditEndEntityProfile()");
+        log.trace("<test04EditEndEntityProfile()");
     }
 
 
@@ -136,7 +136,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test05removeEndEntityProfiles() throws Exception {
-        log.debug(">test05removeEndEntityProfiles()");
+        log.trace(">test05removeEndEntityProfiles()");
         boolean ret = false;
         try {
             TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TEST");
@@ -146,7 +146,7 @@ public class TestEndEntityProfile extends TestCase {
         }
         assertTrue("Removing End Entity Profile failed", ret);
 
-        log.debug("<test05removeEndEntityProfiles()");
+        log.trace("<test05removeEndEntityProfiles()");
     }
 
     /**
@@ -154,7 +154,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test06testEndEntityProfilesDynamicFields() throws Exception {
-        log.debug(">test06testEndEntityProfilesDynamicFields()");
+        log.trace(">test06testEndEntityProfilesDynamicFields()");
         String testProfileName = "TESTDYNAMICFIELDS";
         String testString1 = "testString1";
         String testString2 = "testString2";
@@ -185,7 +185,7 @@ public class TestEndEntityProfile extends TestCase {
         assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         // Remove profile
         TestTools.getRaAdminSession().removeEndEntityProfile(admin, testProfileName);
-        log.debug("<test06testEndEntityProfilesDynamicFields()");
+        log.trace("<test06testEndEntityProfilesDynamicFields()");
     } // test06testEndEntityProfilesDynamicFields
 
     /**
@@ -193,7 +193,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test07PasswordAutoGeneration() throws Exception {
-        log.debug(">test07PasswordAutoGeneration()");
+        log.trace(">test07PasswordAutoGeneration()");
     	// Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
         profile.setValue(EndEntityProfile.AUTOGENPASSWORDTYPE, 0, PasswordGeneratorFactory.PASSWORDTYPE_DIGITS);
@@ -206,7 +206,7 @@ public class TestEndEntityProfile extends TestCase {
             	assertTrue("Password was generated with a improper char '" + password.charAt(j) + "'.", DIGITS.contains("" + password.charAt(j)));
             }
         }
-        log.debug("<test07PasswordAutoGeneration()");
+        log.trace("<test07PasswordAutoGeneration()");
     }
 
     /**
@@ -214,7 +214,7 @@ public class TestEndEntityProfile extends TestCase {
      * @throws Exception error
      */
     public void test08FieldIds() throws Exception {
-        log.debug(">test08FieldIds()");
+        log.trace(">test08FieldIds()");
         EndEntityProfile profile = new EndEntityProfile();
         
         // Simple one that is guaranteed to succeed.
@@ -231,9 +231,7 @@ public class TestEndEntityProfile extends TestCase {
         assertEquals(1, profile.getNumberOfField(EndEntityProfile.STARTTIME));
         profile.addField(EndEntityProfile.STARTTIME);
         assertEquals(2, profile.getNumberOfField(EndEntityProfile.STARTTIME));
-        
-        
-        log.debug("<test08FieldIds()");
+        log.trace("<test08FieldIds()");
     }
 
 }

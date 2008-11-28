@@ -285,7 +285,9 @@ public class CertTools {
     	return stringToBcX509Name(dn, converter, getDefaultX509FieldOrder());
     }
     public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter, Vector dnOrder) {
-      //log.debug(">stringToBcX509Name: " + dn);
+    	/*if (log.isTraceEnabled()) {
+    		log.trace(">stringToBcX509Name: " + dn);
+    	}*/
       if (dn == null)
         return null;
 
@@ -332,7 +334,7 @@ public class CertTools {
       //-- Reorder fields
       X509Name orderedX509Name = getOrderedX509Name(x509Name, dnOrder, converter);
 
-      //log.debug("<stringToBcX509Name");
+      //log.trace("<stringToBcX509Name");
       return orderedX509Name;
     } // stringToBcX509Name
     
@@ -347,7 +349,9 @@ public class CertTools {
      * @return String containing DN, or null if input is null
      */
     public static String stringToBCDNString(String dn) {
-        //log.debug(">stringToBcDNString: "+dn);
+    	/*if (log.isTraceEnabled()) {
+    		log.trace(">stringToBcDNString: "+dn);
+    	}*/
     	if (isDNReversed(dn)) {
     		dn = reverseDN(dn);
     	}
@@ -362,7 +366,9 @@ public class CertTools {
         if ( (ret != null) && (ret.length() > 250) ) {
         	log.info("Warning! DN is more than 250 characters long. Some databases have only 250 characters in the database for SubjectDN. Clipping may occur! DN ("+ret.length()+" chars): "+ret);
         }
-        //log.debug("<stringToBcDNString: "+ret);
+        /*if (log.isTraceEnabled()) {
+            log.trace("<stringToBcDNString: "+ret);
+        }*/
         return ret;
     }
 
@@ -377,7 +383,9 @@ public class CertTools {
      * @return the found email address, or <code>null</code> if none is found
      */
     public static ArrayList getEmailFromDN(String dn) {
-        log.debug(">getEmailFromDN(" + dn + ")");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getEmailFromDN(" + dn + ")");
+    	}
         ArrayList ret = new ArrayList();
         for (int i = 0; i < EMAILIDS.length ; i++) {
             ArrayList emails = getPartsFromDN(dn, EMAILIDS[i]);
@@ -386,7 +394,9 @@ public class CertTools {
             }
             
         }
-        log.debug("<getEmailFromDN(" + dn + "): " + ret.size());
+        if (log.isTraceEnabled()) {
+        	log.trace("<getEmailFromDN(" + dn + "): " + ret.size());
+        }
         return ret;
     }
     
@@ -438,7 +448,9 @@ public class CertTools {
      * @return String containing reversed DN
      */
     public static String reverseDN(String dn) {
-        log.debug(">reverseDN: dn: " + dn);
+    	if (log.isTraceEnabled()) {
+    		log.trace(">reverseDN: dn: " + dn);
+    	}
         String ret = null;
         if (dn != null) {
             String o;
@@ -459,8 +471,9 @@ public class CertTools {
             	ret = buf.toString();
             }
         }
-        
-        log.debug("<reverseDN: resulting dn: " + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<reverseDN: resulting dn: " + ret);
+        }
         return ret;
     } //reverseDN
 
@@ -480,7 +493,9 @@ public class CertTools {
      * @return true if the DN is believed to be in reversed order, false otherwise
      */
     protected static boolean isDNReversed(String dn) {
-        //log.debug(">isDNReversed: dn: " + dn);
+    	/*if (log.isTraceEnabled()) {
+    		log.trace(">isDNReversed: dn: " + dn);
+    	}*/
         boolean ret = false;
         if (dn != null) {
             String first = null;
@@ -511,7 +526,9 @@ public class CertTools {
             	
             }
         }
-        //log.debug("<isDNReversed: " + ret);
+        /*if (log.isTraceEnabled()) {
+        	log.trace("<isDNReversed: " + ret);
+        }*/
         return ret;
     } //isDNReversed
 
@@ -525,7 +542,9 @@ public class CertTools {
      * @return String containing dnpart or null if dnpart is not present
      */
     public static String getPartFromDN(String dn, String dnpart) {
-        log.debug(">getPartFromDN: dn:'" + dn + "', dnpart=" + dnpart);
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getPartFromDN: dn:'" + dn + "', dnpart=" + dnpart);
+    	}
         String part = null;
         if ((dn != null) && (dnpart != null)) {
             String o;
@@ -542,7 +561,9 @@ public class CertTools {
                 }
             }
         }
-        log.debug("<getpartFromDN: resulting DN part=" + part);
+        if (log.isTraceEnabled()) {
+        	log.trace("<getpartFromDN: resulting DN part=" + part);
+        }
         return part;
     } //getPartFromDN
 
@@ -556,7 +577,9 @@ public class CertTools {
 	 * @return ArrayList containing dnparts or empty list if dnpart is not present
 	 */
 	public static ArrayList getPartsFromDN(String dn, String dnpart) {
-		log.debug(">getPartsFromDN: dn:'" + dn + "', dnpart=" + dnpart);
+		if (log.isTraceEnabled()) {
+			log.trace(">getPartsFromDN: dn:'" + dn + "', dnpart=" + dnpart);
+		}
 		ArrayList parts = new ArrayList();
 		if ((dn != null) && (dnpart != null)) {
 			String o;
@@ -570,7 +593,9 @@ public class CertTools {
 				}
 			}
 		}
-		log.debug("<getpartsFromDN: resulting DN part=" + parts.toString());
+		if (log.isTraceEnabled()) {
+			log.trace("<getpartsFromDN: resulting DN part=" + parts.toString());
+		}
 		return parts;
 	} //getPartFromDN
 
@@ -583,7 +608,9 @@ public class CertTools {
 	 * @return ArrayList containing oids or empty list if no custom OIDs are present
 	 */
 	public static ArrayList getCustomOids(String dn) {
-		log.debug(">getCustomOids: dn:'" + dn);
+		if (log.isTraceEnabled()) {
+			log.trace(">getCustomOids: dn:'" + dn);
+		}
 		ArrayList parts = new ArrayList();
 		if (dn != null) {
 			String o;
@@ -604,7 +631,9 @@ public class CertTools {
 				}
 			}
 		}
-		log.debug("<getpartsFromDN: resulting DN part=" + parts.toString());
+		if (log.isTraceEnabled()) {
+			log.trace("<getpartsFromDN: resulting DN part=" + parts.toString());
+		}
 		return parts;
 	} //getPartFromDN
 
@@ -639,7 +668,9 @@ public class CertTools {
      * @return String containing the DN.
      */
     private static String getDN(Certificate cert, int which) {
-        //log.debug(">getDN("+which+")");
+    	/*if (log.isTraceEnabled()) {
+    		log.trace(">getDN("+which+")");
+    	}*/
         String ret = null;
         if (cert == null) {
             return null;
@@ -692,7 +723,9 @@ public class CertTools {
                 return null;
 			}
 		}
-        //log.debug("<getDN("+which+"):"+dn);
+    	/*if (log.isTraceEnabled()) {
+    		log.trace("<getDN("+which+"):"+dn);
+    	}*/
         return ret;
     } // getDN
 
@@ -818,7 +851,9 @@ public class CertTools {
      * @return String containing the DN.
      */
     public static String getIssuerDN(X509CRL crl) {
-        //log.debug(">getIssuerDN(crl)");
+    	/*if (log.isTraceEnabled()) {
+    		log.trace(">getIssuerDN(crl)");
+    	}*/
         String dn = null;
         try {
             CertificateFactory cf = CertTools.getCertificateFactory();
@@ -829,7 +864,9 @@ public class CertTools {
             log.error("CRLException: ", ce);
             return null;
         }
-        //log.debug("<getIssuerDN(crl):"+dn);
+        /*if (log.isTraceEnabled()) {
+        	log.trace("<getIssuerDN(crl):"+dn);
+        }*/
         return stringToBCDNString(dn);
     } // getIssuerDN
     
@@ -1004,7 +1041,9 @@ public class CertTools {
      * @exception CertificateException if the filen does not contain a correct certificate.
      */
     public static Collection getCertsFromPEM(String certFile) throws IOException, CertificateException {
-        log.debug(">getCertfromPEM: certFile=" + certFile);
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getCertfromPEM: certFile=" + certFile);
+    	}
         InputStream inStrm = null;
         Collection certs;
 		try {
@@ -1013,7 +1052,9 @@ public class CertTools {
 		} finally {
 			if (inStrm != null) inStrm.close();
 		}
-        log.debug("<getCertfromPEM: certFile=" + certFile);
+		if (log.isTraceEnabled()) {
+			log.trace("<getCertfromPEM: certFile=" + certFile);
+		}
         return certs;
     }
 
@@ -1028,7 +1069,7 @@ public class CertTools {
      */
     public static Collection getCertsFromPEM(InputStream certstream)
     throws IOException, CertificateException {
-        log.debug(">getCertfromPEM:");
+        log.trace(">getCertfromPEM");
         ArrayList ret = new ArrayList();
         String beginKeyTrust = "-----BEGIN TRUSTED CERTIFICATE-----";
         String endKeyTrust = "-----END TRUSTED CERTIFICATE-----";
@@ -1073,7 +1114,9 @@ public class CertTools {
 			if (opstr != null) opstr.close();
 			if (ostr != null) ostr.close();
 		}        
-		log.debug("<getcertfromPEM:" + ret.size());
+		if (log.isTraceEnabled()) {
+			log.trace("<getcertfromPEM:" + ret.size());
+		}
         return ret;
     } // getCertsFromPEM
 
@@ -1086,8 +1129,8 @@ public class CertTools {
     * @throws CertificateException 
     */
     public static ArrayList getCertCollectionFromArray(Certificate[] certs, String provider) throws CertificateException, NoSuchProviderException {
-    	if (log.isDebugEnabled()) {
-    		log.debug(">getCertCollectionFromArray: "+provider);
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getCertCollectionFromArray: "+provider);
     	}
     	ArrayList ret = new ArrayList();
     	String prov = provider;
@@ -1099,8 +1142,8 @@ public class CertTools {
     		Certificate newcert = getCertfromByteArray(cert.getEncoded(), prov);
     		ret.add(newcert);    		
     	}
-    	if (log.isDebugEnabled()) {
-    		log.debug("<getCertCollectionFromArray: "+ret.size());
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getCertCollectionFromArray: "+ret.size());
     	}
     	return ret;
     }
@@ -1165,7 +1208,9 @@ public class CertTools {
      */
     public static Certificate getCertfromByteArray(byte[] cert, String provider)
         throws CertificateException {
-        //log.debug(">getCertfromByteArray:");
+    	/*if (log.isTraceEnabled()) {
+    		log.trace(">getCertfromByteArray");
+    	}*/
         Certificate ret = null;
         String prov = provider;
         if (provider == null) {
@@ -1191,7 +1236,7 @@ public class CertTools {
 			}
 
         }
-        //log.debug("<getCertfromByteArray:");
+        //log.trace("<getCertfromByteArray");
         return ret;
     } // getCertfromByteArray
     
@@ -1213,7 +1258,7 @@ public class CertTools {
      */
     public static X509CRL getCRLfromByteArray(byte[] crl)
         throws IOException, CRLException {
-        log.debug(">getCRLfromByteArray:");
+        log.trace(">getCRLfromByteArray");
 
         if (crl == null) {
             throw new IOException("Cannot read byte[] that is 'null'!");
@@ -1221,7 +1266,7 @@ public class CertTools {
 
         CertificateFactory cf = CertTools.getCertificateFactory();
         X509CRL x509crl = (X509CRL) cf.generateCRL(new ByteArrayInputStream(crl));
-        log.debug("<getCRLfromByteArray:");
+        log.trace("<getCRLfromByteArray");
 
         return x509crl;
     } // getCRLfromByteArray
@@ -1234,12 +1279,13 @@ public class CertTools {
      * @return boolean true if the certificate has the same issuer and subject, false otherwise.
      */
     public static boolean isSelfSigned(Certificate cert) {
-        log.debug(">isSelfSigned: cert: " + CertTools.getIssuerDN(cert) + "\n" +
-            CertTools.getSubjectDN(cert));
-
+    	if (log.isTraceEnabled()) {
+    		log.trace(">isSelfSigned: cert: " + CertTools.getIssuerDN(cert) + "\n" + CertTools.getSubjectDN(cert));
+    	}
         boolean ret = CertTools.getSubjectDN(cert).equals(CertTools.getIssuerDN(cert));
-        log.debug("<isSelfSigned:" + ret);
-
+        if (log.isTraceEnabled()) {
+        	log.trace("<isSelfSigned:" + ret);
+        }
         return ret;
     } // isSelfSigned
 
@@ -1252,7 +1298,7 @@ public class CertTools {
      * @return boolean true if the certificate belongs to a CA.
      */
     public static boolean isCA(Certificate cert) {
-        log.debug(">isCA");
+        log.trace(">isCA");
         boolean ret = false;
         if (cert instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate)cert;
@@ -1271,7 +1317,9 @@ public class CertTools {
 				log.error("NoSuchFieldException: ", e);
 			}
 		}
-        log.debug("<isCA:" + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<isCA:" + ret);
+        }
         return ret;
     } // isSelfSigned
 
@@ -1793,8 +1841,9 @@ public class CertTools {
      * @see #getSubjectAlternativeName
      */
     public static GeneralNames getGeneralNamesFromAltName(String altName) {
-    	log.debug(">getGeneralNamesFromAltName: "+altName);
-    	
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getGeneralNamesFromAltName: "+altName);
+    	}
         ASN1EncodableVector vec = new ASN1EncodableVector();
 
         ArrayList emails = CertTools.getEmailFromDN(altName);
@@ -2294,7 +2343,7 @@ public class CertTools {
      * @return Byte array containing SHA1 hash of DER encoded certificate.
      */
     public static byte[] generateSHA1Fingerprint(byte[] ba) {
-    	//log.debug(">generateSHA1Fingerprint");
+    	//log.trace(">generateSHA1Fingerprint");
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
 
@@ -2302,7 +2351,7 @@ public class CertTools {
         } catch (NoSuchAlgorithmException nsae) {
             log.error("SHA1 algorithm not supported", nsae);
         }
-    	//log.debug("<generateSHA1Fingerprint");
+    	//log.trace("<generateSHA1Fingerprint");
         return null;
     } // generateSHA1Fingerprint
 

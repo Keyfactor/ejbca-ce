@@ -50,9 +50,9 @@ public class TestRemoveCA extends TestCase {
      * @throws Exception error
      */
     public void test02removeRSACA() throws Exception {
-        log.debug(">test02removeRSACA()");
+        log.trace(">test02removeRSACA()");
         assertTrue("Removing RSA CA failed", TestTools.removeTestCA("TEST"));
-        log.debug("<test02removeRSACA()");
+        log.trace("<test02removeRSACA()");
     }
 
     /**
@@ -61,7 +61,7 @@ public class TestRemoveCA extends TestCase {
      * @throws Exception error
      */
     public void test03removeECDSACA() throws Exception {
-        log.debug(">test03removeECDSACA()");
+        log.trace(">test03removeECDSACA()");
         boolean ret = false;
         try {
             TestTools.getCAAdminSession().removeCA(admin, "CN=TESTECDSA".hashCode());
@@ -77,7 +77,7 @@ public class TestRemoveCA extends TestCase {
         }
         assertTrue("Removing ECDSA ImplicitlyCA CA failed", ret);
 
-        log.debug("<test03removeECDSACA()");
+        log.trace("<test03removeECDSACA()");
     }
 
     /**
@@ -86,7 +86,7 @@ public class TestRemoveCA extends TestCase {
      * @throws Exception error
      */
     public void test04removeRSASha256WithMGF1CA() throws Exception {
-        log.debug(">test04removeRSASha256WithMGF1CA()");
+        log.trace(">test04removeRSASha256WithMGF1CA()");
         boolean ret = false;
         try {
             TestTools.getCAAdminSession().removeCA(admin, "CN=TESTSha256WithMGF1".hashCode());
@@ -95,11 +95,11 @@ public class TestRemoveCA extends TestCase {
         }
         assertTrue("Removing RSA SHA256WithMGF1 CA failed", ret);
 
-        log.debug("<test04removeRSASha256WithMGF1CA()");
+        log.trace("<test04removeRSASha256WithMGF1CA()");
     }
 
     public void test05removeRSACA4096() throws Exception {
-        log.debug(">test05removeRSACA4096()");
+        log.trace(">test05removeRSACA4096()");
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
@@ -109,11 +109,11 @@ public class TestRemoveCA extends TestCase {
         	log.info("Remove failed: ", e);
         }
         assertTrue("Removing RSA CA 4096 failed", ret);
-        log.debug("<test05removeRSACA4096()");
+        log.trace("<test05removeRSACA4096()");
     }
     
     public void test06removeRSACAReverse() throws Exception {
-        log.debug(">test06removeRSACAReverse()");
+        log.trace(">test06removeRSACAReverse()");
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
@@ -123,11 +123,11 @@ public class TestRemoveCA extends TestCase {
         	log.info("Remove failed: ", e);
         }
         assertTrue("Removing RSA CA Reverse failed", ret);
-        log.debug("<test06removeRSACAReverse()");
+        log.trace("<test06removeRSACAReverse()");
     }
 
     public void test07removeCVCCA() throws Exception {
-        log.debug(">test07removeCVCCA()");
+        log.trace(">test07removeCVCCA()");
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTCVCA,C=SE");
@@ -157,11 +157,11 @@ public class TestRemoveCA extends TestCase {
         } catch (Exception e) {
         	log.info("Remove profile failed: ", e);
         }
-        log.debug("<test07removeCVCCA()");
+        log.trace("<test07removeCVCCA()");
     }
 
     public void test09removeRSASignedByExternal() throws Exception {
-        log.debug(">test09removeRSASignedByExternal()");
+        log.trace(">test09removeRSASignedByExternal()");
         boolean ret = false;
         try {
             TestTools.getCAAdminSession().removeCA(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
@@ -169,6 +169,6 @@ public class TestRemoveCA extends TestCase {
         } catch (Exception pee) {
         }
         assertTrue("Removing RSA CA failed", ret);
-        log.debug("<test09removeRSASignedByExternal()");
+        log.trace("<test09removeRSASignedByExternal()");
     }
 }

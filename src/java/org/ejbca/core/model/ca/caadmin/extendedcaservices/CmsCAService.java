@@ -229,7 +229,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	 */
 	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
-		m_log.debug(">extendedService");
+		m_log.trace(">extendedService");
 		if (!(request instanceof CmsCAServiceRequest)) {
 			throw new IllegalExtendedCAServiceRequestException();            
 		}
@@ -295,7 +295,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
         	throw new ExtendedCAServiceRequestException(e);
 		}
 
-		m_log.debug("<extendedService");		  		
+		m_log.trace("<extendedService");		  		
 		return returnval;
 	}
 

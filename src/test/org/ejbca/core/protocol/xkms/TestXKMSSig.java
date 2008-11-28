@@ -113,13 +113,13 @@ public class TestXKMSSig extends TestCase {
 	}
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()"); 
+        log.trace(">setUp()"); 
     	caid = CertTools.stringToBCDNString("CN=AdminCA1,O=EJBCA Sample,C=SE").hashCode();
         Random ran = new Random();
         if(baseUsername == null){
           baseUsername = "xkmstestadmin" + (ran.nextInt() % 1000) + "-";
         }
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {

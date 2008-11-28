@@ -63,7 +63,7 @@ public class TestAddLotsofUsers extends TestCase {
 
     protected void setUp() throws Exception {
 
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         //Object obj = ctx.lookup("UserData");
         //home = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
         if (cacheAdmin == null) {
@@ -80,20 +80,16 @@ public class TestAddLotsofUsers extends TestCase {
 
         Calendar cal = Calendar.getInstance();
         baseUsername = "lotsausers" + cal.get(Calendar.SECOND) + "-";
-
-
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -125,7 +121,7 @@ public class TestAddLotsofUsers extends TestCase {
      * @throws Exception error
      */
     public void test01Create2000Users() throws Exception {
-        log.debug(">test01Create2000Users()");
+        log.trace(">test01Create2000Users()");
 
         //UserDataRemote data1=null;
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
@@ -157,6 +153,6 @@ public class TestAddLotsofUsers extends TestCase {
             }
         }
         log.debug("Created 2000 users!");
-        log.debug("<test01Create2000Users()");
+        log.trace("<test01Create2000Users()");
     }
 }

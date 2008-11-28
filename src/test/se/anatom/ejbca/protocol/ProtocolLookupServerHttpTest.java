@@ -170,18 +170,18 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         }
     }
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
 
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
     
@@ -480,7 +480,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
     }
     
     private SSLSocketFactory getSSLFactory(boolean trust) throws GeneralSecurityException, IOException {
-        log.debug(">getSSLFactory()");
+        log.trace(">getSSLFactory()");
 
         String trustp12 = "/lookup-kstrust.p12";
         if (!trust) trustp12 = "/lookup-ksnotrust.p12";
@@ -507,7 +507,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
 
         ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
-        log.debug("<getSSLFactory()");
+        log.trace("<getSSLFactory()");
         return ctx.getSocketFactory();
     }
 
@@ -520,7 +520,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
      * @throws GeneralSecurityException
      */
     private URLConnection getUrlConnection(URL url, boolean trust) throws IOException, GeneralSecurityException {
-        log.debug(">getUrlConnection( URL url )");
+        log.trace(">getUrlConnection( URL url )");
         log.debug(" - url=" + url);
         URLConnection orgcon = url.openConnection();
         log.debug(orgcon.getClass());
@@ -530,7 +530,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
             con.setSSLSocketFactory(getSSLFactory(trust));
         } else
             log.debug("getUrlConnection(): Ingen HttpsUrlConnection!");
-        log.debug("<getUrlConnection() --> " + orgcon);
+        log.trace("<getUrlConnection() --> " + orgcon);
         return orgcon;
     }
 

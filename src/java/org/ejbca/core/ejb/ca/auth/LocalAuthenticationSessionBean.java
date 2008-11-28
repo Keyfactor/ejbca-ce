@@ -154,11 +154,11 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * @ejb.create-method
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
+        trace(">ejbCreate()");
         
         userHome = (UserDataLocalHome)getLocator().getLocalHome(UserDataLocalHome.COMP_NAME);
         
-        debug("<ejbCreate()");
+        trace("<ejbCreate()");
     }
     
     private ILogSessionLocal getLogSession() {
@@ -228,8 +228,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      */
     public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
-        debug(">authenticateUser(" + username + ", hiddenpwd)");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">authenticateUser(" + username + ", hiddenpwd)");
+    	}
         try {
             // Find the user with username username
             UserDataPK pk = new UserDataPK(username);
@@ -250,7 +251,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
                 		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
                 ret.setPassword(data.getClearPassword());                             
-                debug("<authenticateUser("+username+", hiddenpwd)");
+            	if (log.isTraceEnabled()) {
+                    log.trace("<authenticateUser("+username+", hiddenpwd)");
+            	}
                 return ret;
             }
         	String msg = intres.getLocalizedMessage("authentication.wrongstatus", new Integer(status), username);            	
@@ -285,8 +288,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
-        debug(">finishUser(" + username + ", hiddenpwd)");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">finishUser(" + username + ", hiddenpwd)");
+    	}
         try {
             // Change status of the user with username username
         	UserDataVO data = getUserSession().findUser(admin, username);
@@ -304,7 +308,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     			String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
     			getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);        		
     		} 
-            debug("<finishUser("+username+", hiddenpwd)");
+        	if (log.isTraceEnabled()) {
+                log.trace("<finishUser("+username+", hiddenpwd)");
+        	}
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
         	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);

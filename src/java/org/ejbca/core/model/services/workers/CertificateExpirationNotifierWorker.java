@@ -58,7 +58,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work() throws ServiceExecutionFailedException {
-		log.debug(">CertificateExpirationNotifierWorker.work started");
+		log.trace(">CertificateExpirationNotifierWorker.work started");
 		
 		ArrayList userEmailQueue = new ArrayList();
 		ArrayList adminEmailQueue = new ArrayList();
@@ -160,7 +160,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 		} else {
 			log.debug("No CAs to check");
 		}
-		log.debug("<CertificateExpirationNotifierWorker.work ended");
+		log.trace("<CertificateExpirationNotifierWorker.work ended");
 	}
 	/** Method that must be implemented by all subclasses to EmailSendingWorker, used to update status of 
 	 * a certificate, user, or similar

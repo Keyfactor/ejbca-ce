@@ -200,7 +200,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	}
 	
 	public void apply() {
-		log.debug(">apply");
+		log.trace(">apply");
 		List list = caInfoList;
 		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
 			CAWrapper wrapper = (CAWrapper) iterator.next();
@@ -229,7 +229,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 				log.error(e);
 			}			
 		}
-		log.debug("<apply");
+		log.trace("<apply");
 	}
 
 	public String getMakeoffline() {
@@ -243,7 +243,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	}
 	
 	public List getHasMessages() {
-		log.debug(">getHasMessages");
+		log.trace(">getHasMessages");
 		List list = caInfoList;
 		List hasMessages = new ArrayList();
 		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
@@ -253,7 +253,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 				hasMessages.add(wrapper);
 			}			
 		}
-		log.debug("<getHasMessages");
+		log.trace("<getHasMessages");
 		return hasMessages;
 	}
 }

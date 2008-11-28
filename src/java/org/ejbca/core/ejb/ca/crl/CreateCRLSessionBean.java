@@ -187,7 +187,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
 	 */
     public void run(Admin admin, String issuerdn) throws CATokenOfflineException {
-        debug(">run()");
+        trace(">run()");
         int caid = issuerdn.hashCode();
         try {
             ICAAdminSessionLocal caadmin = caadminHome.create();
@@ -255,7 +255,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
             throw new EJBException(e);
         }
-        debug("<run()");
+        trace("<run()");
     } // run
 
     /**
@@ -269,7 +269,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public byte[] runDeltaCRL(Admin admin, String issuerdn)  {
-    	debug(">runDeltaCRL: "+issuerdn);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">runDeltaCRL: "+issuerdn);
+    	}
     	int caid = issuerdn.hashCode();
     	try {
     		ICAAdminSessionLocal caadmin = caadminHome.create();
@@ -297,7 +299,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     		X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
     		debug("Created delta CRL with expire date: "+crl.getNextUpdate());
 
-        	debug("<runDeltaCRL: "+issuerdn);
+        	if (log.isTraceEnabled()) {
+            	log.trace("<runDeltaCRL: "+issuerdn);
+        	}
     		return crlBytes;
     	} catch (Exception e) {
     		logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,e.getMessage());

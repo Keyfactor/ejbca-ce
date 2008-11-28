@@ -261,7 +261,7 @@ public class CVCRequestMessage implements IRequestMessage {
     }
     private boolean verify(PublicKey pubKey)
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        log.debug(">verify()");
+        log.trace(">verify()");
 
         boolean ret = false;
 
@@ -290,7 +290,7 @@ public class CVCRequestMessage implements IRequestMessage {
             log.error("Error in CVC-signature:", e);
         }
 
-        log.debug("<verify()");
+        log.trace("<verify()");
 
         return ret;
     }

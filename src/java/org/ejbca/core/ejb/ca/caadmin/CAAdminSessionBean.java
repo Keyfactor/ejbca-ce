@@ -1016,7 +1016,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public byte[] makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-    	debug(">makeRequest: "+caid);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">makeRequest: "+caid);
+    	}
         byte[] returnval = null;
         // Check authorization
         try{
@@ -1097,7 +1099,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
         
 		String msg = intres.getLocalizedMessage("caadmin.certreqcreated", new Integer(caid));            	
         getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
-    	debug("<makeRequest: "+caid);
+    	if (log.isTraceEnabled()) {
+        	trace("<makeRequest: "+caid);
+    	}
         return returnval;
     } // makeRequest
 
@@ -1574,7 +1578,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void renewCA(Admin admin, int caid, String keystorepass, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-    	debug(">CAAdminSession, renewCA(), caid=" + caid);
+    	if (log.isTraceEnabled()) {
+        	log.trace(">CAAdminSession, renewCA(), caid=" + caid);
+    	}
     	Collection cachain = null;
     	Certificate cacertificate = null;
     	// check authorization
@@ -1694,7 +1700,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	}
 		String msg = intres.getLocalizedMessage("caadmin.renewdca", new Integer(caid));            	
     	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CARENEWED,msg);
-    	debug("<CAAdminSession, renewCA(), caid=" + caid);
+    	if (log.isTraceEnabled()) {
+        	log.trace("<CAAdminSession, renewCA(), caid=" + caid);
+    	}
     } // renewCA
 
     /**
@@ -2193,7 +2201,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      */
     public byte[] exportCAKeyStore(Admin admin, String caname, String keystorepass, String privkeypass, String privateSignatureKeyAlias, 
     		String privateEncryptionKeyAlias) throws Exception {
-        log.debug(">exportCAKeyStore");               
+        log.trace(">exportCAKeyStore");               
         try {
 	    	CA thisCa = cadatahome.findByName(caname).getCA();
 			// Make sure we are not trying to export a hard or invalid token
@@ -2259,7 +2267,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	    	}
         	String msg = intres.getLocalizedMessage("caadmin.exportedca", caname, format);
 	        getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEXPORTED, msg);
-	        log.debug("<exportCAKeyStore");               
+	        log.trace("<exportCAKeyStore");               
 	    	return ret;
 	    } catch(Exception e){
         	String msg = intres.getLocalizedMessage("caadmin.errorexportca", caname, "PKCS12", e.getMessage());

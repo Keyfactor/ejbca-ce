@@ -27,10 +27,10 @@ public class ProtectedLogVerificationWorker extends BaseWorker {
 	public static final String DEFAULT_VERIFICATION_INTERVAL = "1";
 
 	public void work() throws ServiceExecutionFailedException {
-		log.debug(">ProtectedLogVerificationWorker.work");
+		log.trace(">ProtectedLogVerificationWorker.work");
 		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance(properties);
 		protectedLogVerifier.runIfNotBusy();
-		log.debug("<ProtectedLogVerificationWorker done");
+		log.trace("<ProtectedLogVerificationWorker done");
 	}
 	
 }

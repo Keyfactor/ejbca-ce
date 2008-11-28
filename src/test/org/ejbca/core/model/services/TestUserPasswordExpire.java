@@ -89,7 +89,7 @@ public class TestUserPasswordExpire extends TestCase {
      *
      */
     public void test01ExpireUserPassword() throws Exception {
-        log.debug(">test01CreateNewUser()");
+        log.trace(">test01CreateNewUser()");
         
         // Create a new user
         username = genRandomUserName();
@@ -145,7 +145,7 @@ public class TestUserPasswordExpire extends TestCase {
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_GENERATED, data.getStatus());
         
-        log.debug("<test01CreateNewUser()");
+        log.trace("<test01CreateNewUser()");
     }
 
 
@@ -154,13 +154,13 @@ public class TestUserPasswordExpire extends TestCase {
      *
      */
     public void test99CleanUp() throws Exception {
-        log.debug(">test99CleanUp()");
+        log.trace(">test99CleanUp()");
         TestTools.getUserAdminSession().deleteUser(admin,username);
         log.debug("Removed user: "+username);
         TestTools.getServiceSession().removeService(admin, "TestUserPasswordService");
         log.debug("Removed service: TestUserPasswordService");
         TestTools.removeTestCA();
         log.debug("Removed test CA");
-        log.debug("<test99CleanUp()");
+        log.trace("<test99CleanUp()");
     }
 }

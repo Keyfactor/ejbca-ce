@@ -58,7 +58,7 @@ public class CaChangeCATokenSignAlg extends BaseAdminCommand {
 	}
 
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-		debug(">execute()");
+		trace(">execute()");
 		CertTools.installBCProvider(); // need this for CVC certificate
 		if ( args.length<3 ) {
 			usage();
@@ -89,6 +89,6 @@ public class CaChangeCATokenSignAlg extends BaseAdminCommand {
 			getOutputStream().println("Error: " + e.getMessage());
 			usage();
 		}
-		debug("<execute()");
+		trace("<execute()");
 	}
 }

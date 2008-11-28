@@ -326,7 +326,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 * create new encryption keys, since this would make it impossible to decrypt old stuff.
 	 */
 	public void generateKeys(String authenticationCode, boolean renew) throws Exception{  
-		log.debug(">generateKeys");
+		log.trace(">generateKeys");
 		CATokenInfo catokeninfo = getCATokenInfo();
 		
 		// First we start by setting a new sequence for our new keys
@@ -472,7 +472,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 			log.error(msg);
 			return;
 		}
-		log.debug("<generateKeys");
+		log.trace("<generateKeys");
 	}
 
 	/**

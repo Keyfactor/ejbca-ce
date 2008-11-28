@@ -162,7 +162,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @return true if ok to upgrade or false if not
      */
     private boolean preCheck() {
-        debug(">preCheck");
+        trace(">preCheck");
         boolean ret = false;
         Connection con = null;
         PreparedStatement ps = null;
@@ -196,7 +196,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
             JDBCUtil.close(ps);
             JDBCUtil.close(con);
         }
-        debug("<preCheck("+ret+")");
+        trace("<preCheck("+ret+")");
         return ret;
     }
 
@@ -208,7 +208,9 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @return true or false if upgrade was done or not
      */
     public boolean upgrade(Admin admin, String[] args) {
-        debug(">upgrade("+admin.toString()+")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">upgrade("+admin.toString()+")");
+    	}
         this.administrator = admin;
         
         String dbtype = null;
@@ -268,7 +270,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         		return false;
         	}
         }
-        debug("<upgrade()");
+        log.trace("<upgrade()");
         return true;
     }
 

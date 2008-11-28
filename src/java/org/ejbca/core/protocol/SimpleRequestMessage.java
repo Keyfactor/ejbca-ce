@@ -75,11 +75,11 @@ public class SimpleRequestMessage implements IRequestMessage {
      * @param password password of the EJBCA user
      */
     public SimpleRequestMessage(PublicKey pubkey, String username, String password) {
-        log.debug(">SimpleRequestMessage()");
+        log.trace(">SimpleRequestMessage()");
         this.pubkey = pubkey;
         this.username = username;
         this.password = password;
-        log.debug("<SimpleRequestMessage()");
+        log.trace("<SimpleRequestMessage()");
     }
 
     /**

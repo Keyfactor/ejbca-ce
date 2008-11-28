@@ -290,7 +290,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
+        trace(">ejbCreate()");
 
         try {
             keyrecoverydatahome = (KeyRecoveryDataLocalHome) getLocator().getLocalHome(KeyRecoveryDataLocalHome.COMP_NAME);
@@ -315,7 +315,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             
 
             
-            debug("<ejbCreate()");
+            trace("<ejbCreate()");
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -337,8 +337,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      */
     public boolean addKeyRecoveryData(Admin admin, Certificate certificate, String username,
                                       KeyPair keypair) {
-        debug(">addKeyRecoveryData(user: " + username + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">addKeyRecoveryData(user: " + username + ")");
+    	}
         boolean returnval = false;
 
         try {
@@ -359,9 +360,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             logsession.log(admin, certificate, LogConstants.MODULE_KEYRECOVERY, new java.util.Date(),
                     username, certificate, LogConstants.EVENT_ERROR_KEYRECOVERY, msg);
         }
-
-        debug("<addKeyRecoveryData()");
-
+        log.trace("<addKeyRecoveryData()");
         return returnval;
     } // addKeyRecoveryData
 
@@ -381,9 +380,10 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      */
     public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate,
                                          boolean markedasrecoverable, KeyPair keypair) {
-        debug(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString(16) + ", " +
-                CertTools.getIssuerDN(certificate) + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString(16) + ", " +
+                    CertTools.getIssuerDN(certificate) + ")");
+    	}
         boolean returnval = false;
         final String hexSerial = certificate.getSerialNumber().toString(16);
         final String dn = CertTools.getIssuerDN(certificate);
@@ -408,8 +408,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                     certificate, LogConstants.EVENT_ERROR_KEYRECOVERY, msg);
         }
 
-        debug("<changeKeyRecoveryData()");
-
+        log.trace("<changeKeyRecoveryData()");
         return returnval;
     } // changeKeyRecoveryData
 
@@ -425,7 +424,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      */
     public void removeKeyRecoveryData(Admin admin, Certificate certificate) {
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
-        debug(">removeKeyRecoveryData(certificate: " + CertTools.getSerialNumber(certificate).toString(16) +")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">removeKeyRecoveryData(certificate: " + CertTools.getSerialNumber(certificate).toString(16) +")");
+    	}
         final String dn = CertTools.getIssuerDN(certificate);
         try {
             String username = null;
@@ -440,8 +441,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             logsession.log(admin, certificate, LogConstants.MODULE_KEYRECOVERY, new java.util.Date(), null,
                     certificate, LogConstants.EVENT_ERROR_KEYRECOVERY, msg);
         }
-
-        debug("<removeKeyRecoveryData()");
+        log.trace("<removeKeyRecoveryData()");
     } // removeKeyRecoveryData
 
     /**
@@ -455,8 +455,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void removeAllKeyRecoveryData(Admin admin, String username) {
-        debug(">removeAllKeyRecoveryData(user: " + username + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">removeAllKeyRecoveryData(user: " + username + ")");
+    	}
         try {
             Collection result = keyrecoverydatahome.findByUsername(username);
             Iterator iter = result.iterator();
@@ -473,8 +474,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_KEYRECOVERY, new java.util.Date(), null,
                     null, LogConstants.EVENT_ERROR_KEYRECOVERY, msg);
         }
-
-        debug("<removeAllKeyRecoveryData()");
+        log.trace("<removeAllKeyRecoveryData()");
     } // removeAllKeyRecoveryData
 
     /**
@@ -493,8 +493,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public KeyRecoveryData keyRecovery(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
-        debug(">keyRecovery(user: " + username + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">keyRecovery(user: " + username + ")");
+    	}
         KeyRecoveryData returnval = null;
         KeyRecoveryDataLocal krd = null;
         X509Certificate certificate = null;
@@ -540,8 +541,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         	}
         }
 
-        debug("<keyRecovery()");
-
+        log.trace("<keyRecovery()");
         return returnval;
     } // keyRecovery
 
@@ -569,8 +569,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public boolean markNewestAsRecoverable(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
-        debug(">markNewestAsRecoverable(user: " + username + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">markNewestAsRecoverable(user: " + username + ")");
+    	}
         boolean returnval = false;
         long newesttime = 0;
         KeyRecoveryDataLocal krd = null;
@@ -621,8 +622,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             }
         }
 
-        debug("<markNewestAsRecoverable()");
-
+        log.trace("<markNewestAsRecoverable()");
         return returnval;
     } // markNewestAsRecoverable
 
@@ -644,7 +644,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);        
-        debug(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
+    	}
         boolean returnval = false;
         try {
             String username = null;
@@ -668,8 +670,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                     certificate, LogConstants.EVENT_ERROR_KEYRECOVERY, msg);
         } 
 
-        debug("<markAsRecoverable()");
-
+        log.trace("<markAsRecoverable()");
         return returnval;
     } // markAsRecoverable
 
@@ -684,10 +685,10 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void unmarkUser(Admin admin, String username) {
-        debug(">unmarkUser(user: " + username + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">unmarkUser(user: " + username + ")");
+    	}
         KeyRecoveryDataLocal krd = null;
-
         try {
             Collection result = keyrecoverydatahome.findByUserMark(username);            
             Iterator i = result.iterator();
@@ -699,8 +700,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         } catch (Exception e) {
             throw new EJBException(e);
         }
-
-        debug("<unmarkUser()");
+        log.trace("<unmarkUser()");
     } // unmarkUser
 
     /**
@@ -717,8 +717,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public boolean isUserMarked(Admin admin, String username) {
-        debug(">isUserMarked(user: " + username + ")");
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">isUserMarked(user: " + username + ")");
+    	}
         boolean returnval = false;
         KeyRecoveryDataLocal krd = null;
         try {
@@ -736,7 +737,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         } catch (Exception e) {
             throw new EJBException(e);
         }
-        debug("<isUserMarked(" + returnval + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace("<isUserMarked(" + returnval + ")");
+    	}
         return returnval;
     } // isUserMarked
 
@@ -754,7 +757,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public boolean existsKeys(Admin admin, Certificate certificate) {
-        debug(">existsKeys()");
+        log.trace(">existsKeys()");
 
         boolean returnval = false;
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
@@ -765,7 +768,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             returnval = true;
         } catch (FinderException e) {
         }
-        debug("<existsKeys(" + returnval + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace("<existsKeys(" + returnval + ")");
+    	}
         return returnval;
     } // existsKeys
 

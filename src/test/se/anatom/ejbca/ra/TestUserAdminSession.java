@@ -96,7 +96,7 @@ public class TestUserAdminSession extends TestCase {
      * @throws Exception error
      */
     public void test01AddUser() throws Exception {
-        log.debug(">test01AddUser()");
+        log.trace(">test01AddUser()");
 
         // Make user that we know later...
         username = genRandomUserName();
@@ -122,7 +122,7 @@ public class TestUserAdminSession extends TestCase {
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 
-        log.debug("<test01AddUser()");
+        log.trace("<test01AddUser()");
     }
 
     /**
@@ -131,7 +131,7 @@ public class TestUserAdminSession extends TestCase {
      * @throws Exception error
      */
     public void test01DeleteUser() throws Exception {
-        log.debug(">test01DeleteUser()");
+        log.trace(">test01DeleteUser()");
 
         TestTools.getUserAdminSession().deleteUser(admin, username);
         log.debug("deleted user: " + username);
@@ -144,7 +144,7 @@ public class TestUserAdminSession extends TestCase {
         }
         assertTrue("User does not exist does not throw NotFoundException", removed);
 
-        log.debug("<test01DeleteUser()");
+        log.trace("<test01DeleteUser()");
     }
 
 	public void test99RemoveTestCA() throws Exception {

@@ -65,7 +65,7 @@ public class TestProtect extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         CertTools.installBCProvider();
         if (cacheAdmin == null) {
             if (cacheHome == null) {
@@ -77,16 +77,16 @@ public class TestProtect extends TestCase {
             cacheAdmin = cacheHome.create();
         }
         if (entrys == null) createLogEntrys();
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -111,13 +111,13 @@ public class TestProtect extends TestCase {
      * @throws Exception error
      */
     public void test01ProtectLogEntry() throws Exception {
-        log.debug(">test01ProtectLogEntry()");
+        log.trace(">test01ProtectLogEntry()");
         Iterator iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le = (LogEntry)iter.next();
             cacheAdmin.protect(admin, le);        	
         }
-        log.debug("<test01ProtectLogEntry()");
+        log.trace("<test01ProtectLogEntry()");
     }
 
     /**
@@ -126,7 +126,7 @@ public class TestProtect extends TestCase {
      * @throws Exception error
      */
     public void test02VerifyLogEntry() throws Exception {
-        log.debug(">test02VerifyLogEntry()");
+        log.trace(">test02VerifyLogEntry()");
         Iterator iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le = (LogEntry)iter.next();
@@ -177,7 +177,7 @@ public class TestProtect extends TestCase {
             }
         }
         
-        log.debug("<test02VerifyLogEntry()");
+        log.trace("<test02VerifyLogEntry()");
     }
     
     /**
@@ -186,7 +186,7 @@ public class TestProtect extends TestCase {
      * @throws Exception error
      */
     public void test03VerifyCertEntry() throws Exception {
-        log.debug(">test03VerifyCertEntry()");
+        log.trace(">test03VerifyCertEntry()");
         Context ctx = getInitialContext();
         Object obj2 = ctx.lookup("CertificateStoreSession");
         ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
@@ -217,7 +217,7 @@ public class TestProtect extends TestCase {
         res = cacheAdmin.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
         
-        log.debug("<test03VerifyCertEntry()");
+        log.trace("<test03VerifyCertEntry()");
     }
 
     /**
@@ -226,7 +226,7 @@ public class TestProtect extends TestCase {
      * @throws Exception error
      */
     public void test04VerifyCertEntryExternal() throws Exception {
-        log.debug(">test04VerifyCertEntryExternal()");
+        log.trace(">test04VerifyCertEntryExternal()");
         String dataSource = "java:/EjbcaDS";
         Context ctx = getInitialContext();
         Object obj2 = ctx.lookup("CertificateStoreSession");
@@ -258,7 +258,7 @@ public class TestProtect extends TestCase {
         res = cacheAdmin.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
         
-        log.debug("<test04VerifyCertEntryExternal()");
+        log.trace("<test04VerifyCertEntryExternal()");
     }
 
     static byte[] testcert = Base64.decode(("MIICBDCCAW0CAQMwDQYJKoZIhvcNAQEEBQAwTDELMAkGA1UEBhMCU0UxEzARBgNV"

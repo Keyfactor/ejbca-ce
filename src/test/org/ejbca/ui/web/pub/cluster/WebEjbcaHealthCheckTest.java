@@ -55,7 +55,7 @@ public class WebEjbcaHealthCheckTest extends TestCase {
      * Creates a number of threads that bombards the health check servlet 1000 times each
      */
     public void test01EjbcaHealthHttp() throws Exception {
-        log.debug(">test01EjbcaHealthHttp()");
+        log.trace(">test01EjbcaHealthHttp()");
 
         // Make a quick test first that it works at all before starting all threads
         final WebClient webClient = new WebClient();
@@ -89,7 +89,7 @@ public class WebEjbcaHealthCheckTest extends TestCase {
 		long after = System.currentTimeMillis();
 		long diff = after - before;
         System.out.println("All threads finished. Total time: "+diff+" ms");
-        log.debug("<test01EjbcaHealthHttp()");
+        log.trace("<test01EjbcaHealthHttp()");
     }
     
 }

@@ -349,12 +349,12 @@ public class DemoCertReqServlet extends HttpServlet {
 
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
   {
-    log.debug(">doGet()");
+    log.trace(">doGet()");
     response.setHeader("Allow", "POST");
     ServletDebug debug = new ServletDebug(request,response);
     debug.print("The certificate request servlet only handles POST method.");
     debug.printDebugInfo();
-    log.debug("<doGet()");
+    log.trace("<doGet()");
   } // doGet
 
 

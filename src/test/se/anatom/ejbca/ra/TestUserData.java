@@ -90,16 +90,16 @@ public class TestUserData extends TestCase {
 
 
     public void test01CreateNewUser() throws Exception {
-        log.debug(">test01CreateNewUser()");
+        log.trace(">test01CreateNewUser()");
         username = genRandomUserName();
         pwd = genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it!");
-        log.debug("<test01CreateNewUser()");
+        log.trace("<test01CreateNewUser()");
     }
 
     public void test02LookupAndChangeUser() throws Exception {
-        log.debug(">test02LookupAndChangeUser()");
+        log.trace(">test02LookupAndChangeUser()");
 
         log.debug("username=" + username);
         UserDataVO data2 = TestTools.getUserAdminSession().findUser(admin,username);
@@ -120,11 +120,11 @@ public class TestUserData extends TestCase {
         // Change DN
         TestTools.getUserAdminSession().changeUser(admin,username,"foo123","C=SE,O=AnaTom,OU=Engineering, CN="+username,null,username+"@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
         log.debug("Changed it");
-        log.debug("<test02LookupAndChangeUser()");
+        log.trace("<test02LookupAndChangeUser()");
     }
 
     public void test03LookupChangedUser() throws Exception {
-        log.debug(">test03LookupChangedUser()");
+        log.trace(">test03LookupChangedUser()");
 
         UserDataVO data = TestTools.getUserAdminSession().findUser(admin,username);
         log.debug("found by key! =" + data);
@@ -145,11 +145,11 @@ public class TestUserData extends TestCase {
 
         // Use clear text pwd instead, new email, reverse DN again
         TestTools.getUserAdminSession().changeUser(admin,username,"foo234","C=SE,O=AnaTom,CN="+username,null,username+"@anatom.nu",true,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
-        log.debug("<test03LookupChangedUser()");
+        log.trace("<test03LookupChangedUser()");
     }
 
     public void test03LookupChangedUser2() throws Exception {
-        log.debug(">test03LookupChangedUser2()");
+        log.trace(">test03LookupChangedUser2()");
 
         UserDataVO data = TestTools.getUserAdminSession().findUser(admin,username);
         log.debug("found by key! =" + data);
@@ -170,20 +170,20 @@ public class TestUserData extends TestCase {
         assertTrue("wrong pwd (" + pwd + " works)", TestTools.getUserAdminSession().verifyPassword(admin,username,pwd) == false);
         
         TestTools.getUserAdminSession().setPassword(admin,username,"foo234");
-        log.debug("<test03LookupChangedUser2()");
+        log.trace("<test03LookupChangedUser2()");
     }
 
     public void test04CreateNewUser() throws Exception {
-        log.debug(">test04CreateNewUser()");
+        log.trace(">test04CreateNewUser()");
         username1 = genRandomUserName();
         pwd1 = genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username1,pwd1,"C=SE,O=AnaTom,CN="+username1,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it again!");
-        log.debug("<test04CreateNewUser()");
+        log.trace("<test04CreateNewUser()");
     }
 
     public void test05ListNewUser() throws Exception {
-        log.debug(">test05ListNewUser()");
+        log.trace(">test05ListNewUser()");
 
         Collection coll = TestTools.getUserAdminSession().findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
         Iterator iter = coll.iterator();
@@ -196,11 +196,11 @@ public class TestUserData extends TestCase {
 
         Collection coll1 = TestTools.getUserAdminSession().findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
-        log.debug("<test05ListNewUser()");
+        log.trace("<test05ListNewUser()");
     }
 
     public void test06RequestCounter() throws Exception {
-        log.debug(">test06RequestCounter()");
+        log.trace(">test06RequestCounter()");
 
         // Change already existing user to add extended information with counter
         UserDataVO user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
@@ -421,7 +421,7 @@ public class TestUserData extends TestCase {
         value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
         assertNull(value);
         
-        log.debug("<test06RequestCounter()");
+        log.trace("<test06RequestCounter()");
     }
 
     /**
@@ -430,7 +430,7 @@ public class TestUserData extends TestCase {
      * @throws Exception DOCUMENT ME!
      */
     public void test99CleanUp() throws Exception {
-        log.debug(">test99CleanUp()");
+        log.trace(">test99CleanUp()");
 
         try {        	
             TestTools.getUserAdminSession().deleteUser(admin,username);
@@ -443,6 +443,6 @@ public class TestUserData extends TestCase {
         } catch (Exception e) { /* ignore */ }
         log.debug("Removed it!");
         TestTools.removeTestCA();
-        log.debug("<test99CleanUp()");
+        log.trace("<test99CleanUp()");
     }
 }

@@ -234,7 +234,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		*/		
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
-		log.debug(">handleMessage");
+		log.trace(">handleMessage");
 		IResponseMessage resp = null;
 		try {
 			CrmfRequestMessage crmfreq = null;

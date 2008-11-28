@@ -120,18 +120,17 @@ public class CertRequestHttpTest extends TestCase {
         } 
     }
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
-        log.debug("<setUp()");
+        log.trace(">setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -141,7 +140,7 @@ public class CertRequestHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test01RequestPKCS12() throws Exception {
-        log.debug(">test01RequestPKCS12()");
+        log.trace(">test01RequestPKCS12()");
 
         // find a CA (TestCA?) create a user
         // Send certificate request for a server generated PKCS12
@@ -189,14 +188,14 @@ public class CertRequestHttpTest extends TestCase {
 			assertTrue("Public key is not RSA", false);
 		}
         
-        log.debug("<test01RequestPKCS12()");
+        log.trace("<test01RequestPKCS12()");
     }
 
     /** Tests request for a unknown user
      * @throws Exception error
      */
     public void test02RequestUnknownUser() throws Exception {
-        log.debug(">test02RequestUnknownUser()");
+        log.trace(">test02RequestUnknownUser()");
 
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceReq);
@@ -236,14 +235,14 @@ public class CertRequestHttpTest extends TestCase {
         String errormsg = error.substring(index+5, index2);
         System.out.println(errormsg);
         assertEquals("Username: reqtestunknown\nNon existent username!\nTo generate a certificate a valid username and password must be entered.\n", errormsg);
-        log.debug("<test02RequestUnknownUser()");
+        log.trace("<test02RequestUnknownUser()");
     }
 
     /** Tests request for a wrong password
      * @throws Exception error
      */
     public void test03RequestWrongPwd() throws Exception {
-        log.debug(">test03RequestWrongPwd()");
+        log.trace(">test03RequestWrongPwd()");
 
         setupUser();
         
@@ -284,14 +283,14 @@ public class CertRequestHttpTest extends TestCase {
         String errormsg = error.substring(index+5, index2);
         assertEquals("Username: reqtest\nWrong username or password!\nTo generate a certificate a valid username and password must be entered.\n", errormsg);
         System.out.println(errormsg);
-        log.debug("<test03RequestWrongPwd()");
+        log.trace("<test03RequestWrongPwd()");
     }
 
     /** Tests request with wrong status
      * @throws Exception error
      */
     public void test04RequestWrongStatus() throws Exception {
-        log.debug(">test04RequestWrongStatus()");
+        log.trace(">test04RequestWrongStatus()");
 
         setupUser();
         setupUserStatus(UserDataConstants.STATUS_GENERATED);
@@ -333,7 +332,7 @@ public class CertRequestHttpTest extends TestCase {
         String errormsg = error.substring(index+5, index2);
         assertEquals("Username: reqtest\nWrong user status!\nTo generate a certificate for a user the user must have status new, failed or inprocess.\n", errormsg);
         System.out.println(errormsg);
-        log.debug("<test04RequestWrongStatus()");
+        log.trace("<test04RequestWrongStatus()");
     }
 
     /**
@@ -342,9 +341,9 @@ public class CertRequestHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test99Cleanup() throws Exception {
-        log.debug(">test99Cleanup()");
+        log.trace(">test99Cleanup()");
         usersession.deleteUser(admin, "reqtest");
-        log.debug("<test99Cleanup()");
+        log.trace("<test99Cleanup()");
     }
 
     //

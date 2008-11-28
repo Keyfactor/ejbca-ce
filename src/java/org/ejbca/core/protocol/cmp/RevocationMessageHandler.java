@@ -100,7 +100,7 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
-		log.debug(">handleMessage");
+		log.trace(">handleMessage");
 		IResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
 		// Try to find a HMAC/SHA1 protection key

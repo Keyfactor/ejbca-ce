@@ -42,7 +42,9 @@ public class AccessTreeNode implements Serializable{
 
     /** Creates a new instance of AccessTreeNode */
     public AccessTreeNode(String resource) {
-        //log.debug(">AccessTreeNode:" +resource);
+        /*if (log.isTraceEnabled()) {
+        	log.trace(">AccessTreeNode:" +resource);
+        }*/
         name=resource;
         useraccesspairs = new ArrayList();
         leafs = new HashMap();
@@ -50,20 +52,20 @@ public class AccessTreeNode implements Serializable{
 
     /** Checks the tree if the users X509Certificate is athorized to view the requested resource */
     public boolean isAuthorized(AdminInformation admininformation, String resource) {
-    	if (log.isDebugEnabled()) {
-            log.debug(">isAuthorized: " +resource);    		
+    	if (log.isTraceEnabled()) {
+            log.trace(">isAuthorized: " +resource);    		
     	}
         boolean retval =isAuthorizedRecursive(admininformation,resource,STATE_DECLINE); // Default is to decline access.
-    	if (log.isDebugEnabled()) {
-    		log.debug("<isAuthorized: returns " + retval);
+    	if (log.isTraceEnabled()) {
+    		log.trace("<isAuthorized: returns " + retval);
     	}
         return retval;
     }
 
      /** Adds an access rule with associated admingroup to the tree. */
      public void addAccessRule(String subresource, AccessRule accessrule, AdminGroup admingroup) {
-    	 if (log.isDebugEnabled()) {
-    		 log.debug(">addAccessRule: " + subresource );
+    	 if (log.isTraceEnabled()) {
+    		 log.trace(">addAccessRule: " + subresource );
     	 }
        int index;
        AccessTreeNode next;
@@ -95,14 +97,14 @@ public class AccessTreeNode implements Serializable{
                     
            next.addAccessRule(nextsubresource, accessrule, admingroup);
        }
-       if (log.isDebugEnabled()) {
-    	   log.debug("<addAccessRule: " + subresource);
+       if (log.isTraceEnabled()) {
+    	   log.trace("<addAccessRule: " + subresource);
        }
      }
 
     private boolean isAuthorizedRecursive(AdminInformation admininformation, String resource, int state){
-    	if (log.isDebugEnabled()) {
-    		log.debug("isAuthorizedRecursive: " + " resource: " + resource + " name: "+ this.name + "," +state);
+    	if (log.isTraceEnabled()) {
+    		log.trace(">isAuthorizedRecursive: " + " resource: " + resource + " name: "+ this.name + "," +state);
     	}
        int index;
        int internalstate = STATE_DECLINE;
@@ -160,16 +162,14 @@ public class AccessTreeNode implements Serializable{
            returnval=next.isAuthorizedRecursive(admininformation, nextsubresource, state);
          }
        }
-       if (log.isDebugEnabled()) {
-    	   log.debug("<isAthorizedRecursive: returns " + returnval + " : " + resource + "," +state);
+       if (log.isTraceEnabled()) {
+    	   log.trace("<isAthorizedRecursive: returns " + returnval + " : " + resource + "," +state);
        }
        return returnval;
     }
 
        private int matchInformation(AdminInformation admininformation){
-    	   if (log.isDebugEnabled()) {
-    		   log.debug(">matchInformation");
-    	   }
+    	   log.trace(">matchInformation");
           final int ACCESSRULE = 0;
           final int ADMINGROUP  = 1;
 
@@ -210,8 +210,8 @@ public class AccessTreeNode implements Serializable{
               }
             }
           }  
-          if (log.isDebugEnabled()) {
-        	  log.debug("<matchInformation: returns " + state );
+          if (log.isTraceEnabled()) {
+        	  log.trace("<matchInformation: returns " + state );
           }
           return state;
        }

@@ -248,7 +248,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, int number) {
-    	log.debug(">storeCRL");
+    	log.trace(">storeCRL");
         Iterator iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
@@ -273,7 +273,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
 
             }
         }
-    	log.debug("<storeCRL");
+    	log.trace("<storeCRL");
         return returnval;
     }
 
@@ -319,7 +319,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public void testConnection(Admin admin, int publisherid) throws PublisherConnectionException {
-        debug(">testConnection(id: " + publisherid + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">testConnection(id: " + publisherid + ")");
+    	}
         try {
             PublisherDataLocal pdl = publisherhome.findByPrimaryKey(new Integer(publisherid));
             try {
@@ -340,7 +342,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                     LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
 
         }
-        debug("<testConnection(id: " + publisherid + ")");
+    	if (log.isTraceEnabled()) {
+            trace("<testConnection(id: " + publisherid + ")");
+    	}
     }
 
     /**
@@ -352,9 +356,11 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      */
 
     public void addPublisher(Admin admin, String name, BasePublisher publisher) throws PublisherExistsException {
-        debug(">addPublisher(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">addPublisher(name: " + name + ")");
+    	}
         addPublisher(admin,findFreePublisherId().intValue(),name,publisher);
-        debug("<addPublisher()");
+        trace("<addPublisher()");
     } // addPublisher
 
 
@@ -368,7 +374,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      */
 
     public void addPublisher(Admin admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
-        debug(">addPublisher(name: " + name + ", id: " + id + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">addPublisher(name: " + name + ", id: " + id + ")");
+    	}
         boolean success = false;
         try {
             publisherhome.findByName(name);
@@ -394,7 +402,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         }
         if (!success)
             throw new PublisherExistsException();
-        debug("<addPublisher()");
+        log.trace("<addPublisher()");
     } // addPublisher
 
     /**
@@ -405,7 +413,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      */
 
     public void changePublisher(Admin admin, String name, BasePublisher publisher) {
-        debug(">changePublisher(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">changePublisher(name: " + name + ")");
+    	}
         boolean success = false;
         try {
             PublisherDataLocal htp = publisherhome.findByName(name);
@@ -422,7 +432,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
         }
 
-        debug("<changePublisher()");
+        trace("<changePublisher()");
     } // changePublisher
 
     /**
@@ -433,7 +443,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void clonePublisher(Admin admin, String oldname, String newname) {
-        debug(">clonePublisher(name: " + oldname + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">clonePublisher(name: " + oldname + ")");
+    	}
         BasePublisher publisherdata = null;
         try {
             PublisherDataLocal htp = publisherhome.findByName(oldname);
@@ -452,8 +464,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             error(msg, e);
             throw new EJBException(e);
         }
-
-        debug("<clonePublisher()");
+        log.trace("<clonePublisher()");
     } // clonePublisher
 
     /**
@@ -463,7 +474,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void removePublisher(Admin admin, String name) {
-        debug(">removePublisher(name: " + name + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">removePublisher(name: " + name + ")");
+    	}
         try {
             PublisherDataLocal htp = publisherhome.findByName(name);
             htp.remove();
@@ -473,7 +486,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         	String msg = intres.getLocalizedMessage("publisher.errorremovepublisher", name);            	
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, e);
         }
-        debug("<removePublisher()");
+        log.trace("<removePublisher()");
     } // removePublisher
 
     /**
@@ -484,7 +497,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void renamePublisher(Admin admin, String oldname, String newname) throws PublisherExistsException {
-        debug(">renamePublisher(from " + oldname + " to " + newname + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
+    	}
         boolean success = false;
         try {
             publisherhome.findByName(newname);
@@ -506,7 +521,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         }
         if (!success)
             throw new PublisherExistsException();
-        debug("<renamePublisher()");
+        log.trace("<renamePublisher()");
     } // renameHardTokenProfile
 
     /**
@@ -649,7 +664,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public String getPublisherName(Admin admin, int id) {
-        debug(">getPublisherName(id: " + id + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">getPublisherName(id: " + id + ")");
+    	}
         String returnval = null;
         PublisherDataLocal htp = null;
         try {
@@ -659,8 +676,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             }
         } catch (FinderException e) {
         }
-
-        debug("<getPublisherName()");
+        log.trace("<getPublisherName()");
         return returnval;
     } // getPublisherName
 

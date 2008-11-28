@@ -139,7 +139,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 	
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 		//getOutputStream().println("Certificate import tool. V 1.1, (c) 2005 CSITA - University of Genoa (Italy)");
-		debug(">execute()");
+		trace(">execute()");
 		if ((args.length < 7) || (args.length > 9)) {
 			usage();
 			return;
@@ -285,6 +285,6 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			getOutputStream().println("Error: " + e.getMessage());
 			usage();
 		}
-		debug("<execute()");
+		trace("<execute()");
 	}
 }

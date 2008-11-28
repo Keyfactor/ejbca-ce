@@ -471,7 +471,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     	userdata.setEmail(email);
         int type = userdata.getType();
         String newpassword = userdata.getPassword();
-        debug(">addUser(" + userdata.getUsername() + ", password, " + dn + ", "+ userdata.getDN() + ", " + userdata.getSubjectAltName()+", "+userdata.getEmail() + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">addUser(" + userdata.getUsername() + ", password, " + dn + ", "+ userdata.getDN() + ", " + userdata.getSubjectAltName()+", "+userdata.getEmail() + ")");
+        }
         int profileId = userdata.getEndEntityProfileId();
         String profileName = raadminsession.getEndEntityProfileName(admin, profileId);
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
@@ -568,8 +570,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             error(msg, e);
             throw new EJBException(e);
         }
-
-        debug("<addUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<addUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
+        }
     } // addUser
 
     /**
@@ -675,7 +678,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         String altName = userdata.getSubjectAltName();    
         String newpassword = userdata.getPassword();
         int type = userdata.getType();
-        debug(">changeUser(" + userdata.getUsername() + ", " + dn + ", " + userdata.getEmail() + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">changeUser(" + userdata.getUsername() + ", " + dn + ", " + userdata.getEmail() + ")");
+        }
         int oldstatus;
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
         UserDataPK pk = new UserDataPK(userdata.getUsername());
@@ -843,7 +848,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             error("ChangeUser:", e);
             throw new EJBException(e);
         }
-        debug("<changeUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<changeUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
+        }
     } // changeUser
 
 
@@ -856,7 +863,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.interface-method
      */
     public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException {
-        debug(">deleteUser(" + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">deleteUser(" + username + ")");
+        }
         // Check if administrator is authorized to delete user.
         int caid = LogConstants.INTERNALCAID;
         try {
@@ -892,7 +901,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
             throw new RemoveException(msg);
         }
-        debug("<deleteUser(" + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<deleteUser(" + username + ")");
+        }
     } // deleteUser
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
@@ -915,7 +926,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.interface-method
      */
     public int decRequestCounter(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
-        debug(">decRequestCounter(" + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">decRequestCounter(" + username + ")");
+        }
         // Default return value is as if the optional value does not exist for the user, i.e. the default values is 0
         // because the default number of allowed requests are 1
         int counter = 0;
@@ -972,7 +985,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
             throw e;
         }
-        debug("<decRequestCounter(" + username + "): "+counter);
+        if (log.isTraceEnabled()) {
+            log.trace("<decRequestCounter(" + username + "): "+counter);
+        }
         return counter;
     } // decRequestCounter
 
@@ -986,7 +1001,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.interface-method
      */
     public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
-        debug(">setUserStatus(" + username + ", " + status + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">setUserStatus(" + username + ", " + status + ")");
+        }
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
         try {
@@ -1039,8 +1056,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
             throw e;
         }
-
-        debug("<setUserStatus(" + username + ", " + status + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<setUserStatus(" + username + ", " + status + ")");
+        }
     } // setUserStatus
 
     /**
@@ -1078,7 +1096,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param cleartext true gives cleartext password, false hashed
      */
     private void setPassword(Admin admin, String username, String password, boolean cleartext) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException {
-        debug(">setPassword(" + username + ", hiddenpwd), " + cleartext);
+        if (log.isTraceEnabled()) {
+            log.trace(">setPassword(" + username + ", hiddenpwd), " + cleartext);
+        }
         // Find user
         String newpasswd = password;
         UserDataPK pk = new UserDataPK(username);
@@ -1133,7 +1153,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             error("NoSuchAlgorithmException while setting password for user " + username);
             throw new EJBException(nsae);
         }
-        debug("<setPassword(" + username + ", hiddenpwd), " + cleartext);
+        if (log.isTraceEnabled()) {
+            log.trace("<setPassword(" + username + ", hiddenpwd), " + cleartext);
+        }
     } // setPassword
 
     /**
@@ -1145,7 +1167,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.interface-method
      */
     public boolean verifyPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException {
-        debug(">verifyPassword(" + username + ", hiddenpwd)");
+        if (log.isTraceEnabled()) {
+            log.trace(">verifyPassword(" + username + ", hiddenpwd)");
+        }
         boolean ret = false;
         // Find user
         UserDataPK pk = new UserDataPK(username);
@@ -1173,7 +1197,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             debug("NoSuchAlgorithmException while verifying password for user " + username);
             throw new EJBException(nsae);
         }
-        debug("<verifyPassword(" + username + ", hiddenpwd)");
+        if (log.isTraceEnabled()) {
+            log.trace("<verifyPassword(" + username + ", hiddenpwd)");
+        }
         return ret;
     } // verifyPassword
 
@@ -1245,7 +1271,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      */
     public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, FinderException,
     	ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-        debug(">revokeUser(" + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">revokeUser(" + username + ")");
+        }
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
 
@@ -1295,7 +1323,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         certificatesession.setRevokeStatus(admin, username, publishers, reason);
         String msg = intres.getLocalizedMessage("ra.revokedentity", username);            	
         logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
-        debug("<revokeUser()");
+        log.trace("<revokeUser()");
     }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKECERT = {
@@ -1314,7 +1342,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      */
     public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException,
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-        debug(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ", username, " + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ", username, " + username + ")");
+        }
         UserDataPK pk = new UserDataPK(username);	// TODO: Fetch this from certstoresession instead
         UserDataLocal data;
         try {
@@ -1405,7 +1435,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 }
             }
         }
-        debug("<revokeCert()");
+        log.trace("<revokeCert()");
     } // revokeCert
 
     /** 
@@ -1421,9 +1451,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.interface-method
      */
     public void unRevokeCert(Admin admin, BigInteger certserno, String issuerdn, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-        log.debug(">unrevokeCert()");
+        log.trace(">unrevokeCert()");
         revokeCert(admin, certserno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
-        log.debug("<unrevokeCert()");
+        log.trace("<unrevokeCert()");
     }
 
     /**
@@ -1436,7 +1466,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public UserDataVO findUser(Admin admin, String username) throws FinderException, AuthorizationDeniedException {
-        debug(">findUser(" + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">findUser(" + username + ")");
+        }
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data;
         try {
@@ -1463,7 +1495,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                 , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
         ret.setPassword(data.getClearPassword());
-        debug("<findUser(" + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<findUser(" + username + ")");
+        }
         return ret;
     } // findUser
 
@@ -1478,7 +1512,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public UserDataVO findUserBySubjectAndIssuerDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
-        debug(">findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
+        if (log.isTraceEnabled()) {
+            log.trace(">findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
+        }
         String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
         String dn = StringTools.strip(bcdn);
@@ -1493,7 +1529,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             log.debug("Cannot find user with DN='" + dn + "'");
         }
         returnval = returnUserDataVO(admin, returnval, data);
-        debug("<findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
+        if (log.isTraceEnabled()) {
+            log.trace("<findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
+        }
         return returnval;
     } // findUserBySubjectDN
 
@@ -1507,7 +1545,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException {
-        debug(">findUserBySubjectDN(" + subjectdn + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">findUserBySubjectDN(" + subjectdn + ")");
+        }
         String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
         String dn = StringTools.strip(bcdn);
@@ -1522,7 +1562,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             log.debug("Cannot find user with DN='" + dn + "'");
         }
         returnval = returnUserDataVO(admin, returnval, data);
-        debug("<findUserBySubjectDN(" + subjectdn + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<findUserBySubjectDN(" + subjectdn + ")");
+        }
         return returnval;
     } // findUserBySubjectDN
 
@@ -1560,7 +1602,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public Collection findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException {
-        debug(">findUserByEmail(" + email + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">findUserByEmail(" + email + ")");
+        }
         debug("Looking for user with email: " + email);
         ArrayList returnval = new ArrayList();
 
@@ -1592,7 +1636,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             user.setPassword(data.getClearPassword());
             returnval.add(user);
         }
-        debug("<findUserByEmail(" + email + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<findUserByEmail(" + email + ")");
+        }
         return returnval;
     } // findUserBySubjectDN
 
@@ -1618,9 +1664,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public void checkIfCertificateBelongToUser(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
-        debug(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
+        }
         if (!WebConfiguration.getRequireAdminCertificateInDatabase()) {
-        	debug("<checkIfCertificateBelongToUser Configured to ignore if cert belongs to user.");
+        	log.trace("<checkIfCertificateBelongToUser Configured to ignore if cert belongs to user.");
         	return;
         }
         String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
@@ -1634,7 +1682,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 throw new AuthorizationDeniedException(msg);
             }
         }
-        debug("<checkIfCertificateBelongToUser()");
+        log.trace("<checkIfCertificateBelongToUser()");
     }
 
     /**
@@ -1646,7 +1694,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public Collection findAllUsersByStatus(Admin admin, int status) throws FinderException {
-        debug(">findAllUsersByStatus(" + status + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">findAllUsersByStatus(" + status + ")");
+        }
         debug("Looking for users with status: " + status);
 
         Query query = new Query(Query.TYPE_USERQUERY);
@@ -1658,7 +1708,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         } catch (IllegalQueryException e) {
         }
         debug("found " + returnval.size() + " user(s) with status=" + status);
-        debug("<findAllUsersByStatus(" + status + ")");
+        if (log.isTraceEnabled()) {
+            log.trace("<findAllUsersByStatus(" + status + ")");
+        }
         return returnval;
     }
     /**
@@ -1670,7 +1722,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
      public Collection findAllUsersByCaId(Admin admin, int caid) throws FinderException {
-         debug(">findAllUsersByCaId("+caid+")");
+         if (log.isTraceEnabled()) {
+             log.trace(">findAllUsersByCaId("+caid+")");
+         }
          debug("Looking for users with caid: " + caid);
          
          Query query = new Query(Query.TYPE_USERQUERY);
@@ -1681,7 +1735,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
            returnval = query(admin, query, false, null, null, false,0);  
          }catch(IllegalQueryException e){}
          debug("found "+returnval.size()+" user(s) with caid="+caid);
-         debug("<findAllUsersByCaId("+caid+")");
+         if (log.isTraceEnabled()) {
+             log.trace("<findAllUsersByCaId("+caid+")");
+         }
          return returnval;         
      }
 
@@ -1694,13 +1750,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public Collection findAllUsersWithLimit(Admin admin) throws FinderException {
-        debug(">findAllUsersWithLimit()");
+        trace(">findAllUsersWithLimit()");
         Collection returnval = null;
         try {
             returnval = query(admin, null, true, null, null, false, 0);
         } catch (IllegalQueryException e) {
         }
-        debug("<findAllUsersWithLimit()");
+        trace("<findAllUsersWithLimit()");
         return returnval;
     }
 
@@ -1712,7 +1768,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
-        debug(">findAllUsersByStatusWithLimit()");
+        trace(">findAllUsersByStatusWithLimit()");
 
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
@@ -1723,7 +1779,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         } catch (IllegalQueryException e) {
         }
 
-        debug("<findAllUsersByStatusWithLimit()");
+        trace("<findAllUsersByStatusWithLimit()");
         return returnval;
     }
 
@@ -1753,7 +1809,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param numberofrows  the number of rows to fetch, use 0 for default UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT 
      */
     private Collection query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr, boolean onlybatchusers, int numberofrows) throws IllegalQueryException {
-        debug(">query(): withlimit="+withlimit);
+        if (log.isTraceEnabled()) {
+            log.trace(">query(): withlimit="+withlimit);
+        }
         boolean authorizedtoanyprofile = true;
         Connection con = null;
         PreparedStatement ps = null;
@@ -1771,7 +1829,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         if(numberofrows != 0){
         	fetchsize = numberofrows;
         }
-
 
         // Check if query is legal.
         if (query != null && !query.isLegalQuery())
@@ -1849,7 +1906,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         returnval.add(data);
                 }
             }
-            debug("<query()");
+            log.trace("<query()");
             return returnval;
 
         } catch (Exception e) {
@@ -1857,7 +1914,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-
     } // query
     
 
@@ -1871,7 +1927,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid) {
-        debug(">checkForEndEntityProfileId()");
+        log.trace(">checkForEndEntityProfileId()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1890,16 +1946,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            debug("<checkForEndEntityProfileId()");
+            log.trace("<checkForEndEntityProfileId()");
             return count > 0;
-
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-
-
     }
 
     /**
@@ -1912,7 +1965,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid) {
-        debug(">checkForCertificateProfileId()");
+        log.trace(">checkForCertificateProfileId()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1931,7 +1984,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            debug("<checkForCertificateProfileId()");
+            log.trace("<checkForCertificateProfileId()");
             return count > 0;
 
         } catch (Exception e) {
@@ -1951,7 +2004,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public boolean checkForCAId(Admin admin, int caid) {
-        debug(">checkForCAId()");
+        log.trace(">checkForCAId()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1971,7 +2024,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 count = rs.getInt(1);
             }
             boolean exists = count > 0;
-            debug("<checkForCAId(): "+exists);
+            if (log.isTraceEnabled()) {
+                log.trace("<checkForCAId(): "+exists);
+            }
             return exists;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -1991,7 +2046,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.transaction type="Supports"
      */
     public boolean checkForHardTokenProfileId(Admin admin, int profileid) {
-        debug(">checkForHardTokenProfileId()");
+        trace(">checkForHardTokenProfileId()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -2010,7 +2065,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            debug("<checkForHardTokenProfileId()");
+            trace("<checkForHardTokenProfileId()");
             return count > 0;
 
         } catch (Exception e) {
@@ -2045,7 +2100,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     		return;
     	}
         String useremail = data.getEmail();
-        debug(">sendNotification: user="+data.getUsername()+", email="+useremail);
+        if (log.isTraceEnabled()) {
+            log.trace(">sendNotification: user="+data.getUsername()+", email="+useremail);
+        }
 
         // Make check if we should send notifications at all
         if ( ((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) ) {
@@ -2138,7 +2195,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         } else { // if ( ((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) )
         	log.debug("Type does not contain SecConst.USER_SENDNOTIFICATION, no notification sent.");
         }
-        debug("<sendNotification: user="+data.getUsername()+", email="+useremail);
+        if (log.isTraceEnabled()) {
+            log.trace("<sendNotification: user="+data.getUsername()+", email="+useremail);
+        }
     } // sendNotification
 
     /**
@@ -2169,8 +2228,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param data1 UserDataLocal, the new user
      */
     private void resetRequestCounter(Admin admin, UserDataLocal data1, boolean onlyRemoveNoUpdate) {
-    	if (log.isDebugEnabled()) {
-        	debug(">resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
+    	if (log.isTraceEnabled()) {
+        	log.trace(">resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
     	}
     	int epid = data1.getEndEntityProfileId();
     	EndEntityProfile prof = raadminsession.getEndEntityProfile(admin, epid);
@@ -2203,8 +2262,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     	} else {
     		debug("No extended information exists for user: "+data1.getUsername());
     	}
-    	if (log.isDebugEnabled()) {
-        	debug("<resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
+    	if (log.isTraceEnabled()) {
+        	log.trace("<resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
     	}
 
     }
@@ -2216,7 +2275,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @return one of the UserDataConstants.STATUS_
      */
     private int getUserStatus(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
-        debug(">getUserStatus(" + username + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace(">getUserStatus(" + username + ")");
+    	}
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
         int status;
@@ -2242,9 +2303,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
             throw e;
         }
-        debug("<getUserStatus(" + username + ", " + status + ")");
+    	if (log.isTraceEnabled()) {
+            log.trace("<getUserStatus(" + username + ", " + status + ")");
+    	}
         return status;
     } // getUserStatus
-
 
 } // LocalUserAdminSessionBean

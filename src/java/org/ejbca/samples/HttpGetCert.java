@@ -69,14 +69,14 @@ public class HttpGetCert {
      * Constructor
      */
     public HttpGetCert() {
-        log.debug(">HttpGetCert:");
+        log.trace(">HttpGetCert:");
 
         // Use for SSL connections
         /*
         System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
         java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         */
-        log.debug("<HttpGetCert:");
+        log.trace("<HttpGetCert:");
     }
 
     // HttpGetCert
@@ -97,12 +97,12 @@ public class HttpGetCert {
 
     /*
     public void setSSLTrustedServerCert(byte[] cert) throws java.security.cert.CertificateException {
-    log.debug(">setSSLTrustedServerCert:");
+    log.trace(">setSSLTrustedServerCert:");
     CertificateFactory cf = CertTools.getCertificateFactory();
     webcert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert));
     if ( CertTools.isSelfSigned( webcert ) )
         throw new IllegalArgumentException("Webcert certificate is not self signed (not a root CA certificate).");
-    log.debug("<setSSLTrustedServerCert:");
+    log.trace("<setSSLTrustedServerCert:");
 
     } // setSSLTrustedServerCert
     */
@@ -122,7 +122,7 @@ public class HttpGetCert {
 
     /*
     private SSLSocketFactory getSSLFactory() throws IllegalArgumentException, Exception {
-        log.debug( ">getSSLFactory" );
+        log.trace( ">getSSLFactory" );
         SSLContext ctx = SSLContext.getInstance( "SSL" );
         KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
         String proxyHost = null;
@@ -148,7 +148,7 @@ public class HttpGetCert {
 
         ctx.init( null, tmf.getTrustManagers(), null );
 
-        log.debug( "<getSSLFactory" );
+        log.trace( "<getSSLFactory" );
         return ctx.getSocketFactory();
     }
     */
@@ -189,7 +189,7 @@ public class HttpGetCert {
      */
     public void sendHttpReq(String requestUrl, String request, String username, String password)
         throws Exception {
-        log.debug(">sendHttpReq: request=" + request.toString() + ", username=" + username +
+        log.trace(">sendHttpReq: request=" + request.toString() + ", username=" + username +
             ", password=" + password);
 
         if (requestUrl == null) {
@@ -234,7 +234,7 @@ public class HttpGetCert {
         // We are done, disconnect
         con.disconnect();
 
-        log.debug("<sendHttpReq:");
+        log.trace("<sendHttpReq:");
     }
 
     // sendHttpReq

@@ -44,7 +44,7 @@ public class TestQuery extends TestCase {
      * @throws Exception DOCUMENT ME!
      */
     public void test01TestUserQuery() throws Exception {
-        log.debug(">test01TestUserQuery()");
+        log.trace(">test01TestUserQuery()");
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(UserDataConstants.STATUS_NEW));
         String str = query.getQueryString();
@@ -55,7 +55,7 @@ public class TestQuery extends TestCase {
         str = query.getQueryString();
         assertEquals("username = 'foo'", str);
         
-        log.debug("<test01TestUserQuery()");
+        log.trace("<test01TestUserQuery()");
     }
 
 }

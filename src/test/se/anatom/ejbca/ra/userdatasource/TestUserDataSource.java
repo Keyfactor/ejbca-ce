@@ -56,7 +56,7 @@ public class TestUserDataSource extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         ctx = getInitialContext();
         
         Object obj = ctx.lookup("UserDataSourceSession");
@@ -66,7 +66,7 @@ public class TestUserDataSource extends TestCase {
         
         CertTools.installBCProvider();
         
-        log.debug("<setUp()");
+        log.trace("<setUp()");
         
     }
     
@@ -74,10 +74,9 @@ public class TestUserDataSource extends TestCase {
     }
     
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-        
+        log.trace("<getInitialContext");
         return ctx;
     }
     
@@ -88,7 +87,7 @@ public class TestUserDataSource extends TestCase {
      * @throws Exception error
      */
     public void test01AddCustomUserDataSource() throws Exception {
-        log.debug(">test01AddCustomUserDataSource()");
+        log.trace(">test01AddCustomUserDataSource()");
         boolean ret = false;
         try {
             CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
@@ -100,8 +99,7 @@ public class TestUserDataSource extends TestCase {
         }
         
         assertTrue("Creating Custom UserDataSource failed", ret);
-        
-        log.debug("<test01AddCustomUserDataSource()");
+        log.trace("<test01AddCustomUserDataSource()");
     }
     
     /**
@@ -110,8 +108,7 @@ public class TestUserDataSource extends TestCase {
      * @throws Exception error
      */
     public void test02RenameUserDataSource() throws Exception {
-        log.debug(">test02RenameUserDataSource()");
-        
+        log.trace(">test02RenameUserDataSource()");
         boolean ret = false;
         try {
             pub.renameUserDataSource(admin, "TESTDUMMYCUSTOM", "TESTNEWDUMMYCUSTOM");
@@ -119,9 +116,7 @@ public class TestUserDataSource extends TestCase {
         } catch (UserDataSourceExistsException pee) {
         }
         assertTrue("Renaming Custom UserDataSource failed", ret);
-        
-        
-        log.debug("<test02RenameUserDataSource()");
+        log.trace("<test02RenameUserDataSource()");
     }
     
     /**
@@ -130,14 +125,12 @@ public class TestUserDataSource extends TestCase {
      * @throws Exception error
      */
     public void test03CloneUserDataSource() throws Exception {
-        log.debug(">test03CloneUserDataSource()");
-        
+        log.trace(">test03CloneUserDataSource()");
         boolean ret = false;
         pub.cloneUserDataSource(admin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
         ret = true;
         assertTrue("Cloning Custom UserDataSource failed", ret);
-        
-        log.debug("<test03CloneUserDataSource()");
+        log.trace("<test03CloneUserDataSource()");
     }
     
     
@@ -147,8 +140,7 @@ public class TestUserDataSource extends TestCase {
      * @throws Exception error
      */
     public void test04EditUserDataSource() throws Exception {
-        log.debug(">test04EditUserDataSource()");
-        
+        log.trace(">test04EditUserDataSource()");
         boolean ret = false;
         
         BaseUserDataSource userdatasource = pub.getUserDataSource(admin, "TESTCLONEDUMMYCUSTOM");
@@ -157,9 +149,7 @@ public class TestUserDataSource extends TestCase {
         ret = true;
         
         assertTrue("Editing Custom UserDataSource failed", ret);
-        
-        
-        log.debug("<test04EditUserDataSource()");
+        log.trace("<test04EditUserDataSource()");
     }
     
     /**
@@ -168,8 +158,7 @@ public class TestUserDataSource extends TestCase {
      * @throws Exception error
      */
     public void test05FetchFromDummy() throws Exception {
-        log.debug(">test05FetchFromDummy()");
-        
+        log.trace(">test05FetchFromDummy()");
         ArrayList userdatasources = new ArrayList();
         userdatasources.add(new Integer(pub.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")));
         
@@ -179,8 +168,7 @@ public class TestUserDataSource extends TestCase {
         Iterator iter = ret.iterator();
         UserDataSourceVO next = (UserDataSourceVO) iter.next();
         assertTrue("Didn't get epected user data", next.getUserDataVO().getUsername().equals("PER"));        
-
-        log.debug("<test05FetchFromDummy()");
+        log.trace("<test05FetchFromDummy()");
     }
     
     
@@ -190,7 +178,7 @@ public class TestUserDataSource extends TestCase {
      * @throws Exception error
      */
     public void test06removeUserDataSources() throws Exception {
-        log.debug(">test06removeUserDataSources()");
+        log.trace(">test06removeUserDataSources()");
         boolean ret = false;
         try {
             pub.removeUserDataSource(admin, "TESTNEWDUMMYCUSTOM");
@@ -199,7 +187,6 @@ public class TestUserDataSource extends TestCase {
         } catch (Exception pee) {
         }
         assertTrue("Removing UserDataSource failed", ret);
-        
-        log.debug("<test06removeUserDataSources()");
+        log.trace("<test06removeUserDataSources()");
     }
 }

@@ -60,7 +60,7 @@ public class PeriodicalInterval extends BaseInterval {
 	 * @see org.ejbca.core.model.services.IInterval#getTimeToExecution()
 	 */
 	public long getTimeToExecution() {
-		log.debug(">PeriodicalInterval.getTimeToExecution()");
+		log.trace(">PeriodicalInterval.getTimeToExecution()");
 		if(interval == 0){
 			String unit = properties.getProperty(PROP_UNIT);
 			if(unit == null){				

@@ -143,10 +143,10 @@ public class TestKeyTools extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-        log.debug("<setUp()");
+        log.trace("<setUp()");
 
     }
 
@@ -154,7 +154,7 @@ public class TestKeyTools extends TestCase {
     }
 
     public void test01GetCertChain() throws Exception {
-        log.debug(">test01GetCertChain()");
+        log.trace(">test01GetCertChain()");
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
         store.load(fis, storepwd.toCharArray());
@@ -168,11 +168,11 @@ public class TestKeyTools extends TestCase {
             if (i == 1) assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=TestSubCA,O=AnaTom,C=SE");
             if (i == 2) assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=TestCA,O=AnaTom,C=SE");
         }
-        log.debug("<test01GetCertChain()");
+        log.trace("<test01GetCertChain()");
     }
 
     public void test02GenKeysRSA() throws Exception {
-        log.debug(">test02GenKeysRSA()");
+        log.trace(">test02GenKeysRSA()");
         KeyPair keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
@@ -183,11 +183,11 @@ public class TestKeyTools extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //System.out.println(b64cert);
-        log.debug("<test02GenKeysRSA()");
+        log.trace("<test02GenKeysRSA()");
     }
 
     public void test03CreateP12() throws Exception {
-        log.debug(">test03CreateP12()");
+        log.trace(">test03CreateP12()");
         Certificate cert = CertTools.getCertfromByteArray(certbytes);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -198,11 +198,11 @@ public class TestKeyTools extends TestCase {
         // If password below is more than 7 chars, strong crypto is needed
         ks.store(baos, "foo123".toCharArray());
         assertTrue("baos size must not be 0", baos.size() > 0);
-        log.debug("<test03CreateP12()");
+        log.trace("<test03CreateP12()");
     }
 
     public void test03GenKeysECDSAx9() throws Exception {
-        log.debug(">test03GenKeysECDSA()");
+        log.trace(">test03GenKeysECDSA()");
         KeyPair keys = KeyTools.genKeys("prime192v1", CATokenConstants.KEYALGORITHM_ECDSA);
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
@@ -214,11 +214,11 @@ public class TestKeyTools extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //System.out.println(b64cert);
-        log.debug("<test03GenKeysECDSA()");
+        log.trace("<test03GenKeysECDSA()");
     }
 
     public void test04GenKeysECDSANist() throws Exception {
-        log.debug(">test04GenKeysECDSANist()");
+        log.trace(">test04GenKeysECDSANist()");
         KeyPair keys = KeyTools.genKeys("secp384r1", CATokenConstants.KEYALGORITHM_ECDSA);
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
@@ -230,11 +230,11 @@ public class TestKeyTools extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         System.out.println(b64cert);
-        log.debug("<test04GenKeysECDSANist()");
+        log.trace("<test04GenKeysECDSANist()");
     }
     
     public void test05GenKeysECDSAImplicitlyCA() throws Exception {
-        log.debug(">test05GenKeysECDSAImplicitlyCA()");
+        log.trace(">test05GenKeysECDSAImplicitlyCA()");
         KeyPair keys = KeyTools.genKeys("implicitlyCA", CATokenConstants.KEYALGORITHM_ECDSA);
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
@@ -246,6 +246,6 @@ public class TestKeyTools extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         System.out.println(b64cert);
-        log.debug("<test05GenKeysECDSAImplicitlyCA()");
+        log.trace("<test05GenKeysECDSAImplicitlyCA()");
     }
 }

@@ -103,10 +103,10 @@ public class PKCS10RequestMessage implements IRequestMessage {
      * @throws IOException if the request can not be parsed.
      */
     public PKCS10RequestMessage(byte[] msg) {
-        log.debug(">PKCS10RequestMessage(byte[])");
+        log.trace(">PKCS10RequestMessage(byte[])");
         this.p10msg = msg;
         init();
-        log.debug("<PKCS10RequestMessage(byte[])");
+        log.trace("<PKCS10RequestMessage(byte[])");
     }
 
     /**
@@ -115,10 +115,10 @@ public class PKCS10RequestMessage implements IRequestMessage {
      * @param p10 the PKCS#10 request
      */
     public PKCS10RequestMessage(PKCS10CertificationRequest p10) {
-        log.debug(">PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
+        log.trace(">PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
         p10msg = p10.getEncoded();
         pkcs10 = p10;
-        log.debug("<PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
+        log.trace("<PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
     }
 
     private void init() {
@@ -441,7 +441,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
     }
     public boolean verify(PublicKey pubKey)
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        log.debug(">verify()");
+        log.trace(">verify()");
 
         boolean ret = false;
 
@@ -463,7 +463,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
             log.error("Error in PKCS10-signature:", e);
         }
 
-        log.debug("<verify()");
+        log.trace("<verify()");
 
         return ret;
     }

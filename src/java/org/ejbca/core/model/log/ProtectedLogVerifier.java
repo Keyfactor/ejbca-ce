@@ -134,7 +134,7 @@ public class ProtectedLogVerifier {
 	}
 
 	synchronized private void run() {
-		log.debug(">run");
+		log.trace(">run");
 		long startTimeOfExecution = new Date().getTime();
 		try  {
 			ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
@@ -167,7 +167,7 @@ public class ProtectedLogVerifier {
 			isRunning = false;
 			isCanceled = false;
 		}
-		log.debug("<run");
+		log.trace("<run");
 	}
 	
 	public long getTimeOfLastExecution() {
@@ -179,7 +179,7 @@ public class ProtectedLogVerifier {
 	 * Verify that the log hasn't been rolled back since last run
 	 */
 	private ProtectedLogEventIdentifier verifyLastEvent() {
-		log.debug(">verifyLastEvent");
+		log.trace(">verifyLastEvent");
 		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties); 
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow();
 		// Is log empy?
@@ -201,7 +201,7 @@ public class ProtectedLogVerifier {
 				lastKnownEventTime = currentEventTime;
 			}
 		}
-		log.debug("<verifyLastEvent");
+		log.trace("<verifyLastEvent");
 		return null;
 	}
 
@@ -209,7 +209,7 @@ public class ProtectedLogVerifier {
 	 * Retrieves and verifies the requested ProtectedLogEvent or null if not found.
 	 */
 	private ProtectedLogEventRow getValidLogEventRow(ProtectedLogEventIdentifier protectedLogEventIdentifier) {
-		log.debug(">getValidLogEventRow");
+		log.trace(">getValidLogEventRow");
 		ProtectedLogEventRow protectedLogEventRow = getProtectedLogSession().getProtectedLogEventRow(protectedLogEventIdentifier);
 		if (protectedLogEventRow == null) {
 			// We take no action here. We want to return null to show the caller that the event was not found.
@@ -225,7 +225,7 @@ public class ProtectedLogVerifier {
 			    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing"));
 					protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 				} else {
-					log.debug("<getValidLogEventRow");
+					log.trace("<getValidLogEventRow");
 					return protectedLogEventRow;
 				}
 			} catch (Exception e) {

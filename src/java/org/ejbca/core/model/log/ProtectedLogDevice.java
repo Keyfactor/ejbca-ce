@@ -481,7 +481,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
 	public Collection query(Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException {
-		log.debug(">query()");
+		log.trace(">query()");
 		Collection ret = null;
 		if (capriviledges == null || capriviledges.length() == 0 || !query.isLegalQuery()) {
 			throw new IllegalQueryException();
@@ -501,7 +501,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			log.debug("Query: "+sql);			
 		}
 		ret = getProtectedLogSession().performQuery(sql);
-		log.debug("<query()");
+		log.trace("<query()");
 		return ret;
 	} // query
 	

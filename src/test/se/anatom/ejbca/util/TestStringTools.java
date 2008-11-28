@@ -38,13 +38,13 @@ public class TestStringTools extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
-        log.debug("<setUp()");
+        log.trace(">setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-        log.debug(">tearDown()");
-        log.debug("<tearDown()");
+        log.trace(">tearDown()");
+        log.trace("<tearDown()");
     }
 
     /**
@@ -53,36 +53,36 @@ public class TestStringTools extends TestCase {
      * @throws Exception error
      */
     public void test01StripWhitespace() throws Exception {
-        log.debug(">test01StripWhitespace()");
+        log.trace(">test01StripWhitespace()");
         String test = " foo \t bar \r\n\r\n \f\f\f quu x                  ";
         assertEquals("foobarquux", StringTools.stripWhitespace(test));
-        log.debug(">test01StripWhitespace()");
+        log.trace(">test01StripWhitespace()");
     }
 
     public void test02IpStringToOctets() throws Exception {
-        log.debug(">test02IpStringToOctets()");
+        log.trace(">test02IpStringToOctets()");
         String ip = "23.34.45.167";
         byte[] octs = StringTools.ipStringToOctets(ip);
         for (int i=0;i<octs.length;i++) {
             log.debug("octs["+i+"]="+(int)octs[i]);
         }
-        log.debug(">test02IpStringToOctets()");
+        log.trace(">test02IpStringToOctets()");
     }
     public void test03Strip() throws Exception {
-    	log.debug(">test03Strip()");
+    	log.trace(">test03Strip()");
     	String strip1 = "foo$bar:far%";
     	String stripped = StringTools.strip(strip1);
     	assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
     	assertEquals("String not stripped correctly!", stripped, "foo/bar:far/");
-		log.debug("<test03Strip()");
+		log.trace("<test03Strip()");
     }
     public void test04Strip() throws Exception {
-        log.debug(">test04Strip()");
+        log.trace(">test04Strip()");
         String strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/<>bar";
         String stripped = StringTools.strip(strip1);
         assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
         assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/////bar");
-        log.debug("<test04Strip()");
+        log.trace("<test04Strip()");
     }
     public void testBase64() throws Exception {
         String s1 = "C=SE, O=abc, CN=def";

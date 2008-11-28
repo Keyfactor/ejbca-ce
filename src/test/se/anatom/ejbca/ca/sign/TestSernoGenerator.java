@@ -49,7 +49,7 @@ public class TestSernoGenerator extends TestCase {
     }
 
     public void test01GenerateSernos8Octets() throws Exception {
-        log.debug(">test01GenerateSernos8Octets()");
+        log.trace(">test01GenerateSernos8Octets()");
 
         ISernoGenerator gen = SernoGenerator.instance();
         HashMap map = new HashMap(500000);
@@ -82,14 +82,14 @@ public class TestSernoGenerator extends TestCase {
 
         System.out.println("Map now contains " + map.size() + " serial numbers. Last one: "+hex);
         System.out.println("Number of duplicates: "+duplicates);
-        log.debug("<test01GenerateSernos8Octets()");
+        log.trace("<test01GenerateSernos8Octets()");
     }
     
     /** Using only 32 bit serial numbers will produce collisions 
      * about 1-5 times for 100.000 serial numbers
      */
     public void test02GenerateSernos4Octets() throws Exception {
-        log.debug(">test01GenerateSernos4Octets()");
+        log.trace(">test01GenerateSernos4Octets()");
 
         ISernoGenerator gen = SernoGenerator.instance();
         gen.setSernoOctetSize(4);
@@ -119,7 +119,7 @@ public class TestSernoGenerator extends TestCase {
 
         System.out.println("Map now contains " + map.size() + " serial numbers. Last one: "+hex);
         System.out.println("Number of duplicates: "+duplicates);
-        log.debug("<test02GenerateSernos4Octets()");
+        log.trace("<test02GenerateSernos4Octets()");
     }
 
 }

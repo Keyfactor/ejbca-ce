@@ -83,7 +83,7 @@ public class TestDeltaCRL extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
 
         ctx = getInitialContext();
 
@@ -113,28 +113,28 @@ public class TestDeltaCRL extends TestCase {
         assertNotNull("CA TEST not active. You must run TestCAs before this test", cainfo);
         cadn = cainfo.getSubjectDN();
         caid = cainfo.getCAId();
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
 
         return ctx;
     }
 
     public void test01CreateNewDeltaCRL() throws Exception {
-        log.debug(">test01CreateNewCRL()");
+        log.trace(">test01CreateNewCRL()");
         remote.runDeltaCRL(admin, cadn);
-        log.debug("<test01CreateNewCRL()");
+        log.trace("<test01CreateNewCRL()");
     }
 
     public void test02LastDeltaCRL() throws Exception {
-        log.debug(">test02LastCRL()");
+        log.trace(">test02LastCRL()");
         // Get number of last Delta CRL
         int number = storeremote.getLastCRLNumber(admin, cadn, true);
         log.debug("Last CRLNumber = " + number);
@@ -160,12 +160,12 @@ public class TestDeltaCRL extends TestCase {
         X509CRL x509crl2 = CertTools.getCRLfromByteArray(crl2);
         BigInteger num2 = CrlExtensions.getCrlNumber(x509crl2);
         assertEquals(number1+2, num2.intValue());
-        log.debug("<test02LastDeltaCRL()");
+        log.trace("<test02LastDeltaCRL()");
     }
 
     public void test03CheckNumberofRevokedCerts() throws Exception {
         // check revoked certificates
-        log.debug(">test03CheckNumberofRevokedCerts()");
+        log.trace(">test03CheckNumberofRevokedCerts()");
 
         byte[] crl = storeremote.getLastCRL(admin, cadn, false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -199,12 +199,12 @@ public class TestDeltaCRL extends TestCase {
         assertNotNull("revset can not be null", revset);
         assertEquals(revsize+1, revset.size());        	
         
-        log.debug("<test03CheckNumberofRevokedCerts()");
+        log.trace("<test03CheckNumberofRevokedCerts()");
     }
 
     public void test04RevokeAndUnrevoke() throws Exception {
         // Test revocation and un-revokation of certificates
-        log.debug(">test04RevokeAndUnrevoke()");
+        log.trace(">test04RevokeAndUnrevoke()");
 
         X509Certificate cert = createUserAndCert();
         
@@ -340,7 +340,7 @@ public class TestDeltaCRL extends TestCase {
         	assertFalse(found);
         } // If no revoked certificates exist at all, this test passed...
         
-        log.debug("<test04RevokeAndUnrevoke()");
+        log.trace("<test04RevokeAndUnrevoke()");
     }
 
     // 

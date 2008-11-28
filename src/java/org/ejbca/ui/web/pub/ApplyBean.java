@@ -113,8 +113,9 @@ public class ApplyBean implements java.io.Serializable {
             returnval = useradmindata.getTokenType();
         }
 		this.username = username;
-		
-		log.debug("<getTokenType(" + username + ") --> " + returnval);
+		if (log.isTraceEnabled()) {
+			log.trace("<getTokenType(" + username + ") --> " + returnval);
+		}
         return returnval;
     }
 
@@ -143,8 +144,9 @@ public class ApplyBean implements java.io.Serializable {
 			returnval = useradmindata.getCAId();
 		}
 		this.username = username;
-		
-		log.debug("<getCAId(" + username + ") --> " + returnval);
+		if (log.isTraceEnabled()) {
+			log.trace("<getCAId(" + username + ") --> " + returnval);
+		}
 		return returnval;
 	}
 
@@ -189,7 +191,9 @@ public class ApplyBean implements java.io.Serializable {
             		retdebug += returnval[i];        			
         		}
         	}
-        	log.debug("<availableBitLengths(" + username + ") --> " + retdebug);
+        	if (log.isTraceEnabled()) {
+        		log.trace("<availableBitLengths(" + username + ") --> " + retdebug);
+        	}
         }
         return returnval;
     }
@@ -240,7 +244,9 @@ public class ApplyBean implements java.io.Serializable {
             		retdebug += returnval[i];        			
         		}
         	}
-        	log.debug("<availableCertificateProfiles(" + username + ") --> " + retdebug);
+        	if (log.isTraceEnabled()) {
+        		log.trace("<availableCertificateProfiles(" + username + ") --> " + retdebug);
+        	}
         }
         return returnval;
     }
@@ -270,8 +276,8 @@ public class ApplyBean implements java.io.Serializable {
         }
         this.username = username;
 
-        if (log.isDebugEnabled()) {
-        	log.debug("<getUserCertificateProfile(" + username + ") --> " + returnval);
+        if (log.isTraceEnabled()) {
+        	log.trace("<getUserCertificateProfile(" + username + ") --> " + returnval);
         }
         return returnval;
     }

@@ -391,14 +391,14 @@ public class CertReqServlet extends HttpServlet {
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-        log.debug(">doGet()");
+        log.trace(">doGet()");
         response.setHeader("Allow", "POST");
 
         ServletDebug debug = new ServletDebug(request, response);
     	String iMsg = intres.getLocalizedMessage("certreq.postonly");
         debug.print(iMsg);
         debug.printDebugInfo();
-        log.debug("<doGet()");
+        log.trace("<doGet()");
     }
 
     // doGet

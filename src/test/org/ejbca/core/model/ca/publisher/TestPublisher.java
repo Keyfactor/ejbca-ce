@@ -109,7 +109,7 @@ public class TestPublisher extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         ctx = getInitialContext();
         
         Object obj = ctx.lookup("PublisherSession");
@@ -119,7 +119,7 @@ public class TestPublisher extends TestCase {
         
         CertTools.installBCProvider();
         
-        log.debug("<setUp()");
+        log.trace("<setUp()");
         
     }
     
@@ -127,9 +127,9 @@ public class TestPublisher extends TestCase {
     }
     
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         
         return ctx;
     }
@@ -140,7 +140,7 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test01AddLDAPPublisher() throws Exception {
-        log.debug(">test01AddLDAPPublisher()");
+        log.trace(">test01AddLDAPPublisher()");
         boolean ret = false;
         try {
             LdapPublisher publisher = new LdapPublisher();
@@ -152,7 +152,7 @@ public class TestPublisher extends TestCase {
         }
         
         assertTrue("Creating LDAP Publisher failed", ret);
-        log.debug("<test01AddLDAPPublisher()");
+        log.trace("<test01AddLDAPPublisher()");
     }
     
     /**
@@ -161,7 +161,7 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test02AddADPublisher() throws Exception {
-        log.debug(">test02AddADPublisher() ");
+        log.trace(">test02AddADPublisher() ");
         boolean ret = false;
         try {
             ActiveDirectoryPublisher publisher = new ActiveDirectoryPublisher();
@@ -173,7 +173,7 @@ public class TestPublisher extends TestCase {
         }
         
         assertTrue("Creating AD Publisher failed", ret);
-        log.debug("<test02AddADPublisher() ");
+        log.trace("<test02AddADPublisher() ");
     }
     
     /**
@@ -182,7 +182,7 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test03AddCustomPublisher() throws Exception {
-        log.debug(">test03AddCustomPublisher()");
+        log.trace(">test03AddCustomPublisher()");
         boolean ret = false;
         try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
@@ -195,7 +195,7 @@ public class TestPublisher extends TestCase {
         
         assertTrue("Creating Custom Publisher failed", ret);
         
-        log.debug("<test03AddCustomPublisher()");
+        log.trace("<test03AddCustomPublisher()");
     }
     
     /**
@@ -204,7 +204,7 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test04RenamePublisher() throws Exception {
-        log.debug(">test04RenamePublisher()");
+        log.trace(">test04RenamePublisher()");
         
         boolean ret = false;
         try {
@@ -215,7 +215,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Renaming Custom Publisher failed", ret);
         
         
-        log.debug("<test04RenamePublisher()");
+        log.trace("<test04RenamePublisher()");
     }
     
     /**
@@ -224,14 +224,14 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test05ClonePublisher() throws Exception {
-        log.debug(">test05ClonePublisher()");
+        log.trace(">test05ClonePublisher()");
         
         boolean ret = false;
         pub.clonePublisher(admin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
         ret = true;
         assertTrue("Cloning Custom Publisher failed", ret);
         
-        log.debug("<test05ClonePublisher()");
+        log.trace("<test05ClonePublisher()");
     }
     
     
@@ -241,7 +241,7 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test06EditPublisher() throws Exception {
-        log.debug(">test06EditPublisher()");
+        log.trace(">test06EditPublisher()");
         
         boolean ret = false;
         
@@ -253,7 +253,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Editing Custom Publisher failed", ret);
         
         
-        log.debug("<test06EditPublisher()");
+        log.trace("<test06EditPublisher()");
     }
     
     /**
@@ -262,14 +262,14 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test07StoreCertToDummy() throws Exception {
-        log.debug(">test07StoreCertToDummy()");
+        log.trace(">test07StoreCertToDummy()");
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList publishers = new ArrayList();
         publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
         
         boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
-        log.debug("<test07StoreCertToDummyr()");
+        log.trace("<test07StoreCertToDummyr()");
     }
     
     /**
@@ -278,14 +278,14 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test08storeCRLToDummy() throws Exception {
-        log.debug(">test08storeCRLToDummy()");
+        log.trace(">test08storeCRLToDummy()");
         
         ArrayList publishers = new ArrayList();
         publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
         boolean ret = pub.storeCRL(admin, publishers, testcrl, null, 1);
         assertTrue("Storing CRL to dummy publisher failed", ret);
         
-        log.debug("<test08storeCRLToDummy()");
+        log.trace("<test08storeCRLToDummy()");
     }
     
     
@@ -295,7 +295,7 @@ public class TestPublisher extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test10GenPurpCustPubl() throws Exception {
-	    log.debug(">test10GenPurpCustPubl()");
+	    log.trace(">test10GenPurpCustPubl()");
 	    
 	    GeneralPurposeCustomPublisher gpcPublisher = null;
 	    Properties props = new Properties();
@@ -331,7 +331,7 @@ public class TestPublisher extends TestCase {
 			e.printStackTrace();
 		}
 	    assertTrue("Store CRL with GeneralPurposeCustomPublisher failed.", ret);
-	    log.debug("<test10GenPurpCustPubl()");
+	    log.trace("<test10GenPurpCustPubl()");
 	} // test10GenPurpCustPubl
 
 	/**
@@ -341,7 +341,7 @@ public class TestPublisher extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test11GenPurpCustPublErrorCode() throws Exception {
-	    log.debug(">test11GenPurpCustPublErrorCode()");
+	    log.trace(">test11GenPurpCustPublErrorCode()");
 	    
 	    GeneralPurposeCustomPublisher gpcPublisher = null;
 	    Properties props = new Properties();
@@ -389,7 +389,7 @@ public class TestPublisher extends TestCase {
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Revoke cert with GeneralPurposeCustomPublisher did not fail on errorcode.", ret);
-	    log.debug("<test11GenPurpCustPublErrorCode()");
+	    log.trace("<test11GenPurpCustPublErrorCode()");
 	} // test11GenPurpCustPublErrorCode
 	    
 	/**
@@ -399,7 +399,7 @@ public class TestPublisher extends TestCase {
 	 * @throws Exception error
 	 */
 	public void test12GenPurpCustPublStandardError() throws Exception {
-	    log.debug(">test12GenPurpCustPublStandardError()");
+	    log.trace(">test12GenPurpCustPublStandardError()");
 	    
 	    GeneralPurposeCustomPublisher gpcPublisher = null;
 	    Properties props = new Properties();
@@ -447,7 +447,7 @@ public class TestPublisher extends TestCase {
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Revoke cert with GeneralPurposeCustomPublisher did not fail on standard error.", ret);
-	    log.debug("<test12GenPurpCustPublStandardError()");
+	    log.trace("<test12GenPurpCustPublStandardError()");
 	} // test12GenPurpCustPublStandardError
 
 	/**
@@ -456,7 +456,7 @@ public class TestPublisher extends TestCase {
 	 * @throws Exception
 	 */
 	public void test13GenPurpCustPublConnection() throws Exception {
-	    log.debug(">test13GenPurpCustPublConnection()");
+	    log.trace(">test13GenPurpCustPublConnection()");
 	    GeneralPurposeCustomPublisher gpcPublisher = null;
 	    Properties props = new Properties();
 	    // Create
@@ -489,10 +489,11 @@ public class TestPublisher extends TestCase {
 		} catch (PublisherConnectionException e) {
 		}
 	    assertFalse("testConnection reported all ok, but commandfile does not exist!", ret);
-	    log.debug("<test12GenPurpCustPublStandardError()");
+	    log.trace("<test13GenPurpCustPublStandardError()");
 	} // test13GenPurpCustPublConnection
 
     public void test14ExternalOCSPPublisher() throws Exception {
+	    log.trace(">test14ExternalOCSPPublisher()");
         boolean ret = false;
 
         ret = false;
@@ -519,6 +520,7 @@ public class TestPublisher extends TestCase {
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
         pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+	    log.trace("<test14ExternalOCSPPublisher()");
     }
 
     /**
@@ -527,7 +529,7 @@ public class TestPublisher extends TestCase {
      * @throws Exception error
      */
     public void test99removePublishers() throws Exception {
-        log.debug(">test09removePublishers()");
+        log.trace(">test99removePublishers()");
         boolean ret = true;
         try {
             pub.removePublisher(admin, "TESTLDAP");            
@@ -546,7 +548,7 @@ public class TestPublisher extends TestCase {
         } catch (Exception pee) {ret = false;}
         assertTrue("Removing Publisher failed", ret);
         
-        log.debug("<test09removePublishers()");
+        log.trace("<test99removePublishers()");
     }
 
 

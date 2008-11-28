@@ -164,7 +164,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
      * @throws Exception error
      */
     public void test01OcspGood() throws Exception {
-        log.debug(">test02OcspGood()");
+        log.trace(">test02OcspGood()");
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -185,7 +185,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), CertTools.getSerialNumber(ocspTestCert));
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
-        log.debug("<test02OcspGood()");
+        log.trace("<test02OcspGood()");
     }
     
     

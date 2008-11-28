@@ -230,7 +230,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        debug(">ejbCreate()");
+        trace(">ejbCreate()");
         ServiceLocator locator = ServiceLocator.getInstance();
         admingrouphome = (AdminGroupDataLocalHome) locator.getLocalHome(AdminGroupDataLocalHome.COMP_NAME);
         authorizationtreeupdatehome = (AuthorizationTreeUpdateDataLocalHome) locator.getLocalHome(AuthorizationTreeUpdateDataLocalHome.COMP_NAME);
@@ -239,7 +239,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         	customrules = "";
         } 
         customaccessrules = StringUtils.split(customrules, ';');
-        debug("<ejbCreate()");
+        trace("<ejbCreate()");
     }
     
     private Authorizer getAuthorizer() {
@@ -355,8 +355,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void initialize(Admin admin, int caid) throws AdminGroupExistsException {
-    	if (log.isDebugEnabled()) {
-    		log.debug(">initialize, caid: "+caid);
+    	if (log.isTraceEnabled()) {
+    		log.trace(">initialize, caid: "+caid);
     	}
         // Check if admingroup table is empty, if so insert default superuser
         // and create "special edit accessrules count group"
@@ -425,8 +425,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             	error("initialize continues after Exception: ", ce);
             }
         }
-    	if (log.isDebugEnabled()) {
-    		log.debug("<initialize, caid: "+caid);
+    	if (log.isTraceEnabled()) {
+    		log.trace("<initialize, caid: "+caid);
     	}
     }
 
@@ -984,7 +984,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid) {
-        debug(">existsEndEntityProfileInRules()");
+    	trace(">existsEndEntityProfileInRules()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1002,7 +1002,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            debug("<existsEndEntityProfileInRules()");
+            trace("<existsEndEntityProfileInRules()");
             return count > 0;
 
         } catch (Exception e) {
@@ -1042,7 +1042,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * Help function to existsCAInRules, checks if caid axists among entities in admingroups.
      */
     private boolean existsCAInAdminGroups(int caid) {
-        debug(">existsCAInAdminGroups()");
+    	trace(">existsCAInAdminGroups()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1059,7 +1059,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 count = rs.getInt(1);
             }
             boolean exists = count > 0;
-            debug("<existsCAInAdminGroups(): "+exists);
+            trace("<existsCAInAdminGroups(): "+exists);
             return exists;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -1072,7 +1072,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * Help function to existsCAInRules, checks if caid axists among accessrules.
      */
     private boolean existsCAInAccessRules(int caid) {
-        debug(">existsCAInAccessRules()");
+    	trace(">existsCAInAccessRules()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1091,7 +1091,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 count = rs.getInt(1);
             }
             boolean exists = count > 0;
-            debug("<existsCAInAccessRules(): "+exists);
+            trace("<existsCAInAccessRules(): "+exists);
             return exists;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -1145,13 +1145,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * to other beans that they should reconstruct their accesstrees.
      */
     private void signalForAuthorizationTreeUpdate() {
-    	if (log.isDebugEnabled()) {
-    		log.debug(">signalForAuthorizationTreeUpdate");
-    	}
+		log.trace(">signalForAuthorizationTreeUpdate");
         getAuthorizationTreeUpdateData().incrementAuthorizationTreeUpdateNumber();
-    	if (log.isDebugEnabled()) {
-    		log.debug("<signalForAuthorizationTreeUpdate");
-    	}
+		log.trace("<signalForAuthorizationTreeUpdate");
     }
 
     private int findFreeAdminGroupId() {

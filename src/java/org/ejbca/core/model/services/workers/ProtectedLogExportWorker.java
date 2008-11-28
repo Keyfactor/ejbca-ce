@@ -15,10 +15,10 @@ public class ProtectedLogExportWorker extends BaseWorker {
 	public static final String DEFAULT_EXPORT_INTERVAL = "1440";
 
 	public void work() throws ServiceExecutionFailedException {
-		log.debug(">ProtectedLogExportWorker.work");
+		log.trace(">ProtectedLogExportWorker.work");
 		ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance(properties);
 		protectedLogExporter.runIfNotBusy();
-		log.debug("<ProtectedLogExportWorker done");
+		log.trace("<ProtectedLogExportWorker done");
 	}
 
 }

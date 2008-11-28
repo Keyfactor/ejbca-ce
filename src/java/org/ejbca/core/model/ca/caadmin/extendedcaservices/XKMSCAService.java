@@ -207,7 +207,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	 */
 	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
-        m_log.debug(">extendedService");
+        m_log.trace(">extendedService");
         if (!(request instanceof XKMSCAServiceRequest)) {
             throw new IllegalExtendedCAServiceRequestException();            
         }
@@ -241,7 +241,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 			}
         }
         
-        m_log.debug("<extendedService");		  		
+        m_log.trace("<extendedService");		  		
 		return returnval;
 	}
 

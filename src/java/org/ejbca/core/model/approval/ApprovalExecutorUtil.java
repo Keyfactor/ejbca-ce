@@ -84,8 +84,8 @@ public class ApprovalExecutorUtil {
 	 */ 
 	public static boolean requireApproval(ApprovalRequest req, ApprovalOveradableClassName[] overridableClassNames) {
 		if (req == null) return false;
-	    if (log.isDebugEnabled()) {
-            log.debug(">requireApproval: "+req.getClass().getName());            
+	    if (log.isTraceEnabled()) {
+            log.trace(">requireApproval: "+req.getClass().getName());            
         }
 		boolean ret = true;
 		if (req.getNumOfRequiredApprovals() > 0) {
@@ -102,8 +102,8 @@ public class ApprovalExecutorUtil {
 			ret = false;
 		}
 		
-        if (log.isDebugEnabled()) {
-            log.debug("<requireApproval: "+ret);
+        if (log.isTraceEnabled()) {
+            log.trace("<requireApproval: "+ret);
         }
 		return ret;
 	}

@@ -95,7 +95,7 @@ public class TestMessages extends TestCase {
      * @throws Exception error
      */
     public void test01TestOpenScep() throws Exception {
-        log.debug(">test01TestOpenScep()");
+        log.trace(">test01TestOpenScep()");
         ScepRequestMessage msg = new ScepRequestMessage(openscep, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
@@ -114,14 +114,14 @@ public class TestMessages extends TestCase {
         String pwd = msg.getPassword();
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
-        log.debug("<test01TestOpenScep()");
+        log.trace("<test01TestOpenScep()");
     }
 
     /** Tests scep message from Simple Scep
      * @throws Exception error
      */
     public void test02TestSimpleScep() throws Exception {
-        log.debug(">test02TestSimpleScep()");
+        log.trace(">test02TestSimpleScep()");
         ScepRequestMessage msg = new ScepRequestMessage(sscep, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
@@ -140,14 +140,14 @@ public class TestMessages extends TestCase {
         String pwd = msg.getPassword();
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
-        log.debug("<test02TestSimpleScep()");
+        log.trace("<test02TestSimpleScep()");
     }
 
     /** Tests scep message from Java Scep Client
      * @throws Exception error
      */
     public void test03TestJavaScepClient() throws Exception {
-        log.debug(">test03TestJavaScepClient()");
+        log.trace(">test03TestJavaScepClient()");
         ScepRequestMessage msg = new ScepRequestMessage(scepclient, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
@@ -170,13 +170,13 @@ public class TestMessages extends TestCase {
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
         */
-        log.debug("<test03TestJavaScepClient()");
+        log.trace("<test03TestJavaScepClient()");
     }
     /** Tests scep message from Cisco VPN client
      * @throws Exception error
      */
     public void test03TestCiscoVPNScep() throws Exception {
-        log.debug(">test03TestCiscoVPNScep()");
+        log.trace(">test03TestCiscoVPNScep()");
         ScepRequestMessage msg = new ScepRequestMessage(ciscovpnscep, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
@@ -195,14 +195,14 @@ public class TestMessages extends TestCase {
         String pwd = msg.getPassword();
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
-        log.debug("<test03TestCiscoVPNScep()");
+        log.trace("<test03TestCiscoVPNScep()");
     }
     /** Tests scep message from Cisco PIX
      * @throws Exception error
      */
     /* This doesn't work because we don't have the right CA
     public void test04TestPixScep() throws Exception {
-        log.debug(">test02TestPixScep()");
+        log.trace(">test02TestPixScep()");
         ScepRequestMessage msg = new ScepRequestMessage(pixscep);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
@@ -220,11 +220,11 @@ public class TestMessages extends TestCase {
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
         assertTrue("Failed to verify SCEP message from PIX.", ret);
-        log.debug("<test04TestPixScep()");
+        log.trace("<test04TestPixScep()");
     } */
     
     public void test05KeyToolP10() throws Exception {
-        log.debug(">test05KeyToolP10()");
+        log.trace(">test05KeyToolP10()");
         PKCS10RequestMessage msg = new PKCS10RequestMessage(keytoolp10);
 
         boolean ret = msg.verify();
@@ -241,11 +241,11 @@ public class TestMessages extends TestCase {
         String alg = pk.getAlgorithm();
         assertEquals("RSA",alg);
         
-        log.debug("<test05KeyToolP10()");        
+        log.trace("<test05KeyToolP10()");        
     }
 
     public void test06OldBCP10() throws Exception {
-        log.debug(">test06OldBCP10()");
+        log.trace(">test06OldBCP10()");
         PKCS10RequestMessage msg = new PKCS10RequestMessage(oldbcp10);
 
         boolean ret = msg.verify();
@@ -262,10 +262,10 @@ public class TestMessages extends TestCase {
         String alg = pk.getAlgorithm();
         assertEquals("RSA",alg);
         
-        log.debug("<test06OldBCP10()");        
+        log.trace("<test06OldBCP10()");        
     }
     public void test07IEP10() throws Exception {
-        log.debug(">test07IEP10()");
+        log.trace(">test07IEP10()");
         PKCS10RequestMessage msg = new PKCS10RequestMessage(iep10);
 
         boolean ret = msg.verify();
@@ -282,7 +282,7 @@ public class TestMessages extends TestCase {
         String alg = pk.getAlgorithm();
         assertEquals("RSA",alg);
         
-        log.debug("<test07IEP10()");        
+        log.trace("<test07IEP10()");        
     }
 
     public void test08AltNameP10() throws Exception {

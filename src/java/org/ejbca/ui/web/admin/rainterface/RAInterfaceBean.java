@@ -89,7 +89,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
     // Public methods.
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
-      log.debug(">initialize()");
+      log.trace(">initialize()");
 
       if(!initialized){
         if(request.getAttribute( "javax.servlet.request.X509Certificate" ) != null)
@@ -128,12 +128,12 @@ public class RAInterfaceBean implements java.io.Serializable {
       } else {
           log.debug("=initialize(): already initialized");
       }
-      log.debug("<initialize()");
+      log.trace("<initialize()");
     }
     
     /* Adds a user to the database, the string array must be in format defined in class UserView. */
     public void addUser(UserView userdata) throws Exception{
-        log.debug(">addUser()");
+        log.trace(">addUser()");
         
         if(userdata.getEndEntityProfileId() != 0){
         	UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
@@ -146,7 +146,7 @@ public class RAInterfaceBean implements java.io.Serializable {
         } else {
             log.debug("=addUser(): profile id not set, user not created");
         }
-        log.debug("<addUser()");
+        log.trace("<addUser()");
     }
     
     /* Removes a number of users from the database.
@@ -155,7 +155,7 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @return false if administrator wasn't authorized to delete all of given users.
      * */
     public boolean deleteUsers(String[] usernames) throws Exception{
-      log.debug(">deleteUsers()");
+      log.trace(">deleteUsers()");
       boolean success = true;
       for(int i=0; i < usernames.length; i++){
          try{
@@ -164,7 +164,7 @@ public class RAInterfaceBean implements java.io.Serializable {
            success = false;
          }
       }
-      log.debug("<deleteUsers(): " + success);
+      log.trace("<deleteUsers(): " + success);
       return success;
     }
 
@@ -175,7 +175,7 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @return false if administrator wasn't authorized to change all of the given users.
      * */
     public boolean setUserStatuses(String[] usernames, String status) throws Exception{
-      log.debug(">setUserStatuses()");
+      log.trace(">setUserStatuses()");
       boolean success = true;
       int intstatus = 0;
       try{
@@ -188,7 +188,7 @@ public class RAInterfaceBean implements java.io.Serializable {
            success = false;
         }
       }
-      log.debug("<setUserStatuses(): " + success);
+      log.trace("<setUserStatuses(): " + success);
       return success;
     }
 
@@ -200,16 +200,16 @@ public class RAInterfaceBean implements java.io.Serializable {
      */
     public void revokeUser(String username, int reason) throws AuthorizationDeniedException,
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-        log.debug(">revokeUser()");
+        log.trace(">revokeUser()");
         adminsession.revokeUser(administrator, username, reason);
-        log.debug("<revokeUser()");
+        log.trace("<revokeUser()");
     }
 
     public void revokeAndDeleteUser(String username, int reason) throws AuthorizationDeniedException,
     		ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException {
-		log.debug(">revokeUser()");
+		log.trace(">revokeUser()");
 		adminsession.revokeAndDeleteUser(administrator, username, reason);
-		log.debug("<revokeUser()");
+		log.trace("<revokeUser()");
     }
     
     /** Revokes the  certificate with certificate serno.
@@ -220,7 +220,7 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @return false if administrator wasn't authorized to revoke the given certificate.
      */
     public boolean revokeCert(BigInteger serno, String issuerdn, String username, int reason) throws ApprovalException, WaitingForApprovalException {
-    	log.debug(">revokeCert()");
+    	log.trace(">revokeCert()");
     	boolean success = true;
     	try {
     		adminsession.revokeCert(administrator, serno, issuerdn, username, reason);
@@ -231,7 +231,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     	} catch (AlreadyRevokedException e) {
     		success = false;
 		}
-    	log.debug("<revokeCert(): " + success);
+    	log.trace("<revokeCert(): " + success);
     	return success;
     }
 
@@ -244,7 +244,7 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @return false if administrator wasn't authorized to unrevoke the given certificate.
      */
     public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws ApprovalException, WaitingForApprovalException {
-    	log.debug(">unrevokeCert()");
+    	log.trace(">unrevokeCert()");
 	  	boolean success = true;
 		try {
 			adminsession.unRevokeCert(administrator, serno, issuerdn, username);
@@ -255,13 +255,13 @@ public class RAInterfaceBean implements java.io.Serializable {
 		} catch (AlreadyRevokedException e) {
 			success = false;
 		}
-		log.debug("<unrevokeCert(): " + success);
+		log.trace("<unrevokeCert(): " + success);
 		return success;
     }
     
     /* Changes the userdata  */
     public void changeUserData(UserView userdata) throws Exception {
-        log.debug(">changeUserData()");
+        log.trace(">changeUserData()");
 
         addedusermemory.changeUser(userdata);
         if(userdata.getPassword() != null && userdata.getPassword().trim().equals(""))
@@ -273,12 +273,12 @@ public class RAInterfaceBean implements java.io.Serializable {
     	uservo.setExtendedinformation(userdata.getExtendedInformation());
     	adminsession.changeUser(administrator, uservo, userdata.getClearTextPassword());
 
-        log.debug("<changeUserData()");
+        log.trace("<changeUserData()");
     }
 
     /* Method to filter out a user by it's username */
     public UserView[] filterByUsername(String username) throws Exception{
-       log.debug(">filterByUserName()");
+       log.trace(">filterByUserName()");
        UserDataVO[] userarray = new UserDataVO[1];
        UserDataVO user = null;
        try{
@@ -292,7 +292,7 @@ public class RAInterfaceBean implements java.io.Serializable {
        }else{
          users.setUsers((UserDataVO[]) null, informationmemory.getCAIdToNameMap());
        }
-       log.debug("<filterByUserName()");
+       log.trace("<filterByUserName()");
        return users.getUsers(0,1);
     }
 
@@ -303,14 +303,18 @@ public class RAInterfaceBean implements java.io.Serializable {
     
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
     public UserView findUser(String username) throws Exception{
-       log.debug(">findUser(" + username + ")");
-       UserDataVO user = adminsession.findUser(administrator, username);
-        UserView userview = null;
-        if (user != null) {
-            userview = new UserView(user, informationmemory.getCAIdToNameMap());
-        }
-        log.debug("<findUser(" + username + "): " + userview);
-        return userview;
+    	if (log.isTraceEnabled()) {
+    		log.trace(">findUser(" + username + ")");
+    	}
+    	UserDataVO user = adminsession.findUser(administrator, username);
+    	UserView userview = null;
+    	if (user != null) {
+    		userview = new UserView(user, informationmemory.getCAIdToNameMap());
+    	}
+    	if (log.isTraceEnabled()) {
+    		log.trace("<findUser(" + username + "): " + userview);
+    	}
+    	return userview;
     }
     /* Method to retrieve a user from the database without inserting it into users data, used by 'edituser.jsp' and page*/
     public UserView findUserForEdit(String username) throws Exception{

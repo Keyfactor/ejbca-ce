@@ -301,7 +301,9 @@ public class SVGImageManipulator {
 
     // Private Methods
     private void insertImage(UserDataVO userdata, SVGOMDocument clone) throws FileNotFoundException, IOException{
-    	log.debug(">insertImage("+userdata != null ? userdata.getUsername() : "null"+")");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">insertImage("+userdata != null ? userdata.getUsername() : "null"+")");
+    	}
     	int imgx = 0;
     	int imgy = 0;
     	int imgwidth = 0;

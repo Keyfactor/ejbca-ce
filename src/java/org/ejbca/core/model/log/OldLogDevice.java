@@ -240,7 +240,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 * @see org.ejbca.util.query.Query
 	 */
 	public Collection query(Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException {
-		log.debug(">query()");
+		log.trace(">query()");
 		if (capriviledges == null || capriviledges.length() == 0 || !query.isLegalQuery()) {
 			throw new IllegalQueryException();
 		}

@@ -49,9 +49,7 @@ public class TestGlobalConfiguration extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
-        log.debug(">setUp()");
-
+        log.trace(">setUp()");
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
@@ -59,23 +57,18 @@ public class TestGlobalConfiguration extends TestCase {
                 cacheHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
 
             }
-
             cacheAdmin = cacheHome.create();
         }
-
-
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -86,7 +79,7 @@ public class TestGlobalConfiguration extends TestCase {
      * @throws Exception error
      */
     public void test01AddGlobalConfiguration() throws Exception {
-        log.debug(">test01AddGlobalConfiguration()");
+        log.trace(">test01AddGlobalConfiguration()");
 
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -97,7 +90,7 @@ public class TestGlobalConfiguration extends TestCase {
         conf.setEjbcaTitle("TESTTITLE");
         this.cacheAdmin.saveGlobalConfiguration(administrator, conf);
 
-        log.debug("<test01AddGlobalConfiguration()");
+        log.trace("<test01AddGlobalConfiguration()");
     }
 
     /**
@@ -106,7 +99,7 @@ public class TestGlobalConfiguration extends TestCase {
      * @throws Exception error
      */
     public void test02ModifyGlobalConfiguration() throws Exception {
-        log.debug(">test01ModifyGlobalConfiguration()");
+        log.trace(">test01ModifyGlobalConfiguration()");
 
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -119,7 +112,7 @@ public class TestGlobalConfiguration extends TestCase {
         // Replace with original
         this.cacheAdmin.saveGlobalConfiguration(administrator, original);
 
-        log.debug("<test01ModifyGlobalConfiguration()");
+        log.trace("<test01ModifyGlobalConfiguration()");
     }
 
 

@@ -673,7 +673,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
-		m_log.debug(">doPost()");
+		m_log.trace(">doPost()");
 		String contentType = request.getHeader("Content-Type");
 		if (!contentType.equalsIgnoreCase("application/ocsp-request")) {
 			m_log.debug("Content type is not application/ocsp-request");
@@ -696,12 +696,12 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		byte[] reqBytes = baos.toByteArray();
 		// Do it...
 		service(request, response, reqBytes);
-		m_log.debug("<doPost()");
+		m_log.trace("<doPost()");
 	} //doPost
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
-		m_log.debug(">doGet()");
+		m_log.trace(">doGet()");
 		/**
 		 * We only support POST operation, so return
 		 * an appropriate HTTP error code to caller.
@@ -728,13 +728,13 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			}
 		}
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "OCSP only supports POST");
-		m_log.debug("<doGet()");
+		m_log.trace("<doGet()");
 	} // doGet
 
 	public void service(HttpServletRequest request, HttpServletResponse response, byte[] reqBytes)
 	throws IOException, ServletException {
-		if (m_log.isDebugEnabled()) {
-			m_log.debug(">service()");
+		if (m_log.isTraceEnabled()) {
+			m_log.trace(">service()");
 		}
         mTransactionID += 1;
 		TransactionLogger transactionLogger = null;
@@ -1138,8 +1138,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			if (transactionLogger != null) transactionLogger.flush();
 			if (auditLogger != null) auditLogger.flush();
 		}
-		if (m_log.isDebugEnabled()) {
-			m_log.debug("<service()");
+		if (m_log.isTraceEnabled()) {
+			m_log.trace("<service()");
 		}
 	}
 } // OCSPServlet

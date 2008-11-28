@@ -53,11 +53,11 @@ public class TestCAImportExport extends TestCase  {
      * @throws Exception
      */
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
 		ctx = org.ejbca.core.ejb.InitialContextBuilder.getInstance().getInitialContext();
 		ICAAdminSessionHome home = (org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome.class );            
 		caadminsession = home.create();          
-		log.debug("<setUp()");
+		log.trace("<setUp()");
     }
     
     /**
@@ -74,7 +74,7 @@ public class TestCAImportExport extends TestCase  {
      * @throws Exception
      */
 	public void test01ImportExportSHA1withRSA() throws Exception {
-	    log.debug("<test01ImportExport..()");
+	    log.trace("<test01ImportExport..()");
         CATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
@@ -83,7 +83,7 @@ public class TestCAImportExport extends TestCase  {
         ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
-	    log.debug("<test01ImportExport()");
+	    log.trace("<test01ImportExport()");
 	} // test01ImportExport
 
     /**
@@ -92,7 +92,7 @@ public class TestCAImportExport extends TestCase  {
      * @throws Exception
      */
 	public void test02ImportExportSHA1withECDSA() throws Exception {
-	    log.debug("<test02ImportExport..()");
+	    log.trace("<test02ImportExport..()");
         CATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_ECDSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_ECDSA);
@@ -101,7 +101,7 @@ public class TestCAImportExport extends TestCase  {
         ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
-	    log.debug("<test02ImportExport()");
+	    log.trace("<test02ImportExport()");
 	} // test02ImportExport
 
     /**
@@ -110,7 +110,7 @@ public class TestCAImportExport extends TestCase  {
      * @throws Exception
      */
 	public void test03ImportExportSHA256withRSA() throws Exception {
-	    log.debug("<test03ImportExport..()");
+	    log.trace("<test03ImportExport..()");
         CATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_RSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
@@ -119,7 +119,7 @@ public class TestCAImportExport extends TestCase  {
         ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
-	    log.debug("<test03ImportExport()");
+	    log.trace("<test03ImportExport()");
 	} // test03ImportExport
 
     /**
@@ -128,7 +128,7 @@ public class TestCAImportExport extends TestCase  {
      * @throws Exception
      */
 	public void test04ImportExportSHA256withECDSA() throws Exception {
-	    log.debug("<test04ImportExport..()");
+	    log.trace("<test04ImportExport..()");
 	    CATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_ECDSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_ECDSA);
@@ -137,7 +137,7 @@ public class TestCAImportExport extends TestCase  {
         ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
-	    log.debug("<test04ImportExport()");
+	    log.trace("<test04ImportExport()");
 	} // test04ImportExport
 
     /**
@@ -148,7 +148,7 @@ public class TestCAImportExport extends TestCase  {
      * @throws Exception
      */
 	public void test05ImportExportAccess() throws Exception {
-	    log.debug("<test05ImportExport..()");
+	    log.trace("<test05ImportExport..()");
 	    CATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_ECDSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_ECDSA);
@@ -157,7 +157,7 @@ public class TestCAImportExport extends TestCase  {
         ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
 		subTestPublicAccess(catokeninfo, new Admin(Admin.TYPE_PUBLIC_WEB_USER));
-	    log.debug("<test05ImportExport()");
+	    log.trace("<test05ImportExport()");
 	} // test05ImportExport
 
     /**

@@ -137,7 +137,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	 * Recievies the request.
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		log.debug(">doPost");
+		log.trace(">doPost");
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 		GlobalConfiguration globalConfiguration = getRaAdminSession().loadGlobalConfiguration(internalAdmin);
 		// Make sure we allow use of this Servlet
@@ -287,13 +287,13 @@ public class AutoEnrollServlet extends HttpServlet {
 			response.flushBuffer();
 			log.info("Sent cert to client");
 		}
-		log.debug("<doPost");
+		log.trace("<doPost");
 	}
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		log.debug(">doGet");
+		log.trace(">doGet");
 		doPost(request, response);
-		log.debug("<doGet");
+		log.trace("<doGet");
 	}
 
 	/**

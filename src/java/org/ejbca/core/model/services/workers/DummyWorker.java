@@ -33,14 +33,14 @@ public class DummyWorker extends BaseWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work() throws ServiceExecutionFailedException {
-		log.debug(">DummyWorker.work");
+		log.trace(">DummyWorker.work");
 		try {
 			log.info("DummyWorker executed");
 			getAction().performAction(null);
 		} catch (ActionException e) {
 		   // This should never happen
 		}
-		log.debug("<DummyWorker.work");
+		log.trace("<DummyWorker.work");
 	}
 
 }

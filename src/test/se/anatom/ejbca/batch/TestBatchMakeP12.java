@@ -72,7 +72,7 @@ public class TestBatchMakeP12 extends TestCase {
      * @throws Exception error
      */
     public void test01CreateNewUsers() throws Exception {
-        log.debug(">test01CreateNewUser()");
+        log.trace(">test01CreateNewUser()");
         String username = genRandomUserName();
         Object o = null;
         try {
@@ -99,7 +99,7 @@ public class TestBatchMakeP12 extends TestCase {
             assertNotNull("Failed to create user " + username1, o);
         }
         log.debug("created " + username1 + ", pwd=foo123");
-        log.debug("<test01CreateNewUsers()");
+        log.trace("<test01CreateNewUsers()");
     }
 
     /**
@@ -108,7 +108,7 @@ public class TestBatchMakeP12 extends TestCase {
      * @throws Exception error
      */
     public void test02MakeP12() throws Exception {
-        log.debug(">test02MakeP12()");
+        log.trace(">test02MakeP12()");
 
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
@@ -116,7 +116,7 @@ public class TestBatchMakeP12 extends TestCase {
         //System.out.println("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        log.debug("<test02MakeP12()");
+        log.trace("<test02MakeP12()");
     }
     
 	public void test99RemoveTestCA() throws Exception {

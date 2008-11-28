@@ -66,7 +66,7 @@ public class ConfirmationMessageHandler implements ICmpMessageHandler {
 
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
-		log.debug(">handleMessage");
+		log.trace(">handleMessage");
 		int version = msg.getHeader().getPvno().getValue().intValue();
 		IResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back

@@ -53,13 +53,15 @@ public class SqlExecutor {
      * @param continueOnSQLError
      */
     public SqlExecutor(Connection connection, boolean continueOnSQLError) {
-        log.debug("> SqlExecutor(" + connection + "," + continueOnSQLError+ ")");
+    	if (log.isTraceEnabled()) {
+            log.trace("> SqlExecutor(" + connection + "," + continueOnSQLError+ ")");
+    	}
         con = connection;
 //        try {
 //            con.setAutoCommit(false);            
 //        } catch (SQLException ignore) {}
         this.continueOnSqlError = continueOnSQLError;
-        log.debug("< SqlExecutor()");
+        log.trace("< SqlExecutor()");
     }
     
     /** Runs a single sql update command
@@ -69,20 +71,24 @@ public class SqlExecutor {
      * @throws SQLException
      */
     public int runCommand(String command) throws SQLException {
-        log.debug("> runCommand: " + command);
+    	if (log.isTraceEnabled()) {
+            log.trace("> runCommand: " + command);
+    	}
         StringBuffer tmp = new StringBuffer(command);
         int res = executeCommand(tmp);
         log.debug(++commands + " commands executed with " + errors + " errors");
         commands = 0;
         errors = 0;
-        log.debug("< runCommand");
+        log.trace("< runCommand");
         return res;
     }
     public void runCommandFile(File file) throws SQLException, FileNotFoundException, IOException {
-        log.debug("> runCommandFile: " + file.getPath());
+    	if (log.isTraceEnabled()) {
+            log.trace("> runCommandFile: " + file.getPath());
+    	}
         Reader rdr = new FileReader(file);
         runCommands(rdr);
-        log.debug("< runCommandFile()");
+        log.trace("< runCommandFile()");
     }
     
     /** Reads sql statements from the Reader object aqnd executes one statement at a time.
@@ -93,7 +99,7 @@ public class SqlExecutor {
      * @throws IOException if the reader object is invalid.
      */
     public void runCommands(Reader rdr) throws SQLException, IOException {
-        log.debug(">runCommands");
+        log.trace(">runCommands");
         BufferedReader br = new BufferedReader(rdr);
         Timestamp start = new Timestamp(System.currentTimeMillis());
         try {
@@ -136,7 +142,7 @@ public class SqlExecutor {
         log.debug(commands + " commands executed with " + errors + " errors");
         commands = 0;
         errors = 0;
-        log.debug("<runCommands");
+        log.trace("<runCommands");
     }
     
     /** Executes an sql update. 
@@ -147,7 +153,9 @@ public class SqlExecutor {
      * @throws SQLException
      */
     private int executeCommand(StringBuffer command) throws SQLException {
-        log.debug("> executeCommand: " + command);
+    	if (log.isTraceEnabled()) {
+            log.trace("> executeCommand: " + command);
+    	}
         Statement stmt = null;
         int res = 0;
         try {
@@ -165,30 +173,30 @@ public class SqlExecutor {
                 stmt.close();
             }            
         }
-        log.debug("< executeCommand");
+        log.trace("< executeCommand");
         return res;
     } // executeCommand
     
   /* commit and rollback commands not needed when running inside a session bean that handles transactions for us */
   /*  
   public void commit() throws SQLException {
-        log.debug("> commit");
+        log.trace("> commit");
         if (con != null)
             con.commit();
         else {
             log.error("Connection == null vid commit()");
         }
-        log.debug("< commit");
+        log.trace("< commit");
     }
     
     public void rollback() throws SQLException {
-        log.debug("> rollback");
+        log.trace("> rollback");
         if (con != null)
             con.rollback();
         else {
             log.error("Connection == null vid rollback()");
         }
-        log.debug("< rollback");
+        log.trace("< rollback");
     }
     */    
 }

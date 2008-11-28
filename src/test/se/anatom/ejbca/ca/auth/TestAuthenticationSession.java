@@ -56,9 +56,9 @@ public class TestAuthenticationSession extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         CertTools.installBCProvider();
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
@@ -95,7 +95,7 @@ public class TestAuthenticationSession extends TestCase {
      * @throws Exception error
      */
     public void test01CreateNewUser() throws Exception {
-        log.debug(">test01CreateNewUser()");
+        log.trace(">test01CreateNewUser()");
 
         // Make user that we know later...
         username = genRandomUserName();
@@ -104,7 +104,7 @@ public class TestAuthenticationSession extends TestCase {
         TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" + username);
 
-        log.debug("<test01CreateNewUser()");
+        log.trace("<test01CreateNewUser()");
     }
 
     /**
@@ -113,7 +113,7 @@ public class TestAuthenticationSession extends TestCase {
      * @throws Exception error
      */
     public void test02AuthenticateUser() throws Exception {
-        log.debug(">test02AuthenticateUser()");
+        log.trace(">test02AuthenticateUser()");
         // user that we know exists...
         log.debug("Username:" + username + "\npwd:" + pwd);
         UserDataVO data = TestTools.getAuthenticationSession().authenticateUser(admin, username, pwd);
@@ -127,7 +127,7 @@ public class TestAuthenticationSession extends TestCase {
 
         log.debug("Type: " + data.getType());
         assertTrue("Type is wrong", data.getType() == SecConst.USER_ENDUSER);
-        log.debug("<test02AuthenticateUser()");
+        log.trace("<test02AuthenticateUser()");
     }
 
     /**
@@ -136,7 +136,7 @@ public class TestAuthenticationSession extends TestCase {
      * @throws Exception error
      */
     public void test03FailAuthenticateUser() throws Exception {
-        log.debug(">test03FailAuthenticateUser()");
+        log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
         TestTools.getUserAdminSession().setUserStatus(admin,username,UserDataConstants.STATUS_GENERATED);
         boolean authfailed = false;
@@ -147,7 +147,7 @@ public class TestAuthenticationSession extends TestCase {
             authfailed = true;
         }
         assertTrue("Authentication succeeded when it should have failed.", authfailed);
-        log.debug("<test03FailAuthenticateUser()");
+        log.trace("<test03FailAuthenticateUser()");
     }
 
     /**
@@ -156,7 +156,7 @@ public class TestAuthenticationSession extends TestCase {
      * @throws Exception error
      */
     public void test04FailAuthenticateUser() throws Exception {
-        log.debug(">test04FailAuthenticateUser()");
+        log.trace(">test04FailAuthenticateUser()");
         // user that we know exists... but we issue wrong password
         boolean authfailed = false;
         try {
@@ -166,7 +166,7 @@ public class TestAuthenticationSession extends TestCase {
             authfailed = true;
         }
         assertTrue("Authentication succeeded when it should have failed.", authfailed);
-        log.debug("<test04FailAuthenticateUser()");
+        log.trace("<test04FailAuthenticateUser()");
     }
 
     /**
@@ -175,7 +175,7 @@ public class TestAuthenticationSession extends TestCase {
      * @throws Exception
      */
     public void test05UnmarkKeyRecoveryOnFinish() throws Exception {
-    	log.debug(">test05UnmarkKeyRecoveryOnFinish()");
+    	log.trace(">test05UnmarkKeyRecoveryOnFinish()");
     	
     	GlobalConfiguration config = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
     	boolean orgkeyrecconfig = config.getEnableKeyRecovery();
@@ -208,7 +208,7 @@ public class TestAuthenticationSession extends TestCase {
 		
 		config.setEnableKeyRecovery(orgkeyrecconfig);
     	TestTools.getRaAdminSession().saveGlobalConfiguration(admin,config);
-    	log.debug("<test05UnmarkKeyRecoveryOnFinish()");
+    	log.trace("<test05UnmarkKeyRecoveryOnFinish()");
     }
     
     /**
@@ -217,10 +217,10 @@ public class TestAuthenticationSession extends TestCase {
      * @throws Exception error
      */
     public void test06DeleteUser() throws Exception {
-        log.debug(">test06DeleteUser()");
+        log.trace(">test06DeleteUser()");
         TestTools.getUserAdminSession().deleteUser(admin, username);
         log.debug("deleted user: " + username);
-        log.debug("<test06eleteUser()");
+        log.trace("<test06eleteUser()");
     }
 
 	public void test99RemoveTestCA() throws Exception {

@@ -105,8 +105,8 @@ public class KeyTools {
      */
     public static KeyPair genKeys(String keySpec, String keyAlg)
         throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-    	if (log.isDebugEnabled()) {
-            log.debug(">genKeys("+keySpec+", "+keyAlg+")");    		
+    	if (log.isTraceEnabled()) {
+            log.trace(">genKeys("+keySpec+", "+keyAlg+")");    		
     	}
 
         KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
@@ -135,9 +135,8 @@ public class KeyTools {
             PublicKey pk = keys.getPublic();
         	int len = getKeyLength(pk);
             log.debug("Generated " + keys.getPublic().getAlgorithm() + " keys with length " + len);        	
-    		log.debug("<genKeys()");
         }
-
+		log.trace("<genKeys()");
         return keys;
     } // genKeys
 
@@ -292,8 +291,9 @@ public class KeyTools {
      */
     public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Certificate[] cachain) 
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-        log.debug(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
-
+    	if (log.isTraceEnabled()) {
+            log.trace(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
+    	}
         // Certificate chain
         if (cert == null) {
             throw new IllegalArgumentException("Parameter cert cannot be null.");
@@ -366,8 +366,9 @@ public class KeyTools {
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
         store.setKeyEntry(alias, pk, null, chain);
-        log.debug("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
-
+        if (log.isTraceEnabled()) {
+        	log.trace("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
+        }
         return store;
     } // createP12
 
@@ -388,9 +389,10 @@ public class KeyTools {
      */
     public static KeyStore createJKS(String alias, PrivateKey privKey, String password,
         X509Certificate cert, Certificate[] cachain) throws Exception {
-        log.debug(">createJKS: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
-            ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
-
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createJKS: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
+    	            ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
+    	}
         String caAlias = "cacert";
 
         // Certificate chain
@@ -429,9 +431,10 @@ public class KeyTools {
         // Set the complete chain
         log.debug("Storing cert chain of length " + chain.length);
         store.setKeyEntry(alias, privKey, password.toCharArray(), chain);
-        log.debug("<createJKS: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
-            ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
-
+        if (log.isTraceEnabled()) {
+        	log.trace("<createJKS: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
+                    ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
+        }
         return store;
     } // createJKS
 
@@ -445,8 +448,9 @@ public class KeyTools {
      */
     public static Certificate[] getCertChain(KeyStore keyStore, String privateKeyAlias)
         throws KeyStoreException {
-        log.debug(">getCertChain: alias='" + privateKeyAlias + "'");
-
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getCertChain: alias='" + privateKeyAlias + "'");
+    	}
         Certificate[] certchain = keyStore.getCertificateChain(privateKeyAlias);
         if (certchain == null) {
             return null;
@@ -457,9 +461,9 @@ public class KeyTools {
         if (certchain.length < 1) {
             log.error("Cannot load certificate chain with alias '" + privateKeyAlias +
                 "' from keystore.");
-            log.debug("<getCertChain: alias='" + privateKeyAlias + "', retlength=" +
-                certchain.length);
-
+            if (log.isTraceEnabled()) {
+            	log.trace("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + certchain.length);
+            }
             return certchain;
         } else if (certchain.length > 0) {
             if (CertTools.isSelfSigned((X509Certificate) certchain[certchain.length - 1])) {
@@ -469,9 +473,9 @@ public class KeyTools {
                 log.debug("Subject='" +
                     CertTools.getSubjectDN((X509Certificate) certchain[certchain.length - 1]) +
                     "'.");
-                log.debug("<getCertChain: alias='" + privateKeyAlias + "', retlength=" +
-                    certchain.length);
-
+                if (log.isTraceEnabled()) {
+                	log.trace("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + certchain.length);
+                }
                 return certchain;
             }
         }
@@ -519,9 +523,9 @@ public class KeyTools {
             log.debug("Issuer='" + CertTools.getIssuerDN((X509Certificate) ret[i]) + "'.");
             log.debug("Subject='" + CertTools.getSubjectDN((X509Certificate) ret[i]) + "'.");
         }
-
-        log.debug("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + ret.length);
-
+        if (log.isTraceEnabled()) {
+        	log.trace("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + ret.length);
+        }
         return ret;
     } // getCertChain
 

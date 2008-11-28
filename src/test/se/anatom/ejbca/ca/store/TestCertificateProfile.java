@@ -58,7 +58,7 @@ public class TestCertificateProfile extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.debug(">setUp()");
+        log.trace(">setUp()");
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
@@ -67,16 +67,16 @@ public class TestCertificateProfile extends TestCase {
             }
             cacheAdmin = cacheHome.create();
         }
-        log.debug("<setUp()");
+        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
+        log.trace(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
+        log.trace("<getInitialContext");
         return ctx;
     }
 
@@ -87,7 +87,7 @@ public class TestCertificateProfile extends TestCase {
      * @throws Exception error
      */
     public void test01AddCertificateProfile() throws Exception {
-        log.debug(">test01AddCertificateProfile()");
+        log.trace(">test01AddCertificateProfile()");
         boolean ret = false;
         try {
             CertificateProfile profile = new CertificateProfile();
@@ -98,7 +98,7 @@ public class TestCertificateProfile extends TestCase {
         }
 
         assertTrue("Creating Certificate Profile failed", ret);
-        log.debug("<test01AddCertificateProfile()");
+        log.trace("<test01AddCertificateProfile()");
     }
 
     /**
@@ -107,7 +107,7 @@ public class TestCertificateProfile extends TestCase {
      * @throws Exception error
      */
     public void test02RenameCertificateProfile() throws Exception {
-        log.debug(">test02RenameCertificateProfile()");
+        log.trace(">test02RenameCertificateProfile()");
 
         boolean ret = false;
         try {
@@ -117,7 +117,7 @@ public class TestCertificateProfile extends TestCase {
         }
         assertTrue("Renaming Certificate Profile failed", ret);
 
-        log.debug("<test02RenameCertificateProfile()");
+        log.trace("<test02RenameCertificateProfile()");
     }
 
     /**
@@ -126,7 +126,7 @@ public class TestCertificateProfile extends TestCase {
      * @throws Exception error
      */
     public void test03CloneCertificateProfile() throws Exception {
-        log.debug(">test03CloneCertificateProfile()");
+        log.trace(">test03CloneCertificateProfile()");
         boolean ret = false;
         try {
             cacheAdmin.cloneCertificateProfile(admin, "TEST2", "TEST");
@@ -134,7 +134,7 @@ public class TestCertificateProfile extends TestCase {
         } catch (CertificateProfileExistsException pee) {
         }
         assertTrue("Cloning Certificate Profile failed", ret);
-        log.debug("<test03CloneCertificateProfile()");
+        log.trace("<test03CloneCertificateProfile()");
     }
 
 
@@ -144,7 +144,7 @@ public class TestCertificateProfile extends TestCase {
      * @throws Exception error
      */
     public void test04EditCertificateProfile() throws Exception {
-        log.debug(">test04EditCertificateProfile()");
+        log.trace(">test04EditCertificateProfile()");
 
         boolean ret = false;
 
@@ -159,7 +159,7 @@ public class TestCertificateProfile extends TestCase {
         assertTrue("Editing CertificateProfile failed", ret);
 
 
-        log.debug("<test04EditCertificateProfile()");
+        log.trace("<test04EditCertificateProfile()");
     }
 
 
@@ -169,7 +169,7 @@ public class TestCertificateProfile extends TestCase {
      * @throws Exception error
      */
     public void test05removeCertificateProfiles() throws Exception {
-        log.debug(">test05removeCertificateProfiles()");
+        log.trace(">test05removeCertificateProfiles()");
         boolean ret = false;
         try {
             cacheAdmin.removeCertificateProfile(admin, "TEST");
@@ -179,11 +179,11 @@ public class TestCertificateProfile extends TestCase {
         }
         assertTrue("Removing Certificate Profile failed", ret);
 
-        log.debug("<test05removeCertificateProfiles()");
+        log.trace("<test05removeCertificateProfiles()");
     }
     
     public void test06createSubjectDNSubSet() throws Exception{
-        log.debug(">test06createSubjectDNSubSet()");    	
+        log.trace(">test06createSubjectDNSubSet()");    	
     	CertificateProfile profile = new CertificateProfile();
     	
     	ArrayList dnsubset = new ArrayList();
@@ -203,11 +203,11 @@ public class TestCertificateProfile extends TestCase {
     	String expecteddn2 = "UID=PVE,CN=Philip Vendil,CN=SecondUsername,GIVENNAME=Philip,SURNAME=Vendil";
         assertTrue("createSubjectDNSubSet doesn't work" + outdn2 + " != "+ expecteddn2, expecteddn2.equalsIgnoreCase(outdn2));
         
-        log.debug(">test06createSubjectDNSubSet()");
+        log.trace(">test06createSubjectDNSubSet()");
     }
 
     public void test07createSubjectAltNameSubSet() throws Exception{
-        log.debug(">test07createSubjectAltNameSubSet()");
+        log.trace(">test07createSubjectAltNameSubSet()");
 
     	CertificateProfile profile = new CertificateProfile();
     	
@@ -226,7 +226,7 @@ public class TestCertificateProfile extends TestCase {
     	String expectedaltname2 = "RFC822NAME=test@test.se,RFC822NAME=test2@test2.se,UPN=testacc@test.se";
         assertTrue("createSubjectAltNameSubSet doesn't work" + outaltname2 + " != "+ expectedaltname2, expectedaltname2.equalsIgnoreCase(outaltname2));
         
-        log.debug(">test07createSubjectAltNameSubSet()");
+        log.trace(">test07createSubjectAltNameSubSet()");
     }
     
     public void test08CertificateProfileValues() throws Exception {
@@ -263,7 +263,7 @@ public class TestCertificateProfile extends TestCase {
     } // test08CertificateProfileValues
 
     public void test09CertificateExtensions() throws Exception{
-        log.debug(">test09CertificateExtensions()");
+        log.trace(">test09CertificateExtensions()");
 
     	CertificateProfile profile = new CertificateProfile();
     	

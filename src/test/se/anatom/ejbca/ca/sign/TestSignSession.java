@@ -228,7 +228,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test01CreateNewUser() throws Exception {
-        log.debug(">test01CreateNewUser()");
+        log.trace(">test01CreateNewUser()");
 
         // Make user that we know...
         boolean userExists = false;
@@ -302,7 +302,7 @@ public class TestSignSession extends TestCase {
             log.debug("Reset status to NEW");
         }
 
-        log.debug("<test01CreateNewUser()");
+        log.trace("<test01CreateNewUser()");
     }
 
     /**
@@ -311,7 +311,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test02SignSession() throws Exception {
-        log.debug(">test02SignSession()");
+        log.trace(">test02SignSession()");
 
         // user that we know exists...
         X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
@@ -340,7 +340,7 @@ public class TestSignSession extends TestCase {
         //FileOutputStream fos = new FileOutputStream("testcertrev.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        log.debug("<test02SignSession()");
+        log.trace("<test02SignSession()");
     }
 
     /**
@@ -349,7 +349,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test03TestBCPKCS10() throws Exception {
-        log.debug(">test03TestBCPKCS10()");
+        log.trace(">test03TestBCPKCS10()");
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -379,7 +379,7 @@ public class TestSignSession extends TestCase {
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
-        log.debug("<test03TestBCPKCS10()");
+        log.trace("<test03TestBCPKCS10()");
     }
 
     /**
@@ -388,7 +388,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test04TestKeytoolPKCS10() throws Exception {
-        log.debug(">test04TestKeytoolPKCS10()");
+        log.trace(">test04TestKeytoolPKCS10()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
@@ -401,7 +401,7 @@ public class TestSignSession extends TestCase {
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
-        log.debug("<test04TestKeytoolPKCS10()");
+        log.trace("<test04TestKeytoolPKCS10()");
     }
 
     /**
@@ -410,7 +410,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test05TestIEPKCS10() throws Exception {
-        log.debug(">test05TestIEPKCS10()");
+        log.trace(">test05TestIEPKCS10()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
@@ -423,7 +423,7 @@ public class TestSignSession extends TestCase {
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
-        log.debug("<test05TestIEPKCS10()");
+        log.trace("<test05TestIEPKCS10()");
     }
 
     /**
@@ -432,7 +432,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test06KeyUsage() throws Exception {
-        log.debug(">test06KeyUsage()");
+        log.trace(">test06KeyUsage()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
@@ -471,7 +471,7 @@ public class TestSignSession extends TestCase {
         assertTrue("Fel KeyUsage, digitalSignature finns!", !retKU[0]);
 
         log.debug("Cert=" + cert1.toString());
-        log.debug("<test06KeyUsage()");
+        log.trace("<test06KeyUsage()");
     }
 
     /**
@@ -480,7 +480,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test07DSAKey() throws Exception {
-        log.debug(">test07DSAKey()");
+        log.trace(">test07DSAKey()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
@@ -499,7 +499,7 @@ public class TestSignSession extends TestCase {
                     e instanceof IllegalKeyException);
         }
 
-        log.debug("<test07DSAKey()");
+        log.trace("<test07DSAKey()");
     }
 
     /**
@@ -508,7 +508,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test08SwedeChars() throws Exception {
-        log.debug(">test08SwedeChars()");
+        log.trace(">test08SwedeChars()");
         // Make user that we know...
         boolean userExists = false;
         try {
@@ -535,7 +535,7 @@ public class TestSignSession extends TestCase {
 //        FileOutputStream fos = new FileOutputStream("/tmp/swedecert.crt");
 //        fos.write(cert.getEncoded());
 //        fos.close();
-        log.debug("<test08SwedeChars()");
+        log.trace("<test08SwedeChars()");
     }
 
 
@@ -543,7 +543,7 @@ public class TestSignSession extends TestCase {
      * 
      */
     public void test09TestMultipleAltNames() throws Exception {
-        log.debug(">test09TestMultipleAltNames()");
+        log.trace(">test09TestMultipleAltNames()");
 
         // Create a good end entity profile (good enough), allowing multiple UPN names
         TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTMULALTNAME");
@@ -634,14 +634,14 @@ public class TestSignSession extends TestCase {
         // Clean up
         TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTMULALTNAME");
 
-        log.debug("<test09TestMultipleAltNames()");        
+        log.trace("<test09TestMultipleAltNames()");        
     }
     
     /** Tests creting a certificate with QC statement
      * 
      */
     public void test10TestQcCert() throws Exception {
-        log.debug(">test10TestQcCert()");
+        log.trace(">test10TestQcCert()");
 
         // Create a good certificate profile (good enough), using QC statement
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTQC");
@@ -698,14 +698,14 @@ public class TestSignSession extends TestCase {
         TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTQC");
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTQC");
 
-        log.debug("<test10TestQcCert()");        
+        log.trace("<test10TestQcCert()");        
     }
 
     /** Tests creting a certificate with QC statement
      * 
      */
     public void test11TestValidityOverride() throws Exception {
-        log.debug(">test11TestValidityOverride()");
+        log.trace(">test11TestValidityOverride()");
 
         // Create a good certificate profile (good enough), using QC statement
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTVALOVERRIDE");
@@ -811,7 +811,7 @@ public class TestSignSession extends TestCase {
         TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTVALOVERRIDE");
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTVALOVERRIDE");
 
-        log.debug("<test11TestValidityOverride()");        
+        log.trace("<test11TestValidityOverride()");        
     }
 
     /**
@@ -820,7 +820,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test12SignSessionECDSAWithRSACA() throws Exception {
-        log.debug(">test12SignSessionECDSAWithRSACA()");
+        log.trace(">test12SignSessionECDSAWithRSACA()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
@@ -847,7 +847,7 @@ public class TestSignSession extends TestCase {
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        log.debug("<test12SignSessionECDSAWithRSACA()");
+        log.trace("<test12SignSessionECDSAWithRSACA()");
     }
 
     /**
@@ -856,7 +856,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test13TestBCPKCS10ECDSAWithRSACA() throws Exception {
-        log.debug(">test13TestBCPKCS10ECDSAWithRSACA()");
+        log.trace(">test13TestBCPKCS10ECDSAWithRSACA()");
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -899,7 +899,7 @@ public class TestSignSession extends TestCase {
         } catch (Exception e) {
         	assertTrue("Verify failed: "+e.getMessage(), false);
         }
-        log.debug("<test13TestBCPKCS10ECDSAWithRSACA()");
+        log.trace("<test13TestBCPKCS10ECDSAWithRSACA()");
     }
 
     /**
@@ -908,7 +908,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test14SignSessionECDSAWithECDSACA() throws Exception {
-        log.debug(">test14SignSessionECDSAWithECDSACA()");
+        log.trace(">test14SignSessionECDSAWithECDSACA()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsa' to NEW");
@@ -935,7 +935,7 @@ public class TestSignSession extends TestCase {
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        log.debug("<test14SignSessionECDSAWithECDSACA()");
+        log.trace("<test14SignSessionECDSAWithECDSACA()");
     }
 
     /**
@@ -944,7 +944,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test15TestBCPKCS10ECDSAWithECDSACA() throws Exception {
-        log.debug(">test15TestBCPKCS10ECDSAWithECDSACA()");
+        log.trace(">test15TestBCPKCS10ECDSAWithECDSACA()");
         TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -987,7 +987,7 @@ public class TestSignSession extends TestCase {
         } catch (Exception e) {
         	assertTrue("Verify failed: "+e.getMessage(), false);
         }
-        log.debug("<test15TestBCPKCS10ECDSAWithECDSACA()");
+        log.trace("<test15TestBCPKCS10ECDSAWithECDSACA()");
     }
     /**
      * creates cert
@@ -995,7 +995,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test16SignSessionECDSAWithECDSAImplicitlyCACA() throws Exception {
-        log.debug(">test16SignSessionECDSAWithECDSAImplicitlyCACA()");
+        log.trace(">test16SignSessionECDSAWithECDSAImplicitlyCACA()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsaimpca' to NEW");
@@ -1022,7 +1022,7 @@ public class TestSignSession extends TestCase {
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        log.debug("<test16SignSessionECDSAWithECDSAImplicitlyCACA()");
+        log.trace("<test16SignSessionECDSAWithECDSAImplicitlyCACA()");
     }
 
     /**
@@ -1031,7 +1031,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA() throws Exception {
-        log.debug(">test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
+        log.trace(">test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
         TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -1074,7 +1074,7 @@ public class TestSignSession extends TestCase {
         } catch (Exception e) {
         	assertTrue("Verify failed: "+e.getMessage(), false);
         }
-        log.debug("<test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
+        log.trace("<test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
     }
 
     /**
@@ -1083,7 +1083,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test18SignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
-        log.debug(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
+        log.trace(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
 
         TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
@@ -1122,7 +1122,7 @@ public class TestSignSession extends TestCase {
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
         
-        log.debug("<test18SignSessionRSAWithRSASha256WithMGF1CA()");
+        log.trace("<test18SignSessionRSAWithRSASha256WithMGF1CA()");
     }
 
     /**
@@ -1131,7 +1131,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test19TestBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
-        log.debug(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
+        log.trace(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
         TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
@@ -1182,7 +1182,7 @@ public class TestSignSession extends TestCase {
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
         assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
 
-        log.debug("<test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
+        log.trace("<test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
     }
 
     /**
@@ -1191,7 +1191,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test20MultiRequests() throws Exception {
-        log.debug(">test20MultiRequests()");
+        log.trace(">test20MultiRequests()");
 
         // Test that it works correctly with end entity profiles using the counter
         int pid = 0;
@@ -1277,11 +1277,11 @@ public class TestSignSession extends TestCase {
         }
         assertTrue("Should have failed to create cert", authstatus);
 
-        log.debug("<test20MultiRequests()");
+        log.trace("<test20MultiRequests()");
     }
 
     public void test21CVCertificate() throws Exception {
-        log.debug(">test21CVCertificate()");
+        log.trace(">test21CVCertificate()");
 
         UserDataVO user = new UserDataVO("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
         user.setPassword("cvc");
@@ -1310,11 +1310,11 @@ public class TestSignSession extends TestCase {
         CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
         String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
         assertEquals("IS", role);
-        log.debug("<test21CVCertificate()");
+        log.trace("<test21CVCertificate()");
     }
 
     public void test22DnOrder() throws Exception {
-        log.debug(">test22DnOrder()");
+        log.trace(">test22DnOrder()");
 
         // Create a good certificate profile (good enough), using QC statement
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTDNORDER");
@@ -1362,7 +1362,7 @@ public class TestSignSession extends TestCase {
         TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTDNORDER");
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTDNORDER");
 
-        log.debug("<test22DnOrder()");        
+        log.trace("<test22DnOrder()");        
     }
 
     /**
@@ -1371,7 +1371,7 @@ public class TestSignSession extends TestCase {
      * @throws Exception if en error occurs...
      */
     public void test99CleanUp() throws Exception {
-        log.debug(">test99CleanUp()");
+        log.trace(">test99CleanUp()");
 
         // Delete test end entity profile
         try {        	
@@ -1396,7 +1396,7 @@ public class TestSignSession extends TestCase {
         } catch (Exception e) { /* ignore */ }
 
 		TestTools.removeTestCA();
-        log.debug("<test99CleanUp()");
+        log.trace("<test99CleanUp()");
     }
 
     
@@ -1405,7 +1405,7 @@ public class TestSignSession extends TestCase {
      */
 /*
     public void test10TestOpenScep() throws Exception {
-        log.debug(">test10TestOpenScep()");
+        log.trace(">test10TestOpenScep()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
@@ -1415,7 +1415,7 @@ public class TestSignSession extends TestCase {
         byte[] msg = resp.getResponseMessage();
         log.debug("Message: "+new String(Base64.encode(msg,true)));
         assertNotNull("Failed to get encoded response message", msg);
-        log.debug("<test10TestOpenScep()");
+        log.trace("<test10TestOpenScep()");
     }
 */
 }
