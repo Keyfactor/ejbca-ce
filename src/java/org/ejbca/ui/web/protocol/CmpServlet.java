@@ -148,7 +148,6 @@ public class CmpServlet extends HttpServlet {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 	
-	//private Properties properties;
 	/**
 	 * Inits the CMP servlet
 	 *
@@ -158,74 +157,6 @@ public class CmpServlet extends HttpServlet {
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		/*
-		properties = new Properties();
-		String str = ServiceLocator.getInstance().getString("java:comp/env/allowRaVerifyPopo");
-		if (StringUtils.equals("true", str)) {
-			log.debug("allowRAVerifyPopo=true");
-			properties.setProperty("allowRaVerifyPopo", "true");
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/defaultCA");
-		log.debug("defaultCA="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			properties.setProperty("defaultCA", str);
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/extractUsernameComponent");
-		log.debug("extractUsernameComponent="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			properties.setProperty("extractUsernameComponent", str);
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/operationMode");
-		log.debug("operationMode="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			properties.setProperty("operationMode", str);
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationScheme");
-		log.debug("raModeNameGenerationScheme="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			properties.setProperty("raModeNameGenerationScheme", str);
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationParameters");
-		log.debug("raModeNameGenerationParameters="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			properties.setProperty("raModeNameGenerationParameters", str);
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationPrefix");
-		log.debug("raModeNameGenerationPrefix="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			properties.setProperty("raModeNameGenerationPrefix", str);
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationPostfix");
-		log.debug("raModeNameGenerationPostfix="+str);
-		if (StringUtils.isNotEmpty(str)) {
-			properties.setProperty("raModeNameGenerationPostfix", str);
-		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/responseProtection");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("responseProtection="+str);
-			properties.setProperty("responseProtection", str);
-		}			
-		str = ServiceLocator.getInstance().getString("java:comp/env/raAuthenticationSecret");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("raAuthenticationSecret is not null");
-			properties.setProperty("raAuthenticationSecret", str);
-		}			
-		str = ServiceLocator.getInstance().getString("java:comp/env/endEntityProfile");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("endEntityProfile="+str);
-			properties.setProperty("endEntityProfile", str);
-		}			
-		str = ServiceLocator.getInstance().getString("java:comp/env/certificateProfile");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("certificateProfile="+str);
-			properties.setProperty("certificateProfile", str);
-		}			
-		str = ServiceLocator.getInstance().getString("java:comp/env/caName");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("caName="+str);
-			properties.setProperty("caName", str);
-		}
-		*/		
 	}
 	
 	/**
