@@ -91,6 +91,7 @@ ca.policy=null
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
 # If upgrading from EJBCA 3.0.x, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> keyStorePass. 
 # The default value is the same for convenience.
+# Note! If changing this value AFTER installation of EJBCA you must do 'ant clean; ant bootstrap' in order to activate changes.
 ca.keystorepass=foo123
 #ca.keystorepass=!secret!
 
