@@ -29,6 +29,14 @@
     Download any of the source packages from <a href="https://sourceforge.net/project/platformdownload.php?group_id=39716">Sourceforge</a>.
     </p>
   </section>
+
+  <section name="Live CD">
+    <p>
+    Get a feeling for EJBCA easily by downloading and running our 
+    <a href="http://download.primekey.se/public/ejbca-live.iso">LiveCD</a>.
+    </p>
+  </section>
+
   <section name="Debian packages">
     <p>
     For Debian stable(etch) and unstable EJBCA 3.5.x Packages see:<br/>

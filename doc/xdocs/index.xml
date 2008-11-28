@@ -9,7 +9,7 @@
   <section name="News">
   <note>
   <p><strong>EJBCA 3.7.4 and cert-cvc 1.2.8 with EAC ePassport support is now out!</strong>
-  <br/>Visit the <a href="download.html">download</a> section.
+  <br/>Visit the <a href="download.html">download</a> section. There is also a LiveCD!
   </p>
   </note>
   <note>
@@ -56,7 +56,7 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Single sign-on by using a single certificate to secure logon to web applications.</li>
 <li>Creating signed documents.</li>
 <li>Issue citizen certificates for access to government resources, used in passports etc.</li>
-<li>Issue CV certificates (CVC) to Document Verifiers and Inspection Systems for EU EAC ePassports.</li>
+<li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for <a href="cvccas.html">EU EAC ePassports</a>.</li>
 <li>... and many many more ...</li>
 </ul>
 </p>
