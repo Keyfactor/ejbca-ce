@@ -1128,8 +1128,15 @@ Windows Registry Editor Version 5.00
   </subsection>
   <subsection name="References">
   <ul>
-  	<li>Kerberos authentication on Apache2, http://www.grolmsnet.de/kerbtut/</li>
-  	<li>MS Certificate requests, http://technet2.microsoft.com/WindowsServer/en/library/008acdeb-0650-4063-a9a2-1258b3229d4f1033.mspx</li>
+  	<li>Kerberos authentication on Apache2, <a href="http://www.grolmsnet.de/kerbtut/">http://www.grolmsnet.de/kerbtut/</a></li>
+  	<li>MS Certificate requests, <a href="http://technet2.microsoft.com/WindowsServer/en/library/008acdeb-0650-4063-a9a2-1258b3229d4f1033.mspx">http://technet2.microsoft.com/WindowsServer/en/library/008acdeb-0650-4063-a9a2-1258b3229d4f1033.mspx</a></li>
+  	<li>Requirements for Domain Controller Certificates from a Third-Party CA, <a href="http://support.microsoft.com/kb/291010">http://support.microsoft.com/kb/291010</a></li>
+  </ul>
+  <p>Other auto enroll references</p>
+  <ul>
+  <li>ICertPassage remote protocol, <a href="http://msdn.microsoft.com/en-us/library/cc233162.aspx">http://msdn.microsoft.com/en-us/library/cc233162.aspx</a></li>
+  <li>Windows Client Certificate Enrollment Protocol, <a href="http://msdn.microsoft.com/en-us/library/cc249820.aspx">http://msdn.microsoft.com/en-us/library/cc249820.aspx</a></li>
+  <li>RedHat auto enroll proxy, <a href="http://directory.fedoraproject.org/wiki/Auto_Enroll_Documentation">http://directory.fedoraproject.org/wiki/Auto_Enroll_Documentation</a></li>
   </ul>
   </subsection>
   </section>  
