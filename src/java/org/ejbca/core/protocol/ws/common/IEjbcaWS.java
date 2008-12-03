@@ -211,8 +211,9 @@ public interface IEjbcaWS {
 	 * 
 	 * @see #editUser
 	 * @see #pkcs10Request
-	 * @param userdata the user data for editing/adding a user
-	 * @param cvcreq Base64 encoded CVC request message
+	 * @param username the user name of the user requesting the certificate.
+	 * @param password the password for initial enrollment, not used for renewal requests that can be authenticated using signatures with keys with valid certificates.
+	 * @param cvcreq Base64 encoded CVC request message.
 	 * @return the full certificate chain for the IS, with IS certificate in pos 0, DV in 1, CVCA in 2.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if administrator is not authorized to edit end entity or if an authenticated request can not be verified
