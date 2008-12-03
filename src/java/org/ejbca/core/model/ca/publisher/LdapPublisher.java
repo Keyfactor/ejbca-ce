@@ -19,7 +19,6 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -175,7 +174,7 @@ public class LdapPublisher extends BasePublisher {
 		String certdn = null;
 		try {
 			// Extract the users DN from the cert.
-			certdn = CertTools.getSubjectDN((X509Certificate) incert);
+			certdn = CertTools.getSubjectDN(incert);
 			log.debug( "Constructing DN for: " + username);
 			dn = constructLDAPDN(certdn);
 			log.debug("LDAP DN for user " +username +" is '" + dn+"'");
@@ -186,7 +185,7 @@ public class LdapPublisher extends BasePublisher {
 		}
 
 		// Extract the users email from the cert.
-		String email = CertTools.getEMailAddress((X509Certificate)incert);
+		String email = CertTools.getEMailAddress(incert);
 
 		// Check if the entry is already present, we will update it with the new certificate.
 		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the 
@@ -540,7 +539,7 @@ public class LdapPublisher extends BasePublisher {
 		String certdn = null;
 		try {
 			// Extract the users DN from the cert.
-			certdn = CertTools.getSubjectDN((X509Certificate) cert);
+			certdn = CertTools.getSubjectDN(cert);
 			dn = constructLDAPDN(certdn);
 		} catch (Exception e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
@@ -549,14 +548,14 @@ public class LdapPublisher extends BasePublisher {
 		}
 
 		// Extract the users email from the cert.
-		String email = CertTools.getEMailAddress((X509Certificate)cert);
+		String email = CertTools.getEMailAddress(cert);
 
 		// Check if the entry is already present, we will update it with the new certificate.
 		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn, email);
 
 		ArrayList modSet = new ArrayList();
 
-		if (((X509Certificate) cert).getBasicConstraints() == -1) {
+		if (!CertTools.isCA(cert)) {
 			log.debug("Removing end user certificate from first available server of " + getHostnames());
 
 			if (oldEntry != null) {          
