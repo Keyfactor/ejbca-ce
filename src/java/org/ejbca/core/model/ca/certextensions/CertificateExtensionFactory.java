@@ -35,6 +35,7 @@ import org.ejbca.core.model.ca.certextensions.standard.KeyUsage;
 import org.ejbca.core.model.ca.certextensions.standard.MsTemplate;
 import org.ejbca.core.model.ca.certextensions.standard.OcspNoCheck;
 import org.ejbca.core.model.ca.certextensions.standard.QcStatement;
+import org.ejbca.core.model.ca.certextensions.standard.SeisCardNumber;
 import org.ejbca.core.model.ca.certextensions.standard.StandardCertificateExtension;
 import org.ejbca.core.model.ca.certextensions.standard.SubjectAltNames;
 import org.ejbca.core.model.ca.certextensions.standard.SubjectDirectoryAttributes;
@@ -57,7 +58,7 @@ import org.ejbca.util.CertTools;
 
 public class CertificateExtensionFactory {
 
-	private static Logger log = Logger.getLogger(CertificateExtensionFactory.class);
+	private static final Logger log = Logger.getLogger(CertificateExtensionFactory.class);
 	private static final InternalResources intres = InternalResources.getInstance();
 	
 	private static CertificateExtensionFactory instance = null;
@@ -88,6 +89,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(X509Extensions.QCStatements.getId(), QcStatement.class.getName());
 		standardCertificateExtensions.put(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId(), OcspNoCheck.class.getName());
 		standardCertificateExtensions.put(CertTools.OID_MSTEMPLATE, MsTemplate.class.getName());
+		standardCertificateExtensions.put(SeisCardNumber.OID_CARDNUMBER, SeisCardNumber.class.getName());
 	}
 	
 	private CertificateExtensionFactory(){}

@@ -94,6 +94,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final String DEFAULTTOKENISSUER = "DEFAULTTOKENISSUER";
     public static final String AVAILTOKENISSUER   = "AVAILTOKENISSUER";
     public static final String SENDNOTIFICATION   = "SENDNOTIFICATION";
+    public static final String CARDNUMBER         = "CARDNUMBER";
     public static final String DEFAULTCA          = "DEFAULTCA";
     public static final String AVAILCAS           = "AVAILCAS";
     public static final String STARTTIME          = "STARTTIME";
@@ -175,6 +176,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	dataConstants.put(ALLOWEDREQUESTS, new Integer(97));
     	dataConstants.put(STARTTIME, new Integer(98));
     	dataConstants.put(ENDTIME, new Integer(99));
+    	dataConstants.put(CARDNUMBER, new Integer(39));
     }
     // Type of data constants.
     private static final int VALUE      = 0;
@@ -266,6 +268,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setRequired(STARTTIME,0,false);
         setRequired(ENDTIME,0,false);
         setRequired(ALLOWEDREQUESTS,0,false);
+        setRequired(CARDNUMBER,0,false);
         setValue(DEFAULTCERTPROFILE,0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);
         setValue(AVAILCERTPROFILES,0, SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + SecConst.CERTPROFILE_FIXED_OCSPSIGNER + ";" + SecConst.CERTPROFILE_FIXED_SERVER);
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
@@ -276,6 +279,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setUse(STARTTIME,0,false);
         setUse(ENDTIME,0,false);
         setUse(ALLOWEDREQUESTS,0,false);
+        setUse(CARDNUMBER,0,false);
+        
       }else{
          // initialize profile data
          addField(USERNAME);
@@ -295,6 +300,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(STARTTIME);         
          addField(ENDTIME);         
          addField(ALLOWEDREQUESTS);
+         addField(CARDNUMBER);
          
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
@@ -308,7 +314,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setRequired(STARTTIME,0,false);
          setRequired(ENDTIME,0,false);
          setRequired(ALLOWEDREQUESTS,0,false);
-         
+         setRequired(CARDNUMBER,0,false);
+      
          setValue(AUTOGENPASSWORDLENGTH, 0, "8");
          setValue(DEFAULTCERTPROFILE,0,"1");
          setValue(AVAILCERTPROFILES,0,"1;2;3");
@@ -320,6 +327,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setUse(STARTTIME,0,false);
          setUse(ENDTIME,0,false);
          setUse(ALLOWEDREQUESTS,0,false);
+         setUse(CARDNUMBER,0,false);
+
       }
     }
 

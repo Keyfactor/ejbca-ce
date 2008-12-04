@@ -30,6 +30,8 @@
   static final String TEXTFIELD_UPNNAME           = "textfieldupnnamne";
   static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
+  static final String TEXTFIELD_CARDNUMBER           = "textfieldcardnumber";
+
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -186,6 +188,14 @@
                  }
                }
              }
+             
+			value = request.getParameter(TEXTFIELD_CARDNUMBER);
+			if ( value != null ) {
+				value = value.trim();
+				newuser.setCardNumber(value);
+				}
+			
+			
 
                String subjectdn = "";
                int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
@@ -405,7 +415,7 @@
 				ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
 				newuser.setExtendedInformation(ei);
 			}
-  
+
               if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
                 int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
                 if(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_GENERATED || newstatus == UserDataConstants.STATUS_HISTORICAL || newstatus == UserDataConstants.STATUS_KEYRECOVERY )
@@ -426,7 +436,7 @@
           }
         }
       }
-    } catch(AuthorizationDeniedException e){
+      } catch(AuthorizationDeniedException e){
     }
     nouserparameter = false;
   } 
@@ -754,7 +764,14 @@ function checkallfields(){
     } 
     <%    }
         }
-      } 
+      }
+       
+       if(profile.getUse(EndEntityProfile.CARDNUMBER,0) ){%>
+       if(!checkfieldfordecimalnumbers("document.edituser.<%=TEXTFIELD_CARDNUMBER%>", "<%= ejbcawebbean.getText("CARDNUMBER_MUSTBE", true) %>"))       
+         illegalfields++;
+     <% }
+
+
        if(profile.getUse(EndEntityProfile.PASSWORD,0)){
          if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
     if(document.edituser.<%= TEXTFIELD_PASSWORD %>.value != document.edituser.<%= TEXTFIELD_CONFIRMPASSWORD %>.value){
@@ -781,6 +798,7 @@ function checkallfields(){
       illegalfields++;
     }
 
+    
     <%  if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) && profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
     if(document.edituser.<%=CHECKBOX_SENDNOTIFICATION %>.checked && (document.edituser.<%= TEXTFIELD_EMAIL %>.value == "")){
       alert("<%= ejbcawebbean.getText("NOTIFICATIONADDRESSMUSTBE", true) %>");
@@ -1386,6 +1404,16 @@ function checkUseInBatch(){
                                                                                                                if( userdata.getKeyRecoverable())
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>>  
+      </td>
+      <td></td>
+    </tr>
+    <% }if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("CARDNUMBER") %> <br>
+      </td>
+      <td > 
+        <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="20" tabindex="<%=tabindex++%>" value="<%=userdata.getCardNumber()%>"> 
       </td>
       <td></td>
     </tr>

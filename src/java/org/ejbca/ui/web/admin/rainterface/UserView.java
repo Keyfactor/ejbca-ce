@@ -92,6 +92,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public int getType() {return userdata.getType();}
     public void setKeyRecoverable(boolean keyrecoverable) {userdata.setKeyRecoverable(keyrecoverable);}
     public boolean getKeyRecoverable() {return userdata.getKeyRecoverable();}
+    public void setCardNumber(String cardNumber) {userdata.setCardNumber(cardNumber);}
+    public String getCardNumber() {return userdata.getCardNumber();}
     public void setSendNotification(boolean sendnotification) {userdata.setSendNotification(sendnotification);}
     public boolean getSendNotification() {return userdata.getSendNotification();}
     public void setPrintUserData(boolean printUserData) {userdata.setPrintUserData(printUserData);}

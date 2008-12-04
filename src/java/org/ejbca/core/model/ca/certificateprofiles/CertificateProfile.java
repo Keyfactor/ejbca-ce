@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.ca.certextensions.standard.SeisCardNumber;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
@@ -46,7 +47,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 29.0;
+    public static final float LATEST_VERSION = (float) 30.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -194,6 +195,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USELDAPDNORDER                 = "useldapdnorder";
     protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
 	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
+	protected static final String USECARDNUMBER                 = "usecardnumber";
     protected static final String USEQCSTATEMENT                 = "useqcstatement";
     protected static final String USEPKIXQCSYNTAXV2              = "usepkixqcsyntaxv2";
     protected static final String QCSTATEMENTCRITICAL            = "useqcstatementcritical";
@@ -230,6 +232,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS,X509Extensions.AuthorityInfoAccess.getId());
     	useStandardCertificateExtensions.put(USEOCSPNOCHECK,OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
     	useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE,CertTools.OID_MSTEMPLATE);
+    	useStandardCertificateExtensions.put(USECARDNUMBER, SeisCardNumber.OID_CARDNUMBER);
     }
 
     // Old values used to upgrade from v22 to v23
@@ -312,8 +315,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
 	  setUseLdapDnOrder(true);	  
 
-	  setUseMicrosoftTemplate(false);	  
+	  setUseMicrosoftTemplate(false);	
 	  setMicrosoftTemplate("");
+	  setUseCardNumber(false);
 	  
 	  setUseCNPostfix(false);
 	  setCNPostfix("");
@@ -661,6 +665,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setMicrosoftTemplate(String mstemplate){
     	data.put(MICROSOFTTEMPLATE, mstemplate);	
+    }
+    
+    public Boolean getUseCardNumber() {
+    	return ((Boolean) data.get(USECARDNUMBER)).booleanValue();
+    }
+    
+    public void setUseCardNumber(Boolean use) {
+    	data.put(USECARDNUMBER, Boolean.valueOf(use));
     }
     
     public boolean getUseCNPostfix(){
@@ -1255,6 +1267,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 if (data.get(USELDAPDNORDER) == null) {
                 	setUseLdapDnOrder(true); // v29, default value is true
                 } 
+
+                if(data.get(USECARDNUMBER) == null){ //v30, default value is false
+                    setUseCardNumber(false);            
+                } 
+                
+
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }

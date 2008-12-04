@@ -55,6 +55,7 @@ public class UserDataVO implements Serializable {
     private String subjectAltName;
     private String subjectEmail;
     private String password;
+    private String cardNumber;
     /** Status of user, from UserDataConstants.STATUS_XX */
     private int status;
     /** Type of user, from SecConst */
@@ -76,8 +77,8 @@ public class UserDataVO implements Serializable {
      * be set manually though. This is so you should be sure what you do with the password.
      *
      * @param user DOCUMENT ME!
-     * @param caid CA id of the CA that the user is registered with
      * @param dn DOCUMENT ME!
+     * @param caid CA id of the CA that the user is registered with
      * @param subjectaltname DOCUMENT ME!
      * @param email DOCUMENT ME!
      * @param status DOCUMENT ME!
@@ -88,11 +89,13 @@ public class UserDataVO implements Serializable {
      * @param timemodified DOCUMENT ME!
      * @param tokentype DOCUMENT ME!
      * @param hardtokenissuerid DOCUMENT ME!
+
      */
     public UserDataVO(String user, String dn, int caid, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
                          Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
         setUsername(user);
         setPassword(null);
+        setCardNumber(null);
         setDN(dn);
         setCAId(caid);
         setSubjectAltName(subjectaltname);
@@ -106,6 +109,7 @@ public class UserDataVO implements Serializable {
         setTokenType(tokentype);
         setHardTokenIssuerId(hardtokenissuerid);
         setExtendedinformation(extendedinfo);
+        setCardNumber(null);
     }
     
     /**
@@ -138,6 +142,7 @@ public class UserDataVO implements Serializable {
         setTokenType(tokentype);
         setHardTokenIssuerId(hardtokenissuerid);
         setExtendedinformation(extendedinfo);
+        setCardNumber(null);
     }
     
     
@@ -151,6 +156,8 @@ public class UserDataVO implements Serializable {
     public String getSubjectAltName() {return StringTools.getBase64String(subjectAltName);}
     public void setEmail(String email) {this.subjectEmail = StringTools.putBase64String(email);}
     public String getEmail() {return StringTools.getBase64String(subjectEmail);}
+    public void setCardNumber(String cardNumber) {this.cardNumber =  StringTools.putBase64String(cardNumber);}
+    public String getCardNumber() {return StringTools.getBase64String(cardNumber);}
     public void setPassword(String pwd) {this.password = StringTools.putBase64String(pwd);}
     public String getPassword() {return StringTools.getBase64String(password);}
     public void setStatus(int status) {this.status=status;}
@@ -202,6 +209,7 @@ public class UserDataVO implements Serializable {
       return (type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION;
     }
 
+    
     public void setSendNotification(boolean sendnotification){
       if(sendnotification)
         type = type | SecConst.USER_SENDNOTIFICATION;

@@ -141,6 +141,7 @@ public class RAInterfaceBean implements java.io.Serializable {
         			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
         	uservo.setPassword(userdata.getPassword());
         	uservo.setExtendedinformation(userdata.getExtendedInformation());
+        	uservo.setCardNumber(userdata.getCardNumber());
         	adminsession.addUser(administrator, uservo, userdata.getClearTextPassword());
         	addedusermemory.addUser(userdata);
         } else {
@@ -271,6 +272,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
     	uservo.setPassword(userdata.getPassword());
     	uservo.setExtendedinformation(userdata.getExtendedInformation());
+    	uservo.setCardNumber(userdata.getCardNumber());
     	adminsession.changeUser(administrator, uservo, userdata.getClearTextPassword());
 
         log.trace("<changeUserData()");

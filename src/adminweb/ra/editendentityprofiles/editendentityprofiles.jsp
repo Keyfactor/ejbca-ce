@@ -62,6 +62,7 @@
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_REUSECERTIFICATE           = "checkboxreusecertificate";
   static final String CHECKBOX_REVERSEFIELDCHECKS         = "checkboxreversefieldchecks";
+  static final String CHECKBOX_CARDNUMBER                 = "checkboxcardnumber";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
   static final String CHECKBOX_PRINTING                   = "checkboxprinting";
   static final String CHECKBOX_USE_STARTTIME              = "checkboxsusetarttime";
@@ -80,6 +81,7 @@
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
   static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR    = "checkboxrequiredsubjectdirattr";
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
+  static final String CHECKBOX_REQUIRED_CARDNUMBER        = "checkboxrequiredcardnumber";
   static final String CHECKBOX_REQUIRED_SENDNOTIFICATION  = "checkboxrequiredsendnotification";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
   static final String CHECKBOX_REQUIRED_PRINTING          = "checkboxrequiredprinting";
@@ -93,6 +95,7 @@
   static final String CHECKBOX_MODIFYABLE_EMAIL             = "checkboxmodifyableemail";
 
 
+  static final String CHECKBOX_USE_CARDNUMBER        = "checkboxusecardnumber";
   static final String CHECKBOX_USE_USERNAME          = "checkboxuseusername";
   static final String CHECKBOX_USE_PASSWORD          = "checkboxusepassword";
   static final String CHECKBOX_USE_CLEARTEXTPASSWORD = "checkboxusecleartextpassword";
@@ -398,7 +401,15 @@
              profiledata.setUse(EndEntityProfile.KEYRECOVERABLE, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_KEYRECOVERABLE)));
              
              profiledata.setReUseKeyRevoceredCertificate(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REUSECERTIFICATE)));
- 
+             
+             if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_CARDNUMBER)))
+                 profiledata.setValue(EndEntityProfile.CARDNUMBER, 0 ,EndEntityProfile.TRUE);
+               else
+                 profiledata.setValue(EndEntityProfile.CARDNUMBER, 0 ,EndEntityProfile.FALSE);
+               profiledata.setRequired(EndEntityProfile.CARDNUMBER, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_CARDNUMBER)));
+               profiledata.setUse(EndEntityProfile.CARDNUMBER, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_CARDNUMBER))); 
+
+             
              if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SENDNOTIFICATION)))
                profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0 ,EndEntityProfile.TRUE);
              else

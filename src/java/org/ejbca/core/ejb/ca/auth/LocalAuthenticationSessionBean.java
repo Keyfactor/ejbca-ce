@@ -250,7 +250,8 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
                 		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
                 		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
-                ret.setPassword(data.getClearPassword());                             
+                ret.setPassword(data.getClearPassword());   
+                ret.setCardNumber(data.getCardNumber());
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}

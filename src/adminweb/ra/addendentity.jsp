@@ -31,6 +31,7 @@
   static final String TEXTFIELD_RFC822NAME        = "textfieldrfc822name";
   static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
+  static final String TEXTFIELD_CARDNUMBER        = "textfieldcardnumber";
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -52,10 +53,12 @@
   static final String CHECKBOX_SUBJECTDIRATTR             = "checkboxsubjectdirattr";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
+  static final String CHECKBOX_CARDNUMBER                 = "checkboxcardnumber";
   static final String CHECKBOX_PRINT                      = "checkboxprint";
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
+  static final String CHECKBOX_REQUIRED_CARDNUMBER        = "checkboxrequiredcardnumber";
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
   static final String CHECKBOX_REQUIRED_SUBJECTDN         = "checkboxrequiredsubjectdn";
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
@@ -133,6 +136,7 @@
 
   String approvalmessage           = null;
   String oldemail = "";
+  String oldcardnumber = "";
   String lastselectedusername           = "";
   String lastselectedpassword           = "";
   String lastselectedemaildomain        = "";
@@ -253,7 +257,17 @@
                }
              }
            }
-
+           
+           value = request.getParameter(TEXTFIELD_CARDNUMBER);
+           if(value !=null){
+        	   value=value.trim(); 
+        	 oldcardnumber= value;
+             if(!value.equals("")){
+                   newuser.setCardNumber(value);
+                   oldprofile.setValue(EndEntityProfile.CARDNUMBER,0,value);
+                 }
+               }
+           
            String subjectdn = "";
            int numberofsubjectdnfields = oldprofile.getSubjectDNFieldOrderLength();
            for(int i=0; i < numberofsubjectdnfields; i++){
@@ -417,6 +431,7 @@
                oldprofile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.FALSE);               
              }
            }  
+
            value = request.getParameter(CHECKBOX_SENDNOTIFICATION);
            if(value !=null){
              if(value.equals(CHECKBOX_VALUE)){
@@ -543,6 +558,7 @@
       if(!useoldprofile){
         profile = rabean.getEndEntityProfile(profileid);
         oldemail = "";
+        oldcardnumber = "";
       }else
         profile = oldprofile;
     }else
@@ -903,6 +919,23 @@ function checkallfields(){
     <%    }
         }
       }
+       
+       if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
+      <%  if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)){%>
+       if((document.adduser.<%= TEXTFIELD_CARDNUMBER %>.value == "")){
+         alert("<%= ejbcawebbean.getText("REQUIREDCARDNUMBER", true) %>");
+         illegalfields++;
+       } 
+       <%    }
+             if(profile.isModifyable(EndEntityProfile.CARDNUMBER,0)){%>
+         <%  if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)){%>
+       if((document.adduser.<%= TEXTFIELD_CARDNUMBER %>.value == "")){
+         alert("<%= ejbcawebbean.getText("REQUIREDCARDNUMBER", true) %>");
+         illegalfields++;
+       } 
+       <%    }
+           }
+         }
  
        if(profile.getUse(EndEntityProfile.PASSWORD,0)){
          if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
@@ -930,6 +963,12 @@ function checkallfields(){
       illegalfields++;
     }
 
+    <% if(profile.getUse(EndEntityProfile.CARDNUMBER,0) ){%>
+    if(!checkfieldfordecimalnumbers("document.adduser.<%=TEXTFIELD_CARDNUMBER%>", "<%= ejbcawebbean.getText("CARDNUMBER_MUSTBE", true) %>"))       
+      illegalfields++;
+  <% } %>
+
+
     <%  if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) && profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
     if(document.adduser.<%=CHECKBOX_SENDNOTIFICATION %>.checked && (document.adduser.<%= TEXTFIELD_EMAIL %>.value == "")){
       alert("<%= ejbcawebbean.getText("NOTIFICATIONADDRESSMUSTBE", true) %>");
@@ -942,6 +981,8 @@ function checkallfields(){
       document.adduser.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){%> 
       document.adduser.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
+      <% } if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){%> 
+      document.adduser.<%= TEXTFIELD_CARDNUMBER %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){%> 
       document.adduser.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
       <% } if(profile.getUsePrinting()){%> 
@@ -1124,6 +1165,18 @@ function checkallfields(){
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>
        </tr>
        <% }%>
+
+         <% if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
+       <tr id="Row<%=(row++)%2%>">
+	 <td></td>
+	 <td align="right"><%= ejbcawebbean.getText("CARDNUMBER") %></td>
+	 <td>      
+           <input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%=oldcardnumber%>">
+        </td>
+     <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
+       </tr>
+       <% }%>
+
       <tr id="Row<%=(row++)%2%>">
 	<td></td>
 	<td align="right"><b><%= ejbcawebbean.getText("SUBJECTDNFIELDS") %></b></td>
@@ -1490,6 +1543,7 @@ function checkallfields(){
       </td>
       <td></td>
     </tr>
+
      <% }if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td></td>

@@ -46,6 +46,7 @@ import org.ejbca.util.StringTools;
  * CAId of CA the user is belonging to.
  * Subject Alternative Name (subjectAltName
  * Subject Email (subjectEmail)
+ * Card Number (cardnumber)
  * Status (status)
  * Type (type, from SecConst)
  * End Entity Profile (endEntityProfileId)
@@ -167,7 +168,18 @@ public abstract class UserDataBean extends BaseEntityBean {
     public abstract void setSubjectAltName(String subjectAltName);
 
     /**
-     * @ejb.persistence column-name="subjectEmail"
+     * @ejb.persistence column-name="cardnumber"
+     * @ejb.interface-method
+     */
+    public abstract String getCardNumber();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setCardNumber(String cardnumber);
+    
+    /**
+     * @ejb.persistence column-name="cardnumber"
      * @ejb.interface-method
      */
     public abstract String getSubjectEmail();
@@ -475,6 +487,7 @@ public abstract class UserDataBean extends BaseEntityBean {
         data.setTimeModified(new Date(getTimeModified()));
         data.setTokenType(getTokenType());
         data.setType(getType());
+        data.setCardNumber(getCardNumber());
         return data;
     }
 
@@ -484,17 +497,18 @@ public abstract class UserDataBean extends BaseEntityBean {
 
     /**
      * Entity Bean holding info about a User.
-     * Create by sending in the instance, username, password and subject DN.
+     * Create by sending in the instance, username, password, cardnumber and subject DN.
      * SubjectEmail, Status and Type are set to default values (null, STATUS_NEW, USER_INVALID).
      * and should be set using the respective set-methods. Clear text password is not set at all and must be set using setClearPassword();
      *
-     * @param username the unique username used for authentication.
-     * @param password the password used for authentication. This inly sets passwordhash, to set cleartext password, the setPassword() method must be used.
-     * @param dn       the DN the subject is given in his certificate.
+     * @param username   the unique username used for authentication.
+     * @param password   the password used for authentication. This inly sets passwordhash, to set cleartext password, the setPassword() method must be used.
+     * @param dn         the DN the subject is given in his certificate.
+     * @param cardnumber the number printed on the card.
      * @return UserDataPK primary key
      * @ejb.create-method
      */
-    public UserDataPK ejbCreate(String username, String password, String dn, int caid)
+    public UserDataPK ejbCreate(String username, String password, String dn, int caid, String cardnumber)
             throws CreateException, NoSuchAlgorithmException {
 
         long time = (new Date()).getTime();
@@ -515,14 +529,14 @@ public abstract class UserDataBean extends BaseEntityBean {
         setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
         setHardTokenIssuerId(0);
         setExtendedInformationData(null);
+        setCardNumber(cardnumber);
         UserDataPK pk = new UserDataPK(username);
         log.debug("Created user " + username);
 
         return pk;
     }
 
-    public void ejbPostCreate(String username, String password, String dn, int caid) {
+    public void ejbPostCreate(String username, String password, String dn, int caid, String cardnumber) {
         // Do nothing. Required.
     }
-    
 }

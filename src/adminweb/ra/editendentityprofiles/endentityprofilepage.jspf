@@ -144,6 +144,7 @@ function checkallfields(){
       <% } %>
       document.editprofile.<%= CHECKBOX_REQUIRED_SENDNOTIFICATION %>.disabled = false;
       document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
+      document.editprofile.<%= CHECKBOX_REQUIRED_CARDNUMBER %>.disabled = false;
       document.editprofile.<%= CHECKBOX_ALLOW_MERGEDN_WEBSERVICES %>.disabled = false;
     }
 
@@ -165,6 +166,18 @@ function checkusecheckbox(usefield, value, required){
     reqbox.disabled = true;
   }
 }
+
+function checkusecheckbox2(usefield, required){
+	  var usebox = eval("document.editprofile." + usefield);
+	  var reqbox = eval("document.editprofile." + required);
+	  if(usebox.checked){
+	    reqbox.disabled = false;
+	  }
+	  else{
+	    reqbox.checked = false;
+	    reqbox.disabled = true;
+	  }
+	}
 
 <% if(globalconfiguration.getEnableKeyRecovery()){ %> 
 
@@ -1048,6 +1061,28 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("CARDNUMBER") %>
+        <br />&nbsp;
+      </td>
+      <td width="70%"> 
+        <% used = profiledata.getUse(EndEntityProfile.CARDNUMBER,0); %>
+         <%= ejbcawebbean.getText("USE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_USE_CARDNUMBER %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox2('<%=CHECKBOX_USE_CARDNUMBER %>', '<%=CHECKBOX_REQUIRED_CARDNUMBER%>');"
+           <% if(used)
+                 out.write("CHECKED");
+           %>> <br>
+        <%= ejbcawebbean.getText("REQUIRED") %>
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_CARDNUMBER%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.isRequired(EndEntityProfile.CARDNUMBER,0) && used)
+                out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
         <%= ejbcawebbean.getText("SENDNOTIFICATION") %>
         <%= ejbcawebbean.getHelpReference("/manual.html#Email%20notifications") %>
         <br />&nbsp;
@@ -1230,7 +1265,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="70%">
         <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE%>" cols="40" rows="4" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%> ></textarea>
       </td>
-            
     </tr>
     
     <tr  id="Row<%=row++%2%>"> 

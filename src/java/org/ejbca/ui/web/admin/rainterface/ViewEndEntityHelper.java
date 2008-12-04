@@ -60,6 +60,9 @@ public class ViewEndEntityHelper implements java.io.Serializable{
 	public static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
 	public static final String CHECKBOX_PRINT                      = "checkboxprint";
 	
+	public static final String TEXTFIELD_CARDNUMBER                 = "textfieldcardnumber";
+
+	
 	public static final String CHECKBOX_VALUE             = "true";
 
 	public static final   int[] statusids = {UserDataConstants.STATUS_NEW ,UserDataConstants.STATUS_FAILED, UserDataConstants.STATUS_INITIALIZED, UserDataConstants.STATUS_INPROCESS

@@ -284,7 +284,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     /**
      * Columns in the database used in select
      */
-    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearPassword, timeCreated, timeModified, endEntityProfileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId, extendedInformationData";
+    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearPassword, timeCreated, timeModified, endEntityProfileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId, extendedInformationData, cardnumber";
     private static final String USERDATA_CREATED_COL = "timeCreated";
 
     /**
@@ -521,7 +521,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
         
         try {
-            UserDataLocal data1 = home.create(userdata.getUsername(), newpassword, dn, userdata.getCAId());
+            UserDataLocal data1 = home.create(userdata.getUsername(), newpassword, dn, userdata.getCAId(), userdata.getCardNumber());
             if (userdata.getSubjectAltName() != null)
                 data1.setSubjectAltName(userdata.getSubjectAltName());
 
@@ -788,6 +788,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             data1.setCertificateProfileId(userdata.getCertificateProfileId());
             data1.setTokenType(userdata.getTokenType());
             data1.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
+            data1.setCardNumber(userdata.getCardNumber());
             ExtendedInformation ei = userdata.getExtendedinformation();
             data1.setExtendedInformation(ei);
             oldstatus = data1.getStatus();
@@ -1495,6 +1496,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                 , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
         ret.setPassword(data.getClearPassword());
+        ret.setCardNumber(data.getCardNumber());
         if (log.isTraceEnabled()) {
             log.trace("<findUser(" + username + ")");
         }
@@ -1589,6 +1591,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
 
             returnval.setPassword(data.getClearPassword());
+            returnval.setCardNumber(data.getCardNumber());
         }
 		return returnval;
 	}
@@ -1634,6 +1637,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
                     , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
             user.setPassword(data.getClearPassword());
+            user.setCardNumber(data.getCardNumber());
             returnval.add(user);
         }
         if (log.isTraceEnabled()) {
@@ -1897,10 +1901,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     int tokenissuerid = rs.getInt(13);
                     int caid = rs.getInt(14);
                     String extendedInformation = rs.getString(15);
+                    String cardnumber = rs.getString(16);
                     UserDataVO data = new UserDataVO(user, dn, caid, subaltname, email, status, type
                             , eprofileid, cprofileid, timecreated, timemodified, tokentype, tokenissuerid,
 							UserDataVO.getExtendedInformation(extendedInformation));
                     data.setPassword(pwd);
+                    data.setCardNumber(cardnumber);
 
                     if (!onlybatchusers || (data.getPassword() != null && data.getPassword().length() > 0))
                         returnval.add(data);

@@ -1170,6 +1170,17 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USECARDNUMBER") %> 
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USECARDNUMBER %>"  value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseCardNumber())
+                 out.write("CHECKED");
+           %>>
+      </td>
+    </tr>    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USECNPOSTFIX") %> 
       </td>
       <td width="50%">

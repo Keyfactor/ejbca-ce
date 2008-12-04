@@ -86,6 +86,7 @@
   static final String CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR      = "checkusedefaultocspservicelocator";
   static final String CHECKBOX_USELDAPDNORDER                      = "checkuseldapdnorder";
   static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
+  static final String CHECKBOX_USECARDNUMBER                      = "checkusecardnumber";
   static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
   static final String CHECKBOX_USESUBJECTDNSUBSET                 = "checkusesubjectdnsubset";
   static final String CHECKBOX_USESUBJECTALTNAMESUBSET            = "checkusesubjectaltnamesubset";
@@ -148,7 +149,8 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
 </head>
 <body>
 
-<%  // Determine action 
+<%
+	// Determine action 
   RequestHelper.setDefaultCharacterEncoding(request);
   if( request.getParameter(ACTION) != null){
     if( request.getParameter(ACTION).equals(ACTION_EDIT_CERTIFICATEPROFILES)){
@@ -421,14 +423,14 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                  certificateprofiledata.setUseCertificatePolicies(use);
                  value = request.getParameter(CHECKBOX_CERTIFICATEPOLICIESCRITICAL); 
                  if(value != null) {
-				   certificateprofiledata.setCertificatePoliciesCritical(value.equals(CHECKBOX_VALUE)); 
+		   certificateprofiledata.setCertificatePoliciesCritical(value.equals(CHECKBOX_VALUE)); 
                  } else {
-					 certificateprofiledata.setCertificatePoliciesCritical(false); 
-				 }
+			 certificateprofiledata.setCertificatePoliciesCritical(false); 
+		 }
 
-				 value = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID);
-				 String userNotice = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE);
-				 String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL);
+		 value = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID);
+		 String userNotice = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE);
+		 String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL);
                  if ( (value != null) && (value.trim().length() > 0) ) {
                    boolean added = false;
                    if (userNotice != null) {
@@ -635,6 +637,16 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
              else{
                  certificateprofiledata.setUseMicrosoftTemplate(false);                 
                  certificateprofiledata.setMicrosoftTemplate("");
+             }
+             
+             use = false; 
+             value = request.getParameter(CHECKBOX_USECARDNUMBER);
+             if(value != null) {
+            	 use = value.equals(CHECKBOX_VALUE);
+            	 certificateprofiledata.setUseCardNumber(use);
+             }
+             else {
+            	 certificateprofiledata.setUseCardNumber(false);
              }
 
              use = false;
@@ -862,7 +874,7 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
   }
 
  // Include page
-  if( includefile.equals("certificateprofilepage.jspf")){ 
+  if( includefile.equals("certificateprofilepage.jspf")){
 %>
    <%@ include file="certificateprofilepage.jspf" %>
 <%}

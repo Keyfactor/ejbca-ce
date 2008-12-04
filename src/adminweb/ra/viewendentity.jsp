@@ -218,6 +218,15 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
+      <%} if(viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CARDNUMBER") %></td>
+	 <td><% if(viewendentityhelper.userdata.getCardNumber() != null) out.write(viewendentityhelper.userdata.getCardNumber()); %>
+	 <td><% if(viewendentityhelper.userdata.getEmail() != null) out.write(viewendentityhelper.userdata.getEmail()); %>
+
+         </td>
+       </tr>
+
       <% } if(viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 

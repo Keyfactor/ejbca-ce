@@ -42,6 +42,7 @@ public class SecConst extends Object {
     /** This users keystores are key recoverable. */
     public static final int USER_KEYRECOVERABLE = 0x80;
 
+    
     /** Notification will be sent to this users emailaddress */
     public static final int USER_SENDNOTIFICATION = 0x100;
     
