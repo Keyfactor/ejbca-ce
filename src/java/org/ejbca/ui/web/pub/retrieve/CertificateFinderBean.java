@@ -221,7 +221,7 @@ public class CertificateFinderBean {
 		if (certificates != null) {
 			Iterator i = certificates.iterator();
 			while (i.hasNext()) {
-				X509Certificate cert = (X509Certificate)i.next();
+				Certificate cert = (Certificate)i.next();
 				// TODO: CertificateView is located in web.admin package, but this is web.pub package...
 				CertificateView view = new CertificateView(cert,null,null);
 				result.add(view);
