@@ -118,7 +118,7 @@ appserver.home         : ${appserver.home}
 
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
         <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..."/>
-        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
+        <ejbca:cli name="ca" arg='init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
         <antcall target="ejbca:adminweb"/>
     	<antcall target="ejbca:javatruststore"/>
     </target>
@@ -128,12 +128,12 @@ appserver.home         : ${appserver.home}
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>
-		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" ${ca.name} null 1 JKS SERVER'/>
+		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
 		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli name="ra" arg='adduser superadmin ${superadmin.password} "CN=SuperAdmin" null ${ca.name} null 65 ${superadmin.keystoretype}'/>
+		<ejbca:cli name="ra" arg='adduser superadmin ${superadmin.password} "CN=SuperAdmin" null "${ca.name}" null 65 ${superadmin.keystoretype}'/>
 		<ejbca:cli name="ra" arg="setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
