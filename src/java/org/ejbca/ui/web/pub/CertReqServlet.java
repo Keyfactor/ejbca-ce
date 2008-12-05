@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.KeyStore;
@@ -26,6 +27,11 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
@@ -37,6 +43,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -64,6 +74,7 @@ import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FileTools;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -90,7 +101,7 @@ import org.ejbca.util.keystore.KeyTools;
  * password is needed. The path could be absolute or relative.<br>
  * </p>
  *
- * @author Original code by Lars Silv?n
+ * @author Original code by Lars Silven
  * @version $Id$
  */
 public class CertReqServlet extends HttpServlet {
@@ -170,25 +181,27 @@ public class CertReqServlet extends HttpServlet {
         RequestHelper.setDefaultCharacterEncoding(request);
         String iErrorMessage = null;
         try {
-            String username = request.getParameter("user");
-            String password = request.getParameter("password");
-            String keylengthstring = request.getParameter("keylength");
-            String keyalgstring = request.getParameter("keyalg");
-            String openvpn = request.getParameter("openvpn");
-            String certprofile = request.getParameter("certprofile");
+        	setParameters(request);
+        	
+            String username = getParameter("user");
+            String password = getParameter("password");
+            String keylengthstring = getParameter("keylength");
+            String keyalgstring = getParameter("keyalg");
+            String openvpn = getParameter("openvpn");
+            String certprofile = getParameter("certprofile");
 			String keylength = "1024";
 			String keyalg = CATokenConstants.KEYALGORITHM_RSA;
 			
             int resulttype = 0;
-            if(request.getParameter("resulttype") != null)
-              resulttype = Integer.parseInt(request.getParameter("resulttype")); // Indicates if certificate or PKCS7 should be returned on manual PKCS10 request.
+            if(getParameter("resulttype") != null)
+              resulttype = Integer.parseInt(getParameter("resulttype")); // Indicates if certificate or PKCS7 should be returned on manual PKCS10 request.
             
 
             String classid = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
 
-            if ((request.getParameter("classid") != null) &&
-                    !request.getParameter("classid").equals("")) {
-                classid = request.getParameter("classid");
+            if ((getParameter("classid") != null) &&
+                    !getParameter("classid").equals("")) {
+                classid = getParameter("classid");
             }
 
             if (keylengthstring != null) {
@@ -274,54 +287,86 @@ public class CertReqServlet extends HttpServlet {
             if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
 
               // first check if it is a netscape request,
-              if (request.getParameter("keygen") != null) {
-                  byte[] reqBytes=request.getParameter("keygen").getBytes();
-                  if (reqBytes != null) {
+              if (getParameter("keygen") != null) {
+                  byte[] reqBytes=getParameter("keygen").getBytes();
+                  if ((reqBytes != null) && (reqBytes.length>0)) {
                       log.debug("Received NS request: "+new String(reqBytes));
                       byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
                       RequestHelper.sendNewCertToNSClient(certs, response);
+                  } else {
+                	  throw new SignRequestException("No request bytes received.");
                   }
-              } else if ( request.getParameter("iidPkcs10") != null && !request.getParameter("iidPkcs10").equals("")) {
+              } else if ( getParameter("iidPkcs10") != null && !getParameter("iidPkcs10").equals("")) {
                   // NetID iid?
-                  byte[] reqBytes=request.getParameter("iidPkcs10").getBytes();
-                  if (reqBytes != null) {
+                  byte[] reqBytes = getParameter("iidPkcs10").getBytes();
+                  if ((reqBytes != null) && (reqBytes.length>0)) {
                       log.debug("Received iidPkcs10 request: "+new String(reqBytes));
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
                       response.setContentType("text/html");
                       RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), getServletContext(), getInitParameter("responseIidTemplate"),classid);
+                  } else {
+                	  throw new SignRequestException("No request bytes received.");
                   }
-              } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
+              } else if ( (getParameter("pkcs10") != null) || (getParameter("PKCS10") != null) ) {
                   // if not netscape, check if it's IE
-                  byte[] reqBytes=request.getParameter("pkcs10").getBytes();
+                  byte[] reqBytes = getParameter("pkcs10").getBytes();
                   if (reqBytes == null)
-                      reqBytes=request.getParameter("PKCS10").getBytes();
-                  if (reqBytes != null) {
+                      reqBytes=getParameter("PKCS10").getBytes();
+                  if ((reqBytes != null) && (reqBytes.length>0)) {
                       log.debug("Received IE request: "+new String(reqBytes));
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
                       debug.ieCertFix(b64cert);
                       RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),classid);
+                  } else {
+                	  throw new SignRequestException("No request bytes received.");
                   }
-              } else if (request.getParameter("pkcs10req") != null && resulttype != 0) {
-                  // if not IE, check if it's manual request
-                  byte[] reqBytes=request.getParameter("pkcs10req").getBytes();
-                  if (reqBytes != null) {
-                      log.debug("Received PKCS10 request: "+new String(reqBytes));
-                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
-                      if(resulttype == RequestHelper.ENCODED_PKCS7)  
-                        RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
-                      if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
-                        RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+              } else if ( ((getParameter("pkcs10req") != null) || (getParameter("pkcs10file") != null)) && resulttype != 0) {
+            	  byte[] reqBytes = null;
+            	  String pkcs10req = getParameter("pkcs10req");
+        		  if (StringUtils.isEmpty(pkcs10req)) {
+            		  // did we upload a file instead?
+            		  log.debug("No pasted request received, checking for uploaded file.");
+            		  pkcs10req = getParameter("pkcs10file");
+            		  if (StringUtils.isNotEmpty(pkcs10req)) {
+            			  // The uploaded file has been converted to a base64 encoded string
+            			  reqBytes = Base64.decode(pkcs10req.getBytes());
+            			  
+            		  }
+            	  } else {
+                	  reqBytes=pkcs10req.getBytes(); // The pasted request            		  
+            	  }
+            	  
+                  if ((reqBytes != null) && (reqBytes.length>0)) {
+                      pkcs10Req(response, username, password, resulttype, signsession, helper, reqBytes);
+                  } else {
+                	  throw new SignRequestException("No request bytes received.");
                   }
-              } else if (request.getParameter("cvcreq") != null && resulttype != 0) {
+              } else if ( ((getParameter("cvcreq") != null) || (getParameter("cvcreqfile") != null)) && resulttype != 0) {
                   // It's a CVC certificate request (EAC ePassports)
-                  byte[] reqBytes=request.getParameter("cvcreq").getBytes();
-                  if (reqBytes != null) {
+            	  byte[] reqBytes = null;
+            	  String req = getParameter("cvcreq");
+        		  if (StringUtils.isEmpty(req)) {
+            		  // did we upload a file instead?
+            		  log.debug("No pasted request received, checking for uploaded file.");
+            		  req = getParameter("cvcreqfile");
+            		  if (StringUtils.isNotEmpty(req)) {
+            			  // The uploaded file has been converted to a base64 encoded string
+            			  reqBytes = Base64.decode(req.getBytes());
+            			  
+            		  }
+            	  } else {
+                	  reqBytes=req.getBytes(); // The pasted request            		  
+            	  }
+
+                  if ((reqBytes != null) && (reqBytes.length>0)) {
                       log.debug("Received CVC request: "+new String(reqBytes));
                       byte[] b64cert=helper.cvcCertRequest(signsession, reqBytes, username, password);
                       if(resulttype == RequestHelper.BINARY_CERTIFICATE)  
                         RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", username+".cvcert");
                       if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
                         RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+                  } else {
+                	  throw new SignRequestException("No request bytes received.");
                   }
               }
             }
@@ -332,7 +377,7 @@ public class CertReqServlet extends HttpServlet {
         } catch (AuthLoginException ale) {
         	iErrorMessage = intres.getLocalizedMessage("certreq.wrongpassword");
         } catch (SignRequestException re) {
-        	iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
+        	iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq", re.getMessage());
         } catch (SignRequestSignatureException se) {
         	String iMsg = intres.getLocalizedMessage("certreq.invalidsign");
             log.error(iMsg, se);
@@ -352,14 +397,16 @@ public class CertReqServlet extends HttpServlet {
 	            debug.printDebugInfo();
 	            return;				
 			} else {
+				if (e1 == null) e1 = e;
             	String iMsg = intres.getLocalizedMessage("certreq.errorgeneral", e1.getMessage());
 	            log.debug(iMsg, e);
             	iMsg = intres.getLocalizedMessage("certreq.parameters", e1.getMessage());
 	            debug.print(iMsg + ":\n");
-	            Enumeration paramNames = request.getParameterNames();
-	            while (paramNames.hasMoreElements()) {
-	                String name = paramNames.nextElement().toString();
-	                String parameter = request.getParameter(name);
+	            Set paramNames = params.keySet();
+	            Iterator iter = paramNames.iterator();
+	            while (iter.hasNext()) {
+	                String name = (String)iter.next();
+	                String parameter = getParameter(name);
 	                if (!StringUtils.equals(name, "password")) {
 	                    debug.print(name + ": '" + parameter + "'\n");                	
 	                } else {
@@ -377,6 +424,67 @@ public class CertReqServlet extends HttpServlet {
             return;
         }
     }
+    private Map params = null;
+
+    /** Method creating a Map of request values, designed to handle both regular 
+     * x-encoded forms and multipart encoded upload forms. 
+     * 
+     * @param request HttpServletRequest
+     * @throws FileUploadException if multipart request can not be parsed
+     * @throws IOException If input stream of uploaded object can not be read 
+     */
+    private void setParameters(HttpServletRequest request) throws FileUploadException, IOException {
+    	if (FileUpload.isMultipartContent(request)) {     
+    		params = new HashMap();
+    		DiskFileUpload upload = new DiskFileUpload();
+    		upload.setSizeMax(10000);                   
+    		upload.setSizeThreshold(9999);
+    		List items;
+    		items = upload.parseRequest(request);
+    		Iterator iter = items.iterator();
+    		while (iter.hasNext()) {     
+    			FileItem item = (FileItem) iter.next();
+    			if (item.isFormField()) {
+    				params.put(item.getFieldName(), item.getString());
+    			} else {
+    				InputStream is = item.getInputStream();
+    				byte[] bytes = FileTools.readInputStreamtoBuffer(is);
+    				params.put(item.getFieldName(), new String(Base64.encode(bytes)));
+    			}
+    		}
+    	} else {
+    		params = request.getParameterMap();  		  
+    	}
+    }
+    private String getParameter(String param) {
+    	String ret = null;
+    	Object o = params.get(param);
+    	if (o != null) {
+    		if (o instanceof String) {
+        		ret = (String)o;    			
+    		} else if (o instanceof String[]) { // keygen is of this type for some reason...
+    			String[] str = (String[])o;
+    			if ( (str != null) && (str.length>0) ) {
+        			ret = str[0];    				
+    			}
+    		} else {
+    			log.debug("Can not cast object of type: "+o.getClass().getName());    			
+    		}
+    	}
+    	return ret;
+    }
+
+	private void pkcs10Req(HttpServletResponse response, String username,
+			String password, int resulttype, ISignSessionLocal signsession,
+			RequestHelper helper, byte[] reqBytes) throws Exception,
+			IOException {
+		log.debug("Received PKCS10 request: "+new String(reqBytes));
+		  byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
+		  if(resulttype == RequestHelper.ENCODED_PKCS7)  
+		    RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+		  if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
+		    RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+	}
 
     //doPost
 

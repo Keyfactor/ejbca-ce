@@ -1,7 +1,7 @@
 <%@ include file="header.jsp" %>
 <h1 class="title">Enroll For Server Certificate</h1>
-<p>Please give your username and password, paste the PEM-formated certification request into the field below and
-   click OK to fetch your certificate. 
+<p>Please give your username and password, select a PEM- or DER-formated certification request file (CSR) for upload, 
+or paste a PEM-formated request into the field below and click OK to fetch your certificate. 
 </p>
 
 <p>A PEM-formatted request is a BASE64 encoded certificate request starting with<br />
@@ -10,7 +10,7 @@
   <code>-----END CERTIFICATE REQUEST-----</code>
 </p>
 
-<form name="EJBCA" action="../certreq" enctype="x-www-form-encoded" method="post">
+<form name="EJBCA" action="../certreq" method="post" enctype="multipart/form-data">
   <fieldset >
     <legend>Enroll</legend>
 	<label for="user">Username</label>
@@ -20,6 +20,13 @@
 	<input type="password" size="10" name="password" id="password" value="foo123" accesskey="p" />
 	<br />
 	<br />
+	Request file:
+	<label for="pkcs10file"></label>
+	<input type="FILE" name="pkcs10file" id="pkcs10file"></input>
+	
+    <br />
+    <br />
+    or pasted request
 	<label for="pkcs10req"></label>
 	<textarea rows="15" cols="70" name="pkcs10req" id="pkcs10req"></textarea>
 	<br />
