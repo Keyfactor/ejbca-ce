@@ -179,7 +179,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     public abstract void setCardNumber(String cardnumber);
     
     /**
-     * @ejb.persistence column-name="cardnumber"
+     * @ejb.persistence column-name="subjectEmail"
      * @ejb.interface-method
      */
     public abstract String getSubjectEmail();
