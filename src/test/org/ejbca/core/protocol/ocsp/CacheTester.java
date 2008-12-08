@@ -17,7 +17,7 @@ import java.security.cert.X509Certificate;
 /** class used from TestCertificateCache
  * 
  * @author tomas
- * @version $Id: TestCertificateCache.java 6551 2008-11-05 17:08:58Z anatom $
+ * @version $Id$
  */
 public class CacheTester implements Runnable {
 	private CertificateCache cache = null;

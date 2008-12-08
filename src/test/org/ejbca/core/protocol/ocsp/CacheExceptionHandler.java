@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.ocsp;
 
 /** class used from TestCertificateCache, depends on TestCertificateCache
  * @author tomas
- * @version $Id: TestCertificateCache.java 6551 2008-11-05 17:08:58Z anatom $
+ * @version $Id$
  */
 public class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
 	public void uncaughtException(Thread t, Throwable e) {
