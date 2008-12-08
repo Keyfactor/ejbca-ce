@@ -47,7 +47,9 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CertTools;
 
 /** Tests http servlet for certificate request
- **/
+ * 
+ * @version $Id$
+ */
 public class CertRequestHttpTest extends TestCase {
     private static Logger log = Logger.getLogger(CertRequestHttpTest.class);
 

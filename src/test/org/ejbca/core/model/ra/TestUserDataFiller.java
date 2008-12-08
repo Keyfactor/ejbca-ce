@@ -18,6 +18,10 @@ import org.ejbca.util.dn.DnComponents;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+/** Tests DN merging
+ * 
+ * @version $Id$
+ */
 public class TestUserDataFiller extends TestCase {
 	EndEntityProfile profile;
 	UserDataVO userData = new UserDataVO();
