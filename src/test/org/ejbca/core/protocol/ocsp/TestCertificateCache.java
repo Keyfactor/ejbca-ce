@@ -198,24 +198,6 @@ public class TestCertificateCache extends TestCase {
     // 
     // Private helper methods
     //
-	private class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
-		public void uncaughtException(Thread t, Throwable e) {
-			TestCertificateCache.threadException = e;
-		}
-	}
-    private class CacheTester implements Runnable {
-    	private CertificateCache cache = null;
-    	private String dn;
-    	public CacheTester(CertificateCache cache, String lookfor) {
-    		this.cache = cache;
-    		this.dn = lookfor;
-    	}
-    	public void run() {
-    		for (int i=0; i<1000;i++) {
-    			X509Certificate cert = cache.findLatestBySubjectDN(dn);
-    		}    			
-    	}
-    }
 	
 	private static byte[] testroot = Base64
 	.decode(("MIICPDCCAaWgAwIBAgIIV++ss+Mrw5MwDQYJKoZIhvcNAQEFBQAwLjERMA8GA1UE"+
