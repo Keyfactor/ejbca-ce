@@ -236,7 +236,7 @@ public class CertRequestHttpTest extends TestCase {
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
         System.out.println(errormsg);
-        assertEquals("Username: reqtestunknown\nNon existent username!\nTo generate a certificate a valid username and password must be entered.\n", errormsg);
+        assertEquals("Username: reqtestunknown\nNon existent username. To generate a certificate a valid username and password must be supplied.\n", errormsg);
         log.trace("<test02RequestUnknownUser()");
     }
 
@@ -283,7 +283,7 @@ public class CertRequestHttpTest extends TestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
-        assertEquals("Username: reqtest\nWrong username or password!\nTo generate a certificate a valid username and password must be entered.\n", errormsg);
+        assertEquals("Username: reqtest\nWrong username or password! To generate a certificate a valid username and password must be supplied.\n", errormsg);
         System.out.println(errormsg);
         log.trace("<test03RequestWrongPwd()");
     }
@@ -332,7 +332,7 @@ public class CertRequestHttpTest extends TestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
-        assertEquals("Username: reqtest\nWrong user status!\nTo generate a certificate for a user the user must have status new, failed or inprocess.\n", errormsg);
+        assertEquals("Username: reqtest\nWrong user status! To generate a certificate for a user the user must have status New, Failed or In process.\n", errormsg);
         System.out.println(errormsg);
         log.trace("<test04RequestWrongStatus()");
     }
