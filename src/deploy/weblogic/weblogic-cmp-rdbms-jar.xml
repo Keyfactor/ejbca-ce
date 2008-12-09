@@ -703,7 +703,7 @@
          <dbms-column>keyStorePassword</dbms-column>
       </field-map>
             <field-map>
-         <cmp-field>cardnumber</cmp-field>
+         <cmp-field>cardNumber</cmp-field>
          <dbms-column>cardnumber</dbms-column>
       </field-map>
       

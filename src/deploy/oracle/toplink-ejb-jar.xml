@@ -1125,7 +1125,7 @@
                <opm:field name="USERNAME" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>cardnumber</opm:attribute-name>
+               <opm:attribute-name>cardNumber</opm:attribute-name>
                <opm:field name="CARDNUMBER" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             

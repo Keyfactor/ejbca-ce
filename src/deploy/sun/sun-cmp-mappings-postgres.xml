@@ -846,7 +846,7 @@
             </cmp-field-mapping>
             
             <cmp-field-mapping>
-                <field-name>cardnumber</field-name>
+                <field-name>cardNumber</field-name>
                 <column-name>CARDNUMBER</column-name>
 
             </cmp-field-mapping>
