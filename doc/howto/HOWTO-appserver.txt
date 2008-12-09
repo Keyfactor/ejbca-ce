@@ -34,7 +34,7 @@ sun-web.xml
 
 * database schema must be updated.
 Example for MySQL:
-CLASSPATH=../lib/mysql-connector-java-5.0.4-bin.jar:$CLASSPATH 
+export CLASSPATH=../lib/mysql-connector-java-5.0.4-bin.jar:$CLASSPATH 
 ./capture-schema -username ejbca -password ejbca -dburl jdbc:mysql://127.0.0.1/ejbca -driver com.mysql.jdbc.Driver -out ejbca-ejb
 
 Example for Derby:
