@@ -57,5 +57,5 @@
   <field-name>keyStorePassword</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>cardnumber</field-name>
+  <field-name>cardNumber</field-name>
 </cmp-field>
