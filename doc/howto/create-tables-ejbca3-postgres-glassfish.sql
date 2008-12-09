@@ -348,6 +348,7 @@ CREATE TABLE userdata (
   hardTokenIssuerId INT4 NOT NULL, 
   extendedInformationData TEXT, 
   keyStorePassword TEXT, 
+  cardnumber TEXT, 
 CONSTRAINT pk_userdata PRIMARY KEY (username)
 );
 

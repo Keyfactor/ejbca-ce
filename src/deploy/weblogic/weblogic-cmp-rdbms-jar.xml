@@ -702,6 +702,11 @@
          <cmp-field>keyStorePassword</cmp-field>
          <dbms-column>keyStorePassword</dbms-column>
       </field-map>
+            <field-map>
+         <cmp-field>cardnumber</cmp-field>
+         <dbms-column>cardnumber</dbms-column>
+      </field-map>
+      
       </table-map>
 
    </weblogic-rdbms-bean>

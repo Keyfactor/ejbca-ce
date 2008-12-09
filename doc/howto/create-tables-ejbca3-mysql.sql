@@ -319,6 +319,7 @@ CREATE TABLE UserData (
     hardTokenIssuerId int(11) NOT NULL DEFAULT '0',
     extendedInformationData longtext NULL DEFAULT NULL,
     keyStorePassword varchar(250) binary NULL DEFAULT NULL,
+    cardnumber varchar(19) binary NULL DEFAULT NULL,
     PRIMARY KEY (username)
 );
 

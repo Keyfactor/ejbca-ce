@@ -319,6 +319,7 @@ CREATE TABLE UserData (
     hardTokenIssuerId integer NOT NULL,
     extendedInformationData clob,
     keyStorePassword varchar(256),
+    cardnumber varchar(19),
     PRIMARY KEY (username)
 );
 

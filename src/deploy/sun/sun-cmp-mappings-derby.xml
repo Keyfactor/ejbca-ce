@@ -844,6 +844,12 @@
                 <column-name>KEYSTOREPASSWORD</column-name>
 
             </cmp-field-mapping>
+            
+            <cmp-field-mapping>
+                <field-name>cardnumber</field-name>
+                <column-name>CARDNUMBER</column-name>
+
+            </cmp-field-mapping>
 
         </entity-mapping>
 

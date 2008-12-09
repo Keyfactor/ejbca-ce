@@ -1124,6 +1124,11 @@
                <opm:attribute-name>username</opm:attribute-name>
                <opm:field name="USERNAME" xsi:type="opm:column"/>
             </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>cardnumber</opm:attribute-name>
+               <opm:field name="CARDNUMBER" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            
          </opm:attribute-mappings>
          <toplink:descriptor-type>independent</toplink:descriptor-type>
          <toplink:instantiation/>
