@@ -123,7 +123,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		for (String caName : cas.keySet()) {
 			Integer caId = cas.get(caName);
 			if (availableCAs.contains(caId)) {
-				list.add(new SelectItem(caId, caName));
+				list.add(new SelectItem(caId.toString(), caName));
 			}
 		}
 		return list;
