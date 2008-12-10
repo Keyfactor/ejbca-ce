@@ -28,7 +28,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
@@ -39,11 +38,11 @@ import javax.ejb.DuplicateKeyException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -612,14 +611,16 @@ public class ProtocolOcspHttpTest extends TestCase {
         // Request 2
         //
         // Remove the last byte, should still be quite corrupted
-        bytes = Arrays.copyOf(orgbytes, orgbytes.length-1);
+        //bytes = Arrays.copyOf(orgbytes, orgbytes.length-1); only works in Java 6
+        bytes = ArrayUtils.remove(orgbytes, orgbytes.length-1);
         singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // error code 1 means malformed request
         assertNull("SingleResps should be null.", singleResps);
 
         // Request 3
         //
         // more than 1 million bytes
-        bytes = Arrays.copyOf(orgbytes, 1000010);
+        //bytes = Arrays.copyOf(orgbytes, 1000010); only works in Java 6
+        bytes = ArrayUtils.addAll(orgbytes, new byte[1000010]);
         singleResps = helper.sendOCSPPost(bytes, "123456789", 0, 400); // http code 400 is HttpServletResponse.SC_BAD_REQUEST
         assertNull("SingleResps should be null.", singleResps);
 
