@@ -611,7 +611,7 @@ To be able to use the WS-API you must select 'search local classes first' for 'e
   and 'ejbcaws.enabled=false' in conf/jaxws.properties, 
   and also edit src/deploy/ear/META-INF/orion-application.xml
 <ol>
-<li>Log into the admin console of Oracle AS and deploy EJBCA.<br/>
+<li>Start OC4J (bin/oc4j -start) and log into the admin console of Oracle AS and deploy EJBCA.<br/>
   'Automatically create a new deployment plan' = checked in step 1.<br/>
   'Application Name' = ejbca in step 2.<br/>
   'Configure Class Loading' -> 'Search Local Classes First' = true for 'ejbcaws' and 'xkms' in step 3.<br/></li>
