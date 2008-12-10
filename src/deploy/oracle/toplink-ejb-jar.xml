@@ -1383,17 +1383,14 @@
                      <toplink:collection-type>java.util.Vector</toplink:collection-type>
                   </toplink:container>
                </opm:query>
-               <opm:query name="findByGroupNameAndCAId" xsi:type="toplink:read-object-query">
+               <opm:query name="findByGroupName" xsi:type="toplink:read-object-query">
                   <opm:arguments>
                      <opm:argument name="1">
                         <opm:type>java.lang.String</opm:type>
                      </opm:argument>
-                     <opm:argument name="2">
-                        <opm:type>int</opm:type>
-                     </opm:argument>
                   </opm:arguments>
                   <toplink:call xsi:type="toplink:ejbql-call">
-                     <toplink:ejbql>SELECT OBJECT(a) from AdminGroupDataBean a WHERE a.adminGroupName=?1 AND a.caId=?2</toplink:ejbql>
+                     <toplink:ejbql>SELECT OBJECT(a) from AdminGroupDataBean a WHERE a.adminGroupName=?1</toplink:ejbql>
                   </toplink:call>
                   <toplink:reference-class>org.ejbca.core.ejb.authorization.AdminGroupDataBean</toplink:reference-class>
                   <toplink:cache-usage>conform</toplink:cache-usage>
