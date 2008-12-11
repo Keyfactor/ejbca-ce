@@ -23,6 +23,7 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 
 /**
@@ -50,9 +51,14 @@ public class ProofOfPossession implements DEREncodable
     
     public DERNull getRaVerified()
     {
-      if( this.tag != 0 )
-        return null;
-      return (DERNull)this.obj;
+    	if( this.tag != 0 )
+    		return null;
+    	// This can sometimes be a 0 length Octet string it seems
+    	if (obj instanceof DEROctetString) {
+    		DEROctetString o = (DEROctetString) obj;
+    		return new DERNull();
+    	}
+    	return (DERNull)this.obj;
     }
 
     public POPOSigningKey getSignature()
