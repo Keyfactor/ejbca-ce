@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.apache.log4j.Logger;
+
 import com.novell.ldap.LDAPException;
 
 /**
@@ -23,6 +25,7 @@ import com.novell.ldap.LDAPException;
  * @version $Id$
  */
 public class TCPTool {
+    private static final Logger log = Logger.getLogger(TCPTool.class);
 
 	/**
 	 * Probe a TCP port connection at hostname:port.  
@@ -58,8 +61,14 @@ public class TCPTool {
 	 * @throws IOException if the connection fails
 	 */
 	public static void probeConnectionRaw(String hostname, int port, int timeout) throws IOException {
+		if (log.isTraceEnabled()) {
+			log.trace(">probeConnectionRaw("+hostname+", "+port+", "+timeout+")");			
+		}
 		Socket probeSocket = new Socket();
 		probeSocket.connect(new InetSocketAddress(hostname, port), timeout);
 		probeSocket.close();
+		if (log.isTraceEnabled()) {
+			log.trace("<probeConnectionRaw");			
+		}
 	}
 }
