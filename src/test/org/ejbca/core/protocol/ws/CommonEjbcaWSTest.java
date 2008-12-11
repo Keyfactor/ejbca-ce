@@ -138,7 +138,7 @@ public class CommonEjbcaWSTest extends TestCase {
     protected final static String wsTestAdminUsername = "wstest";
 	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
     protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-	protected final static String HOSTNAME = "ca-server";	//"localhost";
+	protected final static String HOSTNAME = "localhost";
 	private static final String BADCANAME = "BadCaName";
     
     protected String getAdminCAName() {
