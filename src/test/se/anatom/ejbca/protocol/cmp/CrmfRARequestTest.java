@@ -48,7 +48,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * This test requires:
- * cmp.operationmode=ra, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password, cmp.allowraverifypopo=true.
+ * cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password.
  * @author tomas
  * @version $Id$
  */

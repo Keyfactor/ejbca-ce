@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * requires setup of the CMP with a tcp listener on port 5587
- * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
+ * cmp.operationmode=ra, allowraverifypopo=true, responseProtection=signature, authenticationsecret=password.
  * @author tomas
  * @version $Id$
  */
@@ -113,7 +113,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		super.tearDown();
 	}
 
-	public void test01CrmfHttpUnknowUser() throws Exception {
+	public void test01CrmfUnknowUser() throws Exception {
         // A name that does not exis
 	    userDN = "CN=abc123rry5774466, O=PrimeKey Solutions AB, C=SE";
 
@@ -137,7 +137,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 	}
 	
 	
-	public void test02CrmfHttpOkUser() throws Exception {
+	public void test02CrmfOkUser() throws Exception {
 
 		// Create a new good user
 		createCmpUser();
@@ -189,7 +189,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		checkCmpCertRepMessage(userDN, cacert, resp, reqId);
 	}
 	
-	public void test04CrmfUnuahtenticated() throws Exception {
+	public void test04CrmfUnauthenticated() throws Exception {
 
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();

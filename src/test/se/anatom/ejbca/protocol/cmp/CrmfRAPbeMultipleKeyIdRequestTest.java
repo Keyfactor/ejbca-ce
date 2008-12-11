@@ -66,28 +66,28 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * cmp.ra.authenticationsecret=password, cmp.ra.namegenerationscheme=DN
  * cmp.ra.endentityprofile=KeyId, cmp.ra.certificateprofile=KeyId, cmp.ra.caname=ProfileDefault
  * 
- * You need a CMP tcp listener configured on port 5547.
+ * You need a CMP tcp listener configured on port 5587.
  * 
  * Two CAs: CmpCA1 with DN "CN=CmpCA1,O=EJBCA Sample,C=SE"
  *          CmpCA2 with DN "CN=CmpCA2,O=EJBCA Sample,C=SE"
  *          
- * There must be three end entity profiles and two certificate profiles with names KeyId1 and KeyId2.
+ * There must be three end entity profiles and four certificate profiles.
  * 
  * Cert Profile with name KeyId1 must have key usage "digital signature", non-overridable
  * Cert Profile with name KeyId2 must have key usage "non repudiation", non-overridable
  * Cert Profile with name KeyId3 must have key usage "key encipherment", overridable
- * Cert Profile with name KeyId4 must be the same as KeyId2, but have "Enable Extension Override".
+ * Cert Profile with name KeyId4 must be the same as KeyId2, but have "Allow Extension Override".
  * 
  * EE Profile with name KeyId1 must have a fixed, non-modifiable C=SE, an O, a CN and be using certProfile KeyId1
  * EE Profile with name KeyId1 must have a modifyable rfc822Name and UPN field allowed in subjectAltNames 
  * EE Profile with name KeyId1 must have default CA with name CmpCA1
  * 
  * EE Profile with name KeyId2 must have a fixed, non-modifiable C=NO, an O, a CN  and be using certProfile KeyId2
- * EE Profile with name KeyId2 must have modifyable rfc822Name and UPN field allowed in subjectAltNames 
+ * EE Profile with name KeyId2 must have modifyable rfc822Name and MS UPN field allowed in subjectAltNames 
  * EE Profile with name KeyId2 must have default CA with name CmpCA2
  * 
  * EE Profile with name KeyId3 must have a fixed, non-modifiable C=NO, an O, a CN  and be using certProfile KeyId3
- * EE Profile with name KeyId3 must have modifyable rfc822Name and UPN field allowed in subjectAltNames 
+ * EE Profile with name KeyId3 must have modifyable rfc822Name and MS UPN field allowed in subjectAltNames 
  * EE Profile with name KeyId3 must have default CA with name CmpCA2 
  * (use entity profile KeyId2 as template for KeyId3)
  * 
