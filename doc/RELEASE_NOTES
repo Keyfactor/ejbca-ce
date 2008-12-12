@@ -7,12 +7,20 @@ Read the changelog for details.
 Notable changes in no specific order:
 - Restructure administrator validation to allow admins using externally issued certificates.
 - Add a CLI subcommand to add an administrator in an admin group using the serial number.
-- Drop administrator flag in end entities, it's not needed.
+- Drop administrator flag in end entities, it's not needed, makes configuration easier together with remade admin GUI.
 - Possible to generate CA PKCS#10 request without giving CA certificate.
+- Add support for SEIS Card Number extension.
+- Added KRB5PrincipalName subjectAltName.
+- Option in certificate profiles for reversing DN order.  
+- Enroll for CV certificate on public web.
+- Upload PEM or binary certificate requests on public web.
+- Possible to sign releases and deployed code.
+- Enhanced basic custom certificate extension.
+- Command to list objects in Luna HSM partition.
 - Some bug fixes.  
   
 For upgrade instructions, please see UPGRADE. 
-There are database upgrades in this release, so read UPGRADE carefully.
+NOTE: There are database upgrades in this release, so read UPGRADE carefully.
 
 Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
 EJBCA 3.7.x to 3.8.0. Use the full package from EJBCA 3.8.0 and follow the upgrade instructions in UPGRADE.

@@ -54,9 +54,9 @@ and then simply update the software on the other nodes.
 8. Restart JBoss again to flush all caches.
 
 
-If you don't want to do step 6 above (doing step 6 is the recommended way though) and instead want to do
-the upgrade of the database manually, you can find the SQL commands for your database in
-src/upgrade/37_38/37_38-upgrade-<<database name>>.sql.
+Ant upgrade is needed to make the database changes in the authorization module.
+To see which database structural changes are made you can find the SQL commands for your database in
+src/upgrade/37_38/37_38-upgrade-<<database name>>.sql. Note that ant upgrade does more than these sql lines.
 
 You should be able to upgrade from EJBCA 3.1.x directly to 3.8.x, by following the same instructions
 as above (this upgrade is not thoroughly tested though). Also see instructions below for additional
