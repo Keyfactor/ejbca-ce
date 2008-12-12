@@ -1170,7 +1170,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECARDNUMBER") %> 
+        <%= ejbcawebbean.getText("USECARDNUMBER") %> <%= ejbcawebbean.getHelpReference("/manual.html#Cardnumber") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECARDNUMBER %>"  value="<%=CHECKBOX_VALUE %>" 
