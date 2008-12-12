@@ -62,7 +62,7 @@ public class TestUserDataFiller extends TestCase {
     public void testFillUserDataWithDefaultValuesDnOnly() {
     	userData.setSendNotification(true);
     	userData.setPassword("userPassword");
-    	String expectedUserDn="CN=userName,C=fr,O=linagora";
+    	String expectedUserDn="CN=userName,O=linagora,C=fr";
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
     	Assert.assertEquals("userName", userData.getUsername());
     	Assert.assertTrue(userData.getSendNotification());

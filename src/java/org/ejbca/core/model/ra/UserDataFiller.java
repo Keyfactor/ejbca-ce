@@ -24,6 +24,7 @@ import javax.naming.ldap.Rdn;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.dn.DnComponents;
@@ -134,7 +135,8 @@ public class UserDataFiller {
         if (profile.getUse(DnComponents.DNEMAIL, 0)) {
             dnMap.put(DnComponents.DNEMAIL, entityEmail);
         }
-        return  profiledn.mergeDN(userdn, true, dnMap).toString();
+//        return  profiledn.mergeDN(userdn, true, dnMap).toString();
+        return  CertTools.stringToBCDNString(profiledn.mergeDN(userdn, true, dnMap).toString());
     }
  
     /**
@@ -188,6 +190,7 @@ public class UserDataFiller {
         if (profile.getUse(DnComponents.RFC822NAME, 0)) {
             dnMap.put(DnComponents.RFC822NAME, entityEmail);
         }
-        return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
+//        return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
+        return  CertTools.stringToBCDNString(profileAltName.mergeDN(userAltName, true, dnMap).toString());
     }
 }
