@@ -324,12 +324,12 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generateCertReq(java.lang.String)
      */
-    public void generateCertReq(String alias) throws Exception {
+    public void generateCertReq(String alias, String sDN) throws Exception {
         final RSAPublicKey publicKey = (RSAPublicKey)this.keyStore.getCertificate(alias).getPublicKey();
         final PrivateKey privateKey = (PrivateKey)this.keyStore.getKey(alias, null);
         final PKCS10CertificationRequest certReq =
             new PKCS10CertificationRequest( "SHA1withRSA",
-                                            new X509Name("CN="+alias),
+                                            sDN!=null ? new X509Name(sDN) : new X509Name("CN="+alias),
                                             publicKey, new DERSet(),
                                             privateKey,
                                             this.keyStore.getProvider().getName() );

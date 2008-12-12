@@ -59,10 +59,11 @@ public interface KeyStoreContainer {
     byte[] renameAlias( String oldAlias, String newAlias ) throws Exception;
 
     /**
-     * @param string
+     * @param string alias for the key to be used
+     * @param dn the DN to be used. If null the 'CN=alias' will be used
      * @throws Exception
      */
-    void generateCertReq(String string) throws Exception;
+    void generateCertReq(String string, String dn) throws Exception;
 
     /**
      * @param string

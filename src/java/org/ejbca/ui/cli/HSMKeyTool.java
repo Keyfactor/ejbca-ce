@@ -139,9 +139,9 @@ public class HSMKeyTool extends ClientToolBox {
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(CERT_REQ)) {
                 if ( args.length < 7 )
-                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name>");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>]");
                 else
-                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6]);
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6], args.length>7 ? args[7] : null);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
                 if ( args.length < 7 )
@@ -163,7 +163,7 @@ public class HSMKeyTool extends ClientToolBox {
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 6 )
-                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<# of tests or threads>] [alias for stress test] [type of stress test]");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<# of tests or threads>] [<alias for stress test>] [<type of stress test>]");
                 else
                     KeyStoreContainerTest.test(args[2], args[3], args[4], args[5],
                                                args.length>6 ? Integer.parseInt(args[6].trim()) : 1, args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null);
