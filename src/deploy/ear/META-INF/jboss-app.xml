@@ -1,18 +1,8 @@
 <?xml version="1.0"?>
 <jboss-app>
-	<!--
-		JBoss classloader is an absolute abomination and a total hack
-		that encourages sloppy programming practices.
-		
-		The following fallback to something closer to the traditional J2EE isolation system.
-		
-		To have a look at the loading disaster:
-		
-		http://localhost:8080/jmx-console/HtmlAdaptor?action=inspectMBean&name=org.ejbca.loader%3Aloader%3Dejbca-ca.ear
-	  -->
 	  
-	  <!-- does not work with JBoss 4.0.x so remove it for the time beeing
-	<loader-repository>org.ejbca.loader:loader=ejbca-ca.ear</loader-repository>
+	  <!-- Configure class loading isolation for ejbca, for JBoss 4.2.x and later
+	<loader-repository>ejbca:archive=ejbca.ear</loader-repository>
 	  -->
 
    <!-- String indicating where cmptcpservice should be replaced -->
