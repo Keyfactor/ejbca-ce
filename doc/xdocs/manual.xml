@@ -467,9 +467,11 @@ This means that if both are true the DN will have Ldap DN order, but if any one 
 </p>
 </subsection>
 <subsection name="Cardnumber">
+<p>
 Select this if you want to use the SEIS Cardnumber Extension. The card number is a unique identifier stored in the certificate and should also be printed on top of the card on which the certificate is stored.
 When used, the card number needs to be set for the end entity before creating a certificate.
 The extension is specified in the the Seis document  SS 614331 chapter 4.3 and has OID 1.2.752.34.2.1.
+</p>
 </subsection>
 </section>
 
