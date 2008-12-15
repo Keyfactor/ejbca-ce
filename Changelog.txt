@@ -1,3 +1,49 @@
+3.8.0, 2008-12-15
+---
+New Feature
+    * [ECA-904] - Add a CLI subcommand to add an administrator in an admin group using the serial number
+    * [ECA-935] - Restructure administrator validation to allow admins using externally issued certificates
+    * [ECA-953] - List objects in Luna HSM partition
+    * [ECA-969] - Possible to generate CA PKCS#10 request without giving CA certificate
+    * [ECA-993] - Add KRB5PrincipalName subjectAltName
+    * [ECA-1000] - Sign releases and deployed code
+    * [ECA-1007] - Enhanced basic certificate extensions
+    * [ECA-1033] - Possible to enroll for CV certificates on public web
+    * [ECA-1051] - Possibility give a user defined DN to a new certificate request for an HSM
+
+Improvement
+    * [ECA-917] - Allow to use inverse LDAP order in DN for end entities
+    * [ECA-918] - Handle web service error code when CA is down
+    * [ECA-936] - Drop administrator flag in end entities
+    * [ECA-937] - Allow use of emailAddress in Admin interface
+    * [ECA-963] - Ability to distinguish between non-existing CA and authorization problems through WS
+    * [ECA-990] - Allow auto-activation of CAs dispite not having strong crypto policy installed
+    * [ECA-1001] - tool to change key alias
+    * [ECA-1012] - Option to enter email manually for import cert cli command
+    * [ECA-1014] - Display ejbca version in startup log message
+    * [ECA-1016] - Make error messages from CertReqServlet localizeable
+    * [ECA-1034] - Use TRACE logging for certain debug log
+    * [ECA-1038] - Use Commons Configuration for CMP service
+    * [ECA-1043] - Upload of binary certificate requests in public web enrol
+    * [ECA-1045] - Add support for SEIS Card Number extension in certificates
+    * [ECA-1049] - CMP raVerified can sometimes by zero bytes DEROctetString instead of DERNUll
+
+Task
+    * [ECA-971] - ExtRA: upgrade to commons-lang 2.4 and commons-collections 3.2
+    * [ECA-1013] - Upgrade BC to 1.41
+
+Bug
+    * [ECA-664] - Adding Administrator Access rule; username with not-allowed character is possible
+    * [ECA-782] - Listing user certificates from the public web fails if the serial number of the cert begins with "0"
+    * [ECA-882] - Add Administrator - cert serial number not checked
+    * [ECA-968] - Key length changes when editing CA in admin-GUI
+    * [ECA-970] - LdapPublisher searches for old objects on certDN instead of Ldap DN
+    * [ECA-972] - Merge on DN - Problems with rfc822name and email
+    * [ECA-992] - Cannot add "OtherName" SubjectAltName in end entity profile
+    * [ECA-996] - Merge of DN doesn't work properly
+    * [ECA-1046] - view certificate on Public web gives error for CVC certificates
+    * [ECA-1048] - Can not install with initial CA with space in name
+
 3.7.4, 2008-11-18
 ---
 New Feature
