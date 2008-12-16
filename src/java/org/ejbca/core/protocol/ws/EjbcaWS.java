@@ -1469,7 +1469,7 @@ public class EjbcaWS implements IEjbcaWS {
 				while(htdIter.hasNext()) {
 					HardTokenDataWS toRevoke = (HardTokenDataWS)htdIter.next();
 					try{
-						if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
+						  if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD) && toRevoke.getLabel() != null && !toRevoke.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
 
 								// Token have extended key usage MS Logon, don't revoke it
 								Iterator revokeCerts = ejbhelper.getHardTokenSession().findCertificatesInHardToken(admin, toRevoke.getHardTokenSN()).iterator();
