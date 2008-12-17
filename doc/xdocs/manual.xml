@@ -3294,27 +3294,11 @@ lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE
 
 <subsection name="SafeNet Luna SA HSM">
 <p>
-Hopefully it is possible to use PKCS#11 interface of the HSM instead of using the java provider of the HSM.
-It will better to use PKCS#11 since the Luna java provider is using the PKCS#11
-Using PKCS#11 will change the keygeneration (step 3). The CA creation (step 5) should then be done with the PKCS#11 token.
-</p><p>
-PKCS#11 key pair generation mini-howto from Ricardo Ariel Gorosito:
-<br/>
-1: keypair generation:<br/>
-# cmu gen -slot=1 -modulusBits=2048 -publicExp=65537 -sign=1 -verify=1 -labelPublic="My Public Key" -labelPrivate="My Private Key" -id=123456
-<br/>(ID is a random number, and utilized in certificate import)
-<br/>
-2: CSR generation:<br/>
-# cmu requestCert -slot=1<br/>
-utility list private keys and you need to select the number of "My Private Key"<br/>
-3: certificate import:<br/>
-# cmu import -slot=1 -inputFile=/tmp/yo.crt -label="My Certificate"<br/>
-4: set ID to certificate:<br/>
-# cmu setattribute -id=123456<br/>
-Utility list objects and you need to select the number of "My Certificate". Now, if you open the PKCS11 keystore, see the alias "My Certificate"
-<br/>Note: every time you run "cmu" you are asked for slot password 
-</p><p>
-Follow these steps to create a CA that is using a Luna SA HSM:
+One SafeNet Luna it is possible to use either the PKCS#11 interface or the JCE interface. Being generally used by all HSMs we recommend using the 
+PKC#11 interface.
+</p>
+<p>
+General steps for the installation and CA creation. Step 1, 3, and 5 have different configuration depending on if you use PKCS#11 or JCE.
 </p>
 <strong>1. Install the Luna SA HSM</strong>
 <p>
@@ -3324,6 +3308,75 @@ It is only possible for the CA to use one partition. The reason for this limitat
 <p>
 Do the setup according the documentation from SafeNet. After "Assign a Client to a Partition" is done you should check that you have access to a partition with the "vtl verify" command. The label of the partition returned in the response should be used later as 'slotLabel'.
 </p>
+<p>
+Follow steps 2 to 5 depending on if you use PKCS#11 or JCE.
+</p>
+<strong>Note.</strong>
+<p>
+When activating Luna CAs in EJBCA the given password is only validated for the first one that is activated. When this first CA is activated a login is performed to the used partition. Logout from the partition is performed when all Luna CAs in EJBCA for a partition has been deactivated.
+</p><p>
+Different partitions may be used for different CAs. But only CAs from one partition may be activated at a certain time.
+</p>
+
+<subsubsection name="SafeNet PKCS11">
+<strong>2. Build EJBCA</strong>
+<p>
+Build and deploy as usual, see installation guide.
+</p>
+<strong>3. Create keys that should be used on the Luna SA HSM</strong>
+<ol>
+<li>Keypair generation:<br/>
+# cd /usr/lunasa/bin<br/>
+# ./cmu gen -slot=1 -modulusBits=2048 -publicExp=65537 -sign=1 -verify=1 -labelPublic="defualtPublicKey" -labelPrivate="defaultPrivateKey" -id=123456<br/>
+(ID is a random number, and utilized in certificate generation. This must be a new number for every key that is generated.)
+</li>
+<li>Certificate generation - Not CA certificate, only HSM wrapper for public key:<br/>
+# ./cmu selfsigncertificate -slot=1<br/>
+Select defaultPrivateKey from the list.<br/>
+You must enter at least a value for CN when asked, this will be the label of the key to use in EJBCA. Enter <i>defaultKey</i> for this example. 
+</li>
+<li>List objects:<br/>
+# ./cmu list<br/>
+You should see defaultKey listed.
+</li>
+</ol>
+<p>
+Note: every time you run "cmu" you are asked for slot password 
+</p>
+<strong>4. Make EJBCA aware of the new keys</strong>
+<p>
+Do the following:
+</p>
+<ul>
+<li>1. Stop the application server.</li>
+<li>2. Start the application server.</li>
+</ul>
+<strong>5. Create a new CA in the web GUI of EJBCA</strong>
+<p>
+Choose PKCS#11 as "CA Token Type".
+</p><p>
+Define which keys on the slot that should be used and the purpose of these keys. See above for general description of PKCS#11 CA Token properties.
+</p><p>
+The keys in the property field are defined by the wrapper certificates aliases.
+</p><p>
+Example:
+</p>
+<source>
+slot 1
+defaultKey defaultKey
+sharedLibrary /usr/lib/libCryptoki2.so
+</source>
+<p>You can also include the slot password in the properties if you want autoactivation of the CA. If not you have to manually activate the CA when the server is restarted.
+</p> 
+<source>
+slot 1
+defaultKey defaultKey
+sharedLibrary /usr/lib/libCryptoki2.so
+pin sqEK-WALL-xCTT-Hdx6
+</source>
+</subsubsection>
+
+<subsubsection name="SafeNet JCE">
 <strong>2. Build EJBCA</strong>
 <p>
 Do the following:
@@ -3373,23 +3426,8 @@ slotLabel p1
 certSignKey rootCertSign
 defaultKey rootCRLSign
 </source>
-<p>
-It ought to be better to create a PKCS#11 token instead. But this has not been verified. It configuration should look like this:
-</p>
-<source>
-slot 1
-certSignKey rootCertSign
-defaultKey rootCRLSign
-</source>
-<p>
-Using PKCS#11 may work even if the keys has been created with "lunaHSM generate".
-</p>
-<strong>Note.</strong>
-<p>
-When activating Luna CAs in EJBCA the given password is only validated for the first one that is activated. When this first CA is activated a login is performed to the used partition. Logout from the partition is performed when all Luna CAs in EJBCA for a partition has been deactivated.
-</p><p>
-Different partitions may be used for different CAs. But only CAs from one partition may be activated at a certain time.
-</p>
+</subsubsection>
+
 </subsection>
 
 <subsection name="Eracom HSM with PKCS#11">
