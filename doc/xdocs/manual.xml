@@ -3343,6 +3343,9 @@ You should see defaultKey listed.
 <p>
 Note: every time you run "cmu" you are asked for slot password 
 </p>
+<p>You can also generate keys using lunaHSM.sh as for JCE (bin/lunaHSM.sh generate testKey 1024 sqEK-WALL-xCTT-Hdx6) and then running 'cmu selfsigncertificate', selecting testKey and giving
+the certificate a CN of myTestKey. Then you can use this key with alias myTestKey in the ca token properties.
+</p>
 <strong>4. Make EJBCA aware of the new keys</strong>
 <p>
 Do the following:
