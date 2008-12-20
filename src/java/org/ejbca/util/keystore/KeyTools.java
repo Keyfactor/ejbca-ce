@@ -48,7 +48,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
-import java.util.Random;
 
 import javax.crypto.Cipher;
 
@@ -549,10 +548,6 @@ public class KeyTools {
         }
     } // createSubjectKeyId
 
-    /**
-     * random used to get unique provider name in {@link #getP11Provider(String, String, boolean, String)}
-     */
-    private static final Random random = new Random();
     /** Creates a SUN or IAIK PKCS#11 provider using the passed in pkcs11 library. First we try to see if the IAIK provider is available,
      * because it supports more algorithms. If the IAIK provider is not available in the classpath, we try the SUN provider.
      * 
@@ -586,14 +581,13 @@ public class KeyTools {
     	}
         if ( slot==null )
             return getP11Provider(new FileInputStream(fileName), null);
-        
+
         // Properties for the SUN PKCS#11 provider
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter pw = new PrintWriter(baos);
-        // to allways create new session when a provider is created make sure name is unique.
-    	pw.println("name = "+libFile.getName()+"-"+random.nextInt(1000) +"-slot"+slot);
+    	pw.println("name = "+libFile.getName()+"-slot"+slot);
     	pw.println("library = "+libFile.getCanonicalPath());
-    	
+
         final int slotNr;
         try {
             if (slot.length()>0)
@@ -615,8 +609,8 @@ public class KeyTools {
     	if (log.isDebugEnabled()) {
     		log.debug(baos.toString());
     	}
-    	
-    	// Properties for the IAIK PKCS#11 provider
+
+        // Properties for the IAIK PKCS#11 provider
     	Properties prop = new Properties();
     	prop.setProperty("PKCS11_NATIVE_MODULE", libFile.getCanonicalPath());
     	// If using Slot Index it is denoted by brackets in iaik

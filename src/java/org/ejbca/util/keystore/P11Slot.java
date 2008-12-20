@@ -99,7 +99,6 @@ public class P11Slot {
             if ( iTokens.next().isActive() )
                 return;
         }
-        System.runFinalization();
         Security.removeProvider(this.provider.getName());
         ((AuthProvider)this.provider).logout();
         this.provider.clear();
@@ -121,7 +120,6 @@ public class P11Slot {
             return this.provider;
         try {
             this.isSettingProvider = true;
-            System.runFinalization();
             this.provider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
                                                     this.isIndex, this.atributesFile);
         } catch (IOException e) {
@@ -135,7 +133,6 @@ public class P11Slot {
         if ( this.provider==null )
             throw new CATokenOfflineException("Provider is null");
         log.debug("Provider successfully added: "+this.provider);
-        System.runFinalization();
         return this.provider;
     }
 }
