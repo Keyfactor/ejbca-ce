@@ -14,7 +14,6 @@ package org.ejbca.core.model.ca.catoken;
 
 import java.security.KeyStore;
 import java.security.Provider;
-import java.security.Security;
 import java.security.KeyStore.PasswordProtection;
 import java.util.HashMap;
 import java.util.Properties;
@@ -61,14 +60,18 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
      */
     @Override
     public void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException {
+        if ( this.p11slot == null )
+            throw new CATokenOfflineException("Slot not initialized.");
         try {
+            final Provider provider = this.p11slot.getProvider();
             final PasswordProtection pwp =new PasswordProtection( (authCode!=null && authCode.length()>0)? authCode.toCharArray():null );
             final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
-                                                                          Security.getProvider(getProvider()),
+                                                                          provider,
                                                                           pwp);
             final KeyStore keyStore = builder.getKeyStore();
             log.debug("Loading key from slot '"+this.sSlotLabel+"' using pin.");
             keyStore.load(null, null);
+            setJCAProvider(provider);
             setKeys(keyStore, null);
             pwp.destroy();
         } catch (CATokenOfflineException e) {
@@ -86,7 +89,7 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
     @Override
     public boolean deactivate() throws Exception {
         final boolean result = super.deactivate();
-        this.p11slot.reloadProviderIfNoTokensActive();
+        this.p11slot.removeProviderIfNoTokensActive();
         return result;
     }
     /* (non-Javadoc)
@@ -106,9 +109,6 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
         String atributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
         // getInstance will run autoActivate()
         this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, atributesFile, this);
-    }
-    public void setProvider(Provider provider) {
-        setJCAProvider(provider);
     }
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.BaseCAToken#reset()

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.ca.catoken.PKCS11CAToken;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 
 public class P11Slot {
     /** Log4j instance */
@@ -19,7 +19,6 @@ public class P11Slot {
 
     public interface P11SlotUser {
         boolean deactivate() throws Exception;
-        void setProvider(Provider provider);
         boolean isActive();
     }
     private final static Map<String,P11Slot> slotMap = new HashMap<String, P11Slot>();
@@ -30,13 +29,12 @@ public class P11Slot {
     final private Set<P11SlotUser> caTokens;
     private String atributesFile;
     private Provider provider;
-    private boolean isReloading = false;
-    private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex ) throws IOException {
+    private boolean isSettingProvider = false;
+    private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex ) {
         this.slotNr = _slotNr;
         this.sharedLibrary = _sharedLibrary;
         this.isIndex = _isIndex;
         this.caTokens = new HashSet<P11SlotUser>();
-        this.reloadProviderIfNoTokensActive();
     }
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
@@ -68,7 +66,7 @@ public class P11Slot {
      * @throws IOException
      */
     static public P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
-                                      String _atributesFile, P11SlotUser token) throws IOException {
+                                      String _atributesFile, P11SlotUser token) {
         final String libName = new File(sharedLibrary).getName();
         final String slotLabel = slotNr + libName + isIndex;
         P11Slot slot = slotMap.get(slotLabel);
@@ -84,39 +82,55 @@ public class P11Slot {
         }
         slot.atributesFile = _atributesFile;
         slot.caTokens.add(token);
-        token.setProvider(slot.provider);
         return slot;
     }
     /**
      * Unload if last active token on slot
-     * @throws IOException 
      */
-    public synchronized void reloadProviderIfNoTokensActive() throws IOException {
-        if ( this.isReloading )
+    public void removeProviderIfNoTokensActive() {
+        if (this.provider==null)
             return;
-        try {
-            this.isReloading = true;
-            if (this.provider!=null) {
-                final Iterator<P11SlotUser> iTokens = this.caTokens.iterator();
-                while( iTokens.hasNext() ) {
-                    if ( iTokens.next().isActive() )
-                        return;
-                }
-                Security.removeProvider(this.provider.getName());
-                this.provider.clear();
-                this.provider = null;
+        final Iterator<P11SlotUser> iTokens = this.caTokens.iterator();
+        while( iTokens.hasNext() ) {
+            if ( iTokens.next().isActive() )
+                return;
+        }
+        System.runFinalization();
+        Security.removeProvider(this.provider.getName());
+        this.provider.clear();
+        this.provider = null;
+        System.runFinalization();
+    }
+    /**
+     * @return  the provider of the slot.
+     * @throws CATokenOfflineException
+     */
+    public synchronized Provider getProvider() throws CATokenOfflineException {
+        while ( this.isSettingProvider )
+            try {
+                this.wait();
+            } catch (InterruptedException e1) {
+                log.fatal("This should never happend", e1);
             }
+        if ( this.provider!=null )
+            return this.provider;
+        try {
+            this.isSettingProvider = true;
+            System.runFinalization();
             this.provider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
                                                     this.isIndex, this.atributesFile);
-            final Iterator<P11SlotUser> i = this.caTokens.iterator();
-            while( i.hasNext() )
-                i.next().setProvider(this.provider);
-            if ( this.provider==null )
-                log.error("Not possible to create provider");
-            else
-                log.debug("Provider successfully added: "+this.provider);
+        } catch (IOException e) {
+            final CATokenOfflineException e2 = new CATokenOfflineException("Not possible to create provider. See cause.");
+            e2.initCause(e);
+            throw e2;
         } finally {
-            this.isReloading = false;
+            this.isSettingProvider = false;
+            this.notifyAll();
         }
+        if ( this.provider==null )
+            throw new CATokenOfflineException("Provider is null");
+        log.debug("Provider successfully added: "+this.provider);
+        System.runFinalization();
+        return this.provider;
     }
 }
