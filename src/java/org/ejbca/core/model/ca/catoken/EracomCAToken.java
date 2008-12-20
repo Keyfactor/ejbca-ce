@@ -72,7 +72,7 @@ public class EracomCAToken extends BaseCAToken {
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.BaseCAToken#readPublicKey(java.security.KeyStore, java.lang.String)
      */
-    protected PublicKey readPublicKey(KeyStore keyStore, String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+    protected PublicKey readPublicKey(KeyStore keyStore, String alias) throws Exception {
         return (PublicKey)keyStore.getKey(alias+"_pub", null);
     }
     /* (non-Javadoc)

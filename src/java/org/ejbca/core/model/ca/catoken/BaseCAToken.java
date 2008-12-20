@@ -16,15 +16,12 @@
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.ProviderException;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -59,7 +56,7 @@ public abstract class BaseCAToken implements ICAToken {
     private Map mKeys;
 	private String mAuthCode;
 
-    public BaseCAToken() throws InstantiationException {
+    public BaseCAToken() {
         super();
     }
     public BaseCAToken(String providerClass) throws InstantiationException {
@@ -70,15 +67,14 @@ public abstract class BaseCAToken implements ICAToken {
         }
     }
     protected void autoActivate() {
-        if ( mKeys==null && mAuthCode!=null )
+        if ( this.mKeys==null && this.mAuthCode!=null )
             try {
             	log.debug("Trying to autoactivate CAToken");
-                activate(mAuthCode);
+                activate(this.mAuthCode);
             } catch (Exception e) {
                 log.debug(e);
             }
     }
-
 
     private void testKey( KeyPair pair ) throws Exception {
         final byte input[] = "Lillan gick p� v�gen ut, m�tte d�r en katt ...".getBytes();
@@ -110,8 +106,8 @@ public abstract class BaseCAToken implements ICAToken {
      * @throws Exception
      */
     protected void setKeys(KeyStore keyStore, String authCode) throws Exception {
-        mKeys = null;
-        final String keyAliases[] = keyStrings.getAllStrings();
+        this.mKeys = null;
+        final String keyAliases[] = this.keyStrings.getAllStrings();
         final Map<String, KeyPair> mTmp = new Hashtable<String, KeyPair>();
         for ( int i=0; i<keyAliases.length; i++ ) {
             PrivateKey privateK =
@@ -126,7 +122,7 @@ public abstract class BaseCAToken implements ICAToken {
         		}            	
             } else {
                 PublicKey publicK = readPublicKey(keyStore, keyAliases[i]);
-                if ( (publicK != null) && (privateK != null) ) {
+                if ( publicK != null ) {
                     KeyPair keyPair = new KeyPair(publicK, privateK);
                     mTmp.put(keyAliases[i], keyPair);            	
                 }            	
@@ -144,7 +140,7 @@ public abstract class BaseCAToken implements ICAToken {
                 }            	
             }
         }
-        mKeys = mTmp;
+        this.mKeys = mTmp;
         if ( getCATokenStatus()!=ICAToken.STATUS_ACTIVE )
             throw new Exception("Activation test failed");
     }
@@ -152,12 +148,10 @@ public abstract class BaseCAToken implements ICAToken {
     /**
      * @param keyStore
      * @param alias
-     * @return Public key
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
-     * @throws UnrecoverableKeyException
+     * @return
+     * @throws Exception
      */
-    protected PublicKey readPublicKey(KeyStore keyStore, String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+    protected PublicKey readPublicKey(KeyStore keyStore, String alias) throws Exception {
     	Certificate cert = keyStore.getCertificate(alias);
     	PublicKey pubk = null;
     	if (cert != null) {
@@ -178,12 +172,12 @@ public abstract class BaseCAToken implements ICAToken {
     	if (log.isDebugEnabled()) {
     		log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
     	}
-        keyStrings = new KeyStrings(properties);
-        if (sSlotLabelKey != null) {
-            sSlotLabel = properties.getProperty(sSlotLabelKey);        	
+        this.keyStrings = new KeyStrings(properties);
+        if (sSlotLabelKey != null && properties!=null) {
+            this.sSlotLabel = properties.getProperty(sSlotLabelKey);        	
         }
-        sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
-        mAuthCode = BaseCAToken.getAutoActivatePin(properties);
+        this.sSlotLabel = this.sSlotLabel!=null ? this.sSlotLabel.trim() : null;
+        this.mAuthCode = BaseCAToken.getAutoActivatePin(properties);
         if ( doAutoActivate ) {
             autoActivate();        	
         }
@@ -248,17 +242,17 @@ public abstract class BaseCAToken implements ICAToken {
     protected void setProviders(String jcaProviderClassName, String jceProviderClassName) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     	Provider jcaProvider = (Provider)Class.forName(jcaProviderClassName).newInstance();
         setProvider(jcaProvider);
-        mJcaProviderName = jcaProvider.getName(); 
+        this.mJcaProviderName = jcaProvider.getName(); 
         if (jceProviderClassName != null) {
         	try {
         		Provider jceProvider = (Provider)Class.forName(jceProviderClassName).newInstance();
         		setProvider(jceProvider);        	
-        		mJceProviderName = jceProvider.getName(); 
+        		this.mJceProviderName = jceProvider.getName(); 
         	} catch (Exception e) {
         		log.error("Failed to initialize JCE provider. Encryption operations may not work bu we are continuing...", e);
         	}
         } else {
-        	mJceProviderName = null;
+        	this.mJceProviderName = null;
         }
     }
     /** If we only have one provider to handle both JCA and JCE, and perhaps it is not so straightforward to 
@@ -270,14 +264,14 @@ public abstract class BaseCAToken implements ICAToken {
      */
     protected void setJCAProvider(Provider prov) {
     	setProvider(prov);
-    	mJcaProviderName = prov.getName();
+    	this.mJcaProviderName = prov.getName();
     }
     /** If we don't use any of the methods to set a specific provider, but use some already existing provider
      * we should set the name of that provider at least.
      * @param pName the provider name as retriever from Provider.getName()
      */ 
     protected void setJCAProviderName(String pName) {
-    	mJcaProviderName = pName;
+    	this.mJcaProviderName = pName;
     }
     private void setProvider(Provider prov) {
     	String pName = prov.getName();
@@ -303,10 +297,10 @@ public abstract class BaseCAToken implements ICAToken {
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.ICAToken#deactivate()
      */
-    public boolean deactivate(){  
+    public boolean deactivate() throws Exception {
 		String msg = intres.getLocalizedMessage("catoken.deactivate");
         log.info(msg);
-        mKeys = null;
+        this.mKeys = null;
         return true;	
     }
 
@@ -316,8 +310,8 @@ public abstract class BaseCAToken implements ICAToken {
     public PrivateKey getPrivateKey(int purpose)
         throws CATokenOfflineException {
     	autoActivate();
-        KeyPair keyPair = mKeys!=null ?
-            (KeyPair)mKeys.get(keyStrings.getString(purpose)) :
+        KeyPair keyPair = this.mKeys!=null ?
+            (KeyPair)this.mKeys.get(this.keyStrings.getString(purpose)) :
             null;
         if ( keyPair==null )
             throw new CATokenOfflineException("no such key");
@@ -330,8 +324,8 @@ public abstract class BaseCAToken implements ICAToken {
     public PublicKey getPublicKey(int purpose)
         throws CATokenOfflineException {
     	autoActivate();
-        KeyPair keyPair = mKeys!=null ?
-            (KeyPair)mKeys.get(keyStrings.getString(purpose)) :
+        KeyPair keyPair = this.mKeys!=null ?
+            (KeyPair)this.mKeys.get(this.keyStrings.getString(purpose)) :
             null;
         if ( keyPair==null )
             throw new CATokenOfflineException();
@@ -342,14 +336,14 @@ public abstract class BaseCAToken implements ICAToken {
      * @see org.ejbca.core.model.ca.catoken.ICAToken#getKeyLabel(int)
      */
     public String getKeyLabel(int purpose) {
-    	return keyStrings.getString(purpose);
+    	return this.keyStrings.getString(purpose);
     }
 
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.ICAToken#getProvider()
      */
     public String getProvider() {
-        return mJcaProviderName;
+        return this.mJcaProviderName;
     }
 
     /* (non-Javadoc)
@@ -358,10 +352,10 @@ public abstract class BaseCAToken implements ICAToken {
     public String getJCEProvider() {
     	// If we don't have a specific JCE provider, it is most likely the same
     	// as the JCA provider
-    	if (mJceProviderName == null) {
-    		return mJcaProviderName;
+    	if (this.mJceProviderName == null) {
+    		return this.mJcaProviderName;
     	}
-    	return mJceProviderName;
+    	return this.mJceProviderName;
     }
 
 	/* (non-Javadoc)
@@ -374,10 +368,10 @@ public abstract class BaseCAToken implements ICAToken {
     	autoActivate();
     	int ret = ICAToken.STATUS_OFFLINE;
     	// If we have no keystrings, no point in continuing...
-    	if (keyStrings != null) {
-        	String strings[] = keyStrings.getAllStrings();
+    	if (this.keyStrings != null) {
+        	String strings[] = this.keyStrings.getAllStrings();
         	int i=0;
-        	while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null ) {
+        	while( strings!=null && i<strings.length && this.mKeys!=null && this.mKeys.get(strings[i])!=null ) {
         		i++;                    		
         	}
         	// If we don't have any keys for the strings, or we don't have enough keys for the strings, no point in continuing...
@@ -410,5 +404,14 @@ public abstract class BaseCAToken implements ICAToken {
 			log.trace("<getCATokenStatus: "+ret);
 		}
     	return ret;
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#reset()
+     */
+    public void reset() {
+        // do nothing. the impimenting class decides whether something could be done to get the HSM working after a failure.
+    }
+    public boolean isActive() {
+        return this.mKeys != null;
     }
 }

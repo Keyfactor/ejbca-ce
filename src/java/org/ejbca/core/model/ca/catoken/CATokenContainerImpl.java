@@ -284,10 +284,10 @@ public class CATokenContainerImpl extends CATokenContainer {
 		getCAToken().activate(authorizationcode);		
 	}
 
-	/**
+	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#deactivate()
 	 */
-	public boolean deactivate() {		
+	public boolean deactivate() throws Exception {
 		return getCAToken().deactivate();
 	}
 

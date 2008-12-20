@@ -83,7 +83,11 @@ public class NFastCAToken extends BaseCAToken {
             log.info("Authentication failed for keystore "+sSlotLabel+':', t );
             CATokenAuthenticationFailedException e = new CATokenAuthenticationFailedException(t.toString());
             e.initCause(t);
-            deactivate();
+            try {
+                deactivate();
+            } catch (Exception e1) {
+                log.error("Not possbile to deactivate token.", e1);
+            }
             throw e;
         }
 		String msg = intres.getLocalizedMessage("catoken.activated", "nFast");

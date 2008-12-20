@@ -13,6 +13,7 @@
 package org.ejbca.core.model.ca.catoken;
 
 import java.security.KeyStore;
+import java.security.Provider;
 import java.security.Security;
 import java.security.KeyStore.PasswordProtection;
 import java.util.HashMap;
@@ -21,12 +22,14 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.keystore.KeyTools;
+import org.ejbca.util.keystore.P11Slot;
+
 
 /**
  * @author lars
  * @version $Id$
  */
-public class PKCS11CAToken extends BaseCAToken {
+public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(PKCS11CAToken.class);
@@ -37,8 +40,9 @@ public class PKCS11CAToken extends BaseCAToken {
     static final public String SLOT_LABEL_KEY = "slot";
     static final public String SHLIB_LABEL_KEY = "sharedLibrary";
     static final public String ATTRIB_LABEL_KEY = "attributesFile";
-    
-    
+
+    private P11Slot p11slot;
+
     /**
      * @param providerClass
      * @throws InstantiationException
@@ -56,26 +60,35 @@ public class PKCS11CAToken extends BaseCAToken {
      * @see org.ejbca.core.model.ca.catoken.BaseCAToken#activate(java.lang.String)
      */
     @Override
-    public void activate(String authCode) throws CATokenOfflineException,
-                                         CATokenAuthenticationFailedException {
+    public void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException {
         try {
             final PasswordProtection pwp =new PasswordProtection( (authCode!=null && authCode.length()>0)? authCode.toCharArray():null );
             final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
                                                                           Security.getProvider(getProvider()),
                                                                           pwp);
             final KeyStore keyStore = builder.getKeyStore();
-            log.debug("Loading key from slot '"+sSlotLabel+"' using pin.");
+            log.debug("Loading key from slot '"+this.sSlotLabel+"' using pin.");
             keyStore.load(null, null);
             setKeys(keyStore, null);
             pwp.destroy();
+        } catch (CATokenOfflineException e) {
+            throw e;
         } catch (Throwable t) {
-            log.error("Failed to initialize PKCS11 provider slot '"+sSlotLabel+"'.", t);
-            throw new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider slot '"+sSlotLabel+"'.");
+            log.error("Failed to initialize PKCS11 provider slot '"+this.sSlotLabel+"'.", t);
+            throw new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider slot '"+this.sSlotLabel+"'.");
         }
 		String msg = intres.getLocalizedMessage("catoken.activated", "PKCS11");
         log.info(msg);
     }
-
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.BaseCAToken#deactivate()
+     */
+    @Override
+    public boolean deactivate() throws Exception {
+        final boolean result = super.deactivate();
+        this.p11slot.reloadProviderIfNoTokensActive();
+        return result;
+    }
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
      */
@@ -83,15 +96,26 @@ public class PKCS11CAToken extends BaseCAToken {
     	// Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         init("slot", properties, signaturealgorithm, false);
         final boolean isIndex;
-        if (sSlotLabel == null) {
-            sSlotLabel = properties.getProperty("slotListIndex");         
-            sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : "-1";
-            isIndex = sSlotLabel!=null;
+        if (this.sSlotLabel == null) {
+            this.sSlotLabel = properties.getProperty("slotListIndex");         
+            this.sSlotLabel = this.sSlotLabel!=null ? this.sSlotLabel.trim() : "-1";
+            isIndex = this.sSlotLabel!=null;
         } else
             isIndex = false;
         String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
-        String arributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
-        setJCAProvider( KeyTools.getP11Provider(sSlotLabel, sharedLibrary, isIndex, arributesFile) );
-        autoActivate();
+        String atributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
+        // getInstance will run autoActivate()
+        this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, atributesFile, this);
+    }
+    public void setProvider(Provider provider) {
+        setJCAProvider(provider);
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.BaseCAToken#reset()
+     */
+    @Override
+    public void reset() {
+        if ( this.p11slot!=null )
+            this.p11slot.reset();
     }
 }

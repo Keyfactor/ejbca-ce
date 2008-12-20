@@ -78,8 +78,9 @@ public abstract class CATokenContainer extends UpgradeableDataHashMap implements
      * Used to set a CAToken too offline status and to reset the HSMs authorization code.
      * 
      * @return true if deactivation was successful.
+     * @throws Exception 
      */
-    public abstract boolean deactivate();    
+    public abstract boolean deactivate() throws Exception;    
    
     
    /** Returns the private key (if possible) of token.

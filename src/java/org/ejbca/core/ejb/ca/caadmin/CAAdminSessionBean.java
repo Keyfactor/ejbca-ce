@@ -2479,11 +2479,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				CACacheManager.instance().removeCA(cadata.getCaId().intValue());
             		String msg = intres.getLocalizedMessage("caadmin.catokendeactivated", cadata.getName());            	
             		getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
-            	} catch (IllegalKeyStoreException e) {
+            	} catch (Exception e) {
             		throw new EJBException(e);
-            	} catch (UnsupportedEncodingException e) {
-            		throw new EJBException(e);
-            	}
+                }
             }else{
         		String msg = intres.getLocalizedMessage("caadmin.errornotonline", cadata.getName());            	
             	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg);

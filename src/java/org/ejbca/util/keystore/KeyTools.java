@@ -48,6 +48,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 
@@ -548,6 +549,10 @@ public class KeyTools {
         }
     } // createSubjectKeyId
 
+    /**
+     * random used to get unique provider name in {@link #getP11Provider(String, String, boolean, String)}
+     */
+    private static final Random random = new Random();
     /** Creates a SUN or IAIK PKCS#11 provider using the passed in pkcs11 library. First we try to see if the IAIK provider is available,
      * because it supports more algorithms. If the IAIK provider is not available in the classpath, we try the SUN provider.
      * 
@@ -571,7 +576,7 @@ public class KeyTools {
      * @throws IOException if the pkcs11 library can not be found, or the PKCS11 provider can not be created.
      */ 
     public static Provider getP11Provider(final String slot, final String fileName,
-                                                  final boolean isIndex, final String attributesFile) throws IOException {
+                                          final boolean isIndex, final String attributesFile) throws IOException {
     	if (StringUtils.isEmpty(fileName)) {
     		throw new IOException("A file name must be supplied.");
     	}
@@ -585,7 +590,8 @@ public class KeyTools {
         // Properties for the SUN PKCS#11 provider
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter pw = new PrintWriter(baos);
-    	pw.println("name = "+libFile.getName()+"-slot"+slot);
+        // to allways create new session when a provider is created make sure name is unique.
+    	pw.println("name = "+libFile.getName()+"-"+random.nextInt(1000) +"-slot"+slot);
     	pw.println("library = "+libFile.getCanonicalPath());
     	
         final int slotNr;

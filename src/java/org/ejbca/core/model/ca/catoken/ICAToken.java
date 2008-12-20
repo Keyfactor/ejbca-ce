@@ -69,8 +69,9 @@ public interface ICAToken {
      * Used to set a CAToken too offline status and to reset the HSMs authorization code.
      * 
      * @return true if deactivation was successful.
+     * @throws Exception 
      */
-    public boolean deactivate();    
+    public boolean deactivate() throws Exception;    
     
     /** Returns the private key (if possible) of token.
     *
