@@ -15,7 +15,7 @@ import org.ejbca.core.model.ca.catoken.PKCS11CAToken;
 
 public class P11Slot {
     /** Log4j instance */
-    private static final Logger log = Logger.getLogger(PKCS11CAToken.class);
+    private static final Logger log = Logger.getLogger(P11Slot.class);
 
     public interface P11SlotUser {
         boolean deactivate() throws Exception;
