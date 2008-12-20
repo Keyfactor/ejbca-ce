@@ -108,11 +108,13 @@ public class P11Slot {
             }
             this.provider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
                                                     this.isIndex, this.atributesFile);
-            if (this.provider==null)
-                return;
             final Iterator<P11SlotUser> i = this.caTokens.iterator();
             while( i.hasNext() )
                 i.next().setProvider(this.provider);
+            if ( this.provider==null )
+                log.error("Not possible to create provider");
+            else
+                log.debug("Provider successfully added: "+this.provider);
         } finally {
             this.isReloading = false;
         }

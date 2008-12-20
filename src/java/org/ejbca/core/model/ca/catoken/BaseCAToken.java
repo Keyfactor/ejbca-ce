@@ -264,7 +264,7 @@ public abstract class BaseCAToken implements ICAToken {
      */
     protected void setJCAProvider(Provider prov) {
     	setProvider(prov);
-    	this.mJcaProviderName = prov.getName();
+    	this.mJcaProviderName = prov!=null ? prov.getName() : null;
     }
     /** If we don't use any of the methods to set a specific provider, but use some already existing provider
      * we should set the name of that provider at least.
@@ -274,6 +274,8 @@ public abstract class BaseCAToken implements ICAToken {
     	this.mJcaProviderName = pName;
     }
     private void setProvider(Provider prov) {
+        if ( prov==null )
+            return;
     	String pName = prov.getName();
         if (pName.startsWith("LunaJCA")) {
         	// Luna Java provider does not contain support for RSA/ECB/PKCS1Padding but this is 
