@@ -2,6 +2,7 @@ package org.ejbca.util.keystore;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.AuthProvider;
 import java.security.Provider;
 import java.security.Security;
 import java.util.HashMap;
@@ -9,6 +10,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -86,8 +89,9 @@ public class P11Slot {
     }
     /**
      * Unload if last active token on slot
+     * @throws LoginException 
      */
-    public void removeProviderIfNoTokensActive() {
+    public void removeProviderIfNoTokensActive() throws LoginException {
         if (this.provider==null)
             return;
         final Iterator<P11SlotUser> iTokens = this.caTokens.iterator();
@@ -97,6 +101,7 @@ public class P11Slot {
         }
         System.runFinalization();
         Security.removeProvider(this.provider.getName());
+        ((AuthProvider)this.provider).logout();
         this.provider.clear();
         this.provider = null;
         System.runFinalization();
