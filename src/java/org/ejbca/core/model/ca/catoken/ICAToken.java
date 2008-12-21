@@ -19,8 +19,6 @@ import java.util.HashMap;
 import java.util.Properties;
 
 
-
-
 /** Handles maintenance of the hardware device producing signatures and handling the private key.
  *  All CAToken plug-ins must implement this interface.
  * 
@@ -29,15 +27,15 @@ import java.util.Properties;
  */
 public interface ICAToken {
 
-	public static final int STATUS_ACTIVE  = 1;
-	public static final int STATUS_OFFLINE = 2;
-	
-	/** Auto activation property that can be defined in CA token properties */
-    public static final String AUTOACTIVATE_PIN_PROPERTY = "pin";
+    static final int STATUS_ACTIVE  = 1;
+    static final int STATUS_OFFLINE = 2;
+
+    /** Auto activation property that can be defined in CA token properties */
+    static final String AUTOACTIVATE_PIN_PROPERTY = "pin";
     /** Previous sequence (matching KeyString.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS key) that can be set in CA token properties */
-    public static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
-    
-   /** 
+    static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
+
+    /**
     * Method called after creation of instance. Gives the object it's properties.
     * 
     * @param properties CA Token properties, as entered for all HSM tokens, can be null for tokens that don't need it
@@ -45,16 +43,16 @@ public interface ICAToken {
     * @param signaturealgorithm the signature algorithm used by the CA
     * 
     * @throws Exception 
-    */	
-    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception;
-	
-	/**
-	 *  Method that returns the current status of the catoken.
-	 * 
-	 *  Should return one of the ICAToken.STATUS_.. values 
-	 */
-	public int getCATokenStatus();
-	
+    */
+    void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception;
+
+    /**
+     *  Method that returns the current status of the catoken.
+     *
+     *  Should return one of the ICAToken.STATUS_.. values 
+     */
+    int getCATokenStatus();
+
     /**
      * Method used to activate HardCATokens when connected after being offline.
      * 
@@ -62,7 +60,7 @@ public interface ICAToken {
      * @throws CATokenOfflineException if CAToken is not available or connected.
      * @throws CATokenAuthenticationFailedException with error message if authentication to HardCATokens fail.
      */
-	public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException;    
+    void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException;    
 
     /**
      * Method used to deactivate HardCATokens. 
@@ -71,15 +69,15 @@ public interface ICAToken {
      * @return true if deactivation was successful.
      * @throws Exception 
      */
-    public boolean deactivate() throws Exception;    
-    
+    boolean deactivate() throws Exception;
+
     /** Returns the private key (if possible) of token.
     *
     * @param purpose should be SecConst.CAKEYPURPOSE_CERTSIGN, SecConst.CAKEYPURPOSE_CRLSIGN or SecConst.CAKEYPURPOSE_KEYENCRYPT 
     * @throws CATokenOfflineException if CAToken is not available or connected.
     * @return PrivateKey object
     */
-    public PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException;
+    PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException;
 
     /** Returns the public key (if possible) of token.
     *
@@ -87,24 +85,29 @@ public interface ICAToken {
     * @throws CATokenOfflineException if CAToken is not available or connected.
     * @return PublicKey object
     */
-    public PublicKey getPublicKey(int purpose) throws CATokenOfflineException;
-    
+    PublicKey getPublicKey(int purpose) throws CATokenOfflineException;
+
     /**
      * Returns the key label configured for a specific key purpose. Key labels are KeyStrings.CAKEYPURPOSE_XXX
      * @param purpose
      */
-    public String getKeyLabel(int purpose);
-    
+    String getKeyLabel(int purpose);
+
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signing device implementation.
      * @return String the name of the Provider
      */
-    public String getProvider();
-    
+    String getProvider();
+
     /** Returns the crypto Provider that should be used to encrypt/decrypt things with
      *  the PrivateKey object returned by this signing device implementation.
      *  In most cases this is the same as the signature provider.
      * @return String the name of the Provider
      */
-    public String getJCEProvider();
+    String getJCEProvider();
+
+    /**
+     * Resets token. Might cure HW failures. It is up to each implementation to implement this or not.
+     */
+    void reset();
 }
