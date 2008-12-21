@@ -91,7 +91,7 @@ public class P11Slot {
      * Unload if last active token on slot
      * @throws LoginException 
      */
-    public void removeProviderIfNoTokensActive() throws LoginException {
+    public void removeProviderIfNoTokensActive() {
         if (this.provider==null)
             return;
         final Iterator<P11SlotUser> iTokens = this.caTokens.iterator();
@@ -100,7 +100,13 @@ public class P11Slot {
                 return;
         }
         Security.removeProvider(this.provider.getName());
-        ((AuthProvider)this.provider).logout();
+        if ( this.provider instanceof AuthProvider ) {
+            try {
+                ((AuthProvider)this.provider).logout();
+            } catch (LoginException e) {
+                log.warn("Not possible to logout from P11 Session. HW problems?", e);
+            }
+        }
         this.provider.clear();
         this.provider = null;
         System.runFinalization();
