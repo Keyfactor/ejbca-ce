@@ -809,6 +809,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					if (transactionLogger != null ) transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
 					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, new String(Hex.encode(signercert.getSerialNumber().toByteArray())));
 					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
+					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
 					if (m_reqMustBeSigned) {
 						// If it verifies OK, check if it is revoked
 						RevokedCertInfo rci = isRevoked(m_adm, signercert.getIssuerDN().getName(), signercert.getSerialNumber());
@@ -1106,9 +1107,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
 			if (auditLogger != null) auditLogger.paramPut(AuditLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
-			if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
+			//if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
 			if (auditLogger != null) auditLogger.writeln();
-			if (transactionLogger != null) transactionLogger.flush();
+			if (transactionLogger != null) transactionLogger.flush(String.valueOf( new Date().getTime() - startTime.getTime() ));
 			if (auditLogger != null) auditLogger.flush();
 			if (mDoSaferLogging){
 				// See if the Errorhandler has found any problems

@@ -268,7 +268,7 @@
     <property name="ocsp.log-date" value="yyyy-MM-dd:HH:mm:ss:z"/>
     <property name="ocsp.log-timezone" value="GMT"/>
     <property name="ocsp.trx-log-pattern" value="\$$\{(.+?)\}"/>
-    <property name="ocsp.trx-log-order" value="$${SESSION_ID};$${LOG_ID};$${STATUS};$${REQ_NAME}'$${CLIENT_IP}';'$${SIGN_ISSUER_NAME_DN}';'$${SIGN_SUBJECT_NAME}';$${SIGN_SERIAL_NO};'$${LOG_TIME}';$${NUM_CERT_ID};0;0;0;0;0;0;0;'$${ISSUER_NAME_DN}';$${ISSUER_NAME_HASH};$${ISSUER_KEY};$${DIGEST_ALGOR};$${SERIAL_NOHEX};$${CERT_STATUS}"/>
+    <property name="ocsp.trx-log-order" value="$${SESSION_ID};$${LOG_ID};$${STATUS};$${REQ_NAME}'$${CLIENT_IP}';'$${SIGN_ISSUER_NAME_DN}';'$${SIGN_SUBJECT_NAME}';$${SIGN_SERIAL_NO};'$${LOG_TIME}';${REPLY_TIME};$${NUM_CERT_ID};0;0;0;0;0;0;0;'$${ISSUER_NAME_DN}';$${ISSUER_NAME_HASH};$${ISSUER_KEY};$${DIGEST_ALGOR};$${SERIAL_NOHEX};$${CERT_STATUS}"/>
     <property name="ocsp.audit-log" value="false"/>
     <property name="ocsp.audit-log-pattern" value="\$$\{(.+?)\}"/>
     <property name="ocsp.audit-log-order" value="SESSION_ID:$${SESSION_ID};LOG ID:$${LOG_ID};'$${LOG_TIME}';TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n'$${OCSPREQUEST}';\nOCSP RESPONSE:\n'$${OCSPRESPONSE}';\nSTATUS:${STATUS}"/>

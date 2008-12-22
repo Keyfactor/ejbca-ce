@@ -317,6 +317,7 @@ ISSUER_KEY, The public key of the issuer of a requested certificate
 DIGEST_ALGOR, Algorithm used by requested certificate to hash issuer key and issuer name
 SERIAL_NO, Serial number of the a requested certificate.
 CERT_STATUS, The requested certificate revocation status.
+REPLY_TIME, The time measured between when the request is recieved by the responder and when the response is sent.
 
 3. The audit log logs entire requests and responses. This can be useful when requests and responses are signed because the information can be used 
 to verify requests and responses afterwards.

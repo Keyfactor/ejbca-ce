@@ -39,10 +39,10 @@ public abstract class PatternLogger {
 	public static final String SESSION_ID = "SESSION_ID"; //A random 32 bit number identifying a log entry for a request
 
 	protected HashMap valuepairs= new HashMap();
-	private StringBuffer logmessage = new StringBuffer();
+	protected StringBuffer logmessage = new StringBuffer();
 	private Matcher m;
 	private String orderString;
-	private Logger logger;
+	protected Logger logger;
 	private String logDateFormat;
 	private String timeZone;
 	

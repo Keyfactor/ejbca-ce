@@ -94,6 +94,22 @@ public class TransactionLogger extends PatternLogger{
 		super.paramPut(DIGEST_ALGOR,"0");
 		super.paramPut(SERIAL_NOHEX,"0");
 		super.paramPut(CERT_STATUS,"0");
-		super.paramPut(REPLY_TIME,"0");
+		super.paramPut(REPLY_TIME,"REPLY_TIME");
 	}
+	
+	/**
+	 * Writes all the rows created by writeln() to the Logger
+	 */
+	public void flush(String replytime) {
+		String logstring = super.logmessage.toString();
+		logstring = logstring.replaceAll("REPLY_TIME", replytime);
+		super.logger.debug(logstring);
+	}
+	
+	public void flush() {
+		String logstring = super.logmessage.toString();
+		logstring = logstring.replaceAll("REPLY_TIME", "0");
+		super.logger.debug(logstring);
+	}
+	
 }
