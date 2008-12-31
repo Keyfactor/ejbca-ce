@@ -7,6 +7,12 @@
 
 <body>
   <section name="References">
+	<subsection name="Code of conduct">
+	<p>
+	The EJBCA community should try to follow the excellent <a href="http://www.ubuntu.com/community/conduct">Ubuntu Code of Conduct</a>.
+	</p>
+	</subsection>
+
 	<subsection name="RFCs">
 	<p>
 	<ul>
