@@ -24,11 +24,6 @@
   Did you know that EJBCA includes a stand-alone OCSP responder? The responder is scalable with high-performance and can be used
   also with any other CA than EJBCA. 
   </note>
-  <note>
-  SafeSign IC provides strong authentication and smart card logon on Windows, Linux and MAC. 
-  <br/> 
-  For more information or an evaluation kit see the <a href="complimentary.html">complimentary software section</a> or visit <a href="http://www.aeteurope.nl/aet/aet-europe/_www/en/pub/news/aet_promotions/ejbca_promotion.htm">www.aeteurope.com</a>.
-  </note>
   </section>
 
 <section name="About EJBCA">
