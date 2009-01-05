@@ -98,9 +98,13 @@ import org.ejbca.util.CertTools;
  * signature="Collection findByIssuerDNSerialNumber(java.lang.String issuerDN, java.lang.String serialNumber)"
  * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.issuerDN=?1 AND a.serialNumber=?2"
  *
+ * The findByUsername orders first by expireDate and then by serialNumber. This is a special for CVC certificates who only have 
+ * expire date granularity of one day, and serialNumber that is a sequence. So if several certificates are issued on the same day, 
+ * the one with the highest serialNumber will be the latest.
+ * 
  * @ejb.finder description="findByUsername"
  * signature="Collection findByUsername(java.lang.String username)"
- * query="SELECT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1 ORDER BY a.expireDate DESC"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1 ORDER BY a.expireDate DESC, a.serialNumber DESC"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
