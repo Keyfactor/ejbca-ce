@@ -465,9 +465,9 @@ public class CommonEjbcaWSTest extends TestCase {
         usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_CONTAINS);
         usermatch.setMatchvalue("WSTESTUSER1");				
 		List<UserDataVOWS> userdatas4 = ejbcaraws.findUser(usermatch);
-		assertTrue(userdatas4 != null);
-		assertTrue(userdatas4.size() == 1);
-		assertTrue(userdatas4.get(0).getSubjectDN().equals("CN=WSTESTUSER1,O=Test"));
+		assertNotNull(userdatas4 != null);
+		assertEquals(1, userdatas4.size());
+		assertEquals("CN=WSTESTUSER1,O=Test", userdatas4.get(0).getSubjectDN());
 		
 		usermatch = new UserMatch();
         usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_ENDENTITYPROFILE);
