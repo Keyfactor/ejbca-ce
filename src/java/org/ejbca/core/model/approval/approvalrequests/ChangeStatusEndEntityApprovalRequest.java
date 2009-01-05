@@ -202,14 +202,14 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public List getNewRequestDataAsText(Admin admin) {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",(String) UserDataConstants.STATUS_TEXT.get(new Integer(newstatus)),true,true));		
+		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(newstatus),true,true));		
 		return retval;
 	}
 	
 	public List getOldRequestDataAsText(Admin admin) {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",(String) UserDataConstants.STATUS_TEXT.get(new Integer(oldstatus)),true,true));		
+		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(oldstatus),true,true));		
 		return retval;
 	}
 

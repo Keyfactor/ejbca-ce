@@ -364,9 +364,9 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
 	  <answer><p>You LDAP object class may require some fields in the DN that you have not entered. Some schemas require the DN-attribute SN for instance.</p></answer>
 	</faq>
     <faq id="errorUserStatus">
-      <question>Why do I get the exception/error: User foo has status '40', NEW, FAILED or INPROCESS required.; nested exception is: javax.ejb.EJBException:null</question>
+      <question>Why do I get the exception/error: Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: foo; nested exception is: javax.ejb.EJBException:null</question>
 	  <answer><p>When using the LocalAuthenticationSession (default) all users have a STATUS. The status lifecycle
-	  beginns with NEW and ends with REVOKED. Only when the status is NEW, FAILED or INPROCESS is it possible
+	  begins with NEW and ends with REVOKED. Only when the status is NEW, FAILED or INPROCESS is it possible
 	  to issue a certificate to a user. After a certificate has been issued, the status is set to GENERATED. This works like a
 	one-time-password scheme. To issue a new certificate to the user his/her status must be reset to NEW, FAILED or INPROCESS.
 	This can be done with the admin-GUI or:

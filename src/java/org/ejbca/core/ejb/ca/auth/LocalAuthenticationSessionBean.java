@@ -257,9 +257,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             	}
                 return ret;
             }
-        	String msg = intres.getLocalizedMessage("authentication.wrongstatus", new Integer(status), username);            	
+        	String msg = intres.getLocalizedMessage("authentication.wrongstatus", UserDataConstants.getStatusText(status), Integer.valueOf(status), username);            	
         	getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
-            throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
+            throw new AuthStatusException(msg);
         } catch (ObjectNotFoundException oe) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
         	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);

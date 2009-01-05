@@ -136,7 +136,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,newuserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("STATUS",(String) UserDataConstants.STATUS_TEXT.get(new Integer(newuserdata.getStatus())),true,true));
+		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
 		return retval;
 	}
 	
@@ -163,7 +163,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,orguserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",orguserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",orguserdata.getSendNotification() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("STATUS",(String) UserDataConstants.STATUS_TEXT.get(new Integer(orguserdata.getStatus())),true,true));
+		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(orguserdata.getStatus()),true,true));
 		return retval;
 	}
 
