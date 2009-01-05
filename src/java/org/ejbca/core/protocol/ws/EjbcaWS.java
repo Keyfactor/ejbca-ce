@@ -411,8 +411,9 @@ public class EjbcaWS implements IEjbcaWS {
 		log.trace(">cvcRequest");
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);
-		
-		// Check if user is revoked
+
+		// get and old status that we can remember so we can reset status if this fails in the last step
+		int olduserStatus = UserDataConstants.STATUS_GENERATED;
 		try {
 			UserDataVO user;
 			user = ejbhelper.getUserAdminSession().findUser(admin, username);
@@ -421,9 +422,9 @@ public class EjbcaWS implements IEjbcaWS {
 			// In that case look for it's last old certificate and try to authenticate the request using an outer signature.
 			// If this verification is correct, set status to NEW and continue process the request.
 			if (user != null) {
-				int status = user.getStatus();
+				olduserStatus = user.getStatus();
 				// If user is revoked, we can not proceed
-				if ( (status == UserDataConstants.STATUS_REVOKED) || (status == UserDataConstants.STATUS_HISTORICAL) ) {
+				if ( (olduserStatus == UserDataConstants.STATUS_REVOKED) || (olduserStatus == UserDataConstants.STATUS_HISTORICAL) ) {
 					throw new AuthorizationDeniedException("User '"+username+"' is revoked.");
 				}
 				CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(cvcreq.getBytes()));
@@ -619,29 +620,42 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			log.trace("<cvcRequest");
 			return retval;
+		} catch (EjbcaException e) {
+			// Have this first, if processReq throws an EjbcaException we want to reset status
+			log.error("EJBCA EjbcaException, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
+		    throw e;
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ServiceLocatorException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (FinderException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ParseException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (ConstructionException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (NoSuchFieldException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (CertificateEncodingException e) {
 			log.error("EJBCA WebService error, cvcRequest : ",e);
+			resetUserPasswordAndStatus(admin, ejbhelper, username, olduserStatus);
 		    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}		
 	}
@@ -670,7 +684,18 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		return ret;
 	}
-	
+
+	private void resetUserPasswordAndStatus(Admin admin, EjbcaWSHelper ejbhelper, String username, int status) {
+		try {
+			ejbhelper.getUserAdminSession().setPassword(admin, username, null);
+			ejbhelper.getUserAdminSession().setUserStatus(admin, username, status);	
+			log.debug("Reset user password to null and status to "+status);
+		} catch (Exception e) {
+			// Catch all because this reset method will be called from withing other catch clauses
+			log.error(e);
+		}
+	}
+
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Request(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
