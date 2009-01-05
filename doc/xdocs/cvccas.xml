@@ -185,7 +185,7 @@
 	  <li>If there are old certificates and the request is an authenticated request (with outer signature):</li>
 	  	<ul>
 	  	<li>If the request uses the same public key as the old certificate the request is denied (AuthorizationDeniedException).</li>
-	  	<li>If the old certificate can verify the request but the certificate is not valid we try to process the request as a non-authenticated request.</li>
+	  	<li>If the old certificate can verify the request but the certificate is not valid we throw a CertificateExpiredException (in EJBCA 3.7.4 and earlier we tried to process the request as a non-authenticated request instead).</li>
 	  	<li>If the request can be verified using one of the old <strong>valid</strong> certificates the request is automatically granted and users status is set to new and the password set to the given password.</li>
 	  	<li>If the request can not be verified at all the request is denied (AuthorizationDeniedException).</li>
 	  	</ul>
@@ -367,8 +367,8 @@ bin/pkcs11HSM.sh generate /etc/utimaco/libcs2_pkcs11.so secp160r1 signKey 1
 
   <section name="PEM requests">
   <p>
-  Processing certificate requests in the Admin-GUI of EJBCA requires a PEM format certificate request.
-  If you receive a binary request converting it to PEM is easy:
+  Processing certificate requests in the Admin-GUI of EJBCA can use wither binary or PEM format certificate requests.
+  If you receive a binary request and want to convert it to PEM it is easy:
   <ol>
   <li>Base64 encode the request, for example with openssl base64 -in MY.cvrqst -a -out MY.cvrqst.pem.</li>
   <li>Add -----BEGIN CERTIFICATE REQUEST----- in the beginning of the file. </li>

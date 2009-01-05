@@ -54,6 +54,7 @@ public class ObjectFactory {
     private final static QName _CvcRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "cvcRequest");
     private final static QName _FetchUserDataResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "fetchUserDataResponse");
     private final static QName _FindUser_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findUser");
+    private final static QName _CertificateExpiredException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CertificateExpiredException");
     private final static QName _GetEjbcaVersion_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getEjbcaVersion");
     private final static QName _GenTokenCertificatesResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "genTokenCertificatesResponse");
     private final static QName _IsAuthorized_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isAuthorized");
@@ -848,6 +849,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CertificateExpiredException }
+     * 
+     */
+    public CertificateExpiredException createCertificateExpiredException() {
+        return new CertificateExpiredException();
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs12ReqResponse }{@code >}}
      * 
      */
@@ -1115,6 +1124,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findUser")
     public JAXBElement<FindUser> createFindUser(FindUser value) {
         return new JAXBElement<FindUser>(_FindUser_QNAME, FindUser.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CertificateExpiredException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CertificateExpiredException")
+    public JAXBElement<CertificateExpiredException> createCertificateExpiredException(CertificateExpiredException value) {
+        return new JAXBElement<CertificateExpiredException>(_CertificateExpiredException_QNAME, CertificateExpiredException.class, null, value);
     }
 
     /**
