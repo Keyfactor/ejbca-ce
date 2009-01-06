@@ -817,5 +817,29 @@ The default password for SSL keystore (key.p12) in Websphere is WebAS.
 
 </section>
 
+<section name="Files deployed">
+<p>
+Here we describe shortly which files are copied during ant bootstrap and ant deploy. These targets only modified files automatically on the JBoss platforms,
+but it will give an indication as well for other platforms what configuration steps are needed.
+</p>
+<p>
+<strong>ant bootstrap</strong>
+<ul>
+<li>deploy/ejbca-ds.xml</li>
+<li>deploy/ejbca-mail-service.xml</li>
+<li>deploy/ejbca.ear</li>
+</ul>
+</p>
+<p>
+<strong>ant deploy</strong>
+<ul>
+<li>Files from ant bootstrap</li>
+<li>conf/keystore/keystore.jk</li>
+<li>conf/keystore/truststore.jks</li>
+<li>deploy/jboss-web.deployer/server.xml</li>
+</ul>
+</p>
+</section>
+
 </body>
 </document>
