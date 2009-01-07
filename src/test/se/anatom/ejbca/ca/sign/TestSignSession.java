@@ -58,6 +58,7 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.QCStatementExtension;
+import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -705,13 +706,14 @@ public class TestSignSession extends TestCase {
      * 
      */
     public void test11TestValidityOverride() throws Exception {
-        log.trace(">test11TestValidityOverride()");
+        log.trace(">test11TestValidityOverrideAndCardNumber()");
 
         // Create a good certificate profile (good enough), using QC statement
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTVALOVERRIDE");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setAllowValidityOverride(false);
         certprof.setValidity(298);
+        certprof.setUseCardNumber(true);
         TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
         int cprofile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"TESTVALOVERRIDE");
 
@@ -722,17 +724,23 @@ public class TestSignSession extends TestCase {
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
+        profile.setUse(EndEntityProfile.CARDNUMBER, 0, true);
         TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
         int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTVALOVERRIDE");
         try {
             // Change a user that we know...
-            TestTools.getUserAdminSession().changeUser(admin, "foo", "foo123", "C=SE,CN=validityoverride",
-                    null,
-                    "foo@anatom.nu", false,
-                    eeprofile,
-                    cprofile,
-                    SecConst.USER_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+        	UserDataVO user = new UserDataVO("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+        	user.setPassword("foo123");
+        	user.setStatus(UserDataConstants.STATUS_NEW);
+        	user.setCardNumber("123456789");
+        	TestTools.getUserAdminSession().changeUser(admin, user, false);
+//            TestTools.getUserAdminSession().changeUser(admin, "foo", "foo123", "C=SE,CN=validityoverride",
+//                    null,
+//                    "foo@anatom.nu", false,
+//                    eeprofile,
+//                    cprofile,
+//                    SecConst.USER_ENDUSER,
+//                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
             log.debug("created user: foo, foo123, C=SE, CN=validityoverride");
         } catch (RemoteException re) {
             assertTrue("User foo does not exist, or error changing user", false);
@@ -752,10 +760,15 @@ public class TestSignSession extends TestCase {
         // Override was not enabled, the cert should have notAfter less than 299 days in the future (298 to be exact)
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
         
+        // Check card number extension as well
+        String cardNumber = SeisCardNumberExtension.getSeisCardNumber(cert);
+        assertEquals("123456789", cardNumber);
+        
         // Change so that we allow override of validity time
         CertificateProfile prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
         prof.setAllowValidityOverride(true);
         prof.setValidity(3065);
+        prof.setUseCardNumber(false);
         TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
         cal = Calendar.getInstance();
         Calendar notBefore = Calendar.getInstance();
@@ -777,7 +790,11 @@ public class TestSignSession extends TestCase {
         assertTrue(notAfter.compareTo(cal.getTime()) > 0);
         cal.add(Calendar.DAY_OF_MONTH, 2);
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
-
+        
+        // Check that card number extension is not present
+        cardNumber = SeisCardNumberExtension.getSeisCardNumber(cert);
+        assertNull(cardNumber);
+        
         // Verify that we can not get a certificate that has notBefore befor the current time
         // and that we can not get a certificate valid longer than the certificate profile allows.
         prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
