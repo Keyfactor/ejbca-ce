@@ -724,7 +724,9 @@
 
 	<target name="ziprelease" description="Make a zip file for EJBCA release">
 		<antcall target="clean" />
-		<convertdot/>
+		
+		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
+		<convertdot/> <!-- convert dots to underscores in version string -->
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
 		<zip destfile="../ejbca_${ejbca.zipversion}.zip">
 		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="600" dirmode="700"> 
@@ -768,6 +770,33 @@
 		<echo>${app.version}</echo>
 	</target>
 
+    <!-- ======================================================================= -->
+    <!-- Target updating svn revision string in propertiesAndPaths.xml           -->
+    <!-- ======================================================================= -->
+	<target name="update-svnrev" description="Updates propertiesAndPaths.xmli file with current trunk SVN revision">
+		<echo>Updating propertiesAndPAths.xmli with SVN revision of COMMITTED.</echo>
+        <property name="revision" value="COMMITTED"/>	
+		
+        <!-- find out svn.revision of HEAD, need svn.exe installed on local machine will end up in property ${Revision} -->
+        <exec executable="svn" output="svnlog.out">
+            <arg line="info -r ${revision}"/>
+        </exec>
+		<loadproperties srcFile="svnlog.out">
+		      <filterchain>
+		        <linecontains>
+		          <contains value="Revision"/>
+		        </linecontains>
+		      </filterchain>
+		</loadproperties>
+		<delete file="svnlog.out"/>
+
+		<replaceregexp file="propertiesAndPaths.xmli" encoding="UTF-8" match='(\x3Cproperty name="svn.revision" value=")[^\x3C]*(" />)'
+			replace='\1r${Revision}\2' />
+	
+		<echo>Updated "svn.revision" to: r${Revision}</echo>
+    </target>
+
+     
 	<!--
         Target for signing a JAR (JAR, EAR, WAR or ZIP)
         parameter: signjar.file=file to sign 
