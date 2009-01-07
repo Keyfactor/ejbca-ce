@@ -68,13 +68,10 @@
 	<h:dataTable value="#{adminGroupsManagedBean.accessRulesCollections}" var="accessRuleCollection"
 		headerClass="listHeader" style="width: 100%;">
 		<h:column>
-		<f:facet name="header">
-			<h:outputText value="#{web.text[accessRuleCollection.name]}"/>
-		</f:facet>
 		<h:dataTable value="#{accessRuleCollection.collection}" var="accessRule" rendered="#{not empty accessRuleCollection.collection}"
 			headerClass="listHeader" rowClasses="listRow1,listRow2" columnClasses="rulesColumn1,rulesColumn2,rulesColumn2" style="width: 100%">
 			<f:facet name="header">
-				<h:outputText value="#{web.text.ROLEBASEDACCESSRULES}" />
+				<h:outputText value="#{web.text[accessRuleCollection.name]}"/>
 			</f:facet>
 			<h:column>
 				<f:facet name="header">
