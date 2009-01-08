@@ -184,7 +184,7 @@ public class CertificateCache {
         	if (fp != null) {
         		X509Certificate ret = (X509Certificate)certCache.get(fp);
         		if (log.isDebugEnabled()) {
-        			log.debug("Found certificate from CertificateID in cache. SubjectDN='"+CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret));
+        			log.debug("Found certificate from CertificateID in cache. SubjectDN='"+ CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret) + "IssuerKeyHash = " + certId.getIssuerKeyHash());
         		}
         		return ret;
         	}
