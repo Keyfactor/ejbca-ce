@@ -309,6 +309,10 @@ public class OCSPUtil {
     					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
     					m_log.info(infoMsg);
     					verifyOK = false;
+    				} catch (InvalidKeyException e) {
+    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
+    					m_log.info(infoMsg);
+    					verifyOK = false;
     				} catch (CertificateNotYetValidException e) {
     					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certnotyetvalid", subject, issuer, e.getMessage());
     					m_log.info(infoMsg);
