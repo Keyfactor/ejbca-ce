@@ -21,8 +21,6 @@ import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
@@ -30,8 +28,6 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.UserDataLocal;
 import org.ejbca.core.ejb.ra.UserDataLocalHome;
 import org.ejbca.core.ejb.ra.UserDataPK;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -42,10 +38,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
-
-
-
-
 
 /**
  * Authenticates users towards a user database.
@@ -103,50 +95,21 @@ import org.ejbca.core.model.ra.UserDataVO;
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
- *
- * @ejb.ejb-external-ref
- *   description="The RA Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/RaAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *   link="RaAdminSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Key Recovery Session Bean"
- *   view-type="local"
- *   ref-name="ejb/KeyRecoverySessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
- *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
- *   link="KeyRecoverySession"  
- *
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
     /** home interface to user entity bean */
     private UserDataLocalHome userHome = null;
     
-    /** home interface to user admin session bean */
-    private IUserAdminSessionLocalHome usersessionhome = null;
-    	
     /** interface to user admin session bean */
     private IUserAdminSessionLocal usersession = null;
     
     /** The remote interface of the log session bean */
     private ILogSessionLocal logsession;
     
-    /** The local interface of the keyrecovery session bean */
-    private IKeyRecoverySessionLocal keyrecoverysession = null;
-    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /** boolean indicating if keyrecovery should be used. */
-    private boolean usekeyrecovery = true;
-    
-
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -155,9 +118,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      */
     public void ejbCreate() throws CreateException {
         trace(">ejbCreate()");
-        
         userHome = (UserDataLocalHome)getLocator().getLocalHome(UserDataLocalHome.COMP_NAME);
-        
         trace("<ejbCreate()");
     }
     
@@ -169,7 +130,6 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
 			} catch (CreateException e) {
 				throw new EJBException(e);
 			}
-    		
     	}
     	return logsession;
     }
@@ -182,37 +142,10 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
 			} catch (CreateException e) {
 				throw new EJBException(e);
 			}
-    		
     	}
     	return usersession;
     }
     
-    /**
-     * Method returning the keyrecovery session if key recovery is configured in the globalconfiguration
-     * else null is returned. 
-     * 
-     * @param admin
-     * @return
-     */
-    private IKeyRecoverySessionLocal getKeyRecoverySession(Admin admin){
-    	if(keyrecoverysession == null){
-    		try{
-              IRaAdminSessionLocalHome raadminhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);                            
-              IRaAdminSessionLocal raadmin = raadminhome.create();        
-              usekeyrecovery = (raadmin.loadGlobalConfiguration(admin)).getEnableKeyRecovery();
-              if(usekeyrecovery){
-                IKeyRecoverySessionLocalHome keyrecoveryhome = (IKeyRecoverySessionLocalHome) getLocator().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
-                keyrecoverysession = keyrecoveryhome.create();
-              }
-    		}catch(Exception e){
-    			  error("Error in getKeyRecoverySession: ", e);
-    	          throw new EJBException(e);
-            }
-    	}
-    	
-    	return keyrecoverysession;
-    }
-
     /**
      * Authenticates a user to the user database and returns the user DN.
      *
