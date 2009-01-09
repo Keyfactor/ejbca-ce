@@ -385,6 +385,93 @@ NameVirtualHost *:443
   </p>
   </section>
 
+  <section name="Setting up an Apache Web Server with mod_jk in front of EJBCA">
+  <p>
+  Instead of using a proxy you can use mod_jk which uses a JK connector between apache and tomcat. I think this have some benefits. 
+  You can easily combine it with mod_rewrite to have any type of external URLs, for OCSP, CRLs etc, and mapping them to other URLs in EJBCA.
+  </p>
+  <p>
+  This section will show you how to use an Apache with mod_jk in front of EJBCA.
+  The resulting server will
+  </p>
+  <ul>
+  <li>Display EJBCA public web at http://demo.primekey.se/</li>
+  <li>Require a client SSL certificate when accessing https://demo.primekey.se/, which works for the admin-GUI.</li>
+  </ul>
+  mod_jk have many features and by using it you can virtually do anything you want with hosts, ports and URLs.
+  <p>
+  This example was created on Ubuntu 64-bit Server 8.10 using the Apache Web Server 2.2 package,
+  but should be easy to adapt to any system able to run Apache.
+  </p>
+<source>
+# sudo apt-get install apache2 libapache2-mod-jk
+# vim /etc/libapache2-mod-jk/workers.properties
+-----
+worker.list=jboss
+
+# Define a worker using ajp13
+worker.jboss.port=8009
+worker.jboss.host=127.0.0.1
+worker.jboss.type=ajp13
+-----
+</source>
+<source>
+# vim /etc/apache2/sites-available/demo.primekey.se
+-----
+&lt;VirtualHost demo.primekey.se:80&gt;
+  # We must disable default charset or everything will be ISO-8859-1,
+  AddDefaultCharset off
+  ServerAdmin webmaster@primekey.se
+  ServerName demo.primekey.se
+  ServerAlias demo.primekey.se
+
+  JkLogFile /var/log/apache2/mod_jk.log
+  JkLogLevel debug
+
+  JkMount /* jboss
+  JkMount / jboss
+&lt;/VirtualHost&gt;
+
+&lt;VirtualHost demo.primekey.se:443>&gt;
+  # We must disable default charset or everything will be ISO-8859-1,
+  AddDefaultCharset off
+  ServerAdmin webmaster@primekey.se
+  ServerName demo.primekey.se
+  ServerAlias demo.primekey.se
+
+  SSLEngine on
+  
+  JkLogFile /var/log/apache2/mod_jk.log
+  JkLogLevel debug
+
+  JkMount /* jboss
+  JkMount / jboss
+
+  # JkExtractSSL is On by default
+  # JkExtractSSL On
+&lt;/VirtualHost&gt;
+-----
+</source>
+Enable demo.primekey.se in /etc/apache2/sites-enabled
+
+<source>
+# vim /etc/apache2/mods-available
+-----
+SSLVerifyClient require
+SSLVerifyDepth 3
+
+SSLCACertificateFile /etc/apache2/ssl/apache-CA.pem
+SSLCertificateFile /etc/apache2/ssl/apache.pem
+
+SSLOptions +StdEnvVars +ExportCertData
+-----
+</source>
+  <p>
+   Now enable ssl.load and ssl.conf in /etc/apache2/mods-enabled.
+  </p>
+  <p>Finally restart apache and go to http://demo.primekey.se/ (or https). Same security considerations as for using proxy applies.</p>
+  </section>
+
   <section name="Setting up Autoenrollment for Windows clients with EJBCA">
   <p>
   This section will show you how to set up automatic certificate enroll of
