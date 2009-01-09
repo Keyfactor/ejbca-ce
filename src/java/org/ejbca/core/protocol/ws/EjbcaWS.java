@@ -141,6 +141,7 @@ import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
+import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -412,6 +413,12 @@ public class EjbcaWS implements IEjbcaWS {
 		EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		Admin admin = ejbhelper.getAdmin(wsContext);
 
+		// If password is empty we can generate a big random one to use instead
+		if (StringUtils.isEmpty(password)) {
+			AllPrintableCharPasswordGenerator gen = new AllPrintableCharPasswordGenerator();
+			password = gen.getNewPassword(15, 20);
+			log.debug("Using a long random password");
+		}
 		// get and old status that we can remember so we can reset status if this fails in the last step
 		int olduserStatus = UserDataConstants.STATUS_GENERATED;
 		try {
