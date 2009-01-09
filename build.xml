@@ -710,6 +710,9 @@
     <!-- Make a ZIP release file of EJBCA, and a SHA1 checksum of the release    -->
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
     <!-- ======================================================================= -->
+	<target name="ziprelease" description="Make a zip file for EJBCA release">
+		<antcall target="clean" />
+
 	<!-- A small script that converts the version x.y.z to x_y_z to be used in the file -->
 	<scriptdef name="convertdot" language="javascript">
 	    <![CDATA[
@@ -721,9 +724,6 @@
           str = project.getProperty("ejbca.zipversion");
 	    ]]>
     </scriptdef>
-
-	<target name="ziprelease" description="Make a zip file for EJBCA release">
-		<antcall target="clean" />
 		
 		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
 		<convertdot/> <!-- convert dots to underscores in version string -->
