@@ -98,8 +98,10 @@ class KeyStoreContainerTest {
             try {
                 if ( tests==null || nrOfTests==-5 )
                     tests = getTests(keyStore);
-                for( int j = 0; j<tests.length; j++ )
+                for( int j = 0; j<tests.length; j++ ) {
+                    System.out.println();
                     tests[j].doIt();
+                }
             } catch( Throwable t ) {
                 tests = null;
                 t.printStackTrace(System.err);
@@ -333,20 +335,37 @@ class KeyStoreContainerTest {
             test.printInfo(System.out);
             return totalTime;
         }
-        void doIt() throws Exception {
+        void doIt() {
+            final String CSI = "\u001B";
+            System.out.println(CSI+"[1;4;5mTesting of key: "+this.alias+CSI+"[0m");
             boolean isCryptoAvailable = true;
             try {
                 this.totalDecryptTime += test(new Crypto());
             } catch( CryptoNotAvailableForThisAlgorithm e ) {
                 isCryptoAvailable = false;
+            } catch( Exception e) {
+                this.totalDecryptTime = -1;
+                e.printStackTrace(System.out);
             }
-            this.totalSignTime += test(new Sign());
+            try {
+                this.totalSignTime += test(new Sign());
+            } catch (Exception e) {
+                this.totalSignTime = -1;
+                e.printStackTrace(System.out);
+            }
             this.nrOfTests++;
             final long nanoNumber = this.nrOfTests*(long)1000000000;
-            System.out.print(this.alias+" key statistics. Signings per second: "+(nanoNumber+this.totalSignTime/2)/this.totalSignTime);
-            if ( isCryptoAvailable )
-                System.out.println(" Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
+            System.out.println("Key statistics. ");
+            if ( this.totalSignTime < 0)
+                System.out.print("Signing not possible with this key. See exception");
             else
+                System.out.print("Signings per second: "+(nanoNumber+this.totalSignTime/2)/this.totalSignTime);
+            if ( isCryptoAvailable ) {
+                if ( this.totalDecryptTime < 0)
+                    System.out.println("; Crypto not possible with this key. See exception");
+                else
+                    System.out.println("; Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
+            } else
                 System.out.println(" No crypto available for this key.");
         }
 
