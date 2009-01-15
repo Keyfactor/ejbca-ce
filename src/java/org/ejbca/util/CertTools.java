@@ -2149,7 +2149,7 @@ public class CertTools {
 					throw new CertificateNotYetValidException(msg);
 				}
 				if (end.before(date)) {
-					String msg = "Certificate endDate '"+start+"' is before check date '"+date+"'";
+					String msg = "Certificate endDate '"+end+"' is before check date '"+date+"'";
 					log.error(msg);
 					throw new CertificateExpiredException(msg);
 				}
