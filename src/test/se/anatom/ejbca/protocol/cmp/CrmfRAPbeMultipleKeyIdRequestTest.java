@@ -164,8 +164,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
 		this.storesession = storeHome.create();
         
-        issuerDN1 = cacert1.getIssuerDN().getName();
-        issuerDN2 = cacert2.getIssuerDN().getName();
+        issuerDN1 = cacert1.getSubjectDN().getName();
+        issuerDN2 = cacert2.getSubjectDN().getName();
 	}
 	
     private Context getInitialContext() throws NamingException {
