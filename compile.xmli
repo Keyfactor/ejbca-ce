@@ -11,6 +11,10 @@
 	    </condition>
 	</target>
 	
+    <target name="jboss50jsfimpl" depends="jboss50targetcheck" if="jboss50.enabled">
+	   <property name="web.jsfimpl" value="sunri"/>
+	   <echo>JBoss 5.0.x uses SunRI JSF implementation</echo>
+    </target>
     <target name="jboss42jsfimpl" depends="jboss42targetcheck" if="jboss42.enabled">
 	   <property name="web.jsfimpl" value="sunri"/>
 	   <echo>JBoss 4.2.x uses SunRI JSF implementation</echo>
@@ -35,7 +39,7 @@
 	   <property name="web.jsfimpl" value="sunri"/>
 	   <echo>Websphere uses SunRI JSF implementation</echo>
     </target>
-	<target name="set.jsfimpl" depends="jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl,oc4jjsfimpl,webspherejsfimpl">
+	<target name="set.jsfimpl" depends="jboss50jsfimpl,jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl,oc4jjsfimpl,webspherejsfimpl">
 	</target>
     <!-- =================================================================== -->
     <!-- Create the time stamp and build directory -->
@@ -446,6 +450,9 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 	    <!-- 
 	      Copy java files and insert some variables in them 
 	    -->
+        <available file="${appserver.home}/client/jboss-javaee.jar" property="jboss5dependencyquote"
+        	value='"'/>
+        <property name="jboss5dependencyquote" value=""/>
         <copy todir="${preprocessed}" encoding="ISO-8859-1">
             <fileset dir="src">
                 <include name="**/*.java"/>
@@ -466,6 +473,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>				
 				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
 				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
+				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>
 				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
 				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
 				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>
@@ -529,6 +537,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			<tokenfilter>			    
 				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
 				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
+				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>
 			</tokenfilter>
 			</filterchain>
         </copy>

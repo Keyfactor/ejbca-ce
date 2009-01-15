@@ -364,6 +364,14 @@
 				<equals arg1="${appserver.type}" arg2="glassfish"/>
 			</condition>
 	</target>
+	<target name="jboss50targetcheck">
+			<condition property="jboss50.enabled">
+                <and>
+				  <equals arg1="${appserver.type}" arg2="jboss"/>
+                  <available file="${jboss.deploy.dir}/jbossweb.sar" type="dir"/>
+                </and>
+			</condition>
+	</target>
 	<target name="jboss42targetcheck">
 			<condition property="jboss42.enabled">
                 <and>
