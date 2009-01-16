@@ -380,8 +380,10 @@ client certificate is verified with a list of trusted CA certificates known as
 the 'truststore'.</li>
 <li>EJBCA verfies that the client certificate exists in the database and that
 it's not revoked. (Configurable in web.properties.)</li>
-<li>EJBCA tries to match the information in the certificate with the all the
-administrators in the different administrator groups.</li>
+<li>EJBCA tries to match the information in the certificate with any of the
+matching criterias found in the different administrator groups. Matching rules
+are evaluated separately so matching with both CN and OU would match all CN
+matched certificates and also all OU matched certificates.</li>
 <li>If a match is found, the access rules for this group is given to the
 administrator.</li>
 </ol>
