@@ -103,7 +103,7 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   <section name="EJBCA and Cisco IOS">
   <p>This howto is contributed by Bruno Bonfils.</p>
   <p>
-  There is a <a href="http://www.ipflow.utc.fr/index.php/Cisco_7200_Simulator">Cisco 7200 emulator</a> available.
+  There is a <a href="#Cisco IOS simulator">Cisco emulator</a> available.
   </p>
   <p>Here is the IOS config related to the CA:
   </p>
@@ -195,7 +195,83 @@ CA Certificate
   Associated Trustpoints: FMSCA  
   </source>
 
+  <subsection name="Cisco IOS simulator">
+  <p>
+  There is a Cisco 7200 emulator called <a href="http://www.ipflow.utc.fr/index.php/Cisco_7200_Simulator">dynamips</a> available  
+  and a graphical front end <a href="http://www.gns3.net/">GNS3</a>.
+  </p>
+  <p>Below is a short run through how to configure and enroll directly with EJBCA using GNS3 on Ubuntu 8.10.
+  </p>
+  <source>
+sudo apt-get install gns3 uml-utilities bridge-utils
+  </source>
+  <p>Now you have to configure the host and gns3 to be able to communicate with each other, so the router can connect to EJBCA on the host computer. 
+  This is taken from <a href="http://www.blindhog.net/linux-bridging-for-gns3-lan-communications/">http://www.blindhog.net/linux-bridging-for-gns3-lan-communications/"</a>.
+  </p>
+  <source>
+1. Create a tap interface
+   sudo tunctl -t tap0
+2. Remove ip addressing and set eth0 and tap0 to promiscuous mode
+   sudo ifconfig tap0 0.0.0.0 promisc up
+   sudo ifconfig eth0 0.0.0.0 promisc up
+3. Create a new bridge interface
+   sudo brctl addbr br0
+4. Add tap0 and eth0 to the bridge group
+   sudo brctl addif br0 tap0
+   sudo brctl addif br0 eth0
+5. Enable the bridge interface and give it an ip address
+   sudo ifconfig br0 up
+   sudo ifconfig br0 10.10.10.99/24
+6. Configure the default route
+   sudo route add default gw 10.10.10.254
+  </source>
+  <p>Now start gns3.</p>
+  <source>
+sudo gns3
+  </source>
+  <p>Configure with IOS image, for example c7200-jk9s-mz.124-13b.bin (an image with crypto commands), it's available on the net.
+  Also configure a simple topology:
+  <ul>
+  <li>drag cloud to topology window</li>
+  <li>drag c7200 to topology window</li>
+  <li>configure cloud and add tap0 interface</li>
+  <li>add manual link from cloud to c7200</li>
+  <li>start c7200</li>
+  <li>open console on c7200</li>
+  <li>enter configuration and configure FastEthernet0/0 with ip 10.10.10.98/255.255.255.0</li>
+  </ul>
+  Now you should be able to ping the host computer, where EJBCA is running. 
+  It is now time to do the actual enrollment as described above. Below are sample commands I have used.
+  </p>
+  <source>
+Router>enable
+Router#configure terminal
+Router(config)#
+Router(config)#crypto ca trustpoint ScepCA
+
+Router(ca-trustpoint)#enrollment url http://10.10.10.99:8080/ejbca/publicweb/apply/scep
+Router(ca-trustpoint)#serial-number
+Router(ca-trustpoint)#ip-address none
+Router(ca-trustpoint)#subject-name OU=Network Management, O=PrimeKey Solutions AB, C=SE
+Router(ca-trustpoint)#revocation-check none
+Router(ca-trustpoint)#exit
+
+Router(config)#crypto ca authenticate ScepCA
+Router(config)#crypto ca enroll ScepCA
+  </source>
+  <p>
+  You will see in the log what the username of the user you must create is called.
+  create end entity profile and user with DN containing SN=FFFFFF and unstructuredName=Router, as seen in the log file (FFFFFF and Router are the default values in the simulator).
+  </p>
+  <source>
+Router(config)#crypto ca enroll ScepCA
+Router(config)#exit
+Router#show crypto ca certificate
+</source>
+  </subsection>
+
   </section>
+
 
   <section name="OpenSSH and X509 authentication">
   <p>Bruno Bonfils has written this excellent howto on using SSH with certificates from EJBCA:</p>
