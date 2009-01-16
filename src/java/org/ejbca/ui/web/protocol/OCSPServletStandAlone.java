@@ -240,15 +240,15 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
-        RevokedCertInfo revokedInfo = isRevoked(adm, cert.getIssuerDN().getName(),
-                cert.getSerialNumber());
+    	String issuerDN = CertTools.getIssuerDN(cert);
+        RevokedCertInfo revokedInfo = isRevoked(adm, issuerDN, CertTools.getSerialNumber(cert));
         if ( revokedInfo==null ) {
-    		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", cert.getSerialNumber().toString(16), cert.getIssuerDN());
+    		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN);
             m_log.warn(wMsg);
             return null;
         }
         if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
-    		String wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", cert.getSerialNumber().toString(16), cert.getIssuerDN());
+    		String wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", CertTools.getSerialNumberAsString(cert), issuerDN);
             m_log.warn(wMsg);
             return null;
         }
@@ -262,7 +262,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         		break;
         	}
         	// Is there a CA certificate?
-        	X509Certificate target = m_caCertCache.findLatestBySubjectDN(current.getIssuerDN().getName());
+        	X509Certificate target = m_caCertCache.findLatestBySubjectDN(CertTools.getIssuerDN(current));
         	if (target != null) {
     			current = target;
         	} else {
@@ -270,7 +270,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         	}
         }
         if ( chain==null ) {
-    		String wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", cert.getSerialNumber().toString(16), cert.getIssuerDN());
+    		String wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", CertTools.getSerialNumberAsString(cert), issuerDN);
         	m_log.warn(wMsg);
         }
         return chain;

@@ -803,16 +803,16 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				}
 				if (req.isSigned()) {
 					X509Certificate signercert = OCSPUtil.checkRequestSignature(request.getRemoteAddr(), req, m_caCertCache);
-					String signercertIssuerName = signercert.getIssuerDN().getName();
-					BigInteger signercertSerNo = signercert.getSerialNumber();
-					String signercertSubjectName = signercert.getSubjectDN().getName();
+					String signercertIssuerName = CertTools.getIssuerDN(signercert);
+					BigInteger signercertSerNo = CertTools.getSerialNumber(signercert);
+					String signercertSubjectName = CertTools.getSubjectDN(signercert);
 					if (transactionLogger != null ) transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
 					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, new String(Hex.encode(signercert.getSerialNumber().toByteArray())));
 					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
 					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
 					if (m_reqMustBeSigned) {
 						// If it verifies OK, check if it is revoked
-						RevokedCertInfo rci = isRevoked(m_adm, signercert.getIssuerDN().getName(), signercert.getSerialNumber());
+						RevokedCertInfo rci = isRevoked(m_adm, CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
 						// If rci == null it means the certificate does not exist in database, we then treat it as ok,
 						// because it may be so that only revoked certificates is in the (external) OCSP database.
 						if ((rci != null) && rci.isRevoked()) {
@@ -946,7 +946,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					 *    certificates issued by that CA.
 					 */
 					RevokedCertInfo rci;
-					rci = isRevoked(m_adm, cacert.getIssuerDN().getName(), cacert.getSerialNumber());
+					rci = isRevoked(m_adm, CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
 					if (null != rci && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
 						rci = null;
 					}
