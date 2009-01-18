@@ -46,7 +46,7 @@ public abstract class ClientToolBox {
      */
     public static void main(String[] args) {
         // each new tool must be added to the array
-        final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool(), new PKCS11HSMKeyTool(), new NCipherHSMKeyTool(), new Ocsp(), new EjbcaWsRaCli() };
+        final ClientToolBox toolBox[] = { new HealthCheckTest(), new HSMKeyTool(), new PKCS11HSMKeyTool(), new NCipherHSMKeyTool(), new Ocsp(), new EjbcaWsRaCli(), new CMPTest() };
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) )
                 return;
