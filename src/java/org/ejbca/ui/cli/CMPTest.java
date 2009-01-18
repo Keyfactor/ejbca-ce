@@ -14,6 +14,7 @@ package org.ejbca.ui.cli;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,9 +23,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.Provider;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
@@ -59,13 +61,11 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.X509Principal;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
-import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -99,21 +99,30 @@ class CMPTest extends ClientToolBox {
         final PerformanceTest performanceTest;
 
         private static final String PBEPASSWORD = "password";
-        private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
+        private final String httpReqPath;
         private static final String resourceCmp = "publicweb/cmp";
-        final private KeyPair keyPair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+        final private KeyPair keyPair;
         final private X509Certificate cacert;
         final Random random = new Random();
+        final CertificateFactory certificateFactory;
+        final Provider bcProvider = new BouncyCastleProvider();
 
-        StressTest( final String caCertFileName,
+        StressTest( final String hostName,
+                    final InputStream certInputStream,
                     final int numberOfThreads,
                     final int waitTime) throws Exception {
-            CertificateFactory cf = CertTools.getCertificateFactory("BC");
-            this.cacert = (X509Certificate)cf.generateCertificate(new FileInputStream(caCertFileName));
+            this.httpReqPath = "http://"+hostName+":8080/ejbca";
+            this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
+            this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
+
+            final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
+            keygen.initialize(2048);
+            this.keyPair = keygen.generateKeyPair();
+
             this.performanceTest = new PerformanceTest();
             this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
         }
-        private PKIMessage genCertReq(SessionData sessionData, boolean raVerifiedPopo, X509Extensions extensions) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+        private PKIMessage genCertReq(SessionData sessionData, boolean raVerifiedPopo, X509Extensions extensions) throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
             final OptionalValidity myOptionalValidity = new OptionalValidity();
             myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
             myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
@@ -172,7 +181,7 @@ class CMPTest extends ClientToolBox {
                 mout.writeObject( myCertRequest );
                 mout.close();
                 final byte[] popoProtectionBytes = baos.toByteArray();
-                final Signature sig = Signature.getInstance( PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+                final Signature sig = Signature.getInstance( PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
                 sig.initSign(this.keyPair.getPrivate());
                 sig.update( popoProtectionBytes );
 
@@ -204,11 +213,11 @@ class CMPTest extends ClientToolBox {
             final PKIBody myPKIBody = new PKIBody(myCertReqMessages, 0); // initialization request
             return new PKIMessage(myPKIHeader, myPKIBody);   
         }
-        protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+        protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password) throws NoSuchAlgorithmException, InvalidKeyException {
             return protectPKIMessage(msg, badObjectId, password, "primekey");
         }
         
-        protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+        protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId) throws NoSuchAlgorithmException, InvalidKeyException {
             // SHA1
             final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
             // 567 iterations
@@ -246,7 +255,7 @@ class CMPTest extends ClientToolBox {
                     basekey[raSecret.length+i] = salt[i];
                 }
                 // Construct the base key according to rfc4210, section 5.1.3.1
-                final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), "BC");
+                final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), this.bcProvider);
                 for (int i = 0; i < iterationCount; i++) {
                     basekey = dig.digest(basekey);
                     dig.reset();
@@ -254,7 +263,7 @@ class CMPTest extends ClientToolBox {
                 // For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
                 final String macOid = macAlg.getObjectId().getId();
                 final byte[] protectedBytes = ret.getProtectedBytes();
-                final Mac mac = Mac.getInstance(macOid, "BC");
+                final Mac mac = Mac.getInstance(macOid, this.bcProvider);
                 final SecretKey key = new SecretKeySpec(basekey, macOid);
                 mac.init(key);
                 mac.reset();
@@ -271,7 +280,7 @@ class CMPTest extends ClientToolBox {
             // POST the CMP request
             // we are going to do a POST
             final String resource = resourceCmp;
-            final String urlString = httpReqPath + '/' + resource;
+            final String urlString = this.httpReqPath + '/' + resource;
             final URL url = new URL(urlString);
             final HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setDoOutput(true);
@@ -336,7 +345,7 @@ class CMPTest extends ClientToolBox {
             }
 
             // Check that the signer is the expected CA
-            X509Name name = X509Name.getInstance(header.getSender().getName()); 
+            final X509Name name = X509Name.getInstance(header.getSender().getName()); 
             if ( header.getSender().getTagNo()!=4 || name==null || !name.equals(this.cacert.getSubjectDN()) )
                 StressTest.this.performanceTest.getLog().error("Not signed by right issuer.");
 
@@ -346,7 +355,7 @@ class CMPTest extends ClientToolBox {
                 final DERBitString bs = respObject.getProtection();
                 final Signature sig;
                 try {
-                    sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+                    sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
                     sig.initVerify(this.cacert);
                     sig.update(protBytes);
                     if ( !sig.verify(bs.getBytes()) )
@@ -388,14 +397,14 @@ class CMPTest extends ClientToolBox {
                         basekey[raSecret.length+i] = salt[i];
                     }
                     // Construct the base key according to rfc4210, section 5.1.3.1
-                    final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), "BC");
+                    final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId());
                     for (int i = 0; i < iterationCount; i++) {
                         basekey = dig.digest(basekey);
                         dig.reset();
                     }
                     key = new SecretKeySpec(basekey, macOid);
                 }
-                final Mac mac = Mac.getInstance(macOid, "BC");
+                final Mac mac = Mac.getInstance(macOid);
                 mac.init(key);
                 mac.reset();
                 final byte[] protectedBytes = respObject.getProtectedBytes();
@@ -406,16 +415,13 @@ class CMPTest extends ClientToolBox {
                 byte[] pb = protection.getBytes();
                 if ( !Arrays.equals(out, pb) )
                     StressTest.this.performanceTest.getLog().error("Wrong PBE hash");
-                return true;
             }
+            if ( header.getSenderNonce().getOctets().length!=16 )
+                StressTest.this.performanceTest.getLog().error("Wrong length of received sender nonce (made up by server). Is "+header.getSenderNonce().getOctets().length+" byte but should be 16.");
 
-            // --Recipient Nonce
-            // recipient nonce should be the same as we sent away as sender nonce
-            if ( !Arrays.equals(header.getSenderNonce().getOctets(), sessionData.getNonce()) )
-                StressTest.this.performanceTest.getLog().error("recipient nonce not the same as we sent away as the sender nonce");
+            if ( !Arrays.equals(header.getRecipNonce().getOctets(), sessionData.getNonce()) )
+                StressTest.this.performanceTest.getLog().error("recipient nonce not the same as we sent away as the sender nonce. Sent: "+Arrays.toString(sessionData.getNonce())+" Received: "+Arrays.toString(header.getRecipNonce().getOctets()));
 
-            // --Transaction ID
-            // transid should be the same as the one we sent
             if ( !Arrays.equals(header.getTransactionID().getOctets(), sessionData.getTransId()) )
                 StressTest.this.performanceTest.getLog().error("transid is not the same as the one we sent");
             return true;
@@ -475,20 +481,14 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No encoded certificate received.");
                 return null;
             }
-            X509Certificate cert;
-            try {
-                cert = (X509Certificate)CertificateFactory.getInstance("X.509", "BC").generateCertificate(new ByteArrayInputStream(encoded));
-            } catch (NoSuchProviderException e) {
-                StressTest.this.performanceTest.getLog().error("Not possbile to create certificate.",e);
-                return null;
-            }
+            final X509Certificate cert = (X509Certificate)this.certificateFactory.generateCertificate(new ByteArrayInputStream(encoded));
             if ( cert==null ) {
                 StressTest.this.performanceTest.getLog().error("Not possbile to create certificate.");
                 return null;
             }
-            if ( !cert.getSubjectDN().equals(new X509Principal(sessionData.getUserDN())) )
+            if ( cert.getSubjectDN().hashCode() != new X509Name(sessionData.getUserDN()).hashCode() )
                 StressTest.this.performanceTest.getLog().error("Subject is '"+cert.getSubjectDN()+"' but should be '"+sessionData.getUserDN()+'\'');
-            if ( !cert.getIssuerDN().equals(this.cacert.getSubjectDN()) )
+            if ( cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode() )
                 StressTest.this.performanceTest.getLog().error("Issuer is '"+cert.getIssuerDN()+"' but should be '"+this.cacert.getSubjectDN()+'\'');
             try {
                 cert.verify(this.cacert.getPublicKey());
@@ -510,13 +510,13 @@ class CMPTest extends ClientToolBox {
             if ( header.getSender().getTagNo()!=4 )
                 StressTest.this.performanceTest.getLog().error("Wrong tag in respnse message header. Is "+header.getSender().getTagNo()+" should be 4.");
             {
-                final X509Name name = X509Name.getInstance(header.getSender().getName()); 
-                if ( name.equals(this.cacert.getSubjectDN()) )
-                    StressTest.this.performanceTest.getLog().error("Wrong CA DN. Is "+name+" should be "+this.cacert.getSubjectDN());
+                final X509Name name = X509Name.getInstance(header.getSender().getName());
+                if ( name.hashCode() != this.cacert.getSubjectDN().hashCode() )
+                    StressTest.this.performanceTest.getLog().error("Wrong CA DN. Is '"+name+"' should be '"+this.cacert.getSubjectDN()+"'.");
             }{
                 final X509Name name = X509Name.getInstance(header.getRecipient().getName());
-                if ( name.equals(new X509Name(sessionData.userDN)))
-                    StressTest.this.performanceTest.getLog().error("Wrong recipient DN. Is "+name+" should be "+sessionData.userDN);
+                if ( name.hashCode() != new X509Name(sessionData.userDN).hashCode() )
+                    StressTest.this.performanceTest.getLog().error("Wrong recipient DN. Is '"+name+"' should be '"+sessionData.userDN+"'.");
             }
             final PKIBody body = respObject.getBody();
             if ( body==null ) {
@@ -637,11 +637,14 @@ class CMPTest extends ClientToolBox {
         }*/
         class SessionData {
             private String userDN;
-            private byte[] nonce;
-            private byte[] transid;
+            final private byte[] nonce = new byte[16];
+            final private byte[] transid = new byte[16];
             private int reqId;
+            SessionData() {
+                super();
+            }
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+StressTest.this.random.nextInt()+",O=CMP Test";
+                this.userDN = "CN=CMP Test User Nr "+StressTest.this.random.nextInt()+", O=CMP Test";
                 StressTest.this.random.nextBytes(this.nonce);
                 StressTest.this.random.nextBytes(this.transid);
             }
@@ -674,19 +677,28 @@ class CMPTest extends ClientToolBox {
      */
     @Override
     void execute(String[] args) {
-        final String httpPath;
+        final String hostName;
         final int numberOfThreads;
         final int waitTime;
-        if ( args.length < 2 ) {
-            System.out.println(args[0]+" <http URL> [<number of threads>] [<wait time between eash thread is started>]");
-            System.out.println("Example: ");
+        final String certFileName;
+        final File certFile;
+        if ( args.length < 3 ) {
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>]");
+//          System.out.println("Example: ");
             return;
         }
-        httpPath = args[1];
-        numberOfThreads = args.length>2 ? Integer.parseInt(args[2].trim()):1;
-        waitTime = args.length>3 ? Integer.parseInt(args[3].trim()):0;
+        hostName = args[1];
+        certFileName = args[2];
+        certFile = new File(certFileName);
+        numberOfThreads = args.length>3 ? Integer.parseInt(args[3].trim()):1;
+        waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
         try {
-            new StressTest(httpPath, numberOfThreads, waitTime);
+            if ( !certFile.canRead() ) {
+                System.out.println("File "+certFile.getCanonicalPath()+" not a valid file name.");
+                return;
+            }
+//            Security.addProvider(new BouncyCastleProvider());
+            new StressTest(hostName, new FileInputStream(certFile), numberOfThreads, waitTime);
         } catch (Exception e) {
             e.printStackTrace();
         }
