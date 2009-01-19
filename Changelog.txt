@@ -44,6 +44,29 @@ Bug
     * [ECA-1046] - view certificate on Public web gives error for CVC certificates
     * [ECA-1048] - Can not install with initial CA with space in name
 
+3.7.5, 2009-01-19
+---
+New Feature
+    * [ECA-1035] - Add Brazilian Portuguese Translation
+
+Improvement
+    * [ECA-983] - Allow logging of REPLY_TIME in both audit and transaction logs
+    * [ECA-1031] - Get server certificate in public web shoud not show password
+    * [ECA-1032] - Add cli command to convert cvc certificates between binary and pem
+    * [ECA-1036] - Hide keytool-errors during install.
+    * [ECA-1060] - Throw CertificateExpiredException when certificate used to verify cvc request has expired
+
+Bug
+    * [ECA-244] - Problem during installation with schema: DC=bigcorp,DC=com
+    * [ECA-1037] - CLI for fetching user certificate fails
+    * [ECA-1039] - CVC certificate requests with error leaves user status as new
+    * [ECA-1040] - cvcgetchain does not return latest cert
+    * [ECA-1042] - LdapPublisher does not work with CVC certificates
+    * [ECA-1044] - Nullpointer in BasicFunctions when admin not authorized to CA
+    * [ECA-1046] - view certificate on Public web gives error for CVC certificates
+    * [ECA-1065] - Password needed to update CVC certificate with WS-API
+    * [ECA-1069] - Wrong errormessage in checkValidity when endDate is wrong
+
 3.7.4, 2008-11-18
 ---
 New Feature

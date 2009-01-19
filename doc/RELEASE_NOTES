@@ -27,6 +27,19 @@ EJBCA 3.7.x to 3.8.0. Use the full package from EJBCA 3.8.0 and follow the upgra
 
 Note that if using JBoss, you need JBoss 4.2.x or later to run EJBCA 3.8.x.
 
+EJBCA 3.7.5
+-----------
+This is a minor release that makes a few minor changes in the CVC WS-API and adds a variable in OCSP audit log.
+- Allow logging of REPLY_TIME in both audit and transaction logs  
+- Fixed CVC certificate requests with error leaves user status as new  
+- Fixed that cvcgetchain does not return latest cert
+- Add brazilian portuguese translation of admin GUI
+- A few minor bugs  
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.7.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.7.4
 -----------
 This is a minor release that replaces 3.7.3 where initial install was broken. It has a few additional fixes from 3.7.3 as well.
