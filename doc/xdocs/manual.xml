@@ -3296,10 +3296,11 @@ lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE
 
 <subsection name="SafeNet Luna SA HSM">
 <p>
-One SafeNet Luna it is possible to use either the PKCS#11 interface or the JCE interface. Being generally used by all HSMs we recommend using the 
+One SafeNet Luna it is possible to use either the PKCS#11 interface or the JCE interface. 
+</p><p>
+Being generally used by all HSMs we recommend using the 
 PKC#11 interface.
-</p>
-<p>
+</p><p>
 General steps for the installation and CA creation. Step 1, 3, and 5 have different configuration depending on if you use PKCS#11 or JCE.
 </p>
 <strong>1. Install the Luna SA HSM</strong>
@@ -3329,17 +3330,17 @@ Build and deploy as usual, see installation guide.
 <ol>
 <li>Keypair generation:<br/>
 # cd /usr/lunasa/bin<br/>
-# ./cmu gen -slot=1 -modulusBits=2048 -publicExp=65537 -sign=1 -verify=1 -labelPublic="defualtPublicKey" -labelPrivate="defaultPrivateKey" -id=123456<br/>
+# ./cmu gen -slot=1 -modulusBits=2048 -publicExp=65537 -sign=1 -verify=1 -labelPublic="defaultPublicKey" -labelPrivate="defaultPrivateKey" -id=123456<br/>
 (ID is a random number, and utilized in certificate generation. This must be a new number for every key that is generated.)
 </li>
 <li>Certificate generation - Not CA certificate, only HSM wrapper for public key:<br/>
 # ./cmu selfsigncertificate -slot=1<br/>
 Select defaultPrivateKey from the list.<br/>
-You must enter at least a value for CN when asked, this will be the label of the key to use in EJBCA. Enter <i>defaultKey</i> for this example. 
+You must enter at least a value for CN when asked, this will be the label of the key to use in EJBCA. Enter <i>defaultKeyCert</i> for this example. 
 </li>
 <li>List objects:<br/>
 # ./cmu list<br/>
-You should see defaultKey listed.
+You should see defaultKeyCert listed.
 </li>
 </ol>
 <p>
@@ -3368,14 +3369,14 @@ Example:
 </p>
 <source>
 slot 1
-defaultKey defaultKey
+defaultKey defaultKeyCert
 sharedLibrary /usr/lib/libCryptoki2.so
 </source>
-<p>You can also include the slot password in the properties if you want autoactivation of the CA. If not you have to manually activate the CA when the server is restarted.
+<p>You can also include the slot password in the properties if you want auto activation of the CA. If not you have to manually activate the CA when the server is restarted.
 </p> 
 <source>
 slot 1
-defaultKey defaultKey
+defaultKey defaultKeyCert
 sharedLibrary /usr/lib/libCryptoki2.so
 pin sqEK-WALL-xCTT-Hdx6
 </source>
