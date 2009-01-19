@@ -106,14 +106,17 @@ class CMPTest extends ClientToolBox {
         final Random random = new Random();
         final CertificateFactory certificateFactory;
         final Provider bcProvider = new BouncyCastleProvider();
+        final String keyId;
 
         StressTest( final String hostName,
                     final InputStream certInputStream,
                     final int numberOfThreads,
-                    final int waitTime) throws Exception {
+                    final int waitTime,
+                    final String _keyId) throws Exception {
             this.httpReqPath = "http://"+hostName+":8080/ejbca";
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
             this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
+            this.keyId = _keyId;
 
             final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
             keygen.initialize(2048);
@@ -213,11 +216,8 @@ class CMPTest extends ClientToolBox {
             final PKIBody myPKIBody = new PKIBody(myCertReqMessages, 0); // initialization request
             return new PKIMessage(myPKIHeader, myPKIBody);   
         }
-        protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password) throws NoSuchAlgorithmException, InvalidKeyException {
-            return protectPKIMessage(msg, badObjectId, password, "primekey");
-        }
         
-        protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId) throws NoSuchAlgorithmException, InvalidKeyException {
+        private PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password) throws NoSuchAlgorithmException, InvalidKeyException {
             // SHA1
             final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
             // 567 iterations
@@ -229,7 +229,7 @@ class CMPTest extends ClientToolBox {
             final PKIMessage ret; {
                 // Create the PasswordBased protection of the message
                 final PKIHeader head = msg.getHeader();
-                head.setSenderKID(new DEROctetString(keyId.getBytes()));
+                head.setSenderKID(new DEROctetString(this.keyId.getBytes()));
                 final DERInteger iteration = new DERInteger(iterationCount);
 
                 // Create the new protected return message
@@ -682,9 +682,11 @@ class CMPTest extends ClientToolBox {
         final int waitTime;
         final String certFileName;
         final File certFile;
+        final String keyId;
         if ( args.length < 3 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>]");
-//          System.out.println("Example: ");
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>] [<KeyId>]");
+            System.out.println("EJBCA build configutation requirements: cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password");
+            System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             return;
         }
         hostName = args[1];
@@ -692,13 +694,15 @@ class CMPTest extends ClientToolBox {
         certFile = new File(certFileName);
         numberOfThreads = args.length>3 ? Integer.parseInt(args[3].trim()):1;
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
+        keyId = args.length>5 ? args[5].trim():"EMPTY";
+
         try {
             if ( !certFile.canRead() ) {
                 System.out.println("File "+certFile.getCanonicalPath()+" not a valid file name.");
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, new FileInputStream(certFile), numberOfThreads, waitTime);
+            new StressTest(hostName, new FileInputStream(certFile), numberOfThreads, waitTime, keyId);
         } catch (Exception e) {
             e.printStackTrace();
         }
