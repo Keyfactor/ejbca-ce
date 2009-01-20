@@ -40,12 +40,14 @@ import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.FailInfo;
@@ -115,14 +117,8 @@ public class CmpMessageHelper {
 		log.debug("Selected signature alg oid: "+oid.getId());
 		pKIMessage.getHeader().setProtectionAlg( new AlgorithmIdentifier(oid) );
 		// Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
-		// we use BC provider to translate it into a signature algorithm name instead
-		String sigAlg = oid.getId();
-		try {
-			Signature sig = Signature.getInstance( sigAlg, "BC" );
-			sigAlg = sig.getAlgorithm();			
-		} catch (NoSuchAlgorithmException e) {
-			log.info("Algorithm oid "+sigAlg+" could not be translated to algorithm name, sticking with oid.");
-		}
+		// we use BC classes to translate it into a signature algorithm name instead
+		final String sigAlg = new BasicOCSPResp(new BasicOCSPResponse(null, new AlgorithmIdentifier(oid), null, null)).getSignatureAlgName();
 		log.debug("Signing CMP message with signature alg: "+sigAlg);
 		Signature sig = Signature.getInstance(sigAlg , provider );
 		sig.initSign(key);
