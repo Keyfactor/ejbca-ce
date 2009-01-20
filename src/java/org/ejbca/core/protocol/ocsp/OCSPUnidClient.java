@@ -85,7 +85,7 @@ public class OCSPUnidClient {
     final private KeyStore ks;
     final private String passphrase;
     final private PrivateKey signKey;
-    final private X509Certificate[] certChain;
+    private X509Certificate[] certChain;
     final private X509Extensions extensions;
     final private byte nonce[];
 	
@@ -158,6 +158,12 @@ public class OCSPUnidClient {
         // See if we must try to get the ocsprul from the cert
         if (httpReqPath == null) {
             httpReqPath = CertTools.getAuthorityInformationAccessOcspUrl(cert);
+        	if (httpReqPath == null) {
+        		throw new IllegalArgumentException ("\nYou have not specified an OCSP url and the certificate\ndoes not contain an OCSP URL either");
+        	}
+        }
+        if (certChain == null) {
+        	certChain = new X509Certificate[] {(X509Certificate)cacert}; 
         }
         return lookup( CertTools.getSerialNumber(cert), cacert );
     }
@@ -328,10 +334,13 @@ public class OCSPUnidClient {
     private SSLSocketFactory getSSLFactory() throws GeneralSecurityException, IOException {
 
         SSLContext ctx = SSLContext.getInstance("TLS");
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        KeyManagerFactory kmf = null;
 
-        // Put the key and certs in the user keystore
-        kmf.init(ks, passphrase.toCharArray());
+        // Put the key and certs in the user keystore (if available)
+        if (ks != null) {
+        	kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(ks, passphrase.toCharArray());
+        }
 
         // Now make a truststore to verify the server
         KeyStore trustks = KeyStore.getInstance("jks");
@@ -341,7 +350,7 @@ public class OCSPUnidClient {
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(trustks);
 
-        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        ctx.init(kmf == null ? null : kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
         return ctx.getSocketFactory();
     }
