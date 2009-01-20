@@ -618,7 +618,7 @@ class CMPTest extends ClientToolBox {
                 }
                 checkCmpResponseGeneral(resp, this.sessionData, false, false);
                 checkCmpPKIConfirmMessage(this.sessionData, resp);
-                StressTest.this.performanceTest.getLog().result("User with DN '"+this.sessionData.getUserDN()+"' finished.");
+                StressTest.this.performanceTest.getLog().info("User with DN '"+this.sessionData.getUserDN()+"' finished.");
                 return true;
             }
             public String getJobTimeDescription() {
