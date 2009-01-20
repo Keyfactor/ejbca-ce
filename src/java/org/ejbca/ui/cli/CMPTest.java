@@ -296,8 +296,13 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("Wrong http resonse code:"+con.getResponseCode());
                 return null;
             }
+            final String contentType = con.getContentType();
+            if ( contentType==null ) {
+                StressTest.this.performanceTest.getLog().error("No content type received.");
+                return null;
+            }
             // Some appserver (Weblogic) responds with "application/pkixcmp; charset=UTF-8"
-            if ( !con.getContentType().startsWith("application/pkixcmp") )
+            if ( !contentType.startsWith("application/pkixcmp") )
                 StressTest.this.performanceTest.getLog().info("wrong content type: "+con.getContentType());
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // This works for small requests, and CMP requests are small enough
@@ -577,7 +582,11 @@ class CMPTest extends ClientToolBox {
                     return false;
                 }
                 checkCmpResponseGeneral(resp, this.sessionData, true, false);
-                checkCmpCertRepMessage(this.sessionData, resp, this.sessionData.getReqId());
+                final X509Certificate cert = checkCmpCertRepMessage(this.sessionData, resp, this.sessionData.getReqId());
+                if ( cert==null )
+                    return false;
+                StressTest.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
+
                 return true;
             }
             public String getJobTimeDescription() {
@@ -609,6 +618,7 @@ class CMPTest extends ClientToolBox {
                 }
                 checkCmpResponseGeneral(resp, this.sessionData, false, false);
                 checkCmpPKIConfirmMessage(this.sessionData, resp);
+                StressTest.this.performanceTest.getLog().result("User with DN '"+this.sessionData.getUserDN()+"' finished.");
                 return true;
             }
             public String getJobTimeDescription() {
@@ -644,7 +654,7 @@ class CMPTest extends ClientToolBox {
                 super();
             }
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+StressTest.this.random.nextInt()+", O=CMP Test";
+                this.userDN = "CN=CMP Test User Nr "+StressTest.this.random.nextInt()+",O=CMP Test,C=SE";
                 StressTest.this.random.nextBytes(this.nonce);
                 StressTest.this.random.nextBytes(this.transid);
             }
