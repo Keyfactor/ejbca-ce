@@ -62,7 +62,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * revokeCert  : Revokes the given certificate.
  * revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user.
  * revokeToken : Revokes all certificates placed on a given hard token
- * checkRevokationStatus : Checks the revokation status of a certificate.
+ * checkRevokationStatus : Checks the revocation status of a certificate.
  * isAuthorized : Checks if an admin is authorized to an resource
  * fetchUserData : Method used to fetch userdata from an existing UserDataSource
  * genTokenCertificates : Method used to add information about a generated hardtoken
@@ -106,7 +106,7 @@ public interface IEjbcaWS {
 	 * - /ca/<ca of user>
 	 * 
 	 * @param userdata contains all the information about the user about to be added.
-	 * @param clearPwd indicates it the password should be stored in cleartext, requeried
+	 * @param clearPwd indicates it the password should be stored in cleartext, required
 	 * when creating server generated keystores.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws EjbcaException
@@ -117,7 +117,7 @@ public interface IEjbcaWS {
 			ApprovalException, WaitingForApprovalException;
 
 	/**
-	 * Retreives information about a user in the database.
+	 * Retrieves information about a user in the database.
 	 * 
 	 * Authorization requirements: the client certificate must have the following priviledges set
 	 * - Administrator flag set
@@ -138,7 +138,7 @@ public interface IEjbcaWS {
 			EjbcaException;
 
 	/**
-	 * Retreives a collection of certificates generated for a user.
+	 * Retrieves a collection of certificates generated for a user.
 	 * 
 	 * Authorization requirements: the client certificate must have the following priviledges set
 	 * - Administrator flag set
@@ -226,11 +226,11 @@ public interface IEjbcaWS {
 	
 	/**
 	 * Method to use to generate a certificate for a user. The method must be preceded by
-	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users.
+	 * a editUser call, either to set the userstatus to 'new' or to add non-existing users.
 	 * 
 	 * Observe, the user must first have added/set the status to new with edituser command
 	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
+	 * Authorization requirements: the client certificate must have the following privileges set
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
@@ -242,8 +242,8 @@ public interface IEjbcaWS {
 	 * @param password the password sent with editUser call
 	 * @param pkcs10 the PKCS10 (only the public key is used.)
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-	 * possible to map it by give the hardTokenSN here, this will simplyfy revokation of a tokens
-	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
+	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
+	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
 	 * @return the generated certificate, in either just X509Certificate or PKCS7 
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
@@ -257,10 +257,10 @@ public interface IEjbcaWS {
 
 	/**
 	 * Method to use to generate a server generated keystore. The method must be preceded by
-	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users and
+	 * a editUser call, either to set the userstatus to 'new' or to add non-existing users and
 	 * the users token should be set to SecConst.TOKEN_SOFT_P12.
 	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
+	 * Authorization requirements: the client certificate must have the following privileges set
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
@@ -271,8 +271,8 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-	 * possible to map it by give the hardTokenSN here, this will simplyfy revokation of a tokens
-	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
+	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
+	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in CATokenConstants.org.ejbca.core.model.ca.catoken.KEYALGORITHM_XX.
 	 * @return the generated keystore
@@ -289,7 +289,7 @@ public interface IEjbcaWS {
 	/**
 	 * Method used to revoke a certificate.
 	 * 
-	 * * Authorization requirements: the client certificate must have the following priviledges set
+	 * * Authorization requirements: the client certificate must have the following privileges set
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
@@ -298,8 +298,8 @@ public interface IEjbcaWS {
 	 * 
 	 * @param issuerDN of the certificate to revoke
 	 * @param certificateSN of the certificate to revoke
-	 * @param reason for revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants, 
-	 * or use RevokedCertInfo.NOT_REVOKED to unrevoke a certificate on hold.
+	 * @param reason for revocation, one of RevokedCertInfo.REVOKATION_REASON_ constants, 
+	 * or use RevokedCertInfo.NOT_REVOKED to un-revoke a certificate on hold.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if certificate doesn't exist
@@ -317,7 +317,7 @@ public interface IEjbcaWS {
 	 * Method used to revoke all a users certificates. It is also possible to delete
 	 * a user after all certificates have been revoked.
 	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
+	 * Authorization requirements: the client certificate must have the following privileges set
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
@@ -326,7 +326,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param username unique username i EJBCA
 	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
-	 * or use RevokedCertInfo.NOT_REVOKED to unrevoke a certificate on hold.
+	 * or use RevokedCertInfo.NOT_REVOKED to un-revoke a certificate on hold.
 	 * @param deleteUser deletes the users after all the certificates have been revoked.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
@@ -366,7 +366,7 @@ public interface IEjbcaWS {
 	/**
 	 * Method used to revoke all certificates mapped to one hardtoken.
 	 *
-	 * Authorization requirements: the client certificate must have the following priviledges set
+	 * Authorization requirements: the client certificate must have the following privileges set
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
@@ -374,7 +374,7 @@ public interface IEjbcaWS {
 	 * - /ca/<ca of certificates on token>
 	 * 
 	 * @param hardTokenSN of the hardTokenSN
-	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
+	 * @param reasonfor revocation, one of RevokedCertInfo.REVOKATION_REASON_ constants
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if token doesn't exist
@@ -389,16 +389,16 @@ public interface IEjbcaWS {
 			WaitingForApprovalException, AlreadyRevokedException;
 
 	/**
-	 * Method returning the revokestatus for given user
+	 * Method returning the revocation status for given user
 	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
+	 * Authorization requirements: the client certificate must have the following privileges set
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ca/<ca of certificate>
 	 * 
 	 * @param issuerDN 
-	 * @param certificateSN a hexadecimal string
-	 * @return the revokestatus of null i certificate doesn't exists.
+	 * @param certificateSN a hexa decimal string
+	 * @return the revocation status or null i certificate doesn't exists.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @see org.ejbca.core.protocol.ws.RevokeStatus
@@ -409,12 +409,12 @@ public interface IEjbcaWS {
 			EjbcaException;
 
 	/**
-	 * Method checking if a user is authorixed to a given resource
+	 * Method checking if a user is authorized to a given resource
 	 * 
 	 * Authorization requirements: a valid client certificate
 	 * 
 	 * @param resource the access rule to test
-	 * @return true if the user is authorized to the resource othervise false.
+	 * @return true if the user is authorized to the resource otherwise false.
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @see org.ejbca.core.protocol.ws.RevokeStatus
 	 */
@@ -435,7 +435,7 @@ public interface IEjbcaWS {
 	 * @param userDataSourceNames a List of User Data Source Names
 	 * @param searchString to identify the userdata.
 	 * @return a List of UserDataSourceVOWS of the data in the specified UserDataSources, if no user data is found will an empty list be returned. 
-	 * @throws UserDataSourceException if an error occured connecting to one of 
+	 * @throws UserDataSourceException if an error occurred connecting to one of 
 	 * UserDataSources.
 	 */
 	public abstract List<UserDataSourceVOWS> fetchUserData(
@@ -461,19 +461,19 @@ public interface IEjbcaWS {
 	 * 
 	 * @param userData of the user that should be generated
 	 * @param tokenRequests a list of certificate requests
-	 * @param hardTokenData data containin PIN/PUK info
+	 * @param hardTokenData data containing PIN/PUK info
 	 * @param hardTokenSN Serial number of the generated hard token.
 	 * @param overwriteExistingSN if the the current hardtoken should be overwritten instead of throwing HardTokenExists exception.
 	 * If a card is overwritten, all previous certificates on the card is revoked.
 	 * @param revocePreviousCards tells the service to revoke old cards issued to this user. If the present card have the label TEMPORARY_CARD
-	 * old cards is set to CERTIFICATE_ONHOLD otherwice UNSPECIFIED.
+	 * old cards is set to CERTIFICATE_ONHOLD otherwise UNSPECIFIED.
 	 * @return a List of the generated certificates. 
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if the administrator isn't authorized.
 	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed.
-	 * @throws HardTokenExistsException if the given hardtokensn already exists.
+	 * @throws HardTokenExistsException if the given hardtoken serial number already exists.
 	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
-	 * @throws ApprovalException  if error happended with the approval mechanisms
+	 * @throws ApprovalException  if error happened with the approval mechanisms
 	 * @throws WaitingForApprovalException if the request haven't been processed yet. 
 	 * @throws ApprovalRequestExecutionException if the approval request was rejected 
 	 */
@@ -495,7 +495,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param hardTokenSN the serial number of the token to look for.
 	 * @return true if hard token exists
-	 * @throws EjbcaException if error occured server side
+	 * @throws EjbcaException if error occurred server side
 	 */
 	public abstract boolean existsHardToken(String hardTokenSN)
 			throws EjbcaException;
@@ -519,9 +519,9 @@ public interface IEjbcaWS {
 	 * @return the HardTokenData
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws HardTokenDoesntExistsException if the hardtokensn don't exist in database.
-	 * @throws EjbcaException if an exception occured on server side.
+	 * @throws EjbcaException if an exception occurred on server side.
 	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
-	 * @throws ApprovalException  if error happended with the approval mechanisms
+	 * @throws ApprovalException  if error happened with the approval mechanisms
 	 * @throws WaitingForApprovalException if the request haven't been processed yet. 
 	 * @throws ApprovalRequestExecutionException if the approval request was rejected 
 	 */
@@ -544,7 +544,7 @@ public interface IEjbcaWS {
 	 * @param viewPUKData if PUK data of the hard token should be returned.
 	 * @param boolean onlyValidCertificates of all revoked and expired certificates should be filtered.
 	 * @return a list of the HardTokenData generated for the user never null.
-	 * @throws EjbcaException if an exception occured on server side.
+	 * @throws EjbcaException if an exception occurred on server side.
 	 */
 	public abstract List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
 			throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
