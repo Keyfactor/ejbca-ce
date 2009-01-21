@@ -3,6 +3,16 @@
 
 	<!--  This file is included from build.xml and can not be run in itself -->
 	
+	<!-- This target sets the cmptcp class path to be included if the tcp service is enabled -->
+	<target name="jbosscmptcpclasspathset" if="cmptcpservices.enabled" depends="cmptcpserviceconditioncheck">
+	    <property name="jar.cmptcpclasspath" value="lib/quickserver/QuickServer.jar lib/quickserver/commons-pool.jar"/>
+	</target> 	
+	<target name="jbosscmptcpclasspathunset" unless="cmptcpservices.enabled" depends="cmptcpserviceconditioncheck">
+	    <property name="jar.cmptcpclasspath" value=""/>
+	</target> 	
+	<target name="jbosscmptcpclasspath" depends="jbosscmptcpclasspathset, jbosscmptcpclasspathunset">
+	</target> 	
+	
     <!-- =================================================================== -->
     <!-- Build Jboss CMP tmp listener                       -->
     <!-- =================================================================== -->
@@ -42,7 +52,7 @@
         </copy>
         <jar basedir="${cmptcpservice.build}" jarfile="${cmptcpservicejar}">
             <manifest>
-                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
+                <!-- <attribute name="Class-Path" value="${jar.extclasspath} ${jar.cmptcpclasspath}" /> -->
             </manifest>
         </jar>
     </target>
@@ -75,6 +85,11 @@
             <fileset dir="${dist.dir}">
                 <include name="${cmptcpservice.name}" />
             </fileset>
+            <!-- JBoss 5 needs these jars in the ear lib directory -->
+            <fileset dir=".">
+                <include name="${lib}/quickserver/QuickServer.jar" />
+			    <include name="${lib}/quickserver/commons-pool.jar" />
+			</fileset>
 		</ear>
     </target>
 

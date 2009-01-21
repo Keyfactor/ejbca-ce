@@ -217,6 +217,9 @@
         <pathelement location="${appserver.home}/lib/jboss-system.jar" />
         <pathelement location="${appserver.home}/lib/jboss-common.jar" />
         <pathelement location="${appserver.home}/lib/jboss-jmx.jar" />
+        <!-- The two below needed for JBoss 5 -->
+        <pathelement location="${appserver.home}/lib/jboss-system-jmx.jar" />
+        <pathelement location="${appserver.home}/lib/jboss-kernel.jar" />
     </path>
         
     <path id="xdoclet.classpath">

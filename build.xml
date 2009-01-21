@@ -236,7 +236,7 @@
     <!-- =================================================================== -->
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
-    <target name="ejbca-ejb.jar" depends="compile">
+    <target name="ejbca-ejb.jar" depends="compile, jbosscmptcpclasspath">
         <!-- create empty directory for HW tokens if not existing -->
         <mkdir dir="${hwtoken.class.dir}"/>
     	<!-- Temp space where we will unpack jars to include in this jar file -->
@@ -249,7 +249,7 @@
         <jar jarfile="${dist.dir}/ejbca-ejb.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
-                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath}" />
+                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
             </manifest>
             <fileset dir="${src.dd}">
             	<exclude name="WEB-INF/**"/>
