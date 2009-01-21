@@ -443,8 +443,6 @@ public class TestCertTools extends TestCase {
 	public void test01GetPartFromDN() throws Exception {
 		log.trace(">test01GetPartFromDN()");
 
-		assertFalse(true);
-		
 		// We try to examine the general case and some special cases, which we
 		// want to be able to handle
 		String dn0 = "C=SE, O=AnaTom, CN=foo";
