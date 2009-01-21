@@ -107,6 +107,8 @@ class CMPTest extends ClientToolBox {
         final CertificateFactory certificateFactory;
         final Provider bcProvider = new BouncyCastleProvider();
         final String keyId;
+        boolean isSign;
+        boolean firstTime = true;
 
         StressTest( final String hostName,
                     final InputStream certInputStream,
@@ -320,7 +322,9 @@ class CMPTest extends ClientToolBox {
             }
             return respBytes;
         }
-        private boolean checkCmpResponseGeneral(byte[] retMsg, SessionData sessionData, boolean signed, boolean pbe) throws Exception {
+        private boolean checkCmpResponseGeneral(final byte[] retMsg,
+                                                final SessionData sessionData,
+                                                final boolean requireProtection) throws Exception {
             //
             // Parse response message
             //
@@ -336,25 +340,50 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No header in response message.");
                 return false;
             }
-
-            // Check that the message is signed with the correct digest alg
-            if (signed) {
-                final AlgorithmIdentifier algId = header.getProtectionAlg();
-                if ( algId==null || !algId.getObjectId().getId().equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId()) )
-                    StressTest.this.performanceTest.getLog().error("Wrong signing algorithm used.");
-            }
-            if (pbe) {
-                final AlgorithmIdentifier algId = header.getProtectionAlg();
-                if ( algId==null || !algId.getObjectId().getId().equals(CMPObjectIdentifiers.passwordBasedMac.getId()) )
-                    StressTest.this.performanceTest.getLog().error("Wrong password.");
-            }
-
             // Check that the signer is the expected CA
             final X509Name name = X509Name.getInstance(header.getSender().getName()); 
             if ( header.getSender().getTagNo()!=4 || name==null || !name.equals(this.cacert.getSubjectDN()) )
                 StressTest.this.performanceTest.getLog().error("Not signed by right issuer.");
 
-            if (signed) {
+            if ( header.getSenderNonce().getOctets().length!=16 )
+                StressTest.this.performanceTest.getLog().error("Wrong length of received sender nonce (made up by server). Is "+header.getSenderNonce().getOctets().length+" byte but should be 16.");
+
+            if ( !Arrays.equals(header.getRecipNonce().getOctets(), sessionData.getNonce()) )
+                StressTest.this.performanceTest.getLog().error("recipient nonce not the same as we sent away as the sender nonce. Sent: "+Arrays.toString(sessionData.getNonce())+" Received: "+Arrays.toString(header.getRecipNonce().getOctets()));
+
+            if ( !Arrays.equals(header.getTransactionID().getOctets(), sessionData.getTransId()) )
+                StressTest.this.performanceTest.getLog().error("transid is not the same as the one we sent");
+            {
+                // Check that the message is signed with the correct digest alg
+                final AlgorithmIdentifier algId = header.getProtectionAlg();
+                if (algId==null || algId.getObjectId()==null || algId.getObjectId().getId()==null) {
+                    if ( requireProtection ) {
+                        StressTest.this.performanceTest.getLog().error("Not possible to get algorithm.");
+                        return false;
+                    }
+                    return true;
+                }
+                final String id = algId.getObjectId().getId();
+                if ( id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId()) ) {
+                    if ( this.firstTime ) {
+                        this.firstTime = false;
+                        this.isSign = true;
+                        StressTest.this.performanceTest.getLog().info("Signature protection used.");
+                    } else if ( !this.isSign )
+                        StressTest.this.performanceTest.getLog().error("Message password protected but should be signature protected.");
+                } else if ( id.equals(CMPObjectIdentifiers.passwordBasedMac.getId()) ) {
+                    if ( this.firstTime ) {
+                        this.firstTime = false;
+                        this.isSign = false;
+                        StressTest.this.performanceTest.getLog().info("Password (PBE) protection used.");
+                    } else if ( this.isSign )
+                        StressTest.this.performanceTest.getLog().error("Message signature protected but should be password protected.");
+                } else {
+                    StressTest.this.performanceTest.getLog().error("No valid algorithm.");
+                    return false;
+                }
+            }
+            if ( this.isSign ) {
                 // Verify the signature
                 byte[] protBytes = respObject.getProtectedBytes();
                 final DERBitString bs = respObject.getProtection();
@@ -368,29 +397,27 @@ class CMPTest extends ClientToolBox {
                 } catch ( Exception e) {
                     StressTest.this.performanceTest.getLog().error("Not possible to verify signature.", e);
                 }           
-            }
-            if (pbe) {
-                DEROctetString os = header.getSenderKID();
-                if ( os!=null )
-                    StressTest.this.performanceTest.getLog().info("Found a sender keyId: "+new String(os.getOctets()));
+            } else {
+                //final DEROctetString os = header.getSenderKID();
+                //if ( os!=null )
+                //    StressTest.this.performanceTest.getLog().info("Found a sender keyId: "+new String(os.getOctets()));
                 // Verify the PasswordBased protection of the message
                 final PBMParameter pp; {
-                    AlgorithmIdentifier pAlg = header.getProtectionAlg();
-                    StressTest.this.performanceTest.getLog().info("Protection type is: "+pAlg.getObjectId().getId());
+                    final AlgorithmIdentifier pAlg = header.getProtectionAlg();
+                    // StressTest.this.performanceTest.getLog().info("Protection type is: "+pAlg.getObjectId().getId());
                     pp = PBMParameter.getInstance(pAlg.getParameters());
                 }
                 final int iterationCount = pp.getIterationCount().getPositiveValue().intValue();
-                StressTest.this.performanceTest.getLog().info("Iteration count is: "+iterationCount);
+                // StressTest.this.performanceTest.getLog().info("Iteration count is: "+iterationCount);
                 final AlgorithmIdentifier owfAlg = pp.getOwf();
                 // Normal OWF alg is 1.3.14.3.2.26 - SHA1
-                StressTest.this.performanceTest.getLog().info("Owf type is: "+owfAlg.getObjectId().getId());
+                // StressTest.this.performanceTest.getLog().info("Owf type is: "+owfAlg.getObjectId().getId());
                 final AlgorithmIdentifier macAlg = pp.getMac();
                 // Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
-                StressTest.this.performanceTest.getLog().info("Mac type is: "+macAlg.getObjectId().getId());
+                // StressTest.this.performanceTest.getLog().info("Mac type is: "+macAlg.getObjectId().getId());
                 final byte[] salt = pp.getSalt().getOctets();
                 //log.info("Salt is: "+new String(salt));
-                String raAuthenticationSecret = "password";
-                final byte[] raSecret = raAuthenticationSecret.getBytes();
+                final byte[] raSecret = new String("password").getBytes();
                 // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
                 final String macOid = macAlg.getObjectId().getId();
                 final SecretKey key; {
@@ -402,14 +429,14 @@ class CMPTest extends ClientToolBox {
                         basekey[raSecret.length+i] = salt[i];
                     }
                     // Construct the base key according to rfc4210, section 5.1.3.1
-                    final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId());
+                    final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), this.bcProvider);
                     for (int i = 0; i < iterationCount; i++) {
                         basekey = dig.digest(basekey);
                         dig.reset();
                     }
                     key = new SecretKeySpec(basekey, macOid);
                 }
-                final Mac mac = Mac.getInstance(macOid);
+                final Mac mac = Mac.getInstance(macOid, this.bcProvider);
                 mac.init(key);
                 mac.reset();
                 final byte[] protectedBytes = respObject.getProtectedBytes();
@@ -421,14 +448,6 @@ class CMPTest extends ClientToolBox {
                 if ( !Arrays.equals(out, pb) )
                     StressTest.this.performanceTest.getLog().error("Wrong PBE hash");
             }
-            if ( header.getSenderNonce().getOctets().length!=16 )
-                StressTest.this.performanceTest.getLog().error("Wrong length of received sender nonce (made up by server). Is "+header.getSenderNonce().getOctets().length+" byte but should be 16.");
-
-            if ( !Arrays.equals(header.getRecipNonce().getOctets(), sessionData.getNonce()) )
-                StressTest.this.performanceTest.getLog().error("recipient nonce not the same as we sent away as the sender nonce. Sent: "+Arrays.toString(sessionData.getNonce())+" Received: "+Arrays.toString(header.getRecipNonce().getOctets()));
-
-            if ( !Arrays.equals(header.getTransactionID().getOctets(), sessionData.getTransId()) )
-                StressTest.this.performanceTest.getLog().error("transid is not the same as the one we sent");
             return true;
         }
         private X509Certificate checkCmpCertRepMessage(SessionData sessionData, byte[] retMsg, int requestId) throws IOException, CertificateException {
@@ -581,7 +600,7 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("No response message.");
                     return false;
                 }
-                checkCmpResponseGeneral(resp, this.sessionData, true, false);
+                checkCmpResponseGeneral(resp, this.sessionData, true);
                 final X509Certificate cert = checkCmpCertRepMessage(this.sessionData, resp, this.sessionData.getReqId());
                 if ( cert==null )
                     return false;
@@ -616,7 +635,7 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("No response message.");
                     return false;
                 }
-                checkCmpResponseGeneral(resp, this.sessionData, false, false);
+                checkCmpResponseGeneral(resp, this.sessionData, false);
                 checkCmpPKIConfirmMessage(this.sessionData, resp);
                 StressTest.this.performanceTest.getLog().info("User with DN '"+this.sessionData.getUserDN()+"' finished.");
                 return true;
