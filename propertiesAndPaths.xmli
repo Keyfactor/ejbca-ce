@@ -205,7 +205,8 @@
             <include name="lib/javaee.jar"/>
             <include name="lib/appserv-rt.jar"/>
         	<!-- weblogic -->
-            <include name="server/lib/weblogic.jar"/>
+            <include name="server/lib/weblogic.jar"/>	<!-- For 9.2 -->
+            <include name="server/lib/wlclient.jar"/>	<!-- For 10.3 -->
         	<!-- oracle -->
             <include name="j2ee/home/oc4jclient.jar"/>
         	<!-- websphere -->

@@ -409,27 +409,34 @@ Your mileage may vary, some JDBC drivers were known to be buggy earlier, but it 
 
 <li>Configure SSL in Weblogic:<br/>
 <ol>
-<li>Copy $EJBCA_HOME/p12/truststore.jks to $BEA_HOME/jre/lib/security/cacerts, so that Weblogic can trust the initial CA installed 
+<li>(Optional for Weblogic 10.3:) Copy $EJBCA_HOME/p12/truststore.jks to $BEA_HOME/jre/lib/security/cacerts, so that Weblogic can trust the initial CA installed 
 when doing 'ant install'.<br/>
-You can create cacerts file with 'sudo rm $EJBCA_HOME/p12/truststore.jks' and then 'sudo ant javatruststore'.
+You can create a new 'cacerts' file with 'rm $EJBCA_HOME/p12/truststore.jks' and then 'ant javatruststore'.
 Type 'ant -p' to get a description how you can run 'ant javatruststore' with arguments to point to a specific keystore etc.
 You can get the CA certificate with 'bin/ejbca.sh ca getrootcert cert.pem'.</li>
 <li>Configure weblogic server for SSL.<br/>
+   For Weblogic 9.2.0: 
    Servers->Myserver->Configuration->Keystores (or SSL), click "Change", select "Custom Identity and Java Standard Trust"<br/>
      - Custom Identity Keystore: path to tomcat.jks generated while "ant install" (ejbca/p12/tomcat.jks),<br/>
      - Private Key Alias: localhost (httpsserver.hostname in conf/web.properties).<br/>
        The alias is what you configured as httpsserver.hostname in conf/web.properties<br/>
      - Passphrase: serverpwd (httpsserver.password in conf/web.properties).<br/>
        The password is what you configures as httpsserver.password in conf/web.properties.<br/><br/>
+   For Weblogic 10.3.0: 
+   Servers->examplesServer->Keystores (or SSL), select "Custom Identity and Custom Trust"<br/>
+   Same as for Weblogic 9.2.0, but you can also configure custom trust:<br/>
+     - Custom Trust Keystore: path to truststore.jks generated while "ant install" (ejbca/p12/truststore.jks),<br/>
+     - Passphrase: changeit (java.trustpassword in conf/web.properties).<br/><br/>
    Servers->Myserver->Configuration->SSL->Advanced->Server Attributes->Two Way Client Cert Behavior:<br/>
-     - Client Certs Requested And Enforced<br/><br/>
+     - Client Certs Requested But Not Enforced<br/><br/>
    Servers->Myserver->configuration->general, check "SSL Listen Port Enabled", note that the port should be same as httpserver.privhttps in ejbca.properties.
    </li>
    </ol>
 </li>
 </ol>
-This should make the admin-GUI work, note to install the  Unlimited Strength Jurisdiction Policy Files from java.sun.com 
-for both sun's JDK and BEA's JDK first before installation.
+This should make the Admin GUI work, note to install the  Unlimited Strength Jurisdiction Policy Files from java.sun.com 
+for both sun's JDK and BEA's JDK first before installation. For Weblogic 10.3 it wa possible to skip the installation of the
+bundled JDK's and use a pre-installed Sun JDK.
 </p>
 </subsubsection>
 

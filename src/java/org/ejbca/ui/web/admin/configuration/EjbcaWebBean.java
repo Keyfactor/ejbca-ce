@@ -149,7 +149,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     public GlobalConfiguration initialize(HttpServletRequest request, String resource) throws Exception{
     	
     	certificates = (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
-    	if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
+    	if(certificates == null || certificates.length == 0) throw new AuthenticationFailedException("Client certificate required.");
 
     	
     	String userdn = "";
