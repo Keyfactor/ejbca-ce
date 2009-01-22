@@ -25,12 +25,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Signature;
 import java.security.SignatureException;
@@ -103,30 +103,34 @@ class CMPTest extends ClientToolBox {
     static private class StressTest {
         final PerformanceTest performanceTest;
 
-        private static final String PBEPASSWORD = "password";
-        private final String hostName;
-        private static final String resourceCmp = "publicweb/cmp";
+        final private static String PBEPASSWORD = "password";
+        final private static String resourceCmp = "publicweb/cmp";
         final private KeyPair keyPair;
         final private X509Certificate cacert;
-        final Random random = new Random();
-        final CertificateFactory certificateFactory;
-        final Provider bcProvider = new BouncyCastleProvider();
-        final String keyId;
-        private final int tcpPort;
+        final private Random random = new Random();
+        final private CertificateFactory certificateFactory;
+        final private Provider bcProvider = new BouncyCastleProvider();
+        final private String keyId;
+        final private String hostName;
+        final private int port;
+        final private boolean isHttp;
         boolean isSign;
         boolean firstTime = true;
 
+
         StressTest( final String _hostName,
+                    final int _port,
+                    final boolean _isHttp,
                     final InputStream certInputStream,
                     final int numberOfThreads,
                     final int waitTime,
-                    final String _keyId,
-                    final int _tcpPort) throws Exception {
+                    final String _keyId) throws Exception {
             this.hostName = _hostName;
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
             this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
             this.keyId = _keyId;
-            this.tcpPort = _tcpPort;
+            this.port = _port;
+            this.isHttp = _isHttp;
 
             final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
             keygen.initialize(2048);
@@ -135,7 +139,9 @@ class CMPTest extends ClientToolBox {
             this.performanceTest = new PerformanceTest();
             this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
         }
-        private PKIMessage genCertReq(SessionData sessionData, boolean raVerifiedPopo, X509Extensions extensions) throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
+        private PKIMessage genCertReq(final SessionData sessionData,
+                                      final boolean raVerifiedPopo,
+                                      final X509Extensions extensions) throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
             final OptionalValidity myOptionalValidity = new OptionalValidity();
             myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
             myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
@@ -227,7 +233,9 @@ class CMPTest extends ClientToolBox {
             return new PKIMessage(myPKIHeader, myPKIBody);   
         }
         
-        private PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password) throws NoSuchAlgorithmException, InvalidKeyException {
+        private PKIMessage protectPKIMessage(final PKIMessage msg,
+                                             final boolean badObjectId,
+                                             final String password) throws NoSuchAlgorithmException, InvalidKeyException {
             // SHA1
             final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
             // 567 iterations
@@ -286,12 +294,13 @@ class CMPTest extends ClientToolBox {
             }
             return ret;
         }
-        private byte[] sendCmp(byte[] message) throws IOException {
-            if ( this.tcpPort < 0 )
-                return sendCmpHttp(message);
-            return sendCmpTcp(message);
+        private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws IOException {
+            final HttpURLConnection httpConnection = sessionData.getHttpURLConnection();
+            if ( httpConnection!=null )
+                return sendCmpHttp(message, httpConnection);
+            return sendCmpTcp(message, sessionData.getSocket());
         }
-        private static byte[] createTcpMessage(byte[] msg) throws IOException {
+        private static byte[] createTcpMessage(final byte[] msg) throws IOException {
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bao); 
             // 0 is pkiReq
@@ -306,19 +315,17 @@ class CMPTest extends ClientToolBox {
             dos.flush();
             return bao.toByteArray();
         }
-        private byte[] sendCmpTcp(byte[] message) {
+        private byte[] sendCmpTcp(final byte[] message, final Socket socket) {
             try {
-                final Socket socket = new Socket(this.hostName, this.tcpPort);
-
                 final byte msg[] = createTcpMessage(message);
 
-                BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
+                final BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
                 os.write(msg);
                 os.flush();
 
                 final DataInputStream dis = new DataInputStream(socket.getInputStream());
                 // Read the length, 32 bits
-                final int len = dis.readInt();
+                /*final int len =*/ dis.readInt();
                 // System.out.println("Got a message claiming to be of length: " + len);
                 // Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
                 final int version = dis.readByte();
@@ -326,7 +333,7 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("Wrong version. Is "+version+" should be 10.");
 
                 // Read flags, 8 bits for version 10
-                final int flags = dis.readByte();
+                /*final int flags =*/ dis.readByte();
                 // System.out.println("Got a message with flags (1 means close): " + flags);
                 // Check if the client wants us to close the connection (LSB is 1 in that case according to spec)
 
@@ -334,37 +341,31 @@ class CMPTest extends ClientToolBox {
                 final int msgType = dis.readByte();
                 //System.out.println("Got a message of type: " +msgType);
                 if ( msgType!=5 )
-                    StressTest.this.performanceTest.getLog().error("Wrong message type. Is "+version+" should be 10.");
+                    StressTest.this.performanceTest.getLog().error("Wrong message type. Is "+msgType+" should be 5.");
 
                 // Read message
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
                 while (true) {
-                    final int nextByte = dis.read();
-                    if ( nextByte<0 )
+                    if ( dis.available()<=0 )
                         break;
-                    baos.write(nextByte);
+                    final byte bytes[] = new byte[dis.available()];
+                    dis.read(bytes);
+                    baos.write(bytes);
                 }
+                os.close();
+                dis.close();
+                socket.close();
                 //System.out.println("Read "+baos.size()+" bytes");
                 final byte respBytes[] = baos.toByteArray();
                 if ( respBytes==null || respBytes.length<1 )
-                    StressTest.this.performanceTest.getLog().error("Nothing rexeived from host.");
+                    StressTest.this.performanceTest.getLog().error("Nothing received from host.");
                 return respBytes;
             } catch( Exception e ) {
                 StressTest.this.performanceTest.getLog().error("Error when sending message to TCP port.", e);
                 return null;
             }
         }
-        private byte[] sendCmpHttp(byte[] message) throws IOException {
-            // POST the CMP request
-            // we are going to do a POST
-            final String resource = resourceCmp;
-            final String urlString = "http://"+this.hostName+":8080/ejbca/" + resource;
-            final URL url = new URL(urlString);
-            final HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setDoOutput(true);
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-type", "application/pkixcmp");
-            con.connect();
+        private byte[] sendCmpHttp(final byte[] message, final HttpURLConnection con) throws IOException {
             // POST it
             final OutputStream os = con.getOutputStream();
             os.write(message);
@@ -526,7 +527,9 @@ class CMPTest extends ClientToolBox {
             }
             return true;
         }
-        private X509Certificate checkCmpCertRepMessage(SessionData sessionData, byte[] retMsg, int requestId) throws IOException, CertificateException {
+        private X509Certificate checkCmpCertRepMessage(final SessionData sessionData,
+                                                       final byte[] retMsg,
+                                                       final int requestId) throws IOException, CertificateException {
             //
             // Parse response message
             //
@@ -597,7 +600,8 @@ class CMPTest extends ClientToolBox {
             }
             return cert;
         }
-        private boolean checkCmpPKIConfirmMessage(SessionData sessionData, byte[] retMsg) throws IOException {
+        private boolean checkCmpPKIConfirmMessage(final SessionData sessionData,
+                                                  final byte retMsg[]) throws IOException {
             //
             // Parse response message
             //
@@ -630,7 +634,7 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("Confirmation is null.");
             return true;
         }
-        private PKIMessage genCertConfirm(SessionData sessionData, String hash) {
+        private PKIMessage genCertConfirm(final SessionData sessionData, final String hash) {
             
             PKIHeader myPKIHeader =
                 new PKIHeader(
@@ -650,7 +654,7 @@ class CMPTest extends ClientToolBox {
         }
         private class GetCertificate implements Command {
             final private SessionData sessionData;
-            GetCertificate(SessionData sd) {
+            GetCertificate(final SessionData sd) {
                 this.sessionData = sd;
             }
             public boolean doIt() throws Exception {
@@ -671,7 +675,7 @@ class CMPTest extends ClientToolBox {
                 out.writeObject(req);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
-                final byte[] resp = sendCmp(ba);
+                final byte[] resp = sendCmp(ba, this.sessionData);
                 if ( resp==null || resp.length <= 0 ) {
                     StressTest.this.performanceTest.getLog().error("No response message.");
                     return false;
@@ -690,7 +694,7 @@ class CMPTest extends ClientToolBox {
         }
         private class SendConfirmMessageToCA implements Command {
             final private SessionData sessionData;
-            SendConfirmMessageToCA(SessionData sd) {
+            SendConfirmMessageToCA(final SessionData sd) {
                 this.sessionData = sd;
             }
             public boolean doIt() throws Exception {
@@ -706,7 +710,7 @@ class CMPTest extends ClientToolBox {
                 out.writeObject(confirm);
                 final byte ba[] = bao.toByteArray();
                 // Send request and receive response
-                final byte[] resp = sendCmp(ba);
+                final byte[] resp = sendCmp(ba, this.sessionData);
                 if ( resp==null || resp.length <= 0 ) {
                     StressTest.this.performanceTest.getLog().error("No response message.");
                     return false;
@@ -741,12 +745,29 @@ class CMPTest extends ClientToolBox {
             }
         }*/
         class SessionData {
-            private String userDN;
             final private byte[] nonce = new byte[16];
             final private byte[] transid = new byte[16];
+            private String userDN;
             private int reqId;
             SessionData() {
                 super();
+            }
+            Socket getSocket() throws UnknownHostException, IOException {
+                if ( StressTest.this.isHttp )
+                    return null;
+                return new Socket(StressTest.this.hostName, StressTest.this.port);
+            }
+            HttpURLConnection getHttpURLConnection() throws IOException {
+                if ( !StressTest.this.isHttp )
+                    return null;
+                // POST the CMP request
+                // we are going to do a POST
+                final HttpURLConnection con = (HttpURLConnection)new URL("http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/" + resourceCmp).openConnection();
+                con.setDoOutput(true);
+                con.setRequestMethod("POST");
+                con.setRequestProperty("Content-type", "application/pkixcmp");
+                con.connect();
+                return con;
             }
             void newSession() {
                 this.userDN = "CN=CMP Test User Nr "+StressTest.this.random.nextInt()+",O=CMP Test,C=SE";
@@ -788,9 +809,10 @@ class CMPTest extends ClientToolBox {
         final String certFileName;
         final File certFile;
         final String keyId;
-        final int tcpPort;
+        final int port;
+        final boolean isHttp;
         if ( args.length < 3 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>] [<KeyId>] [<TCP port number. -1 means do not use TCP>]");
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>] [<KeyId to be sent to server>] [<port>] [<protocol, http default, write tcp if you want socket.>]");
             System.out.println("EJBCA build configutation requirements: cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password");
             System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             return;
@@ -801,7 +823,8 @@ class CMPTest extends ClientToolBox {
         numberOfThreads = args.length>3 ? Integer.parseInt(args[3].trim()):1;
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
         keyId = args.length>5 ? args[5].trim():"EMPTY";
-        tcpPort = args.length>6 ? Integer.parseInt(args[6].trim()):-1;
+        port = args.length>6 ? Integer.parseInt(args[6].trim()):8080;
+        isHttp = args.length>7 ? args[7].toLowerCase().indexOf("tcp", 0)<0 : true;
 
         try {
             if ( !certFile.canRead() ) {
@@ -809,7 +832,7 @@ class CMPTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, new FileInputStream(certFile), numberOfThreads, waitTime, keyId, tcpPort);
+            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, keyId);
         } catch (Exception e) {
             e.printStackTrace();
         }
