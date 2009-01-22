@@ -16,6 +16,7 @@ package org.ejbca.core.protocol.cmp;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -132,7 +133,14 @@ public class CmpMessageHelper {
 		log.trace(">protectPKIMessageWithPBE()");
 		// Create the PasswordBased protection of the message
 		PKIHeader head = msg.getHeader();
-		head.setSenderKID(new DEROctetString(keyId.getBytes()));
+		byte[] keyIdBytes;
+		try {
+			keyIdBytes = keyId.getBytes("UTF-8");			
+		} catch (UnsupportedEncodingException e) {
+			keyIdBytes = keyId.getBytes();
+			log.info("UTF-8 not available, using platform default encoding for keyIdBytes.");
+		}
+		head.setSenderKID(new DEROctetString(keyIdBytes));
 		// SHA1
 		//AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
 		AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(digestAlgId);
