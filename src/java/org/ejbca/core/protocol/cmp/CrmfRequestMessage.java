@@ -350,6 +350,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		boolean ret = false;
 		ProofOfPossession pop = getReq().getPop();
+		if (log.isDebugEnabled()) {
+			log.debug("allowRaVerifyPopo: "+allowRaVerifyPopo);
+			log.debug("pop.getRaVerified(): "+(pop.getRaVerified() != null));
+			log.debug("pop.getSignature(): "+(pop.getSignature() != null));
+		}
 		if ( allowRaVerifyPopo && (pop.getRaVerified() != null)) {
 			ret = true;
 		} else if (pop.getSignature() != null) {
