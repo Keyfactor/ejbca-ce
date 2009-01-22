@@ -34,6 +34,10 @@ public class CmpConfiguration {
 		return ConfigurationHolder.getString("cmp.ra.namegenerationpostfix", null);
 	}
 	
+	public static String getUserPasswordParams() {
+		return ConfigurationHolder.getString("cmp.ra.passwordgenparams", "random");		
+	}
+	
 	public static String getRAAuthenticationSecret() {
 		return ConfigurationHolder.getString("cmp.ra.authenticationsecret", null);
 	}

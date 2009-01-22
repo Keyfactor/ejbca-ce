@@ -83,6 +83,8 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private String extractUsernameComponent = null;
 	/** Parameters used for username generation if we are using RA mode to create users */
 	private UsernameGeneratorParams usernameGeneratorParams = null;
+	/** Parameters used for temporary password generation */
+	private String userPasswordParams = "random";
 	/** The endEntityProfile to be used when adding users in RA mode */
 	private int eeProfileId = 0;
 	/** The certificate profile to use when adding users in RA mode */
@@ -136,6 +138,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			usernameGeneratorParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters());
 			usernameGeneratorParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix());
 			usernameGeneratorParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
+			
+			userPasswordParams =  CmpConfiguration.getUserPasswordParams();
+			
 			raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 			String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
 			if (StringUtils.equals(endEntityProfile, "KeyId")) {
@@ -163,6 +168,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				caId = info.getCAId();					
 			}
 			responseProtection = CmpConfiguration.getResponseProtection();
+			
 			/*
 			str = prop.getProperty("raModeNameGenerationScheme");
 			log.debug("raModeNameGenerationScheme="+str);
@@ -273,8 +279,15 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								String dn = crmfreq.getSubjectDN();
 								log.debug("Creating username from base dn: "+dn);
 								String username = gen.generateUsername(dn);
-								IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
-								String pwd = pwdgen.getNewPassword(12, 12);
+								String pwd;
+								if (StringUtils.equals(userPasswordParams, "random")) {
+									log.debug("Setting 12 char random user password.");
+									IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+									pwd = pwdgen.getNewPassword(12, 12);									
+								} else {
+									log.debug("Setting fixed user password from config.");
+									pwd = userPasswordParams;									
+								}
 								// AltNames may be in the request template
 								String altNames = crmfreq.getRequestAltNames();
 								boolean addedUser = false; // flag indicating if adding was successful

@@ -80,6 +80,13 @@
 # Default: empty
 #cmp.ra.namegenerationpostfix=
 
+# Working in RA mode an internal random password is temporarily used during certificate generation. 
+# By setting this parameter you can use a fixed password instead of a random.
+# Example: foo123
+#
+# Default: random
+#cmp.ra.passwordgenparams
+
 # The endEntityProfile to be used when adding users in RA mode. 
 # Possible values are:
 # The name of a End Entity Profile
