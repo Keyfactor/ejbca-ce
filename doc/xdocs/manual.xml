@@ -20,7 +20,7 @@ There are additional documentation and administrative tutorial movies at <a href
 </subsection>
 <subsection name="Administrating EJBCA">
 <p>
-You can administrate EJBCA using a web browser and the admin-GUI, this is the easiest way. 
+You can administer EJBCA using a web browser and the admin-GUI, this is the easiest way. 
 The admin-GUI requires SSL with authentication using client certificate, i.e. strong authentication.
 </p><p>
 You can also use the command line interface (cli) which is called by 'bin/ejbca.sh'. 
@@ -200,13 +200,13 @@ Dw3PqQiroMNx2+gzC/f/wTXsF92aujyG+IZx1FIcNg/MoHXBWG7T8YrjnQ==
 -----END CERTIFICATE-----
 </source>
 <p>
-You can treat an internal CA, i.e. a CA risiding on the same EJBCA instance as another CA, as an external CA. 
+You can treat an internal CA, i.e. a CA residing on the same EJBCA instance as another CA, as an external CA. 
 From the SubCA this works just like the normal case, but on the RootCA you must choose the exact same CA Name as
 the already existing internal CA when you choose to "Process Certificate Request".  
 <br/>
 This can be useful if you have an HSM setup where only one set of keys can be active at one time, for example using nCipher with
-two different, non-persistens, operator cards sets for the RootCA and the SubCA. Using the SubCA as an external CA you can still create
-the PKI but with only one CA activa at a time.
+two different, non-persistence, operator cards sets for the RootCA and the SubCA. Using the SubCA as an external CA you can still create
+the PKI but with only one CA active at a time.
 </p>
 </subsection> 
 <subsection name="Signing an External CA">
@@ -444,6 +444,13 @@ The validity of a certificate is determined as follows:
 </p>
 <p>If the validity is for a CA the certificate profile specifies the maximum validity, but it can be shorter if specified when adding the CA.
 The validity of the CA can never be longer than the value specified in the profile.
+</p>
+</subsection>
+<subsection name="Path Length Constraints">
+<p>
+Note: this extension is only applicable for immediate CA certificates
+and it sets how deep the succeeding certificate hierarchy may be.
+If it set to 1 this CA certificate is the last in a chain.
 </p>
 </subsection>
 <subsection name="Use LDAP DN order">
