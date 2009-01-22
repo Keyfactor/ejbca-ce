@@ -325,33 +325,42 @@ class CMPTest extends ClientToolBox {
 
                 final DataInputStream dis = new DataInputStream(socket.getInputStream());
                 // Read the length, 32 bits
-                /*final int len =*/ dis.readInt();
+                int moreBytesToRead = dis.readInt();
                 // System.out.println("Got a message claiming to be of length: " + len);
                 // Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
-                final int version = dis.readByte();
+                final int version = dis.readByte(); moreBytesToRead--;
                 if ( version!=10 )
                     StressTest.this.performanceTest.getLog().error("Wrong version. Is "+version+" should be 10.");
 
                 // Read flags, 8 bits for version 10
-                /*final int flags =*/ dis.readByte();
+                /*final int flags =*/ dis.readByte(); moreBytesToRead--;
                 // System.out.println("Got a message with flags (1 means close): " + flags);
                 // Check if the client wants us to close the connection (LSB is 1 in that case according to spec)
 
                 // Read message type, 8 bits
-                final int msgType = dis.readByte();
+                final int msgType = dis.readByte(); moreBytesToRead--;
                 //System.out.println("Got a message of type: " +msgType);
                 if ( msgType!=5 )
                     StressTest.this.performanceTest.getLog().error("Wrong message type. Is "+msgType+" should be 5.");
 
                 // Read message
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
-                while (true) {
-                    if ( dis.available()<=0 )
-                        break;
-                    final byte bytes[] = new byte[dis.available()];
-                    dis.read(bytes);
-                    baos.write(bytes);
+                while ( moreBytesToRead>0 ) {
+                    if ( dis.available()<=0 ) {
+                        final int nextByte = dis.read();
+                        if ( nextByte < 0 )
+                            break;
+                        baos.write(nextByte);
+                        moreBytesToRead--;
+                    } else {
+                        final byte bytes[] = new byte[dis.available()];
+                        dis.read(bytes);
+                        baos.write(bytes);
+                        moreBytesToRead -= bytes.length;
+                    }
                 }
+                if ( moreBytesToRead!=0 )
+                    StressTest.this.performanceTest.getLog().error("More bytes to read happens to be "+moreBytesToRead);
                 os.close();
                 dis.close();
                 socket.close();
