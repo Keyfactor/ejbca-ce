@@ -356,8 +356,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new PKCS10CertificationRequest(seq);
-            log.debug("Successfully extracted PKCS10.");
-            //log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
+            if (log.isDebugEnabled()) {
+            	log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
+            }
         }
         if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
             issuerAndSerno = IssuerAndSerialNumber.getInstance(derobj);
@@ -367,7 +368,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     } // decrypt
 
     /**
-     * Returns the public key from the certificattion request.
+     * Returns the public key from the certification request.
      *
      * @return public key from certification request.
      */

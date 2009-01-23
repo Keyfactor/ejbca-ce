@@ -333,9 +333,17 @@ public class PKCS10RequestMessage implements IRequestMessage {
 
         if (info != null) {
             X509Name name = info.getSubject();
-            ret = name.toString();
+            String dn = name.toString();
+            // We have to make special handling again for Cisco devices. 
+            // they will submit requests like: SN=FFFFFF+unstructuredName=Router
+            // EJBCA does not handle this very well so we will change it to: SN=FFFFFF,unstructuredName=Router
+            dn = dn.replace("+unstructuredName=", ",unstructuredName=");
+            dn = dn.replace(" + unstructuredName=", ",unstructuredName=");
+            dn = dn.replace("+unstructuredAddress=", ",unstructuredAddress=");
+            dn = dn.replace(" + unstructuredAddress=", ",unstructuredAddress=");
+            ret = dn;
         }
-
+        log.debug("getRequestDN: "+ret);
         return ret;
     }
 

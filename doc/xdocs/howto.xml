@@ -268,6 +268,58 @@ Router(config)#crypto ca enroll ScepCA
 Router(config)#exit
 Router#show crypto ca certificate
 </source>
+<p>
+You can always look at the defined trustpoints using the command:
+</p>
+<source>
+Router#show crypto ca trustpoints
+</source>
+<p>
+If you are enrolling towards an RA instead (see External RA documentation for information how to set up an external RA for SCEP) you issue the following commands:
+</p>
+<source>
+Router>enable
+Router#configure terminal
+Router(config)#
+Router(config)#crypto ca trustpoint ScepRA
+
+Router(ca-trustpoint)#enrollment url http://10.10.10.99:8080/scepraserver/scep
+Router(ca-trustpoint)#enrollment mode ra
+Router(ca-trustpoint)#serial-number
+Router(ca-trustpoint)#ip-address none
+Router(ca-trustpoint)#subject-name OU=Network Management, O=PrimeKey Solutions AB, C=SE
+Router(ca-trustpoint)#revocation-check none
+Router(ca-trustpoint)#exit
+
+Router(config)#crypto ca authenticate ScepRA
+Router(config)#crypto ca enroll ScepRA
+</source>
+<p>
+Note! This would only have a chance to work in EJBCA 3.8.1 and later, and actually it does not work due to the following
+error in Cisco. If you have any ideas, please contact us.
+</p>
+<source>
+Router#debug crypto pki API
+Router#debug crypto pki messages
+Router#debug crypto pki server
+Router#debug crypto pki transactions
+Router#debug crypto pki validation
+
+...
+
+*Jan 16 21:47:32.546: CRYPTO_PKI: make trustedCerts list for ScepRA
+*Jan 16 21:47:32.550: CRYPTO_PKI: subject="c=SE,o=Foo,cn=Scep RA" serial number= 3A 46 2F B4 5B AC 06 47                         
+
+*Jan 16 21:47:32.554: CRYPTO_PKI: subject="c=SE,o=EJBCA Sample,cn=ScepCA" serial number= 19 A6 7D 78 AF 9D 3B 27                         
+
+*Jan 16 21:47:32.566: E ../cert-c/source/p7digdat.c(377) : Error #703h
+*Jan 16 21:47:32.566: E ../cert-c/source/p7spprt.c(589) : Error #703h
+*Jan 16 21:47:32.582: pkcs7 verify data returned status 0x703
+*Jan 16 21:47:32.582: CRYPTO_PKI: status = 1795: failed to verify
+*Jan 16 21:47:32.582: %PKI-6-CERTFAIL: Certificate enrollment failed.
+*Jan 16 21:47:32.582: CRYPTO_PKI: All enrollment requests completed for trustpoint ScepRA.
+</source>
+
   </subsection>
 
   </section>
