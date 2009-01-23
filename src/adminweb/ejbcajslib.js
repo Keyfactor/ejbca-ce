@@ -120,7 +120,8 @@ function checkfieldforlegaldncharswithchangeable(thetextfield , alerttext){
 function checkfieldforipaddess(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^0-9\.]/g;
+  // 0-9, A-F, a-f, ., :
+  re = /[^\u0030-\u0039\u0041-\u0046\u0061-\u0066\.\:]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;

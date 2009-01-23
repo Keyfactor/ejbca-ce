@@ -490,6 +490,22 @@ The extension is specified in the the Seis document  SS 614331 chapter 4.3 and h
 There are a number of standard ones, and the possibility to define special ones, which many companies have done for altNames
 such as MS UPN, GUID, Krb5PrincipalName.
 </p>
+<p>
+Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>, uri=&lt;http://host.com/>, ipaddress=&lt;address>, upn=&lt;MS UPN>, guid=&lt;MS globally unique id>, directoryName=&lt;LDAP escaped DN>, krb5principal=&lt;Krb5 principal name>
+</p>
+<subsubsection name="IP address">
+<p>An IP address can be either an IPv4 address or an IPv6 address.
+<br/>Example IPv4:
+</p>
+<source>
+192.168.2.54
+</source>
+<p>Example IPv6:
+</p>
+<source>
+2001:DB8:85A3:0:0:8A2E:370:7334
+</source>
+</subsubsection>
 <subsubsection name="Krb5 Principal Name">
 <p>The Krb5 principal name is of the form "principal1/principal2@realm", and should be entered as such in the field.
 Example:

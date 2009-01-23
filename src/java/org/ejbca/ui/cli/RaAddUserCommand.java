@@ -94,7 +94,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getOutputStream().println("");
                 getOutputStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 getOutputStream().println(
-                    "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>, directoryName=<LDAP escaped DN>\"");
+                    "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, upn=<MS UPN>, guid=<MS globally unique id>, directoryName=<LDAP escaped DN>, krb5principal=<Krb5 principal name>\"");
                 getOutputStream().println("An LDAP escaped DN is for example:");
                 getOutputStream().println("DN: CN=Tomas Gustavsson, O=PrimeKey Solutions, C=SE");
                 getOutputStream().println("LDAP escaped DN: CN=Tomas Gustavsson\\, O=PrimeKey Solutions\\, C=SE");

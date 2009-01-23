@@ -196,14 +196,18 @@ public class StringTools {
     }
     
     /** Converts an IP-address string to octets of binary ints. 
-     * ip is of form a.b.c.d, i.e. at least four octets
+     * ipv4 is of form a.b.c.d, i.e. at least four octets for example 192.168.5.54 
+     * ipv6 is of form a:b:c:d:e:f:g:h, for example 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+     * 
+     * Result is tested with openssl, that it's subjectAltName displays as intended.
+     * 
      * @param str string form of ip-address
      * @return octets, null if input format is invalid
      */
     public static byte[] ipStringToOctets(String str) {
         String[] toks = str.split("[.:]");
         if (toks.length == 4) {
-            // IPv4 address
+            // IPv4 address such as 192.168.5.45
             byte[] ret = new byte[4];
             for (int i = 0;i<toks.length;i++) {
                 int t = Integer.parseInt(toks[i]);
@@ -216,20 +220,24 @@ public class StringTools {
             return ret;
         }
         if (toks.length == 8) {
-            // IPv6 address
+            // IPv6 address such as 2001:0db8:85a3:0000:0000:8a2e:0370:7334
             byte[] ret = new byte[16];
             int ind = 0;
             for (int i = 0;i<toks.length;i++) {
-                int t = Integer.parseInt(toks[i]);
+                int t = Integer.parseInt(toks[i], 16);
                 if (t>0xFFFF) {
                     log.error("IPv6 address '"+str+"' contains part > 0xFFFF.");
                     return null;
                 }
-                int b1 = t & 0x00FF;
+                int t1 = t >> 8;
+    		    int b1 = t1 & 0x00FF;
+                //int b1 = t & 0x00FF;
                 ret[ind++] = (byte)b1;
-                int b2 = t & 0xFF00;
+                //int b2 = t & 0xFF00;
+                int b2 = t & 0x00FF;
                 ret[ind++] = (byte)b2;
             }
+            return ret;
         }
         log.error("Not a IPv4 or IPv6 address.");
         return null;

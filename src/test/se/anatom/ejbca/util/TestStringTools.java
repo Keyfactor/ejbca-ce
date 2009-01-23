@@ -118,4 +118,16 @@ public class TestStringTools extends TestCase {
     	oldSeq = "SEBAR";
     	assertEquals("SEBAR", StringTools.incrementKeySequence(oldSeq));
     }
+
+    public void testIpStringToOctets() throws Exception {
+    	String ipv4 = "192.168.4.45";
+    	byte[] ipv4oct = StringTools.ipStringToOctets(ipv4);
+    	assertNotNull(ipv4oct);
+    	assertEquals(4, ipv4oct.length);
+    	String ipv6 = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+    	byte[] ipv6oct = StringTools.ipStringToOctets(ipv6);
+    	assertNotNull(ipv6oct);
+    	assertEquals(16, ipv6oct.length);
+    }
+
 }
