@@ -13,6 +13,7 @@
  
 package org.ejbca.core.protocol.ws.client;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -27,7 +28,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 
 /**
- * Adds a user to the database.
+ * Adds a user to the database or edits an existing user.
  *
  * @version $Id$
  */
@@ -75,7 +76,11 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 
             UserDataVOWS userdata = new UserDataVOWS();
             userdata.setUsername(args[ARG_USERNAME]);
-            userdata.setPassword(args[ARG_PASSWORD]);
+            String pwd = args[ARG_PASSWORD];
+            if (StringUtils.equalsIgnoreCase("null", pwd)) {
+            	pwd = null;
+            }
+            userdata.setPassword(pwd);
             userdata.setClearPwd(args[ARG_CLEARPWD].equalsIgnoreCase("true"));
             userdata.setSubjectDN(args[ARG_SUBJECTDN]);
             if(!args[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")){                        
@@ -161,7 +166,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 
 	protected void usage() {
 		getPrintStream().println("Command used to add or edit userdata, if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : edituser <username> <password> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (Optional)> \n\n");
+		getPrintStream().println("Usage : edituser <username> <password|null> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (Optional)> \n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
         getPrintStream().println(
             "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
