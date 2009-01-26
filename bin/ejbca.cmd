@@ -35,15 +35,15 @@ if "%APPSRV_HOME%" == "" (
 )
 if not "%APPSRV_HOME%" == ""  ( 
     set J2EE_DIR=%APPSRV_HOME%\client
-    if exist %APPSRV_HOME%\lib\appserv-rt.jar (
+    if exist "%APPSRV_HOME%\lib\appserv-rt.jar" (
         echo Using Glassfish JNDI provider...
         set J2EE_DIR=%APPSRV_HOME%\lib
         set J2EE_CP=%APPSRV_HOME%\lib\appserv-rt.jar;%APPSRV_HOME%\lib\javaee.jar
-    ) else if exist %APPSRV_HOME%\server\lib\weblogic.jar (
+    ) else if exist "%APPSRV_HOME%\server\lib\weblogic.jar" (
         echo Using Weblogic JNDI provider...
         set J2EE_DIR=%APPSRV_HOME%\server\lib
         set J2EE_CP=%APPSRV_HOME%\server\lib\weblogic.jar
-    ) else if exist %APPSRV_HOME%\j2ee\home\oc4jclient.jar (
+    ) else if exist "%APPSRV_HOME%\j2ee\home\oc4jclient.jar" (
         echo Using Oracle JNDI provider...
         set J2EE_DIR=%APPSRV_HOME%\j2ee\home
         set J2EE_CP=%APPSRV_HOME%\j2ee\home\oc4jclient.jar
@@ -105,6 +105,6 @@ shift
 set m=%9
 rem echo %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
 rem echo %CLASSPATH%
-"%JAVA_HOME%\bin\java" -cp %CLASSPATH% %class_name% %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
+"%JAVA_HOME%\bin\java" -cp "%CLASSPATH%" %class_name% %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
 
 :end
