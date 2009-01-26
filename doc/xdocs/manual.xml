@@ -4500,7 +4500,7 @@ You can mix 'implicitlyCA' with named curves any way you like though.
 <section name="Internationalization">
 <p>
 To customize EJBCA admin GUI for your languages special characters you will probably have to 
-change the default page encoding in 'web.contentencoding' (in conf/ejbca.properties file) 
+change the default page encoding in 'web.contentencoding' (in conf/web.properties file) 
 to for example UTF-8 instead of the default ISO-8859-1.
 </p><p>
 Displaying, receiving, decoding and storing different char sets is rather complicated and the 
