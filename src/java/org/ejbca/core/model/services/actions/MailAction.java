@@ -22,6 +22,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -78,7 +79,7 @@ public class MailAction extends BaseAction {
               msg.setFrom(new InternetAddress(senderAddress));
               msg.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(reciverAddress, false));
               msg.setSubject(mailActionInfo.getSubject());
-              msg.setContent(mailActionInfo.getMessage(), "text/plain");
+              msg.setContent(mailActionInfo.getMessage(), WebConfiguration.getMailMimeType());
               msg.setHeader("X-Mailer", "JavaMailer");
               msg.setSentDate(new Date());
               Transport.send(msg);

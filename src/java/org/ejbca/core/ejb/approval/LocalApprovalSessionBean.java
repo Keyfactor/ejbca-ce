@@ -74,6 +74,7 @@ import org.ejbca.util.NotificationParamGen;
 import org.ejbca.util.TemplateMimeMessage;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+import org.ejbca.config.WebConfiguration;
 
 
 
@@ -953,7 +954,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         }
     } // query 
 
-    
+ 
+     
     private void sendApprovalNotification(Admin admin, GlobalConfiguration gc, String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest, Approval approval) {
     	if (log.isTraceEnabled()) {
             log.trace(">sendNotification approval notification: id="+id);
@@ -1021,7 +1023,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             	  msg.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(requestAdminEmail, false));
               }
               msg.setSubject(notificationSubject);
-              msg.setContent(notificationMsg, "text/plain");
+              msg.setContent(notificationMsg, WebConfiguration.getMailMimeType());
               msg.setHeader("X-Mailer", "JavaMailer");
               msg.setSentDate(new Date());
               Transport.send(msg);
