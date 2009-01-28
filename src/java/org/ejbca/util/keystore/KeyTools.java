@@ -120,7 +120,10 @@ public class KeyTools {
         	} else {
         		log.debug("Generating named curve ECDSA key pair: "+keySpec);
             	// We have EC keys
-            	ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);        		
+            	ecSpec = ECNamedCurveTable.getParameterSpec(keySpec); 
+            	if (ecSpec == null) {
+            		throw new InvalidAlgorithmParameterException("keySpec "+keySpec+" is invalid for ECDSA.");
+            	}
         	}
         	keygen.initialize(ecSpec, new SecureRandom());
         } else {
