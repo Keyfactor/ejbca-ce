@@ -229,7 +229,7 @@ CREATE TABLE ProtectedLogData (
     certificateSerialNumber varchar(256),
     certificateIssuerDN varchar(256),
     eventId integer NOT NULL,
-    eventComment long varchar,
+    eventComment VARCHAR(32672),
     nodeGUID integer NOT NULL,
     counter bigint NOT NULL,
     nodeIP varchar(256),
@@ -263,7 +263,7 @@ CREATE TABLE ProtectedLogTokenData (
     tokenIdentifier integer NOT NULL,
     tokenType integer NOT NULL,
     b64TokenCertificate long varchar,
-    tokenReference long varchar,
+    tokenReference VARCHAR(32672),
     PRIMARY KEY (pk)
 );
 

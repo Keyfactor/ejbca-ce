@@ -32,7 +32,7 @@
 <cmp-field>
   <field-name>eventComment</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG VARCHAR</sql-type>
+  <sql-type>VARCHAR(32672)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>nodeGUID</field-name>
@@ -46,7 +46,7 @@
 <cmp-field>
   <field-name>b64LinkedInEventIdentifiers</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG VARCHAR</sql-type>
+  <sql-type>VARCHAR(32672)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>b64LinkedInEventsHash</field-name>
