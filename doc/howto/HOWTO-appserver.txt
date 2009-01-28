@@ -88,3 +88,9 @@ JBoss classloading works.
 http://wiki.jboss.org/wiki/Wiki.jsp?page=ClassLoadingConfiguration
 http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
 
+Global transactions timeouts can be configured in JBOSS_HOME/server/default/conf/jboss-service.xml
+(2 occasions) for JBoss 4.2.3.GA and earlier. EJBCA overrides these value for UpgradeSessionBean
+and CreateCRLSessionBean to allow the transaction to run for one hour before timing out. This is
+done by using XDoclet tags in the source-code:
+ @jboss.method-attributes pattern="*" transaction-timeout="3600"
+that ends up in ejbca.ear/ejbca-ejb.jar/META-INF/jboss.xml in the compiled application. 

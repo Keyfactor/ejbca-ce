@@ -66,6 +66,9 @@ import org.ejbca.util.CertTools;
  * @ejb.transaction type="Required"
  *
  * @weblogic.enable-call-by-reference True
+ * 
+ * Increase transaction timeout for all methods in this class to one hour on JBoss.
+ * @jboss.method-attributes pattern="*" transaction-timeout="3600"
  *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
