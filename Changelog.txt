@@ -391,6 +391,19 @@ Bug
     * [ECA-758] - Under some conditions it's not possible to edit rfc822name altname field for user in admin-gui
     * [ECA-766] - Error saving CRL Service on Weblogic 10
 
+3.5.11, 2009-01-28
+---
+Improvement
+    * [ECA-778] - change genTokenCertificates WS call behavior to not temporary revoke certificates for MS logon
+
+Bug
+    * [ECA-1052] - Error in EJBCAWS.genTokenCertificate temporary cards aren't revoked properly
+
+3.5.10, 2008-11-14
+---
+Bug
+    * [ECA-724] - CertificateExpirationNotifier service not working on Weblogic-Oracle
+
 3.5.9, 2008-10-06
 ---
 Improvement

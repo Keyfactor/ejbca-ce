@@ -188,6 +188,25 @@ For the Oracle database we have made a switch from the deprecated type LONG to C
 EJBCA 3.6 still works if you continue to use the LONG data type (i.e. does not make any changes to your database).
 If you decide to migrate, there is a migration sql script in src/upgrade/35_36/oracle-long-to-clob.sql.
 
+EJBCA 3.5.11
+-----------
+This is a minor release, fixing two minor issues with webservice calls used by HardTokenMgmt.
+- Change genTokenCertificates WS call behavior to not temporary revoke certificates for MS logon
+- Fix error in EJBCAWS.genTokenCertificate temporary cards aren't revoked properly
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
+
+EJBCA 3.5.10
+-----------
+This is a minor release, only backorting a fix done in 3.6.
+- CertificateExpirationNotifier service not working on Weblogic-Oracle
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.5.9
 -----------
 This is a minor release, targeted for fixing a few annoying bugs.
