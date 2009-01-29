@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -62,6 +63,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.cert.CertificateNotBeforeComparator;
 import org.ejbca.util.query.Query;
 
 
@@ -576,8 +578,14 @@ public class RAInterfaceBean implements java.io.Serializable {
      */
     private void loadCertificateView(Collection certs, String username) {
     	if(!certs.isEmpty()){
-    		Iterator j = certs.iterator();
-    		certificates = new CertificateView[certs.size()];
+    		ArrayList list = new ArrayList(certs);
+        	if (certs.size() < 50) {
+        		Collections.sort(list, new CertificateNotBeforeComparator());        		
+        	} else {
+        		log.debug("User has more than 50 certificates, we will not sort them");
+        	}
+    		Iterator j = list.iterator();
+    		certificates = new CertificateView[list.size()];
     		for(int i=0; i< certificates.length; i++){
     			RevokedInfoView revokedinfo = null;
     			Certificate cert = (Certificate) j.next();
