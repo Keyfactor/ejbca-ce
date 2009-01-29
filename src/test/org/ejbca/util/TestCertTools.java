@@ -1372,4 +1372,10 @@ public class TestCertTools extends TestCase {
 		String s = CertTools.getSubjectAlternativeName(krbcert);
 		assertEquals("krb5principal=foo/bar@P.COM", s);
 	}
+	
+	public void testPseudonym() throws Exception {
+		String dn1 = "c=SE,O=Prime,OU=Tech,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,Pseudonym=Shredder,cn=Tomas Gustavsson";
+		String bcdn1 = CertTools.stringToBCDNString(dn1);
+		assertEquals("Pseudonym=Shredder,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,CN=Tomas Gustavsson,OU=Tech,O=Prime,C=SE", bcdn1);		
+	}
 }
