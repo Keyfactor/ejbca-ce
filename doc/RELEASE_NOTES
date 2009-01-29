@@ -1,3 +1,16 @@
+EJBCA 3.8.1
+-----------
+This is a minor release, targeted for adding support for JBoss 5 and fixing a mistake that caused install on Glassfish to fail.
+It also adds a few minor improvements and bugfixes.
+Read the changelog for details.
+- Add support for JBoss 5.
+- Fix support for Glassfish caused by a forgotten commit in 3.8.0.
+- Improve support for Weblogic 10.3.
+- Fix support for IPv6 subject alternative names.
+- A few minor CMP, OCSP and CVC fixes.
+
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.8.0
 -----------
 This is a major release, particularly focusing on support for administrators to log in with certificates from other CAs, 

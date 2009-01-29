@@ -1,3 +1,32 @@
+3.8.1, 2009-01-29
+---
+Improvement
+    * [ECA-966] - NPE when using a non-existing ECC algorithm during CVC CA creation
+    * [ECA-983] - Allow logging of REPLY_TIME in both audit and transaction logs
+    * [ECA-1006] - Database index script fails for MySQL using UTF-8
+    * [ECA-1057] - Run EJBCA in JBoss 5.0
+    * [ECA-1059] - Fix ipv6 altname ipaddress and allow it in admin-GUI
+    * [ECA-1060] - Throw CertificateExpiredException when certificate used to verify cvc request has expired
+    * [ECA-1070] - Windows .BAT file for using clientToolBox
+    * [ECA-1080] - Option to set internally used password in CMP
+    * [ECA-1081] - Improve support for Weblogic 10.3
+    * [ECA-1086] - Allow to set null password in WS cli editUser call
+    * [ECA-1087] - Increase timeout for CRL generation transaction on JBoss and document how it could be done
+
+Bug
+    * [ECA-984] - ejbca.cmd does not work with spaces in JBoss path
+    * [ECA-1039] - CVC certificate requests with error leaves user status as new
+    * [ECA-1040] - cvcgetchain does not return latest cert
+    * [ECA-1056] - REQUIREDCARDNUMBER language string missing
+    * [ECA-1061] - Wrong header displayed for different groups of access rules
+    * [ECA-1062] - Verifying OCSP requests can throw InvalidKeyException which is not caught
+    * [ECA-1063] - Not working on Glassfish
+    * [ECA-1068] - CMP tcp service does not work on JBoss 5
+    * [ECA-1069] - Wrong errormessage in checkValidity when endDate is wrong
+    * [ECA-1071] - OCSP responder does not handle TelephoneNumber, PostalAddress and PostalCode in DN
+    * [ECA-1079] - KeyId decoding in CMP uses platform charset
+    * [ECA-1084] - External RA: SCEP enrollment from Cisco IOS gets wrong DN
+
 3.8.0, 2008-12-15
 ---
 New Feature
