@@ -20,6 +20,7 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.Security;
+import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Date;
 import java.util.Enumeration;
 
@@ -211,7 +212,7 @@ public class LunaKeyTool {
             final KeyPair keyPair; {
                 final KeyPairGenerator keyPairgen = KeyPairGenerator.getInstance("RSA",
                                                                                  "LunaJCAProvider");
-                keyPairgen.initialize(keySize);
+                keyPairgen.initialize(new RSAKeyGenParameterSpec(keySize, RSAKeyGenParameterSpec.F4));
                 keyPair = keyPairgen.generateKeyPair();
             }
             LunaCertificateX509[] certChain = new LunaCertificateX509[1];
