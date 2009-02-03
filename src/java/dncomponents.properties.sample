@@ -1,6 +1,7 @@
 #
 # This is a comment
 #
+pseudonym=2.5.4.65
 telephonenumber=2.5.4.20
 postaladdress=2.5.4.16
 businesscategory=2.5.4.15
@@ -26,4 +27,3 @@ l=2.5.4.7
 st=2.5.4.8
 dc=0.9.2342.19200300.100.1.25
 c=2.5.4.6
-pseudonym=2.5.4.65
