@@ -713,18 +713,17 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * @param if the call is aremove call, othervise fetch authorization is used.
      * @return true if the administrator is authorized
      */
-    private boolean isAuthorizedToUserDataSource(Admin admin, int id,  BaseUserDataSource userdatasource,boolean remove) {
-    	try {
-    		if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
+    private boolean isAuthorizedToUserDataSource(Admin admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
+    		if(isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
     			return true;
     		}
     		
     		if(remove){
-    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_REMOVE_RIGHTS);
+    			isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_REMOVE_RIGHTS);
     		}else{
-    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_FETCH_RIGHTS);    			
+    			isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_FETCH_RIGHTS);    			
     		}
-    		if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR)){
+    		if(isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR)){
     			if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
     				return true;
     			}
@@ -732,11 +731,29 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
     			if(authorizedcas.containsAll(userdatasource.getApplicableCAs())){
     				return true;
     			}
-    		}
-    	} catch (AuthorizationDeniedException e) {}
+    		}    	
     	
 		return false;
 	}
+    
+    
+    private boolean isAuthorizedNoLog(Admin admin, String resource){
+    	boolean retval = false;
+    	try {
+    		retval = getAuthorizationSession().isAuthorizedNoLog(admin, resource);
+    	}catch (AuthorizationDeniedException e) {}
+    	
+    	return retval;
+    }
+    
+    private boolean isAuthorized(Admin admin, String resource){
+    	boolean retval = false;
+    	try {
+    		retval = getAuthorizationSession().isAuthorized(admin, resource);
+    	}catch (AuthorizationDeniedException e) {}
+    	
+    	return retval;
+    }
     
     /**
      * Method to check if an admin is authorized to edit an user data source
