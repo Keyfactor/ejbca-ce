@@ -9,7 +9,7 @@
 
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.ui.web.RequestHelper.getDefaultContentEncoding() %>" />
     <title>@EJBCA@ Certification Authority</title>
     <link rel="stylesheet" href="../styles.css" type="text/css" />
     <script type="text/javascript" src="../scripts/functions.js"></script>
