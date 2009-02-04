@@ -40,8 +40,20 @@ public class ServletDebug {
     }
 
     public void printDebugInfo() throws IOException, ServletException {
-        request.setAttribute("ErrorMessage", new String(buffer.toByteArray()));
-        request.getRequestDispatcher("error.jsp").forward(request, response);
+    	String errorform = request.getParameter ("errorform");
+    	String errormessage = new String(buffer.toByteArray());
+    	if (errorform == null){
+            request.setAttribute("ErrorMessage", errormessage);
+            request.getRequestDispatcher("error.jsp").forward(request, response);
+    	}
+    	else{
+    		int i = errorform.indexOf("@ERROR@");
+    		if (i > 0){
+    			errorform = errorform.substring (0, i) + errormessage + errorform.substring(i + 7);
+    		}
+    		response.setContentType("text/html");
+    		response.getOutputStream().print(errorform);
+    	}
     }
 
     public void print(Object o) {
