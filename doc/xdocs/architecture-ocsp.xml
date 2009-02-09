@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>OCSP Architecture</title>
+  </properties>
+
+<body>
+  <section name="External OCSP responders">
+    <p>
+    External OCSP responders serves multiple purposes:
+    <ul>
+    <li>Separating the validation service from the CA service. This increases security because the CA service does not have to accept any 
+        incoming connections.</li>
+    <li>Ensure highest availability of the validation service. Using external OCSP responders you can have several completely independent nodes.
+    This means that you can do maintenance on the CA, or some of the OCSP nodes without disturbing availability to the validation service.</li>
+    <li>Ensure highest performance. The external OCSP responder is very fast and one single responder can answer hundreds of requests per second. 
+    In addition to this the external OCSP responders can be scaled linearly by adding multiple independent OCSP nodes.</li>
+    </ul> 
+    </p>
+    <p>
+    	The following diagram is a rough schema of the architecture using external OCSP responders.
+    </p>
+    <p>
+    <img src="images/external-ocsp.png" alt="External OCSP architecture" />
+    </p>
+    <p>
+    The EJBCA external OCSP responder does not rely on CRLs being issued by the CA. Instead the OCSP responder uses it's own database with certificate status 
+    information. This can be a replica of the CertificateData table in EJBCA. In normal operation the EJBCA CA pushes status changes to the external OCSP
+    database when certificates are issued and revoked in EJBCA.
+    </p>
+    <p>The external OCSP responder is not limited to usage in combination with EJCBA though. The external OCSP database can simply be updated by other tools, for example 
+    being fed with CRLs from other CAs.
+    </p> 
+  </section>
+
+</body>
+</document>
+
