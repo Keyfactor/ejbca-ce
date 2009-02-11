@@ -149,7 +149,7 @@ import org.ejbca.config.WebConfiguration;
  *   link="UserAdminSession"
  *
  * @ejb.ejb-external-ref
- *   description="The Certificate Store session bean"
+ *   description="The Hard token session bean"
  *   view-type="local"
  *   ref-name="ejb/HardTokenSessionLocal"
  *   type="Session"
