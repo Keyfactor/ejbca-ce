@@ -57,9 +57,6 @@
         </jar>
     </target>
 
-	<target name="ca.ear">
-	</target>
-	
 	<target name="cmptcpserviceconditioncheck">
 		<condition property="cmptcpservices.enabled">
 			<istrue value="${cmp.tcp.enabled}"/>
