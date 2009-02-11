@@ -88,6 +88,7 @@
         <available file="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar"/>
 		<!-- For JBoss 4.2.x tomcat is bundled in jboss-web.deployer dir, i.e. new naming scheme -->
         <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jboss-web.deployer"/>
+		<!-- For JBoss 5.0.0 tomcat has yet a new naming scheme -->
         <available file="${jboss.deploy.dir}/jbossweb.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb.sar"/>
         <copy todir="${tomcat.dir}" overwrite="true">
 			<fileset dir="src/appserver/jboss/${jboss.web}"/>
