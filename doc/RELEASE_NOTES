@@ -126,6 +126,15 @@ There are no database upgrades in this release.
 Because there are binary files in EJBCA_HOME/lib changed there is no patch file for upgrading
 EJBCA 3.6.x to 3.7.0. Use the full package from EJBCA 3.7.0 and follow the upgrade instructions in UPGRADE.
 
+EJBCA 3.6.4
+-----------
+This is a minor release, only fixing one single issue.
+- [ECA-921] - EjbcaHealthCheck does not work on OC4J
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.6.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.6.3
 -----------
 This is a minor release, targeted for fixing a few annoying bugs.

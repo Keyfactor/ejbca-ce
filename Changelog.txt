@@ -213,6 +213,11 @@ Bug
     * [ECA-921] - EjbcaHealthCheck does not work on OC4J
     * [ECA-924] - Language variable misspelled (name="UTF8")
 
+3.6.4, 2009-02-13
+---
+Bug
+    * [ECA-921] - EjbcaHealthCheck does not work on OC4J
+
 3.6.3, 2008-10-06
 ---
 Bug
