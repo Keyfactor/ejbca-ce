@@ -125,7 +125,6 @@ import org.ejbca.cvc.OIDField;
 import org.ejbca.cvc.ReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
 
 
@@ -2765,12 +2764,10 @@ public class CertTools {
      * @return
      */
     private static String getDirectoryStringFromAltName(String altName) {
-      
-    	DNFieldExtractor dnfe = new DNFieldExtractor(altName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-    	String directoryName = dnfe.getField(DNFieldExtractor.DIRECTORYNAME, 0);
-    	
+    	String directoryName = CertTools.getPartFromDN(altName, CertTools.DIRECTORYNAME);
+    	//DNFieldExtractor dnfe = new DNFieldExtractor(altName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    	//String directoryName = dnfe.getField(DNFieldExtractor.DIRECTORYNAME, 0);
     	/** TODO: Validate or restrict the directoryName Fields? */
-      
     	return ( "".equals(directoryName) ? null : directoryName );
     } // getDirectoryStringFromAltName
     
