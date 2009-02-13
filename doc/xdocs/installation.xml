@@ -622,6 +622,7 @@ To be able to use the WS-API you must select 'search local classes first' for 'e
   'Automatically create a new deployment plan' = checked in step 1.<br/>
   'Application Name' = ejbca in step 2.<br/>
   'Configure Class Loading' -> 'Search Local Classes First' = true for 'ejbcaws' and 'xkms' in step 3.<br/></li>
+<li>Now you can run 'ant install' to install EJBCA. You should configure OC4J to use a single RMI port for EJB access, and configure this port in conf/jndi.properties.oracle.</li>
 <li>Configure SSL in OC4J and make sure the SSL information is passed on to Java, not terminated in Apache.<br/>
 <ul>
 <li>If you have SSL directly in OC4J:<br/>
