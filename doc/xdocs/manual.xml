@@ -4858,14 +4858,15 @@ To access the usage information for some commands, that does not take parameters
 
 <subsection name="Other Configuration">
 <p>
-To setup an initial hard token issuer with alias 'local' and queue the admin user for card issuing:
+To setup an initial hard token issuer with alias 'local' and queue a superadmin user for card issuing. Card issuing using the hard 
+token issuers is normally done using PrimeCard.
 </p>
 <source>
 bin/ejbca.sh setup initializehardtokenissuing &lt;caname&gt;
 Ex: bin/ejbca.sh setup initializehardtokenissuing AdminCA1
 </source>
 <p>
-This is a utility function to quickly an easily issue an initial administration smart card.
+This is a utility function to quickly and easily issue an initial administration smart card using PrimeCard.
 </p><p>
 If you want to change the baseurl of the admin-web after installation use the command:
 </p>
