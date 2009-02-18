@@ -1,0 +1,8 @@
+# 
+# This properties file is for configuring where external RA components that should be deployed in EJBCA is located.
+# Configuration of the external RA itself is done in the external RA module configuration files.
+# 
+# Default no location. When this property is not set, no external RA component will be included in ejbca.
+# In this location EJBCA will look for dist/lib/extracaservice.jar
+
+#externalra.home=../extra

@@ -49,7 +49,7 @@ public class ConfigurationHolder {
 	/** This is a singleton so it's not allowed to create an instance explicitly */ 
 	private ConfigurationHolder() {}
 	
-	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties"};
+	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties", "externalra-caservice.properties"};
 
 	public static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
 

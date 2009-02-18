@@ -141,6 +141,32 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   business="org.ejbca.core.ejb.log.IProtectedLogSessionLocal"
  *   link="ProtectedLogSession"
  *   
+ * @ejb.ejb-external-ref description="The Approval Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/ApprovalSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
+ *   business="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
+ *   link="ApprovalSession"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="The Key Recovery session bean"
+ *   view-type="local"
+ *   ref-name="ejb/KeyRecoverySessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
+ *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
+ *   link="KeyRecoverySession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Hard token session bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
+ *   link="HardTokenSession"
+ *
  *  @jonas.bean ejb-name="ServiceTimerSession"
  *  
  *  @version $Id$
@@ -236,23 +262,52 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * This method need "RequiresNew" transaction handling, because we want to make sure that the timer
      * runs the next time even if the execution fails.
      * 
+     * @return true if the service should run, false if the service should not run
+     * 
      * @ejb.transaction type="RequiresNew"
      */
 	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceData, String serviceName) {
 		boolean ret = false;
 		// Add a random delay within 30 seconds to the interval, just to make sure nodes in a cluster is
-		// not scheduled to run on the exact same second
-		Random rand = new Random();
-		int i = rand.nextInt(30000);
-		getSessionContext().getTimerService().createTimer((nextInterval*1000+i), timerInfo);
-		Date nextRunDate = serviceData.getNextRunTimestamp();
+		// not scheduled to run on the exact same second. If the next scheduled run is less than 40 seconds away, 
+		// in which case we only randomize on 5 seconds.
 		Date currentDate = new Date();
+		Date nextApproxTime = new Date(currentDate.getTime()+nextInterval*1000);
+		Date fourtysec = new Date(currentDate.getTime()+40000);
+		Date threesec = new Date(currentDate.getTime()+3000);
+		/*
+		if (log.isDebugEnabled()) {
+			log.info("nextApproc: "+nextApproxTime);			
+			log.info("currentDate: "+currentDate);			
+			log.info("forty: "+fourtysec);			
+			log.info("three: "+threesec);			
+		}*/
+		int randInterval = 30000;
+		if (fourtysec.after(nextApproxTime)) {
+			randInterval = 5000;
+			// And if we are running with a very short interval we only randomize on one second
+			if (threesec.after(nextApproxTime)) {
+				randInterval = 1000;
+			}
+		}
+		Random rand = new Random();
+		int randMillis = rand.nextInt(randInterval);
+		if (log.isDebugEnabled()) {
+			log.debug("Adding random delay: "+randMillis);			
+		}
+		
+		long intervalMillis = nextInterval*1000+randMillis; 
+		getSessionContext().getTimerService().createTimer((intervalMillis), timerInfo);
 		// Check if the current date is after when the service should run.
 		// If a service on another cluster node has updated this timestamp already, then it will return false and
 		// this service will not run.
 		// This is a semaphor so that services in a cluster only runs on one node and don't compete with each other.
+		Date nextRunDate = serviceData.getNextRunTimestamp(); // nextRunDate will typically be the same (or just a millisecond earlier) as now here
 		if(currentDate.after(nextRunDate)){
-			nextRunDate = new Date(currentDate.getTime() + nextInterval);
+			nextRunDate = new Date(currentDate.getTime() + intervalMillis);
+			if (log.isDebugEnabled()) {
+				log.debug("Next runDate is: "+nextRunDate);
+			}
 			serviceData.setNextRunTimestamp(nextRunDate);
 			getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
 			ret=true;

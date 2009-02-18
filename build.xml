@@ -16,11 +16,12 @@
 	<import file="./cmptcp.xmli" />
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
+	<import file="./externalra.xmli" />
 	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="testforgnujava, ca.ear" description="Compiles EJBCA, developers can run with '-Dno-xdoc=true' for faster build"/>
+    <target name="build" depends="testforgnujava, ejbca.ear" description="Compiles EJBCA, developers can run with '-Dno-xdoc=true' for faster build"/>
 
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -298,12 +299,14 @@
                     <include name="**/BaseSessionBean.*" /> 
                 	<include name="**/ServiceLocator.*"/>
                 	<include name="**/JNDINames.*"/>
+                    <include name="org/ejbca/**/I*SessionLocal.*"/>
                 	<include name="**/HealthCheckServlet.*"/>                	
                     <include name="org/ejbca/ui/web/RequestHelper.*"/>
                     <include name="org/ejbca/ui/cli/**"/>
                 	<include name="org/ejbca/ui/web/pub/cluster/**"/>
                     <include name="org/ejbca/ui/web/pub/ServletUtils.*"/>   
                     <include name="org/ejbca/ui/web/admin/configuration/LanguageProperties.*"/>
+                    <include name="org/ejbca/config/ConfigurationHolder.*"/>
                 </fileset>
             	<fileset dir="${src}/java">
             	    <include name="dncomponents.properties"/>
@@ -449,6 +452,9 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
+	<target name="ejbca.ear" depends="ca.ear, externalra.jar">
+	</target>
+	
 	<target name="ca.ear" depends="jsflibs, publicweb.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
@@ -474,8 +480,9 @@
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
-            </fileset>
+            </fileset>            
 	</ear>
+
     <antcall target="signjar">
         <param name="signjar.file" value="${caear}"/>
     </antcall>
@@ -666,6 +673,7 @@
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
     <target name="deploy" depends="build, buildwithcmptcpservice" description="Deploy the main EJBCA application">
+        <antcall target="externalra.deploy" />
         <antcall target="j2ee:deploy" />
     </target>
     <target name="ocsp-deploy" depends="ocsp-ear" description="Deploy the standalone OCSP reponder" >

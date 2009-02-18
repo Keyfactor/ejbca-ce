@@ -52,6 +52,7 @@
     <property file="conf/cmp.properties" />
     <property file="conf/jaxws.properties" />
     <property file="conf/xkms.properties" />
+    <property file="conf/externalra.properties" />
 
     <!--
         Start setting default values and classpaths etc here
