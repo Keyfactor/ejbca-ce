@@ -1,3 +1,9 @@
+EJBCA 3.9.0
+-----------
+
+Note that the configuration of External RA changed dramatically (to the better). If using the external RA, please read the manual how to 
+install and configure the RA CA service in EJBCA 3.9.
+
 EJBCA 3.8.1
 -----------
 This is a minor release, targeted for adding support for JBoss 5 and fixing a mistake that caused install on Glassfish to fail.
