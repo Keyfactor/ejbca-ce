@@ -844,12 +844,14 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 
 
         // Check if query is legal.
-        if (query != null && !query.isLegalQuery())
+        if (query != null && !query.isLegalQuery()) {
             throw new IllegalQueryException();
+        }
 
-        if (query != null)
+        if (query != null) {
             sqlquery = sqlquery + query.getQueryString();
-
+        }
+        
         raauthorization = new RAAuthorization(admin, getRAAdminSession(), getAuthorizationSession());
         String caauthstring = raauthorization.getCAAuthorizationString();
         String endentityauth = "";
@@ -1050,8 +1052,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 
         while (!foundfree) {
             try {
-                if (id > 1)
-                   approvalHome.findByPrimaryKey(new Integer(id));
+                if (id > 1){
+                    approvalHome.findByPrimaryKey(new Integer(id));
+                }
                 id = ran.nextInt();
             } catch (FinderException e) {
                 foundfree = true;

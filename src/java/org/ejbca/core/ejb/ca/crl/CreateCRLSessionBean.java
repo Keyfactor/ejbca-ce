@@ -292,8 +292,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     		Iterator iter = revcertinfos.iterator();
     		while (iter.hasNext()) {
     			RevokedCertInfo ci = (RevokedCertInfo)iter.next();
-    			if (ci.getRevocationDate() == null)
+    			if (ci.getRevocationDate() == null) {
     				ci.setRevocationDate(new Date());
+    			}
     			certs.add(ci);
     		}
     		ISignSessionLocal sign = signHome.create();

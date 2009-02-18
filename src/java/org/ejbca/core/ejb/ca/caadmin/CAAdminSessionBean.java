@@ -1793,9 +1793,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     public void upgradeFromOldCAHSMKeyStore(Admin admin, int caid){
         try{
             // check authorization
-            if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER)
+            if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
               getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
-
+            }
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
             CATokenContainer token = ca.getCAToken();

@@ -472,9 +472,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
-        if (updateNeccessary())
+        if (updateNeccessary()) {
             updateAuthorizationTree();
-        
+        }
         return getAuthorizer().isAuthorized(admin, resource);
     }
 
@@ -499,8 +499,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public boolean isGroupAuthorized(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException {
-        if (updateNeccessary())
+        if (updateNeccessary()) {
             updateAuthorizationTree();
+        }
         return getAuthorizer().isGroupAuthorized(admin, admingrouppk, resource);
     }
 
@@ -511,8 +512,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public boolean isGroupAuthorizedNoLog(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException {
-        if (updateNeccessary())
-            updateAuthorizationTree();
+        if (updateNeccessary()) {
+        	updateAuthorizationTree();
+        }
         return getAuthorizer().isGroupAuthorizedNoLog(admin, admingrouppk, resource);
     }
 
@@ -524,9 +526,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     public boolean existsAdministratorInGroup(Admin admin, int admingrouppk) {
         boolean returnval = false;
-        if (updateNeccessary())
+        if (updateNeccessary()) {
             updateAuthorizationTree();
-
+        }
         try {
             AdminGroupDataLocal agdl = admingrouphome.findByPrimaryKey(new Integer(admingrouppk));
             Iterator adminentitites = agdl.getAdminGroup().getAdminEntities().iterator();
@@ -694,8 +696,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         ArrayList returnval = new ArrayList();
         try {
             Iterator iter = admingrouphome.findAll().iterator();
-            while (iter.hasNext())
+            while (iter.hasNext()) {
                 returnval.add(((AdminGroupDataLocal) iter.next()).getAdminGroup());
+            }
         } catch (FinderException e) {
         }
 

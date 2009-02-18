@@ -48,7 +48,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
     	 HashSet aar = new HashSet();
     	 aar.addAll(availableaccessrules);
     	 Iterator iter = currentaccessrules.iterator();
-    	 while(iter.hasNext()) aar.add(((AccessRule) iter.next()).getAccessRule());    	 
+    	 while(iter.hasNext()) {
+    		 aar.add(((AccessRule) iter.next()).getAccessRule());    	 
+    	 }
     	 initAvailableRoles(aar);    	 
     	 initAvailableRules(usehardtokens, usekeyrecovery, aar);    	 
     	 
@@ -171,9 +173,10 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		    // Check if administrator is supervisor
             if(isSupervisor(currentaccessrules)){          	   
           	    this.currentrole = BasicAccessRuleSet.ROLE_SUPERVISOR;          	  	 
-            }else
+            } else {
           	    this.forceadvanced = true;
-		}else{
+            }
+          } else {
 			this.currentrole = BasicAccessRuleSet.ROLE_NONE;
 		}	        
 	}
@@ -185,8 +188,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 			AccessRule ar = (AccessRule) currentaccessrules.iterator().next();
 			if(ar.getAccessRule().equals(AvailableAccessRules.ROLE_SUPERADMINISTRATOR) && 
 					                                   ar.getRule() == AccessRule.RULE_ACCEPT &&
-													   !ar.isRecursive())
+													   !ar.isRecursive()) {
 				returnval = true;
+			}
 		}
 		
 		return returnval;
@@ -211,20 +215,23 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	     boolean illegal = false;
 	     while(iter.hasNext()){
 	     	AccessRule ar = (AccessRule) iter.next();
-	     	if(!isAllowedCAAdministratorRule(ar))
-	     	  if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive() && requiredacceptrecrules.contains(ar.getAccessRule()))
+	     	if(!isAllowedCAAdministratorRule(ar)) {
+	     	  if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive() && requiredacceptrecrules.contains(ar.getAccessRule())) {
 	     	  		requiredacceptrecrules.remove(ar.getAccessRule());
+	     	  }
 	     	  else		
-	     	  	if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive() && requiredacceptnonrecrules.contains(ar.getAccessRule()))
+	     	  	if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive() && requiredacceptnonrecrules.contains(ar.getAccessRule())) {
 	     	  		requiredacceptnonrecrules.remove(ar.getAccessRule());
-	     	    else{
+	     	  	}
+	     	    else {
 	     	    	illegal = true;
 					break;
-	     	    }		     	
+	     	    }
+	     	}
 	     }
-	     if(!illegal && requiredacceptrecrules.size()==0 && requiredacceptnonrecrules.size() == 0)
+	     if(!illegal && requiredacceptrecrules.size()==0 && requiredacceptnonrecrules.size() == 0) {
 	     	returnval = true;
-	     
+	     }
 	   }
 	   
 
@@ -235,14 +242,17 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	private boolean isAllowedCAAdministratorRule(AccessRule ar){
 		boolean returnval = false;
 		
-		if(ar.getAccessRule().equals(AvailableAccessRules.CABASE) && ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive())
+		if(ar.getAccessRule().equals(AvailableAccessRules.CABASE) && ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive()) {
 			returnval = true;
+		}
 
-		if(ar.getAccessRule().startsWith(AvailableAccessRules.CAPREFIX) && ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive())
-			returnval = true;		
-	
-		if(ar.getAccessRule().startsWith(AvailableAccessRules.HARDTOKEN_ISSUEHARDTOKENS) && ar.getRule() == AccessRule.RULE_ACCEPT)
+		if(ar.getAccessRule().startsWith(AvailableAccessRules.CAPREFIX) && ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive()) {
 			returnval = true;
+		}
+	
+		if(ar.getAccessRule().startsWith(AvailableAccessRules.HARDTOKEN_ISSUEHARDTOKENS) && ar.getRule() == AccessRule.RULE_ACCEPT) {
+			returnval = true;
+		}
 		
 		return returnval;
 	}
@@ -261,16 +271,18 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 			boolean illegal = false;
 			while(iter.hasNext()){
 				AccessRule ar = (AccessRule) iter.next();	     	
-				if(!isAllowedRAAdministratorRule(ar))
-						if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive() && requiredaccepnonrecrules.contains(ar.getAccessRule()))
+				if(!isAllowedRAAdministratorRule(ar)) {
+						if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive() && requiredaccepnonrecrules.contains(ar.getAccessRule())) {
 							requiredaccepnonrecrules.remove(ar.getAccessRule());
-						else{
+						}else{
 							illegal = true;
 							break;
 						}	
+				}
 			}
-			if(!illegal && requiredaccepnonrecrules.size() == 0)
-				returnval = true;	     	    	     
+			if(!illegal && requiredaccepnonrecrules.size() == 0) {
+				returnval = true;
+			}
 		}
 		
 		return returnval;
@@ -281,22 +293,28 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		boolean returnval = false;
 								
 		if(ar.getRule() == AccessRule.RULE_ACCEPT){
-		  if(ar.getAccessRule().equals(AvailableAccessRules.HARDTOKEN_ISSUEHARDTOKENS))
+		  if(ar.getAccessRule().equals(AvailableAccessRules.HARDTOKEN_ISSUEHARDTOKENS)) {
 			  returnval = true;
+		  }
 		  if(ar.isRecursive()){
-		  	  if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWLOG)) 
+		  	  if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWLOG)) { 
 		  	  	 returnval = true; 
+		  	  }
 		      if(ar.getAccessRule().equals(AvailableAccessRules.ENDENTITYPROFILEBASE) ||
-		         ar.getAccessRule().equals(AvailableAccessRules.CABASE))   	
+		         ar.getAccessRule().equals(AvailableAccessRules.CABASE)) {
 		      	   returnval = true;
+		      }
 		  }else{
 		  	  if(ar.getAccessRule().startsWith(AvailableAccessRules.REGULAR_RAFUNCTIONALITY + "/")
-		  	  	  && !ar.getAccessRule().equals(AvailableAccessRules.REGULAR_EDITENDENTITYPROFILES))
+		  	  	  && !ar.getAccessRule().equals(AvailableAccessRules.REGULAR_EDITENDENTITYPROFILES)) {
 		  	  	  returnval = true;
-		  	  if(ar.getAccessRule().startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX))
+		  	  }
+		  	  if(ar.getAccessRule().startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)) {
 		  	  	returnval = true;
-		  	  if(ar.getAccessRule().startsWith(AvailableAccessRules.CAPREFIX))
+		  	  }
+		  	  if(ar.getAccessRule().startsWith(AvailableAccessRules.CAPREFIX)) {
 		  	  	returnval = true;		  	  
+		  	  }
 		  } 	
 		}
 		return returnval;
@@ -315,19 +333,22 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 			boolean illegal = false;
 			while(iter.hasNext()){
 				AccessRule ar = (AccessRule) iter.next();	     	
-				if(!isAllowedSupervisorRule(ar))
-					if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive() && requiredacceptrecrules.contains(ar.getAccessRule()))
+				if(!isAllowedSupervisorRule(ar)) {
+					if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive() && requiredacceptrecrules.contains(ar.getAccessRule())) {
 						requiredacceptrecrules.remove(ar.getAccessRule());
-					else		
-						if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive() && requiredacceptnonrecrules.contains(ar.getAccessRule()))
+					} else {		
+						if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive() && requiredacceptnonrecrules.contains(ar.getAccessRule())) {
 							requiredacceptnonrecrules.remove(ar.getAccessRule());
-						else{
+						} else{
 							illegal = true;
 							break;
 						}	
+					}
+				}
 			}
-			if(!illegal && requiredacceptrecrules.size() ==0 && requiredacceptnonrecrules.size() == 0)
+			if(!illegal && requiredacceptrecrules.size() ==0 && requiredacceptnonrecrules.size() == 0) {
 				returnval = true;
+			}
 			
 
 		}
@@ -342,17 +363,21 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		if(ar.getRule() == AccessRule.RULE_ACCEPT){
 			if(ar.isRecursive()){
 					if(ar.getAccessRule().equals(AvailableAccessRules.ENDENTITYPROFILEBASE) ||
-							ar.getAccessRule().equals(AvailableAccessRules.CABASE))   	
+							ar.getAccessRule().equals(AvailableAccessRules.CABASE))   	{
 						returnval = true;
+					}
 			}else{
 				if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWENDENTITY) ||
 				   ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWENDENTITYHISTORY) ||
-				   ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWHARDTOKENS) )
+				   ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWHARDTOKENS) ) {
 					returnval = true;
-				if(ar.getAccessRule().startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX))
+				}
+				if(ar.getAccessRule().startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)) {
 					returnval = true;
-				if(ar.getAccessRule().startsWith(AvailableAccessRules.CAPREFIX))
+				}
+				if(ar.getAccessRule().startsWith(AvailableAccessRules.CAPREFIX)) {
 					returnval = true;		  	  
+				}
 			}
 		}
 		return returnval;				
@@ -361,17 +386,18 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection availableaccessrules){
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEW));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
-		if(usehardtokens)
-		  availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS));
+		if(usehardtokens) {
+		  availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS)); 
+		}
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_CREATE));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_EDIT));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_DELETE));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_REVOKE));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWPUK));
-		if(usekeyrecovery)
+		if(usekeyrecovery) {
 		  availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));
-		
+		}
 		Iterator iter = availableaccessrules.iterator();
 		while(iter.hasNext()){
 			String nextrule = (String) iter.next();
@@ -396,9 +422,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		
 		
 		this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_VIEWLOG));
-		if(usehardtokens)
+		if(usehardtokens) {
 			this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
-		
+		}
 	}
 	
 	private void initCurrentRules(Collection currentaccessrules){		
@@ -481,9 +507,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				  		break;
 				  	}
 					int currentval = 0;
-					if(endentityrules.get(profileid) != null)
+					if(endentityrules.get(profileid) != null) {
 						currentval = ((Integer) endentityrules.get(profileid)).intValue();
-					
+					}
 					if(ar.getAccessRule().endsWith(AvailableAccessRules.VIEW_RIGHTS)){
 						currentval += BasicAccessRuleSet.ENDENTITY_VIEW;
 					}else
@@ -569,8 +595,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 			if(!next.equals(general)){
 				if(((Integer) endentityrules.get(next)).intValue() == endentityruleval ){
 					this.currentendentityprofiles.add(next);
-				}else
+				}else {
 					this.forceadvanced = true;
+				}
 			}			
 		}
 
