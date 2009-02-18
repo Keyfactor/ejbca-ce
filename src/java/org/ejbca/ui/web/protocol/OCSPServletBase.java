@@ -740,25 +740,38 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		TransactionLogger transactionLogger = null;
 		AuditLogger auditLogger = null;
 		Date startTime = new Date();
-		if (mDoTransactionLog) transactionLogger = new TransactionLogger();
-		if (mDoAuditLog)  auditLogger = new AuditLogger();
-		String transactionID = GUIDGenerator.generateGUID(this);
-		if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
-		if (auditLogger != null) auditLogger.paramPut(AuditLogger.LOG_ID, mTransactionID);
-		if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.LOG_ID, mTransactionID);
-		if (auditLogger != null) auditLogger.paramPut(AuditLogger.SESSION_ID, m_SessionID);
-		if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SESSION_ID, m_SessionID);
-		//audit.paramPut(TransactionLogger.DIGEST_ALGOR, m_sigAlg); //Algorithm used by server to generate signature on OCSP responses
+		if (mDoTransactionLog) {
+			transactionLogger = new TransactionLogger();
+		}
+		if (mDoAuditLog) {
+			auditLogger = new AuditLogger();
+		}
 		String remoteAddress = request.getRemoteAddr();
-		if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CLIENT_IP, remoteAddress);
-		if (auditLogger != null) auditLogger.paramPut(AuditLogger.CLIENT_IP, remoteAddress);
+
+		if (auditLogger != null) {
+			auditLogger.paramPut(AuditLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
+			auditLogger.paramPut(AuditLogger.LOG_ID, mTransactionID);
+			auditLogger.paramPut(AuditLogger.SESSION_ID, m_SessionID);
+			auditLogger.paramPut(AuditLogger.CLIENT_IP, remoteAddress);
+		}
+		if (transactionLogger != null) {
+			transactionLogger.paramPut(TransactionLogger.LOG_ID, mTransactionID);
+			transactionLogger.paramPut(TransactionLogger.SESSION_ID, m_SessionID);
+			transactionLogger.paramPut(TransactionLogger.CLIENT_IP, remoteAddress);
+
+		}
+		//audit.paramPut(TransactionLogger.DIGEST_ALGOR, m_sigAlg); //Algorithm used by server to generate signature on OCSP responses
 		if ((reqBytes == null) || (reqBytes.length == 0)) {
 			m_log.info("No request bytes from ip: "+remoteAddress);
-			if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-			if (transactionLogger != null) transactionLogger.writeln();
-			if (transactionLogger != null) transactionLogger.flush();
-			if (auditLogger != null) auditLogger.paramPut(auditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-			if (auditLogger != null) auditLogger.flush();
+			if (transactionLogger != null) { 
+				transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+				transactionLogger.writeln();
+				transactionLogger.flush();
+			}
+			if (auditLogger != null) {
+				auditLogger.paramPut(auditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+				auditLogger.flush();
+			}
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
 			return;
 		}
@@ -786,7 +799,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					if (m_log.isDebugEnabled()) {
 						m_log.debug("Requestorname is: "+req.getRequestorName().toString());						
 					}
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REQ_NAME, req.getRequestorName().toString());
+					if (transactionLogger != null) {
+						transactionLogger.paramPut(TransactionLogger.REQ_NAME, req.getRequestorName().toString());
+					}
 				}
 				// Make sure our signature keys are updated
 				loadPrivateKeys(m_adm);
@@ -806,10 +821,12 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					String signercertIssuerName = CertTools.getIssuerDN(signercert);
 					BigInteger signercertSerNo = CertTools.getSerialNumber(signercert);
 					String signercertSubjectName = CertTools.getSubjectDN(signercert);
-					if (transactionLogger != null ) transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, new String(Hex.encode(signercert.getSerialNumber().toByteArray())));
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
+					if (transactionLogger != null ) {
+						transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
+						transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, new String(Hex.encode(signercert.getSerialNumber().toByteArray())));
+						transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
+						transactionLogger.paramPut(TransactionLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
+					}
 					if (m_reqMustBeSigned) {
 						// If it verifies OK, check if it is revoked
 						RevokedCertInfo rci = isRevoked(m_adm, CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
@@ -851,7 +868,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				
 				// Get the certificate status requests that are inside this OCSP req
 				Req[] requests = req.getRequestList();
-				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, requests.length);
+				if (transactionLogger != null) {
+					transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, requests.length);
+				}
 				if (requests.length <= 0) {
 					String errMsg = intres.getLocalizedMessage("ocsp.errornoreqentities");
 					m_log.error(errMsg);
@@ -878,20 +897,28 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 
 				// Add standard response extensions
 				Hashtable responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
-                if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
-                if (auditLogger!= null) auditLogger.paramPut(auditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+                if (transactionLogger != null) {
+                	transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+                }
+                if (auditLogger!= null) {
+                	auditLogger.paramPut(auditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+                }
 				// Look over the status requests
 				ArrayList responseList = new ArrayList();
 				for (int i = 0; i < requests.length; i++) {
 					CertificateID certId = requests[i].getCertID();
 					// now some Logging
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, new String( Hex.encode(certId.getSerialNumber().toByteArray())));
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID()); //todo, find text version of this or find out if it should be something else                    
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
-					if (auditLogger != null) auditLogger.paramPut(AuditLogger.SERIAL_NOHEX, new String( Hex.encode(certId.getSerialNumber().toByteArray())));
-					if (auditLogger != null) auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
-					if (auditLogger != null) auditLogger.paramPut(AuditLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
+					if (transactionLogger != null) {
+						transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, new String( Hex.encode(certId.getSerialNumber().toByteArray())));
+						transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID()); //todo, find text version of this or find out if it should be something else                    
+						transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
+						transactionLogger.paramPut(TransactionLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
+					}
+					if (auditLogger != null) {
+						auditLogger.paramPut(AuditLogger.ISSUER_KEY,new String(Hex.encode(certId.getIssuerKeyHash())));
+						auditLogger.paramPut(AuditLogger.SERIAL_NOHEX, new String( Hex.encode(certId.getSerialNumber().toByteArray())));
+						auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, new String( new String( Hex.encode(certId.getIssuerNameHash()))));
+					}
  					byte[] hashbytes = certId.getIssuerNameHash();
 					String hash = null;
 					if (hashbytes != null) {
@@ -930,11 +957,15 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						m_log.info(errMsg);
 						// If we can not find the CA, answer UnknowStatus
 						responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));
-						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN); 
-						if (transactionLogger != null) transactionLogger.writeln();
+						if (transactionLogger != null) {
+							transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN); 
+							transactionLogger.writeln();
+						}
 						continue;
 					} else {
-						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
+						if (transactionLogger != null) {
+							transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, cacert.getSubjectDN().getName());
+						}
 					}
 					/*
 					 * Implement logic according to
@@ -951,7 +982,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						rci = null;
 					}
 					CertificateStatus certStatus = null; // null means good
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); // it seems to be correct
+					if (transactionLogger != null) {
+						transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); // it seems to be correct
+					}
 
 					if (null == rci) {
 						rci = isRevoked(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
@@ -963,7 +996,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 							}
 							String status = "good";
 							certStatus = null; // null means "good" in OCSP
-							if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+							if (transactionLogger != null) {
+								transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+							}
 							// If we do not treat non existing certificates as good 
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
@@ -971,41 +1006,54 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 							if ( (!m_nonExistingIsGood) || (m_caCertCache.findByHash(certId) == null) ) {
 								status = "unknown";
 								certStatus = new UnknownStatus();
-								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN);
+								if (transactionLogger != null) {
+									transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN);
+								}
 							}
 							infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 							m_log.info(infoMsg);
 							responseList.add(new OCSPResponseItem(certId, certStatus));
-							if (transactionLogger != null) transactionLogger.writeln();
-							//  if (account != null) account.writeln();
+							if (transactionLogger != null) {
+								transactionLogger.writeln();
+							}
 						} else {
 							BigInteger rciSerno = rci.getUserCertificate(); 
 							if (rciSerno.compareTo(certId.getSerialNumber()) == 0) {
 								if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
 									certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
 											new CRLReason(rci.getReason())));
-									if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
+									if (transactionLogger != null) {
+										transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
+									}
 								} else {
 									certStatus = null;
 								}
 								String status = "good";
-								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+								if (transactionLogger != null) {
+									transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+								}
 								if (certStatus != null) {
 									status ="revoked";
-									if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
+									if (transactionLogger != null) {
+										transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
+									}
 								}
 								infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 
 								m_log.info(infoMsg);
 								responseList.add(new OCSPResponseItem(certId, certStatus));
-								if (transactionLogger != null) transactionLogger.writeln();
+								if (transactionLogger != null) {
+									transactionLogger.writeln();
+								}
 							} else {
 								m_log.error("ERROR: Certificate serialNumber ("+rciSerno.toString(16)+") in response from database does not match request ("
 										+certId.getSerialNumber().toString(16)+").");
 								infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "unknown", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 								m_log.info(infoMsg);
-								if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN); 
-								if (transactionLogger != null) transactionLogger.writeln();
+								if (transactionLogger != null) {
+									transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN); 
+									transactionLogger.writeln();
+								}
 								responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));                		
 							}
 						}
@@ -1015,8 +1063,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 						m_log.info(infoMsg);
 						responseList.add(new OCSPResponseItem(certId, certStatus));
-						if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED);
-						if (transactionLogger != null) transactionLogger.writeln();
+						if (transactionLogger != null) {
+							transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED);
+							transactionLogger.writeln();
+						}
 					}
 					// Look for extension OIDs
 					Iterator iter = m_extensionOids.iterator();
@@ -1058,8 +1108,12 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					// generate the signed response object
 					BasicOCSPResp basicresp = signOCSPResponse(req, responseList, exts, cacert);
 					ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);
-					if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
-					if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+					if (auditLogger != null) {
+						auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+					}
+					if (transactionLogger != null) {
+						transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+					}
 				} else {
 					String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
 					m_log.error(errMsg);
@@ -1069,48 +1123,74 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.info(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, null);	// RFC 2560: responseBytes are not set on error.
-				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-				if (transactionLogger != null) transactionLogger.writeln();
+				if (transactionLogger != null) {
+					transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+					transactionLogger.writeln();
+
+				}
+				if (auditLogger != null) {
+					auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+				}
 			} catch (SignRequestException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
 				ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, null);	// RFC 2560: responseBytes are not set on error.
-				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
-				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
-				if (transactionLogger != null) transactionLogger.writeln();
+				if (transactionLogger != null) {
+					transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
+					transactionLogger.writeln();
+				}
+				if (auditLogger != null) {
+					auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
+				}
 			} catch (SignRequestSignatureException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
 				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, null);	// RFC 2560: responseBytes are not set on error.
-				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
-				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
-				if (transactionLogger != null) transactionLogger.writeln();
+				if (transactionLogger != null) {
+					transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
+					transactionLogger.writeln();
+				}
+				if (auditLogger != null) {
+					auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
+				}
 			} catch (InvalidKeyException e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.info(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, null);	// RFC 2560: responseBytes are not set on error.
-				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
-				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
-				if (transactionLogger != null) transactionLogger.writeln();
+				if (transactionLogger != null) {
+					transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
+					transactionLogger.writeln();
+				}
+				if (auditLogger != null) {
+					auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
+				}
 			} catch (Exception e) {
-				if (e instanceof ServletException)
+				if (e instanceof ServletException){
 					throw (ServletException) e;
+				}
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.error(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.
-				if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
-				if (transactionLogger != null) transactionLogger.writeln();
-				if (auditLogger != null) auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
+				if (transactionLogger != null) {
+					transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
+					transactionLogger.writeln();
+				}
+				if (auditLogger != null) {
+					auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
+				}
 			}
 			byte[] respBytes = ocspresp.getEncoded();
 			
-			if (auditLogger != null) auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
-			if (auditLogger != null) auditLogger.paramPut(AuditLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
+			if (auditLogger != null) {
+				auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
+				auditLogger.paramPut(AuditLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
+				auditLogger.writeln();
+				auditLogger.flush();
+			}
 			//if (transactionLogger != null) transactionLogger.paramPut(TransactionLogger.REPLY_TIME, String.valueOf( new Date().getTime() - startTime.getTime() ));
-			if (auditLogger != null) auditLogger.writeln();
-			if (transactionLogger != null) transactionLogger.flush(String.valueOf( new Date().getTime() - startTime.getTime() ));
-			if (auditLogger != null) auditLogger.flush();
+			if (transactionLogger != null) {
+				transactionLogger.flush(String.valueOf( new Date().getTime() - startTime.getTime() ));
+			}
 			if (mDoSaferLogging){
 				// See if the Errorhandler has found any problems
 				if (hasErrorHandlerFailedSince(startTime)) {
@@ -1136,8 +1216,12 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			throw new ServletException(e);
 		} catch (Exception e ) {
 			m_log.error(e);
-			if (transactionLogger != null) transactionLogger.flush();
-			if (auditLogger != null) auditLogger.flush();
+			if (transactionLogger != null) {
+				transactionLogger.flush();
+			}
+			if (auditLogger != null) {
+				auditLogger.flush();
+			}
 		}
 		if (m_log.isTraceEnabled()) {
 			m_log.trace("<service()");
