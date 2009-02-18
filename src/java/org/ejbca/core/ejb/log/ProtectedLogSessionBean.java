@@ -720,36 +720,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 
 
 	/**
-	 * Find the oldest protected log-event
-	 * @ejb.interface-method view-type="both"
-	 */
-	public ProtectedLogEventIdentifier findOldestSignedProtectedLogEventRow() {
-		log.trace(">findOldestSignedProtectedLogEventRow");
-		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try {
-			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-			String sql="SELECT nodeGUID, counter FROM ProtectedLogData WHERE b64Protection IS NOT NULL ORDER BY eventTime ASC";
-			ps = con.prepareStatement(sql);
-			ps.setFetchSize(1);
-			ps.setMaxRows(1);
-			rs = ps.executeQuery();
-			if (rs.next()) {
-				protectedLogEventIdentifier = new ProtectedLogEventIdentifier(rs.getInt(1), rs.getInt(2));
-			}
-		} catch (Exception e) {
-			log.error("", e);
-			throw new EJBException(e);
-		} finally {
-			JDBCUtil.close(con, ps, rs);
-		}
-		log.trace("<findOldestSignedProtectedLogEventRow");
-		return protectedLogEventIdentifier;
-	}
-
-	/**
 	 * @return all different nodeGUID that exist between the requested times
 	 * @ejb.interface-method view-type="both"
 	 */
@@ -1357,7 +1327,6 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		newestProtectedLogEventRows.add(tmpPLER);
 		// Find the oldest LogEventRow and save this time as “stoptime”.
 		ProtectedLogEventIdentifier oldestProtectedLogEventIdentifier = findOldestProtectedLogEventRow();
-		ProtectedLogEventIdentifier oldestSignedProtectedLogEventIdentifier = findOldestSignedProtectedLogEventRow();
 		stopTime = getProtectedLogEventRow(oldestProtectedLogEventIdentifier).getEventTime();
 
 		// Keep track of all found nodes and their newest known LogEventRow. Also keep track of which nodes already has been verified.

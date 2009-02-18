@@ -27,10 +27,7 @@ import javax.crypto.SecretKey;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.CADataLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CACacheManager;
@@ -97,17 +94,6 @@ public class ProtectedLogToken {
 		this.tokenType = TYPE_NONE;
 	}
 
-	private ISignSessionLocal getSignSession() {
-		try {
-			if (signSession == null) {
-				signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
-			}
-			return signSession;
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
-	
 	public String getProtectionAlgorithm() {
 		return protectionAlgorithm;
 	}

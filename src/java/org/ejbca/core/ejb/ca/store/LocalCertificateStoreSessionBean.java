@@ -438,9 +438,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		// This should only list a few thousand certificates at a time, in case there
     		// are really many revoked certificates after some time...
     		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-    		String sql = "select fingerprint, issuerDN, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and status=?";
+    		String sql = "select fingerprint, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and status=?";
     		// For delta CRLs we must select both revoked certificates, and certificates that are active because they have been un-revoked
-    		String deltaCRLSql = "select fingerprint, issuerDN, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and revocationDate>? and (status=? or (status=? and revocationReason=?))";
+    		String deltaCRLSql = "select fingerprint, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and revocationDate>? and (status=? or (status=? and revocationReason=?))";
     		if (lastbasecrldate > 0) {
     			sql = deltaCRLSql;
     		}
@@ -461,19 +461,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		ArrayList vect = new ArrayList();
     		while (result.next()) {
     			String fp = result.getString(1);
-    			String issuerDN = result.getString(2);
-    			BigInteger serNo = new BigInteger(result.getString(3));
-    			long exptime = result.getLong(4);
+    			BigInteger serNo = new BigInteger(result.getString(2));
+    			long exptime = result.getLong(3);
     			Date expDate = null;
     			if (exptime > 0) {
     				expDate = new Date(exptime);
     			}
-    			long revtime = result.getLong(5);
+    			long revtime = result.getLong(4);
     			Date revDate = null;
     			if (revtime > 0) {
     				revDate = new Date(revtime);            	
     			}
-    			int revReason = result.getInt(6);
+    			int revReason = result.getInt(5);
     			RevokedCertInfo certinfo = new RevokedCertInfo(fp, serNo, revDate, revReason, expDate);
     			// Add to the result
     			vect.add(certinfo);

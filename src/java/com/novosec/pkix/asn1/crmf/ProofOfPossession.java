@@ -55,7 +55,7 @@ public class ProofOfPossession implements DEREncodable
     		return null;
     	// This can sometimes be a 0 length Octet string it seems
     	if (obj instanceof DEROctetString) {
-    		DEROctetString o = (DEROctetString) obj;
+    		//DEROctetString o = (DEROctetString) obj;
     		return new DERNull();
     	}
     	return (DERNull)this.obj;

@@ -246,7 +246,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         try {
         	if (authorizer == null) {
                 authorizer = new Authorizer(getAdminGroups(), admingrouphome,
-                        getLogSession(), getCertificateStoreSession(), getRaAdminSession(), getCAAdminSession(), new Admin(Admin.TYPE_INTERNALUSER), LogConstants.MODULE_AUTHORIZATION);
+                        getLogSession(), getCertificateStoreSession(), getRaAdminSession(), getCAAdminSession(), LogConstants.MODULE_AUTHORIZATION);
         	}
         	return authorizer;
         } catch (Exception e) {

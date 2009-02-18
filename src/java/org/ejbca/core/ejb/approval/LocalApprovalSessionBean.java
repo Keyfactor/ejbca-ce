@@ -38,6 +38,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -74,7 +75,6 @@ import org.ejbca.util.NotificationParamGen;
 import org.ejbca.util.TemplateMimeMessage;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
-import org.ejbca.config.WebConfiguration;
 
 
 
@@ -446,7 +446,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	log.trace(">approve");
     	ApprovalDataLocal adl;
 		try {
-			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId,approval);
+			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId);
 		} catch (ApprovalException e1) {
 			getLogSession().log(admin,admin.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +" doesn't exists.");
 			throw e1;
@@ -547,7 +547,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	log.trace(">reject");
     	ApprovalDataLocal adl;
 		try {
-			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId,approval);
+			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId);
 		} catch (ApprovalException e1) {
 			getLogSession().log(admin,admin.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +" doesn't exists.");
 			throw e1;
@@ -606,10 +606,10 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 	/**
      * Help method for approve and reject.
      */
-    private ApprovalDataLocal isAuthorizedBeforeApproveOrReject(Admin admin, int approvalId, Approval approval) throws ApprovalException, AuthorizationDeniedException{
+    private ApprovalDataLocal isAuthorizedBeforeApproveOrReject(Admin admin, int approvalId) throws ApprovalException, AuthorizationDeniedException{
     	ApprovalDataLocal retval = null;
     	
-    	retval = findNonExpiredApprovalDataLocal(admin,approvalId);
+    	retval = findNonExpiredApprovalDataLocal(approvalId);
     	
     	if(retval != null){
     		if(retval.getEndEntityProfileId() == ApprovalDataVO.ANY_ENDENTITYPROFILE){
@@ -741,20 +741,20 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     
     /**
      * Method returning  an approval requests with status 'waiting', 'Approved' or 'Reject'
-     * returns null if no non expirted have exists
+     * returns null if no non expired exists
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
     public ApprovalDataVO findNonExpiredApprovalRequest(Admin admin, int approvalId){
     	ApprovalDataVO retval = null;
-    	ApprovalDataLocal data = findNonExpiredApprovalDataLocal(admin,approvalId);
+    	ApprovalDataLocal data = findNonExpiredApprovalDataLocal(approvalId);
     	if(data != null){
     		retval = data.getApprovalDataVO(); 
     	}
     	return retval;    	
     }
     
-    private ApprovalDataLocal findNonExpiredApprovalDataLocal(Admin admin, int approvalId){
+    private ApprovalDataLocal findNonExpiredApprovalDataLocal(int approvalId){
     	ApprovalDataLocal retval = null;
     	try {
 			Collection result = approvalHome.findByApprovalIdNonExpired(approvalId);

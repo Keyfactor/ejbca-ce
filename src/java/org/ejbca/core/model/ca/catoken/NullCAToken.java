@@ -31,9 +31,6 @@ public class NullCAToken extends BaseCAToken {
     public NullCAToken() throws InstantiationException {
     }
     
-    public NullCAToken(HashMap data) throws InstantiationException {    
-    }
-    
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
      */

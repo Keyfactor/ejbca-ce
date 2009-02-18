@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.ca.store;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import javax.ejb.CreateException;
@@ -489,8 +488,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     public CertificateDataPK ejbCreate(Certificate incert)
         throws CreateException {
         // Exctract all fields to store with the certificate.
-        X509Certificate tmpcert;
-
         try {
             String b64Cert = new String(Base64.encode(incert.getEncoded()));
             setBase64Cert(b64Cert);

@@ -1290,7 +1290,6 @@ public class LdapPublisher extends BasePublisher {
 		ArrayList modSet = new ArrayList();
 		// We get this, because we can not modify attributes that are present in the original DN
 		// i.e. if the ldap entry have a DN, we are not allowed to modify that
-		String oldDn = oldEntry.getDN();
 		if (extra) {
 			log.debug("Adding extra attributes to modificationSet");
 			modSet.addAll(getModificationSetFromDN(dn, oldEntry, MATCHINGEXTRAATTRIBUTES));

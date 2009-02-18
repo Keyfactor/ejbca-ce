@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import javax.ejb.CreateException;
@@ -242,9 +241,7 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      */
     public CertReqHistoryDataPK ejbCreate(Certificate incert, UserDataVO useradmindata)
         throws CreateException {
-        // Exctract fields to store with the certificate.
-        X509Certificate tmpcert;
-
+        // Extract fields to store with the certificate.
         String fingerprint = CertTools.getFingerprintAsString(incert);
         setFingerprint(fingerprint);
         setIssuerDN(CertTools.getIssuerDN(incert));

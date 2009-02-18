@@ -114,8 +114,6 @@ public class TestEndEntityProfile extends TestCase {
     public void test04EditEndEntityProfile() throws Exception {
         log.trace(">test04EditEndEntityProfile()");
 
-        boolean ret = false;
-
         EndEntityProfile profile = TestTools.getRaAdminSession().getEndEntityProfile(admin, "TEST");
         assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT) == 1);
 
@@ -124,7 +122,6 @@ public class TestEndEntityProfile extends TestCase {
 
         // Change the profile, if save fails it should throw an exception
         TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TEST", profile);
-
 
         log.trace("<test04EditEndEntityProfile()");
     }

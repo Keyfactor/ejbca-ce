@@ -43,8 +43,6 @@ public class LoggingStressTest extends TestCase {
     	private long startTime = 0;
     	private int threadId = 0;
     	
-    	public LogTester(String name) {}
-    	
     	LogTester(int threadId, long runTime) {
     		this.threadId = threadId;
     		this.startTime = new Date().getTime();

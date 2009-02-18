@@ -27,6 +27,7 @@ public class ProtectedLogDummyAction implements IProtectedLogAction, Serializabl
 	 * @see org.ejbca.core.model.log.IProtectedLogAction
 	 */
 	public ProtectedLogDummyAction(Properties properties) {
+		// This constructor is used by ProtectedLogActions
 	}
 
 	/**

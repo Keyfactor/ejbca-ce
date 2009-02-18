@@ -1063,7 +1063,6 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     private CADataLocal getCAFromRequest(Admin admin, IRequestMessage req) throws AuthStatusException, AuthLoginException, CADoesntExistsException, UnsupportedEncodingException{
     	CADataLocal cadata = null;
-    	UserDataVO data = null;
         try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {

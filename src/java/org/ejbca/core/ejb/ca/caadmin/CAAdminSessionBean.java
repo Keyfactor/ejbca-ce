@@ -109,7 +109,6 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.IRequestMessage;
@@ -1976,12 +1975,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
         CATokenContainer catoken = new CATokenContainerImpl(catokeninfo);
         catoken.activate(catokenpassword);
 
-        Certificate caSignatureCertificate = (Certificate) signatureCertChain[0];
-        
         String keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
         String keySpecification = "2048";
         // Do the general import
-        CA ca = importCA(admin, caname, catokenpassword, signatureCertChain, catoken, keyAlgorithm, keySpecification);
+        importCA(admin, caname, catokenpassword, signatureCertChain, catoken, keyAlgorithm, keySpecification);
     }
 
     /**

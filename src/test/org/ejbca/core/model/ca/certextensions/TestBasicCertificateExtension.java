@@ -89,7 +89,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		baseExt.init(1, "1.2.3", false, props);
 		value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
-		BigInteger bi = new BigInteger(((DERBitString)value).getBytes());
+		new BigInteger(((DERBitString)value).getBytes()); // Will throw if value is wrong
 		//System.out.println(bi.toString(2));
 		//System.out.println(bi.toString());
 		//System.out.println(((DERBitString)value).getBytes()[0]);
