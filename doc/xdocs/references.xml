@@ -95,6 +95,14 @@ Microsoft Knowledge Base documents
 <li><a href="http://msdn2.microsoft.com/en-us/library/ms867026.aspx">Creating Certificate Requests Using the Certificate Enrollment Control and CryptoAPI</a></li>
 </ul>
 </subsection>
+
+<subsection name="Cisco">
+<ul>
+<li><a href="http://www.cod.edu/people/faculty/wagnerjo/labs/NS2_lab_5_3_2_en.pdf">Lab 5.3.2</a> - Configure a PIX Security Appliance Site-to-Site IPSec VPN Tunnel with CA
+support
+</li>
+</ul>
+</subsection>
   </section>
 
 </body>
