@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.DuplicateKeyException;
-import javax.naming.Context;
 
 import junit.framework.TestCase;
 
@@ -139,7 +138,6 @@ public class TestSignSession extends TestCase {
             "Yfl7tQ9RLOKUGX/1c5+XuvN1ZbGy0yUw3Le16UViahWmmx6FM1sW6M48U7C/CZOyoxagADALBgcq" +
             "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
     private static Logger log = Logger.getLogger(TestSignSession.class);
-    private static Context ctx;
     private static KeyPair rsakeys=null;
     private static KeyPair ecdsakeys=null;
     private static KeyPair ecdsaimplicitlyca=null;

@@ -30,6 +30,7 @@ public class ProtectedLogShutDownAction implements IProtectedLogAction, Serializ
     private static final InternalResources intres = InternalResources.getInstance();
 
 	public ProtectedLogShutDownAction(Properties properties) {
+		// Constructor is used but does nothing.
 	}
 
 	/**

@@ -15,7 +15,6 @@ package org.ejbca.ui.web.pub.retrieve;
 
 import java.security.cert.Certificate;
 
-import org.apache.log4j.Logger;
 import org.ejbca.util.CertTools;
 
 /**
@@ -29,8 +28,6 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class CertificateWrapper {
-	
-	private static final Logger log = Logger.getLogger(CertificateWrapper.class);
 	
 	private Certificate mCurrentCert;
 

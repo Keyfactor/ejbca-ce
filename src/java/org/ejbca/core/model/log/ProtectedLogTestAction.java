@@ -31,12 +31,10 @@ public class ProtectedLogTestAction implements IProtectedLogAction, Serializable
 
 	private static final long serialVersionUID = -7056505975194222536L;
 
-    private static Logger log = Logger.getLogger(ProtectedLogTestAction.class);
+    private static final Logger log = Logger.getLogger(ProtectedLogTestAction.class);
 
-	/**
-	 * @see org.ejbca.core.model.log.IProtectedLogAction
-	 */
 	public ProtectedLogTestAction(Properties properties) {
+		// Constructor is used, but does nothing.
 	}
 	
 	/**
@@ -53,7 +51,7 @@ public class ProtectedLogTestAction implements IProtectedLogAction, Serializable
 	}
 
 	/**
-	 * @return the last status and then resetts the status
+	 * @return the last status and then resets the status
 	 */
 	public static String getLastActionCause() {
         String causeIdentifier = null;

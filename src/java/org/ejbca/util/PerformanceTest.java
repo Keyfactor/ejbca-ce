@@ -107,7 +107,7 @@ public class PerformanceTest {
          * @throws FileNotFoundException 
          * 
          */
-        public TestInstance(int _nr, Log _log, int _waitTime, Statistic _statistic,
+        public TestInstance(int _nr, int _waitTime, Statistic _statistic,
                             CommandFactory commandFactory) throws Exception {
             this.nr = _nr;
             this.maxWaitTime = _waitTime;
@@ -151,7 +151,7 @@ public class PerformanceTest {
         final Statistic statistic = new Statistic(numberOfThreads, printStream);
         final Thread threads[] = new Thread[numberOfThreads];
         for(int i=0; i < numberOfThreads;i++)
-            threads[i] = new Thread(new TestInstance(i, log, waitTime, statistic, commandFactory));
+            threads[i] = new Thread(new TestInstance(i, waitTime, statistic, commandFactory));
         for(int i=0; i < numberOfThreads;i++)
             threads[i].start();
         new Thread(statistic).start();

@@ -29,6 +29,7 @@ public class CacheTester implements Runnable {
 	public void run() {
 		for (int i=0; i<1000;i++) {
 			X509Certificate cert = cache.findLatestBySubjectDN(dn);
+			cert.getSubjectDN(); // just to see that we did receive a cert, will throw NPE if no cert was returned
 		}    			
 	}
 }

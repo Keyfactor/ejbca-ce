@@ -23,9 +23,6 @@ public class ProtectedLogDummyAction implements IProtectedLogAction, Serializabl
 
 	private static final long serialVersionUID = -7056505975194222537L;
 
-	/**
-	 * @see org.ejbca.core.model.log.IProtectedLogAction
-	 */
 	public ProtectedLogDummyAction(Properties properties) {
 		// This constructor is used by ProtectedLogActions
 	}

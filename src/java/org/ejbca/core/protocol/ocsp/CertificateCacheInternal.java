@@ -18,11 +18,9 @@ import java.util.Properties;
 
 import javax.ejb.EJBException;
 
-import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -35,12 +33,6 @@ import org.ejbca.core.model.log.Admin;
  */
 public class CertificateCacheInternal extends CertificateCache {
 	
-    /** Log4j instance for Base */
-    private static final Logger log = Logger.getLogger(CertificateCacheInternal.class);
-
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
-
     /**  
      * @param prop Properties giving initialization parameters. Required parameters are ocspSigningCertsValidTime and ocspResponderType.
      * prop can be set to null to use default values 0 and OCSPUtil.RESPONDER_TYPE_INTERNAL. 

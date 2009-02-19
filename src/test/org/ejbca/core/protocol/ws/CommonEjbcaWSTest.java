@@ -1720,14 +1720,13 @@ public class CommonEjbcaWSTest extends TestCase {
         assertTrue(foundcerts != null);
         assertTrue(foundcerts.size() > 1);
         
-        boolean certFound = false;
     	java.security.cert.Certificate cacert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(foundcerts.size()-1).getCertificateData());
     	assertTrue(CertTools.isSelfSigned(cacert));
     	java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(0).getCertificateData());
     	assertEquals("CN=WSTESTUSER1,O=Test", CertTools.getSubjectDN(cert));
     	for (int i = 1; i < foundcerts.size(); i++) {
         	java.security.cert.Certificate cert2 = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
-    		cert.verify(cert2.getPublicKey());
+    		cert.verify(cert2.getPublicKey()); // will throw if verification fails
     		cert = cert2;
     	}
 	}

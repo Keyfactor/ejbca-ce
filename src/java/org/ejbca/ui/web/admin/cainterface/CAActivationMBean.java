@@ -248,7 +248,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		List hasMessages = new ArrayList();
 		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
 			CAWrapper wrapper = (CAWrapper) iterator.next();
-			String option = wrapper.getActivateOption();
 			if (!wrapper.getCAActivationMessage().equals(""))  {
 				hasMessages.add(wrapper);
 			}			

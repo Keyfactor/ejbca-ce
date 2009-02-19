@@ -17,19 +17,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -106,7 +93,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 		
 		configureGlobalConfiguration();
 		createAdministratorTokenProfile();
-		createLocalHardTokenIssuer(caid, admingroupid);
+		createLocalHardTokenIssuer(admingroupid);
 		createAdminTokenEndEntityProfile(caid);
 		createSuperAdminTokenUser(caid);
 		addSuperAdminTokenUserToTemporarySuperAdminGroup(caid);
@@ -157,7 +144,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
      * 
      * @throws Exception
      */
-	private void createLocalHardTokenIssuer(int caid, int admingroupid) throws Exception{
+	private void createLocalHardTokenIssuer(int admingroupid) throws Exception{
 	  HardTokenIssuer localissuer = new HardTokenIssuer();
 	  
 	  localissuer.setDescription("Issuer created by installation script, used to create the first administration token");

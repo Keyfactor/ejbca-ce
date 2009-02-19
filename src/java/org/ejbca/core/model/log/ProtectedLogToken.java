@@ -27,7 +27,6 @@ import javax.crypto.SecretKey;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CACacheManager;
@@ -48,8 +47,6 @@ public class ProtectedLogToken {
 	
 	private static final Logger log = Logger.getLogger(ProtectedLogToken.class);
 
-	private ISignSessionLocal signSession = null;
-	
 	private SecretKey protectionSecretKey = null;
 	private PrivateKey protectionPrivateKey = null;
 	private PublicKey protectionPublicKey = null;

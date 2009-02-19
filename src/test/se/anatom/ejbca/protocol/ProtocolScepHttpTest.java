@@ -527,7 +527,6 @@ public class ProtocolScepHttpTest extends TestCase {
                 // Issued certificate must be first
                 boolean verified = false;
                 boolean gotcacert = false;
-                String mysubjectdn = CertTools.stringToBCDNString("C=SE,O=PrimeKey,CN=sceptest");
                 while (it.hasNext()) {
                     X509Certificate retcert = (X509Certificate)it.next();
                     System.out.println("Got cert with DN: "+ retcert.getSubjectDN().getName());
@@ -539,7 +538,7 @@ public class ProtocolScepHttpTest extends TestCase {
                 
                     // check the returned certificate
                     String subjectdn = CertTools.stringToBCDNString(retcert.getSubjectDN().getName());
-                    if (mysubjectdn.equals(subjectdn)) {
+                    if (userDN.equals(subjectdn)) {
                         // issued certificate
                         assertEquals(CertTools.stringToBCDNString("C=SE,O=PrimeKey,CN=sceptest"), subjectdn);
                         assertEquals(cacert.getSubjectDN().getName(), retcert.getIssuerDN().getName());

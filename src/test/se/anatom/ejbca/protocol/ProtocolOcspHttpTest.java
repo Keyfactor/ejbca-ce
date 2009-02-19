@@ -257,8 +257,8 @@ public class ProtocolOcspHttpTest extends TestCase {
         // send OCSP req and get bad status
         // (send crap message and get good error)
 
-        // Make user that we know...
-        KeyPair keys = createUserCert(caid);
+        // Make user and ocspTestCert that we know...
+        createUserCert(caid);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -468,7 +468,8 @@ public class ProtocolOcspHttpTest extends TestCase {
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "prime192v1");
         helper.reloadKeys();
         
-        KeyPair keys = createUserCert(ecdsacaid);
+        // Make user and ocspTestCert that we know...
+        createUserCert(ecdsacaid);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -500,7 +501,8 @@ public class ProtocolOcspHttpTest extends TestCase {
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
         helper.reloadKeys();
         
-        KeyPair keys = createUserCert(ecdsacaid);
+        // Make user and ocspTestCert that we know...
+        createUserCert(ecdsacaid);
         
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -531,8 +533,9 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
 
-        // And another OCSP request
-        KeyPair keys = createUserCert(caid);
+        // Make user and ocspTestCert that we know...
+        createUserCert(caid);
+        
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         Hashtable exts = new Hashtable();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
@@ -540,7 +543,6 @@ public class ProtocolOcspHttpTest extends TestCase {
         gen.setRequestExtensions(new X509Extensions(exts));
 
         OCSPReq req = gen.generate();
-        
         
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);

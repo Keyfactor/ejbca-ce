@@ -161,7 +161,7 @@ public class TestAutoEnrollServlet extends TestCase {
 	public void test01TestUserRequest() throws Exception {
 		log.trace(">test01TestUserRequest");
 		String remoteUser = "AETester@COMPANY.LOCAL";
-		X509Certificate cert = doRequest(remoteUser, "User", CERTREQ_USER2_TEMPLATE);
+		X509Certificate cert = doRequest(remoteUser, CERTREQ_USER2_TEMPLATE); // "User"
 		assertTrue("Returned certificate with wrong CN", ("CN=AETester".equals(cert.getSubjectDN().getName())));
 		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
 		boolean isExtendedKeyUsageCritical = false;
@@ -184,7 +184,7 @@ public class TestAutoEnrollServlet extends TestCase {
 	public void test02TestMachineRequest() throws Exception {
 		log.trace(">test02TestMachineRequest");
 		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	
-		X509Certificate cert = doRequest(remoteUser, "Machine", CERTREQ_MACHINE_TEMPLATE);
+		X509Certificate cert = doRequest(remoteUser, CERTREQ_MACHINE_TEMPLATE); // "Machine"
 		// Expecting the $-sign to be removed
 		assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
 		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
@@ -206,7 +206,7 @@ public class TestAutoEnrollServlet extends TestCase {
 	public void test03TestDomainControllerRequest() throws Exception {
 		log.trace(">test03TestDomainControllerRequest");
 		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	
-		X509Certificate cert = doRequest(remoteUser, "DomainController", CERTREQ_DOMAIN_CONTROLLER_TEMPLATE);
+		X509Certificate cert = doRequest(remoteUser, CERTREQ_DOMAIN_CONTROLLER_TEMPLATE); // "DomainController"
 		// Expecting the $-sign to be removed
 		assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
 		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
@@ -234,7 +234,7 @@ public class TestAutoEnrollServlet extends TestCase {
 	/**
 	 * Post Certificate request to Servlet 
 	 */
-	private X509Certificate doRequest(String remoteUser, String certificateTemplate, String requestData)  throws Exception {
+	private X509Certificate doRequest(String remoteUser, String requestData)  throws Exception {
 		URL localAutoEnrollServletURL = new URL("http://127.0.0.1:8080/ejbca/autoenroll");
 		HttpURLConnection localServletConnection = (HttpURLConnection) localAutoEnrollServletURL.openConnection();
 		localServletConnection.setRequestProperty("X-Remote-User", remoteUser);

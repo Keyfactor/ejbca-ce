@@ -39,7 +39,6 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
@@ -1276,18 +1275,6 @@ public class TestCertTools extends TestCase {
 		} catch (Exception e) {
 		}	  
 	}
-
-	// A certificate request where the outer signature is done with the same key as in cvcreq, but the inner request has a new key
-	private static String cvcreqrenew1 = ("Z4IB3H8hggFEf06BvF8pAQBCDVNFV1NDVkNBMDAwMDF/SYGVBgoEAH8ABwICAgEE"+
-		"gYGBAMtxBhvERPvQS2KZA4ljbWO8GUB9uVTooVZ3BKMVHOp4tDa0bXIdqZVoJoEV"+
-		"XIRIEUoLGsmLZqdUd0+Vb/Ey3+jgDF+efFJHq+6SVHZvl2q/0tMqTWh42N+lwHu+"+
-		"ZMKlGBmkIDCLTMgVef0HSvXf5qdcTMH5dnEj2h0bqAxzSJTbggMBAAFfIA1TRVdT"+
-		"Q1ZDQTAwMDAxXzeBgJx/PZHuzYtwjUpgwKJgh6WPnbXmZhX3iXRL3XVGvmx4WdG7"+
-		"j8RRqXUZvcWAZOiV/AlJjgIzq7GOoPzRSgLIgATFBYnHcn/IU/cNJE/I36bNkW6q"+
-		"dO53cNgAybQM06HS3jdScLLIBDb2CBM8rY8vJH6/5KiRTp+BYKezd6qN8TenQg1T"+
-		"RVdTQ1ZDQTAwMDAxXzeBgGaKETnP7GowXh3jQxR96JL5z4REZm8VOxA6TKxYGx+e"+
-		"bPCWkX4PZ0c/QD+xpXEeVu2fWEj5r+2d3XBZmKBx0h2Sx3YPvmYLLAdB7rz3km9y"+
-		"G1H6EorPtwp1FYrK2FERdcjD5ErXPIuhyJYUuknwHcO+op6iEZ8gxFmztQUczQDC");
 
 	public void test21GenSelfCert() throws Exception {
 		KeyPair kp = KeyTools.genKeys("1024", "RSA");

@@ -12,11 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.PatternLogger;
 
 /**
@@ -44,9 +42,6 @@ public class TransactionLogger extends PatternLogger{
 	public static final String CLIENT_IP="CLIENT_IP";//IP of the client making the request
 
 
-	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
-
 	/** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
 	// private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}"); // TODO this should be configurable from file
 	private  static Pattern PATTERN;// = Pattern.compile("\\$\\{(.+?)\\}");// TODO this should be configurable from file
@@ -54,7 +49,6 @@ public class TransactionLogger extends PatternLogger{
 	//  = "${LOG_ID};${STATUS};\"${CLIENT_IP}\";\"${SIGN_ISSUER_NAME_DN}\";\"${SIGN_SUBJECT_NAME}\";${SIGN_SERIAL_NO};" +
 	// 		"\"${LOG_TIME}\";${NUM_CERT_ID};0;0;0;0;0;0;0;" +
 	//		"\"${ISSUER_NAME_DN}\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}";
-	private  static Matcher m_matcher; 
 	private  static String orderString;
 	private static String mLogDateFormat; 
 	private static String mTimeZone;
@@ -73,7 +67,6 @@ public class TransactionLogger extends PatternLogger{
 	public static void configure(String auditLogPattern, String auditLogOrder, String logDateFormat, String timeZone) {
 		PATTERN = Pattern.compile(auditLogPattern);
 		orderString = auditLogOrder;
-		m_matcher = PATTERN.matcher(orderString);
 		mLogDateFormat = logDateFormat;
 		mTimeZone = timeZone;
 	}

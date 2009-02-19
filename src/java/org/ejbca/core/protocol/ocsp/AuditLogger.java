@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
-import java.util.Date;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -30,7 +28,6 @@ import org.ejbca.util.PatternLogger;
 public class AuditLogger extends PatternLogger { 
 	private static Pattern PATTERN;
 	private static String orderString;
-	private static Matcher m_matcher;
     private static final Logger accountLog = Logger.getLogger(AuditLogger.class.getName());
 	private static String mLogDateFormat ;
 	private static String mTimeZone;
@@ -76,7 +73,6 @@ public class AuditLogger extends PatternLogger {
 	public static void configure(String accountLogPattern, String accountLogOrder, String logDateFormat, String timeZone) {
 		PATTERN = Pattern.compile(accountLogPattern);
 		orderString = accountLogOrder;
-		m_matcher = PATTERN.matcher(orderString);
 		mLogDateFormat = logDateFormat;
 		mTimeZone = timeZone;
 	}

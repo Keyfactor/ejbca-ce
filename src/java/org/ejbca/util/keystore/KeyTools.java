@@ -166,11 +166,12 @@ public class KeyTools {
     			org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p, false);
     			ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
 		        KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
-    	        pk = keyfact.generatePublic(pubKey);
+    	        ret = keyfact.generatePublic(pubKey);
     		}
     	} 
-    	return pk;
+    	return ret;
     }
+    
     public static PublicKey getECPublicKeyWithParams(PublicKey pk, PublicKey pkwithparams) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
     	PublicKey ret = pk;
     	if ( (pk instanceof PublicKeyEC) && (pkwithparams instanceof PublicKeyEC) ) {
@@ -186,7 +187,7 @@ public class KeyTools {
         			org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
         			ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
     		        KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
-        	        pk = keyfact.generatePublic(pubKey);        			
+    		        ret = keyfact.generatePublic(pubKey);        			
         		} else {
         			log.info("pkwithparams does not have any params.");
         		}
@@ -194,7 +195,7 @@ public class KeyTools {
     	} else {
     		log.info("Either pk or pkwithparams is not a PublicKeyEC: "+pk.toString()+", "+pkwithparams.toString());
     	}
-    	return pk;
+    	return ret;
     }
 
     /**

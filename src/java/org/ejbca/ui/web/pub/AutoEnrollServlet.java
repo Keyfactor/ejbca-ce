@@ -199,7 +199,7 @@ public class AutoEnrollServlet extends HttpServlet {
 		String certificateTemplate = null;
 		String command = request.getParameter("command");
 		if (command != null && "status".equalsIgnoreCase(command)) {
-			response.getOutputStream().println(returnStatus(response, internalAdmin, "Autoenrolled-" + usernameShort + "-" + request.getParameter("template")));
+			response.getOutputStream().println(returnStatus(internalAdmin, "Autoenrolled-" + usernameShort + "-" + request.getParameter("template")));
 			return; 
 		} else {
 			// Default command "request"
@@ -299,7 +299,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	/**
 	 * Return "OK" if renewal isn't needed.
 	 */
-	private String returnStatus(HttpServletResponse response, Admin admin, String username) {
+	private String returnStatus(Admin admin, String username) {
 		if (!getUserAdminSession().existsUser(admin, username)) {
 			return "NO_SUCH_USER";
 		}

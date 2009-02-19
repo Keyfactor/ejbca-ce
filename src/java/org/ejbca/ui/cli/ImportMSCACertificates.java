@@ -68,7 +68,6 @@ public class ImportMSCACertificates {
 			fstream = new FileInputStream(infile);
 			BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
 			String strLine;
-			int currentCertificate = 0;
 			String currentUPN = null;
 			String currentTemplate = null;
 			String currentStatus = null;
@@ -76,9 +75,6 @@ public class ImportMSCACertificates {
 			File tempFile = null;
 			Writer bw = null;
 			while ((strLine = br.readLine()) != null)   {
-				if (strLine.startsWith("Row ")) {
-					currentCertificate++;
-				}
 				if (strLine.startsWith("  User Principal Name:")) {
 					currentUPN = strLine.split("\"")[1];
 				}

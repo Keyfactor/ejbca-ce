@@ -160,15 +160,11 @@ public class TestSignLotsOfCerts extends TestCase {
 
     }
     private void deleteUser(String post) throws Exception {
-        // Make user that we know...
-        boolean userExists = false;
         try {
             usersession.deleteUser(admin, "performancefoo"+post);
             log.debug("deleted user: performancefoo"+post);
         } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
+        	// User did not exist, which is fine so do nothing.
         }
     }
     

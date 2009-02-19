@@ -63,18 +63,6 @@ import org.ejbca.util.query.Query;
 public class EjbcaWSHelper extends EjbRemoteHelper {
 
 	private static final Logger log = Logger.getLogger(EjbcaWSHelper.class);				
-
-	private static EjbcaWSHelper instance = null;
-	
-//	private EjbcaWSHelper() {
-//	}
-//	
-//	public static EjbcaWSHelper getInstance() {
-//		if (instance == null) {
-//			instance = new EjbcaWSHelper();
-//		}
-//		return instance;
-//	}
 	
 	//
 	// Helper methods for various tasks done from the WS interface

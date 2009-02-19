@@ -995,7 +995,6 @@ public class TestXKMSKRSS extends TestCase {
     public void test21RevocationApprovals() throws Exception {
 		final String APPROVINGADMINNAME = "superadmin";
 		final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval."; 
-    	final String ERRORNOTSUPPORTEDSUCCEEDED = "Reactivation of users is not supported, but succeeded anyway.";
 		String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
 		String caname = "xkmsRevocationCA" + randomPostfix;
 		String username = "xkmsRevocationUser" + randomPostfix;
