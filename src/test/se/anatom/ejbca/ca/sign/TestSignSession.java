@@ -1225,7 +1225,7 @@ public class TestSignSession extends TestCase {
         }
         
         // Change already existing user 
-        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         TestTools.getUserAdminSession().changeUser(admin, user, false);
         TestTools.getUserAdminSession().setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         // create first cert
@@ -1298,7 +1298,7 @@ public class TestSignSession extends TestCase {
     public void test21CVCertificate() throws Exception {
         log.trace(">test21CVCertificate()");
 
-        UserDataVO user = new UserDataVO("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        UserDataVO user = new UserDataVO("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("cvc");
         TestTools.getUserAdminSession().addUser(admin, user, false);
         TestTools.getUserAdminSession().setUserStatus(admin, "cvc", UserDataConstants.STATUS_NEW);

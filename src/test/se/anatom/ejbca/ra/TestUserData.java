@@ -203,7 +203,7 @@ public class TestUserData extends TestCase {
         log.trace(">test06RequestCounter()");
 
         // Change already existing user to add extended information with counter
-        UserDataVO user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, null);
+        UserDataVO user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setStatus(UserDataConstants.STATUS_GENERATED);
         TestTools.getUserAdminSession().changeUser(admin, user, false);
         
