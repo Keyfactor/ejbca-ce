@@ -47,14 +47,15 @@ public class EncryptedKey implements DEREncodable
 
     public static EncryptedKey getInstance( DEREncodable derObj )
     {
-        if(derObj instanceof EnvelopedData)
+        if(derObj instanceof EnvelopedData) {
             return new EncryptedKey( (EnvelopedData)derObj );
-        else if(derObj instanceof EncryptedValue)
+        } else if(derObj instanceof EncryptedValue) {
             return new EncryptedKey( (EncryptedValue)derObj );
-        else if(derObj instanceof ASN1TaggedObject)
+        } else if(derObj instanceof ASN1TaggedObject) {
             return getInstance( (ASN1TaggedObject)derObj, false );
-        else
+        } else {
             return new EncryptedKey( EncryptedValue.getInstance(derObj) ); // last try ;-)
+        }
     }
 
     public static EncryptedKey getInstance( ASN1TaggedObject tagObj, boolean explicit )
@@ -71,11 +72,11 @@ public class EncryptedKey implements DEREncodable
     {
         this.tagNo = tag;
 
-        if(derObj instanceof EnvelopedData)
+        if(derObj instanceof EnvelopedData) {
             this.obj = (EnvelopedData)derObj;
-        else if(derObj instanceof EncryptedValue)
+        } else if(derObj instanceof EncryptedValue) {
             this.encryptedValue = (EncryptedValue)derObj;
-        else {
+        } else {
             switch( this.tagNo ) {
                 case TAGNO_ENV_DATA: this.obj = EnvelopedData.getInstance(derObj); break;
                 default: this.encryptedValue = EncryptedValue.getInstance(derObj); break;
@@ -116,12 +117,13 @@ public class EncryptedKey implements DEREncodable
 
     public DERObject getDERObject()
     {
-        if( this.encryptedValue != null )
+        if( this.encryptedValue != null ) {
             return encryptedValue.getDERObject();
-        else if( this.obj != null )
+        } else if( this.obj != null ) {
             return new DERTaggedObject(true, this.tagNo, this.obj);  // choice is allways explictly tagged
-        else
+        } else {
             return null;
+        }
     }
 
     public String toString() {
@@ -130,9 +132,9 @@ public class EncryptedKey implements DEREncodable
 
         sb.append("tagNo: " + this.tagNo + ", ");
 
-        if( this.encryptedValue != null )
+        if( this.encryptedValue != null ) {
             sb.append("encryptedValue: " + this.encryptedValue + ", ");
-
+        }
         if( this.obj != null ) {
             sb.append("envelopedData: " + this.obj + ", ");
         }

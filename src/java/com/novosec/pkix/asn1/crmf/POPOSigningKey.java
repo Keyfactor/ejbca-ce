@@ -77,13 +77,14 @@ public class POPOSigningKey implements DEREncodable
       if( obj instanceof ASN1TaggedObject )
       {
         ASN1TaggedObject tagObj = (ASN1TaggedObject)obj;
-        if( tagObj.getTagNo() == 0 )
+        if( tagObj.getTagNo() == 0 ) {
           this.poposkInput = POPOSigningKeyInput.getInstance( tagObj.getObject() );
-        else
+        } else {
           throw new IllegalArgumentException("unknown tag: " + tagObj.getTagNo());
-      }
-      else
+        }
+      } else {
         idx--;
+      }
         
       this.algorithmIdentifier = AlgorithmIdentifier.getInstance( seq.getObjectAt(idx++) );
       this.signature = DERBitString.getInstance( seq.getObjectAt(idx) );
@@ -119,9 +120,9 @@ public class POPOSigningKey implements DEREncodable
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 
-      if( poposkInput != null )
+      if( poposkInput != null ) {
         v.add( new DERTaggedObject( false, 0, poposkInput ) );
-
+      }
       v.add( algorithmIdentifier );
       v.add( signature );
 
@@ -132,9 +133,9 @@ public class POPOSigningKey implements DEREncodable
     {
       String s = "POPOSigningKey: (";
       
-      if( this.getPoposkInput() != null )
+      if( this.getPoposkInput() != null ) {
         s += "poposkInput: " + this.getPoposkInput() + ", ";
-
+      }
       s += "algorithmIdentifier: " + this.getAlgorithmIdentifier() + ", ";
         
       s += "signature: " + this.getSignature() + ")";

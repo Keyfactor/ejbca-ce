@@ -223,26 +223,36 @@ public class CertTemplate implements DEREncodable
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 
-        if( version != null )
+        if( version != null ) {
           v.add( new DERTaggedObject( false, 0, version ) );
-        if( serialNumber != null )
+        }
+        if( serialNumber != null ) {
           v.add( new DERTaggedObject( false, 1, serialNumber ) );
-        if( signingAlg != null )
+        }
+        if( signingAlg != null ) {
           v.add( new DERTaggedObject( false, 2, signingAlg ) );
-        if( issuer != null )
+        }
+        if( issuer != null ) {
           v.add( new DERTaggedObject( bNameIsExplicit, 3, issuer) );
-        if( validity != null )
+        }
+        if( validity != null ) {
           v.add( new DERTaggedObject( false, 4, validity ) );
-        if( subject != null )
+        }
+        if( subject != null ) {
           v.add( new DERTaggedObject( bNameIsExplicit, 5, subject ) );
-        if( publicKey != null )
+        } 
+        if( publicKey != null ) {
           v.add( new DERTaggedObject( false, 6, publicKey ) );
-        if( issuerUID != null )
+        }
+        if( issuerUID != null ) {
           v.add( new DERTaggedObject( false, 7, issuerUID ) );
-        if( subjectUID != null )
+        }
+        if( subjectUID != null ) {
           v.add( new DERTaggedObject( false, 8, subjectUID ) );
-        if( extensions != null )
+        }
+        if( extensions != null ) {
           v.add( new DERTaggedObject( false, 9, extensions ) );
+        }
 
         return new DERSequence(v);
     }
@@ -251,36 +261,36 @@ public class CertTemplate implements DEREncodable
         StringBuffer sb = new StringBuffer(this.getClass().getName());
         sb.append(" (");
 
-        if( this.getVersion() != null )
+        if( this.getVersion() != null ) {
             sb.append("version: " + this.getVersion() + ", ");
-
-        if( this.getSerialNumber() != null )
+        }
+        if( this.getSerialNumber() != null ) {
             sb.append("serialNumber: " + this.getSerialNumber() + ", ");
-
-        if( this.getSigningAlg() != null )
+        }
+        if( this.getSigningAlg() != null ) {
             sb.append("signingAlg: " + this.getSigningAlg() + ", ");
-
-        if( this.getIssuer() != null )
+        }
+        if( this.getIssuer() != null ) {
             sb.append("issuer: " + this.getIssuer() + ", ");
-
-        if( this.getValidity() != null )
+        }
+        if( this.getValidity() != null ) {
             sb.append("validity: " + this.getValidity() + ", ");
-
-        if( this.getSubject() != null )
+        }
+        if( this.getSubject() != null ) {
             sb.append("subject: " + this.getSubject() + ", ");
-
-        if( this.getPublicKey() != null )
+        }
+        if( this.getPublicKey() != null ) {
             sb.append("publicKey: " + this.getPublicKey() + ", ");
-
-        if( this.getIssuerUID() != null )
+        }
+        if( this.getIssuerUID() != null ) {
             sb.append("issuerUID: " + this.getIssuerUID() + ", ");
-
-        if( this.getSubjectUID() != null )
+        }
+        if( this.getSubjectUID() != null ) {
             sb.append("subjectUID: " + this.getSubjectUID() + ", ");
-
-        if( this.getExtensions() != null )
+        }
+        if( this.getExtensions() != null ) {
             sb.append("extensions: " + this.getExtensions() + ", ");
-
+        }
         sb.append("hashCode: " + Integer.toHexString(this.hashCode()) + ")");
         return sb.toString();
     }

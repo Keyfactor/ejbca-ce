@@ -72,22 +72,25 @@ public class CertReqMsg implements DEREncodable
 
       Object obj = null;
 
-      if( e.hasMoreElements() )      
+      if( e.hasMoreElements() ) {      
         obj = e.nextElement();
+      }
       
       if( obj instanceof ASN1TaggedObject )
       {
         this.pop = ProofOfPossession.getInstance((ASN1TaggedObject)obj);
         
-        if( e.hasMoreElements() )      
+        if( e.hasMoreElements() ) {      
           obj = e.nextElement();
+        }
       }
       
       if( obj instanceof ASN1Sequence )
       {
         ASN1Sequence s = (ASN1Sequence)obj;
-        for( int i=0; i<s.size(); i++ )
+        for( int i=0; i<s.size(); i++ ) {
           regInfos.addElement( AttributeTypeAndValue.getInstance(s.getObjectAt(i)) );
+        }
       }
     }
 
@@ -113,8 +116,9 @@ public class CertReqMsg implements DEREncodable
 
     public AttributeTypeAndValue getRegInfo(int nr)
     {
-      if( regInfos.size() > nr )
+      if( regInfos.size() > nr ) {
         return (AttributeTypeAndValue)regInfos.elementAt(nr);
+      }
         
       return null;
     }
@@ -136,8 +140,9 @@ public class CertReqMsg implements DEREncodable
       if( regInfos.size() > 0 )
       {
         ASN1EncodableVector regiv = new ASN1EncodableVector();
-        for (int i=0;i<regInfos.size();i++)
+        for (int i=0;i<regInfos.size();i++) {
           regiv.add( (AttributeTypeAndValue)regInfos.elementAt(i) );
+        }
           
         v.add( new DERSequence( regiv ) );
       }
@@ -149,15 +154,17 @@ public class CertReqMsg implements DEREncodable
     {
       String s = "CertReqMsg: (certReq = " + this.getCertReq() + ", ";
       
-      if( this.getPop() != null )
+      if( this.getPop() != null ) {
         s += "pop: " + this.getPop() + ", ";
+      }
       
       if( regInfos.size() > 0 )
       {
         s += "regInfo : (";
         
-        for (int i=0;i<regInfos.size();i++)
+        for (int i=0;i<regInfos.size();i++) {
           s += (AttributeTypeAndValue)regInfos.elementAt(i);
+        }
           
         s += ")";
       }

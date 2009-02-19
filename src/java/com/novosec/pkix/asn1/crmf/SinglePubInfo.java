@@ -70,8 +70,9 @@ public class SinglePubInfo implements DEREncodable
     {
       this.pubMethod = DERInteger.getInstance(seq.getObjectAt(0));
       
-      if( seq.size()>1 )
+      if( seq.size()>1 ) {
         this.pubLocation = GeneralName.getInstance((ASN1TaggedObject)seq.getObjectAt(1),true); //QQQ ??? choice is always explicit --> true
+      }
     }
 
     public SinglePubInfo( DERInteger pubMethod )
@@ -100,8 +101,9 @@ public class SinglePubInfo implements DEREncodable
 
         v.add( pubMethod );
         
-        if( pubLocation != null )
+        if( pubLocation != null ) {
           v.add( pubLocation );
+        }
 
         return new DERSequence(v);
     }
@@ -110,9 +112,10 @@ public class SinglePubInfo implements DEREncodable
     {
       String s = "SinglePubInfo: (pubMethod = " + this.getPubMethod() + ", ";
       
-      if( this.getPubLocation() != null )
+      if( this.getPubLocation() != null ) {
         s += "pubLocation = " + this.getPubLocation();
-        
+      }
+      
       s += ")";
       
       return s;

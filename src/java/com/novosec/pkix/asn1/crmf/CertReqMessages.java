@@ -61,8 +61,9 @@ public class CertReqMessages implements DEREncodable
 	
     public CertReqMessages( ASN1Sequence seq )
     {
-       for( int i=0; i<seq.size(); i++ )
+       for( int i=0; i<seq.size(); i++ ) {
          certReqMsgs.addElement( CertReqMsg.getInstance(seq.getObjectAt(i)) );
+       }
     }
 
     public CertReqMessages( CertReqMsg certReqMsg )
@@ -72,8 +73,9 @@ public class CertReqMessages implements DEREncodable
 
     public CertReqMsg getCertReqMsg(int nr)
     {
-      if( certReqMsgs.size() > nr )
+      if( certReqMsgs.size() > nr ) {
         return (CertReqMsg)certReqMsgs.elementAt(nr);
+      }
         
       return null;
     }
@@ -88,8 +90,9 @@ public class CertReqMessages implements DEREncodable
     	
       ASN1EncodableVector  v = new ASN1EncodableVector();
 
-      for (int i=0;i<certReqMsgs.size();i++)
+      for (int i=0;i<certReqMsgs.size();i++) {
         v.add( (CertReqMsg)certReqMsgs.elementAt(i) );
+      }
 
       return new DERSequence(v);
     }
@@ -98,8 +101,9 @@ public class CertReqMessages implements DEREncodable
     {
       String s = "CertReqMessages: (";
       
-      for (int i=0;i<certReqMsgs.size();i++)
+      for (int i=0;i<certReqMsgs.size();i++) {
         s += (CertReqMsg)certReqMsgs.elementAt(i);
+      }
 
       s += ")";
       

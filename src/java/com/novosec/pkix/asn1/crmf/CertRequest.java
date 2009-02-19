@@ -72,8 +72,9 @@ public class CertRequest implements DEREncodable
       if( seq.size()>2 )
       {
         ASN1Sequence s = (ASN1Sequence)seq.getObjectAt(2);
-        for( int i=0; i<s.size(); i++ )
+        for( int i=0; i<s.size(); i++ ) {
           controls.addElement( AttributeTypeAndValue.getInstance(s.getObjectAt(i)) );
+        }
       }
     }
 
@@ -95,8 +96,9 @@ public class CertRequest implements DEREncodable
 
     public AttributeTypeAndValue getControls(int nr)
     {
-      if( controls.size() > nr )
+      if( controls.size() > nr ) {
         return (AttributeTypeAndValue)controls.elementAt(nr);
+      }
         
       return null;
     }
@@ -116,8 +118,9 @@ public class CertRequest implements DEREncodable
       if( controls.size() > 0 )
       {
         ASN1EncodableVector pubiv = new ASN1EncodableVector();
-        for (int i=0;i<controls.size();i++)
+        for (int i=0;i<controls.size();i++) {
           pubiv.add( (AttributeTypeAndValue)controls.elementAt(i) );
+        }
           
         v.add( new DERSequence( pubiv ) );
       }
@@ -135,8 +138,9 @@ public class CertRequest implements DEREncodable
       {
         s += "controls : (";
         
-        for (int i=0;i<controls.size();i++)
+        for (int i=0;i<controls.size();i++) {
           s += (AttributeTypeAndValue)controls.elementAt(i);
+        }
           
         s += ")";
       }

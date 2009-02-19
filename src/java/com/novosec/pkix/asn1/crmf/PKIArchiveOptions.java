@@ -51,22 +51,25 @@ public class PKIArchiveOptions implements DEREncodable
     
     public EncryptedKey getEncryptedKey()
     {
-      if( this.tag != 0 )
+      if( this.tag != 0 ) {
         return null;
+      }
       return (EncryptedKey)this.obj;
     }
 
     public DEROctetString getKeyGenParameters()
     {
-      if( this.tag != 1 )
+      if( this.tag != 1 ) {
         return null;
+      }
       return (DEROctetString)this.obj;
     }
 
     public DERBoolean getArchiveRemGenPrivKey()
     {
-      if( this.tag != 2 )
+      if( this.tag != 2 ) {
         return null;
+      }
       return (DERBoolean)this.obj;
     }
 

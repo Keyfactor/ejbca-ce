@@ -57,22 +57,25 @@ public class POPOPrivKey implements DEREncodable
     
     public DERBitString getThisMessage()
     {
-      if( this.tag != 0 )
+      if( this.tag != 0 ) {
         return null;
+      }
       return (DERBitString)this.obj;
     }
 
     public DERInteger getSubsequentMessage()
     {
-      if( this.tag != 1 )
+      if( this.tag != 1 ) {
         return null;
+      }
       return (DERInteger)this.obj;
     }
 
     public DERBitString getDhMAC()
     {
-      if( this.tag != 2 )
+      if( this.tag != 2 ) {
         return null;
+      }
       return (DERBitString)this.obj;
     }
 

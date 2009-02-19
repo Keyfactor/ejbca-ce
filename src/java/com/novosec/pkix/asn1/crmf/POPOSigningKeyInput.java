@@ -75,10 +75,11 @@ public class POPOSigningKeyInput implements DEREncodable
       if( obj instanceof ASN1TaggedObject )
       {
         ASN1TaggedObject tagObj = (ASN1TaggedObject)obj;
-        if( tagObj.getTagNo() == 0 )
+        if( tagObj.getTagNo() == 0 ) {
           this.sender = GeneralName.getInstance( (ASN1TaggedObject)tagObj.getObject(), true ); //QQQ ??? choice is always explicit --> true
-        else
+        } else {
           throw new IllegalArgumentException("unknown tag: " + tagObj.getTagNo());
+        }
       }
       else
         publicKeyMAC = PKMACValue.getInstance( obj );
@@ -116,10 +117,11 @@ public class POPOSigningKeyInput implements DEREncodable
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 
-      if( sender != null )
+      if( sender != null ) {
         v.add( new DERTaggedObject( false, 0, sender ) );
-      else
+      } else {
         v.add( publicKeyMAC );
+      }
       
       v.add( publicKey );
 
@@ -130,11 +132,12 @@ public class POPOSigningKeyInput implements DEREncodable
     {
       String s = "POPOSigningKeyInput: (";
       
-      if( this.getSender() != null )
+      if( this.getSender() != null ) {
         s += "sender: " + this.getSender() + ", ";
-      else
+      } else {
         s += "publicKeyMAC: " + this.getPublicKeyMAC() + ", ";
-        
+      }
+      
       s += "publicKey: " + this.getPublicKey() + ")";
       
       return s;

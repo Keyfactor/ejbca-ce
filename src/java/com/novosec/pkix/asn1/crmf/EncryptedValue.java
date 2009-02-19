@@ -167,16 +167,21 @@ public class EncryptedValue implements DEREncodable
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 
-        if( intendedAlg != null )
+        if( intendedAlg != null ) {
           v.add( new DERTaggedObject( false, 0, intendedAlg ) );
-        if( symmAlg != null )
+        }
+        if( symmAlg != null ) {
           v.add( new DERTaggedObject( false, 1, symmAlg ) );
-        if( encSymmKey != null )
+        }
+        if( encSymmKey != null ) {
           v.add( new DERTaggedObject( false, 2, encSymmKey ) );
-        if( keyAlg != null )
+        }
+        if( keyAlg != null ) {
           v.add( new DERTaggedObject( false, 3, keyAlg ) );
-        if( valueHint != null )
+        }
+        if( valueHint != null ) {
           v.add( new DERTaggedObject( false, 4, valueHint ) );
+        }
 
         v.add( encValue );
 
@@ -187,21 +192,21 @@ public class EncryptedValue implements DEREncodable
     {
       String s = "EncryptedValue: (";
       
-      if( this.getIntendedAlg() != null )
+      if( this.getIntendedAlg() != null ) {
         s += "intendedAlg: " + this.getIntendedAlg() + ", ";
-
-      if( this.getSymmAlg() != null )
+      }
+      if( this.getSymmAlg() != null ) {
         s += "symmAlg: " + this.getSymmAlg() + ", ";
-
-      if( this.getEncSymmKey() != null )
+      }
+      if( this.getEncSymmKey() != null ) {
         s += "encSymmKey: " + this.getEncSymmKey() + ", ";
-
-      if( this.getKeyAlg() != null )
+      }
+      if( this.getKeyAlg() != null ) {
         s += "keyAlg: " + this.getKeyAlg() + ", ";
-
-      if( this.getValueHint() != null )
+      }
+      if( this.getValueHint() != null ) {
         s += "valueHint: " + this.getValueHint() + ", ";
-
+      }
       s += "encValue: " + this.getEncValue() + ")";
       
       return s;

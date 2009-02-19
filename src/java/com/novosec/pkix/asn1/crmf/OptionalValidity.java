@@ -113,12 +113,12 @@ public class OptionalValidity implements DEREncodable
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 
-        if( notBefore != null )
+        if( notBefore != null ) {
           v.add( new DERTaggedObject( bTimeIsExplicit, 0, notBefore ) );
-
-        if( notAfter != null )
+        }
+        if( notAfter != null ) {
           v.add( new DERTaggedObject( bTimeIsExplicit, 1, notAfter ) );
-
+        }
         return new DERSequence(v);
     }
 
@@ -126,12 +126,12 @@ public class OptionalValidity implements DEREncodable
         StringBuffer sb = new StringBuffer(this.getClass().getName());
         sb.append(" (");
 
-        if( this.getNotBefore() != null )
+        if( this.getNotBefore() != null ) {
             sb.append("notBefore: " + this.getNotBefore() + ", ");
-
-        if( this.getNotBefore() != null )
+        }
+        if( this.getNotBefore() != null ) {
             sb.append("notAfter: " + this.getNotAfter() + ", ");
-
+        }
         sb.append("hashCode: " + Integer.toHexString(this.hashCode()) + ")");
         return sb.toString();
     }

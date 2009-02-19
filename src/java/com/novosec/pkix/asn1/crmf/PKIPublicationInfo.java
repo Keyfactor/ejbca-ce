@@ -71,8 +71,9 @@ public class PKIPublicationInfo implements DEREncodable
       if( seq.size()>1 )
       {
         ASN1Sequence s = (ASN1Sequence)seq.getObjectAt(1);
-        for( int i=0; i<s.size(); i++ )
+        for( int i=0; i<s.size(); i++ ) {
           pubInfos.addElement( SinglePubInfo.getInstance(s.getObjectAt(i)) );
+        }
       }
     }
 
@@ -88,9 +89,9 @@ public class PKIPublicationInfo implements DEREncodable
 
     public SinglePubInfo getPubInfo(int nr)
     {
-      if( pubInfos.size() > nr )
+      if( pubInfos.size() > nr ) {
         return (SinglePubInfo)pubInfos.elementAt(nr);
-        
+      }
       return null;
     }
 
@@ -108,9 +109,9 @@ public class PKIPublicationInfo implements DEREncodable
       if( pubInfos.size() > 0 )
       {
         ASN1EncodableVector pubiv = new ASN1EncodableVector();
-        for (int i=0;i<pubInfos.size();i++)
+        for (int i=0;i<pubInfos.size();i++) {
           pubiv.add( (SinglePubInfo)pubInfos.elementAt(i) );
-          
+        }
         v.add( new DERSequence( pubiv ) );
       }
 
@@ -125,9 +126,9 @@ public class PKIPublicationInfo implements DEREncodable
       {
         s += "pubInfos : (";
         
-        for (int i=0;i<pubInfos.size();i++)
+        for (int i=0;i<pubInfos.size();i++) {
           s += (SinglePubInfo)pubInfos.elementAt(i);
-          
+        }
         s += ")";
       }
 

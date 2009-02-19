@@ -51,8 +51,9 @@ public class ProofOfPossession implements DEREncodable
     
     public DERNull getRaVerified()
     {
-    	if( this.tag != 0 )
+    	if( this.tag != 0 ) {
     		return null;
+    	}
     	// This can sometimes be a 0 length Octet string it seems
     	if (obj instanceof DEROctetString) {
     		//DEROctetString o = (DEROctetString) obj;
@@ -63,22 +64,25 @@ public class ProofOfPossession implements DEREncodable
 
     public POPOSigningKey getSignature()
     {
-      if( this.tag != 1 )
+      if( this.tag != 1 ) {
         return null;
+      }
       return (POPOSigningKey)this.obj;
     }
 
     public POPOPrivKey getKeyEncipherment()
     {
-      if( this.tag != 2 )
+      if( this.tag != 2 ) {
         return null;
+      }
       return (POPOPrivKey)this.obj;
     }
 
     public POPOPrivKey getKeyAgreement()
     {
-      if( this.tag != 3 )
+      if( this.tag != 3 ) {
         return null;
+      }
       return (POPOPrivKey)this.obj;
     }
 
