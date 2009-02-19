@@ -112,7 +112,7 @@ public class TestCertificateCache extends TestCase {
 		cert = cache.findByHash(new CertificateID(CertificateID.HASH_SHA1, testsnindncert, BigInteger.valueOf(0)));
 		assertNotNull(cert);
 		cert.verify(testsnindncert.getPublicKey());
-		System.out.println(testsnindncert.getIssuerDN().getName());
+		//System.out.println(testsnindncert.getIssuerDN().getName());
 		cert = cache.findLatestBySubjectDN(testsnindncert.getIssuerDN().getName());
 		assertNotNull(cert);
 		cert.verify(testsnindncert.getPublicKey());
@@ -137,10 +137,11 @@ public class TestCertificateCache extends TestCase {
 		certs.add(testscepcert);
 		prop.put("ocspTestCACerts", certs);
 		CertificateCache cache = new CertificateCache(prop);
-
+		
 		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1");
 		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2");
 		Thread no3 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3");
+		// No4 uses CV Certificates, and it will never return anything from the cache because this cache (OCSP) only handles X.509 certificates
 		Thread no4 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testcvccert)),"no4");
 		Thread no5 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no5");
 		Thread no11 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1");
