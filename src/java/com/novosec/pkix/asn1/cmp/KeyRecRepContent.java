@@ -88,15 +88,17 @@ public class KeyRecRepContent implements DEREncodable
         case 1 :
           {
             ASN1Sequence s = (ASN1Sequence) tagObj.getObject();
-            for (int i = 0; i < s.size(); i++)
+            for (int i = 0; i < s.size(); i++) {
               caCerts.addElement(X509CertificateStructure.getInstance(s.getObjectAt(i)));
+            }
           }
           break;
         case 2 :
           {
             ASN1Sequence s = (ASN1Sequence) tagObj.getObject();
-            for (int i = 0; i < s.size(); i++)
+            for (int i = 0; i < s.size(); i++) {
               keyPairHists.addElement(CertifiedKeyPair.getInstance(s.getObjectAt(i)));
+            }
           }
           break;
       }
@@ -130,8 +132,9 @@ public class KeyRecRepContent implements DEREncodable
 
   public X509CertificateStructure getCaCerts(int nr)
   {
-    if (nr < caCerts.size())
+    if (nr < caCerts.size()) {
       return (X509CertificateStructure) caCerts.elementAt(nr);
+    }
 
     return null;
   }
@@ -143,8 +146,9 @@ public class KeyRecRepContent implements DEREncodable
 
   public CertifiedKeyPair getKeyPairHist(int nr)
   {
-    if (nr < keyPairHists.size())
+    if (nr < keyPairHists.size()) {
       return (CertifiedKeyPair) keyPairHists.elementAt(nr);
+    }
 
     return null;
   }
@@ -155,15 +159,17 @@ public class KeyRecRepContent implements DEREncodable
 
     v.add(status);
 
-    if (newSigCert != null)
+    if (newSigCert != null) {
       v.add(new DERTaggedObject(true, 0, newSigCert));
+    }
 
     if (caCerts.size() > 0)
     {
       ASN1EncodableVector cacv = new ASN1EncodableVector();
 
-      for (int i = 0; i < caCerts.size(); i++)
+      for (int i = 0; i < caCerts.size(); i++) {
         cacv.add((X509CertificateStructure) caCerts.elementAt(i));
+      }
 
       v.add(new DERTaggedObject(true, 1, new DERSequence(cacv)));
     }
@@ -172,8 +178,9 @@ public class KeyRecRepContent implements DEREncodable
     {
       ASN1EncodableVector keyphv = new ASN1EncodableVector();
 
-      for (int i = 0; i < keyPairHists.size(); i++)
+      for (int i = 0; i < keyPairHists.size(); i++) {
         keyphv.add((CertifiedKeyPair) keyPairHists.elementAt(i));
+      }
 
       v.add(new DERTaggedObject(true, 2, new DERSequence(keyphv)));
     }
@@ -185,15 +192,17 @@ public class KeyRecRepContent implements DEREncodable
   {
     String s = "CertifiedKeyPair: ( status: " + this.getStatus() + ", ";
 
-    if( this.getNewSigCert() != null )
+    if( this.getNewSigCert() != null ) {
       s += "newSigCert: "+ this.getNewSigCert() + ", ";
+    }
 
     if( caCerts.size() > 0 )
     {
       s += "caCerts: (";
       
-      for( int i=0; i<caCerts.size(); i++ )
+      for( int i=0; i<caCerts.size(); i++ ) {
         s += (X509CertificateStructure)caCerts.elementAt(i);
+      }
         
       s += "), ";
     }
@@ -202,8 +211,9 @@ public class KeyRecRepContent implements DEREncodable
     {
       s += "keyPairHist: (";
       
-      for( int i=0; i<caCerts.size(); i++ )
+      for( int i=0; i<caCerts.size(); i++ ) {
         s += (CertifiedKeyPair)keyPairHists.elementAt(i);
+      }
         
       s += ")";
     }

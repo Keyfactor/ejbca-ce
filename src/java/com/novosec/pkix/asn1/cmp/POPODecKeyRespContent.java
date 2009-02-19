@@ -65,8 +65,9 @@ public class POPODecKeyRespContent implements DEREncodable
   {
     Enumeration e = seq.getObjects();
 
-    while (e.hasMoreElements())
+    while (e.hasMoreElements()) {
       integers.addElement( e.nextElement() );
+    }
   }
 
   public POPODecKeyRespContent(DERInteger p)
@@ -81,8 +82,9 @@ public class POPODecKeyRespContent implements DEREncodable
 
   public DERInteger getInteger(int nr)
   {
-    if (integers.size() > nr)
+    if (integers.size() > nr) {
       return (DERInteger) integers.elementAt(nr);
+    }
 
     return null;
   }
@@ -91,8 +93,9 @@ public class POPODecKeyRespContent implements DEREncodable
   {
     ASN1EncodableVector v = new ASN1EncodableVector();
 
-    for (int i = 0; i < integers.size(); i++)
+    for (int i = 0; i < integers.size(); i++) {
       v.add((DERInteger) integers.elementAt(i));
+    }
 
     return new DERSequence(v);
   }
@@ -101,8 +104,9 @@ public class POPODecKeyRespContent implements DEREncodable
   {
     String s = "POPODecKeyRespContent: (";
     
-    for (int i=0;i<integers.size();i++)
+    for (int i=0;i<integers.size();i++) {
       s += integers.elementAt(i) + ", ";
+    }
     
     s += ")";
     

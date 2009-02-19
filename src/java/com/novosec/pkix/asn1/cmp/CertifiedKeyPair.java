@@ -123,11 +123,13 @@ public class CertifiedKeyPair implements DEREncodable
 
       v.add( certOrEncCert );
       
-      if( privateKey != null )
+      if( privateKey != null ) {
         v.add( new DERTaggedObject( true, 0, privateKey ) );
+      }
 
-      if( publicationInfo != null )
+      if( publicationInfo != null ) {
         v.add( new DERTaggedObject( true, 1, publicationInfo ) );
+      }
       
       return new DERSequence(v);
     }
@@ -136,11 +138,13 @@ public class CertifiedKeyPair implements DEREncodable
     {
       String s = "CertifiedKeyPair: ( certOrEncCert: " + this.getCertOrEncCert() + ", ";
 
-      if( this.getPrivateKey() != null )
+      if( this.getPrivateKey() != null ) {
         s += "privateKey: "+ this.getPrivateKey() + ", ";
+      }
 
-      if( this.getPublicationInfo() != null )
+      if( this.getPublicationInfo() != null ) {
         s += "publicationInfo: "+ this.getPublicationInfo() + ", ";
+      }
 
       s += ")";
       

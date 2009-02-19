@@ -116,8 +116,9 @@ public class CertConfirmContent implements DEREncodable
         v.add( certHash );
         v.add( certReqId );
 
-        if ( statusInfo != null )
+        if ( statusInfo != null ) {
             v.add( statusInfo);
+        }
 
         outer.add( new DERSequence(v) );
         
@@ -129,8 +130,9 @@ public class CertConfirmContent implements DEREncodable
       String s = "CertConfirmContent: (certHash = " + this.getCertHash() + 
       		", certReqId = " + this.getCertReqId();
       
-      if( this.getPKIStatus() != null )
+      if( this.getPKIStatus() != null ) {
         s += "pkiStatus = " + this.getPKIStatus();
+      }
         
       s += ")";
       

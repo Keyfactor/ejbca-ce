@@ -81,175 +81,200 @@ public class PKIBody implements DEREncodable
     
     public CertReqMessages getIr()
     {
-      if( this.tag != 0 )
+      if( this.tag != 0 ) {
         return null;
+      }
       return (CertReqMessages)this.obj;
     }
     
     public CertRepMessage getIp()
     {
-      if( this.tag != 1 )
+      if( this.tag != 1 ) {
         return null;
+      }
       return (CertRepMessage)this.obj;
     }
 
     public CertReqMessages getCr()
     {
-      if( this.tag != 2 )
+      if( this.tag != 2 ) {
         return null;
+      }
       return (CertReqMessages)this.obj;
     }
 
     public CertRepMessage getCp()
     {
-      if( this.tag != 3 )
+      if( this.tag != 3 ) {
         return null;
+      }
       return (CertRepMessage)this.obj;
     }
     
     public CertificationRequest getP10cr()
     {
-      if( this.tag != 4 )
+      if( this.tag != 4 ) {
         return null;
+      }
       return (CertificationRequest)this.obj;
     }
     
     public POPODecKeyChallContent getPopdecc()
     {
-      if( this.tag != 5 )
+      if( this.tag != 5 ) {
         return null;
+      }
       return (POPODecKeyChallContent)this.obj;
     }
 
     public POPODecKeyRespContent getPopdecr()
     {
-      if( this.tag != 6 )
+      if( this.tag != 6 ) {
         return null;
+      }
       return (POPODecKeyRespContent)this.obj;
     }
     
     public CertReqMessages getKur()
     {
-      if( this.tag != 7 )
+      if( this.tag != 7 ) {
         return null;
+      }
       return (CertReqMessages)this.obj;
     }
     
     public CertRepMessage getKup()
     {
-      if( this.tag != 8 )
+      if( this.tag != 8 ) {
         return null;
+      }
       return (CertRepMessage)this.obj;
     }
 
     public CertReqMessages getKrr()
     {
-      if( this.tag != 9 )
+      if( this.tag != 9 ) {
         return null;
+      }
       return (CertReqMessages)this.obj;
     }
     
     public KeyRecRepContent getKrp()
     {
-      if( this.tag != 10 )
+      if( this.tag != 10 ) {
         return null;
+      }
       return (KeyRecRepContent)this.obj;
     }
 
     public RevReqContent getRr()
     {
-      if( this.tag != 11 )
+      if( this.tag != 11 ) {
         return null;
+      }
       return (RevReqContent)this.obj;
     }
     
     public RevRepContent getRp()
     {
-      if( this.tag != 12 )
+      if( this.tag != 12 ) {
         return null;
+      }
       return (RevRepContent)this.obj;
     }
 
     public CertReqMessages getCcr()
     {
-      if( this.tag != 13 )
+      if( this.tag != 13 ) {
         return null;
+      }
       return (CertReqMessages)this.obj;
     }
 
     public CertRepMessage getCcp()
     {
-      if( this.tag != 14 )
+      if( this.tag != 14 ) {
         return null;
+      }
       return (CertRepMessage)this.obj;
     }
 
     public CAKeyUpdAnnContent getCkuann()
     {
-      if( this.tag != 15 )
+      if( this.tag != 15 ) {
         return null;
+      }
       return (CAKeyUpdAnnContent)this.obj;
     }
 
     public X509CertificateStructure getCann()
     {
-      if( this.tag != 16 )
+      if( this.tag != 16 ) {
         return null;
+      }
       return (X509CertificateStructure)this.obj;
     }
 
     public RevAnnContent getRann()
     {
-      if( this.tag != 17 )
+      if( this.tag != 17 ) {
         return null;
+      }
       return (RevAnnContent)this.obj;
     }
 
     public CRLAnnContent getCrlann()
     {
-      if( this.tag != 18 )
+      if( this.tag != 18 ) {
         return null;
+      }
       return (CRLAnnContent)this.obj;
     }
 
     public DERNull getConf()
     {
-      if( this.tag != 19 )
+      if( this.tag != 19 ) {
         return null;
+      }
       return (DERNull)this.obj;
     }
 
     public PKIMessage getNested()
     {
-      if( this.tag != 20 )
+      if( this.tag != 20 ) {
         return null;
+      }
       return (PKIMessage)this.obj;
     }
 
     public GenMsgContent getGenm()
     {
-      if( this.tag != 21 )
+      if( this.tag != 21 ) {
         return null;
+      }
       return (GenMsgContent)this.obj;
     }
 
     public GenRepContent getGenp()
     {
-      if( this.tag != 22 )
+      if( this.tag != 22 ) {
         return null;
+      }
       return (GenRepContent)this.obj;
     }
 
     public ErrorMsgContent getError()
     {
-      if( this.tag != 23 )
+      if( this.tag != 23 ) {
         return null;
+      }
       return (ErrorMsgContent)this.obj;
     }
 
     public CertConfirmContent getCertConf() {
-    	if (this.tag != 24 ) 
+    	if (this.tag != 24 ) { 
     		return null;
+    	}
     	return (CertConfirmContent)this.obj;
     }
     

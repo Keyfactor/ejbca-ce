@@ -83,8 +83,9 @@ public class CRLAnnContent implements DEREncodable
     
     public CertificateList getCertificateList(int nr)
     {
-      if (certificateLists.size() > nr)
+      if (certificateLists.size() > nr) {
         return (CertificateList)certificateLists.elementAt(nr);
+      }
 
       return null;
     }
@@ -104,12 +105,12 @@ public class CRLAnnContent implements DEREncodable
     public String toString()
     {
         String p = null;
-        for (int i=0;i<certificateLists.size();i++)
-        {
-          if( p == null )
+        for (int i=0;i<certificateLists.size();i++) {
+          if( p == null ) {
             p = ((CertificateList)certificateLists.elementAt(i)).toString();
-          else
+          } else {
             p += (CertificateList)certificateLists.elementAt(i);
+          }
         }
         return "CRLAnnContent: "+p;
     }

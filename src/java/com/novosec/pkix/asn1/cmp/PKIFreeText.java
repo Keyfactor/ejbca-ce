@@ -64,8 +64,9 @@ public class PKIFreeText implements DEREncodable
     public PKIFreeText( ASN1Sequence seq )
     {
         Enumeration e = seq.getObjects();
-        while (e.hasMoreElements())
+        while (e.hasMoreElements()) {
             freeTextStrings.addElement(e.nextElement());
+        }
     }
 
     public PKIFreeText( DERUTF8String p )
@@ -80,8 +81,9 @@ public class PKIFreeText implements DEREncodable
     
     public DERUTF8String getString(int nr)
     {
-      if (freeTextStrings.size() > nr)
+      if (freeTextStrings.size() > nr) {
         return (DERUTF8String)freeTextStrings.elementAt(nr);
+      }
 
       return null;
     }
@@ -90,8 +92,9 @@ public class PKIFreeText implements DEREncodable
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 
-        for (int i=0;i<freeTextStrings.size();i++)
+        for (int i=0;i<freeTextStrings.size();i++) {
           v.add((DERUTF8String)freeTextStrings.elementAt(i));
+        }
 
         return new DERSequence(v);
     }
@@ -100,8 +103,9 @@ public class PKIFreeText implements DEREncodable
     {
         String s = "PKIFreeText: ";
 
-        for (int i=0;i<freeTextStrings.size();i++)
+        for (int i=0;i<freeTextStrings.size();i++) {
             s += (DERUTF8String)freeTextStrings.elementAt(i);
+        }
 
         return s;
     }

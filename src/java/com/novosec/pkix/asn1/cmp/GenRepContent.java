@@ -82,8 +82,9 @@ public class GenRepContent implements DEREncodable
     
     public InfoTypeAndValue getInfoTypeAndValue(int nr)
     {
-      if (infoTypesAndValues.size() > nr)
+      if (infoTypesAndValues.size() > nr) {
         return (InfoTypeAndValue)infoTypesAndValues.elementAt(nr);
+      }
 
       return null;
     }
@@ -105,10 +106,11 @@ public class GenRepContent implements DEREncodable
         String p = null;
         for (int i=0;i<infoTypesAndValues.size();i++)
         {
-          if( p == null )
+          if( p == null ) {
             p = ((InfoTypeAndValue)infoTypesAndValues.elementAt(i)).toString();
-          else
+          } else {
             p += (InfoTypeAndValue)infoTypesAndValues.elementAt(i);
+          }
         }
         return "GenRepContent: "+p;
     }

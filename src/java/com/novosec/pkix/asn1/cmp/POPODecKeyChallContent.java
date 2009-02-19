@@ -63,8 +63,9 @@ public class POPODecKeyChallContent implements DEREncodable
   {
     Enumeration e = seq.getObjects();
 
-    while (e.hasMoreElements())
+    while (e.hasMoreElements()) {
       challenges.addElement( Challenge.getInstance(e.nextElement()) );
+    }
   }
 
   public POPODecKeyChallContent(Challenge p)
@@ -79,8 +80,9 @@ public class POPODecKeyChallContent implements DEREncodable
 
   public Challenge getChallenge(int nr)
   {
-    if (challenges.size() > nr)
+    if (challenges.size() > nr) {
       return (Challenge) challenges.elementAt(nr);
+    }
 
     return null;
   }
@@ -89,8 +91,9 @@ public class POPODecKeyChallContent implements DEREncodable
   {
     ASN1EncodableVector v = new ASN1EncodableVector();
 
-    for (int i = 0; i < challenges.size(); i++)
+    for (int i = 0; i < challenges.size(); i++) {
       v.add((Challenge) challenges.elementAt(i));
+    }
 
     return new DERSequence(v);
   }
@@ -99,8 +102,9 @@ public class POPODecKeyChallContent implements DEREncodable
   {
     String s = "POPODecKeyChallContent: (";
     
-    for (int i=0;i<challenges.size();i++)
+    for (int i=0;i<challenges.size();i++) {
       s += challenges.elementAt(i) + ", ";
+    }
     
     s += ")";
     

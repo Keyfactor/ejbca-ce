@@ -106,8 +106,9 @@ public class PKIMessage implements DEREncodable
           case 0: protection = DERBitString.getInstance( tagObj.getObject() ); break;
           case 1: 
             ASN1Sequence s = (ASN1Sequence)tagObj.getObject();
-            for( int i=0; i<s.size(); i++ )
+            for( int i=0; i<s.size(); i++ ) {
               extraCerts.addElement( X509CertificateStructure.getInstance(s.getObjectAt(i)) );
+            }
             break;
         }
       }
@@ -146,8 +147,9 @@ public class PKIMessage implements DEREncodable
 
     public X509CertificateStructure getExtraCert(int nr)
     {
-      if (extraCerts.size() > nr)
+      if (extraCerts.size() > nr) {
         return (X509CertificateStructure)extraCerts.elementAt(nr);
+      }
 
       return null;
     }
@@ -159,15 +161,17 @@ public class PKIMessage implements DEREncodable
       v.add( header );
       v.add( body );
       
-      if( protection != null )
+      if( protection != null ) {
         v.add( new DERTaggedObject( true, 0, protection ) );
+      }
 
       if( extraCerts.size() > 0 )
       {
         ASN1EncodableVector giv = new ASN1EncodableVector();
   
-        for (int i=0;i<extraCerts.size();i++)
+        for (int i=0;i<extraCerts.size();i++) {
           giv.add((X509CertificateStructure)extraCerts.elementAt(i));
+        }
   
         v.add( new DERTaggedObject( true, 1, new DERSequence(giv) ) );
       }
@@ -177,8 +181,9 @@ public class PKIMessage implements DEREncodable
     
     public byte[] getProtectedBytes()
     {
-      if( protectedBytes != null )
+      if( protectedBytes != null ) {
         return protectedBytes;
+      }
 
       try
       {
@@ -201,14 +206,16 @@ public class PKIMessage implements DEREncodable
     {
       String s = "PKIMessage: ( header: " + this.getHeader() + ", body: " + this.getBody() + ", ";
 
-      if( this.getProtection() != null )
+      if( this.getProtection() != null ) {
         s += "protection: "+ this.getProtection() + ", ";
+      }
       
       if( extraCerts.size() > 0 )
       {
         s += "extraCerts: (";
-        for (int i=0;i<extraCerts.size();i++)
+        for (int i=0;i<extraCerts.size();i++) {
           s += extraCerts.elementAt(i) + ", ";
+        }
         s += ")";
       }        
 

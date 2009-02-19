@@ -76,16 +76,18 @@ public class CertRepMessage implements DEREncodable
       {
         ASN1Sequence s = (ASN1Sequence)(((ASN1TaggedObject)obj).getObject());
         
-        for (int i=0;i<s.size();i++)
+        for (int i=0;i<s.size();i++) {
           caPubs.add(X509CertificateStructure.getInstance(s.getObjectAt(i)));
+        }
         
         obj = e.nextElement();
       }
 
       ASN1Sequence s = (ASN1Sequence)obj;
 
-      for (int i=0;i<s.size();i++)
+      for (int i=0;i<s.size();i++) {
         responses.add(CertResponse.getInstance(s.getObjectAt(i)));
+      }
     }
 
     public CertRepMessage( CertResponse response )
@@ -100,8 +102,9 @@ public class CertRepMessage implements DEREncodable
     
     public X509CertificateStructure getCaPubs( int nr )
     {
-      if( nr<caPubs.size() )
+      if( nr<caPubs.size() ) {
         return (X509CertificateStructure)caPubs.elementAt(nr);
+      }
         
       return null;
     }
@@ -113,8 +116,9 @@ public class CertRepMessage implements DEREncodable
     
     public CertResponse getResponse( int nr )
     {
-      if( nr<responses.size() )
+      if( nr<responses.size() ) {
         return (CertResponse)responses.elementAt(nr);
+      }
         
       return null;
     }
@@ -127,16 +131,18 @@ public class CertRepMessage implements DEREncodable
       {
         ASN1EncodableVector capv = new ASN1EncodableVector();
         
-        for( int i=0; i<caPubs.size(); i++ )
+        for( int i=0; i<caPubs.size(); i++ ) {
           capv.add( (X509CertificateStructure)caPubs.elementAt(i) );
+        }
         
         v.add( new DERTaggedObject( true, 1, new DERSequence(capv) ) );
       }
 
       ASN1EncodableVector resp = new ASN1EncodableVector();
       
-      for( int i=0; i<responses.size(); i++ )
+      for( int i=0; i<responses.size(); i++ ) {
         resp.add( (CertResponse)responses.elementAt(i) );
+      }
       
       v.add( new DERSequence(resp) );
       
@@ -151,16 +157,18 @@ public class CertRepMessage implements DEREncodable
       {
         s += "caPubs: (";
 
-        for( int i=0; i<caPubs.size(); i++ )
+        for( int i=0; i<caPubs.size(); i++ ) {
           s += (X509CertificateStructure)caPubs.elementAt(i);
+        }
           
         s += "), ";
       }
 
       s += "responses: (";
 
-      for( int i=0; i<responses.size(); i++ )
+      for( int i=0; i<responses.size(); i++ ) {
         s += (CertResponse)responses.elementAt(i);
+      }
 
       s += ")";
       

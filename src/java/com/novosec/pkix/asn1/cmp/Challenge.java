@@ -112,8 +112,9 @@ public class Challenge implements DEREncodable
   {
     ASN1EncodableVector v = new ASN1EncodableVector();
 
-    if( owf != null )
+    if( owf != null ) {
       v.add(owf);
+    }
       
     v.add(witness);
     v.add(challenge);
@@ -125,8 +126,9 @@ public class Challenge implements DEREncodable
   {
     String s = "Challenge: (";
     
-    if( this.getOwf() != null )
+    if( this.getOwf() != null ) {
       s += "owf: "+ this.getOwf() + ", ";
+    }
 
     s += "witness: " + this.getWitness();
     s += "challenge: " + this.getChallenge();

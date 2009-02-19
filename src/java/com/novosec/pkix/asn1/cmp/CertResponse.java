@@ -78,19 +78,22 @@ public class CertResponse implements DEREncodable
       
       Object obj = null;
       
-      if( e.hasMoreElements() )
+      if( e.hasMoreElements() ) {
         obj = e.nextElement();
+      }
       
       if ( obj instanceof ASN1Sequence )
       {
         certifiedKeyPair = CertifiedKeyPair.getInstance( obj );
 
-        if( e.hasMoreElements() )
+        if( e.hasMoreElements() ) {
           obj = e.nextElement();
+        }
       }
       
-      if( obj instanceof DEROctetString )
+      if( obj instanceof DEROctetString ) {
         rspInfo = (DEROctetString)obj;
+      }
     }
 
     public CertResponse( DERInteger certReqId, PKIStatusInfo status )
@@ -136,11 +139,13 @@ public class CertResponse implements DEREncodable
       v.add( certReqId );
       v.add( status );
       
-      if( certifiedKeyPair != null )
+      if( certifiedKeyPair != null ) {
         v.add( certifiedKeyPair );
+      }
 
-      if( rspInfo != null )
+      if( rspInfo != null ) {
         v.add( rspInfo );
+      }
       
       return new DERSequence(v);
     }
@@ -149,11 +154,13 @@ public class CertResponse implements DEREncodable
     {
       String s = "CertResponse: ( certReqId: " + this.getCertReqId() + ", status: "+ this.getStatus() + ", ";
 
-      if( this.getCertifiedKeyPair() != null )
+      if( this.getCertifiedKeyPair() != null ) {
         s += "certifiedKeyPair: "+ this.getCertifiedKeyPair() + ", ";
+      }
 
-      if( this.getRspInfo() != null )
+      if( this.getRspInfo() != null ) {
         s += "rspInfo: "+ this.getRspInfo() + ", ";
+      }
 
       s += ")";
       

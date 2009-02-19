@@ -115,8 +115,9 @@ public class PKIHeader implements DEREncodable
           case 7: freeText      = PKIFreeText.getInstance(tagObj.getObject()); break;
           case 8: 
             ASN1Sequence s = (ASN1Sequence)tagObj.getObject();
-            for( int i=0; i<s.size(); i++ )
+            for( int i=0; i<s.size(); i++ ) {
               generalInfos.addElement( InfoTypeAndValue.getInstance(s.getObjectAt(i)) );
+            }
             break;
         }
       }
@@ -231,8 +232,9 @@ public class PKIHeader implements DEREncodable
 
     public InfoTypeAndValue getGeneralInfo(int nr)
     {
-      if (generalInfos.size() > nr)
+      if (generalInfos.size() > nr) {
         return (InfoTypeAndValue)generalInfos.elementAt(nr);
+      }
 
       return null;
     }
@@ -245,36 +247,45 @@ public class PKIHeader implements DEREncodable
       v.add( sender );
       v.add( recipient );
       
-      if( messageTime != null )
+      if( messageTime != null ) {
         v.add( new DERTaggedObject( true, 0, messageTime ) );
+      }
 
-      if( protectionAlg != null )
+      if( protectionAlg != null ) {
         v.add( new DERTaggedObject( true, 1, protectionAlg ) );
+      }
 
-      if( senderKID != null )
+      if( senderKID != null ) {
         v.add( new DERTaggedObject( true, 2, senderKID ) );
+      }
 
-      if( recipKID != null )
+      if( recipKID != null ) {
         v.add( new DERTaggedObject( true, 3, recipKID ) );
+      }
 
-      if( transactionID != null )
+      if( transactionID != null ) {
         v.add( new DERTaggedObject( true, 4, transactionID ) );
+      }
 
-      if( senderNonce != null )
+      if( senderNonce != null ) {
         v.add( new DERTaggedObject( true, 5, senderNonce ) );
+      }
 
-      if( recipNonce != null )
+      if( recipNonce != null ) {
         v.add( new DERTaggedObject( true, 6, recipNonce ) );
+      }
 
-      if( freeText != null )
+      if( freeText != null ) {
         v.add( new DERTaggedObject( true, 7, freeText ) );
+      }
 
       if( generalInfos.size() > 0 )
       {
         ASN1EncodableVector giv = new ASN1EncodableVector();
   
-        for (int i=0;i<generalInfos.size();i++)
+        for (int i=0;i<generalInfos.size();i++) {
           giv.add((InfoTypeAndValue)generalInfos.elementAt(i));
+        }
   
         v.add( new DERTaggedObject( true, 8, new DERSequence(giv) ) );
       }
@@ -286,35 +297,44 @@ public class PKIHeader implements DEREncodable
     {
       String s = "PKIHeader: ( pvno: " + pvno + ", sender: " + sender + ", recipient: " + recipient + ", ";
 
-      if( messageTime != null )
+      if( messageTime != null ) {
         s += "messageTime: "  + messageTime + ", ";
+      }
 
-      if( protectionAlg != null )
+      if( protectionAlg != null ) {
         s += "protectionAlg: "  + protectionAlg + ", ";
+      }
 
-      if( senderKID != null )
+      if( senderKID != null ) {
         s += "senderKID: "  + senderKID + ", ";
+      }
 
-      if( recipKID != null )
+      if( recipKID != null ) {
         s += "recipKID: "  + recipKID + ", ";
+      }
 
-      if( transactionID != null )
+      if( transactionID != null ) {
         s += "transactionID: "  + transactionID + ", ";
+      }
 
-      if( senderNonce != null )
+      if( senderNonce != null ) {
         s += "senderNonce: "  + senderNonce + ", ";
+      }
 
-      if( recipNonce != null )
+      if( recipNonce != null ) {
         s += "recipNonce: "  + recipNonce + ", ";
+      }
       
-      if( freeText != null )
+      if( freeText != null ) {
         s += "freeText: "  + freeText + ", ";
+      }
 
       if( generalInfos.size() > 0 )
       {
         s += "generalInfo: (";
-        for (int i=0;i<generalInfos.size();i++)
+        for (int i=0;i<generalInfos.size();i++) {
           s += generalInfos.elementAt(i) + ", ";
+        }
         s += ")";
       }        
       

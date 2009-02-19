@@ -88,38 +88,43 @@ public class RevDetails implements DEREncodable
       
       Object obj = null;
       
-      if( idx < seq.size() )
+      if( idx < seq.size() ) {
         obj = seq.getObjectAt(idx++);
+      }
       
       if( obj instanceof DERBitString )
       {
         this.revocationReason = DERBitString.getInstance( obj );
-        if( idx < seq.size() )
+        if( idx < seq.size() ) {
           obj = seq.getObjectAt(idx++);
-        else
+        } else {
           obj = null;
+        }
       }
     
       if( obj instanceof DERGeneralizedTime )
       {
         this.badSinceDate = DERGeneralizedTime.getInstance( obj );
-        if( idx < seq.size() )
+        if( idx < seq.size() ) {
           obj = seq.getObjectAt(idx++);
-        else
+        } else {
           obj = null;
+        }
       }
     
       if( obj instanceof ASN1Sequence )
       {
         this.crlEntryDetails = X509Extensions.getInstance( obj );
-        if( idx < seq.size() )
+        if( idx < seq.size() ) {
           obj = seq.getObjectAt(idx++);
-        else
+        } else {
           obj = null;
+        }
       }
 
-      if( obj != null )
+      if( obj != null ) {
         throw new IllegalArgumentException("unknown object in factory");
+      }
     }
 
     public RevDetails( CertTemplate certDetails )
@@ -176,14 +181,17 @@ public class RevDetails implements DEREncodable
 
         v.add( certDetails );
 
-        if ( revocationReason != null )
+        if ( revocationReason != null ) {
             v.add( revocationReason );
+        }
 
-        if ( badSinceDate!= null)
+        if ( badSinceDate!= null) {
             v.add( badSinceDate );
+        }
 
-        if ( crlEntryDetails!= null)
+        if ( crlEntryDetails!= null) {
             v.add( crlEntryDetails );
+        }
 
         return new DERSequence(v);
     }
@@ -192,14 +200,17 @@ public class RevDetails implements DEREncodable
     {
       String s = "RevDetails: ( certDetails = " + this.getCertDetails() + ", ";
       
-      if( this.getRevocationReason() != null )
+      if( this.getRevocationReason() != null ) {
        s += "revocationReason = " + this.getRevocationReason() + ", ";
+      }
       
-      if( this.getBadSinceDate() != null )
+      if( this.getBadSinceDate() != null ) {
        s += "badSinceDate = " + this.getBadSinceDate() + ", ";
+      }
       
-      if( this.getCrlEntryDetails() != null )
+      if( this.getCrlEntryDetails() != null ) {
        s += "crlEntryDetails = " + this.getCrlEntryDetails() + ", ";
+      }
       
       s += ")";
       

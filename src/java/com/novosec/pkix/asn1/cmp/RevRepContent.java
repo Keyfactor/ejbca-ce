@@ -119,8 +119,9 @@ public class RevRepContent implements DEREncodable
 
     public PKIStatusInfo getPKIStatusInfo( int nr )
     {
-      if (status.size() > nr)
+      if (status.size() > nr) {
         return (PKIStatusInfo)status.elementAt(nr);
+      }
 
       return null;
     }
@@ -132,8 +133,9 @@ public class RevRepContent implements DEREncodable
 
     public CertId getRevCert( int nr )
     {
-      if (revCerts.size() > nr)
+      if (revCerts.size() > nr) {
         return (CertId)revCerts.elementAt(nr);
+      }
 
       return null;
     }
@@ -145,8 +147,9 @@ public class RevRepContent implements DEREncodable
 
     public CertificateList getCrl( int nr )
     {
-      if (crls.size() > nr)
+      if (crls.size() > nr) {
         return (CertificateList)crls.elementAt(nr);
+      }
 
       return null;
     }
@@ -156,23 +159,26 @@ public class RevRepContent implements DEREncodable
         ASN1EncodableVector  v = new ASN1EncodableVector();
 
         ASN1EncodableVector  statv = new ASN1EncodableVector();
-        for (int i=0;i<status.size();i++)
+        for (int i=0;i<status.size();i++) {
           statv.add( (PKIStatusInfo)status.elementAt(i) );
+        }
         v.add( new DERSequence( statv ) );
 
         if( revCerts.size() > 0 )
         {
           ASN1EncodableVector  revcv = new ASN1EncodableVector();
-          for (int i=0;i<revCerts.size();i++)
+          for (int i=0;i<revCerts.size();i++) {
             revcv.add( (CertId)revCerts.elementAt(i) );
+          }
           v.add( new DERSequence( revcv ) );
         }
 
         if( crls.size() > 0 )
         {
           ASN1EncodableVector  crlsv = new ASN1EncodableVector();
-          for (int i=0;i<crls.size();i++)
+          for (int i=0;i<crls.size();i++) {
             crlsv.add( (CertificateList)crls.elementAt(i) );
+          }
           v.add( new DERSequence( crlsv ) );
         }
 
@@ -188,8 +194,9 @@ public class RevRepContent implements DEREncodable
       {
         s += "status: (";
         
-        for (int i=0;i<status.size();i++)
+        for (int i=0;i<status.size();i++) {
           s += (PKIStatusInfo)status.elementAt(i);
+        }
           
         s += "), ";
       }
@@ -198,8 +205,9 @@ public class RevRepContent implements DEREncodable
       {
         s += "revCerts: (";
 
-        for (int i=0;i<revCerts.size();i++)
+        for (int i=0;i<revCerts.size();i++) {
           s += (CertId)revCerts.elementAt(i);
+        }
 
         s += "), ";
       }
@@ -208,8 +216,9 @@ public class RevRepContent implements DEREncodable
       {
         s += "crls: (";
   
-        for (int i=0;i<crls.size();i++)
+        for (int i=0;i<crls.size();i++) {
           s += (CertificateList)crls.elementAt(i);
+        }
   
         s += ")";
       }

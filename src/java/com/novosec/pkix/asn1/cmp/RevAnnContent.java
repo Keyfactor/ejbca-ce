@@ -80,8 +80,9 @@ public class RevAnnContent implements DEREncodable
       this.willBeRevokedAt = DERGeneralizedTime.getInstance( seq.getObjectAt(2) );
       this.badSinceDate    = DERGeneralizedTime.getInstance( seq.getObjectAt(3) );
       
-      if( seq.size() > 4 )
+      if( seq.size() > 4 ) {
         this.crlDetails = X509Extensions.getInstance( seq.getObjectAt(4) );
+      }
     }
 
     public RevAnnContent( DERInteger status, CertId certId, DERGeneralizedTime willBeRevokedAt, 
@@ -133,8 +134,9 @@ public class RevAnnContent implements DEREncodable
       v.add( willBeRevokedAt );
       v.add( badSinceDate );
 
-      if( crlDetails != null )
+      if( crlDetails != null ) {
         v.add( crlDetails );
+      }
 
       return new DERSequence(v);
     }
@@ -146,8 +148,9 @@ public class RevAnnContent implements DEREncodable
                                   "willBeRevokedAt = " + this.getWillBeRevokedAt() + ", " +
                                   "badSinceDate = " + this.getBadSinceDate();
                                  
-      if( this.getCrlDetails() != null )
+      if( this.getCrlDetails() != null ) {
         s += ", crlDetails = " + this.getCrlDetails();
+      }
         
       s += ")";
       

@@ -71,20 +71,20 @@ public class ErrorMsgContent implements DEREncodable
       this.errorCode = null;
       this.errorDetails = null;
       
-      if( seq.size() > 2 )
-      {
-        this.errorCode = DERInteger.getInstance( seq.getObjectAt(1) );
-        this.errorDetails = PKIFreeText.getInstance( seq.getObjectAt(2) );
-      }
-      else
-      if (seq.size() > 1)
-      {
-          Object obj = seq.getObjectAt(1);
+      if( seq.size() > 2 ) {
+    	  this.errorCode = DERInteger.getInstance( seq.getObjectAt(1) );
+    	  this.errorDetails = PKIFreeText.getInstance( seq.getObjectAt(2) );
+      } else {
+    	  if (seq.size() > 1)
+    	  {
+    		  Object obj = seq.getObjectAt(1);
 
-          if( obj instanceof ASN1Sequence )
-            this.errorDetails = PKIFreeText.getInstance(obj);
-          else
-            this.errorCode = DERInteger.getInstance(obj);
+    		  if( obj instanceof ASN1Sequence ) {
+    			  this.errorDetails = PKIFreeText.getInstance(obj);
+    		  } else {
+    			  this.errorCode = DERInteger.getInstance(obj);
+    		  }
+    	  }
       }
     }
 
@@ -126,11 +126,13 @@ public class ErrorMsgContent implements DEREncodable
 
         v.add( pKIStatusInfo );
 
-        if ( errorCode != null )
+        if ( errorCode != null ) {
             v.add( errorCode );
+        }
 
-        if ( errorDetails!= null)
+        if ( errorDetails!= null) {
             v.add( errorDetails );
+        }
 
         return new DERSequence(v);
     }
@@ -139,11 +141,13 @@ public class ErrorMsgContent implements DEREncodable
     {
       String s = "ErrorMsgContent: (pKIStatus = " + this.getPKIStatus() + ", ";
       
-      if( this.getErrorCode() != null )
+      if( this.getErrorCode() != null ) {
         s += "errorCode = " + this.getErrorCode() + ", ";
+      }
       
-      if( this.getErrorDetails() != null )
+      if( this.getErrorDetails() != null ) {
         s += "errorDetails = " + this.getErrorDetails();
+      }
         
       s += ")";
       

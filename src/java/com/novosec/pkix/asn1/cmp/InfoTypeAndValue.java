@@ -67,10 +67,11 @@ public class InfoTypeAndValue implements DEREncodable
     {
       infoType = (DERObjectIdentifier)seq.getObjectAt(0);
 
-      if (seq.size() == 2)
+      if (seq.size() == 2) {
         infoValue = seq.getObjectAt(1);
-      else
+      } else {
         infoValue = null;
+      }
     }
 
     public InfoTypeAndValue( DERObjectIdentifier infoType )
@@ -99,8 +100,9 @@ public class InfoTypeAndValue implements DEREncodable
 
       v.add(infoType);
 
-      if( infoValue != null )
+      if( infoValue != null ) {
         v.add(infoValue);
+      }
 
       return new DERSequence(v);
     }
@@ -167,8 +169,9 @@ public class InfoTypeAndValue implements DEREncodable
     {
       String s = "InfoTypeAndValue: (" + getInfoType();
       
-      if( getInfoValue() != null )
+      if( getInfoValue() != null ) {
         s += ", " + getInfoValue();
+      }
         
       s += ")";
         

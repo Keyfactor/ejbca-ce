@@ -64,8 +64,9 @@ public class RevReqContent implements DEREncodable
     {
       Enumeration e = seq.getObjects();
       
-      while (e.hasMoreElements())
+      while (e.hasMoreElements()) {
         revDetails.addElement(RevDetails.getInstance(e.nextElement()));
+      }
     }
 
     public RevReqContent( RevDetails p )
@@ -80,8 +81,9 @@ public class RevReqContent implements DEREncodable
     
     public RevDetails getRevDetails(int nr)
     {
-      if (revDetails.size() > nr)
+      if (revDetails.size() > nr) {
         return (RevDetails)revDetails.elementAt(nr);
+      }
 
       return null;
     }
@@ -90,8 +92,9 @@ public class RevReqContent implements DEREncodable
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 
-        for (int i=0;i<revDetails.size();i++)
+        for (int i=0;i<revDetails.size();i++) {
           v.add((RevDetails)revDetails.elementAt(i));
+        }
 
         return new DERSequence(v);
     }
@@ -100,8 +103,9 @@ public class RevReqContent implements DEREncodable
     {
       String s = "RevReqContent: (";
       
-      for (int i=0;i<revDetails.size();i++)
+      for (int i=0;i<revDetails.size();i++) {
         s += revDetails.elementAt(i) + ", ";
+      }
         
       s += ")";
 

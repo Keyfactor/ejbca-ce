@@ -103,10 +103,11 @@ public class PKIStatusInfo implements DEREncodable
         {
           Object obj = seq.getObjectAt(1);
 
-          if( obj instanceof ASN1Sequence )
+          if( obj instanceof ASN1Sequence ) {
             this.statusString = PKIFreeText.getInstance(obj);
-          else
+          } else {
             this.failInfo = DERBitString.getInstance(obj);
+          }
         }
     }
     
@@ -147,11 +148,13 @@ public class PKIStatusInfo implements DEREncodable
 
         v.add( status );
 
-        if ( statusString != null )
+        if ( statusString != null ) {
             v.add( statusString );
+        }
 
-        if ( failInfo!= null )
+        if ( failInfo!= null ) {
             v.add( failInfo );
+        }
 
         return new DERSequence(v);
     }
@@ -160,11 +163,13 @@ public class PKIStatusInfo implements DEREncodable
     {
       String s = "PKIStatusInfo: (status = " + this.getStatus();
       
-      if( this.getStatusString() != null )
+      if( this.getStatusString() != null ) {
         s += ", statusString: " + this.getStatusString();
+      }
 
-      if( this.getFailInfo() != null )
+      if( this.getFailInfo() != null ) {
         s += ", failInfo: " + this.getFailInfo();
+      }
 
       s += ")";
       

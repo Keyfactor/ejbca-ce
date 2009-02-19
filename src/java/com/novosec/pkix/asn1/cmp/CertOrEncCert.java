@@ -51,15 +51,17 @@ public class CertOrEncCert implements DEREncodable
 
     public X509CertificateStructure getCertificate()
     {
-      if( this.tag != 0 )
+      if( this.tag != 0 ) {
         return null;
+      }
       return (X509CertificateStructure)this.obj;
     }
 
     public EncryptedValue getEncryptedCert()
     {
-      if( this.tag != 1 )
+      if( this.tag != 1 ) {
         return null;
+      }
       return (EncryptedValue)this.obj;
     }
 

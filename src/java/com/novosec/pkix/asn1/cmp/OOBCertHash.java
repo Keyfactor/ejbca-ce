@@ -130,11 +130,13 @@ public class OOBCertHash implements DEREncodable
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
       
-      if( hashAlg != null )
+      if( hashAlg != null ) {
         v.add( new DERTaggedObject( true, 0, hashAlg ) );
+      }
         
-      if( certId != null )
+      if( certId != null ) {
         v.add( new DERTaggedObject( true, 1, certId ) );
+      }
   
       v.add( hashVal );
       
@@ -145,11 +147,13 @@ public class OOBCertHash implements DEREncodable
     {
       String s = "OOBCertHash: ( ";
 
-      if( this.getHashAlg() != null )
+      if( this.getHashAlg() != null ) {
         s += "hashAlg: " + this.getHashAlg() + ", ";
+      }
 
-      if( this.getCertId() != null )
+      if( this.getCertId() != null ) {
         s += "certId: " + this.getCertId() + ", ";
+      }
 
       s += "hashVal: " + this.getHashVal();
 
