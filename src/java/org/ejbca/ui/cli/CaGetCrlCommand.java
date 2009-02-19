@@ -15,11 +15,7 @@ package org.ejbca.ui.cli;
 
 import java.io.FileOutputStream;
 
-import javax.naming.Context;
-
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.util.CertTools;
 
 

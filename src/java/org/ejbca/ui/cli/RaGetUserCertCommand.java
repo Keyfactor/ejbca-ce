@@ -15,7 +15,6 @@ package org.ejbca.ui.cli;
 
 import java.util.Collection;
 
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.util.CertTools;
 
 

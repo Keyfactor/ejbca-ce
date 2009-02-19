@@ -96,8 +96,9 @@ class KeyStoreContainerTest {
                                                            keyStoreType, storeID);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
             try {
-                if ( tests==null || nrOfTests==-5 )
+                if ( tests==null || nrOfTests==-5 ) {
                     tests = getTests(keyStore);
+                }
                 for( int j = 0; j<tests.length; j++ ) {
                     System.out.println();
                     tests[j].doIt();
@@ -125,8 +126,9 @@ class KeyStoreContainerTest {
                            numberOfThreads,
                            -1,
                            isSign);
-        } else
+        } else {
             System.out.println("Key alias does not exist.");
+        }
     }
     static private KeyStoreContainer getKeyStore(final String providerName,
                                                  final String encryptProviderClassName,
@@ -171,8 +173,9 @@ class KeyStoreContainerTest {
         private Cipher cipherDeCryption;
         private boolean result;
         Crypto() throws CryptoNotAvailableForThisAlgorithm {
-            if ( ! (KeyStoreContainerTest.this.keyPair.getPublic() instanceof RSAKey) )
+            if ( ! (KeyStoreContainerTest.this.keyPair.getPublic() instanceof RSAKey) ) {
                 throw new CryptoNotAvailableForThisAlgorithm();
+            }
             this.modulusLength = ((RSAKey)KeyStoreContainerTest.this.keyPair.getPublic()).getModulus().bitLength();
             this.byteLength = (this.modulusLength+7)/8-11;
             this.original = this.testS.substring(0, this.byteLength).getBytes();
@@ -297,10 +300,11 @@ class KeyStoreContainerTest {
                 final boolean isOK = this.test.verify();
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 this.test.printInfo(new PrintStream(baos,true));
-                if ( isOK )
+                if ( isOK ) {
                     StressTest.this.performanceTest.getLog().info(baos.toString());
-                else
+                } else {
                     StressTest.this.performanceTest.getLog().error(baos.toString());
+                }
                 return isOK;
             }
             public String getJobTimeDescription() {
@@ -356,17 +360,20 @@ class KeyStoreContainerTest {
             this.nrOfTests++;
             final long nanoNumber = this.nrOfTests*(long)1000000000;
             System.out.println("Key statistics. ");
-            if ( this.totalSignTime < 0)
+            if ( this.totalSignTime < 0) {
                 System.out.print("Signing not possible with this key. See exception");
-            else
+            } else {
                 System.out.print("Signings per second: "+(nanoNumber+this.totalSignTime/2)/this.totalSignTime);
+            }
             if ( isCryptoAvailable ) {
-                if ( this.totalDecryptTime < 0)
+                if ( this.totalDecryptTime < 0) {
                     System.out.println("; Crypto not possible with this key. See exception");
-                else
+                } else {
                     System.out.println("; Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
-            } else
+                }
+            } else {
                 System.out.println(" No crypto available for this key.");
+            }
         }
 
     }

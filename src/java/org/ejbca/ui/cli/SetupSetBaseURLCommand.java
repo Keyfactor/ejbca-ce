@@ -13,10 +13,6 @@
  
 package org.ejbca.ui.cli;
 
-import javax.naming.InitialContext;
-
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
 
 /**

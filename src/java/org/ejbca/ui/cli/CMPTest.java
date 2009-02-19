@@ -169,7 +169,8 @@ class CMPTest extends ClientToolBox {
                     final byte value[] = bOut.toByteArray();
                     values.add(new X509Extension(false, new DEROctetString(value)));
                     oids.add(X509Extensions.SubjectAlternativeName);
-                }{
+                }
+                {
                     // KeyUsage
                     final int bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
                     final X509KeyUsage ku = new X509KeyUsage(bcku);
@@ -183,8 +184,9 @@ class CMPTest extends ClientToolBox {
                 }
                 // Make the complete extension package
                 myCertTemplate.setExtensions(new X509Extensions(oids, values));
-            } else
+            } else {
                 myCertTemplate.setExtensions(extensions);
+            }
 
             final CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
 
@@ -244,7 +246,8 @@ class CMPTest extends ClientToolBox {
             final AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");
             final byte[] salt = "foo123".getBytes();
             final DEROctetString derSalt = new DEROctetString(salt);
-            final PKIMessage ret; {
+            final PKIMessage ret; 
+            {
                 // Create the PasswordBased protection of the message
                 final PKIHeader head = msg.getHeader();
                 head.setSenderKID(new DEROctetString(this.keyId.getBytes()));
@@ -329,8 +332,9 @@ class CMPTest extends ClientToolBox {
                 // System.out.println("Got a message claiming to be of length: " + len);
                 // Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
                 final int version = dis.readByte(); moreBytesToRead--;
-                if ( version!=10 )
+                if ( version!=10 ) {
                     StressTest.this.performanceTest.getLog().error("Wrong version. Is "+version+" should be 10.");
+                }
 
                 // Read flags, 8 bits for version 10
                 /*final int flags =*/ dis.readByte(); moreBytesToRead--;
@@ -340,16 +344,18 @@ class CMPTest extends ClientToolBox {
                 // Read message type, 8 bits
                 final int msgType = dis.readByte(); moreBytesToRead--;
                 //System.out.println("Got a message of type: " +msgType);
-                if ( msgType!=5 )
+                if ( msgType!=5 ) {
                     StressTest.this.performanceTest.getLog().error("Wrong message type. Is "+msgType+" should be 5.");
+                }
 
                 // Read message
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
                 while ( moreBytesToRead>0 ) {
                     if ( dis.available()<=0 ) {
                         final int nextByte = dis.read();
-                        if ( nextByte < 0 )
+                        if ( nextByte < 0 ) {
                             break;
+                        }
                         baos.write(nextByte);
                         moreBytesToRead--;
                     } else {
@@ -359,15 +365,17 @@ class CMPTest extends ClientToolBox {
                         moreBytesToRead -= bytes.length;
                     }
                 }
-                if ( moreBytesToRead!=0 )
+                if ( moreBytesToRead!=0 ) {
                     StressTest.this.performanceTest.getLog().error("More bytes to read happens to be "+moreBytesToRead);
+                }
                 os.close();
                 dis.close();
                 socket.close();
                 //System.out.println("Read "+baos.size()+" bytes");
                 final byte respBytes[] = baos.toByteArray();
-                if ( respBytes==null || respBytes.length<1 )
+                if ( respBytes==null || respBytes.length<1 ) {
                     StressTest.this.performanceTest.getLog().error("Nothing received from host.");
+                }
                 return respBytes;
             } catch( Exception e ) {
                 StressTest.this.performanceTest.getLog().error("Error when sending message to TCP port.", e);
@@ -390,8 +398,9 @@ class CMPTest extends ClientToolBox {
                 return null;
             }
             // Some appserver (Weblogic) responds with "application/pkixcmp; charset=UTF-8"
-            if ( !contentType.startsWith("application/pkixcmp") )
+            if ( !contentType.startsWith("application/pkixcmp") ) {
                 StressTest.this.performanceTest.getLog().info("wrong content type: "+con.getContentType());
+            }
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // This works for small requests, and CMP requests are small enough
             final InputStream in = con.getInputStream();
@@ -428,17 +437,21 @@ class CMPTest extends ClientToolBox {
             }
             // Check that the signer is the expected CA
             final X509Name name = X509Name.getInstance(header.getSender().getName()); 
-            if ( header.getSender().getTagNo()!=4 || name==null || !name.equals(this.cacert.getSubjectDN()) )
+            if ( header.getSender().getTagNo()!=4 || name==null || !name.equals(this.cacert.getSubjectDN()) ) {
                 StressTest.this.performanceTest.getLog().error("Not signed by right issuer.");
+            }
 
-            if ( header.getSenderNonce().getOctets().length!=16 )
+            if ( header.getSenderNonce().getOctets().length!=16 ) {
                 StressTest.this.performanceTest.getLog().error("Wrong length of received sender nonce (made up by server). Is "+header.getSenderNonce().getOctets().length+" byte but should be 16.");
+            }
 
-            if ( !Arrays.equals(header.getRecipNonce().getOctets(), sessionData.getNonce()) )
+            if ( !Arrays.equals(header.getRecipNonce().getOctets(), sessionData.getNonce()) ) {
                 StressTest.this.performanceTest.getLog().error("recipient nonce not the same as we sent away as the sender nonce. Sent: "+Arrays.toString(sessionData.getNonce())+" Received: "+Arrays.toString(header.getRecipNonce().getOctets()));
+            }
 
-            if ( !Arrays.equals(header.getTransactionID().getOctets(), sessionData.getTransId()) )
+            if ( !Arrays.equals(header.getTransactionID().getOctets(), sessionData.getTransId()) ) {
                 StressTest.this.performanceTest.getLog().error("transid is not the same as the one we sent");
+            }
             {
                 // Check that the message is signed with the correct digest alg
                 final AlgorithmIdentifier algId = header.getProtectionAlg();
@@ -455,15 +468,17 @@ class CMPTest extends ClientToolBox {
                         this.firstTime = false;
                         this.isSign = true;
                         StressTest.this.performanceTest.getLog().info("Signature protection used.");
-                    } else if ( !this.isSign )
+                    } else if ( !this.isSign ) {
                         StressTest.this.performanceTest.getLog().error("Message password protected but should be signature protected.");
+                    }
                 } else if ( id.equals(CMPObjectIdentifiers.passwordBasedMac.getId()) ) {
                     if ( this.firstTime ) {
                         this.firstTime = false;
                         this.isSign = false;
                         StressTest.this.performanceTest.getLog().info("Password (PBE) protection used.");
-                    } else if ( this.isSign )
+                    } else if ( this.isSign ) {
                         StressTest.this.performanceTest.getLog().error("Message signature protected but should be password protected.");
+                    }
                 } else {
                     StressTest.this.performanceTest.getLog().error("No valid algorithm.");
                     return false;
@@ -478,8 +493,9 @@ class CMPTest extends ClientToolBox {
                     sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
                     sig.initVerify(this.cacert);
                     sig.update(protBytes);
-                    if ( !sig.verify(bs.getBytes()) )
+                    if ( !sig.verify(bs.getBytes()) ) {
                         StressTest.this.performanceTest.getLog().error("CA signature not verifying");
+                    }
                 } catch ( Exception e) {
                     StressTest.this.performanceTest.getLog().error("Not possible to verify signature.", e);
                 }           
@@ -531,8 +547,9 @@ class CMPTest extends ClientToolBox {
                 byte[] out = mac.doFinal();
                 // My out should now be the same as the protection bits
                 byte[] pb = protection.getBytes();
-                if ( !Arrays.equals(out, pb) )
+                if ( !Arrays.equals(out, pb) ) {
                     StressTest.this.performanceTest.getLog().error("Wrong PBE hash");
+                }
             }
             return true;
         }
@@ -552,8 +569,9 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No PKIBody for certificate received.");
                 return null;
             }
-            if ( body.getTagNo()!=1 )
+            if ( body.getTagNo()!=1 ) {
                 StressTest.this.performanceTest.getLog().error("Cert body tag not 1.");
+            }
             final CertRepMessage c = body.getIp();
             if ( c==null ) {
                 StressTest.this.performanceTest.getLog().error("No CertRepMessage for certificate received.");
@@ -564,15 +582,17 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No CertResponse for certificate received.");
                 return null;
             }
-            if ( resp.getCertReqId().getValue().intValue()!=requestId )
-                StressTest.this.performanceTest.getLog().error("Received CertReqId is "+resp.getCertReqId().getValue().intValue()+" but should be "+requestId);                
+            if ( resp.getCertReqId().getValue().intValue()!=requestId ) {
+                StressTest.this.performanceTest.getLog().error("Received CertReqId is "+resp.getCertReqId().getValue().intValue()+" but should be "+requestId);
+            }
             final PKIStatusInfo info = resp.getStatus();
             if ( info==null ) {
                 StressTest.this.performanceTest.getLog().error("No PKIStatusInfo for certificate received.");
                 return null;
             }
-            if ( info.getStatus().getValue().intValue()!=0 )
-                StressTest.this.performanceTest.getLog().error("Received Status is "+info.getStatus().getValue().intValue()+" but should be 0");                
+            if ( info.getStatus().getValue().intValue()!=0 ) {
+                StressTest.this.performanceTest.getLog().error("Received Status is "+info.getStatus().getValue().intValue()+" but should be 0");
+            }
             final CertifiedKeyPair kp = resp.getCertifiedKeyPair();
             if ( kp==null ) {
                 StressTest.this.performanceTest.getLog().error("No CertifiedKeyPair for certificate received.");
@@ -598,10 +618,12 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("Not possbile to create certificate.");
                 return null;
             }
-            if ( cert.getSubjectDN().hashCode() != new X509Name(sessionData.getUserDN()).hashCode() )
+            if ( cert.getSubjectDN().hashCode() != new X509Name(sessionData.getUserDN()).hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Subject is '"+cert.getSubjectDN()+"' but should be '"+sessionData.getUserDN()+'\'');
-            if ( cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode() )
+            }
+            if ( cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Issuer is '"+cert.getIssuerDN()+"' but should be '"+this.cacert.getSubjectDN()+'\'');
+            }
             try {
                 cert.verify(this.cacert.getPublicKey());
             } catch (Exception e) {
@@ -620,13 +642,16 @@ class CMPTest extends ClientToolBox {
                 return false;
             }
             final PKIHeader header = respObject.getHeader();
-            if ( header.getSender().getTagNo()!=4 )
+            if ( header.getSender().getTagNo()!=4 ) {
                 StressTest.this.performanceTest.getLog().error("Wrong tag in respnse message header. Is "+header.getSender().getTagNo()+" should be 4.");
+            }
             {
                 final X509Name name = X509Name.getInstance(header.getSender().getName());
-                if ( name.hashCode() != this.cacert.getSubjectDN().hashCode() )
+                if ( name.hashCode() != this.cacert.getSubjectDN().hashCode() ) {
                     StressTest.this.performanceTest.getLog().error("Wrong CA DN. Is '"+name+"' should be '"+this.cacert.getSubjectDN()+"'.");
-            }{
+                }
+            }
+            {
                 final X509Name name = X509Name.getInstance(header.getRecipient().getName());
                 if ( name.hashCode() != new X509Name(sessionData.userDN).hashCode() )
                     StressTest.this.performanceTest.getLog().error("Wrong recipient DN. Is '"+name+"' should be '"+sessionData.userDN+"'.");
@@ -636,11 +661,13 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No PKIBody for response received.");
                 return false;
             }
-            if ( body.getTagNo()!=19 )
+            if ( body.getTagNo()!=19 ) {
                 StressTest.this.performanceTest.getLog().error("Cert body tag not 19.");
+            }
             final DERNull n = body.getConf();
-            if ( n==null )
+            if ( n==null ) {
                 StressTest.this.performanceTest.getLog().error("Confirmation is null.");
+            }
             return true;
         }
         private PKIMessage genCertConfirm(final SessionData sessionData, final String hash) {
@@ -691,8 +718,9 @@ class CMPTest extends ClientToolBox {
                 }
                 checkCmpResponseGeneral(resp, this.sessionData, true);
                 final X509Certificate cert = checkCmpCertRepMessage(this.sessionData, resp, this.sessionData.getReqId());
-                if ( cert==null )
+                if ( cert==null ) {
                     return false;
+                }
                 StressTest.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
 
                 return true;
@@ -762,8 +790,9 @@ class CMPTest extends ClientToolBox {
                 super();
             }
             Socket getSocket() throws UnknownHostException, IOException {
-                if ( StressTest.this.isHttp )
+                if ( StressTest.this.isHttp ) {
                     return null;
+                }
                 return new Socket(StressTest.this.hostName, StressTest.this.port);
             }
             HttpURLConnection getHttpURLConnection() throws IOException {

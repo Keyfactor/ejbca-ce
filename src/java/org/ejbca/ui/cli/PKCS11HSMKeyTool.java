@@ -41,8 +41,9 @@ public class PKCS11HSMKeyTool extends HSMKeyTool {
         lArgs.add(args[2]);// signature provider contains the p11 shared lib.
         lArgs.add("null");// decryption provider not uses
         lArgs.add(KeyStoreContainer.KEYSTORE_TYPE_PKCS11);
-        for ( int i=3; i<args.length; i++) // rest of the arguments
+        for ( int i=3; i<args.length; i++) { // rest of the arguments
             lArgs.add(args[i]);
+        }
         super.execute(lArgs.toArray(new String[]{}));
     }
 

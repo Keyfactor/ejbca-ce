@@ -85,10 +85,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 Collection caids = getAuthorizationSession().getAuthorizedCAIds(administrator);
                 HashMap caidtonamemap = getCAAdminSession().getCAIdToNameMap(administrator);
                 
-                if( usehardtokens)
+                if( usehardtokens) {
                   getOutputStream().println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] [<hardtokenissuer>]");
-                else
+                } else {
                   getOutputStream().println("Usage: RA adduser <username> <password> <dn> <subjectAltName> <caname> <email> <type> <token> [<certificateprofile>]  [<endentityprofile>] ");
+                }
 
 
                 getOutputStream().println("");
@@ -124,10 +125,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 boolean first = true;
                 Iterator iter = caids.iterator();
                 while(iter.hasNext()){
-                  if(first)                    
+                  if(first) {                    
                     first= false;
-                  else
-                    getOutputStream().print(", ");                      
+                  } else {
+                    getOutputStream().print(", ");
+                  }
                   getOutputStream().print(caidtonamemap.get(iter.next()));
                 }
                 getOutputStream().print("\n");
@@ -136,10 +138,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 first = true;
                 iter = certprofileids.iterator();
                 while(iter.hasNext()){
-                  if(first)                    
+                  if(first) {                    
                     first= false;
-                  else
-                    getOutputStream().print(", ");                      
+                  } else {
+                    getOutputStream().print(", ");
+                  }
                   getOutputStream().print(certificateprofileidtonamemap.get(iter.next()));
                 }
                 getOutputStream().print("\n");
@@ -149,10 +152,11 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 first = true;
                 iter = endentityprofileids.iterator();
                 while(iter.hasNext()){
-                  if(first)                    
+                  if(first) {                    
                     first= false;
-                  else
-                    getOutputStream().print(", ");                      
+                  } else {
+                    getOutputStream().print(", ");
+                  }
                   getOutputStream().print(endentityprofileidtonamemap.get(iter.next()));
                 }
                 
@@ -271,12 +275,15 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               getOutputStream().println("Token: "+tokenname);
               getOutputStream().println("Certificate profile: "+certificatetypeid);
               getOutputStream().println("End entity profile: "+profileid);
-			  if (password.toUpperCase().equals("NULL"))
+			  if (password.toUpperCase().equals("NULL")) {
 				  password = null;
-              if (subjectaltname.toUpperCase().equals("NULL"))
+			  }
+              if (subjectaltname.toUpperCase().equals("NULL")) {
                   subjectaltname = null;
-              if (email.toUpperCase().equals("NULL"))
+              }
+              if (email.toUpperCase().equals("NULL")) {
                   email = null;
+              }
               try{
                 getUserAdminSession().addUser(administrator, username, password, dn, subjectaltname, email, false, profileid, certificatetypeid,
                                          type, tokenid, hardtokenissuerid, caid);

@@ -62,8 +62,9 @@ class HealthCheckTest extends ClientToolBox {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 while ( true ) {
                     int nextByte = is.read();
-                    if (nextByte<0)
+                    if (nextByte<0) {
                         break;
+                    }
                     baos.write(nextByte);
                 }
                 if ( !baos.toString().equals("ALLOK")) {

@@ -60,12 +60,13 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             getOutputStream().println("CA Description: " + cainfo.getDescription());
             getOutputStream().println("\n");
             
-            if (chain.size() < 2)
+            if (chain.size() < 2) {
               getOutputStream().println("This is a Root CA.");
-            else
+            } else {
               getOutputStream().println("This is a subordinate CA.");
+            }
               
-              getOutputStream().println("Size of chain: " + chain.size());
+            getOutputStream().println("Size of chain: " + chain.size());
             if (chain.size() > 0) {
                 X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
                 getOutputStream().println("Root CA DN: "+CertTools.getSubjectDN(rootcert));

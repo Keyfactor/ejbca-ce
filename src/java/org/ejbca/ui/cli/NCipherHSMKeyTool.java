@@ -38,8 +38,9 @@ public class NCipherHSMKeyTool extends HSMKeyTool {
         lArgs.add("com.ncipher.provider.km.nCipherKM"); // signature provider
         lArgs.add("com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt");// decryption provider
         lArgs.add("nCipher.sworld");// keystore implementation name
-        for ( int i=2; i<args.length; i++) // rest of the arguments
+        for ( int i=2; i<args.length; i++)  { // rest of the arguments
             lArgs.add(args[i]);
+        }
         super.execute(lArgs.toArray(new String[]{}));
     }
 

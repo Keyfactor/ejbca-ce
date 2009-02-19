@@ -13,9 +13,7 @@
  
 package org.ejbca.ui.cli;
 
-import java.io.BufferedReader;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.ui.cli.util.PasswordReader;

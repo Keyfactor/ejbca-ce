@@ -152,8 +152,9 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
             Signature signature = Signature.getInstance(testSigAlg, "BC");
             signature.initVerify(pub);
             signature.update(input);
-            if ( !signature.verify(signBV) )
+            if ( !signature.verify(signBV) ) {
                 throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
+            }
         }
     }
 

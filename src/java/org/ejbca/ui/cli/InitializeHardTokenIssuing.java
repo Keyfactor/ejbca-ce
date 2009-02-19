@@ -130,8 +130,9 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 	  String nextline = "";
 	  while(nextline!=null){
 	  	nextline = br.readLine();
-	  	if(nextline != null)				    
+	  	if(nextline != null) {				    
 	  		filecontent += nextline + "\n";
+	  	}
 	  }
 	  ((IPINEnvelopeSettings) admintokenprofile).setPINEnvelopeData(filecontent);
 	  ((IPINEnvelopeSettings) admintokenprofile).setPINEnvelopeTemplateFilename(SVGPINFILENAME);	  

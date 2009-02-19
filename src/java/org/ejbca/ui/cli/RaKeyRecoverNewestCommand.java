@@ -13,10 +13,6 @@
  
 package org.ejbca.ui.cli;
 
-import javax.naming.InitialContext;
-
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.model.ra.UserDataVO;
 
 

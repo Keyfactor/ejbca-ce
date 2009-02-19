@@ -77,8 +77,9 @@ public class Ocsp extends ClientToolBox {
                                 is.read();
                             }
                         }
-                        if ( oi==null )
+                        if ( oi==null ) {
                             break;
+                        }
                         try {
                             is.mark(100);
                             vSerialNrs.add((BigInteger)oi.readObject());
@@ -128,14 +129,16 @@ public class Ocsp extends ClientToolBox {
             this.cacert = getCertFromPemFile(args[4]);
             final int numberOfThreads = Integer.parseInt(args[5]);
             final int waitTime = Integer.parseInt(args[6]);
-            if( args.length>7 )
+            if( args.length>7 ) {
                 this.keyStoreFileName = args[7];
-            else
+            } else {
                 this.keyStoreFileName = null;
-            if( args.length>8 )
+            }
+            if( args.length>8 ) {
                 this.keyStorePassword = args[8];
-            else
+            } else {
                 this.keyStorePassword = null;
+            }
             this.performanceTest = new PerformanceTest();
             this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
         }
@@ -229,8 +232,9 @@ public class Ocsp extends ClientToolBox {
     public static void main(String[] args) {
         final List<String> lArgs = new ArrayList<String>();
         lArgs.add("dummy");
-        for ( int i=0; i<args.length; i++) // remove first argument
+        for ( int i=0; i<args.length; i++) { // remove first argument
             lArgs.add(args[i]);
+        }
         new Ocsp().execute(lArgs.toArray(new String[]{}));
     }
     /* (non-Javadoc)
