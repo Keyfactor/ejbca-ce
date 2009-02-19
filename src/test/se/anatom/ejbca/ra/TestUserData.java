@@ -218,7 +218,7 @@ public class TestUserData extends TestCase {
         ExtendedInformation ei = new ExtendedInformation();
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
-        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, ei);
+        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
         TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value, since we use the empty end entity profile, the counter will not be used
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
@@ -243,7 +243,7 @@ public class TestUserData extends TestCase {
         ei = new ExtendedInformation();
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
-        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT, 0, ei);
+        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
         TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
