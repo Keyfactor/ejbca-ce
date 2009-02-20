@@ -101,23 +101,21 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     }
     
     
-    /** Initializes a new global datauration with data used in ra web interface. */
+    /** Initializes a new global configuration with data used in ra web interface. */
     public void initialize(String adminpath, String availablelanguages, String availablethemes,
                            String publicport, String privateport, String publicprotocol, String privateprotocol){
        
-       String tempadminpath           = adminpath.trim();
+       String tempadminpath = adminpath.trim();
 
-       
-       if(tempadminpath == null)
+       if(tempadminpath == null) {
          tempadminpath = "";
+       }
        if(!tempadminpath.endsWith("/") && !tempadminpath.equals("")){
          tempadminpath = tempadminpath + "/";   // Add ending '/'
        }
        if(tempadminpath.startsWith("/")){
-         tempadminpath =tempadminpath.substring(1);   // Remove starting '/'
+         tempadminpath = tempadminpath.substring(1);   // Remove starting '/'
        }
-
-       
        
        data.put(ADMINPATH,tempadminpath);
        data.put(AVAILABLELANGUAGES,availablelanguages.trim());

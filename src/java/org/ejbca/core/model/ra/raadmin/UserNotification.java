@@ -80,9 +80,11 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
 
     public String getNotificationSender(){
-    	if(data.get(NOTIFICATIONSENDER) == null)
-    		return "";
-    	return (String) data.get(NOTIFICATIONSENDER);
+    	String ret = "";
+    	if(data.get(NOTIFICATIONSENDER) != null) {
+    		ret = (String) data.get(NOTIFICATIONSENDER);
+    	}
+    	return ret;
     }
     
     public void setNotificationSender(String sender){
@@ -90,9 +92,11 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
     
     public String getNotificationSubject(){
-    	if(data.get(NOTIFICATIONSUBJECT) == null)
-    		return "";
-    	return (String) data.get(NOTIFICATIONSUBJECT);
+    	String ret = "";
+    	if(data.get(NOTIFICATIONSUBJECT) != null) {
+    		ret = (String) data.get(NOTIFICATIONSUBJECT);
+    	}
+    	return ret;
     }
     
     public void setNotificationSubject(String subject){
@@ -100,9 +104,11 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
         
     public String getNotificationMessage(){
-    	if(data.get(NOTIFICATIONMESSAGE) == null)
-    		return "";
-    	return (String) data.get(NOTIFICATIONMESSAGE);
+    	String ret = "";
+    	if(data.get(NOTIFICATIONMESSAGE) != null) {
+    		ret = (String) data.get(NOTIFICATIONMESSAGE);
+    	}
+    	return ret;
     }
     
     public void setNotificationMessage(String message){
@@ -110,9 +116,11 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
 
     public String getNotificationRecipient(){
-    	if(data.get(NOTIFICATIONRECIPIENT) == null)
-    		return "";
-    	return (String) data.get(NOTIFICATIONRECIPIENT);
+    	String ret = "";
+    	if(data.get(NOTIFICATIONRECIPIENT) != null) {
+    		ret = (String) data.get(NOTIFICATIONRECIPIENT);
+    	}
+    	return ret;
     }
     
     /**
@@ -129,9 +137,11 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
      * @see UserNotification.EVENTS_EDITUSER
      */
     public String getNotificationEvents(){
-    	if(data.get(NOTIFICATIONEVENTS) == null)
-    		return "";
-    	return (String) data.get(NOTIFICATIONEVENTS);
+    	String ret = "";
+    	if(data.get(NOTIFICATIONEVENTS) != null) {
+    		ret = (String) data.get(NOTIFICATIONEVENTS);
+    	}
+    	return ret;
     }
 
     /** Returns a collection view of getNotificationEvents.

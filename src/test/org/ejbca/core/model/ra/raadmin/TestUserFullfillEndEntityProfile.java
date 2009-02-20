@@ -23,8 +23,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.dn.DnComponents;
 
 
@@ -35,7 +33,7 @@ import org.ejbca.util.dn.DnComponents;
  * @version $Id$
  */
 public class TestUserFullfillEndEntityProfile extends TestCase {
-    private static Logger log = Logger.getLogger(TestUserFullfillEndEntityProfile.class);
+    private static final Logger log = Logger.getLogger(TestUserFullfillEndEntityProfile.class);
     
 
     /**
