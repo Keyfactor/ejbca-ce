@@ -56,7 +56,7 @@ public class TestDnFieldExtractor extends TestCase {
     	String dn = "cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	HashMap i = extractor.getNumberOfFields();
-    	assertEquals(22,i.size());
+    	assertEquals(23,i.size());
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
     	cn = extractor.getField(DNFieldExtractor.CN, 1);
