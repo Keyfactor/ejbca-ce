@@ -156,7 +156,7 @@ Note that the installation must be done with a user with privileges to write to 
 example:
 </p> 
 <source>
-APPSRV_HOME=/opt/jboss-4.2.2
+APPSRV_HOME=/opt/jboss-4.2.3
 </source>
 <p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
 <br/>Due to Javas memory handling you mey need to assign more memory to ant in order to build the system without OutOfMemory errors. 
@@ -165,6 +165,11 @@ You can do that by setting an environment variable:
 <source>
 ANT_OPTS=-Xmx512m
 </source>
+<note>
+JBoss 5.0.0 have a bug causing issues with the BC JCE provider. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
+Remember this when it's time for upgrades!
+</note>
+
 <p>
 2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
 The default values works fine for a test installation. 
@@ -671,10 +676,11 @@ After this you should be able to access the admin-GUI in EJBCA.
 </subsubsection>
 </subsection>
 
-<subsection name="Websphere (EJBCA >=3.6)">
+<subsection name="Websphere (EJBCA 3.6)">
 <p>
-EJBCA has been tested with Websphere ND 6.1 and Oracle 10g or PostgreSQL 8.2 database.
+EJBCA 3.6 has been tested with Websphere ND 6.1 and Oracle 10g or PostgreSQL 8.2 database.
 <br/>(Websphere Express seems broken and Websphere Community Edition is a completely different appserver).
+<br/><br/>Note! Due to the massive work involved to support Websphere not all versions will be deployable. Currently only EJBCA 3.6 is possible to install on Websphere.
 </p>
 <p>Install the Unlimited strength crypto policy files for the IBM java shipped with Websphere. 
 You need to download these files from IBM. The IBM policy files version 1.4.2 works with IBM JDK 5.</p>
