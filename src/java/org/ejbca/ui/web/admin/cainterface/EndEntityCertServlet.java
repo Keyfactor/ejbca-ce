@@ -122,8 +122,9 @@ public class EndEntityCertServlet extends HttpServlet {
         // Keep this for logging.
         log.debug("Got request from "+req.getRemoteAddr());
         command = req.getParameter(COMMAND_PROPERTY_NAME);
-        if (command == null)
+        if (command == null) {
             command = "";
+        }
         if ((command.equalsIgnoreCase(COMMAND_NSCERT) || command.equalsIgnoreCase(COMMAND_IECERT) || command.equalsIgnoreCase(COMMAND_CERT)) 
         	 && issuerdn != null && certificatesn != null) {
         	

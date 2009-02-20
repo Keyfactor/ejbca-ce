@@ -69,10 +69,11 @@ public class CAAuthorization implements Serializable {
       if(profilenamesendentity==null){
         profilenamesendentity = new TreeMap();  
         Iterator iter = null;
-        if(usehardtokenprofiles)         
+        if(usehardtokenprofiles) {         
           iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_HARDTOKEN).iterator();
-        else         
+        } else {         
 		  iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ENDENTITY).iterator();
+        }
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -137,11 +138,11 @@ public class CAAuthorization implements Serializable {
           // If not superadministrator, then should only end entity profiles be added.
           if(superadministrator || certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){                      
             // if default profiles, add fixed to name.
-            if(id.intValue() <= SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY || 
-               (!superadministrator && certprofile.isApplicableToAnyCA()))
+            if(id.intValue() <= SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY || (!superadministrator && certprofile.isApplicableToAnyCA())) {
 			  allprofilenames.put(idtonamemap.get(id) + " (FIXED)",id);   
-            else
-		      allprofilenames.put(idtonamemap.get(id),id);          
+            } else {
+		      allprofilenames.put(idtonamemap.get(id),id);
+            }
           }
         }  
       }

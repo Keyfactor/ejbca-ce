@@ -122,8 +122,9 @@ public class GetCRLServlet extends HttpServlet {
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
         command = req.getParameter(COMMAND_PROPERTY_NAME);
-        if (command == null)
+        if (command == null) {
             command = "";
+        }
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
                 Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);

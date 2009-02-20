@@ -53,8 +53,9 @@ public class PublisherDataHandler implements Serializable {
       if(authorizedToEditPublishers()){
         publishersession.addPublisher(administrator, name, publisher);
         this.info.publishersEdited();
-      }else
-        throw new AuthorizationDeniedException("Not authorized to add publisher");  
+      }else {
+        throw new AuthorizationDeniedException("Not authorized to add publisher");
+      }
     }    
 
        /** Method to change a publisher. */     
@@ -62,8 +63,9 @@ public class PublisherDataHandler implements Serializable {
       if(authorizedToEditPublishers()){ 
         publishersession.changePublisher(administrator, name,publisher);   
 		this.info.publishersEdited();
-      }else
-        throw new AuthorizationDeniedException("Not authorized to edit publisher");      
+      }else {
+        throw new AuthorizationDeniedException("Not authorized to edit publisher");
+      }
     }
     
     /** Method to remove a publisher, returns true if deletion failed.*/ 
@@ -77,8 +79,9 @@ public class PublisherDataHandler implements Serializable {
 		  this.info.publishersEdited();
 		  returnval = false;
         }  
-      }else
+      }else {
         throw new AuthorizationDeniedException("Not authorized to remove publisher.");
+      }
         
       return returnval;          
     }
@@ -88,8 +91,9 @@ public class PublisherDataHandler implements Serializable {
      if(authorizedToEditPublishers()){    
 		publishersession.renamePublisher(administrator, oldname,newname);
 	   this.info.publishersEdited();
-     }else
+     }else {
        throw new AuthorizationDeniedException("Not authorized to rename publisher");
+     }
     }
     
 
@@ -97,28 +101,32 @@ public class PublisherDataHandler implements Serializable {
       if(authorizedToEditPublishers()){
         publishersession.clonePublisher(administrator, originalname,newname);
         this.info.publishersEdited();
-      }else
-         throw new AuthorizationDeniedException("Not authorized to clone publisher");          
+      }else {
+         throw new AuthorizationDeniedException("Not authorized to clone publisher");
+      }
     }
     
     public void testConnection(String name) throws PublisherConnectionException, AuthorizationDeniedException{         
     	if(authorizedToPublisherName(name)){
     		publishersession.testConnection(administrator, publishersession.getPublisherId(administrator, name));    		
-    	}else
-    		throw new AuthorizationDeniedException("Not authorized to clone publisher");          
+    	}else {
+    		throw new AuthorizationDeniedException("Not authorized to clone publisher");
+    	}
     }        
     
       /** Method to get a reference to a publisher.*/ 
     public BasePublisher getPublisher(int id) throws AuthorizationDeniedException{
-      if(!authorizedToPublisherId(id))
-        throw new AuthorizationDeniedException("Not authorized to publisher");            
+      if(!authorizedToPublisherId(id)) {
+        throw new AuthorizationDeniedException("Not authorized to publisher");
+      }
       
       return publishersession.getPublisher(administrator, id); 
     }      
           
     public BasePublisher getPublisher(String name) throws AuthorizationDeniedException{
-     if(!authorizedToPublisherName(name))
-        throw new AuthorizationDeniedException("Not authorized to publisher");            
+     if(!authorizedToPublisherName(name)) {
+        throw new AuthorizationDeniedException("Not authorized to publisher");
+     }
          
       return publishersession.getPublisher(administrator, name);
     }

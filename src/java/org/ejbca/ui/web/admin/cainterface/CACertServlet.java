@@ -279,14 +279,16 @@ public class CACertServlet extends HttpServlet {
         // Keep this for logging.
         log.debug("Got request from "+req.getRemoteAddr());
         command = req.getParameter(COMMAND_PROPERTY_NAME);
-        if (command == null)
+        if (command == null) {
             command = "";
+        }
         if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_JKSTRUSTSTORE)
         		|| command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null ) {
             String lev = req.getParameter(LEVEL_PROPERTY);
             int level = 0;
-            if (lev != null)
+            if (lev != null) {
                 level = Integer.parseInt(lev);
+            }
             // Root CA is level 0, next below root level 1 etc etc
             try {
                 ISignSessionLocal ss = getSignSession();

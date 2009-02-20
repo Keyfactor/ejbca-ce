@@ -49,8 +49,9 @@ public class CertificateProfileNameProxy implements java.io.Serializable {
       if(returnval==null){
         // Retreive profilename 
         returnval = certificatestoresession.getCertificateProfileName(admin, certificateprofileid);
-        if(returnval != null)
+        if(returnval != null) {
           certificateprofilenamestore.put(new Integer(certificateprofileid),returnval);
+        }
       }    
        
       return returnval;

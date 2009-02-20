@@ -135,8 +135,9 @@ public class CAInterfaceBean implements java.io.Serializable {
         Certificate next = (Certificate) iter.next();  
         RevokedInfoView revokedinfo = null;
         RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
-        if(revinfo != null && revinfo.getReason() != RevokedCertInfo.NOT_REVOKED)
+        if(revinfo != null && revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
           revokedinfo = new RevokedInfoView(revinfo);
+        }
         returnval[i] = new CertificateView(next, revokedinfo,null);
         i++;
       }

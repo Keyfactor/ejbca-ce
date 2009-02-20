@@ -95,14 +95,15 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 
 		cainfodata[CRLPUBLISHERS] = "";
         Iterator iter = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
-        if(iter.hasNext())
-		  cainfodata[CRLPUBLISHERS] = (String) publishersidtonamemap.get(iter.next()); 
-        else
-		cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
+        if(iter.hasNext()) {
+        	cainfodata[CRLPUBLISHERS] = (String) publishersidtonamemap.get(iter.next()); 
+        } else {
+        	cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
+        }
         
-        while(iter.hasNext())
-			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " +
-			                                               (String) publishersidtonamemap.get(iter.next());
+        while(iter.hasNext()) {
+			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + (String) publishersidtonamemap.get(iter.next());
+        }
         
 		cainfodata[OCSPSPACER]          = "&nbsp;"; // blank line
 		
@@ -112,8 +113,9 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
 	      if(next instanceof OCSPCAServiceInfo){
 	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-	      	if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null)
-	      	  ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);		  
+	      	if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null) {
+	      	  ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);
+	      	}
 	      }
 		}
 		
@@ -137,10 +139,11 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         cainfodata = new String[strings.length];  
         
         for(int i=0; i < strings.length; i++){
-          if(strings[i].equals(""))
+          if(strings[i].equals("")) {
               cainfodatatexts[i]="&nbsp;";
-          else
+          } else {
               cainfodatatexts[i] = ejbcawebbean.getText(strings[i]);
+          }
         }
         
         cainfodata[SUBJECTDN]  = cainfo.getSubjectDN();
@@ -152,10 +155,11 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
             cainfodata[CATYPE]     = ejbcawebbean.getText("X509");        	
         }
         cainfodata[CASPACER]          = "&nbsp;"; // blank line
-        if(cainfo.getExpireTime() == null)
+        if(cainfo.getExpireTime() == null) {
 		  cainfodata[EXPIRETIME] = "";
-		else
+        } else {
           cainfodata[EXPIRETIME] = ejbcawebbean.printDateTime(cainfo.getExpireTime());
+        }
         
         switch(cainfo.getStatus()){
             case SecConst.CA_ACTIVE :

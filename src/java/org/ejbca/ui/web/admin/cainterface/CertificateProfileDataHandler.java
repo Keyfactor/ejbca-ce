@@ -48,8 +48,9 @@ public class CertificateProfileDataHandler implements Serializable {
       if(authorizedToProfile(profile, true)){
         certificatestoresession.addCertificateProfile(administrator, name, profile);
         this.info.certificateProfilesEdited();
-      }else
-        throw new AuthorizationDeniedException("Not authorized to add certificate profile");  
+      }else {
+        throw new AuthorizationDeniedException("Not authorized to add certificate profile");
+      }
     }    
 
        /** Method to change a certificate profile. */     
@@ -57,8 +58,9 @@ public class CertificateProfileDataHandler implements Serializable {
       if(authorizedToProfile(profile, true)){ 
         certificatestoresession.changeCertificateProfile(administrator, name,profile);   
         this.info.certificateProfilesEdited();
-      }else
-        throw new AuthorizationDeniedException("Not authorized to edit certificate profile");      
+      }else {
+        throw new AuthorizationDeniedException("Not authorized to edit certificate profile");
+      }
     }
     
     /** Method to remove a end entity profile.*/ 
@@ -66,8 +68,9 @@ public class CertificateProfileDataHandler implements Serializable {
      if(authorizedToProfileName(name, true)){    
         certificatestoresession.removeCertificateProfile(administrator, name);
         this.info.certificateProfilesEdited();
-     }else
-        throw new AuthorizationDeniedException("Not authorized to remove certificate profile");        
+     }else {
+        throw new AuthorizationDeniedException("Not authorized to remove certificate profile");
+     }
     }
     
     /** Metod to rename a end entity profile */
@@ -75,8 +78,9 @@ public class CertificateProfileDataHandler implements Serializable {
      if(authorizedToProfileName(oldname, true)){    
        certificatestoresession.renameCertificateProfile(administrator, oldname,newname);
        this.info.certificateProfilesEdited();
-     }else
+     }else {
        throw new AuthorizationDeniedException("Not authorized to rename certificate profile");
+     }
     }
     
 
@@ -84,25 +88,26 @@ public class CertificateProfileDataHandler implements Serializable {
       if(authorizedToProfileName(originalname, false)){
         certificatestoresession.cloneCertificateProfile(administrator, originalname,newname);
         this.info.certificateProfilesEdited();
-      }else
-         throw new AuthorizationDeniedException("Not authorized to clone certificate profile");          
+      }else {
+         throw new AuthorizationDeniedException("Not authorized to clone certificate profile");
+      }
     }        
     
 
 
       /** Method to get a reference to a end entity profile.*/ 
     public CertificateProfile getCertificateProfile(int id) throws AuthorizationDeniedException{
-      if(!authorizedToProfileId(id, false))
-        throw new AuthorizationDeniedException("Not authorized to certificate profile");            
-      
+      if(!authorizedToProfileId(id, false)) {
+        throw new AuthorizationDeniedException("Not authorized to certificate profile");
+      }
       return certificatestoresession.getCertificateProfile(administrator, id); 
     }      
           
     public CertificateProfile getCertificateProfile(String profilename) throws AuthorizationDeniedException{
-     if(!authorizedToProfileName(profilename, false))
-        throw new AuthorizationDeniedException("Not authorized to certificate profile");            
-         
-      return certificatestoresession.getCertificateProfile(administrator, profilename);
+     if(!authorizedToProfileName(profilename, false)) {
+        throw new AuthorizationDeniedException("Not authorized to certificate profile");
+     }   
+     return certificatestoresession.getCertificateProfile(administrator, profilename);
     }
    
       
@@ -134,31 +139,34 @@ public class CertificateProfileDataHandler implements Serializable {
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck){
       boolean returnval = false;  
       try{  
-        boolean issuperadministrator = false;
-        try{
-          issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");  
-        }catch(AuthorizationDeniedException ade){}
-        
-        if(editcheck)        
-          authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
-          
-        HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
-       
-        if(profile != null){       
-	      if(!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY)
-	        returnval = false;
-	      else{          		      
-            Collection availablecas = profile.getAvailableCAs();
-            if(availablecas.contains(new Integer(CertificateProfile.ANYCA))){
-              if(issuperadministrator && editcheck)
-                returnval = true;  
-              if(!editcheck)
-                returnval = true;  
-            }else
-              returnval = authorizedcaids.containsAll(availablecas);
-	      }                           
-        }
-      }catch(AuthorizationDeniedException e){}
+    	  boolean issuperadministrator = false;
+    	  try {
+    		  issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");  
+    	  } catch(AuthorizationDeniedException ade) {}
+
+    	  if (editcheck) {        
+    		  authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
+    	  }
+    	  HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
+
+    	  if(profile != null){       
+    		  if(!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY) {
+    			  returnval = false;
+    		  } else {          		      
+    			  Collection availablecas = profile.getAvailableCAs();
+    			  if (availablecas.contains(new Integer(CertificateProfile.ANYCA))){
+    				  if (issuperadministrator && editcheck) {
+    					  returnval = true;  
+    				  }
+    				  if (!editcheck) {
+    					  returnval = true;
+    				  }
+    			  } else {
+    				  returnval = authorizedcaids.containsAll(availablecas);
+    			  }
+    		  }                           
+    	  }
+      }catch (AuthorizationDeniedException e) {}
          
       return returnval;  
     }    

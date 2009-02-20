@@ -140,8 +140,9 @@ public class CACertReqServlet extends HttpServlet {
         RequestHelper.setDefaultCharacterEncoding(req);
         String command = req.getParameter(COMMAND_PROPERTY_NAME);
         String format = req.getParameter(FORMAT_PROPERTY_NAME);
-        if (command == null)
+        if (command == null) {
             command = "";
+        }
         if (command.equalsIgnoreCase(COMMAND_CERTREQ)) {
             try {
                 

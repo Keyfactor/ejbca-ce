@@ -233,8 +233,9 @@ public class AdminCertReqServlet extends HttpServlet {
         newuser.setKeyRecoverable(false);
         
         String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign
-        if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
-        if (email != null) {
+        if (email == null) {
+        	email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
+        } else {
             newuser.setEmail(email);
         }
         
@@ -268,7 +269,9 @@ public class AdminCertReqServlet extends HttpServlet {
         
         
         String password = request.getParameter("password");
-        if (password == null) password = "";
+        if (password == null) {
+        	password = "";
+        }
         newuser.setPassword(password);
         newuser.setClearTextPassword(false);
         
@@ -361,23 +364,24 @@ public class AdminCertReqServlet extends HttpServlet {
      */
     private final static byte[] pkcs10Bytes(String pkcs10)
     {
-        if (pkcs10 == null) return null;
-        byte[] reqBytes = pkcs10.getBytes();
-        byte[] bytes = null;
-        try {
-            // A real PKCS10 PEM request
-            String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-            String endKey   = "-----END CERTIFICATE REQUEST-----";
-            bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
-        } catch (IOException e) {
+    	byte[] bytes = null;
+        if (pkcs10 != null) {
+            byte[] reqBytes = pkcs10.getBytes();
             try {
-                // Keytool PKCS10 PEM request
-                String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-                String endKey   = "-----END NEW CERTIFICATE REQUEST-----";
+                // A real PKCS10 PEM request
+                String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
+                String endKey   = "-----END CERTIFICATE REQUEST-----";
                 bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
-            } catch (IOException e2) {
-                // IE PKCS10 Base64 coded request
-                bytes = Base64.decode(reqBytes);
+            } catch (IOException e) {
+                try {
+                    // Keytool PKCS10 PEM request
+                    String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
+                    String endKey   = "-----END NEW CERTIFICATE REQUEST-----";
+                    bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
+                } catch (IOException e2) {
+                    // IE PKCS10 Base64 coded request
+                    bytes = Base64.decode(reqBytes);
+                }
             }
         }
         return bytes;
@@ -464,7 +468,9 @@ public class AdminCertReqServlet extends HttpServlet {
     private final String checkUsername(RAInterfaceBean rabean, String username)
     throws ServletException
     {
-        if (username != null) username = username.trim();
+        if (username != null) {
+        	username = username.trim();
+        }
         if (username == null || username.length() == 0) {
             throw new ServletException("Username must not be empty.");
         }
