@@ -13,18 +13,17 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.util.HashMap;
+
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
-
-
-import javax.ejb.CreateException;
-import java.util.HashMap;
 
 
 /**

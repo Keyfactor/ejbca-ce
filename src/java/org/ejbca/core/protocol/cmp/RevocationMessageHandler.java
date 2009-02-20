@@ -18,7 +18,6 @@ import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.util.Properties;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;

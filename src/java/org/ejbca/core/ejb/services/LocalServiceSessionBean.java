@@ -327,8 +327,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	}else{
         		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroraddingservice", name));
         	}
-        	if (!success)
+        	if (!success) {
         		throw new ServiceExistsException();
+        	}
         }else{
         	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoadd", name));
         }
@@ -486,8 +487,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         }else{
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname));
         }
-        if (!success)
+        if (!success) {
             throw new ServiceExistsException();
+        }
         log.trace("<renameService()");
     } // renameService
 
@@ -689,8 +691,10 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
 
         while (!foundfree) {
             try {
-                if (id > 1)
+                if (id > 1) {
+                	// Will throw exception if id is not found in the database
                 	getServiceDataHome().findByPrimaryKey(new Integer(id));
+                }
                 id = ran.nextInt();
             } catch (FinderException e) {
                 foundfree = true;

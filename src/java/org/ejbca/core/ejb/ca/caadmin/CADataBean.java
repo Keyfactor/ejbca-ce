@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;

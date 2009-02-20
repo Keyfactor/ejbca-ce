@@ -1505,7 +1505,9 @@ public class CommonEjbcaWSTest extends TestCase {
 		boolean foundkeyrec = false;
 		for (NameAndId n : profs) {
 			System.out.println("name: "+n.getName());
-			if (n.getName().equals("KEYRECOVERY")) foundkeyrec= true;
+			if (n.getName().equals("KEYRECOVERY")) {
+				foundkeyrec= true;
+			}
 			boolean found = false;
 			for (Integer i : ids) {
 				// All ids must be in profs

@@ -223,8 +223,9 @@ public abstract class PublisherDataBean extends BaseEntityBean {
         setId(id);
         setName(name);
         this.setUpdateCounter(0);
-        if (publisher != null)
+        if (publisher != null) {
             setPublisher(publisher);
+        }
 
         log.debug("Created Hard Token Profile " + name);
         return id;

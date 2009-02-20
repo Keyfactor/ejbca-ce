@@ -1548,8 +1548,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                 certificateStore.addCertReqHistoryData(admin,cert,data);
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
-                if (certProfile.getPublisherList() != null)
+                if (certProfile.getPublisherList() != null) {
                     pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, data.getExtendedinformation());
+                }
 
                 trace("<createCertificate(pk, ku, notAfter)");
                 return cert;

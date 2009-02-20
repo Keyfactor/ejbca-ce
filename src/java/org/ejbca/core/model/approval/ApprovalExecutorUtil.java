@@ -83,7 +83,9 @@ public class ApprovalExecutorUtil {
 	 * @return true if the request requires approval, false otherwise
 	 */ 
 	public static boolean requireApproval(ApprovalRequest req, ApprovalOveradableClassName[] overridableClassNames) {
-		if (req == null) return false;
+		if (req == null) {
+			return false;
+		}
 	    if (log.isTraceEnabled()) {
             log.trace(">requireApproval: "+req.getClass().getName());            
         }

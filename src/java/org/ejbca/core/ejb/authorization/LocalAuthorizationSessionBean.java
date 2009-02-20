@@ -487,8 +487,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
-        if (updateNeccessary())
+        if (updateNeccessary()) {
             updateAuthorizationTree();
+        }
         return getAuthorizer().isAuthorizedNoLog(admin, resource);
     }
 

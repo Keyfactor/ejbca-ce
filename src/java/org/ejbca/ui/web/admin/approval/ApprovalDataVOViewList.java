@@ -103,7 +103,9 @@ public class ApprovalDataVOViewList extends AbstractList implements java.io.Seri
     			{
     				return ascending ? c1.getStatus().compareTo(c2.getStatus()) : c2.getStatus().compareTo(c1.getStatus());
     			}
-    			else return 0;
+    			else {
+    				return 0;
+    			}
     		}
 		};
     	

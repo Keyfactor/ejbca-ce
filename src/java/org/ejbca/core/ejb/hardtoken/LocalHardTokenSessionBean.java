@@ -405,8 +405,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	        getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN,  new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
 	    }
 	    
-	    if(!success)
+	    if(!success) {
 	        throw new HardTokenProfileExistsException();
+	    }
 	    log.trace("<addHardTokenProfile()");
 	} // addHardTokenProfile
 
@@ -527,8 +528,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		   getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
 	   }
 
-       if(!success)
+       if(!success) {
 	     throw new HardTokenProfileExistsException();
+       }
 	   log.trace("<renameHardTokenProfile()");
 	} // renameHardTokenProfile
 
@@ -881,8 +883,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Iterator i = result.iterator();
           while(i.hasNext()){
             htih = (HardTokenIssuerDataLocal) i.next();
-            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles()))
+            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles())) {
               returnval.add(new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
+            }
           }
         }
         Collections.sort(returnval);
@@ -911,8 +914,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Iterator i = result.iterator();
           while(i.hasNext()){
             htih = (HardTokenIssuerDataLocal) i.next();
-            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles()))
+            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles())) {
               returnval.add(htih.getAlias());
+            }
           }
         }
         Collections.sort(returnval);
@@ -940,8 +944,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
           Iterator i = result.iterator();
           while(i.hasNext()){
             HardTokenIssuerDataLocal htih = (HardTokenIssuerDataLocal) i.next();
-            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles()))
+            if(authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles())) {
               returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
+            }
           }
         }
       }catch(FinderException e){}
@@ -1085,8 +1090,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         ArrayList availabletokentypes = getHardTokenIssuerData(admin, issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
 
         for(int i=0; i < availabletokentypes.size(); i++){
-          if(((Integer) availabletokentypes.get(i)).intValue() == userdata.getTokenType())
+          if(((Integer) availabletokentypes.get(i)).intValue() == userdata.getTokenType()) {
             returnval = true;
+          }
         }
 
         if(!returnval) {
@@ -1651,8 +1657,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		 profile = ((HardTokenProfileDataLocal) i.next()).getHardTokenProfile();
 		 if(profile instanceof EIDProfile){
 		   certprofiles = ((EIDProfile) profile).getAllCertificateProfileIds();
-		   if(certprofiles.contains(new Integer(id)))
+		   if(certprofiles.contains(new Integer(id))) {
 		     exists = true;
+		   }
 		 }
 	   }
 	 }catch(FinderException e){}
@@ -1678,8 +1685,9 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	   while(i.hasNext() && !exists){
 		 issuer = ((HardTokenIssuerDataLocal) i.next()).getHardTokenIssuer();
 		 hardtokenissuers = issuer.getAvailableHardTokenProfiles();
-		 if(hardtokenissuers.contains(new Integer(id)))
+		 if(hardtokenissuers.contains(new Integer(id))) {
 			 exists = true;		 
+		 }
 	   }
 	 }catch(FinderException e){}
 	 return exists;
@@ -1692,9 +1700,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
 	  while(!foundfree){
 		try{
-		  if(id > SecConst.TOKEN_SOFT)
+		  if(id > SecConst.TOKEN_SOFT) {
+			  // This will throw if nothing with this id is found in database
 			hardtokenprofilehome.findByPrimaryKey(new Integer(id));
-		    id = ran.nextInt();
+		  }
+		  id = ran.nextInt();
 		}catch(FinderException e){
 		   foundfree = true;
 		}

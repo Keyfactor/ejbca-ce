@@ -365,8 +365,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
     			String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", name);            	
         		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
         	}
-        	if (!success)
+        	if (!success) {
         		throw new UserDataSourceExistsException();
+        	}
         }else{
 			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
         	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
@@ -517,8 +518,9 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
         }
 
-        if (!success)
+        if (!success) {
             throw new UserDataSourceExistsException();
+        }
         log.trace("<renameUserDataSource()");
     } // renameUserDataSource
 
@@ -796,8 +798,10 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
 
         while (!foundfree) {
             try {
-                if (id > 1)
-                   userdatasourcehome.findByPrimaryKey(new Integer(id));
+                if (id > 1) {
+                	// will throw exception if id is not found in the database
+                	userdatasourcehome.findByPrimaryKey(new Integer(id));
+                }
                 id = ran.nextInt();
             } catch (FinderException e) {
                 foundfree = true;

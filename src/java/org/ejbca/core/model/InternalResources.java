@@ -97,8 +97,12 @@ public class InternalResources implements Serializable {
 	    	}
 	    } finally {
 	    	try {
-	    		if (primaryStream != null) primaryStream.close();
-	    		if (secondaryStream != null) secondaryStream.close();
+	    		if (primaryStream != null) {
+	    			primaryStream.close();
+	    		}
+	    		if (secondaryStream != null) {
+	    			secondaryStream.close();
+	    		}
 	    	} catch (IOException e) {
 	    		log.error("Error closing internal resources language streams: ", e);
 	    	}

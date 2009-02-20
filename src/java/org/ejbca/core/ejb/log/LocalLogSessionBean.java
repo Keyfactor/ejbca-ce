@@ -214,7 +214,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
 		                		properties.load(is);
 	                		}
 	                	} finally {
-	                		if (is != null) is.close();
+	                		if (is != null) { 
+	                			is.close();
+	                		}
 	                	}
 	                }
 	            	properties.setProperty(ILogDevice.PROPERTY_DEVICENAME, logDevices[i]);

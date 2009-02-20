@@ -532,8 +532,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
       //debug("Admin authorized to "+authorizedcaids.size()+" CAs.");
       try{
-          if(getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator"))
+          if(getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator")) {
               returnval.add(new Integer(SecConst.EMPTY_ENDENTITYPROFILE));
+          }
         }catch(AuthorizationDeniedException e){}
 
       try{
@@ -663,8 +664,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     		log.trace(">getEndEntityProfileId("+profilename+")");    		
     	}
     	int returnval = 0;
-    	if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME))
+    	if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
     		return SecConst.EMPTY_ENDENTITYPROFILE;
+    	}
     	try{
     		Integer id = (profiledatahome.findByProfileName(profilename)).getId();
     		returnval = id.intValue();
@@ -687,8 +689,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      */
     public String getEndEntityProfileName(Admin admin, int id){
       String returnval = null;
-      if(id == SecConst.EMPTY_ENDENTITYPROFILE)
+      if(id == SecConst.EMPTY_ENDENTITYPROFILE) {
         return EMPTY_ENDENTITYPROFILENAME;
+      }
       try{
         returnval = (profiledatahome.findByPrimaryKey(Integer.valueOf(id))).getProfileName();
       }catch(FinderException e){
@@ -767,8 +770,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      */
     public GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
         trace(">loadGlobalConfiguration()");
-        if(globalconfiguration != null)
+        if (globalconfiguration != null) {
           return globalconfiguration ;
+        }
 
         GlobalConfiguration ret=null;
         try{
@@ -838,8 +842,10 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
       while(!foundfree){
         try{
-          if(id > 1)
-            profiledatahome.findByPrimaryKey(Integer.valueOf(id));
+          if(id > 1) {
+        	  // will thwrow exception if this id is not found in the database
+        	  profiledatahome.findByPrimaryKey(Integer.valueOf(id));
+          }
           id++;
         }catch(FinderException e){
            foundfree = true;

@@ -147,7 +147,9 @@ public class GenerateToken {
 
         //  Use CN if as alias in the keystore, if CN is not present use username
     	String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-    	if (alias == null) alias = username;
+    	if (alias == null) {
+    		alias = username;
+    	}
 
         // Store keys and certificates in keystore.
     	KeyStore ks = null;

@@ -40,9 +40,9 @@ public abstract class BasePasswordGenerator implements IPasswordGenerator{
 
 		// Calculate the length of password
 		int passlen = maxlength;
-		if(minlength != maxlength)
+		if(minlength != maxlength) {
 		  passlen = minlength + ran.nextInt(difference);
-
+		}
 		password = new char[passlen];
 		for(int i=0; i < passlen; i++){
 		  password[i] = usedchars[ran.nextInt(usedchars.length)];

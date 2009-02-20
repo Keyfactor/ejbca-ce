@@ -80,9 +80,9 @@ public class POPOSigningKeyInput implements DEREncodable
         } else {
           throw new IllegalArgumentException("unknown tag: " + tagObj.getTagNo());
         }
-      }
-      else
+      } else {
         publicKeyMAC = PKMACValue.getInstance( obj );
+      }
    
       this.publicKey = SubjectPublicKeyInfo.getInstance( seq.getObjectAt(1) );
     }

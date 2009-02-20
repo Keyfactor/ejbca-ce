@@ -168,10 +168,11 @@ public class RequestHelper {
         req.setPassword(password);
         IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(X509ResponseMessage.class.getName()));
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-        if(resulttype == ENCODED_CERTIFICATE)
+        if(resulttype == ENCODED_CERTIFICATE) {
           result = cert.getEncoded();
-        else  
+        } else {  
           result = signsession.createPKCS7(administrator, cert, true);
+        }
         log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());

@@ -613,8 +613,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             ps.setInt(3, CertificateDataBean.CERT_ACTIVE);
             result = ps.executeQuery();
             while (result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT + 1) {
-                if (result.getString(1) != null && !result.getString(1).equals(""))
+                if (result.getString(1) != null && !result.getString(1).equals("")) {
                     returnval.add(result.getString(1));
+                }
             }
             trace("<findCertificatesByExpireTimeWithLimit()");
             return returnval;
@@ -1341,8 +1342,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             result = ps.executeQuery();
 
             int maxnumber = 0;
-            if (result.next())
+            if (result.next()) {
                 maxnumber = result.getInt(1);
+            }
         	if (log.isTraceEnabled()) {
                 log.trace("<getLastCRLNumber(" + maxnumber + ")");
         	}
@@ -1420,8 +1422,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	
     	try{
     	  Collection result = certReqHistoryHome.findByIssuerDNSerialNumber(issuerDN, certificateSN.toString());
-    	  if(result.iterator().hasNext())
+    	  if(result.iterator().hasNext()) {
     	    retval = ((CertReqHistoryDataLocal) result.iterator().next()).getCertReqHistory();
+    	  }
     	}catch(FinderException fe){
     		// Do nothing but return null
     	}
@@ -1443,7 +1446,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	try{
     	  Collection result = certReqHistoryHome.findByUsername(username);
     	  Iterator iter = result.iterator();
-    	  while(iter.hasNext()){
+    	  while(iter.hasNext()) {
     	    retval.add(((CertReqHistoryDataLocal) iter.next()).getCertReqHistory());
     	  }
     	}catch(FinderException fe){
@@ -1467,7 +1470,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	try {
     		Collection result = certprofilehome.findAll();
     		Iterator iter = result.iterator();
-    		while(iter.hasNext()){
+    		while(iter.hasNext()) {
     			CertificateProfileDataLocal pdata = (CertificateProfileDataLocal)iter.next();
     			String name = pdata.getCertificateProfileName();
     			pdata.upgradeProfile();
@@ -1518,8 +1521,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 throw new CertificateProfileExistsException(msg);
             } catch (FinderException e) {
                 try {
-                    certprofilehome.create(new Integer(certificateprofileid), certificateprofilename,
-                            certificateprofile);
+                    certprofilehome.create(new Integer(certificateprofileid), certificateprofilename, certificateprofile);
                 	String msg = intres.getLocalizedMessage("store.addedcertprofile", certificateprofilename);            	
                     getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
                 } catch (Exception f) {
@@ -1676,11 +1678,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_OCSPSIGNER));
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SERVER));
         }
-        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_SUBCA)
+        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_SUBCA) {
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SUBCA));
-        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_ROOTCA)
+        }
+        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_ROOTCA) {
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA));
-
+        }
         if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_HARDTOKEN) {
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
@@ -1713,8 +1716,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                         }
                     }
 
-                    if (allexists)
+                    if (allexists) {
                         returnval.add(next.getId());
+                    }
                 }
             }
         } catch (FinderException e) {
@@ -1775,33 +1779,33 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public CertificateProfile getCertificateProfile(Admin admin, String certificateprofilename) {
         CertificateProfile returnval = null;
 
-        if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
+        if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME)) {
             return new EndUserCertificateProfile();
-
-        if (certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME)) {
             return new CACertificateProfile();
-
-        if (certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME)) {
             return new RootCACertificateProfile();
-
-        if (certificateprofilename.equals(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME)) {
             return new OCSPSignerCertificateProfile();
-
-        if (certificateprofilename.equals(ServerCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(ServerCertificateProfile.CERTIFICATEPROFILENAME)) {
             return new ServerCertificateProfile();
-
-        if (certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME)) {
             return new HardTokenAuthCertificateProfile();
-
-        if (certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME)) {
             return new HardTokenAuthEncCertificateProfile();
-
-        if (certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME)) {
             return new HardTokenEncCertificateProfile();
-
-        if (certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME)) {
             return new HardTokenSignCertificateProfile();
-
+        }
 
         try {
             returnval = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getCertificateProfile();
@@ -1876,33 +1880,33 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	}
         int returnval = 0;
 
-        if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
+        if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_ENDUSER;
-
-        if (certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_SUBCA;
-
-        if (certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_ROOTCA;
-
-        if (certificateprofilename.equals(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_OCSPSIGNER;
-
-        if (certificateprofilename.equals(ServerCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(ServerCertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_SERVER;
-
-        if (certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH;
-
-        if (certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC;
-
-        if (certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_HARDTOKENENC;
-
-        if (certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME)) {
             return SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN;
-
+        }
         try {
             Integer id = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getId();
             returnval = id.intValue();
@@ -2063,21 +2067,21 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     private boolean isCertificateProfileNameFixed(String certificateprofilename) {
         boolean returnval = false;
 
-        if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME))
+        if (certificateprofilename.equals(EndUserCertificateProfile.CERTIFICATEPROFILENAME)) {
             return true;
-
-        if (certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME)) {
             return true;
-
-        if (certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME)) {
             return true;
-
-        if (certificateprofilename.equals(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME)) {
             return true;
-
-        if (certificateprofilename.equals(ServerCertificateProfile.CERTIFICATEPROFILENAME))
+        }
+        if (certificateprofilename.equals(ServerCertificateProfile.CERTIFICATEPROFILENAME)) {
             return true;
-
+        }
         return returnval;
     }
 

@@ -222,7 +222,9 @@ public class HttpGetCert {
                 System.out.println(inputLine);
             }        	
         } finally {
-        	if (in != null) in.close();
+        	if (in != null) {
+        		in.close();
+        	}
         }
 
         if (con.getResponseCode() == 200) {

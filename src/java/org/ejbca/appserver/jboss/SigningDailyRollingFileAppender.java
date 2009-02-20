@@ -359,8 +359,12 @@ class SignerThread implements Runnable {
 				e.printStackTrace();
 			} finally {
 				method.releaseConnection();
-				if (input != null) input.close();
-				if (baos != null) baos.close();
+				if (input != null) { 
+					input.close(); 
+				}
+				if (baos != null) { 
+					baos.close(); 
+				}
 			}   
 
 			if ( (outfile != null) && (replyBytes != null) ) {
@@ -376,7 +380,9 @@ class SignerThread implements Runnable {
 					fos = new FileOutputStream(outfile);
 					fos.write(outBytes);					
 				} finally {
-					if (fos != null) fos.close();
+					if (fos != null) {
+						fos.close();
+					}
 				}
 			}
 

@@ -2,8 +2,6 @@ package org.ejbca.core.model.approval;
 
 import junit.framework.TestCase;
 
-import org.ejbca.core.model.approval.ApprovalExecutorUtil;
-import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;

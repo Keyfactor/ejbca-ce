@@ -275,9 +275,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
         }
       }
 
-      if(returnval.size()==0)
+      if(returnval.size()==0) {
         returnval=null;
-
+      }
       log.trace("<getNextHardTokensToGenerate()");
       return returnval;
     }// getNextHardTokensToGenerate

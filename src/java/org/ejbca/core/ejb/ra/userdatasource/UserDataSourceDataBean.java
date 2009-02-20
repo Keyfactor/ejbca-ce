@@ -211,9 +211,9 @@ public abstract class UserDataSourceDataBean extends BaseEntityBean {
         setId(id);
         setName(name);
         this.setUpdateCounter(0);
-        if (userdatasource != null)
+        if (userdatasource != null) {
             setUserDataSource(userdatasource);
-
+        }
         log.debug("Created User Data Source " + name);
         return id;
     }

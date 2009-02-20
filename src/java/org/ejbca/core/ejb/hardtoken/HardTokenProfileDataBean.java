@@ -215,9 +215,9 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
         setId(id);
         setName(name);
         this.setUpdateCounter(0);
-        if(profile != null)
+        if(profile != null) {
           setHardTokenProfile(profile);
-
+        }
         log.debug("Created Hard Token Profile "+ name );
         return id;
     }

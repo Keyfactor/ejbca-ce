@@ -400,8 +400,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         	String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);            	
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
         }
-        if (!success)
+        if (!success) {
             throw new PublisherExistsException();
+        }
         log.trace("<addPublisher()");
     } // addPublisher
 
@@ -519,8 +520,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         	String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);            	
             getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
         }
-        if (!success)
+        if (!success) {
             throw new PublisherExistsException();
+        }
         log.trace("<renamePublisher()");
     } // renameHardTokenProfile
 
@@ -688,8 +690,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
 
         while (!foundfree) {
             try {
-                if (id > 1)
+                if (id > 1) {
                     publisherhome.findByPrimaryKey(new Integer(id));
+                }
                 id = ran.nextInt();
             } catch (FinderException e) {
                 foundfree = true;

@@ -69,8 +69,9 @@ public class CmpTcpServer {
 		FileHandler txtLog = null;
 		String logDir = CmpConfiguration.getTCPLogDir();
 		File log = new File(logDir + "/");
-		if(!log.canRead())
+		if(!log.canRead()) {
 			log.mkdir();
+		}
 		try	{
 			logger = Logger.getLogger("");
 			logger.setLevel(Level.FINEST);

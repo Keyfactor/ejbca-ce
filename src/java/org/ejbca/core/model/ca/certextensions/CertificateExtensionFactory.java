@@ -191,7 +191,9 @@ public class CertificateExtensionFactory {
 						log.error("Certificate Extension configuration file not found");
 					}
 				} finally {
-					if (is != null) is.close();
+					if (is != null) {
+						is.close();
+					}
 				}
 			}			
 			

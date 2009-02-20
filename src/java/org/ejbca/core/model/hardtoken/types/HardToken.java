@@ -89,9 +89,9 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
 
     
     public int getTokenProfileId() {
-    	if(data.get(HardToken.TOKENPROFILE) == null)
+    	if(data.get(HardToken.TOKENPROFILE) == null) {
     		return 0;
-    	
+    	}
         return ((Integer) data.get(HardToken.TOKENPROFILE)).intValue();
     }
     

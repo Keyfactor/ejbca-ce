@@ -529,15 +529,12 @@ public class UpgradeSessionBean extends BaseSessionBean {
                 try {
                     java.beans.XMLDecoder decoder = null;
                     try {
-                      decoder = new java.beans.XMLDecoder(
-                                new java.io.ByteArrayInputStream(ud.getBytes("UTF8")));
+                      decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(ud.getBytes("UTF8")));
+                      oldud  = (se.anatom.ejbca.common.UserDataVO)decoder.readObject();                          
+                      decoder.close();
                     } catch (UnsupportedEncodingException e) {
                         goon = false;
                     }
-                    if (goon) {
-                        oldud  = (se.anatom.ejbca.common.UserDataVO)decoder.readObject();                          
-                    }
-                    decoder.close();
                 } catch (Exception e) {
                     error("Can not decode old UserDataVO for fingerprint "+fp+": ", e);
                     goon = false;
@@ -559,7 +556,9 @@ public class UpgradeSessionBean extends BaseSessionBean {
                         error("Can not create new UserDataVO for fingerprint "+fp+": ", e);
                     } finally {
                         try {
-                            if (baos != null) baos.close();                            
+                            if (baos != null) {
+                            	baos.close();                            
+                            }
                         } catch (Exception e) {} 
                     }
                 }

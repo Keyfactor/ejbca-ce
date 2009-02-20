@@ -383,7 +383,6 @@ public abstract class UserDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public void setOpenPassword(String password) throws NoSuchAlgorithmException {
-
         String passwordHash = makePasswordHash(password);
         setPasswordHash(passwordHash);
         setClearPassword(password);
@@ -395,12 +394,13 @@ public abstract class UserDataBean extends BaseEntityBean {
      */
     public boolean comparePassword(String password) throws NoSuchAlgorithmException {
         log.trace(">comparePassword()");
-        if (password == null)
-            return false;
-
+        boolean ret = false;
+        if (password != null) {
+            //log.debug("Newhash="+makePasswordHash(password)+", OldHash="+passwordHash);
+            ret = (makePasswordHash(password).equals(getPasswordHash()));
+        }
         log.trace("<comparePassword()");
-        //log.debug("Newhash="+makePasswordHash(password)+", OldHash="+passwordHash);
-        return (makePasswordHash(password).equals(getPasswordHash()));
+        return ret;
     }
 
 
@@ -416,20 +416,17 @@ public abstract class UserDataBean extends BaseEntityBean {
 
     private String makePasswordHash(String password) throws NoSuchAlgorithmException {
         log.trace(">makePasswordHash()");
-
-        if (password == null)
-            return null;
-
         String ret = null;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
-            byte[] pwdhash = md.digest(password.trim().getBytes());
-            ret = new String(Hex.encode(pwdhash));
-        } catch (NoSuchAlgorithmException nsae) {
-            log.error("SHA1 algorithm not supported.", nsae);
-            throw nsae;
+        if (password != null) {
+            try {
+                MessageDigest md = MessageDigest.getInstance("SHA1");
+                byte[] pwdhash = md.digest(password.trim().getBytes());
+                ret = new String(Hex.encode(pwdhash));
+            } catch (NoSuchAlgorithmException nsae) {
+                log.error("SHA1 algorithm not supported.", nsae);
+                throw nsae;
+            }
         }
-
         log.trace("<makePasswordHash()");
         return ret;
     }

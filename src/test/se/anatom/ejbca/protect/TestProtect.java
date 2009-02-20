@@ -76,7 +76,9 @@ public class TestProtect extends TestCase {
             }
             cacheAdmin = cacheHome.create();
         }
-        if (entrys == null) createLogEntrys();
+        if (entrys == null) {
+        	createLogEntrys();
+        }
         log.trace("<setUp()");
     }
 

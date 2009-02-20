@@ -134,8 +134,9 @@ public class CertReqMsg implements DEREncodable
 
       v.add( certReq );
       
-      if( pop != null )
+      if( pop != null ) {
         v.add( pop );
+      }
 
       if( regInfos.size() > 0 )
       {

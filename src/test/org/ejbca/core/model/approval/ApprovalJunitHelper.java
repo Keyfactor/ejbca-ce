@@ -1,6 +1,5 @@
 package org.ejbca.core.model.approval;
 
-import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 
 public class ApprovalJunitHelper {
 
