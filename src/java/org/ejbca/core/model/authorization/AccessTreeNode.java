@@ -78,8 +78,9 @@ public class AccessTreeNode implements Serializable{
        }
        else{
            nextsubresource = subresource.substring(this.name.length());
-           if((nextsubresource.toCharArray()[0])=='/')
+           if((nextsubresource.toCharArray()[0])=='/') {
              nextsubresource = nextsubresource.substring(1);
+           }
 
            index = nextsubresource.indexOf('/');
            if(index != -1){
@@ -118,15 +119,16 @@ public class AccessTreeNode implements Serializable{
          // If this resource have state accept recursive state is given
          if( state == STATE_ACCEPT_RECURSIVE || internalstate == STATE_ACCEPT || internalstate == STATE_ACCEPT_RECURSIVE ){
              // If this resource's rule set don't says decline.
-           if(!(internalstate == STATE_DECLINE || internalstate == STATE_DECLINE_RECURSIVE))
+           if(!(internalstate == STATE_DECLINE || internalstate == STATE_DECLINE_RECURSIVE)) {
              returnval=true;
+           }
          }
-       }
-       else{
+       } else {
          //log.debug(" resource : " + resource);
          nextsubresource = resource.substring(this.name.length());
-         if((nextsubresource.toCharArray()[0])=='/')
-         nextsubresource = nextsubresource.substring(1);
+         if((nextsubresource.toCharArray()[0])=='/') {
+        	 nextsubresource = nextsubresource.substring(1);
+         }
          //log.debug(" nextresource : " + nextsubresource);
          
          index = nextsubresource.indexOf('/');

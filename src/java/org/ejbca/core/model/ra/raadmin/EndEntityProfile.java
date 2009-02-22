@@ -1611,8 +1611,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     	if(field.equals(DnComponents.DNEMAIL)){
     		if(isRequired(field,number)){
-    			if(!data.trim().equals(email.trim()))
+    			if(!data.trim().equals(email.trim())) {
     				throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match Email field.");
+    			}
     		}
     	} else if( field.equals(DnComponents.RFC822NAME) && isRequired(field,number) && getUse(field,number) ) {
     		if(!data.trim().equals(email.trim())) {
@@ -1645,14 +1646,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
         // Check if Username exists.
         if(isRequired(USERNAME,0)){
-          if(username == null || username.trim().equals(""))
+          if(username == null || username.trim().equals("")) {
             throw new UserDoesntFullfillEndEntityProfile("Username cannot be empty or null.");
+          }
         }
 
         // Check if required Email fields exists.
         if(isRequired(EMAIL,0)){
-          if(email == null || email.trim().equals(""))
+          if(email == null || email.trim().equals("")) {
             throw new UserDoesntFullfillEndEntityProfile("Email address cannot be empty or null.");
+          }
         }
 
 
@@ -1669,9 +1672,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         	}else{
                size = getNumberOfField(dnfields[i]);
                for(int j = 0; j < size; j++){
-               if(isRequired(dnfields[i],j))
-                 if(subjectdnfields.getField(dnFieldExtractorIds[i].intValue(),j).trim().equals(""))
-                  throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + dnfields[i] + "' must exist.");
+            	   if(isRequired(dnfields[i],j)) {
+            		   if(subjectdnfields.getField(dnFieldExtractorIds[i].intValue(),j).trim().equals("")) {
+            			   throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + dnfields[i] + "' must exist.");
+            		   }
+            	   }
                }
             }
         }

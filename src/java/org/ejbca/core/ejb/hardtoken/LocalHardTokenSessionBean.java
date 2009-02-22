@@ -1719,9 +1719,11 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
       while(!foundfree){
         try{
-          if(id > 1)
+          if(id > 1) {
+        	// This will throw if id is not found  
             hardtokenissuerhome.findByPrimaryKey(new Integer(id));
-            id = ran.nextInt();
+          }
+          id = ran.nextInt();
         }catch(FinderException e){
            foundfree = true;
         }

@@ -53,11 +53,11 @@ public class AuthorizationProxy implements Serializable {
       Boolean returnval = null;
       int adm = 0;
       
-      if(admin.isSpecialUser()){
+      if (admin.isSpecialUser()) {
         adm = admin.getSpecialUser();
-      }
-      else
+      } else {
         adm = CertTools.getSerialNumber(admin.getX509Certificate()).hashCode();
+      }
       int tmp = adm ^ resource.hashCode();
         // Check if name is in hashmap
       returnval = (Boolean) authstore.get(new Integer(tmp));

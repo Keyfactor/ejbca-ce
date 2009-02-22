@@ -18,15 +18,11 @@ import java.util.Date;
 import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.transaction.TransactionRolledbackException;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;

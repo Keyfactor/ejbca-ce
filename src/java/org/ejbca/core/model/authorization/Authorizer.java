@@ -67,8 +67,9 @@ public class Authorizer extends Object implements java.io.Serializable {
      */
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
         
-        if(admin == null)
+        if(admin == null) {
             throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+        }
         
         AdminInformation admininformation = admin.getAdminInformation();
         
@@ -107,8 +108,9 @@ public class Authorizer extends Object implements java.io.Serializable {
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
-        if(admin == null)
+        if(admin == null) {
             throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+        }
         
         // Check in accesstree.
         if(!authorizationproxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationproxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
@@ -126,8 +128,9 @@ public class Authorizer extends Object implements java.io.Serializable {
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isGroupAuthorized(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
-        if(admin == null)
+        if(admin == null) {
             throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+        }
         
         AdminInformation admininformation = admin.getAdminInformation();
         
@@ -165,8 +168,9 @@ public class Authorizer extends Object implements java.io.Serializable {
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isGroupAuthorizedNoLog(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
-        if(admin == null)
+        if(admin == null) {
             throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+        }
         
         // Check in accesstree.
         if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation(), pk, resource)) {

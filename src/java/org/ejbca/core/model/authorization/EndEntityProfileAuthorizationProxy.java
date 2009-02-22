@@ -119,15 +119,17 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
             // Retreive profilename over RMI
             try{
                 if(local){
-                    if(log)
+                    if(log) {
                         authorizationsessionlocal.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-                    else
+                    } else {
                         authorizationsessionlocal.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                    }
                 }else{
-                    if(log)
+                    if(log) {
                         authorizationsessionremote.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-                    else
+                    } else {
                         authorizationsessionremote.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                    }
                 }
                 returnval = Boolean.TRUE;
             }catch(AuthorizationDeniedException e){

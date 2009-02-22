@@ -765,9 +765,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	 */
 		
 	public Collection getExternalCAServiceTypes(){
-		if(data.get(EXTENDEDCASERVICES) == null)
+		if(data.get(EXTENDEDCASERVICES) == null) {
 		  return new ArrayList();
-		  		
+		}
 		return (Collection) data.get(EXTENDEDCASERVICES);	  	 
 	}
     

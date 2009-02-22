@@ -57,8 +57,8 @@ public class UserDataVO implements Serializable {
     }
 
     /**
-     * Creates new UserDataVO. All fields are almos required in this constructor. Password must
-     * be set amnually though. This is so you should be sure what you do with the password.
+     * Creates new UserDataVO. All fields are almost required in this constructor. Password must
+     * be set manually though. This is so you should be sure what you do with the password.
      *
      * @param user DOCUMENT ME!
      * @param dn DOCUMENT ME!
@@ -125,10 +125,11 @@ public class UserDataVO implements Serializable {
     }
 
     public void setKeyRecoverable(boolean keyrecoverable){
-      if(keyrecoverable)
+      if(keyrecoverable) {
         type = type | SecConst.USER_KEYRECOVERABLE;
-      else
+      } else {
         type = type & (~SecConst.USER_KEYRECOVERABLE);
+      }
     }
 
     public boolean getSendNotification(){
@@ -136,10 +137,11 @@ public class UserDataVO implements Serializable {
     }
 
     public void setSendNotification(boolean sendnotification){
-      if(sendnotification)
+      if(sendnotification) {
         type = type | SecConst.USER_SENDNOTIFICATION;
-      else
+      } else {
         type = type & (~SecConst.USER_SENDNOTIFICATION);
+      }
     }
 
 	/**

@@ -205,29 +205,33 @@ public class AdminEntity implements Serializable, Comparable {
                 case TYPE_EQUALCASE:
                   for(int i=0; i < size ; i++){
                     returnvalue = clientstrings[i].equals(matchvalue);
-                    if(returnvalue)
+                    if(returnvalue) {
                       break;
+                    }
                   }
                   break;
                 case TYPE_EQUALCASEINS:
                   for(int i=0; i < size ; i++){
                     returnvalue = clientstrings[i].equalsIgnoreCase(matchvalue);
-                    if(returnvalue)
+                    if(returnvalue) {
                       break;
+                    }
                   }
                   break;
                 case TYPE_NOT_EQUALCASE:
                   for(int i=0; i < size ; i++){
                     returnvalue = !clientstrings[i].equals(matchvalue);
-                    if(returnvalue)
+                    if(returnvalue) {
                       break;
+                    }
                   }
                   break;
                 case TYPE_NOT_EQUALCASEINS:
                   for(int i=0; i < size ; i++){
                     returnvalue = !clientstrings[i].equalsIgnoreCase(matchvalue);
-                    if(returnvalue)
+                    if(returnvalue) {
                       break;
+                    }
                   }
                   break;
                 default:
@@ -267,8 +271,9 @@ public class AdminEntity implements Serializable, Comparable {
     public void setMatchValue(String matchvalue){
       if(this.matchwith == AdminEntity.WITH_SERIALNUMBER){
          this.matchvalue = StringTools.stripWhitespace(matchvalue);
-      }else  
+      }else {  
          this.matchvalue=matchvalue;
+      }
     }
 
     public int getSpecialUser(){

@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.batch;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -113,13 +112,10 @@ public class BatchMakeP12 {
     /**
      * Creates new BatchMakeP12 object.
      *
-     * @throws javax.naming.NamingException
+     * @throws NamingException
      * @throws CreateException
-     * @throws RemoteException
      */
-    public BatchMakeP12()
-            throws javax.naming.NamingException, javax.ejb.CreateException, java.rmi.RemoteException,
-            java.io.IOException {
+    public BatchMakeP12() throws NamingException, CreateException, IOException {
         log.trace(">BatchMakeP12:");
         
         administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
@@ -129,15 +125,15 @@ public class BatchMakeP12 {
         CertTools.installBCProvider();
 
         Context jndiContext = getInitialContext();
-        Object obj = jndiContext.lookup("UserAdminSession");
+        Object obj = jndiContext.lookup(IUserAdminSessionHome.JNDI_NAME);
         adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        obj = jndiContext.lookup("RaAdminSession");
+        obj = jndiContext.lookup(IRaAdminSessionHome.JNDI_NAME);
         raadminhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
-        obj = jndiContext.lookup("RSASignSession");
+        obj = jndiContext.lookup(ISignSessionHome.JNDI_NAME);
         signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        obj = jndiContext.lookup("CAAdminSession");
+        obj = jndiContext.lookup(ICAAdminSessionHome.JNDI_NAME);
         caadminhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        obj = jndiContext.lookup("AuthenticationSession");
+        obj = jndiContext.lookup(IAuthenticationSessionHome.JNDI_NAME);
         authhome = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IAuthenticationSessionHome.class);
         
         IRaAdminSessionRemote raadmin = raadminhome.create();
@@ -303,7 +299,9 @@ public class BatchMakeP12 {
 
         // Use CN if as alias in the keystore, if CN is not present use username
         String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-        if (alias == null) alias = username;
+        if (alias == null) {
+        	alias = username;
+        }
 
         // Store keys and certificates in keystore.
         KeyStore ks = null;

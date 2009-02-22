@@ -121,8 +121,9 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
             admin = Admin.ADMINTYPETEXTS[Admin.TYPE_CLIENTCERT_USER] + ", Certificate SNR : " + admininfo.getAdminData();
         } else if (admininfo.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER) {
             if (admininfo.getAdminData() != null) {
-                if (!admininfo.getAdminData().equals(""))
+                if (!admininfo.getAdminData().equals("")) {
                     admin = Admin.ADMINTYPETEXTS[Admin.TYPE_PUBLIC_WEB_USER] + ", IP Address : " + admininfo.getAdminData();
+                }
             } else {
                 admin = Admin.ADMINTYPETEXTS[Admin.TYPE_PUBLIC_WEB_USER];
             }

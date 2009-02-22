@@ -48,8 +48,9 @@ public class AccessTree implements Serializable {
     public boolean isAuthorized(AdminInformation admininformation, String resource){
           String checkresource = resource;
         // Must begin with '/'.
-        if((checkresource.toCharArray())[0] != '/')
+        if((checkresource.toCharArray())[0] != '/') {
           checkresource = "/" + checkresource;
+        }
 
         // Check if user is athorized in the tree.
         boolean retval = rootnode.isAuthorized(admininformation, checkresource);

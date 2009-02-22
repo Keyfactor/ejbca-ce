@@ -198,8 +198,9 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("Use one of following commands: ");
 //            pw.println("  "+args[0]+" "+CREATE_CA_SWITCH);
             pw.println("  "+args[0]+" "+GENERATE_SWITCH);
-            if ( doModuleProtection() )
+            if ( doModuleProtection() ) {
                 pw.println("  "+args[0]+" "+GENERATE_MODULE_SWITCH);
+            }
             pw.println("  "+args[0]+" "+CERT_REQ);
             pw.println("  "+args[0]+" "+INSTALL_CERT);
             pw.println("  "+args[0]+" "+DELETE_SWITCH);

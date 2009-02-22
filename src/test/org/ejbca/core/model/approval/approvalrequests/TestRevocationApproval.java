@@ -14,7 +14,6 @@ package org.ejbca.core.model.approval.approvalrequests;
 
 import java.io.File;
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +21,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.RemoveException;
 import javax.naming.Context;
 
 import junit.framework.TestCase;
@@ -44,7 +42,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
@@ -222,10 +219,6 @@ public class TestRevocationApproval extends TestCase {
 	
 	/**
 	 * Verify that normal operations are working
-	 * @throws RemoveException 
-	 * @throws AuthorizationDeniedException 
-	 * @throws RemoteException 
-	 * @throws NotFoundException 
 	 */ 
 	public void test01VerifyAddRemoveUser() throws Exception {
 		String username = genRandomUserName("test01Revocation");

@@ -207,8 +207,9 @@ public class AvailableAccessRules {
       
       insertAvailableRegularAccessRules(admin, accessrules);
       
-      if(enableendentityprofilelimitations) 
+      if(enableendentityprofilelimitations) { 
         insertAvailableEndEntityProfileAccessRules(admin, accessrules);
+      }
 
       insertUserDataSourceAccessRules(admin, accessrules);
       
@@ -231,9 +232,9 @@ public class AvailableAccessRules {
       accessrules.add(ROLEACCESSRULES[0]);
       accessrules.add(ROLEACCESSRULES[1]); 
         
-      if(issuperadministrator)  
+      if(issuperadministrator) {  
         accessrules.add(ROLEACCESSRULES[2]);
-      
+      }
     }
 
     /**
@@ -259,9 +260,9 @@ public class AvailableAccessRules {
         addAuthorizedAccessRule(admin, REGULAR_VIEWPUKS, accessrules);
       }
         
-      if(usekeyrecovery)
+      if(usekeyrecovery) {
          addAuthorizedAccessRule(admin, REGULAR_KEYRECOVERY, accessrules);         
-      
+      }
     }
     
     
@@ -276,8 +277,9 @@ public class AvailableAccessRules {
 		  accessrules.add(ENDENTITYPROFILEBASE);
 		}catch(AuthorizationDeniedException e){
           //  Add it to superadministrator anyway
-				 if(issuperadministrator)
+				 if(issuperadministrator) {
 				   accessrules.add(ENDENTITYPROFILEBASE);
+				 }
 		}
 		
         
@@ -339,8 +341,9 @@ public class AvailableAccessRules {
      */
     private void insertCustomAccessRules(Admin admin, ArrayList accessrules){
       for(int i=0; i < customaccessrules.length; i++){
-        if(!customaccessrules[i].trim().equals(""))  
-          addAuthorizedAccessRule(admin, customaccessrules[i].trim(), accessrules);    
+        if(!customaccessrules[i].trim().equals("")) {  
+          addAuthorizedAccessRule(admin, customaccessrules[i].trim(), accessrules);
+        }
       } 
     }
     

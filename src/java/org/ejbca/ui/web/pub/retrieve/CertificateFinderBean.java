@@ -16,7 +16,6 @@ package org.ejbca.ui.web.pub.retrieve;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

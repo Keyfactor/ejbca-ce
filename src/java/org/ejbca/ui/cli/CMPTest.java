@@ -297,12 +297,18 @@ class CMPTest extends ClientToolBox {
             }
             return ret;
         }
+        
         private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws IOException {
             final HttpURLConnection httpConnection = sessionData.getHttpURLConnection();
-            if ( httpConnection!=null )
-                return sendCmpHttp(message, httpConnection);
-            return sendCmpTcp(message, sessionData.getSocket());
+            byte[] ret;
+            if ( httpConnection!=null ) {
+                ret = sendCmpHttp(message, httpConnection);
+            } else {
+            	ret = sendCmpTcp(message, sessionData.getSocket());
+            }
+            return ret;
         }
+        
         private static byte[] createTcpMessage(final byte[] msg) throws IOException {
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(bao); 
@@ -653,8 +659,9 @@ class CMPTest extends ClientToolBox {
             }
             {
                 final X509Name name = X509Name.getInstance(header.getRecipient().getName());
-                if ( name.hashCode() != new X509Name(sessionData.userDN).hashCode() )
+                if ( name.hashCode() != new X509Name(sessionData.userDN).hashCode() ) {
                     StressTest.this.performanceTest.getLog().error("Wrong recipient DN. Is '"+name+"' should be '"+sessionData.userDN+"'.");
+                }
             }
             final PKIBody body = respObject.getBody();
             if ( body==null ) {
@@ -790,22 +797,26 @@ class CMPTest extends ClientToolBox {
                 super();
             }
             Socket getSocket() throws UnknownHostException, IOException {
-                if ( StressTest.this.isHttp ) {
-                    return null;
+            	Socket ret = null;
+                if ( !StressTest.this.isHttp ) {
+                    ret = new Socket(StressTest.this.hostName, StressTest.this.port);
                 }
-                return new Socket(StressTest.this.hostName, StressTest.this.port);
+                return ret;
             }
+            
             HttpURLConnection getHttpURLConnection() throws IOException {
-                if ( !StressTest.this.isHttp )
-                    return null;
-                // POST the CMP request
-                // we are going to do a POST
-                final HttpURLConnection con = (HttpURLConnection)new URL("http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/" + resourceCmp).openConnection();
-                con.setDoOutput(true);
-                con.setRequestMethod("POST");
-                con.setRequestProperty("Content-type", "application/pkixcmp");
-                con.connect();
-                return con;
+            	HttpURLConnection ret = null;
+                if ( StressTest.this.isHttp ) {
+                    // POST the CMP request
+                    // we are going to do a POST
+                    final HttpURLConnection con = (HttpURLConnection)new URL("http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/" + resourceCmp).openConnection();
+                    con.setDoOutput(true);
+                    con.setRequestMethod("POST");
+                    con.setRequestProperty("Content-type", "application/pkixcmp");
+                    con.connect();
+                    ret = con;
+                }
+                return ret;
             }
             void newSession() {
                 this.userDN = "CN=CMP Test User Nr "+StressTest.this.random.nextInt()+",O=CMP Test,C=SE";

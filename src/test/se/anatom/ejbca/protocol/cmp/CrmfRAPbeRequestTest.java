@@ -18,7 +18,6 @@ import java.io.File;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -26,21 +25,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.CreateException;
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.ejbca.core.ejb.approval.IApprovalSessionHome;
-import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.TestRevocationApproval;
@@ -88,8 +75,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
 
-	public CrmfRAPbeRequestTest(String arg0) throws NamingException, RemoteException, CreateException,
-			CertificateEncodingException, CertificateException {
+	public CrmfRAPbeRequestTest(String arg0) throws RemoteException, CertificateException {
 		super(arg0);
 		CertTools.installBCProvider();
         // Try to use AdminCA1 if it exists

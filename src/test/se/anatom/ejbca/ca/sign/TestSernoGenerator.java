@@ -14,8 +14,6 @@
 package se.anatom.ejbca.ca.sign;
 
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
 import java.util.HashMap;
 
 import junit.framework.TestCase;

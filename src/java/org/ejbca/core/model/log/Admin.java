@@ -103,10 +103,13 @@ public class Admin implements Serializable {
 
     // Method that takes the internal data and returns a AdminInformation object required by the Authorization module.
     public AdminInformation getAdminInformation() {
-        if (type == TYPE_CLIENTCERT_USER)
-            return new AdminInformation(certificate);
-
-        return new AdminInformation(ADMINTYPETOADMINENTITY[type]);
+    	AdminInformation ret = null;
+        if (type == TYPE_CLIENTCERT_USER) {
+            ret = new AdminInformation(certificate);
+        } else {
+        	ret = new AdminInformation(ADMINTYPETOADMINENTITY[type]);
+        }
+        return ret;
     }
 
     /**
@@ -116,15 +119,17 @@ public class Admin implements Serializable {
 
     public int getCaId() {
         int returnval = LogConstants.INTERNALCAID;
-        if (type == TYPE_CLIENTCERT_USER)
+        if (type == TYPE_CLIENTCERT_USER) {
             returnval = CertTools.getIssuerDN(certificate).hashCode();
+        }
         return returnval;
     }
     public String toString() {
+    	String ret =  "UNKNOWN";
     	if ((type > -1) && (type < ADMINTYPETEXTS.length-1)) {
-        	return ADMINTYPETEXTS[type];    		
+        	ret = ADMINTYPETEXTS[type];    		
     	}
-    	return "UNKNOWN";
+    	return ret;
     }
 
 }

@@ -106,8 +106,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.dn.DnComponents;
 
-import com.sun.security.auth.X500Principal;
-
 
 
 
@@ -324,8 +322,9 @@ public class X509CA extends CA implements Serializable {
     public byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate
         try {
-            if (cert != null)
+            if (cert != null) {
                 cert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+            }
         } catch (Exception e) {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
         }

@@ -236,7 +236,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      *
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate() {
+    public void ejbCreate() throws CreateException {
         certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         String sign = getLocator().getString("java:comp/env/certSigning");
         if (StringUtils.equalsIgnoreCase(sign, "true")) {
