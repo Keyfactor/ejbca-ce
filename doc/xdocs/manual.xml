@@ -3049,6 +3049,205 @@ certSignKey signRoot
 crlSignKey signRoot
 testKey testRoot
 </source>
+<strong>Using module protected keys</strong>
+<p>
+Module protected keys do not need an operator card set. Hence no PIN code is needed to active such a key. A CA could be configured to use a keystore with module protected keys.
+</p><p>
+When using PKCS#11 slot 0 is used to indicate module protection. The only other thing except using slot 0 you have to do is to use a slightly different configuration file when creating the key. The file could look like this:
+</p>
+<source>
+name=NFastJava
+library=/opt/nfast/toolkits/pkcs11/libcknfast.so
+slotListIndex=0
+attributes(generate,CKO_PRIVATE_KEY,*) = {
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_TOKEN = true
+}
+</source>
+<p>
+When using JCA all you have to do is to replace 'generate' with 'generatemodule'. Example:
+</p>
+<source>
+jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 4096 default
+Warning: NFAST_HOME not set, using default to /opt/nfast
+Creating KeyStore of type nCipher.sworld with provider nCipherKM.
+Creating certificate with entry defaultKey.
+Next line will contain the identity identifying the keystore:
+41ca8b21186cb508c5e3b84f9df9b4208042f681
+jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 512 test 41ca8b21186cb508c5e3b84f9df9b4208042f681
+Warning: NFAST_HOME not set, using default to /opt/nfast
+Creating KeyStore of type nCipher.sworld with provider nCipherKM with ID 41ca8b21186cb508c5e3b84f9df9b4208042f681.
+Creating certificate with entry test.
+Next line will contain the identity identifying the keystore:
+41ca8b21186cb508c5e3b84f9df9b4208042f681
+</source>
+<strong>Not using preload.</strong>
+<p>
+If a 1/N card set is used then preload don't have to be used (but it can be used). If preload is not used then jboss could be made to start automatically
+at boot time.
+</p><p>
+For PKCS#11 simple do not use the preload command. The authentication code is now needed when activating the CA.
+</p><p>
+For JCA use the "-np" switch to the starting script if you don't want preload:
+</p>
+<source>$EJBCA_HOME/bin/nCipherJboss.sh -np start</source>
+<strong>Using more than one OCS.</strong>
+<p>
+It is also possible to use more than one OCS. This is needed when you want different CAs protected by different OCSs.
+</p>
+<p>
+The key to get this working is to set the environment variable <strong>CKNFAST_LOADSHARING=1</strong>. This environment variable is also implicitly set when running with preload.
+</p>
+<p>
+To get a list of all available slots do:
+</p>
+<source>
+lars@milton:~/work/test/nCipher$ CKNFAST_LOADSHARING=1 ~nfast/bin/ckinfo
+PKCS#11 library CK_INFO
+       interface version 2.01
+                   flags 0
+          manufacturerID "nCipher Corp. Ltd               "
+      libraryDescription "nCipher PKCS#11 1.58.48         "
+  implementation version 1.58
+
+slots[0] CK_SLOT_INFO
+         slotDescription "                                                                "
+          manufacturerID "nCipher Corp. Ltd               "
+                   flags 5
+                   flags &amp; CKF_TOKEN_PRESENT
+                   flags &amp; CKF_HW_SLOT
+        hardware version 0.00
+        firmware version 0.00
+
+
+slots[0] CK_TOKEN_INFO
+                   label "loadshared accelerator          "
+          manufacturerID "nCipher Corp. Ltd               "
+                   model "                "
+            serialNumber "                "
+                   flags 201
+                   flags &amp; CKF_RNG
+                   flags &amp; CKF_DUAL_CRYPTO_OPERATIONS
+       ulMaxSessionCount 1024
+     ulMaxRwSessionCount 1024
+             ulMaxPinLen 18446744073709551615
+             ulMinPinLen 0
+     ulTotalPublicMemory CK_UNAVAILABLE_INFORMATION
+      ulFreePublicMemory CK_UNAVAILABLE_INFORMATION
+    ulTotalPrivateMemory CK_UNAVAILABLE_INFORMATION
+     ulFreePrivateMemory CK_UNAVAILABLE_INFORMATION
+        hardware version 0.00
+        firmware version 0.00
+                 utcTime "                "
+
+slots[1] CK_SLOT_INFO
+         slotDescription "1of2_0                                                          "
+          manufacturerID "nCipher Corp. Ltd               "
+                   flags 6
+                   flags &amp; CKF_REMOVABLE_DEVICE
+                   flags &amp; CKF_HW_SLOT
+        hardware version 0.00
+        firmware version 0.00
+
+
+slots[1] Token not present
+slots[2] CK_SLOT_INFO
+         slotDescription "2of3_0                                                          "
+          manufacturerID "nCipher Corp. Ltd               "
+                   flags 6
+                   flags &amp; CKF_REMOVABLE_DEVICE
+                   flags &amp; CKF_HW_SLOT
+        hardware version 0.00
+        firmware version 0.00
+
+
+slots[2] Token not present
+slots[3] CK_SLOT_INFO
+         slotDescription "ejbca                                                           "
+          manufacturerID "nCipher Corp. Ltd               "
+                   flags 6
+                   flags &amp; CKF_REMOVABLE_DEVICE
+                   flags &amp; CKF_HW_SLOT
+        hardware version 0.00
+        firmware version 0.00
+
+
+slots[3] Token not present
+slots[4] CK_SLOT_INFO
+         slotDescription "2of3_1                                                          "
+          manufacturerID "nCipher Corp. Ltd               "
+                   flags 6
+                   flags &amp; CKF_REMOVABLE_DEVICE
+                   flags &amp; CKF_HW_SLOT
+        hardware version 0.00
+        firmware version 0.00
+
+
+slots[4] Token not present
+slots[5] CK_SLOT_INFO
+         slotDescription "1of2_1                                                          "
+          manufacturerID "nCipher Corp. Ltd               "
+                   flags 7
+                   flags &amp; CKF_TOKEN_PRESENT
+                   flags &amp; CKF_REMOVABLE_DEVICE
+                   flags &amp; CKF_HW_SLOT
+        hardware version 0.00
+        firmware version 0.00
+
+
+slots[5] CK_TOKEN_INFO
+                   label "1of2_1                          "
+          manufacturerID "nCipher Corp. Ltd               "
+                   model "                "
+            serialNumber "ee6071c52a77370c"
+                   flags 20D
+                   flags &amp; CKF_RNG
+                   flags &amp; CKF_LOGIN_REQUIRED
+                   flags &amp; CKF_USER_PIN_INITIALIZED
+                   flags &amp; CKF_DUAL_CRYPTO_OPERATIONS
+       ulMaxSessionCount 1024
+     ulMaxRwSessionCount 1024
+             ulMaxPinLen 18446744073709551615
+             ulMinPinLen 0
+     ulTotalPublicMemory CK_UNAVAILABLE_INFORMATION
+      ulFreePublicMemory CK_UNAVAILABLE_INFORMATION
+    ulTotalPrivateMemory CK_UNAVAILABLE_INFORMATION
+     ulFreePrivateMemory CK_UNAVAILABLE_INFORMATION
+        hardware version 0.00
+        firmware version 0.00
+                 utcTime "                "
+</source><p>
+You then got to identify your OCSs with the slot index. The "label" in the list gives the name you gave to your OCS when creating it. Then you get the slot list index from the x in "slot[x]. Use this for "slotListIndex" in the CA properties.
+</p><p>
+When using a 1/n OCS one card of the OCS must be inserted when activating a CA. If the OCS is persistent then the card could be removed and you could then activate another CA by inserting its OCS.
+</p><p>
+When using k/n OCS where k>1 you got to load all OCSs to be used with preload and then start the application server also with preload. Example:
+</p><source>
+lars@milton:~/work/test/nCipher$ ~nfast/bin/preload -c 2of3_0 pause
+-- follow instruction to insert cards and enter pins. --
+-- then press ctr-z --
+lars@milton:~/work/test/nCipher$ bg 
+lars@milton:~/work/test/nCipher$ ~nfast/bin/preload -c 2of3_1 exit
+-- follow instruction to insert cards and enter pins. --
+</source><p>
+When the application server then is started with preload, CAs defined for slot list index 2 and 4 could be activated. When activating a CA when running preload no PIN has to be given. Also when the application server is started with preload then only CAs of preloaded slots could be activated (not preloaded 1/n slots could not be used).
+</p>
+<strong>Setting public exponent.</strong>
+<p>
+To choose the public exponent the "nCipherHSM.sh" script can not be used. nCipher has not implemented the initialization method of "KeyPairGenerator" that is
+used to set the public exponent.
+But there is another way to generate keys with the public exponent as a parameter. You must have this before you start:
+<ul>
+<li>A card that belongs to a 1/n card set in the nCipher reader</li>
+<li>A keystore protected by this card set</li>
+</ul>
+The keystore may be created with "$EJBCA_HOME/bin/nCipherHSM.sh createKeyStore" or "$EJBCA_HOME/bin/nCipherHSM.sh generate ...". Put the ID of the
+keystore (same as is used in the EJBCA web GUI) in a file. This file may not contain any other characters other than the characters of the ID. Check that the
+length of the file is 40 byte.
+If the file is called "single.jks" then the key is created like this:
+</p>
+<source>/opt/nfast/bin/generatekey -g -csingle -b jcecsp alias=default keystore=single.jks type=RSA pubexp=3 size=2048 keystorepass=single</source>
 <strong>Importing an existing CA or sub-CA to EJBCA.</strong>
 <p>
 Note: you must set JAVA_HOME and possible JDK_HOME for import to work.
@@ -3120,64 +3319,6 @@ When importing a sub-CA, choose Signed by 'External CA'. Edit other properties i
 request'. Ignore the request and edit the same 'ImportedCA'. Press 'Receive Certificate Response' and upload the old
 sub-CA's certificate. Activate the CA-token from Basic Functions when needed.
 </p>
-<strong>Using module protected keys</strong>
-<p>
-Module protected keys do not need an operator card set. Hence no PIN code is needed to active such a key. A CA could be configured to use a keystore with module protected keys.
-</p><p>
-When using PKCS#11 slot 0 is used to indicate module protection. The only other thing except using slot 0 you have to do is to use a slightly different configuration file when creating the key. The file could look like this:
-</p>
-<source>
-name=NFastJava
-library=/opt/nfast/toolkits/pkcs11/libcknfast.so
-slotListIndex=0
-attributes(generate,CKO_PRIVATE_KEY,*) = {
-  CKA_SIGN = true
-  CKA_DECRYPT = true
-  CKA_TOKEN = true
-}
-</source>
-<p>
-When using JCA all you have to do is to replace 'generate' with 'generatemodule'. Example:
-</p>
-<source>
-jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 4096 default
-Warning: NFAST_HOME not set, using default to /opt/nfast
-Creating KeyStore of type nCipher.sworld with provider nCipherKM.
-Creating certificate with entry defaultKey.
-Next line will contain the identity identifying the keystore:
-41ca8b21186cb508c5e3b84f9df9b4208042f681
-jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 512 test 41ca8b21186cb508c5e3b84f9df9b4208042f681
-Warning: NFAST_HOME not set, using default to /opt/nfast
-Creating KeyStore of type nCipher.sworld with provider nCipherKM with ID 41ca8b21186cb508c5e3b84f9df9b4208042f681.
-Creating certificate with entry test.
-Next line will contain the identity identifying the keystore:
-41ca8b21186cb508c5e3b84f9df9b4208042f681
-</source>
-<strong>Not using preload.</strong>
-<p>
-If a 1/N card set is used then preload don't have to be used (but it can be used). If preload is not used then jboss could be made to start automatically
-at boot time.
-</p><p>
-For PKCS#11 simple do not use the preload command. The authentication code is now needed when activating the CA.
-</p><p>
-For JCA use the "-np" switch to the starting script if you don't want preload:
-</p>
-<source>$EJBCA_HOME/bin/nCipherJboss.sh -np start</source>
-<strong>Setting public exponent.</strong>
-<p>
-To choose the public exponent the "nCipherHSM.sh" script can not be used. nCipher has not implemented the initialization method of "KeyPairGenerator" that is
-used to set the public exponent.
-But there is another way to generate keys with the public exponent as a parameter. You must have this before you start:
-<ul>
-<li>A card that belongs to a 1/n card set in the nCipher reader</li>
-<li>A keystore protected by this card set</li>
-</ul>
-The keystore may be created with "$EJBCA_HOME/bin/nCipherHSM.sh createKeyStore" or "$EJBCA_HOME/bin/nCipherHSM.sh generate ...". Put the ID of the
-keystore (same as is used in the EJBCA web GUI) in a file. This file may not contain any other characters other than the characters of the ID. Check that the
-length of the file is 40 byte.
-If the file is called "single.jks" then the key is created like this:
-</p>
-<source>/opt/nfast/bin/generatekey -g -csingle -b jcecsp alias=default keystore=single.jks type=RSA pubexp=3 size=2048 keystorepass=single</source>
 </subsection>
 
 <subsection name="nCipher netHSM load balancing">
@@ -3191,8 +3332,11 @@ After setting up the first netHSM, do the following on the second:
 </ul>
 </p>
 <p>
-With load balancing you need to run JBoss under 'preload'.
-To run you need to load the keys in both HSM using an operator card. For this you have to select for which HSM you want to load the keys first 
+With load balancing you need to have CKNFAST_LOADSHARING=1. Preload implicitly sets CKNFAST_LOADSHARING.
+</p><p>
+TODO --- describe procedure when not using preload.
+</p><p>
+If preload is used then load the keys in both HSMs using an operator card. For this you have to select for which HSM you want to load the keys first 
 and provide the passphrase for the card in each HSM. Here is the starting sequence of JBoss to illustrate what happens exactly:
 </p>
 <source>
