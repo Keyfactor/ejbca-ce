@@ -20,10 +20,14 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
@@ -96,7 +100,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
-		} catch (CreateException e) {
+		} catch (EJBException e) {
 			log.error("EJBCA WebService error: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
@@ -128,7 +132,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
 			retval = true;
 		}catch(AuthorizationDeniedException e){
-		} catch (CreateException e) {			
+		} catch (EJBException e) {			
 			log.error("Error checking if isAdmin: ", e);
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error, isAdmin : ",e);
@@ -154,7 +158,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid );		
 		} catch (RemoteException e) {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
-		} catch (CreateException e) {
+		} catch (EJBException e) {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}
 
@@ -189,12 +193,12 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 		} catch (RemoteException e) {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
-		} catch (CreateException e) {
+		} catch (EJBException e) {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}		
 	}
 	
-	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException, CreateException, NamingException, RemoteException {
+	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException, RemoteException {
 		CAInfo cainfo = getCAAdminSession().getCAInfoOrThrowException(admin,userdata.getCaName());
 		int caid = cainfo.getCAId();
 		if (caid == 0) {
@@ -250,7 +254,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	
 	
 	
-	protected UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException, CreateException, NamingException, RemoteException{
+	protected UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException, RemoteException {
 		String username = userdata.getUsername();
 		String caname = getCAAdminSession().getCAInfo(admin,userdata.getCAId()).getName();
 		if(caname == null){
@@ -361,7 +365,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	 * @throws CreateException
 	 * @throws NamingException
 	 */
-	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException, ClassCastException, CreateException, NamingException, RemoteException{
+	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException, ClassCastException, RemoteException{
 		Query retval = new Query(Query.TYPE_USERQUERY);		  		
 		switch(usermatch.getMatchwith()){
 		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
@@ -396,7 +400,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	 * @throws CreateException 
 	 * @throws ClassCastException 
 	 */
-	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) throws CreateException, NamingException, RemoteException {
+	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) throws RemoteException {
      ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
      Iterator<java.security.cert.Certificate> iter = certs.iterator();
      while(iter.hasNext()){
@@ -416,21 +420,43 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
      return retval;
 	}
 	
-	protected Collection<java.security.cert.Certificate> returnOnlyAuthorizedCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) throws RemoteException, CreateException {
-		ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
+	/**
+	 * Checks authorization for each certificate and optionally check that it's valid. Does not check revocation status. 
+	 * @param admin is the admin used for authorization
+	 * @param certs is the collection of certs to verify
+	 * @param validate set to true to perform validation of each certificate
+	 * @return a List of valid and authorized certificates
+	 */
+	protected List<Certificate> returnAuthorizedCertificates(Admin admin, Collection<java.security.cert.Certificate> certs, boolean validate) {
+		List<Certificate> retval = new ArrayList<Certificate>();
 		Iterator<java.security.cert.Certificate> iter = certs.iterator();
+		Map<Integer, Boolean> authorizationCache = new HashMap<Integer, Boolean>(); 
 		while(iter.hasNext()){
 			java.security.cert.Certificate next = iter.next();
-			try{
-				// check that admin is autorized to CA
-				int caid = CertTools.getIssuerDN(next).hashCode();		
-				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
-				retval.add(next);
-			}catch(AuthorizationDeniedException ade){
-				log.debug("findCerts : not authorized to certificate " + CertTools.getSerialNumberAsString(next));
+			try {
+				if (validate) {
+					// Check validity
+					CertTools.checkValidity(next, new Date());
+				}
+				// Check authorization
+				int caid = CertTools.getIssuerDN(next).hashCode();
+				Boolean authorized = authorizationCache.get(caid);
+				if (authorized == null) {
+					authorized = getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+					authorizationCache.put(caid, authorized);
+				}
+				if (authorized) {
+					retval.add(new Certificate((java.security.cert.Certificate) next));
+				}
+			} catch (CertificateExpiredException e) {		// Drop invalid cert
+			} catch (CertificateNotYetValidException e) {   // Drop invalid cert
+			} catch (CertificateEncodingException e) {		// Drop invalid cert
+				log.error("A defect certificate was detected.");
+			} catch (AuthorizationDeniedException e) {		// Drop unauthorized cert
+			} catch (RemoteException e) {
+				throw new EJBException(e);	// No reason to use checked Exception here
 			}
 		}
-		
 		return retval;
 	}
 	
@@ -440,7 +466,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	private final int[] softtokenids = {SecConst.TOKEN_SOFT_BROWSERGEN,
 			SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM};
 	
-	private int getTokenId(Admin admin, String tokenname) throws RemoteException, CreateException{
+	private int getTokenId(Admin admin, String tokenname) throws RemoteException {
       int returnval = 0;
       
       // First check for soft token type
@@ -457,7 +483,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
       return returnval;
 	}
 	
-	private String getTokenName(Admin admin, int tokenid) throws RemoteException, CreateException{
+	private String getTokenName(Admin admin, int tokenid) throws RemoteException {
       String returnval = null;
       
       // First check for soft token type

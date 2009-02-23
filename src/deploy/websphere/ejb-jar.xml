@@ -3276,6 +3276,18 @@
             </query-method>
             <ejb-ql><![CDATA[SELECT OBJECT(a) from CertificateDataBean a WHERE a.username=?1]]></ejb-ql>
          </query>
+         <query>
+            <description><![CDATA[findByUsernameAndStatus]]></description>
+            <query-method>
+               <method-name>findByUsernameAndStatus</method-name>
+               <method-params>
+                  <method-param>java.lang.String</method-param>
+                  <method-param>int</method-param>
+               </method-params>
+            </query-method>
+            <ejb-ql><![CDATA[SELECT OBJECT(a) from CertificateDataBean a WHERE a.username=?1 AND a.status=?2 ORDER BY a.expireDate DESC, a.serialNumber DESC]]></ejb-ql>
+         </query>
+         
 	  <!-- Write a file named ejb-finders-CertificateDataBean.xml if you want to define extra finders. -->
 
       </entity>

@@ -28,6 +28,7 @@ public class ErrorCode implements Serializable {
     private static final String _INVALID_KEY = "INVALID_KEY"; // Provided key is invalid.
     private static final String _ILLEGAL_KEY = "ILLEGAL_KEY"; // User key is illegal (key length too small).
     private static final String _USER_WRONG_STATUS = "USER_WRONG_STATUS"; // User wrong status.
+    private static final String _USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS"; // User already exists
     private static final String _LOGIN_ERROR = "LOGIN_ERROR"; // Login error.
     private static final String _SIGNATURE_ERROR = "SIGNATURE_ERROR"; // Error in signature.
     private static final String _INVALID_KEY_SPEC = "INVALID_KEY_SPEC"; // Invalid key specification.
@@ -85,6 +86,8 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode ILLEGAL_KEY = new ErrorCode(_ILLEGAL_KEY);
     /** User wrong status. */
     public static final ErrorCode USER_WRONG_STATUS = new ErrorCode(_USER_WRONG_STATUS);
+    /** User already exists. */
+    public static final ErrorCode USER_ALREADY_EXISTS = new ErrorCode(_USER_ALREADY_EXISTS);
     /** Login error. */
     public static final ErrorCode LOGIN_ERROR = new ErrorCode(_LOGIN_ERROR);
     /** Error in signature. */

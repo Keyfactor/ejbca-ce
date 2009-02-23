@@ -785,7 +785,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } // findUsernameByCertSerno
 
     /**
-     * Finds certificate(s) for a given usernaem.
+     * Finds certificate(s) for a given username.
      *
      * @param admin Administrator performing the operation
      * @param username the username of the certificate(s) that will be retrieved
@@ -818,6 +818,39 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     } // findCertificatesByUsername
+
+    /**
+     * Finds certificate(s) for a given username and status.
+     *
+     * @param admin Administrator performing the operation
+     * @param username the username of the certificate(s) that will be retrieved
+     * @param status the status of the CertificateDataBean.CERT_ constants
+     * @return Collection of Certificates ordered by expire date, with last expire date first
+     * @ejb.interface-method
+     */
+    public Collection findCertificatesByUsernameAndStatus(Admin admin, String username, int status) {
+    	if (log.isTraceEnabled()) {
+        	log.trace(">findCertificatesByUsername(),  username=" + username);
+    	}
+        ArrayList ret = new ArrayList();
+        try {
+            // Strip dangerous chars
+            username = StringTools.strip(username);
+            // This method on the entity bean does the ordering in the database
+            Collection coll = certHome.findByUsernameAndStatus(username, status);
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.add(((CertificateDataLocal) iter.next()).getCertificate());
+                }
+            }
+        } catch (javax.ejb.FinderException e) {	// Ignore
+        }
+    	if (log.isTraceEnabled()) {
+            log.trace("<findCertificatesByUsername(), username=" + username);
+    	}
+        return ret;
+    } // findCertificatesByUsernameAndStatus
 
     /**
      * @ejb.interface-method
