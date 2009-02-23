@@ -529,8 +529,12 @@ public class LdapPublisher extends BasePublisher {
 			log.debug("The configuration for the publisher '" + getDescription() + "' does not allow removing of certificates or users.");
 			return;
 		}
-		if (removecert) log.debug("Removing user certificate from ldap");
-		if (removeuser) log.debug("Removing user entry from ldap");
+		if (removecert) {
+			log.debug("Removing user certificate from ldap");
+		}
+		if (removeuser) {
+			log.debug("Removing user entry from ldap");
+		}
 
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
@@ -1218,7 +1222,9 @@ public class LdapPublisher extends BasePublisher {
 							// If there is no natural sn, use cn since sn is required
 							sn = cn;
 						} else {
-							if (index < cn.length()) sn = cn.substring(index+1);
+							if (index < cn.length()) {
+								sn = cn.substring(index+1);
+							}
 						}
 					}
 				}
@@ -1234,7 +1240,9 @@ public class LdapPublisher extends BasePublisher {
 						int index = cn.indexOf(' ');
 						if (index <=0) {
 							// If there is no natural gn/sn, ignore gn if we are using sn
-							if (sn == null) gn = cn;
+							if (sn == null) {
+								gn = cn;
+							}
 						} else {
 							gn = cn.substring(0, index);
 						}
@@ -1309,7 +1317,9 @@ public class LdapPublisher extends BasePublisher {
 							// If there is no natural sn, use cn since sn is required
 							sn = cn;
 						} else {
-							if (index < cn.length()) sn = cn.substring(index+1);
+							if (index < cn.length()) {
+								sn = cn.substring(index+1);
+							}
 						}
 					}
 				}
@@ -1328,7 +1338,9 @@ public class LdapPublisher extends BasePublisher {
 						int index = cn.indexOf(' ');
 						if (index <=0) {
 							// If there is no natural gn/sn, ignore gn if we are using sn
-							if (sn == null) gn = cn;
+							if (sn == null) {
+								gn = cn;
+							}
 						} else {
 							gn = cn.substring(0, index);
 						}

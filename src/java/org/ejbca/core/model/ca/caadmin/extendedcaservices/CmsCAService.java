@@ -156,9 +156,9 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		m_log.debug("CmsCAService : init");
 		// lookup keystore passwords      
 		String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/CMSKeyStorePass");      
-		if (keystorepass == null)
+		if (keystorepass == null) {
 			throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
-
+		}
 		// Currently only RSA keys are supported
 		CmsCAServiceInfo info = (CmsCAServiceInfo) getExtendedCAServiceInfo();       
 

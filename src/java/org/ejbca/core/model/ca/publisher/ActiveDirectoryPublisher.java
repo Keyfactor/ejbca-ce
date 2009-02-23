@@ -185,11 +185,11 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
             attributeSet.add(new LDAPAttribute("samaccountname", samaccountname));
           }
           
-          if(upn != null)
+          if(upn != null) {
           	attributeSet.add(new LDAPAttribute("userPrincipalName", upn));    
-          else
+          } else {
           	attributeSet.add(new LDAPAttribute("userPrincipalName", cn));
-          	
+          }
         }
         attributeSet.add(new LDAPAttribute("displayName", cn));
         if(getUserDescription() != null && !getUserDescription().trim().equals("")){

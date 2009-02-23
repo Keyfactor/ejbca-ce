@@ -103,21 +103,19 @@ public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWi
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#printAdressLabel(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
 	public Printable printAdressLabel(UserDataVO userdata, String[] pincodes,
-			String[] pukcodes, String hardtokensn, String copyoftokensn)
-			throws IOException, PrinterException {
+			String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
 		Printable returnval = null;
-		  
-			if(getAdressLabelData() != null){
-				if(adresslabelsvgimagemanipulator == null)
-					adresslabelsvgimagemanipulator = new SVGImageManipulator(new StringReader(getAdressLabelData()),
-															  getVisualValidity(),
-															  getHardTokenSNPrefix()); 
-															
-			  returnval = adresslabelsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
+
+		if(getAdressLabelData() != null){
+			if(adresslabelsvgimagemanipulator == null) {
+				adresslabelsvgimagemanipulator = new SVGImageManipulator(new StringReader(getAdressLabelData()),
+						getVisualValidity(),
+						getHardTokenSNPrefix()); 
 			}
-		  
-		  
-			return returnval;	
+			returnval = adresslabelsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
+		}
+
+		return returnval;	
 	}
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setNumberOfAdressLabelCopies(int)

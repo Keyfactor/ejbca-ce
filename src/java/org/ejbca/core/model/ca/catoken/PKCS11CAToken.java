@@ -60,8 +60,9 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
      */
     @Override
     public void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException {
-        if ( this.p11slot == null )
+        if ( this.p11slot == null ) {
             throw new CATokenOfflineException("Slot not initialized.");
+        }
         try {
             final Provider provider = this.p11slot.getProvider();
             final PasswordProtection pwp =new PasswordProtection( (authCode!=null && authCode.length()>0)? authCode.toCharArray():null );
@@ -103,8 +104,9 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
             this.sSlotLabel = properties.getProperty("slotListIndex");         
             this.sSlotLabel = this.sSlotLabel!=null ? this.sSlotLabel.trim() : "-1";
             isIndex = this.sSlotLabel!=null;
-        } else
+        } else {
             isIndex = false;
+        }
         String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
         String atributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
         // getInstance will run autoActivate()
@@ -115,7 +117,8 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
      */
     @Override
     public void reset() {
-        if ( this.p11slot!=null )
-            this.p11slot.reset();
+    	if ( this.p11slot!=null ) {
+    		this.p11slot.reset();
+    	}
     }
 }

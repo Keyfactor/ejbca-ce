@@ -14,10 +14,7 @@
 package org.ejbca.core.model.ca.catoken;
 
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Properties;
 

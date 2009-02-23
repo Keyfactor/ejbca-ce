@@ -155,8 +155,9 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	protected boolean isTokenSupported(String[] supportedtokens, String tokenidentificationstring){
 	  boolean returnval = false;
 	  for(int i=0; i<supportedtokens.length; i++){
-	  	if(supportedtokens[i].equals(tokenidentificationstring))
+	  	if(supportedtokens[i].equals(tokenidentificationstring)) {
 	  	  returnval=true;
+	  	}
 	  }
 	  
 	  return returnval;	

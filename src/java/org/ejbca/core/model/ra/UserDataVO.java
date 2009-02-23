@@ -21,7 +21,6 @@ import javax.ejb.EJBException;
 
 import org.ejbca.core.ejb.ra.UserDataBean;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.StringTools;
 
@@ -188,10 +187,11 @@ public class UserDataVO implements Serializable {
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
      */
     public void setAdministrator(boolean administrator){
-      if(administrator)
+      if(administrator) {
         type = type | SecConst.USER_ADMINISTRATOR;
-      else
+      } else {
         type = type & (~SecConst.USER_ADMINISTRATOR);
+      }
     }
 
     public boolean getKeyRecoverable(){
@@ -199,10 +199,11 @@ public class UserDataVO implements Serializable {
     }
 
     public void setKeyRecoverable(boolean keyrecoverable){
-      if(keyrecoverable)
+      if(keyrecoverable) {
         type = type | SecConst.USER_KEYRECOVERABLE;
-      else
+      } else {
         type = type & (~SecConst.USER_KEYRECOVERABLE);
+      }
     }
 
     public boolean getSendNotification(){
@@ -211,10 +212,11 @@ public class UserDataVO implements Serializable {
 
     
     public void setSendNotification(boolean sendnotification){
-      if(sendnotification)
+      if(sendnotification) {
         type = type | SecConst.USER_SENDNOTIFICATION;
-      else
+      } else {
         type = type & (~SecConst.USER_SENDNOTIFICATION);
+      }
     }
     
     public boolean getPrintUserData(){
@@ -222,10 +224,11 @@ public class UserDataVO implements Serializable {
       }
 
     public void setPrintUserData(boolean printUserData){
-        if(printUserData)
+        if(printUserData) {
           type = type | SecConst.USER_PRINT;
-        else
+        } else {
           type = type & (~SecConst.USER_PRINT);
+        }
    }
 
 	/**

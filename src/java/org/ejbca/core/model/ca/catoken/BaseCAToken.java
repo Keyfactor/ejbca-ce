@@ -67,13 +67,14 @@ public abstract class BaseCAToken implements ICAToken {
         }
     }
     protected void autoActivate() {
-        if ( this.mKeys==null && this.mAuthCode!=null )
+        if ( this.mKeys==null && this.mAuthCode!=null ) {
             try {
             	log.debug("Trying to autoactivate CAToken");
                 activate(this.mAuthCode);
             } catch (Exception e) {
                 log.debug(e);
             }
+        }
     }
 
     private void testKey( KeyPair pair ) throws Exception {
@@ -96,8 +97,9 @@ public abstract class BaseCAToken implements ICAToken {
             Signature signature = Signature.getInstance(testSigAlg, "BC");
             signature.initVerify(pair.getPublic());
             signature.update(input);
-            if ( !signature.verify(signBV) )
+            if ( !signature.verify(signBV) ) {
                 throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
+            }
         }
     }
     /**
@@ -141,8 +143,9 @@ public abstract class BaseCAToken implements ICAToken {
             }
         }
         this.mKeys = mTmp;
-        if ( getCATokenStatus()!=ICAToken.STATUS_ACTIVE )
+        if ( getCATokenStatus()!=ICAToken.STATUS_ACTIVE ) {
             throw new Exception("Activation test failed");
+        }
     }
 
     /**
@@ -274,21 +277,25 @@ public abstract class BaseCAToken implements ICAToken {
     	this.mJcaProviderName = pName;
     }
     private void setProvider(Provider prov) {
-        if ( prov==null )
-            return;
-    	String pName = prov.getName();
-        if (pName.startsWith("LunaJCA")) {
-        	// Luna Java provider does not contain support for RSA/ECB/PKCS1Padding but this is 
-        	// the same as the alias below on small amounts of data  
-            prov.put("Alg.Alias.Cipher.RSA/NONE/NoPadding","RSA//NoPadding");
-            prov.put("Alg.Alias.Cipher.1.2.840.113549.1.1.1","RSA//NoPadding");
-            prov.put("Alg.Alias.Cipher.RSA/ECB/PKCS1Padding","RSA//PKCS1v1_5");
-            prov.put("Alg.Alias.Cipher.1.2.840.113549.3.7","DES3/CBC/PKCS5Padding");
+        if ( prov!=null ) {
+        	String pName = prov.getName();
+            if (pName.startsWith("LunaJCA")) {
+            	// Luna Java provider does not contain support for RSA/ECB/PKCS1Padding but this is 
+            	// the same as the alias below on small amounts of data  
+                prov.put("Alg.Alias.Cipher.RSA/NONE/NoPadding","RSA//NoPadding");
+                prov.put("Alg.Alias.Cipher.1.2.840.113549.1.1.1","RSA//NoPadding");
+                prov.put("Alg.Alias.Cipher.RSA/ECB/PKCS1Padding","RSA//PKCS1v1_5");
+                prov.put("Alg.Alias.Cipher.1.2.840.113549.3.7","DES3/CBC/PKCS5Padding");
+            }
+            if ( Security.getProvider(pName)==null ) {
+                Security.addProvider( prov );
+            }
+            if ( Security.getProvider(pName)==null ) {
+                throw new ProviderException("Not possible to install provider: "+pName);
+            }
+        } else {
+        	log.debug("No provider passed to setProvider()");
         }
-        if ( Security.getProvider(pName)==null )
-            Security.addProvider( prov );
-        if ( Security.getProvider(pName)==null )
-            throw new ProviderException("Not possible to install provider: "+pName);
     }
 
     /* (non-Javadoc)
@@ -315,8 +322,9 @@ public abstract class BaseCAToken implements ICAToken {
         KeyPair keyPair = this.mKeys!=null ?
             (KeyPair)this.mKeys.get(this.keyStrings.getString(purpose)) :
             null;
-        if ( keyPair==null )
+        if ( keyPair==null ) {
             throw new CATokenOfflineException("no such key");
+        }
         return keyPair.getPrivate();
     }
 
@@ -329,8 +337,9 @@ public abstract class BaseCAToken implements ICAToken {
         KeyPair keyPair = this.mKeys!=null ?
             (KeyPair)this.mKeys.get(this.keyStrings.getString(purpose)) :
             null;
-        if ( keyPair==null )
+        if ( keyPair==null ) {
             throw new CATokenOfflineException();
+        }
         return keyPair.getPublic();
     }
 

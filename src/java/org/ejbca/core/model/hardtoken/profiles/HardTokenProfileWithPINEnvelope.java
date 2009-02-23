@@ -140,17 +140,14 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
 	 */
 	public Printable printPINEnvelope(UserDataVO userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
-	  
+
 		if(getPINEnvelopeData() != null){
-			if(envelopesvgimagemanipulator == null)
-			  envelopesvgimagemanipulator = new SVGImageManipulator(new StringReader(getPINEnvelopeData()),
-														  getVisualValidity(),
-														  getHardTokenSNPrefix()); 
-														
-		  returnval = envelopesvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
+			if(envelopesvgimagemanipulator == null) {
+				envelopesvgimagemanipulator = new SVGImageManipulator(new StringReader(getPINEnvelopeData()), getVisualValidity(), getHardTokenSNPrefix()); 
+			}	
+			returnval = envelopesvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
 		}
-	  
-	  
+
 		return returnval;	
 	}
 

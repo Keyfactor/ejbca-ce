@@ -103,22 +103,19 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#printReceipt(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
 	public Printable printReceipt(UserDataVO userdata, String[] pincodes,
-			String[] pukcodes, String hardtokensn, String copyoftokensn)
-			throws IOException, PrinterException {
+			String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
 		Printable returnval = null;
-		  
-			if(getReceiptData() != null){
-				if(receiptsvgimagemanipulator == null)
-					receiptsvgimagemanipulator = new SVGImageManipulator(new StringReader(getReceiptData()),
-															  getVisualValidity(),
-															  getHardTokenSNPrefix()); 
-															
-			  returnval = receiptsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
-			}
-		  
-		  
-			return returnval;	
+
+		if(getReceiptData() != null){
+			if(receiptsvgimagemanipulator == null) {
+				receiptsvgimagemanipulator = new SVGImageManipulator(new StringReader(getReceiptData()), getVisualValidity(), getHardTokenSNPrefix()); 
+			}	
+			returnval = receiptsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
+		}		  
+
+		return returnval;	
 	}
+	
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setNumberOfReceiptCopies(int)
 	 */

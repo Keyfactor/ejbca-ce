@@ -55,10 +55,23 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
-	/**
-     * 
-     */
     private static final long serialVersionUID = 3363098236866891317L;
+
+    /** Log4j instance */
+	private static final Logger log = Logger.getLogger(CATokenContainerImpl.class);
+	
+	/** Internal localization of logs and errors */
+	private static final InternalResources intres = InternalResources.getInstance();
+
+	private ICAToken catoken = null; 
+
+	public static final float LATEST_VERSION = 6;
+
+
+	// Default Values
+
+	protected static final String CLASSPATH                       = "classpath";   
+	protected static final String PROPERTYDATA                 = "propertydata";
 
     /** Class for printing properties (for debug purposes) without revealing any pin properties in the log file
      */
@@ -81,8 +94,9 @@ public class CATokenContainerImpl extends CATokenContainer {
         }
         public synchronized String toString() {
             int max = size() - 1;
-            if (max == -1)
+            if (max == -1) {
                 return "{}";
+            }
 
             final StringBuilder sb = new StringBuilder();
             final Iterator it = entrySet().iterator();
@@ -97,28 +111,14 @@ public class CATokenContainerImpl extends CATokenContainer {
                 sb.append('=');
                 sb.append(value);
 
-                if (i == max)
+                if (i == max) {
                     return sb.append('}').toString();
+                }
                 sb.append(", ");
             }
         }
 
     }
-    /** Log4j instance */
-	private static final Logger log = Logger.getLogger(CATokenContainerImpl.class);
-	
-	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
-
-	private ICAToken catoken = null; 
-
-	public static final float LATEST_VERSION = 6;
-
-
-	// Default Values
-
-	protected static final String CLASSPATH                       = "classpath";   
-	protected static final String PROPERTYDATA                 = "propertydata";
 
 	/**
 	 * 

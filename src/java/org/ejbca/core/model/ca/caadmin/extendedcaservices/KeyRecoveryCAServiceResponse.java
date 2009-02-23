@@ -54,9 +54,11 @@ public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse impl
      */
     
     public byte[] getKeyData(){
-    	if(type != TYPE_ENCRYPTKEYSRESPONSE)
-    		return null;
-    	return keydata;
+    	byte[] ret = null;
+    	if(type == TYPE_ENCRYPTKEYSRESPONSE) {
+        	ret = keydata;
+    	}
+    	return ret;
     }
 
     /**
@@ -64,9 +66,11 @@ public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse impl
      *  is TYPE_DECRYPTRESPONSE, null otherwise.
      */
     public KeyPair getKeyPair(){
-    	if(type != TYPE_DECRYPTKEYSRESPONSE)
-    		return null;
-    	return keypair;    	
+    	KeyPair ret = null;
+    	if(type == TYPE_DECRYPTKEYSRESPONSE) {
+        	ret = keypair;    	
+    	}
+    	return ret;
     }
         
 }

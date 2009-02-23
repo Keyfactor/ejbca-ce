@@ -133,8 +133,9 @@ public class UsernameGenerator {
      * @return the interpolated content
      */
     private String interpolate(String input) {
-    	if (input == null)
+    	if (input == null) {
     		return null;
+    	}
         final Matcher m = PATTERN.matcher(input);
         final StringBuffer sb = new StringBuffer(input.length());
         while (m.find()) {

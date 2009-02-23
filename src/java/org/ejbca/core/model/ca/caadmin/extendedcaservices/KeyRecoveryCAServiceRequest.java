@@ -53,9 +53,11 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
      */
     
     public  byte[] getKeyData(){
-    	if(command != COMMAND_DECRYPTKEYS)
-    	  return null;
-    	return keydata;
+    	byte[] ret = null;
+    	if(command == COMMAND_DECRYPTKEYS) {
+        	ret = keydata;
+    	}
+    	return ret;
     }
 
     /**
@@ -63,9 +65,11 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
      */
     
     public  KeyPair getKeyPair(){
-    	if(command != COMMAND_ENCRYPTKEYS)
-    		return null;
-    	return keypair;
+    	KeyPair ret = null;
+    	if(command == COMMAND_ENCRYPTKEYS) {
+        	ret = keypair;
+    	}
+    	return ret;
     }
     
 }

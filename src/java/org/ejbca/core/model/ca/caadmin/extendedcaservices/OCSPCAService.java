@@ -16,22 +16,16 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.OCSPException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.certificateprofiles.OCSPSignerCertificateProfile;
@@ -136,9 +130,9 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
    	 m_log.debug("OCSPCAService : init ");
 	 // lookup keystore passwords      
      String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
-	 if (keystorepass == null)
+	 if (keystorepass == null) {
 	   throw new IllegalArgumentException("Missing OCSPKeyPass property.");
-        
+	 }
 	  // Currently only RSA keys are supported
 	 OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
                   
@@ -261,14 +255,14 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#getExtendedCAServiceInfo()
 	 */
 	public ExtendedCAServiceInfo getExtendedCAServiceInfo() {		
-		if(info == null)
+		if(info == null) {
 		  info = new OCSPCAServiceInfo(getStatus(),
 		                              getSubjectDN(),
 		                              getSubjectAltName(), 
 		                              (String) data.get(KEYSPEC), 
 		                              (String) data.get(KEYALGORITHM),
 		                              this.ocspcertificatechain);
-		
+		}
 		return this.info;
 	}
     

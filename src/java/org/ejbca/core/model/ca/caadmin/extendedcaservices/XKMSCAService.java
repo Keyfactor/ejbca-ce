@@ -129,12 +129,12 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 	* @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	*/   
    public void init(CA ca) throws Exception {
-   	 m_log.debug("XKMSCAService : init ");
+   	 m_log.trace(">init");
 	 // lookup keystore passwords      
      String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");      
-	 if (keystorepass == null)
+	 if (keystorepass == null) {
 	   throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
-        
+	 }
 	  // Currently only RSA keys are supported
 	 XKMSCAServiceInfo info = (XKMSCAServiceInfo) getExtendedCAServiceInfo();       
                   
@@ -144,19 +144,20 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
       
 	 KeyPair xKMSkeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
 	   	  
-	 Certificate xKMSCertificate =
-	  ca.generateCertificate(new UserDataVO("NOUSERNAME", 	                                          
-											info.getSubjectDN(),
-											0, 
-											info.getSubjectAltName(),
-											"NOEMAIL",
-											0,0,0,0, null,null,0,0,null)																																
-						   , xKMSkeys.getPublic(),
-						   -1, // KeyUsage
-						   ca.getValidity(), 
-						   new XKMSCertificateProfile(),
-						   null // sequence
-						   );
+	 UserDataVO user = new UserDataVO("NOUSERNAME", 	                                          
+				info.getSubjectDN(),
+				0, 
+				info.getSubjectAltName(),
+				"NOEMAIL",
+				0,0,0,0, null,null,0,0,null);
+	 Certificate xKMSCertificate = ca.generateCertificate(
+			 user																																
+			,xKMSkeys.getPublic(),
+			-1, // KeyUsage
+			ca.getValidity(), 
+			new XKMSCertificateProfile(),
+			null // sequence
+			);
 	  
 	 xKMScertificatechain = new ArrayList();
 	 xKMScertificatechain.add(xKMSCertificate);
@@ -176,7 +177,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 									  (String)data.get(KEYSPEC), 
 									  (String) data.get(KEYALGORITHM),
 	                                  xKMScertificatechain);
-      
+   	 m_log.trace("<init");
    }   
 
    /* 
@@ -184,7 +185,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 	*/   
    public void update(ExtendedCAServiceInfo serviceinfo, CA ca) throws Exception{		   
    	   XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo; 
-	   m_log.debug("XKMSCAService : update " + serviceinfo.getStatus());
+	   m_log.trace(">update: " + serviceinfo.getStatus());
 	   setStatus(serviceinfo.getStatus());
    	   if(info.getRenewFlag()){  	 
    	     // Renew The XKMS Signers certificate.	                            	       		 										  
@@ -197,8 +198,8 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 										  getSubjectAltName(), 
 										  (String) data.get(KEYSPEC), 
 										  (String) data.get(KEYALGORITHM),
-	                                      xKMScertificatechain);
-										         									    	 									  
+	                                      xKMScertificatechain);										         									    	 									  
+	   m_log.trace("<update: " + serviceinfo.getStatus());
    }   
 
 

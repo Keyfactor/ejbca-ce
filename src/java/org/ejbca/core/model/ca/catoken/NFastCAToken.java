@@ -75,8 +75,9 @@ public class NFastCAToken extends BaseCAToken {
      */
     public void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException {
         try {
-            if ( keyStore==null )
+            if ( keyStore==null ) {
                 keyStore = getKeyStore(authCode);
+            }
             setKeys(keyStore, authCode);
             log.debug("Keys from "+sSlotLabel+ " activated.");
         } catch( Throwable t ) {

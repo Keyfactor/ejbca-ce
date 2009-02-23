@@ -101,18 +101,15 @@ public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileW
 	 */
 	public Printable printVisualValidity(UserDataVO userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
-	  
-	  if(getVisualLayoutData() != null){
-	  	  if(visualsvgimagemanipulator == null)
-		    visualsvgimagemanipulator = new SVGImageManipulator(new StringReader(getVisualLayoutData()),
-														getVisualValidity(),
-														getHardTokenSNPrefix()); 
-														
-		returnval = visualsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
-	  }
-	  
-	  
-	  return returnval;
+
+		if(getVisualLayoutData() != null){
+			if(visualsvgimagemanipulator == null) {
+				visualsvgimagemanipulator = new SVGImageManipulator(new StringReader(getVisualLayoutData()), getVisualValidity(), getHardTokenSNPrefix()); 
+			}		
+			returnval = visualsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
+		}	  
+
+		return returnval;
 	}
     
 

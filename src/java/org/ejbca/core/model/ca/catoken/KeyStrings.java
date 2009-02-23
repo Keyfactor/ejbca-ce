@@ -91,8 +91,9 @@ public class KeyStrings {
         } catch(Exception e) {
             s = null;
         }
-        if ( s!=null && s.length()>0 )
+        if ( s!=null && s.length()>0 ) {
             return s;
+        }
         return defaultKeyS;
     }
     /** Returns which property key is used for a certain key purpose. 
@@ -106,8 +107,9 @@ public class KeyStrings {
         } catch(Exception e) {
             s = null;
         }
-        if ( s!=null && s.length()>0 )
+        if ( s!=null && s.length()>0 ) {
             return s;
+        }
         return CAKEYPURPOSE_DEFAULT_STRING;
     }
     public String[] getAllStrings() {

@@ -394,7 +394,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public boolean getAllowExtensionOverride(){ 
     	Object d = data.get(ALLOWEXTENSIONOVERRIDE);
-    	if (d == null) return false;
+    	if (d == null) {
+    		return false;
+    	}
     	return ((Boolean)d).booleanValue(); 
     }
     /** @see #getAllowExtensionOverride() */
@@ -441,17 +443,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public String getCRLDistributionPointURI(){ return (String) data.get(CRLDISTRIBUTIONPOINTURI); }
     public void setCRLDistributionPointURI(String crldistributionpointuri) {
-      if(crldistributionpointuri==null)
+      if(crldistributionpointuri==null) {
         data.put(CRLDISTRIBUTIONPOINTURI,"");
-      else
+      } else {
         data.put(CRLDISTRIBUTIONPOINTURI,crldistributionpointuri);
+      }
     }
     public String getCRLIssuer(){ return (String) data.get(CRLISSUER); }
     public void setCRLIssuer(String crlissuer) {
-      if(crlissuer==null)
+      if(crlissuer==null) {
         data.put(CRLISSUER,"");
-      else
+      } else {
         data.put(CRLISSUER,crlissuer);
+      }
     }
 
     public boolean getUseFreshestCRL() {
@@ -562,11 +566,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       int maximumavailablebitlength = 0;
 
       for(int i=0;i< availablebitlengths.length;i++){
-        if( availablebitlengths[i] > maximumavailablebitlength)
+        if( availablebitlengths[i] > maximumavailablebitlength) {
           maximumavailablebitlength = availablebitlengths[i];
-        if( availablebitlengths[i] < minimumavailablebitlength)
+        }
+        if( availablebitlengths[i] < minimumavailablebitlength) {
           minimumavailablebitlength = availablebitlengths[i];
-
+        }
         availbitlengths.add(new Integer(availablebitlengths[i]));
       }
       data.put(AVAILABLEBITLENGTHS, availbitlengths);
@@ -790,14 +795,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         	Integer next = (Integer) iter.next();
         	dnField = extractor.getFieldString(next.intValue());
         	if (StringUtils.isNotEmpty(dnField)) {
-            	if(retval.length() == 0)
+            	if(retval.length() == 0) {
               	  retval += dnField; // first item, don't start with a comma
-              	else
-              	  retval += "," + dnField;      	    
+            	} else {
+              	  retval += "," + dnField;
+            	}
         	}
         }
-        
-              
         log.debug("CertificateProfile: constructed DN or AltName: " + retval );
         return retval;	
       }
@@ -809,9 +813,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       ArrayList returnval = new ArrayList();
       ArrayList eku = (ArrayList) data.get(EXTENDEDKEYUSAGE);
       Iterator i = eku.iterator();
-      while(i.hasNext())
+      while(i.hasNext()) {
         returnval.add(EXTENDEDKEYUSAGEOIDSTRINGS[((Integer) i.next()).intValue()]);
-
+      }
 
       return returnval;
     }
@@ -958,10 +962,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
 	public String getOCSPServiceLocatorURI(){ return (String) data.get(OCSPSERVICELOCATORURI); }
 	public void setOCSPServiceLocatorURI(String ocspservicelocatoruri) {
-	  if(ocspservicelocatoruri==null)
+	  if(ocspservicelocatoruri==null) {
 		data.put(OCSPSERVICELOCATORURI,"");
-	  else
+	  } else {
 		data.put(OCSPSERVICELOCATORURI,ocspservicelocatoruri);
+	  }
 	}
 
     public boolean getUseQCStatement(){ return ((Boolean) data.get(USEQCSTATEMENT)).booleanValue(); }
@@ -973,17 +978,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public String getQCStatementRAName(){ return (String) data.get(QCSTATEMENTRANAME); }
     public void setQCStatementRAName(String qcstatementraname) {
-      if(qcstatementraname==null)
+      if(qcstatementraname==null) {
         data.put(QCSTATEMENTRANAME,"");
-      else
+      } else {
         data.put(QCSTATEMENTRANAME,qcstatementraname);
+      }
     }
     public String getQCSemanticsId(){ return (String) data.get(QCSSEMANTICSID); }
     public void setQCSemanticsId(String qcsemanticsid) {
-      if(qcsemanticsid==null)
+      if(qcsemanticsid==null) {
         data.put(QCSSEMANTICSID,"");
-      else
+      } else {
         data.put(QCSSEMANTICSID,qcsemanticsid);
+      }
     }
     public boolean getUseQCEtsiQCCompliance(){ return ((Boolean) data.get(USEQCETSIQCCOMPLIANCE)).booleanValue(); }
     public void setUseQCEtsiQCCompliance(boolean useqcetsiqccompliance) { data.put(USEQCETSIQCCOMPLIANCE, Boolean.valueOf(useqcetsiqccompliance));}
@@ -995,10 +1002,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setQCEtsiValueLimitExp(int qcetsivaluelimitexp){data.put(QCETSIVALUELIMITEXP, new Integer(qcetsivaluelimitexp));}
     public String getQCEtsiValueLimitCurrency(){ return (String) data.get(QCETSIVALUELIMITCURRENCY); }
     public void setQCEtsiValueLimitCurrency(String qcetsicaluelimitcurrency) {
-      if(qcetsicaluelimitcurrency==null)
+      if(qcetsicaluelimitcurrency==null) {
         data.put(QCETSIVALUELIMITCURRENCY,"");
-      else
+      } else {
         data.put(QCETSIVALUELIMITCURRENCY,qcetsicaluelimitcurrency);
+      }
     }
     public boolean getUseQCEtsiRetentionPeriod(){ return ((Boolean) data.get(USEQCETSIRETENTIONPERIOD)).booleanValue(); }
     public void setUseQCEtsiRetentionPeriod(boolean useqcetsiretentionperiod) { data.put(USEQCETSIRETENTIONPERIOD, Boolean.valueOf(useqcetsiretentionperiod));}
@@ -1011,17 +1019,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseQCCustomString(boolean useqccustomstring) { data.put(USEQCCUSTOMSTRING, Boolean.valueOf(useqccustomstring));}
     public String getQCCustomStringOid(){ return (String) data.get(QCCUSTOMSTRINGOID); }
     public void setQCCustomStringOid(String qccustomstringoid) {
-      if(qccustomstringoid==null)
+      if(qccustomstringoid==null) {
         data.put(QCCUSTOMSTRINGOID,"");
-      else
+      } else {
         data.put(QCCUSTOMSTRINGOID,qccustomstringoid);
+      }
     }
     public String getQCCustomStringText(){ return (String) data.get(QCCUSTOMSTRINGTEXT); }
     public void setQCCustomStringText(String qccustomstringtext) {
-      if(qccustomstringtext==null)
+      if(qccustomstringtext==null) {
         data.put(QCCUSTOMSTRINGTEXT,"");
-      else
+      } else {
         data.put(QCCUSTOMSTRINGTEXT,qccustomstringtext);
+      }
     }
 
     public boolean getUseSubjectDirAttributes(){ return ((Boolean) data.get(USESUBJECTDIRATTRIBUTES)).booleanValue(); }
@@ -1056,10 +1066,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param usedCertificateExtensions
      */
     public void setUsedCertificateExtensions(List usedCertificateExtensions) {
-      if(usedCertificateExtensions==null)
+      if(usedCertificateExtensions==null) {
         data.put(USEDCERTIFICATEEXTENSIONS,new ArrayList());
-      else
+      } else {
         data.put(USEDCERTIFICATEEXTENSIONS,usedCertificateExtensions);
+      }
     }
 
     /** Function that looks up in the profile all certificate extensions that we should use
@@ -1110,23 +1121,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 			String msg = intres.getLocalizedMessage("certprofile.upgrade", new Float(getVersion()));
             log.info(msg);
 
-            if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
+            if(data.get(ALLOWKEYUSAGEOVERRIDE) == null) {
                 data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-            if(data.get(USEEXTENDEDKEYUSAGE) ==null)
+            }
+            if(data.get(USEEXTENDEDKEYUSAGE) == null) {
                 data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-            if(data.get(EXTENDEDKEYUSAGE) ==null)
+            }
+            if(data.get(EXTENDEDKEYUSAGE) == null) {
                 data.put(EXTENDEDKEYUSAGE, new ArrayList());
-            if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
+            }
+            if(data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
                 data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-            if(data.get(AVAILABLECAS) == null){
+            }
+            if(data.get(AVAILABLECAS) == null) {
                 ArrayList availablecas = new ArrayList();
                 availablecas.add(new Integer(ANYCA));
                 data.put(AVAILABLECAS, availablecas);
             }
-            if(data.get(USEDPUBLISHERS) == null){
+            if(data.get(USEDPUBLISHERS) == null) {
                 data.put(USEDPUBLISHERS, new ArrayList());   
             }            
-            if(data.get(USEOCSPSERVICELOCATOR) == null){
+            if(data.get(USEOCSPSERVICELOCATOR) == null) {
                 // setUseOCSPServiceLocator(false);            
                 data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(false));
                 setOCSPServiceLocatorURI("");
@@ -1191,10 +1206,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setCRLIssuer(null); // v20
             }
             
-            if(data.get(USEOCSPNOCHECK) == null){
+            if(data.get(USEOCSPNOCHECK) == null) {
                 setUseOcspNoCheck(false); // v21
             }
-            if(data.get(USEFRESHESTCRL) == null){
+            if(data.get(USEFRESHESTCRL) == null) {
                 setUseFreshestCRL(false); // v22
                 setUseCADefinedFreshestCRL(false);
                 setFreshestCRLURI(null);
@@ -1237,7 +1252,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     }
             	}
             	
-                if(data.get(USECRLDISTRIBUTIONPOINTONCRL) == null){
+                if(data.get(USECRLDISTRIBUTIONPOINTONCRL) == null) {
                     setUseCRLDistributionPointOnCRL(false); // v24
                 }
                 if(data.get(USECAISSUERS) == null) {
@@ -1245,7 +1260,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
                     setCaIssuers(new ArrayList());
                 }
-                if ( (data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null) ){
+                if ( (data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null) ) {
                 	setUseAuthorityInformationAccess(true); // v25
                 } else {
                 	setUseAuthorityInformationAccess(false);
@@ -1268,7 +1283,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 	setUseLdapDnOrder(true); // v29, default value is true
                 } 
 
-                if(data.get(USECARDNUMBER) == null){ //v30, default value is false
+                if(data.get(USECARDNUMBER) == null) { //v30, default value is false
                     setUseCardNumber(false);            
                 } 
                 

@@ -221,16 +221,18 @@ public class SVGImageManipulator {
     			int numberofelements2 = list2.getLength();
     			for(int j=0;j<numberofelements2;j++){		  	  
     				Node node2 = list2.item(j);			  
-    				if(node2 instanceof GenericText)
-    					texts.add(node2);			    
+    				if(node2 instanceof GenericText) {
+    					texts.add(node2);			  
+    				}
     				if(node2 instanceof SVGOMTSpanElement){
     					SVGOMTSpanElement tspan = (SVGOMTSpanElement) node2;
     					NodeList list3 = tspan.getChildNodes();
     					int numberofelements3 = list3.getLength();
     					for(int k=0;k<numberofelements3;k++){
     						Node node3 = list3.item(k);
-    						if(node3 instanceof GenericText)
-    							texts.add(node3);			    
+    						if(node3 instanceof GenericText) {
+    							texts.add(node3);			  
+    						}
     					}
     				}		  
     			}
@@ -344,9 +346,9 @@ public class SVGImageManipulator {
 					imgwidth, imgheight, 
 					svgcxt);
     		
-    		if(transform != null && !transform.equals(""))
+    		if(transform != null && !transform.equals("")) {
     			imageelement.setAttribute("transform", transform); 
-    		
+    		}
     		clone.getRootElement().appendChild(imageelement);
     	}
     	

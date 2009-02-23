@@ -97,10 +97,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     	return ret;
     }
     public void setSubjectDirectoryAttributes(String subjdirattr) {
-      if(subjdirattr==null)
+      if(subjdirattr==null) {
         data.put(SUBJECTDIRATTRIBUTES,"");
-      else
+      } else {
         data.put(SUBJECTDIRATTRIBUTES,subjdirattr);
+      }
     }
     
     /**
@@ -114,9 +115,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      */
     public String getRevocationCodeIdentifier(){ 
     	String retval = (String) data.get(XKMSREVOCATIONCODEIDENTIFIER);
-    	
-
-    	
     	return retval;     	
     }
     

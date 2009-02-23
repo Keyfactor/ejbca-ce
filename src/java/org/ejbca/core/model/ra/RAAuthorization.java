@@ -55,15 +55,16 @@ public class RAAuthorization implements Serializable {
         authcastring = "";
         
         while(iter.hasNext()){
-          if(authcastring.equals(""))
+          if(authcastring.equals("")) {
             authcastring = " cAId = " + ((Integer) iter.next()).toString();   
-          else    
-            authcastring = authcastring + " OR cAId = " + ((Integer) iter.next()).toString(); 
+          } else {    
+            authcastring = authcastring + " OR cAId = " + ((Integer) iter.next()).toString();
+          }
         }
         
-        if(!authcastring.equals(""))
+        if(!authcastring.equals("")) {
           authcastring = "( " + authcastring + " )"; 
- 
+        }
       }
       
       return authcastring;
@@ -81,15 +82,16 @@ public class RAAuthorization implements Serializable {
       	Iterator iter = result.iterator();
       	                    
         while(iter.hasNext()){
-          if(authendentityprofilestring == null)
+          if(authendentityprofilestring == null) {
             authendentityprofilestring = " endEntityProfileId = " + ((Integer) iter.next()).toString();   
-          else    
-            authendentityprofilestring = authendentityprofilestring + " OR endEntityProfileId = " + ((Integer) iter.next()).toString(); 
+          } else {    
+            authendentityprofilestring = authendentityprofilestring + " OR endEntityProfileId = " + ((Integer) iter.next()).toString();
+          }
         }
         
-        if(authendentityprofilestring != null)
+        if(authendentityprofilestring != null) {
           authendentityprofilestring = "( " + authendentityprofilestring + " )"; 
-          
+        }
       }
         
       return authendentityprofilestring; 
@@ -141,8 +143,9 @@ public class RAAuthorization implements Serializable {
 	  Iterator iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();
 	  while(iter.hasNext()){
 		Integer next = ((Integer) iter.next());  
-		if(this.endEntityAuthorization(admin, next.intValue(), rights)) 
+		if(this.endEntityAuthorization(admin, next.intValue(), rights)) { 
 		  returnval.put(profilemap.get(next), next);  
+		}
 	  }
 	  
 	  return returnval;
@@ -157,11 +160,12 @@ public class RAAuthorization implements Serializable {
       
 	  // TODO FIX
 	  if(admin.getAdminInformation().isSpecialUser()){
-		return true;
+		  returnval = true;
+	  } else {
+		  try{
+			   returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+		  }catch(AuthorizationDeniedException e){}		  
 	  }
-	  try{
-		   returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-	  }catch(AuthorizationDeniedException e){}
 
 	  return returnval;
 	}    

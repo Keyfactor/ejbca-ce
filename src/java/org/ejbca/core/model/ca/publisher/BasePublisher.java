@@ -16,8 +16,9 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
+import javax.ejb.EJBException;
+
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 
