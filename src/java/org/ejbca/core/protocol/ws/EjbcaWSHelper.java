@@ -437,6 +437,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				if (validate) {
 					// Check validity
 					CertTools.checkValidity(next, new Date());
+					getCertStoreSession().verifyProtection(admin, CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
 				}
 				// Check authorization
 				int caid = CertTools.getIssuerDN(next).hashCode();

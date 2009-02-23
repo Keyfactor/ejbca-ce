@@ -1268,6 +1268,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } //isRevoked
 
     /**
+     * Checks the table protection information for a certificate data row
+     *
+     * @param admin    Administrator performing the operation
+     * @param issuerDN the DN of the issuer.
+     * @param serno    the serialnumber of the certificate that will be checked
+     * @ejb.interface-method
+     */
+    public void verifyProtection(Admin admin, String issuerDN, BigInteger serno) {
+        CertificateDataUtil.verifyProtection(admin, issuerDN, serno, certHome, protecthome, adapter);
+    }
+
+    /**
      * Retrieves the latest CRL issued by this CA.
      *
      * @param admin Administrator performing the operation

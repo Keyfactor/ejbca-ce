@@ -214,19 +214,7 @@ public class CertificateDataUtil {
                 	RevokedCertInfo revinfo = null;
                 	CertificateDataLocal data = (CertificateDataLocal) iter.next();
                 	if (protectHome != null) {
-                		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason());
-                		TableProtectSessionLocal protect;
-                		try {
-                			protect = protectHome.create();
-                			// The verify method will log failed verifies itself
-                			TableVerifyResult res = protect.verify(entry);
-                			if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
-                				//adapter.error("Verify failed, but we go on anyway.");
-                			}
-                		} catch (CreateException e) {
-                        	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
-                			adapter.error(msg, e);
-                		}
+                		verifyProtection(data, protectHome, adapter);
                 	}
                 	revinfo = new RevokedCertInfo(data.getFingerprint(), serno, new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
                 	// Make sure we have it as NOT revoked if it isn't
@@ -247,4 +235,48 @@ public class CertificateDataUtil {
         }
         return null;
     } //isRevoked
+    
+
+    static public void verifyProtection(Admin admin, String issuerDN, BigInteger serno,
+    		CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
+    	if (adapter.getLogger().isTraceEnabled()) {
+    		adapter.getLogger().trace(">verifyProtection, dn:" + issuerDN + ", serno=" + serno.toString(16));
+    	}
+		try {
+			if (protectHome != null) {
+				// First make a DN in our well-known format
+				Collection coll = certHome.findByIssuerDNSerialNumber(CertTools.stringToBCDNString(issuerDN), serno.toString());
+				if (coll != null) {
+					if (coll.size() > 1) {
+						String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
+						adapter.error(msg);
+					}
+					Iterator iter = coll.iterator();
+					if (iter.hasNext()) {
+						CertificateDataLocal data = (CertificateDataLocal) iter.next();
+						verifyProtection(data, protectHome, adapter);
+					}
+				}
+			}
+		} catch (FinderException e) {
+			throw new EJBException(e);	// This should exist here
+		}
+    }
+
+
+    private static void verifyProtection(CertificateDataLocal data, TableProtectSessionLocalHome protectHome, Adapter adapter) {
+		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason());
+		TableProtectSessionLocal protect;
+		try {
+			protect = protectHome.create();
+			// The verify method will log failed verifies itself
+			TableVerifyResult res = protect.verify(entry);
+			if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
+				//adapter.error("Verify failed, but we go on anyway.");
+			}
+		} catch (CreateException e) {
+        	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
+			adapter.error(msg, e);
+		}
+    }
 }
