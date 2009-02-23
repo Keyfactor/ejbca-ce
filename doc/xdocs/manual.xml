@@ -2616,14 +2616,14 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
 }
 </source>
 <p>
-The tool $EJBCA/bin/pkcs11HSM.sh is used administrate and generate keys. Use it without parameters to get all valid options.
+The tool "$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool" is used administrate and generate keys. Use it without parameters to get all valid options.
 Keys may be generated in two ways. Examples:
 </p>
 <source>
-./bin/pkcs11HSM.sh generate hsmp11.so 2048 defaultKey 0
+./clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 0
 </source>
 <source>
-./bin/pkcs11HSM.sh generate hsmp11.conf 2048 defaultKey
+./clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
 </source>
 <p>
 The first example uses the default attributes of the HSM and are then using specified slot and PKCS#11 library.
@@ -2673,7 +2673,7 @@ SlotCount  = 100
 The timeout in this example of 172800 seconds will allow your CA to idle for a long time.
 </p>
 <p>
-When using a PKCS#11 token you should first create keys with the command: $EJBCA_HOME/bin/pkcs11HSM.sh generate
+When using a PKCS#11 token you should first create keys with the command: $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate
 </p><p>
 Each CA should have its own slot.
 </p><p>
@@ -2684,13 +2684,13 @@ Here follows an example on how to initialize a slot and generate keys to be used
 <source>
 ./p11tool Slot=1 InitToken=officer1
 ./p11tool Slot=1 Label=CVCA LoginSO=officer1 InitPin=user1
-$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 4096 signKey 1
+$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 4096 signKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry signKey.
-$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 2048 defaultKey 1
+$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 2048 defaultKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry defaultKey.
-$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 512 testKey 1
+$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 512 testKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry testKey.
 </source>
@@ -2932,22 +2932,25 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
   CKA_TOKEN = true
 }
 </source>
+<note>
+An ECC key could not be used with preload (at least not the curve secp160r1). Such a key is generated OK and could be used as long as the current preload is running. But if all preload processes are stopped and then if then preload is restarted the key could not be used. This means that ECC could only be used with a 1/n OCS.
+</note>
 <p>
 Now 3 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
-Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
+Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry default.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-d165e440baa8dc9963780c682836ba17513e8cbf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
+Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry crypt.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 1024 test
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 1024 test
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-27cfdae84bf4298f2dde83cd00980a81bcf095bf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/bin/pkcs11HSM.sh generate ./ocs-sunpkcs11.cfg 1024 test
+Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 1024 test
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry test.
 jboss@donny:~/work/test/keygen$ 
@@ -3330,45 +3333,17 @@ After setting up the first netHSM, do the following on the second:
 <li>Use the panel of the second netHSM to configure clients</li>
 <li>on each client run: /opt/nfast/bin/nethsmenroll -p</li> 
 </ul>
-</p>
-<p>
+</p><p>
 With load balancing you need to have CKNFAST_LOADSHARING=1. Preload implicitly sets CKNFAST_LOADSHARING.
-</p><p>
-TODO --- describe procedure when not using preload.
-</p><p>
-If preload is used then load the keys in both HSMs using an operator card. For this you have to select for which HSM you want to load the keys first 
-and provide the passphrase for the card in each HSM. Here is the starting sequence of JBoss to illustrate what happens exactly:
-</p>
-<source>
-ejbca@subcallb:/usr/local/ejbca> /opt/nfast/bin/preload -c llbadminsubcafi ../jboss/bin/run.sh
-Loading cardsets:
-llbadminsubcafi on modules 1, 2
-
-Loading `llbadminsubcafi':
- Module 1 slot 0: `llbadminsubcafi' #2 (`llbadminsubcafi')
- Module 2 slot 0: `llbadminsubcafi' #1 (`llbadminsubcafi')
-Use which module [1 2]: 1 
-
- Module 1 slot 0:- passphrase supplied - reading card
- Module 1: completed.
- Module 2 slot 0:- passphrase supplied - reading card
-Card reading complete.
-
-Stored Cardset: llbadminsubcafi (aad9...) on module #1
-Stored Cardset: llbadminsubcafi (aad9...) on module #2
-Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-005c1a08a37fc7d4127e20e8c4e290b56ff9816a (051d...) on module #1
-Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-005c1a08a37fc7d4127e20e8c4e290b56ff9816a (051d...) on module #2
-Loaded pkcs11 ucaad9344776882ed9d750142ea966c469f808dc68-005c1a08a37fc7d4127e20e8c4e290b56ff9816a key (RSAPrivate) on modules 1, 2
-Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-1c4d6a403b7a5df39aa091ed3fafb85afe01d071 (4996...) on module #1
-Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-1c4d6a403b7a5df39aa091ed3fafb85afe01d071 (4996...) on module #2
-Loaded pkcs11 ucaad9344776882ed9d750142ea966c469f808dc68-1c4d6a403b7a5df39aa091ed3fafb85afe01d071 key (RSAPrivate) on modules 1, 2
-Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-6c8c4fcb2c76d5cd18bcc49550ae2c0d5bd93268 (453a...) on module #1
-Stored Key: pkcs11/ucaad9344776882ed9d750142ea966c469f808dc68-6c8c4fcb2c76d5cd18bcc49550ae2c0d5bd93268 (453a...) on module #2
-Loaded pkcs11 ucaad9344776882ed9d750142ea966c469f808dc68-6c8c4fcb2c76d5cd18bcc49550ae2c0d5bd93268 key (RSAPrivate) on modules 1, 2
-Executing ../jboss/bin/run.sh
-=========================================================================
-</source>
-<p>Sample PKCS#11 configuration file for generating the CA keys.</p>
+</p><note>
+If preload is used fail-over to the other HSM if one of the HSMs is broken is not working.
+</note><p>
+Example of starting jboss:
+</p><source>
+ejbca@subcallb:/usr/local/ejbca> CKNFAST_LOADSHARING=1 ../jboss/bin/run.sh
+</source><p>
+When activating a CA you need a smart card from the OCS of the corresponding slot inserted in both HSMs. The OCS got to be 1/n since preload can not be used.
+</p><p>Sample PKCS#11 configuration file for generating the CA keys.</p>
 <source>
 name=NFastJava
 library=/opt/nfast/toolkits/pkcs11/libcknfast.so
@@ -3457,7 +3432,7 @@ dr-xr-xr-x 2 lars lars   4096 28 nov 14.28 include
 lars@maud:~/work/test/ca$ LD_LIBRARY_PATH=../../bullInstall/linux ../../java/jboss/bin/run.sh
 </source>
 <source>
-lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/bin/pkcs11HSM.sh generate trustWay.cfg 2048 defaultkey
+lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate trustWay.cfg 2048 defaultkey
 </source>
 </subsection>
 
@@ -3630,7 +3605,7 @@ Sample Slot Initialization:
 <p>
   Key generation
 <br></br>
-$EJBCA_HOME/bin/pkcs11HSM.sh generate /opt/ETcpsdk/lib/linux-i386/libcryptoki.so 4096 defaultKey 5
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/ETcpsdk/lib/linux-i386/libcryptoki.so 4096 defaultKey 5
 </p>
 <strong>3. If you use an external HSM, set its hostname/IP-Address as unix environment variable</strong>
 <source>
