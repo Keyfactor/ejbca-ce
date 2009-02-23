@@ -64,7 +64,7 @@ import org.ejbca.util.StringTools;
  *
  * @version $Id$
  *
- * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
+ * @ejb.bean description="This enterprise bean entity represents a User Entry with accompanying data"
  * display-name="UserDataEB"
  * name="UserData"
  * jndi-name="UserData"
