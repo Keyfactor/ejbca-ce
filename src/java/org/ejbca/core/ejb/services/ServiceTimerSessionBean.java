@@ -167,6 +167,15 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
  *   link="HardTokenSession"
  *
+ * @ejb.ejb-external-ref
+ *   description="The signing session used to create CRL"
+ *   view-type="local"
+ *   ref-name="ejb/RSASignSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
+ *   link="RSASignSession"
+ *
  *  @jonas.bean ejb-name="ServiceTimerSession"
  *  
  *  @version $Id$
