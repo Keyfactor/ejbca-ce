@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Implements the admins command line interface
  *
- * @version $Id: ca.java 5631 2008-05-22 11:46:54Z anatom $
+ * @version $Id$
  */
 public class admins extends BaseCommand {
     /**

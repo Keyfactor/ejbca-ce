@@ -29,7 +29,7 @@ import com.chrysalisits.crypto.LunaTokenManager;
 
 /**
  * @author lars
- * @version $Id: LunaKeyTool.java.luna,v 1.3 2006-06-08 13:10:44 anatom Exp $
+ * @version $Id$
  *
  */
 public class LunaKeyTool {

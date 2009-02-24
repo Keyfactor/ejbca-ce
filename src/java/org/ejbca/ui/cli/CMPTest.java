@@ -96,7 +96,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Used to stress test the CMP interface.
  * @author primelars
- * @version $Id: HealthCheckTest.java 6106 2008-08-21 08:43:43Z primelars $
+ * @version $Id$
  *
  */
 class CMPTest extends ClientToolBox {
