@@ -53,7 +53,8 @@ public abstract class ClientToolBox {
         		new NCipherHSMKeyTool(), 
         		new Ocsp(), 
         		new EjbcaWsRaCli(), 
-        		new CMPTest() 
+        		new CMPTest(),
+        		new SCEPTest()
         		};
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) ) {

@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol;
+package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -50,6 +50,10 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.protocol.FailInfo;
+import org.ejbca.core.protocol.IRequestMessage;
+import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 

@@ -27,7 +27,7 @@ import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ScepRequestMessage;
+import org.ejbca.core.protocol.scep.ScepRequestMessage;
 
 
 /**
@@ -79,7 +79,7 @@ public class ScepPkiOpHelper {
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
                 // Get the certificate
                 IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1,
-                        Class.forName(org.ejbca.core.protocol.ScepResponseMessage.class.getName()));
+                        Class.forName(org.ejbca.core.protocol.scep.ScepResponseMessage.class.getName()));
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
@@ -88,7 +88,7 @@ public class ScepPkiOpHelper {
                 // create the stupid encrypted CRL message, the below can actually only be made 
                 // at the CA, since CAs privvate key is needed to decrypt
                 IResponseMessage resp = signsession.getCRL(admin, reqmsg,
-                        Class.forName(org.ejbca.core.protocol.ScepResponseMessage.class.getName()));
+                        Class.forName(org.ejbca.core.protocol.scep.ScepResponseMessage.class.getName()));
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }

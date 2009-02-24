@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol;
+package org.ejbca.core.protocol.scep;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -58,6 +58,8 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.protocol.IRequestMessage;
+import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
