@@ -54,8 +54,9 @@ public class JDBCUtil {
                 connection = ServiceLocator.getInstance().getDataSource(dataSource).getConnection();
                 ps = connection.prepareStatement(sqlCommandTemplate);
                 preparer.prepare(ps);
-                if ( ps.execute() )
+                if ( ps.execute() ) {
                     result = ps.getResultSet();
+                }
             } finally {
                 JDBCUtil.close(connection, ps, result);
             }
@@ -121,12 +122,13 @@ public class JDBCUtil {
      * @param con the connection to close (can be null)
      */
     public static void close(Connection con) {
-        if (con != null)
+        if (con != null) {
             try {
                 con.close();
             } catch (SQLException e) {
                 log.warn("Could not close connection", e);
             }
+        }
     }
 
     /**
@@ -135,12 +137,13 @@ public class JDBCUtil {
      * @param rs the resultset to close (can be null)
      */
     public static void close(ResultSet rs) {
-        if (rs != null)
+        if (rs != null) {
             try {
                 rs.close();
             } catch (SQLException e) {
                 log.warn("Could not close ResultSet", e);
             }
+        }
     }
 
     /**
@@ -149,12 +152,13 @@ public class JDBCUtil {
      * @param ps the prepared statement to close (can be null)
      */
     public static void close(PreparedStatement ps) {
-        if (ps != null)
+        if (ps != null) {
             try {
                 ps.close();
             } catch (SQLException e) {
                 log.warn("Could not close PreparedStatement", e);
             }
+        }
     }
 
     /**

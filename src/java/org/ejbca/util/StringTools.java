@@ -340,9 +340,9 @@ public class StringTools {
      */
     public static String deobfuscate(String s)
     {
-        if (s.startsWith("OBF:"))
+        if (s.startsWith("OBF:")) {
             s=s.substring(4);
-        
+        }
         byte[] b=new byte[s.length()/2];
         int l=0;
         for (int i=0;i<s.length();i+=4)

@@ -64,9 +64,9 @@ public class HardTokenProfileDataHandler implements Serializable {
           success=true;
     	}  
          
-      }else
+      }else {
         throw new AuthorizationDeniedException("Not authorized to add hard token profile");
-      
+      }
       return success;
     }    
 
@@ -84,9 +84,9 @@ public class HardTokenProfileDataHandler implements Serializable {
     		  this.info.hardTokenDataEdited();
     		  success=true;
     	  } 
-      }else
+      }else {
         throw new AuthorizationDeniedException("Not authorized to edit hard token profile");
-      
+      }
       return success;
     }
     
@@ -96,19 +96,19 @@ public class HardTokenProfileDataHandler implements Serializable {
       
 	  int profileid = getHardTokenProfileId(name);
 	  
-      if(useradminsession.checkForHardTokenProfileId(administrator, profileid))
+      if(useradminsession.checkForHardTokenProfileId(administrator, profileid)) {
         return true;
-	  
-	  if(hardtokensession.existsHardTokenProfileInHardTokenIssuer(administrator, profileid))
+      }
+	  if(hardtokensession.existsHardTokenProfileInHardTokenIssuer(administrator, profileid)) {
 		return true;  
-        
+	  }
       if(authorizedToProfileName(name, true)){    
 		hardtokensession.removeHardTokenProfile(administrator, name);
 		this.info.hardTokenDataEdited();
 		returnval = false;
-      }else
+      }else {
         throw new AuthorizationDeniedException("Not authorized to remove hard token profile");
-        
+      }
       return returnval;          
     }
     
@@ -117,8 +117,9 @@ public class HardTokenProfileDataHandler implements Serializable {
      if(authorizedToProfileName(oldname, true)){    
 		hardtokensession.renameHardTokenProfile(administrator, oldname,newname);
 	   this.info.hardTokenDataEdited();
-     }else
+     }else {
        throw new AuthorizationDeniedException("Not authorized to rename hard token profile");
+     }
     }
     
 
@@ -126,24 +127,25 @@ public class HardTokenProfileDataHandler implements Serializable {
       if(authorizedToProfileName(originalname, false)){
         hardtokensession.cloneHardTokenProfile(administrator, originalname,newname);
         this.info.hardTokenDataEdited();
-      }else
-         throw new AuthorizationDeniedException("Not authorized to clone hard token profile");          
+      }else {
+         throw new AuthorizationDeniedException("Not authorized to clone hard token profile");
+      }
     }        
     
 
 
       /** Method to get a reference to a Hard Token profile.*/ 
     public HardTokenProfile getHardTokenProfile(int id) throws AuthorizationDeniedException{
-      if(!authorizedToProfileId(id, false))
+      if(!authorizedToProfileId(id, false)) {
         throw new AuthorizationDeniedException("Not authorized to hard token profile");            
-      
+      }
       return hardtokensession.getHardTokenProfile(administrator, id); 
     }      
           
     public HardTokenProfile getHardTokenProfile(String profilename) throws AuthorizationDeniedException{
-     if(!authorizedToProfileName(profilename, false))
+     if(!authorizedToProfileName(profilename, false)) {
         throw new AuthorizationDeniedException("Not authorized to hard token profile");            
-         
+     }
       return hardtokensession.getHardTokenProfile(administrator, profilename);
     }
    
@@ -158,7 +160,7 @@ public class HardTokenProfileDataHandler implements Serializable {
      */
     private boolean authorizedToProfileName(String profilename, boolean editcheck){
 		HardTokenProfile profile = hardtokensession.getHardTokenProfile(administrator, profilename);
-      return authorizedToProfile(profile, editcheck);
+		return authorizedToProfile(profile, editcheck);
     }
      
     

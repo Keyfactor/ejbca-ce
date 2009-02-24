@@ -178,15 +178,18 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 		  FileItem item = (FileItem) iter.next();
 
 		    if (item.isFormField()) {         
-			  if(item.getFieldName().equals(ACTION))
+			  if(item.getFieldName().equals(ACTION)) {
 			    action = item.getString(); 
-			  if(item.getFieldName().equals(HIDDEN_HARDTOKENPROFILENAME))
+			  }
+			  if(item.getFieldName().equals(HIDDEN_HARDTOKENPROFILENAME)) {
 			    profilename = item.getString();
+			  }
 			  if(item.getFieldName().equals(BUTTON_CANCEL)) {
 			      // do nothing
               }
-			  if(item.getFieldName().equals(BUTTON_UPLOADFILE))
+			  if(item.getFieldName().equals(BUTTON_UPLOADFILE)) {
 			    buttonupload = true;
+			  }
 		    }else{         
 			  file = item.getInputStream();
 			  filename = item.getName(); 
@@ -215,8 +218,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				   includefile=PAGE_HARDTOKENPROFILE;
 				   this.profilename = profile;
 				   this.profiledata = handler.getHardTokenProfile(profilename);  
-			   } 
-			   else{ 
+			   } else { 
 				profile= null;
 			  } 
 			}
@@ -296,12 +298,15 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
              
 				 if(profiledata == null){               
 				   String tokentype = request.getParameter(HIDDEN_HARDTOKENTYPE);
-				   if(tokentype.equals(TYPE_SWEDISHEID))
+				   if(tokentype.equals(TYPE_SWEDISHEID)) {
 					 profiledata = new SwedishEIDProfile();
-				   if(tokentype.equals(TYPE_ENCHANCEDEID))
+				   }
+				   if(tokentype.equals(TYPE_ENCHANCEDEID)) {
 					 profiledata = new EnhancedEIDProfile();
-				   if(tokentype.equals(TYPE_TURKISHEID))
+				   }
+				   if(tokentype.equals(TYPE_TURKISHEID)) {
 					 profiledata = new TurkishEIDProfile();
+				   }
 				 }
 				 // Save changes.
                     
@@ -314,9 +319,9 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				 value = request.getParameter(CHECKBOX_EREASBLE);
 				 if(value != null){                              
 				   profiledata.setEreasableToken(value.equals(CHECKBOX_VALUE));
-				 }else
+				 }else {
 				   profiledata.setEreasableToken(false);
-
+				 }
 				 value = request.getParameter(SELECT_NUMOFTOKENCOPIES);
 				 if(value != null){                              				   
 				   profiledata.setNumberOfCopies(Integer.parseInt(value)); 
@@ -325,44 +330,51 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				value = request.getParameter(CHECKBOX_USEIDENTICALPINS);
 				if(value != null){                              
 				  profiledata.setGenerateIdenticalPINForCopies(value.equals(CHECKBOX_VALUE));
-				}else
+				}else {
 				  profiledata.setGenerateIdenticalPINForCopies(false);
-				 				 
-				 if(profiledata instanceof HardTokenProfileWithPINEnvelope){
-				   value = request.getParameter(SELECT_ENVELOPETYPE);
-				   if(value != null)                                               
-					 ((HardTokenProfileWithPINEnvelope) profiledata).setPINEnvelopeType(Integer.parseInt(value));            
-				   value = request.getParameter(SELECT_NUMOFENVELOPECOPIES);
-				   if(value != null)                                               
-					((HardTokenProfileWithPINEnvelope) profiledata).setNumberOfPINEnvelopeCopies(Integer.parseInt(value));
+				}
+				if(profiledata instanceof HardTokenProfileWithPINEnvelope){
+					value = request.getParameter(SELECT_ENVELOPETYPE);
+					if(value != null) {                                               
+						((HardTokenProfileWithPINEnvelope) profiledata).setPINEnvelopeType(Integer.parseInt(value));
+					}
+					value = request.getParameter(SELECT_NUMOFENVELOPECOPIES);
+					if(value != null) {                                               
+						((HardTokenProfileWithPINEnvelope) profiledata).setNumberOfPINEnvelopeCopies(Integer.parseInt(value));
+					}
 					value = request.getParameter(TEXTFIELD_VISUALVALIDITY);
-					if(value != null)                                        
-					  ((HardTokenProfileWithPINEnvelope) profiledata).setVisualValidity(Integer.parseInt(value));       													
-            				   
-				 }
+					if(value != null) {                                        
+						((HardTokenProfileWithPINEnvelope) profiledata).setVisualValidity(Integer.parseInt(value));       													
+					}
+				}
   
 				 if(profiledata instanceof HardTokenProfileWithVisualLayout){
 				   HardTokenProfileWithVisualLayout visprof = (HardTokenProfileWithVisualLayout) profiledata;
 				   value = request.getParameter(SELECT_VISUALLAYOUTTYPE);
-				   if(value != null)                                        
-				     visprof.setVisualLayoutType(Integer.parseInt(value));       
+				   if(value != null) {                                        
+				     visprof.setVisualLayoutType(Integer.parseInt(value));
+				   }
 				 }
 				 
 				 if(profiledata instanceof HardTokenProfileWithReceipt){
 					   value = request.getParameter(SELECT_RECEIPTTYPE);
-					   if(value != null)                                               
-						 ((HardTokenProfileWithReceipt) profiledata).setReceiptType(Integer.parseInt(value));            
+					   if(value != null) {                                               
+						 ((HardTokenProfileWithReceipt) profiledata).setReceiptType(Integer.parseInt(value));
+					   }
 					   value = request.getParameter(SELECT_NUMOFRECEIPTCOPIES);
-					   if(value != null)                                               
-						((HardTokenProfileWithReceipt) profiledata).setNumberOfReceiptCopies(Integer.parseInt(value));       								
+					   if(value != null) {                                               
+						((HardTokenProfileWithReceipt) profiledata).setNumberOfReceiptCopies(Integer.parseInt(value));
+					   }
 				 }
 				 if(profiledata instanceof HardTokenProfileWithAdressLabel){
 					   value = request.getParameter(SELECT_ADRESSLABELTYPE);
-					   if(value != null)                                               
-						 ((HardTokenProfileWithAdressLabel) profiledata).setAdressLabelType(Integer.parseInt(value));            
+					   if(value != null) {                                               
+						 ((HardTokenProfileWithAdressLabel) profiledata).setAdressLabelType(Integer.parseInt(value));
+					   }
 					   value = request.getParameter(SELECT_NUMOFADRESSLABELCOPIES);
-					   if(value != null)                                               
-						((HardTokenProfileWithAdressLabel) profiledata).setNumberOfAdressLabelCopies(Integer.parseInt(value));       								
+					   if(value != null) {                                               
+						((HardTokenProfileWithAdressLabel) profiledata).setNumberOfAdressLabelCopies(Integer.parseInt(value));
+					   }
 				 }
 
 				 if(profiledata instanceof SwedishEIDProfile){
@@ -386,33 +398,37 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				   }
 				   	  
                    value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
-                   if(value!= null)
+                   if(value!= null) {
                      sweprof.setCertificateProfileId(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
-				   
+                   }
 				   value = request.getParameter(SELECT_CA + "0");
-				   if(value!= null)
+				   if(value!= null) {
 					   sweprof.setCAId(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_PINTYPE + "0");
-				   if(value!= null)
+				   if(value!= null) {
 					   sweprof.setPINType(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_MINPINLENGTH + "0");
-				   if(value!= null)
+				   if(value!= null) {
 					   sweprof.setMinimumPINLength(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value)); 
-				   
+				   }
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
-				   if(value!= null)
+				   if(value!= null) {
 					   sweprof.setCertificateProfileId(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
-				   
+				   }
 				   value = request.getParameter(SELECT_CA + "1");
-				   if(value!= null)
-					   sweprof.setCAId(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));					
+				   if(value!= null) {
+					   sweprof.setCAId(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_PINTYPE + "1");
-				   if(value!= null)
+				   if(value!= null) {
 				     sweprof.setPINType(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_MINPINLENGTH + "1");
-				   if(value!= null)
+				   if(value!= null) {
 					 sweprof.setMinimumPINLength(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));                  
-                     
+				   }
 				 }
 
 				 if(profiledata instanceof TurkishEIDProfile){
@@ -436,26 +452,29 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 					   }
 					   	  
 	                   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
-	                   if(value!= null)
+	                   if(value!= null) {
 	                	   turkprof.setCertificateProfileId(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
-					   
+	                   }
 					   value = request.getParameter(SELECT_CA + "0");
-					   if(value!= null)
+					   if(value!= null) {
 						   turkprof.setCAId(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+					   }
 					   value = request.getParameter(SELECT_PINTYPE + "0");
-					   if(value!= null)
+					   if(value!= null) {
 						   turkprof.setPINType(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+					   }
 					   value = request.getParameter(SELECT_MINPINLENGTH + "0");
-					   if(value!= null)
+					   if(value!= null) {
 						   turkprof.setMinimumPINLength(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value)); 
-					   
+					   }
 					   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
-					   if(value!= null)
+					   if(value!= null) {
 						   turkprof.setCertificateProfileId(TurkishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
-					   
+					   }
 					   value = request.getParameter(SELECT_CA + "1");
-					   if(value!= null)
-						   turkprof.setCAId(TurkishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));										  	                     
+					   if(value!= null) {
+						   turkprof.setCAId(TurkishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
+					   }
 			     }				 
 				 
 				 if(profiledata instanceof EnhancedEIDProfile){
@@ -484,59 +503,69 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				   }
 				   
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
-				   
+				   }
 				   value = request.getParameter(SELECT_CA + "0");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_PINTYPE + "0");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_MINPINLENGTH + "0");
-				   if(value!= null)
+				   if(value!= null) {
 				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+				   }
                    enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_SIGN, false); 
                     
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
-				   
+				   }
 				   value = request.getParameter(SELECT_CA + "1");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_PINTYPE + "1");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_MINPINLENGTH + "1");
-				   if(value!= null)
+				   if(value!= null) {
 				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
+				   }
 				   enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_AUTH, false);
 
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "2");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
-				   
+				   }
 				   value = request.getParameter(SELECT_CA + "2");
-				   if(value!= null)
+				   if(value!= null) {
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_PINTYPE + "2");
-				   if(value!= null)
-					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));			
+				   if(value!= null) {
+					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(SELECT_MINPINLENGTH + "2");
-				   if(value!= null)
-				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));				   
+				   if(value!= null) {
+				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
+				   }
 				   value = request.getParameter(CHECKBOX_KEYRECOVERABLE + "2");
-					if(value != null)                              
-					enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));
-					else
+					if(value != null) {                              
+						enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));
+					} else {
 					  enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, false);
+					}
 					value = request.getParameter(CHECKBOX_REUSEOLDCERT + "2");
-					if(value != null)                              
+					if(value != null) {                              
 						enhprof.setReuseOldCertificate(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));
-					else
+					} else {
 						enhprof.setReuseOldCertificate(EnhancedEIDProfile.CERTUSAGE_ENC, false);
-				   				
+					}	
 					
 				 }
 
@@ -611,8 +640,9 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				String nextline = "";
 				while(nextline!=null){
 				  nextline = br.readLine();
-				  if(nextline != null)				    
+			 	  if(nextline != null) {				    
 				    filecontent += nextline + "\n";
+			 	  }
 				}                
 			    ((IPINEnvelopeSettings) profiledata).setPINEnvelopeData(filecontent);
 			    ((IPINEnvelopeSettings) profiledata).setPINEnvelopeTemplateFilename(filename);
@@ -632,8 +662,9 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 			    String nextline = "";
 			    while(nextline!=null){
 				  nextline = br.readLine();
-				  if(nextline != null)				    
+				  if(nextline != null) {				    
 				    filecontent += nextline + "\n";
+				  }
 			    }
 			    ((IVisualLayoutSettings) profiledata).setVisualLayoutData(filecontent);
 			    ((IVisualLayoutSettings) profiledata).setVisualLayoutTemplateFilename(filename);
@@ -652,8 +683,9 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 			    String nextline = "";
 			    while(nextline!=null){
 				  nextline = br.readLine();
-				  if(nextline != null)				    
+				  if(nextline != null) {				    
 				    filecontent += nextline + "\n";
+				  }
 			    }
 			    ((IReceiptSettings) profiledata).setReceiptData(filecontent);
 			    ((IReceiptSettings) profiledata).setReceiptTemplateFilename(filename);
@@ -672,8 +704,9 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 			    String nextline = "";
 			    while(nextline!=null){
 				  nextline = br.readLine();
-				  if(nextline != null)				    
+				  if(nextline != null) {				    
 				    filecontent += nextline + "\n";
+				  }
 			    }
 			    ((IAdressLabelSettings) profiledata).setAdressLabelData(filecontent);
 			    ((IAdressLabelSettings) profiledata).setAdressLabelTemplateFilename(filename);
@@ -693,15 +726,15 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
     public int getProfileType(){    	
       int retval = SwedishEIDProfile.TYPE_SWEDISHEID;
       
-      if(profiledata instanceof SwedishEIDProfile)
+      if(profiledata instanceof SwedishEIDProfile) {
         retval = SwedishEIDProfile.TYPE_SWEDISHEID;	
-      
-	  if(profiledata instanceof EnhancedEIDProfile)
+      }
+	  if(profiledata instanceof EnhancedEIDProfile) {
       	retval = EnhancedEIDProfile.TYPE_ENHANCEDEID;	
-	  
-	  if(profiledata instanceof TurkishEIDProfile)
+	  }
+	  if(profiledata instanceof TurkishEIDProfile) {
 	      	retval = TurkishEIDProfile.TYPE_TURKISHEID;
-	      	
+	  }
 	  return retval;    	
     }
 

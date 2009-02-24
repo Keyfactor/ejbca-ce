@@ -64,7 +64,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
       if(!initialized){
-        admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+        admin = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
             
         final ServiceLocator locator = ServiceLocator.getInstance();
         IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
@@ -117,21 +117,22 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     public HardTokenView getHardTokenViewWithIndex(String username, int index, boolean includePUK) {
         HardTokenView returnval=null;
         
-        if(result == null)
+        if(result == null) {
             getHardTokenViewWithUsername(username, includePUK);
-        
-        if(result!=null)
-            if(index < result.length)
+        }
+        if(result!=null) {
+            if(index < result.length) {
                 returnval=result[index];
-        
+            }
+        }
         return returnval;
     }
     
     public int getHardTokensInCache() {
         int returnval = 0;
-        if(result!=null)
+        if(result!=null) {
             returnval = result.length;
-        
+        }
         return returnval;
     }
     
@@ -139,9 +140,9 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         HardTokenView  returnval = null;
         this.result=null;
         HardTokenData token =  hardtokensession.getHardToken(admin, tokensn, includePUK);
-        if(token != null)
+        if(token != null) {
             returnval = new  HardTokenView(token);
-        
+        }
         return returnval;
     }
     
@@ -173,8 +174,9 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
         while(iter.hasNext()){
             if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
-                if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer()))
+                if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer())) {
                     throw new HardTokenIssuerExistsException();
+                }
                 informationmemory.hardTokenDataEdited();      		
             }
         }      
@@ -182,8 +184,9 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     
     public void changeHardTokenIssuer(String alias, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerDoesntExistsException {
         if(informationmemory.authorizedToHardTokenIssuer(alias)){	          	
-            if(!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer))
+            if(!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer)) {
                 throw new HardTokenIssuerDoesntExistsException();
+            }
             informationmemory.hardTokenDataEdited();
         }
     }
@@ -207,18 +210,18 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     
     public void renameHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException {
         if(informationmemory.authorizedToHardTokenIssuer(oldalias)){	        
-            if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newadmingroupid))
+            if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newadmingroupid)) {
                 throw new HardTokenIssuerExistsException();
-            
+            }
             informationmemory.hardTokenDataEdited();
         }   
     }
     
     public void cloneHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException {
         if(informationmemory.authorizedToHardTokenIssuer(oldalias)){    	        
-            if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newadmingroupid))
+            if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newadmingroupid)) {
                 throw new HardTokenIssuerExistsException();
-            
+            }
             informationmemory.hardTokenDataEdited();
         }
     }

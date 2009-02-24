@@ -143,7 +143,9 @@ public class HTMLTools {
      **/
     public static String htmlescape(String s1)
     {
-    	if (s1 == null) return null;
+    	if (s1 == null) {
+    		return null;
+    	}
         StringBuffer buf = new StringBuffer();
         int i;
         for (i=0; i<s1.length(); ++i) {
@@ -176,7 +178,9 @@ public class HTMLTools {
      * @see #htmlescape(String)
      **/
     public static String htmlunescape(String s1) {
-    	if (s1 == null) return null;
+    	if (s1 == null) {
+    		return null;
+    	}
         StringBuffer buf = new StringBuffer();
         int i;
         for (i=0; i<s1.length(); ++i) {

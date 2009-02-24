@@ -707,11 +707,15 @@ public class CertTools {
 //    					dn += "SERIALNUMBER="+rf.getSequence();
 //    				}
     				if (rf.getMnemonic() != null) {
-    					if (StringUtils.isNotEmpty(dn)) dn += ", ";
+    					if (StringUtils.isNotEmpty(dn)) {
+    						dn += ", ";
+    					}
     					dn += "CN="+rf.getMnemonic();
     				}
     				if (rf.getCountry() != null) {
-    					if (StringUtils.isNotEmpty(dn)) dn += ", ";
+    					if (StringUtils.isNotEmpty(dn)) {
+    						dn += ", ";
+    					}
     					dn += "C="+rf.getCountry();
     				}				
                     ret = stringToBCDNString(dn);                	
@@ -1048,7 +1052,9 @@ public class CertTools {
 			inStrm = new FileInputStream(certFile);
 			certs = getCertsFromPEM(inStrm);
 		} finally {
-			if (inStrm != null) inStrm.close();
+			if (inStrm != null) {
+				inStrm.close();
+			}
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("<getCertfromPEM: certFile=" + certFile);
@@ -1080,9 +1086,9 @@ public class CertTools {
 				ostr = new ByteArrayOutputStream();
 				opstr = new PrintStream(ostr);
 				String temp;
-				while ((temp = bufRdr.readLine()) != null
-						&& !(temp.equals(CertTools.BEGIN_CERTIFICATE) || temp.equals(beginKeyTrust)))
+				while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.BEGIN_CERTIFICATE) || temp.equals(beginKeyTrust))) {
 					continue;
+				}
 				if (temp == null) {
 					if (ret.size() == 0) {
 						// There was no certificate in the file
@@ -1093,12 +1099,12 @@ public class CertTools {
 						break;
 					}
 				}
-				while ((temp = bufRdr.readLine()) != null
-						&& !(temp.equals(CertTools.END_CERTIFICATE) || temp.equals(endKeyTrust)))
+				while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.END_CERTIFICATE) || temp.equals(endKeyTrust))) {
 					opstr.print(temp);
-				if (temp == null)
-					throw new IOException("Error in " + certstream.toString()
-							+ ", missing " + CertTools.END_CERTIFICATE + " boundary");
+				}
+				if (temp == null) {
+					throw new IOException("Error in " + certstream.toString() + ", missing " + CertTools.END_CERTIFICATE + " boundary");
+				}
 				opstr.close();
 
 				byte[] certbuf = Base64.decode(ostr.toByteArray());
@@ -1108,9 +1114,15 @@ public class CertTools {
 				ret.add(cert);
 			}
 		} finally {
-			if (bufRdr != null) bufRdr.close();
-			if (opstr != null) opstr.close();
-			if (ostr != null) ostr.close();
+			if (bufRdr != null) {
+				bufRdr.close();
+			}
+			if (opstr != null) {
+				opstr.close();
+			}
+			if (ostr != null) {
+				ostr.close();
+			}
 		}        
 		if (log.isTraceEnabled()) {
 			log.trace("<getcertfromPEM:" + ret.size());
@@ -2290,7 +2302,9 @@ public class CertTools {
      * @return String containing hex format of SHA1 fingerprint, or null if input is null.
      */
     public static String getFingerprintAsString(Certificate cert) {
-    	if (cert == null) return null;
+    	if (cert == null) {
+    		return null;
+    	}
         try {
             byte[] res = generateSHA1Fingerprint(cert.getEncoded());
 
@@ -2384,24 +2398,33 @@ public class CertTools {
     		return -1;
     	}
         int bcku = 0;
-        if (sku[0] == true)
+        if (sku[0] == true) {
             bcku = bcku | X509KeyUsage.digitalSignature;
-        if (sku[1] == true)
+        }
+        if (sku[1] == true) {
             bcku = bcku | X509KeyUsage.nonRepudiation;
-        if (sku[2] == true)
+        }
+        if (sku[2] == true) {
             bcku = bcku | X509KeyUsage.keyEncipherment;
-        if (sku[3] == true)
+        }
+        if (sku[3] == true) {
             bcku = bcku | X509KeyUsage.dataEncipherment;
-        if (sku[4] == true)
+        }
+        if (sku[4] == true) {
             bcku = bcku | X509KeyUsage.keyAgreement;
-        if (sku[5] == true)
+        }
+        if (sku[5] == true) {
             bcku = bcku | X509KeyUsage.keyCertSign;
-        if (sku[6] == true)
+        }
+        if (sku[6] == true) {
             bcku = bcku | X509KeyUsage.cRLSign;
-        if (sku[7] == true)
+        }
+        if (sku[7] == true) {
             bcku = bcku | X509KeyUsage.encipherOnly;
-        if (sku[8] == true)
+        }
+        if (sku[8] == true) {
             bcku = bcku | X509KeyUsage.decipherOnly;
+        }
         return bcku;
     }
     
@@ -2856,38 +2879,39 @@ public class CertTools {
      */
     private static Collection orderCertificateChain(Collection certlist) throws CertPathValidatorException{
     	 ArrayList returnval = new ArrayList();
-       Certificate rootca = null;
+    	 Certificate rootca = null;
     	 HashMap cacertmap = new HashMap();
     	 Iterator iter = certlist.iterator();
     	 while(iter.hasNext()){
     	 	Certificate cert = (Certificate) iter.next();
-    	    if(CertTools.isSelfSigned(cert))
+    	    if(CertTools.isSelfSigned(cert)) {
     	      rootca = cert;
-    	    else {
+    	    } else {
     	    	log.debug("Adding to cacertmap with index '"+CertTools.getIssuerDN(cert)+"'");
     	    	cacertmap.put(CertTools.getIssuerDN(cert),cert);
     	    }
     	 }
 
-    	 if(rootca == null)
+    	 if (rootca == null) {
     	   throw new CertPathValidatorException("No root CA certificate found in certificatelist");
-
+    	 }
     	 returnval.add(0,rootca);
     	 Certificate currentcert = rootca;
     	 int i =0;
     	 while(certlist.size() != returnval.size() && i <= certlist.size()){
     		 log.debug("Looking in cacertmap for '"+CertTools.getSubjectDN(currentcert)+"'");
-    	 	Certificate nextcert = (Certificate) cacertmap.get(CertTools.getSubjectDN(currentcert));
-    	 	if(nextcert == null)
-  		  throw new CertPathValidatorException("Error building certificate path");
-
-  		returnval.add(0,nextcert);
-  		currentcert = nextcert;
-    	 	i++;
+    		 Certificate nextcert = (Certificate) cacertmap.get(CertTools.getSubjectDN(currentcert));
+    		 if(nextcert == null) {
+    			 throw new CertPathValidatorException("Error building certificate path");
+    		 }
+    		 returnval.add(0,nextcert);
+    		 currentcert = nextcert;
+    		 i++;
     	 }
 
-    	 if(i > certlist.size())
-  	  throw new CertPathValidatorException("Error building certificate path");
+    	 if(i > certlist.size()) {
+    		 throw new CertPathValidatorException("Error building certificate path");
+    	 }
 
 
     	 return returnval;

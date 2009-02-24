@@ -1232,8 +1232,8 @@ public class TestCertTools extends TestCase {
 		String issuerdn = CertTools.getIssuerDN(cert);
 		assertEquals("CN=RPS,C=SE", issuerdn);
 		assertEquals("10110", CertTools.getSerialNumberAsString(cert));
-		CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
-		assertEquals("CVCA", cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name());
+		CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+		assertEquals("CVCA", cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name());
 
 		// Serialization, CVC provider is installed by CertTools.installBCProvider
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

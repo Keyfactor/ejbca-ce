@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.util;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,8 +66,9 @@ public class PerformanceTest {
             final Thread thread = new Thread(this);
             synchronized(this) {
                 thread.start();
-                if ( !bIsFinished )
+                if ( !bIsFinished ) {
                     this.wait(120000);
+                }
                 if ( !bIsFinished ) {
                     thread.interrupt();
                     throw new Exception("Command not finished. See the error printout just above.");
@@ -102,10 +101,6 @@ public class PerformanceTest {
         final private Command commands[];
         /**
          * @param certificateProfileName 
-         * @throws NoSuchAlgorithmException 
-         * @throws IOException 
-         * @throws FileNotFoundException 
-         * 
          */
         public TestInstance(int _nr, int _waitTime, Statistic _statistic,
                             CommandFactory commandFactory) throws Exception {
@@ -137,8 +132,9 @@ public class PerformanceTest {
                         isSuccess = jobRunner.execute();
                         this.statistic.addTime(commands[i].getJobTimeDescription(), jobRunner.getTimeConsumed());
                     }
-                    if ( isSuccess )
+                    if ( isSuccess ) {
                         this.statistic.taskFinished();
+                    }
                 } catch( Throwable t ) {
                     log.error("Exeption in thread "+nr+".", t);
                 }
@@ -150,10 +146,12 @@ public class PerformanceTest {
 
         final Statistic statistic = new Statistic(numberOfThreads, printStream);
         final Thread threads[] = new Thread[numberOfThreads];
-        for(int i=0; i < numberOfThreads;i++)
+        for(int i=0; i < numberOfThreads;i++) {
             threads[i] = new Thread(new TestInstance(i, waitTime, statistic, commandFactory));
-        for(int i=0; i < numberOfThreads;i++)
+        }
+        for(int i=0; i < numberOfThreads;i++) {
             threads[i].start();
+        }
         new Thread(statistic).start();
         printStream.println("Test client started, tail info and error files in this directory for output.");
         printStream.println("Statistic will be written to standard output each "+STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
@@ -180,16 +178,18 @@ public class PerformanceTest {
         }
         void addTime(String timeName, long duration) {
             final long lastTime;
-            if ( mTimes.containsKey(timeName) )
+            if ( mTimes.containsKey(timeName) ) {
                 lastTime = mTimes.get(timeName);
-            else
+            } else {
                 lastTime = 0;
+            }
             mTimes.put(timeName, new Long(lastTime+duration));
         }
         private void printLine(String description, Object value) {
             String padding = new String();
-            for ( int i=description.length(); i<50; i++ )
+            for ( int i=description.length(); i<50; i++ ) {
                 padding += ' ';
+            }
             printStream.println(description+": "+padding+value);
         }
         private void printStatistics() {
@@ -199,8 +199,9 @@ public class PerformanceTest {
             final float relativeWork; {
                 long tmp = 0;
                 Iterator<Long> i=mTimes.values().iterator();
-                while (i.hasNext() )
+                while (i.hasNext() ) {
                     tmp += i.next().longValue();
+                }
                 relativeWork = (float)(allThreadsTime-tmp) / allThreadsTime;
             }
             final String CSI = "\u001B[";
@@ -290,8 +291,9 @@ public class PerformanceTest {
                     try {
                         Log.this.inUse = true;
                         if ( printer!=null ) {
-                            if ( doPrintDate )
+                            if ( doPrintDate ) {
                                 printer.print(currentDate + " : ");
+                            }
                             printer.println(msg);
                             if(t != null){
                                 t.printStackTrace(printer);
@@ -299,8 +301,9 @@ public class PerformanceTest {
                             }
                             printer.flush();
                         }
-                        if ( objectOutput!=null )
+                        if ( objectOutput!=null ) {
                             objectOutput.writeObject(msg);
+                        }
                     } catch( IOException e ) {
                         error("Logging fault", e);
                     } finally {

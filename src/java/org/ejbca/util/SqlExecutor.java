@@ -111,8 +111,9 @@ public class SqlExecutor {
             	if (!temp.startsWith("#")) { // Don't include comments
             		list.add(temp);
             	}
-                if (!temp.endsWith(";"))
+                if (!temp.endsWith(";")) {
                     continue;
+                }
             }
             Iterator it = list.iterator();
             while (it.hasNext()) {
