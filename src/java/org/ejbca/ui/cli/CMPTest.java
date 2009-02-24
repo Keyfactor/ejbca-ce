@@ -94,7 +94,7 @@ import com.novosec.pkix.asn1.crmf.POPOSigningKey;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
- * Used to test the EJBCA health check servet.
+ * Used to stress test the CMP interface.
  * @author primelars
  * @version $Id: HealthCheckTest.java 6106 2008-08-21 08:43:43Z primelars $
  *

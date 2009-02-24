@@ -38,7 +38,7 @@ import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
- * Implements the OCSP simple query command line query interface
+ * Used to stress test the OCSP interface
  *
  * @version $Id$
  */
