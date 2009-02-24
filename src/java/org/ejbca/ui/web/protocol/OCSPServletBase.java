@@ -834,25 +834,25 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						// because it may be so that only revoked certificates is in the (external) OCSP database.
 						if ((rci != null) && rci.isRevoked()) {
 							String serno = signercertSerNo.toString(16);
-							String errMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
-							m_log.error(errMsg);
-							throw new SignRequestSignatureException(errMsg);
+							String infoMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
+							m_log.info(infoMsg);
+							throw new SignRequestSignatureException(infoMsg);
 						}
 
 						if (m_reqRestrictSignatures) {
 							loadTrustDir();
 							if ( m_reqRestrictMethod == RESTRICTONSIGNER) {
 								if (!OCSPUtil.checkCertInList(signercert, mTrustedReqSigSigners)) {
-									String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
-									m_log.error(errMsg);
-									throw new SignRequestSignatureException(errMsg);
+									String infoMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
+									m_log.info(infoMsg);
+									throw new SignRequestSignatureException(infoMsg);
 								}
 							} else if (m_reqRestrictMethod == RESTRICTONISSUER) {
 								X509Certificate signerca = m_caCertCache.findLatestBySubjectDN(signercertIssuerName);
 								if ((signerca == null) || (!OCSPUtil.checkCertInList(signerca, mTrustedReqSigIssuers)) ) {
-									String errMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
-									m_log.error(errMsg);
-									throw new SignRequestSignatureException(errMsg);
+									String infoMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName, signercertSerNo.toString(16));
+									m_log.info(infoMsg);
+									throw new SignRequestSignatureException(infoMsg);
 								}
 							} else {
 								throw new Exception("m_reqRestrictMethod="+m_reqRestrictMethod); // there must be an internal error. We do not want to send a response, just to be safe.
@@ -872,23 +872,23 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, requests.length);
 				}
 				if (requests.length <= 0) {
-					String errMsg = intres.getLocalizedMessage("ocsp.errornoreqentities");
-					m_log.error(errMsg);
+					String infoMsg = intres.getLocalizedMessage("ocsp.errornoreqentities");
+					m_log.info(infoMsg);
 					{
 						// All this just so we can create an error response
 						cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
 					}
-					throw new MalformedRequestException(errMsg);
+					throw new MalformedRequestException(infoMsg);
 				}
 				int maxRequests = 100;
 				if (requests.length > maxRequests) {
-					String errMsg = intres.getLocalizedMessage("ocsp.errortoomanyreqentities", maxRequests);
-					m_log.error(errMsg);
+					String infoMsg = intres.getLocalizedMessage("ocsp.errortoomanyreqentities", maxRequests);
+					m_log.info(infoMsg);
 					{
 						// All this just so we can create an error response
 						cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
 					}
-					throw new MalformedRequestException(errMsg);
+					throw new MalformedRequestException(infoMsg);
 				}
 
 				if (m_log.isDebugEnabled()) {
@@ -943,7 +943,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						}
 					} catch (OCSPException e) {
 						String errMsg = intres.getLocalizedMessage("ocsp.errorgencerthash");
-						m_log.error(errMsg, e);
+						m_log.error(errMsg, e); // TODO: Verify that this is actually an error!
 						cacert = null;
 						continue;
 					}
