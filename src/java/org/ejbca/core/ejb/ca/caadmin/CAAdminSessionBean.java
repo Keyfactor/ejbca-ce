@@ -1810,7 +1810,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	String oldtoken = htokeninfo.getClassPath();
             	if (oldtoken.equals("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken") 
             			|| oldtoken.equals("se.primeKey.caToken.nFast.NFastCAToken")) {
-            		htokeninfo.setClassPath("org.ejbca.core.model.ca.catoken.NFastCAToken");
+            		htokeninfo.setClassPath(org.ejbca.core.model.ca.catoken.NFastCAToken.class.getName());
                 	error("(this is not an error) Updated catoken classpath ("+oldtoken+") for ca with id: "+caid);
             		token.updateCATokenInfo(htokeninfo);
             		ca.setCAToken(token);
@@ -2435,7 +2435,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN = {
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest",null),
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest.class.getName(),null),
 	};
     
     /**

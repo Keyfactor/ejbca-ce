@@ -256,11 +256,11 @@ public class CACertServlet extends HttpServlet {
                                    req.getSession().getAttribute("ejbcawebbean");
         if ( ejbcawebbean == null ){
           try {
-            ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "org.ejbca.ui.web.admin.configuration.EjbcaWebBean");
+            ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
            } catch (ClassNotFoundException exc) {
                throw new ServletException(exc.getMessage());
            }catch (Exception exc) {
-               throw new ServletException (" Cannot create bean of class "+"org.ejbca.ui.web.admin.configuration.EjbcaWebBean", exc);
+               throw new ServletException (" Cannot create bean of class "+org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName(), exc);
            }
            req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
         }

@@ -50,9 +50,11 @@ public class CATokenManager {
      */
     static {
         CATokenManager.instance().addAvailableCAToken(NFastCAToken.class.getName(), "NFastCAToken", false, true);
+        /** Can't use class.getName() here because this class is not always available */
         CATokenManager.instance().addAvailableCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
         CATokenManager.instance().addAvailableCAToken(EracomCAToken.class.getName(), "Eracom", false, true);
         CATokenManager.instance().addAvailableCAToken(PKCS11CAToken.class.getName(), "PKCS#11", false, true);
+        /** Can't use class.getName() here because this class is not always available */
         CATokenManager.instance().addAvailableCAToken("org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken", "SafeNetLunaCAToken", false, true);
         CATokenManager.instance().addAvailableCAToken(SoftCAToken.class.getName(), "SOFT", true, true);
         CATokenManager.instance().addAvailableCAToken(NullCAToken.class.getName(), "Null", false, false);

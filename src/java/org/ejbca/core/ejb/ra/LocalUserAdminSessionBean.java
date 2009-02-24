@@ -415,7 +415,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ADDUSER = {
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest",null),
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest.class.getName(),null),
 	};
 	/**
      * addUserFromWS is called from EjbcaWS
@@ -632,7 +632,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_CHANGEUSER = {
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest",null),
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest.class.getName(),null),
+		/** can not use .class.getName() below, because it is not part of base EJBCA dist */
 		new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
 	};
 
@@ -909,12 +910,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     } // deleteUser
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest",null),
-		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeUser"),
-		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeCert"),
-		new ApprovalOveradableClassName("org.ejbca.core.ejb.ca.auth.LocalAuthenticationSessionBean","finishUser"),
-		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","unrevokeCert"),
-		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName(),null),
+		new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(),"revokeUser"),
+		new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(),"revokeCert"),
+		new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.LocalAuthenticationSessionBean.class.getName(),"finishUser"),
+		new ApprovalOveradableClassName(org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName(),"unrevokeCert"),
+		new ApprovalOveradableClassName(org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName(),"markForRecovery"),
+		/** can not use .class.getName() below, because it is not part of base EJBCA dist */
 		new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 		new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
 	};
@@ -1206,7 +1208,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     } // verifyPassword
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER = {
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest",null),
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(),null),
 	};
 
     /**
@@ -1260,8 +1262,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEUSER = {
-		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeAndDeleteUser"),
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest",null),
+		new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(),"revokeAndDeleteUser"),
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(),null),
 	};
 
     /**
@@ -1329,7 +1331,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKECERT = {
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest",null),
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(),null),
 	};
 
 	/**

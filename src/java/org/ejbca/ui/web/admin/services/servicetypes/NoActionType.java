@@ -38,7 +38,7 @@ public class NoActionType extends ActionType {
 
 
 	public String getClassPath() {
-		return "org.ejbca.core.model.services.actions.NoAction";
+		return org.ejbca.core.model.services.actions.NoAction.class.getName();
 	}
 
 	public Properties getProperties(ArrayList errorMessages) throws IOException {		

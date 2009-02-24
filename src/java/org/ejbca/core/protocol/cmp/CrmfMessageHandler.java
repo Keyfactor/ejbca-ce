@@ -470,7 +470,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			if (resp == null) {
 				// Get the certificate
 				resp = signsession.createCertificate(admin, crmfreq, -1,
-						Class.forName("org.ejbca.core.protocol.cmp.CmpResponseMessage"));				
+						Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));				
 			}
 			if (resp == null) {
 				String errMsg = intres.getLocalizedMessage("cmp.errornullresp");

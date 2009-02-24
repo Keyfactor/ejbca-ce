@@ -547,7 +547,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
     
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_KEYRECOVERY = {
-		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest",null),		
+		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest.class.getName(),null),		
 	};
 	
     /**

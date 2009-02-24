@@ -286,7 +286,7 @@ public class AdminCertReqServlet extends HttpServlet {
             p10.setUsername(username);
             p10.setPassword(password);
             ISignSessionLocal ss = getSignSession();
-            IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+            IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             pkcs7 = ss.createPKCS7(admin, cert, true);
         } catch (ClassNotFoundException e) {
@@ -398,7 +398,7 @@ public class AdminCertReqServlet extends HttpServlet {
         RAInterfaceBean rabean = (RAInterfaceBean) session.getAttribute("rabean");
         if (rabean == null) {
             try {
-                rabean = (RAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), "org.ejbca.ui.web.admin.rainterface.RAInterfaceBean");
+                rabean = (RAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
             } catch (ClassNotFoundException e) {
                 throw new ServletException(e);
             } catch (Exception e) {
@@ -425,11 +425,11 @@ public class AdminCertReqServlet extends HttpServlet {
         EjbcaWebBean ejbcawebbean= (EjbcaWebBean)session.getAttribute("ejbcawebbean");
         if ( ejbcawebbean == null ){
             try {
-                ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "org.ejbca.ui.web.admin.configuration.EjbcaWebBean");
+                ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
             } catch (ClassNotFoundException exc) {
                 throw new ServletException(exc.getMessage());
             }catch (Exception exc) {
-                throw new ServletException (" Cannot create bean of class "+"org.ejbca.ui.web.admin.configuration.EjbcaWebBean", exc);
+                throw new ServletException (" Cannot create bean of class "+org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName(), exc);
             }
             session.setAttribute("ejbcawebbean", ejbcawebbean);
         }
@@ -445,7 +445,7 @@ public class AdminCertReqServlet extends HttpServlet {
         CAInterfaceBean cabean = (CAInterfaceBean) session.getAttribute("cabean");
         if (cabean == null) {
             try {
-                cabean = (CAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), "org.ejbca.ui.web.admin.cainterface.CAInterfaceBean");
+                cabean = (CAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
             } catch (ClassNotFoundException e) {
                 throw new ServletException(e);
             } catch (Exception e) {

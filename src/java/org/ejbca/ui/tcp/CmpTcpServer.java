@@ -47,7 +47,7 @@ public class CmpTcpServer {
 	public static QuickServer myServer = null;
 	
 	public static void start() throws UnknownHostException	{
-		String cmdHandle = "org.ejbca.ui.tcp.CmpTcpCommandHandler";
+		String cmdHandle = org.ejbca.ui.tcp.CmpTcpCommandHandler.class.getName();
 		String auth = null;
 
 		myServer = new QuickServer();

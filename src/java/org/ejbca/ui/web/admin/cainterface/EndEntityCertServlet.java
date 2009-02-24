@@ -87,22 +87,22 @@ public class EndEntityCertServlet extends HttpServlet {
                                    req.getSession().getAttribute("rabean");
         if ( ejbcawebbean == null ){
           try {
-            ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "org.ejbca.ui.web.admin.configuration.EjbcaWebBean");
+            ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
            } catch (ClassNotFoundException exc) {
                throw new ServletException(exc.getMessage());
            }catch (Exception exc) {
-               throw new ServletException (" Cannot create bean of class "+"org.ejbca.ui.web.admin.configuration.EjbcaWebBean", exc);
+               throw new ServletException (" Cannot create bean of class "+ org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName(), exc);
            }
            req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
         }
         
         if ( rabean == null ){
             try {
-              rabean = (org.ejbca.ui.web.admin.rainterface.RAInterfaceBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "org.ejbca.ui.web.admin.rainterface.RAInterfaceBean");
+              rabean = (org.ejbca.ui.web.admin.rainterface.RAInterfaceBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
              } catch (ClassNotFoundException exc) {
                  throw new ServletException(exc.getMessage());
              }catch (Exception exc) {
-                 throw new ServletException (" Cannot create bean of class "+"org.ejbca.ui.web.admin.rainterface.RAInterfaceBean", exc);
+                 throw new ServletException (" Cannot create bean of class "+ org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName(), exc);
              }
              req.getSession().setAttribute("rabean", ejbcawebbean);
           }

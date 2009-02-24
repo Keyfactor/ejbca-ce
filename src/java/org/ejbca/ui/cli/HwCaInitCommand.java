@@ -97,7 +97,7 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
                 pw.close();
                 catokeninfo.setProperties(sw.toString());
             }
-            catokeninfo.setClassPath("org.ejbca.core.model.ca.catoken.NFastCAToken");
+            catokeninfo.setClassPath(org.ejbca.core.model.ca.catoken.NFastCAToken.class.getName());
             X509CAInfo cainfo = new X509CAInfo(dn, 
                                              caname, SecConst.CA_ACTIVE, new Date(),
                                              "", SecConst.CERTPROFILE_FIXED_ROOTCA,
