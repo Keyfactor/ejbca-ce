@@ -31,8 +31,9 @@ public class EjbcaWsRaCli extends ClientToolBox {
         for ( int i=1; i<args.length; i++)  { // remove first argument
             lArgs.add(args[i]);
         }
-        try {// the ejbcawsracli can not be compiled when building EJBCA.
-            Class.forName(org.ejbca.core.protocol.ws.client.ejbcawsracli.class.getName()).getMethod("main", new Class<?>[]{String[].class}).invoke(null, new Object[]{lArgs.toArray(new String[]{})});
+        try {
+        	// the ejbcawsracli can not be compiled when building EJBCA.
+            Class.forName("org.ejbca.core.protocol.ws.client.ejbcawsracli").getMethod("main", new Class<?>[]{String[].class}).invoke(null, new Object[]{lArgs.toArray(new String[]{})});
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
