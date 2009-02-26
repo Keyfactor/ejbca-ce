@@ -1817,7 +1817,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
 
     /**
-     * Retrives a named certificate profile.
+     * Retrives a named certificate profile or null if none was found.
      *
      * @ejb.interface-method
      */
