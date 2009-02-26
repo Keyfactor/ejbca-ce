@@ -40,6 +40,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Random;
 
 import javax.ejb.FinderException;
 import javax.naming.Context;
@@ -147,8 +148,10 @@ public class ProtocolScepHttpTest extends TestCase {
     private static X509Certificate cacert = null;
     private static KeyPair keys = null;
     private static String caname = null;
-    private String transId = null;
     private String senderNonce = null;
+    private String transId = null;
+    
+    private Random rand = new Random();
 
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
@@ -397,16 +400,18 @@ public class ProtocolScepHttpTest extends TestCase {
         gen.setKeys(keys);
         gen.setDigestOid(digestoid);
         byte[] msgBytes = null;
+        // Create a transactionId
+        byte[] randBytes = new byte[16];
+        rand.nextBytes(randBytes);
+        byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
+        transId = new String(Base64.encode(digest));
+
         if (makeCrlReq) {
-            msgBytes = gen.generateCrlReq("C=SE, O=PrimeKey, CN=sceptest", cacert);
+            msgBytes = gen.generateCrlReq("C=SE, O=PrimeKey, CN=sceptest", transId, cacert);
         } else {
-            msgBytes = gen.generateCertReq("C=SE, O=PrimeKey, CN=sceptest", "foo123", cacert);            
+            msgBytes = gen.generateCertReq("C=SE, O=PrimeKey, CN=sceptest", "foo123", transId, cacert);            
         }
         assertNotNull(msgBytes);
-        transId = gen.getTransactionId();
-        assertNotNull(transId);
-        byte[] idBytes = Base64.decode(transId.getBytes());
-        assertTrue(idBytes.length == 16);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
         assertTrue(nonceBytes.length == 16); 

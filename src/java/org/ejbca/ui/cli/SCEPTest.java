@@ -131,10 +131,10 @@ class SCEPTest extends ClientToolBox {
                 ScepRequestGenerator gen = new ScepRequestGenerator();                
                 gen.setKeys(keyPair);
                 gen.setDigestOid(CMSSignedGenerator.DIGEST_SHA1);
-                String dn = sessionData.getUserDN();
-                byte[] msgBytes = gen.generateCertReq(dn, "foo123", racert);                    
+                String dn = this.sessionData.getUserDN();
+                String transactionId = this.sessionData.getTransactionId();
+                byte[] msgBytes = gen.generateCertReq(dn, "foo123", transactionId, racert);                    
                 // Get some valuable things to verify later on
-                String transId = gen.getTransactionId();
                 String senderNonce = gen.getSenderNonce();
 
                 // Send message with HTTP GET
@@ -143,7 +143,7 @@ class SCEPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("Error sending SCEP message.");
                     return false;
                 }
-                boolean okCertReq = checkScepResponse(retMsg, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.PENDING);
+                boolean okCertReq = checkScepResponse(retMsg, senderNonce, transactionId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.PENDING);
                 if ( !okCertReq ) {
                     StressTest.this.performanceTest.getLog().error("Error receiving response to CertReq request.");
                     return false;
@@ -157,10 +157,9 @@ class SCEPTest extends ClientToolBox {
                 	// Generate a SCEP GerCertInitial message
                     gen.setKeys(keyPair);
                     gen.setDigestOid(CMSSignedGenerator.DIGEST_SHA1);
-                    dn = sessionData.getUserDN(); // must be same as when the request was generated
-                    msgBytes = gen.generateGetCertInitial(dn, racert);                    
+                    dn = this.sessionData.getUserDN(); // must be same as when the request was generated
+                    msgBytes = gen.generateGetCertInitial(dn, transactionId, racert);                    
                     // Get some valuable things to verify later on
-                    transId = gen.getTransactionId();
                     senderNonce = gen.getSenderNonce();
                 	
                     // Send message with GET
@@ -171,14 +170,14 @@ class SCEPTest extends ClientToolBox {
                     }
                     if (isScepResponseMessageOfType(retMsg, ResponseStatus.PENDING)) {
                     	StressTest.this.performanceTest.getLog().info("Received a PENDING message.");
-                        boolean okPending = checkScepResponse(retMsg, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.PENDING);            	
+                        boolean okPending = checkScepResponse(retMsg, senderNonce, transactionId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.PENDING);            	
                         if ( !okPending ) {
                             StressTest.this.performanceTest.getLog().error("Error receiving pending response.");
                             return false;
                         }
                     } else {            	
                     	StressTest.this.performanceTest.getLog().info("Received a SUCCESS message.");
-                        boolean okSuccess = checkScepResponse(retMsg, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.SUCCESS);
+                        boolean okSuccess = checkScepResponse(retMsg, senderNonce, transactionId, false, CMSSignedGenerator.DIGEST_SHA1, false, ResponseStatus.SUCCESS);
                         if ( !okSuccess ) {
                             StressTest.this.performanceTest.getLog().error("Error receiving success response.");
                             return false;
@@ -515,6 +514,7 @@ class SCEPTest extends ClientToolBox {
                             // check the returned certificate
                             String subjectdn = CertTools.stringToBCDNString(retcert.getSubjectDN().getName());
                             String mysubjectdn = sessionData.getUserDN();
+                            StressTest.this.performanceTest.getLog().info("subjectdn='"+subjectdn+"', mysubjectdn='"+mysubjectdn+"'.");
                             if (mysubjectdn.equals(subjectdn)) {
                                 //System.out.println("Got user cert with DN: "+ retcert.getSubjectDN().getName());
                                 // issued certificate
@@ -608,15 +608,25 @@ class SCEPTest extends ClientToolBox {
         }
 
         class SessionData {
+        	private Random rand = new Random();
             private String userDN;
+            private String transactionId;
             SessionData() {
                 super();
             }
             void newSession() {
-                this.userDN = "CN=SCEP Test User Nr "+StressTest.this.random.nextInt()+",O=SCEP Test,C=SE";
+                this.userDN = "CN=SCEP_Test_User_Nr_"+StressTest.this.random.nextInt()+",O=SCEP Test,C=SE";
+                byte[] randBytes = new byte[16];
+                rand.nextBytes(randBytes);
+                byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
+                transactionId = new String(Base64.encode(digest));
             }
             String getUserDN() {
                 return this.userDN;
+            }
+            
+            String getTransactionId() {
+            	return this.transactionId;
             }
         } // class SessionData
         
