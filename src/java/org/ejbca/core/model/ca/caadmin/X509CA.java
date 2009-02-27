@@ -349,7 +349,7 @@ public class X509CA extends CA implements Serializable {
             gen.addCertificatesAndCRLs(certs);
             CMSSignedData s = null;
             CATokenContainer catoken = getCAToken();
-            CATokenInfo tokeninfo = catoken.getCATokenInfo();
+            CATokenInfo tokeninfo = getCAInfo().getCATokenInfo();
             if (catoken != null && !(tokeninfo instanceof NullCATokenInfo)) {
             	log.debug("createPKCS7: Provider="+catoken.getProvider()+" using algorithm "+getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN).getAlgorithm());
             	s = gen.generate(msg, true, catoken.getProvider());
@@ -424,7 +424,7 @@ public class X509CA extends CA implements Serializable {
     	// one the stuff below of we are off-line. The line below will throw CATokenOfflineException of CA is offline
         getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
 
-        final String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
+        final String sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
         X509Certificate cacert = (X509Certificate)getCACertificate();
         String dn = subject.getDN();        
         // Check if this is a root CA we are creating
@@ -655,7 +655,7 @@ public class X509CA extends CA implements Serializable {
      */
     private CRL generateCRL(Collection certs, int crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        final String sigAlg= getCAToken().getCATokenInfo().getSignatureAlgorithm();
+        final String sigAlg= getCAInfo().getCATokenInfo().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
             log.debug("generateCRL("+certs.size()+", "+crlPeriod+", "+crlnumber+", "+isDeltaCRL+", "+basecrlnumber);        	
