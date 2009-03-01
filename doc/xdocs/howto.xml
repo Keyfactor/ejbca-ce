@@ -583,7 +583,7 @@ worker.jboss.type=ajp13
 Enable demo.primekey.se in /etc/apache2/sites-enabled
 
 <source>
-# vim /etc/apache2/mods-available
+# vim /etc/apache2/mods-available/ssl.conf
 -----
 SSLVerifyClient require
 SSLVerifyDepth 3
