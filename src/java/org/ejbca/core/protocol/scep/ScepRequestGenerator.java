@@ -66,6 +66,19 @@ public class ScepRequestGenerator {
     private PKCS10CertificationRequest p10request;
     private String senderNonce = null;
 
+    /** A good random source for nounces, can take a long time to initialize on vmware */
+    private static SecureRandom randomSource = null;
+
+    public ScepRequestGenerator() {
+    	try { 
+    		if (randomSource == null) {
+        		randomSource = SecureRandom.getInstance("SHA1PRNG");    			
+    		}
+    	} catch (Exception e) {
+    		log.error(e);
+    	}
+    }
+    
     public void setKeys(KeyPair myKeys) {
         this.keys = myKeys;
     }
@@ -199,7 +212,6 @@ public class ScepRequestGenerator {
 
         // senderNonce
         byte[] nonce = new byte[16];
-        SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
         randomSource.nextBytes(nonce);
         senderNonce = new String(Base64.encode(nonce));
         if (nonce != null) {
