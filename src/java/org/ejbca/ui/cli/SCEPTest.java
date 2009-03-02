@@ -102,6 +102,9 @@ class SCEPTest extends ClientToolBox {
             keygen.initialize(1024);
             this.keyPair = keygen.generateKeyPair();
 
+            // Just initialize and take the performance penalty here, in vmware this can take a long time.
+            this.random.nextInt();
+            
             this.performanceTest = new PerformanceTest();
             this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
         }
@@ -608,7 +611,6 @@ class SCEPTest extends ClientToolBox {
         }
 
         class SessionData {
-        	private Random rand = new Random();
             private String userDN;
             private String transactionId;
             SessionData() {
@@ -617,7 +619,7 @@ class SCEPTest extends ClientToolBox {
             void newSession() {
                 this.userDN = "CN=SCEP_Test_User_Nr_"+StressTest.this.random.nextInt()+",O=SCEP Test,C=SE";
                 byte[] randBytes = new byte[16];
-                rand.nextBytes(randBytes);
+                StressTest.this.random.nextBytes(randBytes);
                 byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
                 transactionId = new String(Base64.encode(digest));
             }
@@ -633,7 +635,7 @@ class SCEPTest extends ClientToolBox {
         private class MyCommandFactory implements CommandFactory {
             public Command[] getCommands() throws Exception {
                 final SessionData sessionData = new SessionData();
-                return new Command[]{new GetCertificate(sessionData)};//, new Revoke(sessionData)};
+                return new Command[]{new GetCertificate(sessionData)};
             }
         }
     }
