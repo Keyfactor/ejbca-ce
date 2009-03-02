@@ -511,6 +511,26 @@ NameVirtualHost *:443
   Even though this looks secure, it is still a good idea to use a firewall as an extra layer of security (e.g. drop malformed packages and
   prevent future services from being exploited).
   </p>
+  
+  <subsubsection name="Nice URLs">
+  <p>
+  A sample configuration how to fix up nice URLs for OCSP so that you can point your OCSP service locator to http://ocsp.company.com/ instead of http://ocsp.company.com:8080/ejbca/publicweb/status/ocsp
+  (some info left out for brevity).
+  </p>
+  <source>
+&lt;VirtualHost ocsp.company.com:80>
+    &lt;Proxy *>
+        Order deny,allow
+        Allow from all
+    &lt;/Proxy>
+    ProxyPass / http://127.0.0.1:8080/ejbca/publicweb/status/ocsp
+    ProxyPassReverse / http://127.0.0.1:8080/ejbca/publicweb/status/ocsp
+&lt;/VirtualHost>
+  </source>
+  <p>You can easily do the same for CRL distribution points.
+  </p>
+  </subsubsection>
+  
   </section>
 
   <section name="Setting up an Apache Web Server with mod_jk in front of EJBCA">
