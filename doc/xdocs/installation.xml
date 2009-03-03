@@ -547,8 +547,18 @@ Do 'ant clean' first if you have tried with different appservers, or database se
     <ul>
        <li>cd $EJBCA_HOME</li>
        <li>bin/ejbca.sh ca getrootcert AdminCA1 ca.der -der</li>
-       <li>keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/ca.der</li>
-       <li>password is 'changeit'</li>
+    </ul>
+    Install the CA certificate in the application servers truststore.<br/>
+    On Glassfish open source:
+    <ul>
+    <li>keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/ca.der</li>
+    <li>password is 'changeit'</li>
+    </ul>
+    On Glassfish Enterprise:
+    <ul>
+    <li>cd $APPSRV_HOME/domains/domain1/config</li>
+    <li>/usr/sfw/bin/certutil -A -n adminca1 -t "p,p,p" -i $EJBCA_HOME/ca.der -d .</li>
+    <li>verify that adminca1 has been added to the store with '/usr/sfw/bin/certutil -L -d .'.</li>
     </ul>
     Restart server<br/>
     (you would probably want to install your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
