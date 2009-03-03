@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
 
-    private static final int myCaId = 1584670546;
+    private static final int myCaId = -1688117755;	//1584670546;
     private static final String myOcspIp = "127.0.0.1";
     
     public static void main(String args[]) {
@@ -101,7 +101,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
             if ( isRevoked==(store.isRevoked(admin, cert.getIssuerDN().toString(), cert.getSerialNumber()).getReason()!=RevokedCertInfo.NOT_REVOKED) )
                 return cert;
         }
-        assertNotNull("Misslyckades h�mta cert", null);
+        assertNotNull("Could not fetch certificate.", null);
         return null;
     }
 
@@ -115,7 +115,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         final X509Certificate ocspTestCert = getTestCert(true);
         pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
         ICertificateStoreSessionRemote store = storehome.create();
-        store.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -133,7 +132,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         RevokedStatus rev = (RevokedStatus) status;
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
-        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
         log.trace("<test03OcspRevoked()");
     }
 

@@ -687,7 +687,8 @@ public class CertTools {
                 }
                 ret = stringToBCDNString(dn);
             } catch (CertificateException ce) {
-                log.error("CertificateException: ", ce);
+            	log.info("Could not get DN from X509Certificate. " + ce.getMessage());
+                log.debug("", ce);
                 return null;
             }
 		} else if (StringUtils.equals(cert.getType(), "CVC")) {
@@ -2140,7 +2141,7 @@ public class CertTools {
 	 * @param certificate cert to verify
 	 * @param date the Date to check against to see if this certificate is valid at that date/time.
 	 * @throws CertificateNotYetValidException 
-	 * @throws CertificateExpiredException 
+	 * @throws NoSuchFieldException 
 	 * @throws CertificateExpiredException - if the certificate has expired with respect to the date supplied. 
      * @throws CertificateNotYetValidException - if the certificate is not yet valid with respect to the date supplied.
      * @see java.security.cert.X509Certificate#checkValidity(Date)

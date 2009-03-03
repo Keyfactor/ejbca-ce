@@ -266,9 +266,9 @@ public class OCSPUtil {
     	X509Certificate signercert = null;
     	
     	if (!req.isSigned()) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq", clientRemoteAddr);
-    		m_log.error(errMsg);
-    		throw new SignRequestException(errMsg);
+    		String infoMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq", clientRemoteAddr);
+    		m_log.info(infoMsg);
+    		throw new SignRequestException(infoMsg);
     	}
     	// Get all certificates embedded in the request (probably a certificate chain)
     	X509Certificate[] certs = req.getCerts("BC");

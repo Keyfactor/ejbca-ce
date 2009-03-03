@@ -145,9 +145,8 @@ public class CertificateCache {
      * @param certId CertificateId from the OCSP request
      * @param certs the collection of CA certificate to search through
      * @return X509Certificate A CA certificate or null of not found in the collection
-     * @throws OCSPException
      */
-    public X509Certificate findByHash(CertificateID certId) throws OCSPException {
+    public X509Certificate findByHash(CertificateID certId) {
         if (null == certId) {
             throw new IllegalArgumentException();
         }
@@ -216,8 +215,8 @@ public class CertificateCache {
         							break; // don't continue the while loop if we found it
         						}
         					} catch (OCSPException e) {
-        						String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
-        						log.error(errMsg, e);
+        						String infoMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
+        						log.info(infoMsg, e);
         					}        		
         				} else {
         					if (log.isDebugEnabled()) {
@@ -252,6 +251,8 @@ public class CertificateCache {
      * We also only want one single thread to do the rebuilding.
      */
     private synchronized void loadCertificates() {
+    	// TODO: Introduce fair locking here. Trade a little throughput for lower peak response time.. however this should never be run if you
+    	//  access the HSM through PKCS#11. See ocsp.signingCertsValidTime in conf/ocsp.properties for more info.
     	// Check if we have a cached collection that is not too old
     	if (certCache != null && m_certValidTo > new Date().getTime()) {
     		// The other HashMaps are always created as well, if this one is created

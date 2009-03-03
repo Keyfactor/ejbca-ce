@@ -305,7 +305,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 
 		int result = CertTools.stringToBCDNString(cert.getSubjectDN().toString()).hashCode();
-		m_log.debug( cert.getSubjectDN() + " has caid: " + result );
+		if (m_log.isDebugEnabled()) {
+			m_log.debug( cert.getSubjectDN() + " has caid: " + result );
+		}
 		return result;
 	}
 
@@ -659,6 +661,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		try {
 			Boolean b = (Boolean)m_errorHandlerMethod.invoke(null, startTime); // first object parameter can be null because this is a static method
 			ret = b.booleanValue();
+			if (!b) {
+				m_log.error("Audit and/or account logging is not working properly.");
+			}
 		} catch (SecurityException e) {
 			m_log.error(e);
 		} catch (IllegalArgumentException e) {
@@ -681,8 +686,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			return;
 		}
 		// Get the request data
-		
-		m_log.debug("Received request of length: "+request.getContentLength());
+		if (m_log.isDebugEnabled()) {
+			m_log.debug("Received request of length: "+request.getContentLength());
+		}
         ServletInputStream in = request.getInputStream();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		// This works for small requests, and OCSP requests are small
@@ -775,6 +781,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
 			return;
 		}
+		// TODO: Move this check to an earlier check where the buffer is parsed
 		// Don't allow requests larger than 1 million bytes
 		if (reqBytes.length > 1000000) {
 			m_log.info("Too large request, max size is 1000000, from ip: "+request.getRemoteAddr());
@@ -934,18 +941,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					// on this server, we sign the response with the default responderId (from params in web.xml).
 					// We have to look up the ca-certificate for each certId in the request though, as we will check
 					// for revocation on the ca-cert as well when checking for revocation on the certId. 
-					try {
-						cacert = m_caCertCache.findByHash(certId);
-						if (cacert == null) {
-							// We could not find certificate for this request so get certificate for default responder
-							cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
-							unknownCA = true;
-						}
-					} catch (OCSPException e) {
-						String errMsg = intres.getLocalizedMessage("ocsp.errorgencerthash");
-						m_log.error(errMsg, e); // TODO: Verify that this is actually an error!
-						cacert = null;
-						continue;
+					cacert = m_caCertCache.findByHash(certId);
+					if (cacert == null) {
+						// We could not find certificate for this request so get certificate for default responder
+						cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
+						unknownCA = true;
 					}
 					if (cacert == null) {
 						String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacert", new String(Hex.encode(certId.getIssuerNameHash())), m_defaultResponderId);
@@ -977,6 +977,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					 *    certificates issued by that CA.
 					 */
 					RevokedCertInfo rci;
+					// Check if the cacert (or the default responderid) is revoked
 					rci = isRevoked(m_adm, CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
 					if (null != rci && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
 						rci = null;
@@ -987,8 +988,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					}
 
 					if (null == rci) {
+						// Check if cert is revoked
 						rci = isRevoked(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
 						if (null == rci) {
+							// No revocation info available for this cert, handle it
 							if (m_log.isDebugEnabled()) {
 								m_log.debug("Unable to find revocation information for certificate with serial '"
 										+ certId.getSerialNumber().toString(16) + "'"
@@ -1017,44 +1020,31 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 								transactionLogger.writeln();
 							}
 						} else {
-							BigInteger rciSerno = rci.getUserCertificate(); 
-							if (rciSerno.compareTo(certId.getSerialNumber()) == 0) {
-								if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
-									certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
-											new CRLReason(rci.getReason())));
-									if (transactionLogger != null) {
-										transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
-									}
-								} else {
-									certStatus = null;
-								}
-								String status = "good";
+							// Revocation info available for this cert, handle it
+							if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
+								certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
+										new CRLReason(rci.getReason())));
 								if (transactionLogger != null) {
-									transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
-								}
-								if (certStatus != null) {
-									status ="revoked";
-									if (transactionLogger != null) {
-										transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
-									}
-								}
-								infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
-
-								m_log.info(infoMsg);
-								responseList.add(new OCSPResponseItem(certId, certStatus));
-								if (transactionLogger != null) {
-									transactionLogger.writeln();
+									transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
 								}
 							} else {
-								m_log.error("ERROR: Certificate serialNumber ("+rciSerno.toString(16)+") in response from database does not match request ("
-										+certId.getSerialNumber().toString(16)+").");
-								infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "unknown", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
-								m_log.info(infoMsg);
+								certStatus = null;
+							}
+							String status = "good";
+							if (transactionLogger != null) {
+								transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+							}
+							if (certStatus != null) {
+								status ="revoked";
 								if (transactionLogger != null) {
-									transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN); 
-									transactionLogger.writeln();
+									transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
 								}
-								responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));                		
+							}
+							infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+							m_log.info(infoMsg);
+							responseList.add(new OCSPResponseItem(certId, certStatus));
+							if (transactionLogger != null) {
+								transactionLogger.writeln();
 							}
 						}
 					} else {
@@ -1102,7 +1092,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						}
 					}
 				} // end of huge for loop
-				if ((req != null) && (cacert != null)) {
+				if (cacert != null) {
 					// Add responseExtensions
 					X509Extensions exts = new X509Extensions(responseExtensions);
 					// generate the signed response object
@@ -1115,6 +1105,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 					}
 				} else {
+					// Only unknown CAs in requests and no default reponders cert 
 					String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
 					m_log.error(errMsg);
 					throw new ServletException(errMsg);
@@ -1164,10 +1155,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				if (auditLogger != null) {
 					auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				}
+			} catch (ServletException e) {
+				throw e;
 			} catch (Exception e) {
-				if (e instanceof ServletException){
-					throw (ServletException) e;
-				}
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.error(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.
