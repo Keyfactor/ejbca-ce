@@ -282,8 +282,8 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		// in which case we only randomize on 5 seconds.
 		Date currentDate = new Date();
 		Date nextApproxTime = new Date(currentDate.getTime()+nextInterval*1000);
-		Date fourtysec = new Date(currentDate.getTime()+40000);
-		Date threesec = new Date(currentDate.getTime()+3000);
+		Date fourtysec = new Date(currentDate.getTime()+40100); // add 100 milliseconds
+		Date threesec = new Date(currentDate.getTime()+3100); // add 100 milliseconds
 		/*
 		if (log.isDebugEnabled()) {
 			log.info("nextApproc: "+nextApproxTime);			
