@@ -19,6 +19,31 @@ After this you must do:
 - ant clean
 - ant deploy
 
+From EJBCA 3.8.x to EJBCA 3.9.x
+-------------------------------
+Upgrade from EJBCA 3.8.x to 3.9.x is a plug-in upgrade.
+
+If you are upgrading a cluster, you should run the upgrade process with only one node running,
+and then simply update the software on the other nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Copy the directory 'p12' from the earlier installation. 
+
+3. Shut down JBoss and do 'ant bootstrap' with the new version.
+
+4. Start up JBoss.
+
+5. Go into the admin-GUI and verify you settings.
+
+You should be able to upgrade from EJBCA 3.1.x directly to 3.9.x, by following the same instructions
+as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
+Also see instructions below for additional issues when upgrading all the way from a much older version.
+
+Note! If you are using the external RA you need to upgrade to ExtRA 3.9 and follow upgrade instructions 
+in the ExtRA package.
+
 From EJBCA 3.7.x to EJBCA 3.8.x
 -------------------------------
 Note that if using JBoss, you need JBoss 4.2.x or later to run EJBCA 3.8.x. 
