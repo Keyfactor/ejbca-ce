@@ -4153,7 +4153,7 @@ in the LDAP servers certificate is the same as the hostname.
 An example of adding a user for the LDAP server with the CLI interface is:
 </p>e
 <source>
-bin/ejbca.sh ra adduser ldap password "C=SE,O=Foo,CN=ldap.foo.se" null MyCA null 1 PEM
+bin/ejbca.sh ra adduser ldap password "C=SE,O=Foo,CN=ldap.foo.se" null MyCA null 1 PEM SERVER
 </source>
 <p>
 where ldap.foo.se is the hostname of the LDAP server that Outlook should use.
@@ -4234,7 +4234,7 @@ interface, adding a user with the admin-GUI works just as fine).
 In the mail ejbca directory type (use simply 'ra' on windows):
 </p>
 <source>
-bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
+bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM SERVER
 bin/ejbca.sh ra setclearpwd ldap foo123
 </source>
 <p>
@@ -5212,7 +5212,7 @@ the returned certificate and the CA-certificate into the keystore).
 Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<i>your-host-name</i>".
 </p>
 <source>
-bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=PrimeKey,CN=your-host-name" null caname null 1 3
+bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=PrimeKey,CN=your-host-name" null caname null 1 JKS SERVER
 </source>
 <p>
 Set a clear text password for the tomcat:
@@ -5249,7 +5249,7 @@ Deploy the new truststore with 'ant deploy'.
 RAADMIN bit (temporarily CN=SuperAdmin gives admin rights).
 </p>
 <source>
-bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 1
+bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 USERGENERATED
 </source>
 <p>
 Alternative:
@@ -5257,7 +5257,7 @@ Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin
 and the RAADMIN bit (temporarily CN=SuperAdmin gives adminrights).
 </p>
 <source>
-bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 2
+bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 P12
 bin/ejbca.sh ra setclearpwd raadmin foo123
 bin/ejbca.sh batch
 </source>
@@ -5281,7 +5281,7 @@ Reference: to generate a JKS with keytool
 <source>
 keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=hostname" -storepass foo123
 keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -storepass foo123 -file tomcat.req
-bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null caname null 1 USERGENERATED
+bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null caname null 1 USERGENERATED SERVER
 (go to EJBCA public web and get a 'Server certificate' by pasting the request into the web form and save as tomcat.pem)
 bin/ejbca.sh ca getrootcert ca.der -der
 keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
