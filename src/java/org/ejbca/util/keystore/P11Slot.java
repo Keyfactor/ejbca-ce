@@ -46,16 +46,20 @@ public class P11Slot {
     public String toString() {
         return "P11 slot "+(this.isIndex ? "index ":"#")+this.slotNr+" using library "+this.sharedLibrary+'.';
     }
+    /**
+     * Reset the HSM. Could be done if it has stopped working in a try to get it working again.
+     */
     public void reset() {
         final Iterator<P11Slot> i = libMap.get(new File(P11Slot.this.sharedLibrary).getName()).iterator();
         while( i.hasNext() ) {
             Iterator<P11SlotUser> i2 = i.next().caTokens.iterator();
-            while( i2.hasNext() )
+            while( i2.hasNext() ) {
                 try {
                     i2.next().deactivate();
                 } catch (Exception e) {
                     log.error("Not possible to deactivate token.", e);
                 }
+            }
         }
     }
     /**

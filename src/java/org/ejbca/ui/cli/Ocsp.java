@@ -158,7 +158,7 @@ public class Ocsp extends ClientToolBox {
 
             final String ksfilename;
             final String kspwd;
-            final String ocspurl;
+            final String ocspUrlFromCLI;
             final String certfilename;
             final String cacertfilename;
             boolean signRequest = false;
@@ -168,14 +168,14 @@ public class Ocsp extends ClientToolBox {
             } else if (args.length == 6) {
                 ksfilename = args[1];
                 kspwd = args[2];
-                ocspurl = args[3].equals("null") ? null : args[3];
+                ocspUrlFromCLI = args[3].equals("null") ? null : args[3];
                 certfilename = args[4];
                 cacertfilename = args[5];            	
                 signRequest = true;
             } else if (args.length == 4) {
                 ksfilename = null;
                 kspwd = null;
-                ocspurl = args[1].equals("null") ? null : args[1];
+                ocspUrlFromCLI = args[1].equals("null") ? null : args[1];
                 certfilename = args[2];
                 cacertfilename = args[3];
             } else {
@@ -189,10 +189,12 @@ public class Ocsp extends ClientToolBox {
                 System.out.println("Just the stress argument gives further info about the stress test.");
                 return;
             }
-            
-            OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspurl, signRequest, true);
-            OCSPUnidResponse response = client.lookup(getCertFromPemFile(certfilename),
-                                                      getCertFromPemFile(cacertfilename));
+            final Certificate userCert = getCertFromPemFile(certfilename);
+            // try OCSP URL from cert if not given as argument
+            final String ocspUrl = ocspUrlFromCLI!=null ? ocspUrlFromCLI : CertTools.getAuthorityInformationAccessOcspUrl(userCert);
+            final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrl, signRequest, true);
+            final OCSPUnidResponse response = client.lookup(userCert,
+                                                            getCertFromPemFile(cacertfilename));
             if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
             	System.out.println("Error querying OCSP server.");
             	System.out.println("Error code is: "+response.getErrorCode());

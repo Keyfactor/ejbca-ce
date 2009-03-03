@@ -281,23 +281,23 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 	}
 
-	abstract protected void loadPrivateKeys(Admin adm) throws Exception;
+	abstract void loadPrivateKeys(Admin adm) throws Exception;
 
-	abstract protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuerDN, BigInteger serno);
+	abstract Certificate findCertificateByIssuerAndSerno(Admin adm, String issuerDN, BigInteger serno);
 
-	abstract protected OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
+	abstract OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
-	abstract protected RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber);
+	abstract RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber);
 
 	/** returns a CertificateCache of appropriate type */
-	abstract protected CertificateCache createCertificateCache(Properties prop);
+	abstract CertificateCache createCertificateCache(Properties prop);
 
 	/** Generates an EJBCA caid from a CA certificate, or looks up the default responder certificate.
 	 * 
 	 * @param cacert the CA certificate to get the CAid from. If this is null, the default responder CA cert  is looked up and used
 	 * @return int 
 	 */
-	protected int getCaid( X509Certificate cacert ) {
+	 int getCaid( X509Certificate cacert ) {
 		X509Certificate cert = cacert;
 		if (cacert == null) {
 			m_log.debug("No correct CA-certificate available to sign response, signing with default CA: "+m_defaultResponderId);
@@ -315,20 +315,16 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private BasicOCSPResp signOCSPResponse(OCSPReq req, ArrayList responseList, X509Extensions exts, X509Certificate cacert)
 	throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
 
-		BasicOCSPResp retval = null;
-		{
-			// Call extended CA services to get our OCSP stuff
-			OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_useCASigningCert, m_includeChain);
-			ocspservicerequest.setRespIdType(m_respIdType);
-			OCSPCAServiceResponse caserviceresp = extendedService(m_adm, getCaid(cacert), ocspservicerequest);
-			// Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
-			if (m_log.isDebugEnabled()) {
-				Collection coll = caserviceresp.getOCSPSigningCertificateChain();
-				m_log.debug("Cert chain for OCSP signing is of size " + coll.size());            	
-			}
-			retval = caserviceresp.getBasicOCSPResp();
-		}
-		return retval;
+	    // Call extended CA services to get our OCSP stuff
+	    OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_useCASigningCert, m_includeChain);
+	    ocspservicerequest.setRespIdType(m_respIdType);
+	    OCSPCAServiceResponse caserviceresp = extendedService(m_adm, getCaid(cacert), ocspservicerequest);
+	    // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
+	    if (m_log.isDebugEnabled()) {
+	        Collection coll = caserviceresp.getOCSPSigningCertificateChain();
+	        m_log.debug("Cert chain for OCSP signing is of size " + coll.size());            	
+	    }
+	    return caserviceresp.getBasicOCSPResp();
 	}
 
 	public void init(ServletConfig config) throws ServletException {
@@ -567,11 +563,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
         if (mDoSaferLogging==true) {
             try {
                 final Class implClass = Class.forName(SAFER_LOG4JAPPENDER_CLASS);
-                Method method = implClass.getMethod("addSubscriber", ISaferAppenderListener.class);
+                final Method method = implClass.getMethod("addSubscriber", ISaferAppenderListener.class);
                 method.invoke(null, this); // first object parameter can be null because this is a static method
                 m_log.info("added us as subscriber to org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
                 // create the method object of the static probeable error handler, so we don't have to do this every tim we log
-    			Class errHandlerClass = Class.forName(PROBEABLE_ERRORHANDLER_CLASS);
+    			final Class errHandlerClass = Class.forName(PROBEABLE_ERRORHANDLER_CLASS);
     			m_errorHandlerMethod = errHandlerClass.getMethod("hasFailedSince", Date.class);
             } catch (Exception e) {
                 m_log.error("Was configured to do safer logging but could not instantiate needed classes", e);
@@ -654,29 +650,23 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 * which is not available on other application servers.
 	 * 
 	 * @param startTime
-	 * @return true or false
+	 * @return true if an error has occured
 	 */
-	private boolean hasErrorHandlerFailedSince(Date startTime) {
-		boolean ret = false; // Default value false if something goes wrong
-		try {
-			Boolean b = (Boolean)m_errorHandlerMethod.invoke(null, startTime); // first object parameter can be null because this is a static method
-			ret = b.booleanValue();
-			if (!b) {
-				m_log.error("Audit and/or account logging is not working properly.");
-			}
-		} catch (SecurityException e) {
-			m_log.error(e);
-		} catch (IllegalArgumentException e) {
-			m_log.error(e);
-		} catch (IllegalAccessException e) {
-			m_log.error(e);
-		} catch (InvocationTargetException e) {
-			m_log.error(e);
-		}
-		return ret;
-	}
-	
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
+    private boolean hasErrorHandlerFailedSince(Date startTime) {
+        if ( m_errorHandlerMethod==null )
+            return false;
+        try {
+            final boolean result = ((Boolean)m_errorHandlerMethod.invoke(null, startTime)).booleanValue(); // first object parameter can be null because this is a static method
+            if (!result) {
+                m_log.error("Audit and/or account logging is not working properly.");
+            }
+        } catch (Exception e) {
+            m_log.error(e);
+        }
+        return false;
+    }
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
 		m_log.trace(">doPost()");
 		String contentType = request.getHeader("Content-Type");
