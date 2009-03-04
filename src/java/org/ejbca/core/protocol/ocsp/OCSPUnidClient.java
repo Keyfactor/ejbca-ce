@@ -229,7 +229,7 @@ public class OCSPUnidClient {
         } finally {
             if (os != null) os.close();
         }
-        OCSPUnidResponse ret = new OCSPUnidResponse();
+        final OCSPUnidResponse ret = new OCSPUnidResponse();
         ret.setHttpReturnCode(con.getResponseCode());
         if (ret.getHttpReturnCode() != 200) {
         	if (ret.getHttpReturnCode() == 401) {
@@ -263,7 +263,12 @@ public class OCSPUnidClient {
         	return ret;
         }
         final OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        ret.setResp(response);
         final BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        if ( brep==null ) {
+            ret.setErrorCode(OCSPUnidResponse.ERROR_NO_RESPONSE);
+            return ret;
+        }
         // Compare nonces to see if the server sent the same nonce as we sent
     	final byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
     	if (noncerep != null) {
@@ -305,7 +310,6 @@ public class OCSPUnidClient {
         	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
         	return ret;        	
         }
-        ret.setResp(response);
         String fnr = getFnr(brep);
         if (fnr != null) {
         	ret.setFnr(fnr);

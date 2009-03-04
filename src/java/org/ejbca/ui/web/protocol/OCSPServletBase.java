@@ -1145,9 +1145,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				if (auditLogger != null) {
 					auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				}
-			} catch (ServletException e) {
-				throw e;
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
 				m_log.error(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.

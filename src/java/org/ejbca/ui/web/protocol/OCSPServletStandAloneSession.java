@@ -593,30 +593,42 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         public String getProviderName() {
             return this.isOK ? this.name : null;
         }
+        private class Reloader implements Runnable {
+            public void run() {
+                String errorMessage ="";
+                while ( true ) try {
+                    errorMessage = "";
+                    {
+                        final Iterator<PrivateKeyFactory> i = P11ProviderHandler.this.sKeyFacrory.iterator();
+                        while ( i.hasNext() ) {
+                            i.next().clear();
+                        }
+                    }
+                    OCSPServletStandAloneSession.this.slot.reset();
+                    OCSPServletStandAloneSession.this.isActive = true;
+                    {
+                        final Iterator<PrivateKeyFactory> i = P11ProviderHandler.this.sKeyFacrory.iterator();
+                        while ( i.hasNext() ) {
+                            PrivateKeyFactory pkf = i.next();
+                            errorMessage = pkf.toString();
+                            pkf.set(P11ProviderHandler.this.getKeyStore(P11ProviderHandler.this.getPwd()));
+                        }
+                    }
+                    P11ProviderHandler.this.isOK = true;
+                    return;
+                } catch ( Throwable t ) {
+                    m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
+                }
+            }
+        }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#reload()
          */
         public synchronized void reload() {
-            {
-                final Iterator<PrivateKeyFactory> i = this.sKeyFacrory.iterator();
-                while ( i.hasNext() ) {
-                    i.next().clear();
-                }
-            }
-            OCSPServletStandAloneSession.this.slot.reset();
-            OCSPServletStandAloneSession.this.isActive = true;
-            {
-                final Iterator<PrivateKeyFactory> i = this.sKeyFacrory.iterator();
-                while ( i.hasNext() ) {
-                    PrivateKeyFactory pkf = i.next();
-                    try {
-                        pkf.set(this.getKeyStore(this.getPwd()));
-                    } catch (Exception e) {
-                        m_log.error(pkf.toString(), e);
-                        e.printStackTrace();
-                    }
-                }
-            }
+            if ( !this.isOK )
+                return;
+            this.isOK = false;
+            new Thread(new Reloader()).start();
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#addKeyFactory(org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory)
