@@ -16,8 +16,6 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
-import javax.ejb.EJBException;
-
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -85,7 +83,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @return true if storage was successful.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws PublisherException if a communication or other error occurs.
      */    
     public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException;
 	
@@ -98,7 +96,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @return true if storage was successful.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws PublisherException if a communication or other error occurs.
      */    
     public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException;
     
@@ -110,14 +108,14 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param username the username of the user holding the certificate
      * @param reason revocation reason, from RevokedCertInfo.XX
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws PublisherException if a communication or other error occurs.
      */
     public abstract void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException;
     
     /**
      * Method used to test the connection to a publisher.
      * 
-     * @param admin the administrator perfoming the test
+     * @param admin the administrator performing the test
      * @throws PublisherConnectionException when couldn't be set up correctly in any way.
      */
     public abstract void testConnection(Admin admin) throws PublisherConnectionException;
@@ -130,7 +128,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
 
     
     public void upgrade(){
-    	// Performing upgrade rutines
+    	// Performing upgrade routines
     }
     
 	
