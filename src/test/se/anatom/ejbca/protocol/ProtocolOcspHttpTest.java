@@ -236,12 +236,12 @@ public class ProtocolOcspHttpTest extends TestCase {
     } // genKeys
 
     public void test01Access() throws Exception {
-        // Hit with GET gives a 405 with OCSP: BAD_METHOD
+        // Hit with GET without a query string gives a 400 with OCSP: BAD_REQUEST
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceOcsp));
         WebResponse resp = con.getResponse(settings);
-        assertEquals( "Response code", 405, resp.getStatusCode() );
+        assertEquals( "Response code", 400, resp.getStatusCode() );
     }
 
 
@@ -637,6 +637,44 @@ public class ProtocolOcspHttpTest extends TestCase {
         assertNull("SingleResps should be null.", singleResps);
 
         log.trace("<test12CorruptRequests()");
+    }
+
+    public void test13GetRequests() throws Exception {
+        // An OCSP request, ocspTestCert is already created in earlier tests
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.generate();
+        SingleResp[] singleResps = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespGenerator.SUCCESSFUL, 200);
+        assertNotNull("SingleResps should not be null.", singleResps);
+        CertificateID certId = singleResps[0].getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResps[0].getCertStatus();
+        assertEquals("Status is not null (null is 'good')", status, null);
+    }
+
+    /**
+     * Send an request that Base64-encoded together with the rest of the URL is larger than 255 bytes.
+     */
+    public void test14TooLargeGetRequests() throws Exception {
+        helper.sendOCSPGet(new byte[256], null, OCSPRespGenerator.SUCCESSFUL, 400);
+    }
+
+    /**
+     * Send multiple requests in one GET request. RFC 5019 2.1.1 prohibits clients from this, but the server should
+     * be RFC 2560 compatible and support this as long as the total request URL is smaller than 256 bytes.
+     */
+    public void test15MultipleGetRequests() throws Exception {
+        // An OCSP request, ocspTestCert is already created in earlier tests
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
+        OCSPReq req = gen.generate();
+        SingleResp[] singleResps = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespGenerator.SUCCESSFUL, 200);
+        assertNotNull("SingleResps should not be null.", singleResps);
+        assertEquals("Serno in response does not match serno in request.", singleResps[0].getCertID().getSerialNumber(), ocspTestCert.getSerialNumber());
+        assertTrue("Serno in response does not match serno in request.", singleResps[1].getCertID().getSerialNumber().toString().equals("1"));
+        assertEquals("Status is not null (null is 'good')", singleResps[0].getCertStatus(), null);
+        assertTrue("Status is not unknown", singleResps[1].getCertStatus() instanceof UnknownStatus);
     }
 
     /**

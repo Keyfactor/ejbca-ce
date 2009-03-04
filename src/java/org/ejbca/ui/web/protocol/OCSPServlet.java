@@ -47,6 +47,7 @@ import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
  *              load-on-startup = "99"
  *
  * @web.servlet-mapping url-pattern = "/ocsp"
+ * @web.servlet-mapping url-pattern = "/ocsp/*"
  *
  * @web.ejb-local-ref
  *  name="ejb/CertificateStoreSessionLocal"

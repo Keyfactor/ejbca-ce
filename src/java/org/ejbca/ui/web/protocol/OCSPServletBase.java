@@ -15,9 +15,9 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.net.URLDecoder;
 import java.security.InvalidKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -78,6 +78,7 @@ import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.GUIDGenerator;
+import org.jfree.util.Log;
 
 /**
  * @web.servlet-init-param description="Algorithm used by server to generate signature on OCSP responses"
@@ -698,11 +699,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
 		m_log.trace(">doGet()");
-		/**
-		 * We only support POST operation, so return
-		 * an appropriate HTTP error code to caller.
-		 */
-		// We have one command though, to force reloading of keys, can only be run from localhost
+		// We have a command to force reloading of keys that can only be run from localhost
 		String reloadCAKeys = request.getParameter("reloadkeys");
 		if (StringUtils.equals(reloadCAKeys, "true")) {
 			String remote = request.getRemoteAddr();
@@ -712,7 +709,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				// Reload CA certificates
 				m_caCertCache.forceReload();
 				try {
-					// Also reloas signing keys
+					// Also reload signing keys
 					mKeysValidTo = 0;
 					loadPrivateKeys(m_adm);
 				} catch (Exception e) {
@@ -721,9 +718,30 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				}
 			} else {
 				m_log.info("Got reloadKeys command from unauthorized ip: "+remote);
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			}
+		} else if (request.getRequestURL().length() <= 255) {
+			String pathInfo = request.getPathInfo();
+			if (pathInfo != null && pathInfo.length() > 0) {
+				byte[] reqBytes = null;
+				try {
+					reqBytes = org.ejbca.util.Base64.decode(URLDecoder.decode(pathInfo.substring(1), "UTF-8").getBytes());
+				} catch (IOException e) {
+					String msg = "Bad URL encoding in request.";
+					m_log.info(msg);
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+				}
+				service(request, response, reqBytes);
+			} else {
+				String msg = "Request is missing query string defined in RFC2560 A.1.1.";
+				m_log.info(msg);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+			}
+		} else {
+			String msg = "Request dropped. RFC2560 A.1.1 / RFC 5019 5: OCSP GET only supports requests of 255 bytes in total or less.";
+			m_log.info(msg);
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
 		}
-		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "OCSP only supports POST");
 		m_log.trace("<doGet()");
 	} // doGet
 
