@@ -21,6 +21,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 
 /**
  * This class can be extended to create highly configurable log classes.
@@ -33,10 +34,7 @@ import org.apache.log4j.Logger;
  * @author thamwickenberg
  * @version $Id$
  */
-public abstract class PatternLogger {
-	public static final String LOG_TIME="LOG_TIME";// The Date and time the request.
-	public static final String LOG_ID="LOG_ID"; //An integer identifying a log entry for a request
-	public static final String SESSION_ID = "SESSION_ID"; //A random 32 bit number identifying a log entry for a request
+public abstract class PatternLogger implements IPatternLogger {
 
 	protected HashMap valuepairs= new HashMap();
 	protected StringBuffer logmessage = new StringBuffer();
@@ -105,10 +103,16 @@ public abstract class PatternLogger {
 		paramPut(LOG_TIME, dateformat.format(new Date()));
 
 	}
+
 	/**
-	 * method that makes sure that a "" is inserted instead of null
-	 * @param key
-	 * @param value
+	 * @see IPatternLogger#paramPut(String, byte[])
+	 */
+	public void paramPut(String key, byte[] value){
+		paramPut(key, new String (Hex.encode(value)));
+	}
+
+	/**
+	 * @see IPatternLogger#paramPut(String, String)
 	 */
 	public void paramPut(String key, String value){
 		//logger.debug("paramput: "+ key+ ";" +value +";" +valuepairs.toString());
@@ -120,9 +124,7 @@ public abstract class PatternLogger {
 	}
 
 	/**
-	 * method that makes sure that a "" is inserted instead of null
-	 * @param key
-	 * @param value
+	 * @see IPatternLogger#paramPut(String, Integer))
 	 */
 	public void paramPut(String key, Integer value){
 		if(value == null){
@@ -133,22 +135,14 @@ public abstract class PatternLogger {
 	}
 
 	/**
-	 * Method used to retrieve the populated parameter hashmap with the notification text.
-	 * @return
-	 */
-	public HashMap getParams(){
-		return valuepairs;
-	}
-	
-	/**
-	 * Method used for creating a log row of all added values
+	 * @see IPatternLogger#writeln()
 	 */
 	public void writeln() {
 		logmessage.append(interpolate()+"\n");
 	}
 	
 	/**
-	 * Writes all the rows created by writeln() to the Logger
+	 * @see IPatternLogger#flush()
 	 */
 	public void flush() {
 		String logstring = logmessage.toString();

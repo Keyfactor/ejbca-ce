@@ -24,23 +24,9 @@ import org.ejbca.util.PatternLogger;
  * @version $Id$
  *
  */
-public class TransactionLogger extends PatternLogger{
-	public static final Logger auditlog = Logger.getLogger(TransactionLogger.class.getName());
-	public static final String STATUS="STATUS";//The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;																				//TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;
-	public static final String REQ_NAME="REQ_NAME";//The Common Name (CN) of the client making the request
-	public static final String SIGN_ISSUER_NAME_DN="SIGN_ISSUER_NAME_DN";//DN of the issuer of the certificate used to sign the request.
-	public static final String SIGN_SUBJECT_NAME="SIGN_SUBJECT_NAME";//Subject Name of the certificate used to sign the request.
-	public static final String SIGN_SERIAL_NO="SIGN_SERIAL_NO";//Certificate serial number of the certificate used to sign the request.
-	public static final String NUM_CERT_ID="NUM_CERT_ID"; // The number of certificates to check revocation status for
-	public static final String ISSUER_NAME_DN="ISSUER_NAME_DN";// The subject DN of the issuer of a requested certificate
-	public static final String ISSUER_NAME_HASH="ISSUER_NAME_HASH";//MD5 hash of the issuer DN
-	public static final String ISSUER_KEY="ISSUER_KEY";//The public key of the issuer of a requested certificate
-	public static final String DIGEST_ALGOR="DIGEST_ALGOR";//Algorithm used by requested certificate to hash issuer key and issuer name
-	public static final String SERIAL_NOHEX="SERIAL_NOHEX";// Serial number of the requested certificate.
-	public static final String CERT_STATUS="CERT_STATUS";//The requested certificate revocation status.
-	public static final String REPLY_TIME = "REPLY_TIME";
-	public static final String CLIENT_IP="CLIENT_IP";//IP of the client making the request
+public class TransactionLogger extends PatternLogger implements ITransactionLogger {
 
+	public static final Logger auditlog = Logger.getLogger(TransactionLogger.class.getName());
 
 	/** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
 	// private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}"); // TODO this should be configurable from file
@@ -91,7 +77,7 @@ public class TransactionLogger extends PatternLogger{
 	}
 	
 	/**
-	 * Writes all the rows created by writeln() to the Logger
+	 * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush(String)
 	 */
 	public void flush(String replytime) {
 		String logstring = super.logmessage.toString();
@@ -99,6 +85,9 @@ public class TransactionLogger extends PatternLogger{
 		super.logger.debug(logstring);
 	}
 	
+	/**
+	 * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush()
+	 */
 	public void flush() {
 		String logstring = super.logmessage.toString();
 		logstring = logstring.replaceAll("REPLY_TIME", "0");

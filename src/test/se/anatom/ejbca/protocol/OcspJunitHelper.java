@@ -98,10 +98,12 @@ public class OcspJunitHelper extends TestCase {
 	 */
     protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException {
         // GET the OCSP request
-    	System.out.println("b64req=" + new String(Base64.encode(ocspPackage, false)));
         URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + URLEncoder.encode(new String(Base64.encode(ocspPackage, false)).replace("+", "%2B"), "UTF-8"));
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
-        assertEquals("Response code: " + con.getResponseMessage(), httpCode, con.getResponseCode());
+        if (con.getResponseCode() != httpCode) {
+        	System.out.println("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
+        }
+        assertEquals("Response code did not match. ", httpCode, con.getResponseCode());
         if (con.getResponseCode() != 200) {
             return null; // if it is an http error code we don't need to test any more
         }

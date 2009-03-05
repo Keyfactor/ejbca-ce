@@ -25,20 +25,12 @@ import org.ejbca.util.PatternLogger;
  * @author tham
  * @version $Id$
  */
-public class AuditLogger extends PatternLogger { 
+public class AuditLogger extends PatternLogger implements IAuditLogger { 
 	private static Pattern PATTERN;
 	private static String orderString;
     private static final Logger accountLog = Logger.getLogger(AuditLogger.class.getName());
 	private static String mLogDateFormat ;
 	private static String mTimeZone;
-	public static final String CLIENT_IP="CLIENT_IP";//IP of the client making the request
-	public static final String SERIAL_NOHEX = "SERIAL_NOHEX"; // The serial number of the requested certificate
-	public static final String OCSPREQUEST = "OCSPREQUEST";	//The byte[] ocsp-request that came with the http-request
-	public static final String OCSPRESPONSE = "OCSPRESPONSE"; //The byte[] ocsp-response that was included in the http-response
-	public static final String ISSUER_NAME_HASH = "ISSUER_NAME_HASH"; // The DN of the issuer of the requested
-	public static final String ISSUER_KEY = "ISSUER_KEY";
-	public static final String REPLY_TIME = "REPLY_TIME";
-	public static final String STATUS="STATUS";//The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;
 	
 	//TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;
 	 /** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
@@ -77,12 +69,4 @@ public class AuditLogger extends PatternLogger {
 		mTimeZone = timeZone;
 	}
 	
-	/**
-	 * This Method needs to be called before creating any instances
-	 * 
-	 * @param accountLogPattern  
-	 * @param accountLogOrder
-	 * @param logDateFormat
-	 */
-
 }
