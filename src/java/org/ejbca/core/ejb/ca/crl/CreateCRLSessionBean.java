@@ -391,6 +391,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     				   if (!certs.isEmpty()) {
     					   cacert = (Certificate)certs.iterator().next();   
     				   } 
+    				   // Don't create CRLs if the CA has expired
     				   if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
         			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
         			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
@@ -512,6 +513,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     					if (!certs.isEmpty()) {
     						cacert = (Certificate)certs.iterator().next();   
     					} 
+    					// Don't create CRLs if the CA has expired
     					if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
         					if(cainfo.getDeltaCRLPeriod() > 0) {
         						if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
