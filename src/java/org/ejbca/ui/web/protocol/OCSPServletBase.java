@@ -194,8 +194,13 @@ import org.ejbca.util.GUIDGenerator;
 public abstract class OCSPServletBase extends HttpServlet implements ISaferAppenderListener { 
 
 	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
+	
 	private static final int RESTRICTONISSUER = 0;
 	private static final int RESTRICTONSIGNER = 1;
+	
+	/** Max size of an OCSP request is 100000 bytes */
+	private static final int MAX_OCSP_REQUEST_SIZE = 100000;
+	
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 	private  boolean canlog =true;
@@ -677,32 +682,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		if (!contentType.equalsIgnoreCase("application/ocsp-request")) {
 			m_log.debug("Content type is not application/ocsp-request");
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Content type is not application/ocsp-request");
-			return;
+		} else {
+			// Do it...
+			serviceOCSP(request, response);
 		}
-		// Get the request data
-		if (m_log.isDebugEnabled()) {
-			m_log.debug("Received request of length: "+request.getContentLength());
-		}
-        ServletInputStream in = request.getInputStream();
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		// This works for small requests, and OCSP requests are small
-		int b = in.read();
-		int length = 0;
-		while (b != -1) {
-			// Don't allow requests larger than 1 million bytes
-			if (++length > 1000000) {
-				m_log.info("Too large request, max size is 1000000, from ip: "+request.getRemoteAddr());
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Too large request");
-				return;
-			}
-			baos.write(b);
-			b = in.read();
-		}
-		baos.flush();
-		in.close();
-		byte[] reqBytes = baos.toByteArray();
-		// Do it...
-		service(request, response, reqBytes);
 		m_log.trace("<doPost()");
 	} //doPost
 
@@ -730,32 +713,118 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				m_log.info("Got reloadKeys command from unauthorized ip: "+remote);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			}
-		} else if (request.getRequestURL().length() <= 255) {
-			String pathInfo = request.getPathInfo();
-			if (pathInfo != null && pathInfo.length() > 0) {
-				byte[] reqBytes = null;
-				try {
-					reqBytes = org.ejbca.util.Base64.decode(URLDecoder.decode(pathInfo.substring(1), "UTF-8").getBytes());
-				} catch (IOException e) {
-					String msg = "Bad URL encoding in request.";
-					m_log.info(msg);
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
-				}
-				service(request, response, reqBytes);
-			} else {
-				String msg = "Request is missing last part of URL defined in RFC2560 A.1.1.";
-				m_log.info(msg);
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
-			}
 		} else {
-			String msg = "Request dropped. RFC2560 A.1.1 / RFC 5019 5: OCSP GET only supports requests of 255 bytes in total or less.";
-			m_log.info(msg);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+			serviceOCSP(request, response);
 		}
 		m_log.trace("<doGet()");
 	} // doGet
 
-	public void service(HttpServletRequest request, HttpServletResponse response, byte[] reqBytes)
+	/** Reads the request bytes and verifies min and max size of the request. If an error occurs it throws a MalformedRequestException. 
+	 * The calling process should then send back an approriate HTTP error code, HttpServletResponse.SC_BAD_REQUEST.
+	 * Can get request bytes both from a HTTP GET and POST request
+	 * 
+	 * @param request
+	 * @param response
+	 * @return the request bytes or null if an error occured.
+	 * @throws IOException In case there is no stream to read
+	 * @throws MalformedRequestException 
+	 */
+	private byte[] checkAndGetRequestBytes(HttpServletRequest request, HttpServletResponse response) throws IOException, MalformedRequestException {
+		byte[] ret = null;
+		// Get the request data
+		String method = request.getMethod();
+		String remoteAddress = request.getRemoteAddr();
+		if (m_log.isDebugEnabled()) {
+			m_log.debug("Received "+method+" request with content length: "+request.getContentLength()+" from "+remoteAddress);		
+		}
+		if (request.getContentLength() > MAX_OCSP_REQUEST_SIZE) {
+			String msg = "Request dropped. OCSP only supports requests of "+MAX_OCSP_REQUEST_SIZE+" bytes in total or less: "+request.getContentLength();
+			m_log.info(msg);
+			throw new MalformedRequestException(msg);
+		} else {
+			// So we passed basic tests, now we can read the bytes, but still keep an eye on the size
+			// we can not fully trust the sent content length.
+			if (StringUtils.equals(method, "POST")) {
+		        ServletInputStream in = request.getInputStream();
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				try {
+					// This works for small requests, and OCSP requests are small
+					int b = in.read();
+					while ( (b != -1) && (baos.size() <= MAX_OCSP_REQUEST_SIZE) ) {
+						baos.write(b);
+						b = in.read();
+					}
+					
+					if (baos.size() > MAX_OCSP_REQUEST_SIZE) {
+						String msg = "Request dropped. OCSP only supports requests of "+MAX_OCSP_REQUEST_SIZE+" bytes in total or less.";
+						m_log.info(msg);
+						throw new MalformedRequestException(msg);
+					} else {
+						// All seems good, we got the request bytes
+						baos.flush();
+						in.close();
+						ret = baos.toByteArray();				
+					}
+				} finally {
+					in.close();
+					baos.close();
+				}				
+			} else if (StringUtils.equals(method, "GET")) {
+				// GET request
+				StringBuffer url = request.getRequestURL();
+//				if (m_log.isDebugEnabled()) {
+//					m_log.debug("URL: "+url.toString());
+//				}
+				// RFC2560 A.1.1 says that request longer than 255 bytes SHOULD be sent by POST, we support GET for longer requests anyway.
+				if (url.length() <= MAX_OCSP_REQUEST_SIZE) {
+					String pathInfo = request.getPathInfo();
+					if (m_log.isDebugEnabled()) {
+						// Don't log the request if it's too long, we don't want to cause denial of serice by filling log files or buffers.
+						if (pathInfo.length() < 2048) {
+							m_log.debug("pathInfo: "+pathInfo);
+						} else {
+							m_log.debug("pathInfo too long to log: "+pathInfo.length());
+						}
+					}
+					if (pathInfo != null && pathInfo.length() > 0) {
+						try {
+							ret = org.ejbca.util.Base64.decode(URLDecoder.decode(pathInfo.substring(1), "UTF-8").getBytes());
+						} catch (IOException e) {
+							String msg = "Bad URL encoding in request.";
+							m_log.info(msg);
+							throw new MalformedRequestException(e);
+						}
+					} else {
+						String msg = "Request is missing last part of URL defined in RFC2560 A.1.1.";
+						m_log.info(msg);
+						throw new MalformedRequestException(msg);
+					}
+				} else {
+					String msg = "Request dropped. OCSP only supports requests of "+MAX_OCSP_REQUEST_SIZE+" bytes in total or less: "+url.length();
+					m_log.info(msg);
+					throw new MalformedRequestException(msg);
+				}
+			} else {
+				// Strange, an unknown method
+				m_log.info("Unknown request method: "+method);
+				throw new MalformedRequestException("Unknown request method: "+method);
+			}
+		}
+
+		// Make a final check that we actually received something
+		if ((ret == null) || (ret.length == 0)) {
+			m_log.info("No request bytes from ip: "+remoteAddress);
+			throw new MalformedRequestException("No request bytes.");
+		}
+		// If this request was bad, log it in the transaction and audit loggers, if they exist
+		return ret;
+	}
+	
+	/** Performs service of the actual OCSP request, which is contained in reqBytes. 
+	 *  
+	 *  @param reqBytes the binary OCSP request bytes. This parameter must already have been checked for max or min size. 
+	 */
+	public void serviceOCSP(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
 		if (m_log.isTraceEnabled()) {
 			m_log.trace(">service()");
@@ -775,28 +844,21 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			auditLogger = new DummyAuditLogger();	// Ignores everything
 		}
 		String remoteAddress = request.getRemoteAddr();
-		auditLogger.paramPut(IAuditLogger.OCSPREQUEST, reqBytes);
+		auditLogger.paramPut(IAuditLogger.OCSPREQUEST, ""); // No request bytes yet
 		auditLogger.paramPut(IAuditLogger.LOG_ID, mTransactionID);
 		auditLogger.paramPut(IAuditLogger.SESSION_ID, m_SessionID);
 		auditLogger.paramPut(IAuditLogger.CLIENT_IP, remoteAddress);
 		transactionLogger.paramPut(ITransactionLogger.LOG_ID, mTransactionID);
 		transactionLogger.paramPut(ITransactionLogger.SESSION_ID, m_SessionID);
 		transactionLogger.paramPut(ITransactionLogger.CLIENT_IP, remoteAddress);
-		if ((reqBytes == null) || (reqBytes.length == 0)) {
-			m_log.info("No request bytes from ip: "+remoteAddress);
-			transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-			transactionLogger.writeln();
-			transactionLogger.flush();
-			auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
-			auditLogger.flush();
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
-			return;
-		}
+
 		try {
 			OCSPResp ocspresp = null;
 			OCSPRespGenerator res = new OCSPRespGenerator();
 			X509Certificate cacert = null; // CA-certificate used to sign response
 			try {
+				byte[] reqBytes = checkAndGetRequestBytes(request, response);
+				auditLogger.paramPut(AuditLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
 				OCSPReq req = null;
 				try {
 					req = new OCSPReq(reqBytes);					

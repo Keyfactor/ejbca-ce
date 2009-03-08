@@ -236,12 +236,12 @@ public class ProtocolOcspHttpTest extends TestCase {
     } // genKeys
 
     public void test01Access() throws Exception {
-        // Hit with GET without a query string gives a 400 with OCSP: BAD_REQUEST
+        // Hit with GET does work since EJBCA 3.8.2
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceOcsp));
         WebResponse resp = con.getResponse(settings);
-        assertEquals( "Response code", 400, resp.getStatusCode() );
+        assertEquals( "Response code", 200, resp.getStatusCode() );
     }
 
 
@@ -570,7 +570,7 @@ public class ProtocolOcspHttpTest extends TestCase {
      * responseStatus OCSPResponseStatus,
      * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
      */
-    public void test11MalformedReequest() throws Exception {
+    public void test11MalformedRequest() throws Exception {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         // Add 101 OCSP requests.. the Servlet will consider a request with more than 100 malformed..
         // This does not mean that we only should allow 100 in the future, just that we if so need to find
@@ -623,7 +623,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         // more than 1 million bytes
         //bytes = Arrays.copyOf(orgbytes, 1000010); only works in Java 6
         bytes = ArrayUtils.addAll(orgbytes, new byte[1000010]);
-        singleResps = helper.sendOCSPPost(bytes, "123456789", 0, 400); // http code 400 is HttpServletResponse.SC_BAD_REQUEST
+        singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // // error code 1 means malformed request
         assertNull("SingleResps should be null.", singleResps);
 
         // Request 4
@@ -653,10 +653,11 @@ public class ProtocolOcspHttpTest extends TestCase {
     }
 
     /**
-     * Send an request that Base64-encoded together with the rest of the URL is larger than 255 bytes.
+     * Send an request that is just garbage, and pretty large.
      */
-    public void test14TooLargeGetRequests() throws Exception {
-        helper.sendOCSPGet(new byte[256], null, OCSPRespGenerator.SUCCESSFUL, 400);
+    public void test14CorruptGetRequests() throws Exception {
+    	// Should return a MALFORMED_REQUEST OCSP error message
+        helper.sendOCSPGet(new byte[4096], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
     }
 
     /**

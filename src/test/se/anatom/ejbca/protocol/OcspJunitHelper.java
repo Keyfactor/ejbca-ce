@@ -98,7 +98,10 @@ public class OcspJunitHelper extends TestCase {
 	 */
     protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException {
         // GET the OCSP request
-        URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + URLEncoder.encode(new String(Base64.encode(ocspPackage, false)).replace("+", "%2B"), "UTF-8"));
+    	String b64 = new String(Base64.encode(ocspPackage, false));
+    	String req = b64.replace("+", "%2B").replace("/", "%2F");
+    	String urls = URLEncoder.encode(req, "UTF-8");
+    	URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + urls);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         if (con.getResponseCode() != httpCode) {
         	System.out.println("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
