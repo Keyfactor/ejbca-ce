@@ -450,8 +450,17 @@ The validity of the CA can never be longer than the value specified in the profi
 <p>
 Note: this extension is only applicable for immediate CA certificates
 and it sets how deep the succeeding certificate hierarchy may be.
-If it set to 1 this CA certificate is the last in a chain.
-</p>
+If it is set to 0 this CA certificate is the last CA in a chain and only end entity certificates may follow.
+<br/>From RFC5280 (4.2.1.9):</p>
+<source>
+The pathLenConstraint field is meaningful only if the cA boolean is asserted and the key usage extension, if present, asserts the
+keyCertSign bit (Section 4.2.1.3). In this case, it gives the maximum number of non-self-issued intermediate certificates that may
+follow this certificate in a valid certification path. (Note: The last certificate in the certification path is not an intermediate
+certificate, and is not included in this limit. Usually, the last certificate is an end entity certificate, but it can be a CA
+certificate.) A pathLenConstraint of zero indicates that no non self-issued intermediate CA certificates may follow in a valid
+certification path. Where it appears, the pathLenConstraint field MUST be greater than or equal to zero. Where pathLenConstraint does
+not appear, no limit is imposed.   
+</source>
 </subsection>
 <subsection name="Use LDAP DN order">
 <p>
