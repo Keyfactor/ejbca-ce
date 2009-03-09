@@ -134,7 +134,7 @@ public abstract class PublisherDataBean extends BaseEntityBean {
     public abstract void setData(String data);
 
     /**
-     * Method that returns the publisher data and updates it if nessesary.
+     * Method that returns the publisher data and updates it if necessary.
      *
      * @ejb.interface-method view-type="local"
      */
