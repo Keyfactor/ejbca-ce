@@ -56,7 +56,7 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /**
- * @version $Id: KeyStoreContainer.java 6102 2008-08-20 17:34:30Z primelars $
+ * @version $Id$
  */
 public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     private static final Logger log = Logger.getLogger(KeyStoreContainerBase.class);
