@@ -62,6 +62,7 @@ import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -714,19 +715,15 @@ public class X509CA extends CA implements Serializable {
         }
     	// CRL Distribution point URI and Freshest CRL DP
   	    if(getUseCrlDistributionPointOnCrl()) {
-  	        String crldistpoint;
-  	        if(isDeltaCRL) {
-  	            crldistpoint = getCADefinedFreshestCRL();
-  	        } else {
-  	            crldistpoint = getDefaultCRLDistPoint();
-  	        }
-
+  	        String crldistpoint = getDefaultCRLDistPoint();
   	        List distpoints = generateDistributionPoints(crldistpoint);
 
   	        if (distpoints.size() > 0) {
-  	            CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
-  	            crlgen.addExtension(X509Extensions.CRLDistributionPoints.getId(),
-  	                                getCrlDistributionPointOnCrlCritical(), ext);
+  	            IssuingDistributionPoint idp =
+  	                new IssuingDistributionPoint(((DistributionPoint) distpoints.get(0)).getDistributionPoint(),
+  	                                             false, false, null, false, false);
+  	            crlgen.addExtension(X509Extensions.IssuingDistributionPoint.getId(),
+  	                                getCrlDistributionPointOnCrlCritical(), idp);
   	        }
 
             if (!isDeltaCRL) {
