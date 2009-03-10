@@ -70,14 +70,16 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	protected String checkDB(){
 		log.debug("Checking database connection.");
 		String retval = "";
+		Connection con = null;
 		try{	
-		  Connection con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+		  con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
 		  Statement statement = con.createStatement();
 		  statement.execute(checkDBString);		  
-		  JDBCUtil.close(con);
 		}catch(Exception e){
 			retval = "\nDB: Error creating connection to EJBCA Database: "+e.getMessage();
 			log.error("Error creating connection to EJBCA Database.",e);
+		} finally {
+			JDBCUtil.close(con);
 		}
 		return retval;
 	}
