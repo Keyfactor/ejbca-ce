@@ -160,6 +160,7 @@ public class X509CA extends CA implements Serializable {
       setCRLNumberCritical(cainfo.getCRLNumberCritical());
       setDefaultCRLDistPoint(cainfo.getDefaultCRLDistPoint());
       setDefaultCRLIssuer(cainfo.getDefaultCRLIssuer());
+      setCADefinedFreshestCRL(cainfo.getCADefinedFreshestCRL());
       setDefaultOCSPServiceLocator(cainfo.getDefaultOCSPServiceLocator());
       setFinishUser(cainfo.getFinishUser());
       setUseUTF8PolicyText(cainfo.getUseUTF8PolicyText());
