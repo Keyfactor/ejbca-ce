@@ -175,10 +175,10 @@
       <li><div class="menuheader">Used Services</div>
       <ul>
       <div>
-	    <a href="http://sourceforge.net/">
-	    <img style="border:none" src="http://sourceforge.net/sflogo.php?group_id=39716&type=1" alt="Hosted on SourceForge"/>
-	    </a>
-	  </div>
+        <a href="http://sourceforge.net/projects/ejbca">
+        <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=39716&type=12" width="120" height="30" border="0" alt="Get EJBCA, J2EE PKI Certificate Authority at SourceForge.net. Fast, secure and Free Open Source software downloads" />
+        </a>
+      </div>
       </ul>    
    	  </li>
        	        
@@ -232,7 +232,7 @@
 
 #macro (footer)
       <p class="copyright">
-        Copyright &copy; 2002-2008&nbsp;EJBCA team. All rights reserved.
+        Copyright &copy; 2001-2009&nbsp;EJBCA team. All rights reserved.
         <script type="text/javascript" language="JavaScript"><!--
                 document.write(" - "+"Last Published: " + document.lastModified);
               //  -->
