@@ -114,6 +114,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAPADDMULTIPLECERTIFICATES= "checkboxaldapddmultiplecertificates";
     public static final String CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE = "checkboxldaprevokeremovecertificate";
     public static final String CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE = "checkboxldaprevokeuseroncertrevoke";
+    public static final String CHECKBOX_LDAP_SET_USERPASSWORD  = "checkboxldapsetuserpassword";
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
 
     public static final String CHECKBOX_ADUSEPASSWORD          = "checkboxadusepassword";
@@ -389,6 +390,13 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 else
                                     ldappublisher.setRemoveUsersWhenCertRevoked(false);
 
+                                value = request.getParameter(CHECKBOX_LDAP_SET_USERPASSWORD);
+                                if(value != null) {
+                                    ldappublisher.setUserPassword(value.equals(CHECKBOX_VALUE));
+                                } else {
+                                    ldappublisher.setUserPassword(false);
+                                }
+                                
                                 String[] values = request.getParameterValues(SELECT_LDAPUSEFIELDINLDAPDN);
                                 if(values != null){
                                     ArrayList usefields = new ArrayList();

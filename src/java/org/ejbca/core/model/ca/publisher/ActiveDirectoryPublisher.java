@@ -137,7 +137,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     	data.put(USERDESCRIPTION, userdescription);	
     }
     
-    /** Overrides getAttributeSet
+    /** Overrides LdapPublisher.getAttributeSet
      * Creates an LDAPAttributeSet.
      * 
      * @param cert is the certificate about to be published
@@ -237,8 +237,8 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *
      * @return LDAPModificationSet created...
      */
-    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, boolean overwrite) {
-    	ArrayList modSet = super.getModificationSet(oldEntry, dn, email, false, person);
+    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
+    	ArrayList modSet = super.getModificationSet(oldEntry, dn, email, false, person, null);
 
 		// Modify AD specific attributes
 		

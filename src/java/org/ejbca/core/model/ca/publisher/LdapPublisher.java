@@ -61,7 +61,7 @@ public class LdapPublisher extends BasePublisher {
 
 	private static byte[] fakecrl = null;
 
-	public static final float LATEST_VERSION = 9;
+	public static final float LATEST_VERSION = 10;
 
 	public static final int TYPE_LDAPPUBLISHER = 2;
 
@@ -109,6 +109,7 @@ public class LdapPublisher extends BasePublisher {
 	protected static final String REMOVEREVOKED            = "removerevoked";    
 	protected static final String REMOVEUSERONCERTREVOKE   = "removeusersoncertrevoke";    
 	protected static final String CREATEINTERMEDIATENODES  = "createintermediatenodes";
+	protected static final String SETUSERPASSWORD          = "setuserpasssword";
 	
 	/** Arrays used to extract attributes to store in LDAP */
 	protected static final String[] MATCHINGEXTRAATTRIBUTES    = {"CN","L","OU"};
@@ -152,7 +153,7 @@ public class LdapPublisher extends BasePublisher {
 
 
 	/**
-	 * Publishes certificate in LDAP, if the certificate is not revoked. If the certifiate is revoked, nothing is done
+	 * Publishes certificate in LDAP, if the certificate is not revoked. If the certificate is revoked, nothing is done
 	 * and the publishing is counted as successful (i.e. returns true).
 	 * 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
@@ -204,8 +205,7 @@ public class LdapPublisher extends BasePublisher {
 			log.debug("Publishing end user certificate to first available server of " + getHostnames());
 
 			if (oldEntry != null) {
-				// TODO: Are we the correct type objectclass?
-				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true);
+				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true, password);
 			} else {
 				objectclass = getUserObjectClass(); // just used for logging
 				attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, email, true, true, password, extendedinformation);
@@ -236,7 +236,7 @@ public class LdapPublisher extends BasePublisher {
 			log.debug("Publishing CA certificate to first available server of " + getHostnames());
 
 			if (oldEntry != null) {
-				modSet = getModificationSet(oldEntry, certdn, null, false, false);
+				modSet = getModificationSet(oldEntry, certdn, null, false, false, password);
 			} else {
 				objectclass = getCAObjectClass(); // just used for logging
 				attributeSet = getAttributeSet(incert, getCAObjectClass(), certdn, null, true, false, password, extendedinformation);
@@ -433,7 +433,7 @@ public class LdapPublisher extends BasePublisher {
 		LDAPAttributeSet attributeSet = null;
 
 		if (oldEntry != null) {
-			modSet = getModificationSet(oldEntry, crldn, null, false, false);
+			modSet = getModificationSet(oldEntry, crldn, null, false, false, null);
 		} else {
 			attributeSet = getAttributeSet(null, this.getCAObjectClass(), crldn, null, true, false, null,null);
 		}
@@ -567,7 +567,7 @@ public class LdapPublisher extends BasePublisher {
 					// Don't try to remove the cert if there does not exist any
 					LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
 					if (oldAttr != null) {
-						modSet = getModificationSet(oldEntry, certdn, null, false, true);
+						modSet = getModificationSet(oldEntry, certdn, null, false, true, null);
 						LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
 						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
 					} else {
@@ -1105,6 +1105,18 @@ public class LdapPublisher extends BasePublisher {
 		return createnodes;
 	}
 
+	public void setUserPassword( boolean userpassword ){
+		data.put(SETUSERPASSWORD, Boolean.valueOf(userpassword));  
+	}
+
+	public boolean getSetUserPassword(){
+		boolean userpassword = false; //-- default value
+		if ( data.get(SETUSERPASSWORD) != null ) {
+			userpassword = ((Boolean)data.get(SETUSERPASSWORD)).booleanValue();
+		}
+		return userpassword;
+	}
+
 	/** Return timout in milliseconds */
 	public int getTimeOut() {
 		int timeout = Integer.parseInt(DEFAULT_TIMEOUT);
@@ -1174,7 +1186,7 @@ public class LdapPublisher extends BasePublisher {
 	 * @param email email address for entry, or null
 	 * @param extra if we should add extra attributes except the objectclass to the attributeset.
 	 * @param person true if this is a person-entry, false if it is a CA.
-	 * @param password, currently only used for the AD publisher
+	 * @param password, users password, to be added into SecurityObjects, and AD
 	 * @param extendedinformation, for future use...
 	 *
 	 * @return LDAPAtributeSet created...
@@ -1269,6 +1281,13 @@ public class LdapPublisher extends BasePublisher {
 						attributeSet.add(new LDAPAttribute("serialNumber", serno));
 					}            		
 				}
+				
+				// If this is an objectClass which is a SecurityObject, such as simpleSecurityObject, we will add the password as well, if not null.
+				if (getSetUserPassword() && (password != null)) {
+					log.debug("Adding userPassword attribute");
+					attributeSet.add(new LDAPAttribute("userPassword", password));
+				}
+				
 			}
 		}
 		log.trace("<getAttributeSet()");
@@ -1285,11 +1304,12 @@ public class LdapPublisher extends BasePublisher {
 	 * @param extra if we should add extra attributes except the objectclass to the
 	 *        modificationset.
 	 * @param pserson true if this is a person-entry, false if it is a CA.
+	 * @param password, users password, to be added into SecurityObjects, and AD
 	 * @param overwrite if true then old attributes in LDAP will be overwritten, otherwise not.
 	 *
 	 * @return LDAPModificationSet created...
 	 */
-	protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person) {
+	protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getModificationSet(dn="+dn+", email="+email+")");			
 		}
@@ -1374,6 +1394,13 @@ public class LdapPublisher extends BasePublisher {
 						LDAPAttribute attr = new LDAPAttribute("serialNumber", serno);
 						modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 					}            		
+				}
+				
+				// If this is an objectClass which is a SecurityObject, such as simpleSecurityObject, we will add the password as well, if not null
+				if (getSetUserPassword() && (password != null)) {
+					log.debug("Modifying userPassword attribute");
+					LDAPAttribute attr = new LDAPAttribute("userPassword", password);
+					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 				}
 			}
 		}
@@ -1492,6 +1519,9 @@ public class LdapPublisher extends BasePublisher {
 			}
 			if (getVersion() < 9) {
 				setTimeOut(getTimeOut());	// v9
+			}
+			if(data.get(SETUSERPASSWORD) == null) {
+				setUserPassword(false);	// v10
 			}
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}

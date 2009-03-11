@@ -224,6 +224,20 @@
            %>>
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("LDAPSETUSERPASSWORD") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAP_SET_USERPASSWORD %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(ldappublisher.getSetUserPassword()) {
+                 out.write(" CHECKED ");
+			   }
+           %>>
+      </td>
+    </tr>
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
