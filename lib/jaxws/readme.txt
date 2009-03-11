@@ -24,3 +24,8 @@ jaxb-impl.jar
 jaxb-xjc.jar   
 jsr173_api.jar   
 
+The following files come from xalan, http://xml.apache.org/xalan-j/. License is Apache License Version 2.0.
+This is Xalan version 2.7.1.
+xalan.jar
+serializer.jar
+

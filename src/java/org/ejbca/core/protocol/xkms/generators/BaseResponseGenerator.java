@@ -72,7 +72,7 @@ public abstract class BaseResponseGenerator {
 	    if(caadminsession == null){	  
 	    	Context context = new InitialContext();	    	
 	    	caadminsession = ((ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-	    	"CAAdminSessionLocal"), ICAAdminSessionLocalHome.class)).create();   
+	    			ICAAdminSessionLocalHome.COMP_NAME), ICAAdminSessionLocalHome.class)).create();   
 	    }
 	    return caadminsession;
 	}
@@ -82,7 +82,7 @@ public abstract class BaseResponseGenerator {
 		if(raadminsession == null){
 		  Context context = new InitialContext();
 	      raadminsession = ((IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-	      "RaAdminSessionLocal"), IRaAdminSessionLocalHome.class)).create();    	           	           	        
+	    		  IRaAdminSessionLocalHome.COMP_NAME), IRaAdminSessionLocalHome.class)).create();    	           	           	        
 		}
 		return raadminsession;
 	}
@@ -92,7 +92,7 @@ public abstract class BaseResponseGenerator {
 		if(certificatestoresession == null){
 			Context context = new InitialContext();
 			certificatestoresession = ((ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-			"CertificateStoreSessionLocal"), ICertificateStoreSessionLocalHome.class)).create();    	           	           	        
+					ICertificateStoreSessionLocalHome.COMP_NAME), ICertificateStoreSessionLocalHome.class)).create();    	           	           	        
 		}
 		return certificatestoresession;
 	}
@@ -102,7 +102,7 @@ public abstract class BaseResponseGenerator {
 		if(signsession == null){
 			Context context = new InitialContext();
 			signsession = ((ISignSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-			"SignSessionLocal"), ISignSessionLocalHome.class)).create();    	           	           	        
+					ISignSessionLocalHome.COMP_NAME), ISignSessionLocalHome.class)).create();    	           	           	        
 		}
 		return signsession;
 	}
@@ -113,7 +113,7 @@ public abstract class BaseResponseGenerator {
 			if(usersession == null){
 				Context context = new InitialContext();
 				usersession = ((IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"UserAdminSessionLocal"), IUserAdminSessionLocalHome.class)).create();   
+						IUserAdminSessionLocalHome.COMP_NAME), IUserAdminSessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
 			log.error(intres.getLocalizedMessage("xkms.errorinitadminsession"));			
@@ -129,7 +129,7 @@ public abstract class BaseResponseGenerator {
 			if(authsession == null){
 				Context context = new InitialContext();
 				authsession = ((IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"AuthorizationSessionLocal"), IAuthorizationSessionLocalHome.class)).create();   
+						IAuthorizationSessionLocalHome.COMP_NAME), IAuthorizationSessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
 			log.error(intres.getLocalizedMessage("xkms.errorinitauthsession"));			
@@ -144,7 +144,7 @@ public abstract class BaseResponseGenerator {
 			if(keyrecoverysession == null){
 				Context context = new InitialContext();
 				keyrecoverysession = ((IKeyRecoverySessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"KeyRecoverySessionLocal"), IKeyRecoverySessionLocalHome.class)).create();   
+						IKeyRecoverySessionLocalHome.COMP_NAME), IKeyRecoverySessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
 			log.error(intres.getLocalizedMessage("xkms.errorinitkeyrecsession"));			
@@ -159,7 +159,7 @@ public abstract class BaseResponseGenerator {
 			if(authenticationSession == null){
 				Context context = new InitialContext();
 				authenticationSession = ((IAuthenticationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-				"AuthenticationSessionLocal"), IAuthenticationSessionLocalHome.class)).create();   
+				IAuthenticationSessionLocalHome.COMP_NAME), IAuthenticationSessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
 			log.error(intres.getLocalizedMessage("xkms.errorinitauthentsession"));			

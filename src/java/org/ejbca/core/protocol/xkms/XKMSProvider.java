@@ -118,7 +118,7 @@ public class XKMSProvider implements Provider<Source> {
 	@Resource
 	private WebServiceContext wsContext;
 	
-	private static Logger log = Logger.getLogger(XKMSPortType.class);
+	private static final Logger log = Logger.getLogger(XKMSProvider.class);
 	
 	private static final InternalResources intres = InternalResources.getInstance();
 	
@@ -164,7 +164,10 @@ public class XKMSProvider implements Provider<Source> {
 		Document requestDoc = null;
 		try{
 			DOMResult dom = new DOMResult();
+			// The setproperty was suggested by Dai Tokunaga to get it working with Glassfish v2. It's not needed for JBoss though.
+			//System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");  
 			Transformer trans = TransformerFactory.newInstance().newTransformer();
+			//System.setProperty("javax.xml.transform.TransformerFactory", "");  
 			trans.transform(request, dom);
 			requestDoc = (Document) dom.getNode();
 		} catch (TransformerConfigurationException e) {
@@ -177,8 +180,8 @@ public class XKMSProvider implements Provider<Source> {
 		
 		boolean respMecSign = false;
 		try {
-			JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
-			
+			//JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
+			JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(requestDoc.cloneNode(true));
 			JAXBElement jAXBResult = null;
 			if(jAXBRequest.getValue() instanceof RequestAbstractType){
 				respMecSign = ((RequestAbstractType)jAXBRequest.getValue()).getResponseMechanism().contains(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
