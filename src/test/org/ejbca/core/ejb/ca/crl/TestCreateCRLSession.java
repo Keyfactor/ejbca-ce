@@ -38,7 +38,9 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.SecConst;
@@ -411,19 +413,18 @@ public class TestCreateCRLSession extends TestCase {
         TestTools.getCAAdminSession().editCA(admin, cainfo);
         TestTools.getCreateCRLSession().run(admin, cadn);
         x509crl = CertTools.getCRLfromByteArray(TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false));
-        cdpDER = x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId());
+        cdpDER = x509crl.getExtensionValue(X509Extensions.IssuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = new CRLDistPoint((ASN1Sequence) aIn.readObject());
-        DistributionPoint[] distpoints = cdp.getDistributionPoints();
+        IssuingDistributionPoint cdp = new IssuingDistributionPoint((ASN1Sequence) aIn.readObject());
+        DistributionPointName distpoint = cdp.getDistributionPoint();
 
-        assertEquals("More CRL distributions points than expected", 1, distpoints.length);
         assertEquals("CRL distribution point is different",
                      cdpURL,
-                     ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint().getName()).getNames()[0].getName()).getString());
+                     ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
 
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint("");
