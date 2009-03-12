@@ -34,6 +34,26 @@
     </p> 
   </section>
 
+  <section name="Features">
+    <p>
+    <ul>
+    <li>Implements RFC 2560 and RFC 5019.</li>
+    <li>Independent of CA software used.</li>
+    <li>One responder can respond for any number of CAs.</li>
+    <li>Status information stored in SQL database.</li>
+    <li>Not depending on CRLs. Status information can be updated in real-time.</li>
+    <li>Plug-in mechanism for custom OCSP extensions.</li>
+    <li>Highly configurable audit and transaction logging. Suitable for invoicing.</li> 
+    <li>Supports PKCS#11 HSMs.</li>
+    <li>Built in health check used by load balancers and for monitoring.</li>
+    <li>Configurable for requiring signed requests, authorized signers, etc.</li>
+    <li>Linear scalability for performance and high availability by adding multiple nodes.</li>
+    <li>High performance, >100 request per second on low end server.</li>
+    <li>OCSP client in java.</li>
+    </ul>
+    </p>
+  </section>
+
 </body>
 </document>
 
