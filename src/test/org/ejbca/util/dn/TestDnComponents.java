@@ -19,15 +19,13 @@ import org.ejbca.util.CertTools;
 
 
 /**
- * Tests the StringTools class .
+ * Tests the DnComponents class.
  *
  * @version $Id$
  */
 public class TestDnComponents extends TestCase {
 
     /**
-     * Creates a new TestStringTools object.
-     *
      * @param name name
      */
     public TestDnComponents(String name) {
@@ -42,22 +40,29 @@ public class TestDnComponents extends TestCase {
 
     public void test01CheckObjects() throws Exception {
         String[] s = DnComponents.getDnObjects();
-        assertEquals(27, s.length);
-        assertEquals("street",s[0]);
-        assertEquals("pseudonym",s[1]);
-        assertEquals("telephonenumber",s[2]);
-        assertEquals("businesscategory",s[4]);
-        assertEquals("postalcode",s[5]);
-        assertEquals("unstructuredaddress",s[6]);
-        assertEquals("unstructuredname",s[7]);
-        assertEquals("dn",s[11]);
-        assertEquals("uid",s[12]);
-        assertEquals("cn",s[13]);
-        assertEquals("t",s[20]);
-        assertEquals("c",s[26]);
+        assertEquals(28, s.length);
+        int i = 0;
+        assertEquals("name",s[i++]);
+        assertEquals("street",s[i++]);
+        assertEquals("pseudonym",s[i++]);
+        assertEquals("telephonenumber",s[i++]);
+        i++;
+        assertEquals("businesscategory",s[i++]);
+        assertEquals("postalcode",s[i++]);
+        assertEquals("unstructuredaddress",s[i++]);
+        assertEquals("unstructuredname",s[i++]);
+        i+=3;
+        assertEquals("dn",s[i++]);
+        assertEquals("uid",s[i++]);
+        assertEquals("cn",s[i++]);
+        i+=6;
+        assertEquals("t",s[i]);
+        i+=6;
+        assertEquals("c",s[i]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
-        assertEquals(27, s1.length);
+        assertEquals(28, s1.length);
+        assertEquals("name",s1[27]);
         assertEquals("street",s1[26]);
         assertEquals("telephonenumber",s1[24]);
         assertEquals("businesscategory",s1[22]);
@@ -70,15 +75,15 @@ public class TestDnComponents extends TestCase {
         assertEquals("c",s1[0]);
 
         String[] s2 = DnComponents.getDnObjects();
-        assertEquals(27, s2.length);
-        assertEquals("businesscategory",s2[4]);
-        assertEquals("postalcode",s2[5]);
-        assertEquals("unstructuredaddress",s2[6]);
-        assertEquals("unstructuredname",s2[7]);
-        assertEquals("uid",s2[12]);
-        assertEquals("cn",s2[13]);
-        assertEquals("t",s2[20]);
-        assertEquals("c",s2[26]);
+        assertEquals(28, s2.length);
+        assertEquals("businesscategory",s2[5]);
+        assertEquals("postalcode",s2[6]);
+        assertEquals("unstructuredaddress",s2[7]);
+        assertEquals("unstructuredname",s2[8]);
+        assertEquals("uid",s2[13]);
+        assertEquals("cn",s2[14]);
+        assertEquals("t",s2[21]);
+        assertEquals("c",s2[27]);
 
     }
     public void test02() {

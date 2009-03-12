@@ -601,7 +601,7 @@ public class TestCertTools extends TestCase {
 		String dn20 = " CN=\"foo, OU=bar\",  O=baz\\\\\\, quux,C=SE ";
 		// BC always escapes with backslash, it doesn't use quotes.
 		assertEquals(CertTools.stringToBCDNString(dn20),
-				"CN=foo\\, OU=bar,O=baz\\\\\\, quux,C=SE");
+				"CN=foo\\, OU\\=bar,O=baz\\\\\\, quux,C=SE");
 
 		String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
 		String bcdn21 = CertTools.stringToBCDNString(dn21);
@@ -886,7 +886,7 @@ public class TestCertTools extends TestCase {
 				.stringToBCDNString(dn19));
 		String dn20 = " C=SE,CN=\"foo, OU=bar\",  O=baz\\\\\\, quux  ";
 		// BC always escapes with backslash, it doesn't use quotes.
-		assertEquals("CN=foo\\, OU=bar,O=baz\\\\\\, quux,C=SE", CertTools
+		assertEquals("CN=foo\\, OU\\=bar,O=baz\\\\\\, quux,C=SE", CertTools
 				.stringToBCDNString(dn20));
 
 		String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
@@ -1360,9 +1360,9 @@ public class TestCertTools extends TestCase {
 		assertEquals("krb5principal=foo/bar@P.COM", s);
 	}
 	
-	public void testPseudonym() throws Exception {
-		String dn1 = "c=SE,O=Prime,OU=Tech,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,Pseudonym=Shredder,cn=Tomas Gustavsson";
+	public void testPseudonymAndName() throws Exception {
+		String dn1 = "c=SE,O=Prime,OU=Tech,TelephoneNumber=555-666,Name=Kalle,PostalAddress=footown,PostalCode=11122,Pseudonym=Shredder,cn=Tomas Gustavsson";
 		String bcdn1 = CertTools.stringToBCDNString(dn1);
-		assertEquals("Pseudonym=Shredder,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,CN=Tomas Gustavsson,OU=Tech,O=Prime,C=SE", bcdn1);		
+		assertEquals("Name=Kalle,Pseudonym=Shredder,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,CN=Tomas Gustavsson,OU=Tech,O=Prime,C=SE", bcdn1);		
 	}
 }

@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 
 /**
- * Tests the StringTools class .
+ * Tests the DNFieldExtractor class.
  *
  * @version $Id$
  */
@@ -29,8 +29,7 @@ public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
 
     /**
-     * Creates a new TestStringTools object.
-     *
+
      * @param name name
      */
     public TestDnFieldExtractor(String name) {
@@ -53,10 +52,10 @@ public class TestDnFieldExtractor extends TestCase {
     public void test01CheckDnFields() throws Exception {
     	String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
-    	String dn = "cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
+    	String dn = "name=tomas,street=a street, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	HashMap i = extractor.getNumberOfFields();
-    	assertEquals(23,i.size());
+    	assertEquals(24,i.size());
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
     	cn = extractor.getField(DNFieldExtractor.CN, 1);
@@ -67,6 +66,12 @@ public class TestDnFieldExtractor extends TestCase {
     	assertEquals("com", dc);
     	String l = extractor.getField(DNFieldExtractor.L, 0);
     	assertEquals("Stockholm", l);
+    	String name = extractor.getField(DNFieldExtractor.NAME, 0);
+    	assertEquals("tomas", name);
+    	String street = extractor.getField(DNFieldExtractor.STREET, 0);
+    	assertEquals("a street", street);
+    	String pseudo = extractor.getField(DNFieldExtractor.PSEUDONYM, 0);
+    	assertEquals("pseudo", pseudo);
     	int num = extractor.getNumberOfFields(DNFieldExtractor.DC);
     	assertEquals(2, num);
     	num = extractor.getNumberOfFields(DNFieldExtractor.O);

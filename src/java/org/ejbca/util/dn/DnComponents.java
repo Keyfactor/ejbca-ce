@@ -79,13 +79,14 @@ public class DnComponents {
         oids.put("telephonenumber", X509Name.TELEPHONE_NUMBER);
         oids.put("pseudonym", X509Name.PSEUDONYM);
         oids.put("street", X509Name.STREET);
+        oids.put("name", X509Name.NAME);
         
     }
     /** Default values used when constructing DN strings that are put in the database
      * 
      */
     private static String[] dNObjectsForward = {
-        "street", "pseudonym", "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
+        "name", "street", "pseudonym", "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     // Default values    
@@ -122,6 +123,7 @@ public class DnComponents {
     public static final String TELEPHONENUMBER     = "TELEPHONENUMBER";
     public static final String PSEUDONYM           = "PSEUDONYM";
     public static final String STREET              = "STREET";
+    public static final String NAME                = "NAME";
     
     // AltNames
     public static final String RFC822NAME         = "RFC822NAME";

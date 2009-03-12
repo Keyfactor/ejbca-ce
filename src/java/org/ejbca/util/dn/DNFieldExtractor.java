@@ -55,6 +55,14 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int C = 13;
     public static final int UNSTRUCTUREDADDRESS = 14;
     public static final int UNSTRUCTUREDNAME = 15;
+    public static final int POSTALCODE = 32;
+    public static final int BUSINESSCATEGORY = 33;
+    public static final int DN = 34;
+    public static final int POSTALADDRESS = 35;
+    public static final int TELEPHONENUMBER = 36;
+    public static final int PSEUDONYM = 37;
+    public static final int STREET = 38;
+    public static final int NAME = 55;
     
     // Subject Alternative Names.
     public static final int OTHERNAME = 16;
