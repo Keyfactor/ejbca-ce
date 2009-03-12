@@ -313,6 +313,8 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		Date nextRunDate = new Date(currentDate.getTime() + intervalMillis);
 		if (log.isDebugEnabled()) {
 			log.debug("Next runDate is: "+nextRunDate);
+			log.debug("Next runDateCheck is: "+nextRunDateCheck);
+			log.debug("Next now is: "+currentDate);
 		}
 		serviceData.setNextRunTimestamp(nextRunDate);
 		getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
