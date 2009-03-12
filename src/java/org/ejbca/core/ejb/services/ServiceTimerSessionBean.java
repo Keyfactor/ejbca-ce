@@ -83,6 +83,14 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   business="org.ejbca.core.ejb.services.IServiceSessionLocal"
  *   link="ServiceSession"
  *
+ * @ejb.ejb-external-ref description="The Service Timer session bean"
+ *   view-type="local"
+ *   ref-name="ejb/ServiceTimerSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome"
+ *   business="org.ejbca.core.ejb.services.IServiceTimerSessionLocal"
+ *   link="ServiceTimerSession"
+
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  *   view-type="local"
  *   ref-name="ejb/CertificateDataLocal"
@@ -240,7 +248,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 				if(serviceData != null){
 					serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 					worker = getWorker(serviceData,serviceName);
-					run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
+					run = getServiceTimerSession().checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
 					log.debug("Service will run: "+run);
 				}
 			} catch (Exception e) {
@@ -499,6 +507,23 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 
         return servicesession ;
     } //getServiceSession 
+
+    /**
+     * Gets connection a service timer session, used for timed services
+     *
+     * @return Connection
+     */
+    private IServiceTimerSessionLocal getServiceTimerSession() {
+    	IServiceTimerSessionLocal servicesession = null;
+    	try {
+    		IServiceTimerSessionLocalHome servicesessionhome = (IServiceTimerSessionLocalHome) getLocator().getLocalHome(IServiceTimerSessionLocalHome.COMP_NAME);
+    		servicesession = servicesessionhome.create();
+    	} catch (CreateException e) {
+    		throw new EJBException(e);
+    	}
+
+        return servicesession ;
+    } //getServiceTimerSession 
 
 
 
