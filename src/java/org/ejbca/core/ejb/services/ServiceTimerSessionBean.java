@@ -241,6 +241,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 					serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 					worker = getWorker(serviceData,serviceName);
 					run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
+					log.debug("Service will run: "+run);
 				}
 			} catch (Exception e) {
 			    // We need to catch wide here in order to continue even if there is some error
