@@ -274,6 +274,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * 
      * @return true if the service should run, false if the service should not run
      * 
+     * @ejb.interface-method view-type="local"
      * @ejb.transaction type="RequiresNew"
      */
 	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceData, String serviceName) {
@@ -498,7 +499,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 
         return servicesession ;
     } //getServiceSession 
-
 
 
 
