@@ -116,13 +116,12 @@ public class CVCRequestMessage implements IRequestMessage {
 
     public PublicKey getRequestPublicKey()
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        try {
-            if (cvcert == null) {
-                init();
-            }
+    	try {
+    		if (cvcert == null) {
+    			init();
+    		}
         } catch (IllegalArgumentException e) {
             log.error("CVC not inited!");
-
             return null;
         }
 
@@ -163,8 +162,9 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return username, which is the holderReference field from the subject DN in certification request.
      */
     public String getUsername() {
-        if (username != null)
+        if (username != null) {
             return username;
+        }
         String subject = null;
 		try {
 			HolderReferenceField hr = cvcert.getCertificateBody().getHolderReference();
@@ -181,7 +181,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return issuerDN of receiving CA or null.
      */
     public String getIssuerDN() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
+    	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getIssuerDN(cc);
     }
 
@@ -192,7 +192,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return null.
      */
     public BigInteger getSerialNo() {
-    	//CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
+    	//CardVerifiableCertificate cc = getCardVerifiableCertificate()
         //return CertTools.getSerialNumber(cc);
     	return null;
     }
@@ -221,7 +221,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @return subject DN from certification request or null.
      */
     public String getRequestDN() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
+    	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getSubjectDN(cc);
     }
 
@@ -233,7 +233,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @see org.ejbca.core.protocol.IRequestMessage
      */
 	public Date getRequestValidityNotBefore() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
+    	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getNotBefore(cc);
 	}
 	
@@ -241,7 +241,7 @@ public class CVCRequestMessage implements IRequestMessage {
      * @see org.ejbca.core.protocol.IRequestMessage
      */
 	public Date getRequestValidityNotAfter() {
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
+    	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getNotAfter(cc);
 	}
 	
@@ -266,19 +266,16 @@ public class CVCRequestMessage implements IRequestMessage {
         boolean ret = false;
 
         try {
-            if (cvcert == null) {
-                init();
-            }
-        	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-            if (pubKey == null) {
-            	cc.verify(cvcert.getCertificateBody().getPublicKey());
-            	ret = true; // If we came here verification was successful
-            } else {
-                cc.verify(pubKey);
-            	ret = true; // If we came here verification was successful
-            }
-        } catch (IllegalArgumentException e) {
-            log.error("CVC not inited!", e);
+        	CardVerifiableCertificate cc = getCardVerifiableCertificate();
+        	if (cc != null) {
+                if (pubKey == null) {
+                	cc.verify(cvcert.getCertificateBody().getPublicKey());
+                	ret = true; // If we came here verification was successful
+                } else {
+                    cc.verify(pubKey);
+                	ret = true; // If we came here verification was successful
+                }        		
+        	}
         } catch (NoSuchFieldException e) {
             log.error("CVC error!", e);
         } catch (InvalidKeyException e) {
@@ -398,5 +395,18 @@ public class CVCRequestMessage implements IRequestMessage {
      */
     public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, encPriv, provider);
+    }
+    
+    private CardVerifiableCertificate getCardVerifiableCertificate() {
+    	try {
+    		if (cvcert == null) {
+    			init();
+    		}
+        } catch (IllegalArgumentException e) {
+            log.error("CVC not inited!", e);
+            return null;
+        }
+    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
+    	return cc;
     }
 } // PKCS10RequestMessage
