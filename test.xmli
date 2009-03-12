@@ -56,6 +56,7 @@
                     <exclude name="org/ejbca/core/protocol/xkms/Test*" />
                     <exclude name="org/ejbca/core/protocol/ws/Test*" />
                     <exclude name="**/ra/TestAddLotsofUsers*" />
+                    <exclude name="**/ra/TestAddLotsofCertsPerUser*" />
                     <exclude name="**/sign/TestSignLotsOfCerts*" />
                     <exclude name="**/TestTools*" />
                 </fileset>
