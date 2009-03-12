@@ -318,12 +318,12 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		long intervalMillis = nextInterval*1000+randMillis; 
 		getSessionContext().getTimerService().createTimer((intervalMillis), timerInfo);
 		// Update the nextRunTimeStamp, since we set a new timer
-		Date nextRunDateCheck = serviceData.getNextRunTimestamp(); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
+		Date runDateCheck = serviceData.getNextRunTimestamp(); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
 		Date nextRunDate = new Date(currentDate.getTime() + intervalMillis);
 		if (log.isDebugEnabled()) {
-			log.debug("Next runDate is: "+nextRunDate);
-			log.debug("Next runDateCheck is: "+nextRunDateCheck);
-			log.debug("Next now is: "+currentDate);
+			log.debug("nextRunDate is: "+nextRunDate);
+			log.debug("runDateCheck is: "+runDateCheck);
+			log.debug("Now is: "+currentDate);
 		}
 		serviceData.setNextRunTimestamp(nextRunDate);
 		getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
@@ -333,7 +333,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		// This is a semaphor (not the best one admitted) so that services in a cluster only runs on one node and don't compete with each other.
 		// If a worker on one node for instance runs for a very long time, there is a chance that another worker on another node will break this semaphore and
 		// run as well.
-		if(currentDate.after(nextRunDateCheck)){
+		if(currentDate.after(runDateCheck)){
 			ret=true;
 		}		
 		return ret;
