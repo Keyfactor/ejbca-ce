@@ -303,6 +303,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		}*/
 		int randInterval = 30000;
 		if (fourtysec.after(nextApproxTime)) {
+			// If we are running with less than 40 second intervale we only randomize 5 seconds
 			randInterval = 5000;
 			// And if we are running with a very short interval we only randomize on one second
 			if (threesec.after(nextApproxTime)) {
@@ -317,16 +318,14 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		
 		long intervalMillis = nextInterval*1000+randMillis; 
 		getSessionContext().getTimerService().createTimer((intervalMillis), timerInfo);
-		// Update the nextRunTimeStamp, since we set a new timer
+		// Calculate the nextRunTimeStamp, since we set a new timer
 		Date runDateCheck = serviceData.getNextRunTimestamp(); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
 		Date nextRunDate = new Date(currentDate.getTime() + intervalMillis);
 		if (log.isDebugEnabled()) {
 			log.debug("nextRunDate is: "+nextRunDate);
 			log.debug("runDateCheck is: "+runDateCheck);
-			log.debug("Now is: "+currentDate);
+			log.debug("currentDate is: "+currentDate);
 		}
-		serviceData.setNextRunTimestamp(nextRunDate);
-		getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
 		// Check if the current date is after when the service should run.
 		// If a service on another cluster node has updated this timestamp already, then it will return false and
 		// this service will not run.
@@ -334,6 +333,9 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		// If a worker on one node for instance runs for a very long time, there is a chance that another worker on another node will break this semaphore and
 		// run as well.
 		if(currentDate.after(runDateCheck)){
+			// We only update the nextRunTimeStamp if the service will be running otherwise it will, in theory, be a race to exclude each other between the nodes.
+			serviceData.setNextRunTimestamp(nextRunDate);
+			getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
 			ret=true;
 		}		
 		return ret;
