@@ -91,8 +91,6 @@ public abstract class ServiceDataBean extends BaseEntityBean {
 
     private static final Logger log = Logger.getLogger(ServiceDataBean.class);
 
-    private ServiceConfiguration serviceConfiguration = null;
-
     /**
      * @ejb.pk-field
      * @ejb.persistence column-name="id"
@@ -126,35 +124,32 @@ public abstract class ServiceDataBean extends BaseEntityBean {
     public abstract void setData(String data);
 
     /**
-     * Method that returns the service configuration data and updates it if nessesary.
+     * Method that returns the service configuration data and updates it if necessary.
      *
      * @ejb.interface-method view-type="local"
      */
     public ServiceConfiguration serviceConfiguration() {
 
-        if (serviceConfiguration == null) {
-            java.beans.XMLDecoder decoder;
-            try {
-                decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-            } catch (UnsupportedEncodingException e) {
-                throw new EJBException(e);
-            }
-            HashMap h = (HashMap) decoder.readObject();
-            decoder.close();
-            // Handle Base64 encoded string values
-            HashMap data = new Base64GetHashMap(h);
-            
-            float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
-            serviceConfiguration = new ServiceConfiguration();
-            serviceConfiguration.loadData(data);
-            // Check if we upgraded the version, in that case we need to save the upgraded value
-            if ( ((serviceConfiguration != null) && (Float.compare(oldversion, serviceConfiguration.getVersion()) != 0))) {
-            	setServiceConfiguration(serviceConfiguration);
-            }
+    	java.beans.XMLDecoder decoder;
+    	try {
+    		decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+    	} catch (UnsupportedEncodingException e) {
+    		throw new EJBException(e);
+    	}
+    	HashMap h = (HashMap) decoder.readObject();
+    	decoder.close();
+    	// Handle Base64 encoded string values
+    	HashMap data = new Base64GetHashMap(h);
 
-        }
+    	float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
+    	ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+    	serviceConfiguration.loadData(data);
+    	// Check if we upgraded the version, in that case we need to save the upgraded value
+    	if ( ((serviceConfiguration != null) && (Float.compare(oldversion, serviceConfiguration.getVersion()) != 0))) {
+    		setServiceConfiguration(serviceConfiguration);
+    	}
 
-        return serviceConfiguration;
+    	return serviceConfiguration;
     }
 
     /**
@@ -180,21 +175,12 @@ public abstract class ServiceDataBean extends BaseEntityBean {
         } catch (UnsupportedEncodingException e) {
             throw new EJBException(e);
         }
-
-        this.serviceConfiguration = serviceConfiguration;        
     }
 
 
     //
     // Fields required by Container
     //
-    /**
-     * Passivates bean, resets CA data.
-     */
-    public void ejbPassivate() {
-        this.serviceConfiguration = null;
-    }
-
 
     /**
      * Entity Bean holding data of a service configuration.
@@ -217,4 +203,9 @@ public abstract class ServiceDataBean extends BaseEntityBean {
     public void ejbPostCreate(Integer id, String name, ServiceConfiguration serviceConfiguration) {
         // Do nothing. Required.
     }
+
+    public void ejbPassivate() {
+    	// Do nothing. Required.
+    }
+
 }
