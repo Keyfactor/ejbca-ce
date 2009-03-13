@@ -228,6 +228,17 @@ For the Oracle database we have made a switch from the deprecated type LONG to C
 EJBCA 3.6 still works if you continue to use the LONG data type (i.e. does not make any changes to your database).
 If you decide to migrate, there is a migration sql script in src/upgrade/35_36/oracle-long-to-clob.sql.
 
+EJBCA 3.5.12
+-----------
+This is a minor release, fixing a performance issue with getCerts webservice call when a single user have lots of certificates, and 
+also an issue with authorization in UserDataSource.
+- Optimize performance of findCerts WS call
+- Serious bug in UserDataSource Authorization
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.5.11
 -----------
 This is a minor release, fixing two minor issues with webservice calls used by HardTokenMgmt.

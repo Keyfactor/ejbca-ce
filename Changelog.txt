@@ -425,6 +425,15 @@ Bug
     * [ECA-758] - Under some conditions it's not possible to edit rfc822name altname field for user in admin-gui
     * [ECA-766] - Error saving CRL Service on Weblogic 10
 
+3.5.12, 2009-03-13
+---
+Improvement
+    * [ECA-1111] - Optimize performance of findCerts WS call
+    * [ECA-1112] - Create a new ant target similar to create-lot-of-users, but creates fewer users with many certs per user
+
+Bug
+    * [ECA-1091] - Serious bug in UserDataSource Authorization
+
 3.5.11, 2009-01-28
 ---
 Improvement
