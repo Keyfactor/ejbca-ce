@@ -2741,9 +2741,8 @@ First the card has to be installed and admin and operator card sets has to be cr
 </p><p>
 Step 2 describes environments variables that must be set before generating keys and installing a new CA.
 </p><p>
-Then there are 2 alternatives when creating a CA. Either the PKCS#11 provider could be used or the JCA provider.
-Step 3a-5a describes the setup using PKCS#11.
-Step 3b-5b describes the setup using JCA.
+Step 3-5 describes PKCS#11 keys are generated and how different CAs within an installation is configured to use these keys.
+In earlier versions of this manual it was also described how the nCipher JCA provider could be used by EJBCA. This has been removed since PKCS#11 keys are better in every respect.
 </p>
 <strong>1. Install the nShield card</strong>
 <p>
@@ -2876,12 +2875,6 @@ nfast@donny:/home/lars/work$
 <p>
 This will generate 3 cards of the card set named 'ejbca'. Any 2 of these cards will be needed when generating keys and starting ejbca. Different card sets could be used for different CAs.
 </p>
-<p>
-Open the file '/opt/nfast/kmdata/config/config' and set 'nonpriv_port=9000' and 'priv_port=9001'. Optional: In the same config file you can set 'impath_port=0' to disable remote connections to the machine.
-</p>
-<p>
-Restart from scratch: 'sudo /etc/init.d/nfast restart'.
-</p>
 <note>
 The preload command (see below) must always be called as the same user unless the directory /opt/nfast/kmdata/preload is removed.
 <br/>If you get a "HostDataAccessDenied" error when running preload or starting JBoss, it is because the
@@ -2920,12 +2913,7 @@ The following environment variables should be set for this user:
 </ul>
 </p>
 
-<p>
-<strong>Below is divided in 3,4,5 a and 3,4,5 b. A is for using nCipher with PKCS#11 and b using JCA/JCE. 
-Select one and ignore the other. In new setups we recommend PKCS#11.</strong>
-</p>
-
-<strong>Step 3a. Create PKCS#11 keys that should be used on the nShield card</strong>
+<strong>Step 3. Create PKCS#11 keys that should be used on the nShield card</strong>
 <p>
 Start a new window and login as the same user (jboss user).
 Create a file (ocs-sunpkcs11.cfg) with the following contents:
@@ -2964,14 +2952,14 @@ PKCS11 Token [SunPKCS11-NFastJava] Password:
 Creating certificate with entry test.
 jboss@donny:~/work/test/keygen$ 
 </source>
-<strong>Step 4a. Start EJBCA with nShield HSM</strong>
+<strong>Step 4. Start EJBCA with nShield HSM</strong>
 <p>
 To start EJBCA, preload must be running with the required key stores loaded. In this example this was done in step 2. Preload is now used to start jboss:
 </p>
 <source>
 jboss@donny:~/work/test/ca$ ~nfast/bin/preload -c ejbca $JBOSS_HOME/bin/run.sh
 </source>
-<strong>Step 5a. Create a new CA in the web GUI of EJBCA</strong>
+<strong>Step 5. Create a new CA in the web GUI of EJBCA</strong>
 <p>
 Choose PKCS#11 as "CA Token Type".
 </p><p>
@@ -2995,72 +2983,6 @@ pin dummy
 slotListIndex 1
 sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
 </source>
-<strong>Step 3b. Create JCA keys that should be used on the nShield card</strong>
-<p>
-Start a new window and login as the same user (jboss user).
-Now 3 keys protected by the key set 'ejbca' are created like this:
-</p>
-<source>
-jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 4096 signRoot
-Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 4096 defaultRoot
-Creating certificate with entry defaultRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
-Give password of inserted card in slot:
-pass2
-Next line will contain the identity identifying the keystore:
-03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 2048 defaultRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 2048 encryptRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-Creating certificate with entry encryptRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
-Give password of inserted card in slot:
-pass2
-Next line will contain the identity identifying the keystore:
-03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 512 testRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 512 testRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-Creating certificate with entry testRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
-Give password of inserted card in slot:
-pass2
-Next line will contain the identity identifying the keystore:
-03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-jboss@donny:~$
-</source>
-<p>
-Different CAs may share the same keystore but may also have different key stores. Different key store may be protected by different card sets. Use the '-c' parameter of preload to select card set when you are generating new keys. Only one key set should be loaded at a time when creating keys.
-</p>
-<p>
-The last key in the example is used to check the status of the HSM by EJBCA.
-This key is small (512 bit) to enhance performance.
-</p>
-<strong>Step 4b. Start EJBCA with nShield HSM</strong>
-<p>
-To start EJBCA, preload must be running with the required key stores loaded. In this example this was done in step 2. A provided script may be used to start EJBCA:
-</p>
-<source>
-jboss@donny:~/tmp$ $EJBCA_HOME/bin/nCipherJboss.sh start
-</source>
-<strong>Step 5b. Create a new CA in the web GUI of EJBCA</strong>
-<p>
-Choose NFastCAToken as "CA Token Type".
-</p><p>
-Define the keystore on the nShield card that should be used. The keystore is defined by the hexadecimal hash string from the output of the key generation.
-Define which keys in the keystore that should be used and the purpose of these keys.
-</p><p>
-Use one row for each definition. Begin the row with a key word. It is one row for the keystore and one for each key definition. Key word and value is separated by one or more spaces.
-A row with the keyword keyStore must always be present.
-</p><p>
-The keys in the property field are defined by their keystore alias. See general text above about key definition.
-</p><p>
-You must use a unique keystore for each CA.
-</p><p>
-Example with previous generated keys where signRoot is used for CAs signing, and defaultRoot is used for everything else (encryption):
-</p>
-<source>
-keyStore 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-defaultKey defaultRoot
-certSignKey signRoot
-crlSignKey signRoot
-testKey testRoot
-</source>
 <strong>Using module protected keys</strong>
 <p>
 Module protected keys do not need an operator card set. Hence no PIN code is needed to active such a key. A CA could be configured to use a keystore with module protected keys.
@@ -3077,33 +2999,13 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
   CKA_TOKEN = true
 }
 </source>
-<p>
-When using JCA all you have to do is to replace 'generate' with 'generatemodule'. Example:
-</p>
-<source>
-jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 4096 default
-Warning: NFAST_HOME not set, using default to /opt/nfast
-Creating KeyStore of type nCipher.sworld with provider nCipherKM.
-Creating certificate with entry defaultKey.
-Next line will contain the identity identifying the keystore:
-41ca8b21186cb508c5e3b84f9df9b4208042f681
-jboss@donny:~/work/test/keygen$ $EJBCA_HOME/bin/nCipherHSM.sh generatemodule 512 test 41ca8b21186cb508c5e3b84f9df9b4208042f681
-Warning: NFAST_HOME not set, using default to /opt/nfast
-Creating KeyStore of type nCipher.sworld with provider nCipherKM with ID 41ca8b21186cb508c5e3b84f9df9b4208042f681.
-Creating certificate with entry test.
-Next line will contain the identity identifying the keystore:
-41ca8b21186cb508c5e3b84f9df9b4208042f681
-</source>
 <strong>Not using preload.</strong>
 <p>
 If a 1/N card set is used then preload don't have to be used (but it can be used). If preload is not used then jboss could be made to start automatically
 at boot time.
 </p><p>
 For PKCS#11 simple do not use the preload command. The authentication code is now needed when activating the CA.
-</p><p>
-For JCA use the "-np" switch to the starting script if you don't want preload:
 </p>
-<source>$EJBCA_HOME/bin/nCipherJboss.sh -np start</source>
 <strong>Using more than one OCS.</strong>
 <p>
 It is also possible to use more than one OCS. This is needed when you want different CAs protected by different OCSs.
@@ -3245,94 +3147,7 @@ lars@milton:~/work/test/nCipher$ ~nfast/bin/preload -c 2of3_1 exit
 </source><p>
 When the application server then is started with preload, CAs defined for slot list index 2 and 4 could be activated. When activating a CA when running preload no PIN has to be given. Also when the application server is started with preload then only CAs of preloaded slots could be activated (not preloaded 1/n slots could not be used).
 </p>
-<strong>Setting public exponent.</strong>
-<p>
-To choose the public exponent the "nCipherHSM.sh" script can not be used. nCipher has not implemented the initialization method of "KeyPairGenerator" that is
-used to set the public exponent.
-But there is another way to generate keys with the public exponent as a parameter. You must have this before you start:
-<ul>
-<li>A card that belongs to a 1/n card set in the nCipher reader</li>
-<li>A keystore protected by this card set</li>
-</ul>
-The keystore may be created with "$EJBCA_HOME/bin/nCipherHSM.sh createKeyStore" or "$EJBCA_HOME/bin/nCipherHSM.sh generate ...". Put the ID of the
-keystore (same as is used in the EJBCA web GUI) in a file. This file may not contain any other characters other than the characters of the ID. Check that the
-length of the file is 40 byte.
-If the file is called "single.jks" then the key is created like this:
-</p>
-<source>/opt/nfast/bin/generatekey -g -csingle -b jcecsp alias=default keystore=single.jks type=RSA pubexp=3 size=2048 keystorepass=single</source>
-<strong>Importing an existing CA or sub-CA to EJBCA.</strong>
-<p>
-Note: you must set JAVA_HOME and possible JDK_HOME for import to work.
-</p>
-<p>
-Importing existing keys is not as safe as generating them in the HSM, since the original key or a copy of the key
-might still be around. The security world has to be initialized in the default FIPS 140-2 Level 2 for this to work.
-First backup and edit $JAVA_HOME/jre/lib/security/java.security and change
-</p><source>
-security.provider.1=sun.security.provider.Sun
-...
-</source><p>
-to
-</p><source>
-security.provider.1=com.ncipher.provider.km.nCipherKM
-security.provider.2=sun.security.provider.Sun
-...
-</source><p>
-Then create an empty a keystore with
-</p>
-<source>jboss@host$ $EJBCA_HOME/bin/nCipherHSM.sh createkeystore
- ...
- Next line will contain the identity of the keystore:
- f7e825134fe23f58b1575d8efb487babe7ebd1ed
-</source>
-<p>
-This hash should be written to a file that has to be exactly 40 bytes long:
-</p>
-<ul>
-<li>Linux: 'cat > temp.keystore' and copypaste the string, press Ctrl-D and Ctrl-C.</li>
-<li>Windows: 'copy con: temp.keystore' and copypaste the string, press Ctrl-Z and Enter.</li>
-</ul>
-<p>
-Import a RSA key protected by 1/X operator cardset 'OperatorCardset' without passphrase from file 'rsaprivatekey.pem' as 'importedKey':
-</p>
-<source>
-jboss@host$ $NFAST_HOME/bin/nfkminfo -k
- AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed
- 
-jboss@host$ export CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jce.jar:$NFAST_HOME/java/classes/nfjava.jar:$NFAST_HOME/java/classes/kmjava.jar:$NFAST_HOME/java/classes/kmcsp.jar
-jboss@host$ $NFAST_HOME/bin/generatekey --import -m 1 -c OperatorCardset jcecsp alias=importedKey pemreadfile=rsaprivatekey.pem type=RSA keystore=temp.keystore
- ...
- ERROR: Could not write to temp.keystore
- ...
-jboss@host$ $NFAST_HOME/bin/nfkminfo -k
- AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed
- AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed-key-832c8a89fe813dc99ae61e094fe5d195ca3e405d
-</source>
-<p>
-Despite the error message the key is still imported.
-</p><p>
-Important: Restore $JAVA_HOME/jre/lib/security/java.security now or EJBCA will stop working!
-</p><p>
-Start JBoss with $EJBCA_HOME/bin/nCipherJboss.sh as described earlier. Create a new CA 'ImportedCA' in
-the Administration GUI. Choose CA Token Type 'NFastCAToken', enter the imported key's properties
-</p>
-<source>
-keyStore f7e825134fe23f58b1575d8efb487babe7ebd1ed
-defaultKey importedKey
-</source>
-<p>
-Also enter the algorithm, the DN and the CRL Expire Period.
-</p><p>
-If you are replicating an existing root CA choose Signed By 'Self Signed' and make sure everything is the
-same as in the original. Press 'Create' and activate the CA-token from Basic Functions
-to start using the CA.
-</p><p>
-When importing a sub-CA, choose Signed by 'External CA'. Edit other properties if you like and press 'Make certificate
-request'. Ignore the request and edit the same 'ImportedCA'. Press 'Receive Certificate Response' and upload the old
-sub-CA's certificate. Activate the CA-token from Basic Functions when needed.
-</p>
 </subsection>
-
 <subsection name="nCipher netHSM load balancing">
 <p>If you load the same security world into two netHSMs it will work with load balancing.
 After setting up the first netHSM, do the following on the second:
@@ -3445,146 +3260,34 @@ lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE
 </source>
 </subsection>
 
-<subsection name="SafeNet Luna SA HSM">
+<subsection name="SafeNet Luna">
+<subsubsection name="Install HW">
 <p>
-One SafeNet Luna it is possible to use either the PKCS#11 interface or the JCE interface. 
-</p><p>
-Being generally used by all HSMs we recommend using the 
-PKC#11 interface.
-</p><p>
-General steps for the installation and CA creation. Step 1, 3, and 5 have different configuration depending on if you use PKCS#11 or JCE.
+Please consult the SafeNet documentation regarding the installation of HW and SW.
 </p>
-<strong>1. Install the Luna SA HSM</strong>
-<p>
-The host that CA is running on must be a client to the HSM. This client should be assigned to a partition of the HSM.
-It is only possible for the CA to use one partition. The reason for this limitation is that a client can only be logged in to a partition at a time.
-</p>
-<p>
-Do the setup according the documentation from SafeNet. After "Assign a Client to a Partition" is done you should check that you have access to a partition with the "vtl verify" command. The label of the partition returned in the response should be used later as 'slotLabel'.
-</p>
-<p>
-Follow steps 2 to 5 depending on if you use PKCS#11 or JCE.
-</p>
-<strong>Note.</strong>
-<p>
-When activating Luna CAs in EJBCA the given password is only validated for the first one that is activated. When this first CA is activated a login is performed to the used partition. Logout from the partition is performed when all Luna CAs in EJBCA for a partition has been deactivated.
-</p><p>
-Different partitions may be used for different CAs. But only CAs from one partition may be activated at a certain time.
-</p>
-
-<subsubsection name="SafeNet PKCS11">
-<strong>2. Build EJBCA</strong>
-<p>
-Build and deploy as usual, see installation guide.
-</p>
-<strong>3. Create keys that should be used on the Luna SA HSM</strong>
-<ol>
-<li>Keypair generation:<br/>
-# cd /usr/lunasa/bin<br/>
-# ./cmu gen -slot=1 -modulusBits=2048 -publicExp=65537 -sign=1 -verify=1 -labelPublic="defaultPublicKey" -labelPrivate="defaultPrivateKey" -id=123456<br/>
-(ID is a random number, and utilized in certificate generation. This must be a new number for every key that is generated.)
-</li>
-<li>Certificate generation - Not CA certificate, only HSM wrapper for public key:<br/>
-# ./cmu selfsigncertificate -slot=1<br/>
-Select defaultPrivateKey from the list.<br/>
-You must enter at least a value for CN when asked, this will be the label of the key to use in EJBCA. Enter <i>defaultKeyCert</i> for this example. 
-</li>
-<li>List objects:<br/>
-# ./cmu list<br/>
-You should see defaultKeyCert listed.
-</li>
-</ol>
-<p>
-Note: every time you run "cmu" you are asked for slot password 
-</p>
-<p>You can also generate keys using lunaHSM.sh as for JCE (bin/lunaHSM.sh generate testKey 1024 sqEK-WALL-xCTT-Hdx6) and then running 'cmu selfsigncertificate', selecting testKey and giving
-the certificate a CN of myTestKey. Then you can use this key with alias myTestKey in the ca token properties.
-</p>
-<strong>4. Make EJBCA aware of the new keys</strong>
-<p>
-Do the following:
-</p>
-<ul>
-<li>1. Stop the application server.</li>
-<li>2. Start the application server.</li>
-</ul>
-<strong>5. Create a new CA in the web GUI of EJBCA</strong>
-<p>
-Choose PKCS#11 as "CA Token Type".
-</p><p>
-Define which keys on the slot that should be used and the purpose of these keys. See above for general description of PKCS#11 CA Token properties.
-</p><p>
-The keys in the property field are defined by the wrapper certificates aliases.
-</p><p>
-Example:
-</p>
-<source>
-slot 1
-defaultKey defaultKeyCert
-sharedLibrary /usr/lib/libCryptoki2.so
-</source>
-<p>You can also include the slot password in the properties if you want auto activation of the CA. If not you have to manually activate the CA when the server is restarted.
-</p> 
-<source>
-slot 1
-defaultKey defaultKeyCert
-sharedLibrary /usr/lib/libCryptoki2.so
-pin sqEK-WALL-xCTT-Hdx6
-</source>
 </subsubsection>
-
-<subsubsection name="SafeNet JCE">
-<strong>2. Build EJBCA</strong>
+<subsubsection name="Configuration">
 <p>
-Do the following:
-<ul>
-<li>1. Put LunaJCASP.jar and LunaJCESP.jar from SafeNet in $EJBCA_HOME/lib and in $APPSRV_HOME/server/default/lib</li>
-<li>2. Define the property 'hsm.luna' in conf/ejbca.properties (see uncommented line in conf/ejbca.properties.sample).</li>
-<li>3. ant deploy</li>
-</ul>
+Do all steps (1-7 in the section) in "A - Configuration (Setup Appliance after Installing)" of in the html document "Luna SA Online Help -- Document # 800274-xxx" that should be found on your installation CD.
+Some notes about our test setup:
+</p><p>
+Step 3: You may do nothing here. But note that changing many of the policies will reset the HSM. This means that you can't change any of these policies later on.
+</p><p>
+Step 4: Note that a new partition could be added at any time.
+</p><p>
+Step 5: A good idea is to allow partitions (p11 slots) to be "activated". If a partition is not activated you got to insert the black key in the PED and give PIN each time a resource in the HSM is used by the client. So in most cases you want to be able to activate a partition:
+lunash:>partition changePolicy -partition partition1 -policy 22 -value 1
+</p><p>
+Step 6:
+You don't have to be in the '/usr/LunaSA/bin' directory as the documentation says. We think it is preferable to be in a directory owned by yourself so you don't have to use sudo.
+Example of running in your own directory:
+lars@milton:~/work/test/luna$ /usr/lunasa/bin/ctp admin@lunasa.int.primekey.se:server.pem .
+Example of occasions when sudo must be used is registration of server and adding client certificates (root owned files and directories are used and updated):
+lars@milton:~/work/test/luna$ sudo /usr/lunasa/bin/vtl addServer -n lunasa.int.primekey.se -c server.pem
+lars@milton:~/work/test/luna$ sudo /usr/lunasa/bin/vtl createCert -n milton
+The clients we registred in the HSM; 'milton' and 'redhates5' are both on the 192.168.3.0 network belonging to the domain 'int.primekey.se'. Same as the HSM 'lunasa'.
 </p>
-<strong>3. Create keys that should be used on the Luna SA HSM</strong>
-<p>
-Use the tool $EJBCA_HOME/bin/lunaHSM':
-</p>
-<source>lunaHSM generate 'key alias' 'key size' ['partition label'] 'partition password'</source>
-<p>
-'partition label' has to be used if there are more than one partitions assigned to the client. Only CAs from the same partition may be activated at a time.
-</p><p>
-When using the tool, the directory of the file libLunaAPI.so must be in LD_LIBRARY_PATH. 
-</p><p>
-At least one key should be generated for each CA in EJBCA. Maybe several if different keys for different purposes are used. When referring to a key in EJBCA the 'key alias' is used.
-</p>
-<strong>4. Make EJBCA aware of the Luna SA HSM</strong>
-<p>
-Do the following:
-</p>
-<ul>
-<li>1. Stop the application server.</li>
-<li>2. Start the application server with the directory of the file libLunaAPI.so in LD_LIBRARY_PATH.</li>
-</ul>
-<strong>5. Create a new CA in the web GUI of EJBCA</strong>
-<p>
-Choose SafeNetLunaCAToken as "CA Token Type".
-</p><p>
-Define which keys on the slot that should be used and the purpose of these keys. If more than one partition is assigned to the client the label of this partition has to be defined too.
-</p><p>
-Use one row for each definition. Begin the row with a key word. It is one row for the 'partition label' (may be omitted if only one partition) and one for each key definition. Key word and value is separated by one or more spaces.
-</p><p>
-'slotLabel' (if present) defines the 'partition label' of the partition to be used.
-A row with the keyword 'slotLabel' must be present if more than on partition is assigned to the client with the name of the label of the used partition.
-</p><p>
-The keys in the property field are defined by their key alias. See general text above about key definition.
-</p><p>
-Example:
-</p>
-<source>
-slotLabel p1
-certSignKey rootCertSign
-defaultKey rootCRLSign
-</source>
 </subsubsection>
-
 </subsection>
 
 <subsection name="Eracom HSM with PKCS#11">
