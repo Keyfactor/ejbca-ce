@@ -3234,7 +3234,7 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
 }
 </source>
 <p>
-When using 'pkcs11HSM.sh' and starting EJBCA, libcc2000_tok.so and libgpkcs11cc2000.so must be in the library path. Examples:
+When using PKCS11HSMKeyTool and starting EJBCA, libcc2000_tok.so and libgpkcs11cc2000.so must be in the library path. Examples:
 </p>
 <source>
 lars@maud:~/work/test/ca$ ls -al ../../bullInstall/linux
@@ -3261,7 +3261,7 @@ lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE
 </subsection>
 
 <subsection name="SafeNet Luna">
-<subsubsection name="Install HW">
+<subsubsection name="Install HW and SW">
 <p>
 Please consult the SafeNet documentation regarding the installation of HW and SW.
 </p>
@@ -3271,185 +3271,166 @@ Please consult the SafeNet documentation regarding the installation of HW and SW
 Do all steps (1-7 in the section) in "A - Configuration (Setup Appliance after Installing)" of in the html document "Luna SA Online Help -- Document # 800274-xxx" that should be found on your installation CD.
 Some notes about our test setup:
 </p><p>
-Step 3: You may do nothing here. But note that changing many of the policies will reset the HSM. This means that you can't change any of these policies later on.
+<strong>Step 3:</strong> You may do nothing here. But note that changing many of the policies will reset the HSM. This means that you can't change any of these policies later on.
 </p><p>
-Step 4: Note that a new partition could be added at any time.
+<strong>Step 4:</strong> Note that a new partition could be added at any time. Each partition will be represented as a PKCS#11 slot. Make sure to write the Record Partition Client Password (TP) in a text file. In the example the password is btqx-EFGH-3456-7/K9 for the first created partition (slot 1). The TP will later be used as PIN for the slot. 
 </p><p>
-Step 5: A good idea is to allow partitions (p11 slots) to be "activated". If a partition is not activated you got to insert the black key in the PED and give PIN each time a resource in the HSM is used by the client. So in most cases you want to be able to activate a partition:
+<strong>Step 5:</strong> A good idea is to allow partitions (p11 slots) to be "activated". If a partition is not activated you got to insert the black key in the PED and give PIN each time a resource in the HSM is used by the client. So in most cases you want to be able to activate a partition:
 lunash:>partition changePolicy -partition partition1 -policy 22 -value 1
 </p><p>
-Step 6:
+<strong>Step 6:</strong>
 You don't have to be in the '/usr/LunaSA/bin' directory as the documentation says. We think it is preferable to be in a directory owned by yourself so you don't have to use sudo.
 Example of running in your own directory:
+</p><source>
 lars@milton:~/work/test/luna$ /usr/lunasa/bin/ctp admin@lunasa.int.primekey.se:server.pem .
+</source><p>
 Example of occasions when sudo must be used is registration of server and adding client certificates (root owned files and directories are used and updated):
+</p><source>
 lars@milton:~/work/test/luna$ sudo /usr/lunasa/bin/vtl addServer -n lunasa.int.primekey.se -c server.pem
 lars@milton:~/work/test/luna$ sudo /usr/lunasa/bin/vtl createCert -n milton
-The clients we registred in the HSM; 'milton' and 'redhates5' are both on the 192.168.3.0 network belonging to the domain 'int.primekey.se'. Same as the HSM 'lunasa'.
+</source><p>
+<strong>Step 7:</strong>
+Each partition assigned to a client will be represented by a PKCS#11 slot for this client. It seems that each new added partition will be put last in the slot list and the number of a slot will be slot list index plus 1 (list index starting with 0 and slot number starting with 1).
+To get the partition slot mapping on the client do:
+</p><source>
+lars@milton:~/work/test/luna$ /usr/lunasa/bin/vtl verify
+
+The following Luna SA Slots/Partitions were found: 
+
+Slot    Serial #        Label
+====    ========        =====
+ 1      950784001       partition1
+ 2      950784002       partition2
+</source><p>
+Now the client may use these slot with EJBCA and it's tools
 </p>
+</subsubsection>
+<subsubsection name="Activating slots">
+<p>
+Before a partition (slot) could be used by a client it must be activated. This is described in 'B - Administration &amp; Maintenance  > Activating and AutoActivating Partitions'. The partition policy required do the activation must have been set (see step5 above). Example to activate a partition:
+</p><source>
+lunash:>hsm login
+lunash:>partition activate -partition partition1 -password btqx-EFGH-3456-7/K9
+</source><p>
+The password is from the configuration step 4. See above.
+</p>
+</subsubsection>
+<subsubsection name="Generate keys on a slot">
+<source>
+lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./sunpkcs11.cfg 2048 rsa2048_1
+0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
+PKCS11 Token [SunPKCS11-Luna] Password: 
+Created certificate with entry rsa2048_1.
+lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./sunpkcs11.cfg secp160r1 secp160r1_1
+0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
+PKCS11 Token [SunPKCS11-Luna] Password: 
+Created certificate with entry secp160r1_1.
+</source><p>
+The password btqx-EFGH-3456-7/K9 (see above) is used.
+</p><p>
+The contents of ./sunpkcs11.cfg :
+</p><source>
+name=Luna
+library=/usr/lunasa/lib/libCryptoki2_64.so
+#library=/usr/lib/pkcs11-spy.so
+slot = 1
+
+attributes(generate,*,*) = {  
+  CKA_TOKEN = true
+}
+attributes(generate,CKO_PUBLIC_KEY,*) = {
+  CKA_ENCRYPT = true
+  CKA_VERIFY = true
+  CKA_WRAP = true
+}
+attributes(generate, CKO_PRIVATE_KEY,*) = {
+  CKA_EXTRACTABLE = false
+  CKA_DECRYPT = true
+  CKA_SIGN = true
+  CKA_UNWRAP = true
+}
+</source>
+</subsubsection>
+<subsubsection name="List and test all keys that could be used by EJBCA">
+<source>
+lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /usr/lunasa/lib/libCryptoki2_64.so 1
+Test of keystore with ID 1.
+0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
+PKCS11 Token [SunPKCS11-libCryptoki2_64.so-slot2] Password: 
+
+Testing of key: rsa2048_1
+SunJCE version 1.7SunPKCS11-libCryptoki2_64.so-slot2 version 1.7; modulus length: 2048; byte length 245. The docoded byte string is equal to the original!
+Signature test of key rsa2048_1: signature length 256; first byte 28; verifying true
+Key statistics. 
+Signings per second: 369; Decryptions per second: 135
+
+Testing of key: secp160r1_1
+Signature test of key secp160r1_1: signature length 48; first byte 30; verifying true
+Key statistics. 
+Signings per second: 68 No crypto available for this key.
+</source>
 </subsubsection>
 </subsection>
 
-<subsection name="Eracom HSM with PKCS#11">
-<p>
-Follow these steps to create a CA that is using a Eracom HSM (tested with a SW emulator):
-</p>
-<strong>1. Install the Eracom software</strong>
-<p>
-You need an access library (ex ETnethsm) and the Toolkit C runtime.
-</p>
-<strong>2. Create the required slots</strong>
-<p>
-Create the required slots (one PIN per slot) and keys (with keylabels) using the Eracom tools or your own java classes.
-</p>
-<p>
-Sample Slot Initialization:
-<ol>
-	ctconf	
-<br></br>
-	ctconf -c10
-<br></br>
-	ctconf -fc
-<br></br>
-	ctkmu t -s5 -lroot
-</ol>
-</p>
-<p>
-  Key generation
-<br></br>
-$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/ETcpsdk/lib/linux-i386/libcryptoki.so 4096 defaultKey 5
-</p>
-<strong>3. If you use an external HSM, set its hostname/IP-Address as unix environment variable</strong>
+<subsection name="Eracom HSM">
+<subsubsection name="install SW">
 <source>
-CT_SERVER=eracom
-export CT_SERVER
+fakeroot alien -c $CDROM/Linux64/ptkc_sdk/ETcpsdk-3.32.00-1.x86_64.rpm
+sudo dpkg -i ./etcpsdk_3.32.00-2_amd64.deb
 </source>
-<p>
-<strong>4. Start the J2EE container</strong>
-</p><p>
-<strong>5. Create a new CA</strong>
-</p><p>
-The keys in the property field are defined by their key alias and slot by the number. See general text above about key definition and PKCS#11.
-</p><p>
-Create a CA with "CA Token Type" = PKCS#11
-</p><p>
-The keys in the property field are defined by their key alias. See general text above about key definition.
-</p><p>
-Fill in the hard token properties. Example:
-</p>
+</subsubsection>
+<subsubsection name="Set passwords for admin SO och admin user">
 <source>
-slot 5
-defaultKey defaultKey
-sharedLibrary /opt/ETcpsdk/lib/linux-i386/libcryptoki.so
-pin user5
+LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctconf
 </source>
-</subsection>
-
-<subsection name="Eracom HSM using Eracom JCE provider">
-<p>
-This tooken type is deprecated. Please follow "Eracom HSM with PKCS#11" instead. But this description was written with experience from a real HSM.
-When writing the PKCS#11 description an emulator was used.
-</p><p>
-Follow these steps to create a CA that is using a Eracom HSM (tested with Eracom ProtectServer Orange (csa8000) external):
-</p>
-<strong>1. Install the Eracom software</strong>
-<p>
-You need an access library (ex ETnethsm), the Toolkit C runtime and the Toolkit J runtime.
-</p>
-<strong>2. Create the required slots</strong>
-<p>
-Create the required slots (one PIN per slot) and keys (with keylabels) using the Eracom tools or your own java classes.
-</p>
-<p>
-Sample Slot Initialization:
-<ol>
-   <li>ctconf -x
-<br></br>
-      'tamper' HSM, erases complete key store memory</li>
-   <li>ctconf
-<br></br>
-      sets Administrator SO and Administrator PINs (first use of ctconf after tamper)</li>
-   <li>ctconf -fF
-<br></br>
-      set FIPS 140-2 compliant mode</li>
-   <li>ctconf -c2
-<br></br>
-      create 2 new user slots</li>
-   <li>ctstat
-<br></br>
-      list user slots (for verification)</li>
-   <li>ctconf -n 0
-<br></br>
-      label: userpki, initialize slot 0, set slot's SO PIN</li>
-   <li>ctconf -n 1
-<br></br>
-      label: serverpki, initialize slot 1, set slot's SO PIN</li>
-   <li>ctkmu p -s 0
-<br></br>
-      set user PIN slot 0</li>
-   <li>ctkmu p -s 1
-<br></br>
-      set user PIN slot 1</li>
-</ol>
-</p>
-<p>
-  Key generation
-<br></br>
-   ( Use the samples / tools provided with the Eracom software.)
-<br></br>
-   ( You can write a helper app using the Eracom crytoki interface )
-</p>
-<p>
-  Key Backup
-<br></br>
-   ( Make key backups on smart cards as described.)
-</p>
-<strong>3. Make sure the required Eracom Java Security Provider (jprov) is on the classpath</strong>
-<p>
-Only need if you want to use the Eracom provider. If PKCS#11 is used (recomended) continue with step 5.
-</p><p>
-For example, for WEBLOGIC, add:
-<br></br>
-WEBLOGIC_CLASSPATH=${WEBLOGIC_CLASSPATH}:...:/opt/Eracom/lib/jprov.jar
-</p>
-<strong>4. Add the native library dir for HSM communication to your path</strong>
-<p>
-Only need if you want to use the Eracom provider. If PKCS#11 is used (recomended) continue with step 5.
-</p><p>
-The native library dir is where libjcprov.so and libcryptoki.so are located.
-</p>
+</subsubsection>
+# skapa 10 slottar
+<subsubsection name="create 10 slots">
 <source>
-LD_LIBRARY_PATH=/opt/Eracom/lib/linux-i386
-export LD_LIBRARY_PATH
+LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctconf -c10
 </source>
-<p>
-For Windows this is done by adding the location where DLLs are located to the system path. 
-This is normally done by the installer programs.
-</p>
-<p>
-<strong>5. If you use an external HSM, set its hostname/IP-Address as unix environment variable</strong>
-</p>
+</subsubsection>
+<subsubsection name="Set no public crypto">
 <source>
-CT_SERVER=eracom
-export CT_SERVER
+LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctconf -fc
 </source>
-<p>
-<strong>6. Start the J2EE container</strong>
-</p><p>
-<strong>7. Create a new CA</strong>
-</p><p>
-Create a CA with "CA Token Type" = Eracom, the type should appear automatically in the list when the Eracom 
-keystore classes are found.
-</p><p>
-The keys in the property field are defined by their key alias. See general text above about key definition.
-</p><p>
-Fill in the hard token properties. Example:
-</p>
+</subsubsection>
+<subsubsection name="Initialize slot 5. Sets SO and user password">
 <source>
-slot 1
-defaultKey cakey1
-pin secret
+LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctkmu t -s5 -lroot
 </source>
+</subsubsection>
+<subsubsection name="Generate a key on slot 5">
+<source>
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./slot5.cfg 2048 default
+</source>
+</subsubsection>
+<subsubsection name="Contents of ./slot5.cfg">
+<source>
+name=SafeNet
+library=/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so
+#library=/usr/lib/pkcs11-spy.so
+slot=5
+attributes(*,*,*) = {
+  CKA_TOKEN = true
+}
+attributes(*,CKO_PRIVATE_KEY,*) = {
+  CKA_PRIVATE = true
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_EXTRACTABLE = true
+  CKA_SENSITIVE = true
+}
+</source>
+</subsubsection>
+<subsubsection name="Test and list keys on slot 5">
+<source>
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so 5
+</source>
+</subsubsection>
+<note>
+The emulator has a bug. Each key of same length that are generated seems to be the same. This means that a slot may only have one key. If a second key is generated for a slot the certificate object for the first key is deleted before writing the certificate object for the new key. This is done since the Sun p11 wrapper provider does not allow two keys that are equal to be present in a keystore.
+</note>
 </subsection>
 
 <subsection name="Writing support for new HSMs">
