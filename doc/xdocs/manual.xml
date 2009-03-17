@@ -1381,9 +1381,7 @@ high-performance for the OCSP responders. This should be a usual setup, if the C
 for one million users, this does not put much pressure on the CA, but the OCSP responders can be put under high load continuously.
 </p>
 <p>
-See the document doc/howto/HOWTO-OCSP-RESPONDER.txt for information how to set up stand-alone, separated OCSP responders.
-<br></br>
-See the image HOWTO-OCSP-RESPONDER.jpg for an overview of a sample setup.
+See the <a href="installation-ocsp.html">OCSP Installation document</a> for information how to set up stand-alone, separated OCSP responders.
 </p>
 </subsection>
 
@@ -1394,7 +1392,7 @@ You can unzip this file and use the 'ocsp.sh' shell script on Linux/Unix. You ca
 java program.
 </p>
 <p>
-See the document doc/howto/HOWTO-OCSP-Unid-client.txt for information how to use the simple OCSP client.
+See the <a href="manual-ocsp.html">OCSP User Guide</a> for information how to use the simple OCSP client.
 </p>
 </subsection>
 
