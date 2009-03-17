@@ -2545,7 +2545,7 @@ Same activation code must be used for all keys used by a CA.
 </p><p>
 EJBCA 3.1 and later has build-in support for the nCipher nShield HSM.
 </p><p>
-EJBCA 3.2 and later also has an implementation for the Eracom HSM. The configuration was changed to 3.3.
+EJBCA 3.2 and later also has an implementation for the Eracom HSM (now SafeNet ProtectServer). The configuration was changed to 3.3.
 </p><p>
 EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
 </p><p>
@@ -2600,7 +2600,7 @@ You have to check if that support is available.
 <subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
 A PKCS#11 wrapper has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
-tested with Utimaco Cryptoserver and nCipher nShield/netHSM and Eracom and AEP Keyper and ARX CoSign and Bull TrustWay.
+tested with Utimaco Cryptoserver and nCipher nShield/netHSM and SafeNet ProtectServer and SafeNet Luna and AEP Keyper and ARX CoSign and Bull TrustWay.
 </p>
 <p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
@@ -3372,7 +3372,7 @@ Signings per second: 68 No crypto available for this key.
 </subsubsection>
 </subsection>
 
-<subsection name="Eracom HSM">
+<subsection name="SafeNet ProtectServer">
 <subsubsection name="install SW">
 <source>
 fakeroot alien -c $CDROM/Linux64/ptkc_sdk/ETcpsdk-3.32.00-1.x86_64.rpm
