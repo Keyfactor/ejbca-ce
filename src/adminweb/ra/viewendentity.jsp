@@ -275,7 +275,7 @@
     </tr> 
 	<%	} if ( endTime != null ) { %>
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFSTART") %></td>
+		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFEND") %></td>
 		<td>
 		<%	if ( !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
 				<%= ejbcawebbean.printDateTime(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
