@@ -79,7 +79,7 @@ public class TestOcspUtil extends TestCase {
         // A response to create
 		ArrayList responseList = new ArrayList();
 		CertificateID certId = req.getRequestList()[0].getCertID();
-		responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));
+		responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), 0));
 
 		// First check that the whole chain is included and the responderId is keyHash
 		OCSPCAServiceRequest ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithECDSA", false, true);

@@ -254,4 +254,14 @@ A pattern for use with ocsp.audit-order to replace constants with values during 
 
 # Set to true if you want transactions to be aborted when logging fails
 # This option needs other configuration changes as well, see HOWTO-OCSP-RESPONDER for more information
+# Default: false
 # ocsp.log-safer = true
+
+# untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
+# Default: 0
+# ocsp.untilNextUpdate = 0
+
+# maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
+# Ignored if untilNextUpdate is disabled. 0 = disable.
+# Default: 30
+# ocsp.maxAge = 30

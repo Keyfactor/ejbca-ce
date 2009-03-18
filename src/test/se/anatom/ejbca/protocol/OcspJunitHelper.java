@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 
@@ -95,8 +96,9 @@ public class OcspJunitHelper extends TestCase {
 	 * @throws IOException
 	 * @throws OCSPException
 	 * @throws NoSuchProviderException
+	 * @throws NoSuchAlgorithmException 
 	 */
-    protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException {
+    protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException {
         // GET the OCSP request
     	String b64 = new String(Base64.encode(ocspPackage, false));
     	String req = b64.replace("+", "%2B").replace("/", "%2F");
@@ -114,6 +116,7 @@ public class OcspJunitHelper extends TestCase {
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(inputStreamToBytes(con.getInputStream())));
+        assertNotNull("Response should not be null.", response);
         assertEquals("Response status not the expected.", respCode, response.getStatus());
         if (respCode != 0) {
             assertNull("According to RFC 2560, responseBytes are not set on error.", (BasicOCSPResp) response.getResponseObject());
@@ -153,7 +156,7 @@ public class OcspJunitHelper extends TestCase {
     /**
      * For small streams only.
      */
-    private byte[] inputStreamToBytes(InputStream in) throws IOException {
+    static byte[] inputStreamToBytes(InputStream in) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int b = in.read();
         while (b != -1) {

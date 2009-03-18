@@ -547,6 +547,33 @@ a remote batch job can be used to verify the database integrity periodically ins
   </p>
   </section>
 
+  <section name="Responses with longer validity and caching">
+  <p>
+<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> defines thisUpdate, nextUpdate and producedAt. producedAt is always
+included in the response and is the time the response was created.
+thisUpdate and nextUpdate is enabled by configuring 'ocsp.untilNextUpdate' in
+ocsp.properties. thisUpdate will be the time a singleResponse is embedded in
+the main response and nextUpdate will be 'untilNextUpdate' seconds later than
+thisUpdate. This enables clients that supports this feature to re-use a valid
+response and decrease to load on the OCSP-responder.
+  </p><p>
+<a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a> defines how to use HTTP
+cache headers as defined in <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> for
+OCSP HTTP GET requests. By using the headers Last-Modified, Expires, max-age
+and Date, less intelligent nextwork component like HTTP caches can cache
+respones. This enables re-use of responses to decrease the load on the
+OCSP-responder and can shorten reponse times by deploying caches closer to the
+actual OCSP consumers. HTTP cache headers is enabled by configuring configuring
+'ocsp.maxAge' in ocsp.properties
+  </p><p>
+When using RFC 5019 style HTTP headers, JBoss users should be aware that the
+Date header is overwritten with a cached value. Since generating the
+Date-string is computationlly heavy for regular small GET requests, it is
+generated about once per second. So a response will have a Last-Modified that
+is one second in the future from Date from time to time.
+  </p>
+  </section>
+
 </body>
 </document>
 

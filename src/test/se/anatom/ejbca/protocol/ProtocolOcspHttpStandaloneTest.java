@@ -13,25 +13,42 @@
 
 package se.anatom.ejbca.protocol;
 
+import java.io.ByteArrayInputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.rmi.RemoteException;
+import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
 
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
+import org.bouncycastle.ocsp.OCSPResp;
+import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataPK;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /** Tests http pages of a standalone ocsp
@@ -134,5 +151,118 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         int reason = rev.getRevocationReason();
         log.trace("<test03OcspRevoked()");
     }
+
+    /**
+     * Verify the headers of a successful GET request.
+     * ocsp.untilNextUpdate has to be configured for this test.
+     */
+    public void test16VerifyHttpGetHeaders() throws Exception {
+        final X509Certificate ocspTestCert = getTestCert(false);
+        // An OCSP request, ocspTestCert is already created in earlier tests
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.generate();
+        
+    	String reqString = new String(Base64.encode(req.getEncoded(), false)).replace("+", "%2B").replace("/", "%2F");
+    	URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + URLEncoder.encode(reqString, "UTF-8"));
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        // Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertEquals("Response status not the expected.", OCSPRespGenerator.SUCCESSFUL, response.getStatus());
+        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        // Just output the headers to stdout so we can visually inspect them if something goes wrong
+        Set<String> keys = con.getHeaderFields().keySet();
+        for (String field : keys) {
+        	List<String> values = con.getHeaderFields().get(field);
+        	for (String value : values) {
+        		System.out.println(field + ": " + value);
+        	}
+        }
+        String eTag = con.getHeaderField("ETag");
+        assertNotNull("RFC 5019 6.2: No 'ETag' HTTP header present as it SHOULD. (Make sure ocsp.nextUpdate is configured for this test)", eTag);
+        assertTrue("ETag is messed up.", ("\"" + new String(Hex.encode(MessageDigest.getInstance("SHA-1", "BC").digest(response.getEncoded()))) + "\"").equals(eTag));
+        long date = con.getHeaderFieldDate("Date", -1);
+        assertTrue("RFC 5019 6.2: No 'Date' HTTP header present as it SHOULD.", date != -1);
+        long lastModified = con.getHeaderFieldDate("Last-Modified", -1);
+        assertTrue("RFC 5019 6.2: No 'Last-Modified' HTTP header present as it SHOULD.", lastModified != -1);
+        //assertTrue("Last-Modified is after response was sent", lastModified<=date);	This will not hold on JBoss AS due to the caching of the Date-header
+        long expires = con.getExpiration();
+        assertTrue("Expires is before response was sent", expires>=date);
+        assertTrue("RFC 5019 6.2: No 'Expires' HTTP header present as it SHOULD.", expires != 0);
+        String cacheControl = con.getHeaderField("Cache-Control");
+        assertNotNull("RFC 5019 6.2: No 'Cache-Control' HTTP header present as it SHOULD.", cacheControl);
+        assertTrue("RFC 5019 6.2: No 'public' HTTP header Cache-Control present as it SHOULD.", cacheControl.contains("public"));
+        assertTrue("RFC 5019 6.2: No 'no-transform' HTTP header Cache-Control present as it SHOULD.", cacheControl.contains("no-transform"));
+        assertTrue("RFC 5019 6.2: No 'must-revalidate' HTTP header Cache-Control present as it SHOULD.", cacheControl.contains("must-revalidate"));
+        Matcher matcher = Pattern.compile(".*max-age\\s*=\\s*(\\d+).*").matcher(cacheControl);
+        assertTrue("RFC 5019 6.2: No 'max-age' HTTP header Cache-Control present as it SHOULD.", matcher.matches());
+        int maxAge = Integer.parseInt(matcher.group(1));
+        assertTrue("RFC 5019 6.2: SHOULD be 'later than thisUpdate but earlier than nextUpdate'.", maxAge < (expires-lastModified)/1000);
+        //assertTrue("Response cannot be produced after it was sent.", brep.getProducedAt().getTime() <= date);	This might not hold on JBoss AS due to the caching of the Date-header
+        X509Certificate[] chain = brep.getCerts("BC");
+        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        assertTrue("Response failed to verify.", verify);
+    	assertNull("No nonce should be present.", brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId()));
+        SingleResp[] singleResps = brep.getResponses();
+        assertNotNull("SingleResps should not be null.", singleResps);
+        assertTrue("Expected a single SingleResp in the repsonse.", singleResps.length == 1);
+        assertEquals("Serno in response does not match serno in request.", singleResps[0].getCertID().getSerialNumber(), ocspTestCert.getSerialNumber());
+        assertEquals("Status is not null (null is 'good')", singleResps[0].getCertStatus(), null);
+        assertTrue("RFC 5019 6.2: Last-Modified SHOULD 'be the same as the thisUpdate timestamp in the request itself'", singleResps[0].getThisUpdate().getTime() == lastModified);
+        assertTrue("RFC 5019 6.2: Expires SHOULD 'be the same as the nextUpdate timestamp in the request itself'", singleResps[0].getNextUpdate().getTime() == expires);
+        assertTrue("Response cannot be produced before it was last modified..", brep.getProducedAt().getTime() >= singleResps[0].getThisUpdate().getTime());
+    }
+
+    /**
+     * Tests nextUpdate and thisUpdate
+     * ocsp.untilNextUpdate has to be configured for this test.
+     */
+    public void test17NextUpdateThisUpdate() throws Exception {
+        // Now revoke the certificate and try again
+        CertificateDataPK pk = new CertificateDataPK();
+        final X509Certificate ocspTestCert = getTestCert(false);
+        pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
+        ICertificateStoreSessionRemote store = storehome.create();
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.generate();
+        // POST the request and receive a singleResponse
+        URL url = new URL(httpReqPath + '/' + resourceOcsp);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/ocsp-request");
+        OutputStream os = con.getOutputStream();
+        os.write(req.getEncoded());
+        os.close();
+        assertEquals("Response code", 200, con.getResponseCode());
+        // Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertEquals("Response status not the expected.", 0, response.getStatus());
+        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        X509Certificate[] chain = brep.getCerts("BC");
+        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        assertTrue("Response failed to verify.", verify);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        CertificateID certId = singleResps[0].getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        assertNull("Status is not null.", singleResps[0].getCertStatus());
+        Date thisUpdate = singleResps[0].getThisUpdate();
+        Date nextUpdate = singleResps[0].getNextUpdate();
+        Date producedAt = brep.getProducedAt();
+        assertNotNull("thisUpdate was not set. (This test requires ocsp.nextUpdate to be configured.)", thisUpdate);
+        assertNotNull("nextUpdate was not set.", nextUpdate);
+        assertNotNull("producedAt was not set.", producedAt);
+        assertTrue("nextUpdate cannot be before thisUpdate.", !nextUpdate.before(thisUpdate));
+        assertTrue("producedAt cannot be before thisUpdate.", !producedAt.before(thisUpdate));
+    }
+
 
 }

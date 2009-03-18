@@ -25,6 +25,7 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -61,6 +62,7 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RespID;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -152,24 +154,26 @@ public class OCSPUnidClient {
 	/**
 	 * @param cert X509Certificate to query, the DN should contain serialNumber which is Unid to be looked up
 	 * @param cacert CA certificate that issued the certificate to be queried
+     * @param useGet if true GET will be used instead of POST as HTTP method
 	 * @return OCSPUnidResponse conatining the response and the fnr, can contain and an error code and the fnr can be null, never returns null.
 	 * @throws OCSPException
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	public OCSPUnidResponse lookup(Certificate cert, Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
-        return lookup( CertTools.getSerialNumber(cert), cacert );
+	public OCSPUnidResponse lookup(Certificate cert, Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException {
+        return lookup( CertTools.getSerialNumber(cert), cacert, useGet);
     }
     /**
      * @param serialNr serial number of the certificate to verify
      * @param cacert issuer of the certificate to verify
+     * @param useGet if true GET will be used instead of POST as HTTP method
      * @return response can contain and an error code but the fnr is allways null, never returns null.
      * @throws OCSPException 
      * @throws IllegalArgumentException 
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public OCSPUnidResponse lookup(BigInteger serialNr, Certificate cacert) throws OCSPException, IOException, GeneralSecurityException {
+    public OCSPUnidResponse lookup(BigInteger serialNr, Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException {
         if (this.httpReqPath == null) {
             // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
             OCSPUnidResponse ret = new OCSPUnidResponse();
@@ -205,30 +209,38 @@ public class OCSPUnidClient {
             os.close();
         }
         // Send the request and receive a BasicResponse
-        return sendOCSPPost(req.getEncoded(), cacert);
+        return sendOCSPRequest(req.getEncoded(), cacert, useGet);
 	}
 
     //
     // Private helper methods
     //
     
-    private OCSPUnidResponse sendOCSPPost(byte[] ocspPackage, Certificate cacert) throws IOException, OCSPException, GeneralSecurityException {
-        // POST the OCSP request
-        URL url = new URL(httpReqPath);
-        HttpURLConnection con = (HttpURLConnection)getUrlConnection(url);
-        // we are going to do a POST
-        con.setDoOutput(true);
-        con.setRequestMethod("POST");
-
-        // POST it
-        con.setRequestProperty("Content-Type", "application/ocsp-request");
-        OutputStream os = null;
-        try {
-            os = con.getOutputStream();
-            os.write(ocspPackage);
-        } finally {
-            if (os != null) os.close();
-        }
+    private OCSPUnidResponse sendOCSPRequest(byte[] ocspPackage, Certificate cacert, boolean useGet) throws IOException, OCSPException, GeneralSecurityException {
+    	HttpURLConnection con;
+    	if (useGet) {
+        	String b64 = new String(Base64.encode(ocspPackage, false));
+        	String req = b64.replace("+", "%2B").replace("/", "%2F");
+        	String urls = URLEncoder.encode(req, "UTF-8");
+        	URL url = new URL(httpReqPath + '/' + urls);
+            con = (HttpURLConnection)url.openConnection();
+    	} else {
+            // POST the OCSP request
+            URL url = new URL(httpReqPath);
+            con = (HttpURLConnection)getUrlConnection(url);
+            // we are going to do a POST
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            // POST it
+            con.setRequestProperty("Content-Type", "application/ocsp-request");
+            OutputStream os = null;
+            try {
+                os = con.getOutputStream();
+                os.write(ocspPackage);
+            } finally {
+                if (os != null) os.close();
+            }
+    	}
         final OCSPUnidResponse ret = new OCSPUnidResponse();
         ret.setHttpReturnCode(con.getResponseCode());
         if (ret.getHttpReturnCode() != 200) {

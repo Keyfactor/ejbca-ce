@@ -279,6 +279,10 @@
     <property name="ocsp.audit-log" value="false"/>
     <property name="ocsp.audit-log-pattern" value="\$$\{(.+?)\}"/>
     <property name="ocsp.audit-log-order" value="SESSION_ID:$${SESSION_ID};LOG ID:$${LOG_ID};'$${LOG_TIME}';TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n'$${OCSPREQUEST}';\nOCSP RESPONSE:\n'$${OCSPRESPONSE}';\nSTATUS:${STATUS}"/>
+    <property name="ocsp.audit-log" value="false"/>
+    <property name="ocsp.log-safer" value="false"/>
+    <property name="ocsp.untilNextUpdate" value="0"/>
+    <property name="ocsp.maxAge" value="30"/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />

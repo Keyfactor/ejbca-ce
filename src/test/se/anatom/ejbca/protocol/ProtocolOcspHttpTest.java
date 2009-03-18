@@ -14,6 +14,7 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -639,6 +640,9 @@ public class ProtocolOcspHttpTest extends TestCase {
         log.trace("<test12CorruptRequests()");
     }
 
+    /**
+     * Just verify that a simple GET works.
+     */
     public void test13GetRequests() throws Exception {
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -653,11 +657,28 @@ public class ProtocolOcspHttpTest extends TestCase {
     }
 
     /**
-     * Send an request that is just garbage, and pretty large.
+     * Send a bunch of faulty requests
      */
     public void test14CorruptGetRequests() throws Exception {
-    	// Should return a MALFORMED_REQUEST OCSP error message
+    	// An array of zeros cannot be right..
         helper.sendOCSPGet(new byte[4096], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
+    	// Send an empty GET request: .../ocsp/{nothing}
+        helper.sendOCSPGet(new byte[0], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
+    	// Test too large requests
+        try {
+        	// When we use an URL of length ~ 8100 chars on JBoss we get a "Connection reset",
+        	// so we cannot test the real Malformed response we want here
+            helper.sendOCSPGet(new byte[6020], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
+        } catch (IOException e) {
+        	System.out.println(e.getMessage());
+        }
+        try {
+        	// When we use an URL of length ~ > 500000 chars on JBoss we get a "Error writing to server",
+        	// so we cannot test the real Malformed response we want here caused by to large requests
+            helper.sendOCSPGet(new byte[1000001], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
+        } catch (IOException e) {
+        	System.out.println(e.getMessage());
+        }
     }
 
     /**

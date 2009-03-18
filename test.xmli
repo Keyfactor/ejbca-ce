@@ -264,6 +264,11 @@
     <target name="test:runocsp" depends="test:compile,j2ee:assert-run" description="run JUnit standalone OCSP testcases">
         <delete dir="${test.dir}/web/reports" />
         <mkdir dir="${test.dir}/web/reports/html" />
+        <condition property="runocsp.warning" else=""
+        	value="WARNING: EJBCA/OCSP must be deployed with ocsp.untilNextUpdate configured for all OCSP tests to succeed.">
+        	<equals arg1="${ocsp.untilNextUpdate}" arg2="0"/>
+       	</condition>
+    	<echo message="${runocsp.warning}"/>
         <junit printsummary="yes" haltonfailure="no">
 			<sysproperty key="testtype" value="WEB"/>
             <classpath>

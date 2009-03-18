@@ -129,7 +129,7 @@ public class OCSPUtil {
     		Iterator iter = responses.iterator();
     		while (iter.hasNext()) {
         		OCSPResponseItem item = (OCSPResponseItem)iter.next();
-            	basicRes.addResponse(item.getCertID(), item.getCertStatus());    			
+            	basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), null);    			
     		}
     	}
     	X509Extensions exts = serviceReq.getExtensions();
@@ -200,7 +200,7 @@ public class OCSPUtil {
     	} catch (NoSuchProviderException nspe) {
     		throw new ExtendedCAServiceRequestException(nspe);            
     	} catch (NotSupportedException e) {
-    		m_log.error("Request type not supported: ", e);
+    		m_log.info("OCSP Request type not supported: ", e);
     		throw new IllegalExtendedCAServiceRequestException(e);
     	} catch (IllegalArgumentException e) {
     		m_log.error("IllegalArgumentException: ", e);
