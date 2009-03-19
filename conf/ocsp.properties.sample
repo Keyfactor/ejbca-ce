@@ -101,7 +101,7 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 #ocsp.unidcacert=
 
 # The ocsp.keys.* preferences has a meaning only to the External OCSP responder.
-# Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
+# Please read the OCSP web docs for information.
 
 # If you are not using SSL on the external OCSP responder (normally not needed for OCSP), you should define
 # this property, e.g. remove the comment sign. See 'Configuring TLS on the Unid lookup server' in the Howto.
