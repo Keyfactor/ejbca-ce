@@ -36,14 +36,14 @@ public class PerformanceTest {
     private final Log log;
     private final Random random;
     public PerformanceTest() {
-        log =new Log();
-        random = new Random();
+        this.log =new Log();
+        this.random = new Random();
     }
     public Log getLog() {
-        return log;
+        return this.log;
     }
     public Random getRandom() {
-        return random;
+        return this.random;
     }
     public interface CommandFactory {
         Command[] getCommands() throws Exception;
@@ -59,31 +59,31 @@ public class PerformanceTest {
         private int time;
         private boolean isSuccess = false;
         JobRunner( Command _command ) throws Exception {
-            bIsFinished = false;
+            this.bIsFinished = false;
             this.command = _command;
         }
         boolean execute() throws Exception {
             final Thread thread = new Thread(this);
             synchronized(this) {
                 thread.start();
-                if ( !bIsFinished ) {
+                if ( !this.bIsFinished ) {
                     this.wait(120000);
                 }
-                if ( !bIsFinished ) {
+                if ( !this.bIsFinished ) {
                     thread.interrupt();
                     throw new Exception("Command not finished. See the error printout just above.");
                 }
             }
-            return isSuccess;
+            return this.isSuccess;
         }
         public void run() {
             try {
                 final long startTime = new Date().getTime();
-                isSuccess = command.doIt();
-                time = (int)(new Date().getTime()-startTime);
-                bIsFinished = true;
+                this.isSuccess = this.command.doIt();
+                this.time = (int)(new Date().getTime()-startTime);
+                this.bIsFinished = true;
             } catch (Throwable t) {
-                log.error("Command failure", t);
+                PerformanceTest.this.log.error("Command failure", t);
             } finally {
                 synchronized(this) {
                     this.notifyAll();
@@ -91,7 +91,7 @@ public class PerformanceTest {
             }
         }
         public int getTimeConsumed() {
-            return time;
+            return this.time;
         }
     }
     private class TestInstance implements Runnable {
@@ -114,13 +114,13 @@ public class PerformanceTest {
          * @see java.lang.Runnable#run()
          */
         public void run() {
-            log.info("Thread nr "+ nr +" started.");
+            PerformanceTest.this.log.info("Thread nr "+ this.nr +" started.");
             while(true) {
                 try {
                     boolean isSuccess = true;
-                    for (int i=0; isSuccess && i<commands.length; i++) {
+                    for (int i=0; isSuccess && i<this.commands.length; i++) {
                         if ( this.maxWaitTime > 0 ) {
-                            final int waitTime = (int)(this.maxWaitTime*random.nextFloat());
+                            final int waitTime = (int)(this.maxWaitTime*PerformanceTest.this.random.nextFloat());
                             if ( waitTime > 0) {
                                 synchronized(this) {
                                     wait(waitTime);
@@ -128,15 +128,18 @@ public class PerformanceTest {
                                 this.statistic.addTime("Relative time waiting between jobs",waitTime);
                             }
                         }
-                        final JobRunner jobRunner = new JobRunner(commands[i]);
+                        final JobRunner jobRunner = new JobRunner(this.commands[i]);
                         isSuccess = jobRunner.execute();
-                        this.statistic.addTime(commands[i].getJobTimeDescription(), jobRunner.getTimeConsumed());
+                        this.statistic.addTime(this.commands[i].getJobTimeDescription(), jobRunner.getTimeConsumed());
                     }
                     if ( isSuccess ) {
                         this.statistic.taskFinished();
+                    } else {
+                        this.statistic.taskFailed();
                     }
                 } catch( Throwable t ) {
-                    log.error("Exeption in thread "+nr+".", t);
+                    this.statistic.taskFailed();
+                    PerformanceTest.this.log.error("Exeption in thread "+this.nr+".", t);
                 }
             }
         }
@@ -154,7 +157,7 @@ public class PerformanceTest {
         }
         new Thread(statistic).start();
         printStream.println("Test client started, tail info and error files in this directory for output.");
-        printStream.println("Statistic will be written to standard output each "+STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
+        printStream.println("Statistic will be written to standard output each "+this.STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
         synchronized(this) {
             wait();
         }
@@ -162,43 +165,50 @@ public class PerformanceTest {
     private class Statistic implements Runnable {
         private final int nr;
         private final Map<String, Long> mTimes;
-        private int nrOfTests = 0;
+        private int nrOfSuccesses = 0;
+        private int nrOfSuccessesLastTime = 0;
+        private int nrOfFailures = 0;
         private long startTime;
         private final PrintStream printStream;
         Statistic(int _nr, PrintStream _printStream) {
             this.nr = _nr;
-            mTimes = new HashMap<String, Long>();
-            printStream = _printStream;
+            this.mTimes = new HashMap<String, Long>();
+            this.printStream = _printStream;
+        }
+        void taskFailed() {
+            this.nrOfFailures++;
         }
         void taskFinished() {
-            nrOfTests++;
+            this.nrOfSuccesses++;
         }
         Statistic(int nr) {
             this(nr, System.out);
         }
         void addTime(String timeName, long duration) {
             final long lastTime;
-            if ( mTimes.containsKey(timeName) ) {
-                lastTime = mTimes.get(timeName);
+            if ( this.mTimes.containsKey(timeName) ) {
+                lastTime = this.mTimes.get(timeName).longValue();
             } else {
                 lastTime = 0;
             }
-            mTimes.put(timeName, new Long(lastTime+duration));
+            this.mTimes.put(timeName, new Long(lastTime+duration));
         }
         private void printLine(String description, Object value) {
             String padding = new String();
             for ( int i=description.length(); i<50; i++ ) {
                 padding += ' ';
             }
-            printStream.println(description+": "+padding+value);
+            this.printStream.println(description+": "+padding+value);
         }
         private void printStatistics() {
             final long time = (int)(new Date().getTime()-this.startTime);
             final long allThreadsTime = this.nr*time;
-            final float signingsPerSecond = (float)nrOfTests*1000/time;
+            final Float testsPerSecond = new Float((float)this.nrOfSuccesses*1000/time);
+            final Float testsPerSecondInLastPeriod = new Float((float)(this.nrOfSuccesses - this.nrOfSuccessesLastTime)/PerformanceTest.this.STATISTIC_UPDATE_PERIOD_IN_SECONDS);
+            this.nrOfSuccessesLastTime = this.nrOfSuccesses;
             final float relativeWork; {
                 long tmp = 0;
-                Iterator<Long> i=mTimes.values().iterator();
+                Iterator<Long> i=this.mTimes.values().iterator();
                 while (i.hasNext() ) {
                     tmp += i.next().longValue();
                 }
@@ -206,24 +216,26 @@ public class PerformanceTest {
             }
             final String CSI = "\u001B[";
 
-            printStream.println(CSI+"J"); // clear rest of screen on VT100 terminals.
-            printLine("Total # of successfully performed tests", nrOfTests);
-            printLine("# of tests completed each second", signingsPerSecond);
-            final Iterator<Entry<String, Long>> i = mTimes.entrySet().iterator();
+            this.printStream.println(CSI+"J"); // clear rest of screen on VT100 terminals.
+            printLine("Total # of successfully performed tests", new Integer(this.nrOfSuccesses));
+            printLine("Total # of failed tests", new Integer(this.nrOfFailures));
+            printLine("# of tests completed each second", testsPerSecond);
+            printLine("# of tests completed each second in last period", testsPerSecondInLastPeriod);
+            final Iterator<Entry<String, Long>> i = this.mTimes.entrySet().iterator();
             while( i.hasNext() ) {
                 final Entry<String, Long> entry = i.next();
-                printLine(entry.getKey(), (float)entry.getValue().longValue() / allThreadsTime);
+                printLine(entry.getKey(), new Float((float)entry.getValue().longValue() / allThreadsTime));
             }
-            printLine("Relative time spent with test client work", relativeWork);
-            printStream.print(CSI+(4+mTimes.size())+"A"); // move up 7 rows.
-            printStream.flush();
+            printLine("Relative time spent with test client work", new Float(relativeWork));
+            this.printStream.print(CSI+(6+this.mTimes.size())+"A"); // move up.
+            this.printStream.flush();
         }
         public void run() {
-            startTime = new Date().getTime();
+            this.startTime = new Date().getTime();
             while(true) {
                 synchronized(this) {
                     try {
-                        wait(STATISTIC_UPDATE_PERIOD_IN_SECONDS*1000);
+                        wait(PerformanceTest.this.STATISTIC_UPDATE_PERIOD_IN_SECONDS*1000);
                     } catch (InterruptedException e) {
                         // do nothing
                     }
@@ -240,11 +252,11 @@ public class PerformanceTest {
         private boolean inUse;
         Log() {
             try {
-                errorPrinter = new PrintWriter(new FileWriter("error.log"));
-                infoPrinter = new PrintWriter(new FileWriter("info.log"));
-                allPrinter = new PrintWriter(new FileWriter("all.log"));
-                resultObject = new ObjectOutputStream(new FileOutputStream("result.log", true));
-                inUse=false;
+                this.errorPrinter = new PrintWriter(new FileWriter("error.log"));
+                this.infoPrinter = new PrintWriter(new FileWriter("info.log"));
+                this.allPrinter = new PrintWriter(new FileWriter("all.log"));
+                this.resultObject = new ObjectOutputStream(new FileOutputStream("result.log", true));
+                this.inUse=false;
             } catch (IOException e) {
                 System.out.println("Error opening log file. "+e.getMessage());
                 System.exit(-1);
@@ -252,9 +264,9 @@ public class PerformanceTest {
             }
         }
         public void close() {
-            errorPrinter.close();
-            infoPrinter.close();
-            allPrinter.close();
+            this.errorPrinter.close();
+            this.infoPrinter.close();
+            this.allPrinter.close();
         }
         private class LogThread implements Runnable {
             final Object msg;
@@ -290,19 +302,19 @@ public class PerformanceTest {
                     }
                     try {
                         Log.this.inUse = true;
-                        if ( printer!=null ) {
-                            if ( doPrintDate ) {
-                                printer.print(currentDate + " : ");
+                        if ( this.printer!=null ) {
+                            if ( this.doPrintDate ) {
+                                this.printer.print(currentDate + " : ");
                             }
-                            printer.println(msg);
-                            if(t != null){
-                                t.printStackTrace(printer);
-                                printer.println();
+                            this.printer.println(this.msg);
+                            if(this.t != null){
+                                this.t.printStackTrace(this.printer);
+                                this.printer.println();
                             }
-                            printer.flush();
+                            this.printer.flush();
                         }
-                        if ( objectOutput!=null ) {
-                            objectOutput.writeObject(msg);
+                        if ( this.objectOutput!=null ) {
+                            this.objectOutput.writeObject(this.msg);
                         }
                     } catch( IOException e ) {
                         error("Logging fault", e);
@@ -317,18 +329,18 @@ public class PerformanceTest {
             new Thread(new LogThread(msg, t, printer, true)).start();
         }
         public void result(Object object ) {
-            new Thread(new LogThread(object, resultObject)).start();
+            new Thread(new LogThread(object, this.resultObject)).start();
         }
         public void error(String msg,Throwable t)  {
-            log(msg, t, errorPrinter);
-            log(msg, t, allPrinter);
+            log(msg, t, this.errorPrinter);
+            log(msg, t, this.allPrinter);
         }
         public void error(String msg)  {
             error(msg, null);
         }
         public void info(String msg,Throwable t) {
-            log(msg, t, infoPrinter);
-            log(msg, t, allPrinter);
+            log(msg, t, this.infoPrinter);
+            log(msg, t, this.allPrinter);
         }
         public void info(String msg) {
             info(msg,null);
