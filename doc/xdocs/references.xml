@@ -20,7 +20,9 @@
 		<li> <a href="http://www.faqs.org/rfcs/rfc3280.html">RFC 3280</a> - Certificate and CRL profile</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2253.html">RFC 2253</a> - DN string representation</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2560.html">RFC 2560</a> - OCSP</li>
+		<li> <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a> - Lightweight OCSP Profile</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2256.html">RFC 2256</a> - X.500(96) User Schema for use with LDAPv3</li>
+		<li> <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> - HTTP/1.1</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2818.html">RFC 2818</a> - HTTP Over TLS</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2595.html">RFC 2595</a> - Using TLS with IMAP, POP3 and ACAP</li>
 		<li> <a href="http://www.ietf.org/rfc/rfc4945.txt">RFC 4945</a> - IP Security PKI Profile</li>
