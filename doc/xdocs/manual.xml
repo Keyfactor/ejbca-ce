@@ -3134,6 +3134,8 @@ You then got to identify your OCSs with the slot index. The "label" in the list 
 </p><p>
 When using a 1/n OCS one card of the OCS must be inserted when activating a CA. If the OCS is persistent then the card could be removed and you could then activate another CA by inserting its OCS.
 </p><p>
+To make the OCS persistent use the "-p" argument at "createocs" time, if this is not the case as soon as the card is removed then the cardset will unload itself.
+</p><p>
 When using k/n OCS where k>1 you got to load all OCSs to be used with preload and then start the application server also with preload. Example:
 </p><source>
 lars@milton:~/work/test/nCipher$ ~nfast/bin/preload -c 2of3_0 pause
@@ -3146,14 +3148,21 @@ lars@milton:~/work/test/nCipher$ ~nfast/bin/preload -c 2of3_1 exit
 When the application server then is started with preload, CAs defined for slot list index 2 and 4 could be activated. When activating a CA when running preload no PIN has to be given. Also when the application server is started with preload then only CAs of preloaded slots could be activated (not preloaded 1/n slots could not be used).
 </p>
 </subsection>
-<subsection name="nCipher netHSM load balancing">
-<p>If you load the same security world into two netHSMs it will work with load balancing.
+<subsection name="nCipher load balancing">
+<p>
+If you want to use the Loadsharing with multiple modules, be it PCI 
+cards of NetHSM's then you must ensure you have a 1/N OCS and the N 
+quorum to be able to have enough cards to be inserted in every HSM you 
+want to load balance the key at server/CA start up when logging in.
+</p><p>
+Same security world got to be loaded in all modules participating.
+</p><p>
 After setting up the first netHSM, do the following on the second:
 <ul>
 <li>Use the panel of the second netHSM to configure the rfs</li>
 <li>Use the panel of the second netHSM to load the security world</li>
 <li>Use the panel of the second netHSM to configure clients</li>
-<li>on each client run: /opt/nfast/bin/nethsmenroll -p</li> 
+<li>on each client run: /opt/nfast/bin/nethsmenroll</li> 
 </ul>
 </p><p>
 With load balancing you need to have CKNFAST_LOADSHARING=1. Preload implicitly sets CKNFAST_LOADSHARING.
