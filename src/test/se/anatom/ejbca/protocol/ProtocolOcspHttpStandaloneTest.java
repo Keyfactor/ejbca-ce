@@ -168,8 +168,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.generate();
-        
-    	String reqString = new String(Base64.encode(req.getEncoded(), false)).replace("+", "%2B").replace("/", "%2F");
+    	String reqString = new String(Base64.encode(req.getEncoded(), false));
     	URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + URLEncoder.encode(reqString, "UTF-8"));
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         assertEquals("Response code did not match. ", 200, con.getResponseCode());

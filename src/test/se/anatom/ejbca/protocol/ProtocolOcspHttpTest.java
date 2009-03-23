@@ -53,6 +53,7 @@ import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
+import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
@@ -645,6 +646,47 @@ public class ProtocolOcspHttpTest extends TestCase {
      * Just verify that a simple GET works.
      */
     public void test13GetRequests() throws Exception {
+    	// Se if the OCSP servlet can read both encoded and non-encoded requests
+    	final String urlEncReq = httpReqPath + '/' + resourceOcsp + '/' + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCCzdx5N0v9XwoiEwHzAdBgkrBgEFBQcwAQIEECrZswo%2Fa7YW%2Bhyi5Sn85fs%3D";
+        URL url = new URL(urlEncReq);
+        System.out.println(url.toString());	// Dump the exact string we use for access
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        assertEquals("Response code did not match. (Make sure you allow encoded slashes in your appserver.. add -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true in Tomcat)", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
+    	final String plainReq = httpReqPath + '/' + resourceOcsp + '/' + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB+Aevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCCzdx5N0v9XwoiEwHzAdBgkrBgEFBQcwAQIEECrZswo/a7YW+hyi5Sn85fs=";
+        url = new URL(plainReq);
+        System.out.println(url.toString());	// Dump the exact string we use for access
+        con = (HttpURLConnection)url.openConnection();
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
+    	final String dubbleSlashNonEncReq = "http://127.0.0.1:8080/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB%2F/HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
+        url = new URL(dubbleSlashNonEncReq);
+        System.out.println(url.toString());	// Dump the exact string we use for access
+        con = (HttpURLConnection)url.openConnection();
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
+    	final String dubbleSlashEncReq = "http://127.0.0.1:8080/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB%2F%2FHJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
+        url = new URL(dubbleSlashEncReq);
+        System.out.println(url.toString());	// Dump the exact string we use for access
+        con = (HttpURLConnection)url.openConnection();
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
         loadUserCert(caid);

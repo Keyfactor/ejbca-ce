@@ -220,8 +220,7 @@ public class OCSPUnidClient {
     	HttpURLConnection con;
     	if (useGet) {
         	String b64 = new String(Base64.encode(ocspPackage, false));
-        	String req = b64.replace("+", "%2B").replace("/", "%2F");
-        	String urls = URLEncoder.encode(req, "UTF-8");
+        	String urls = URLEncoder.encode(b64, "UTF-8");
         	URL url = new URL(httpReqPath + '/' + urls);
             con = (HttpURLConnection)url.openConnection();
     	} else {

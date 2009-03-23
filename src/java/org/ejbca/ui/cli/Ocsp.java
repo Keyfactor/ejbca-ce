@@ -124,9 +124,10 @@ public class Ocsp extends ClientToolBox {
                 this.client = OCSPUnidClient.getOCSPUnidClient(keyStoreFileName, keyStorePassword, ocspurl, keyStoreFileName!=null, false);
             }
             public boolean doIt() throws Exception {
-                OCSPUnidResponse response = client.lookup(serialNrs.getRandom(), cacert, useGet);
+            	BigInteger currentSerialNumber = serialNrs.getRandom();
+                OCSPUnidResponse response = client.lookup(currentSerialNumber, cacert, useGet);
                 if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
-                    performanceTest.getLog().error("Error querying OCSP server. Error code is: "+response.getErrorCode());
+                    performanceTest.getLog().error("Error querying OCSP server for " + currentSerialNumber+" . Error code is: "+response.getErrorCode());
                     return false;
                 }
                 if (response.getHttpReturnCode() != 200) {

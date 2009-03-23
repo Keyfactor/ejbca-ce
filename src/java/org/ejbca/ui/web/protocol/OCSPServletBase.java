@@ -752,8 +752,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		m_log.trace("<doGet()");
 	} // doGet
 
-	/** Reads the request bytes and verifies min and max size of the request. If an error occurs it throws a MalformedRequestException. 
-	 * The calling process should then send back an approriate HTTP error code, HttpServletResponse.SC_BAD_REQUEST.
+	/**
+	 * Reads the request bytes and verifies min and max size of the request. If an error occurs it throws a MalformedRequestException. 
 	 * Can get request bytes both from a HTTP GET and POST request
 	 * 
 	 * @param request
@@ -804,24 +804,34 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				}				
 			} else if (StringUtils.equals(method, "GET")) {
 				// GET request
-				StringBuffer url = request.getRequestURL();
-//				if (m_log.isDebugEnabled()) {
-//					m_log.debug("URL: "+url.toString());
-//				}
+				final StringBuffer url = request.getRequestURL();
 				// RFC2560 A.1.1 says that request longer than 255 bytes SHOULD be sent by POST, we support GET for longer requests anyway.
 				if (url.length() <= MAX_OCSP_REQUEST_SIZE) {
-					String pathInfo = request.getPathInfo();
-					if (pathInfo != null && pathInfo.length() > 0) {
+					final String decodedRequest;
+					try {
+						// We have to extract the pathInfo manually, to avoid multiple slashes being converted to a single
+						final String fullServletpath = request.getContextPath() + request.getServletPath();
+						final String requestString = url.substring(url.indexOf(fullServletpath) + fullServletpath.length() + 1);
+						decodedRequest = URLDecoder.decode(requestString, "UTF-8").replaceAll(" ", "+");
+//						if (m_log.isDebugEnabled()) {
+//							m_log.debug("URL: "+url.toString());
+//						}
+					} catch (Exception e) {
+						String msg = intres.getLocalizedMessage("ocsp.badurlenc");
+						m_log.info(msg);
+						throw new MalformedRequestException(e);
+					}
+					if (decodedRequest != null && decodedRequest.length() > 0) {
 						if (m_log.isDebugEnabled()) {
 							// Don't log the request if it's too long, we don't want to cause denial of service by filling log files or buffers.
-							if (pathInfo.length() < 2048) {
-								m_log.debug("pathInfo: "+pathInfo);
+							if (decodedRequest.length() < 2048) {
+								m_log.debug("decodedRequest: "+decodedRequest);
 							} else {
-								m_log.debug("pathInfo too long to log: "+pathInfo.length());
+								m_log.debug("decodedRequest too long to log: "+decodedRequest.length());
 							}
 						}
 						try {
-							ret = org.ejbca.util.Base64.decode(URLDecoder.decode(pathInfo.substring(1), "UTF-8").getBytes());
+							ret = org.ejbca.util.Base64.decode(decodedRequest.getBytes());
 						} catch (Exception e) {
 							String msg = intres.getLocalizedMessage("ocsp.badurlenc");
 							m_log.info(msg);
