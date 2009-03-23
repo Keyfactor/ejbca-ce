@@ -62,7 +62,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
 
     private static final int myCaId = -1688117755;	//1584670546;
-    private static final String myOcspIp = "127.0.0.1";
+    private static final String myOcspIp = "ocsp"; //"127.0.0.1";	//"ocsp";
     
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
@@ -80,6 +80,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
 
     protected void setCAID(ICAAdminSessionRemote casession) {
         caid = myCaId;
+    }
+    
+    protected void loadUserCert(int caid) throws Exception {
+    	ocspTestCert = getTestCert(false);
     }
     
     public void test01Access() throws Exception {
@@ -115,10 +119,12 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         Iterator i = certs.iterator();
         while ( i.hasNext() ) {
             X509Certificate cert = (X509Certificate)i.next();
-            if ( isRevoked==(store.isRevoked(admin, cert.getIssuerDN().toString(), cert.getSerialNumber()).getReason()!=RevokedCertInfo.NOT_REVOKED) )
+            if ( isRevoked==(store.isRevoked(admin, cert.getIssuerDN().toString(), cert.getSerialNumber()).getReason()!=RevokedCertInfo.NOT_REVOKED) ) {
                 return cert;
+            }
         }
-        assertNotNull("Could not fetch certificate.", null);
+        assertNotNull("To run this test you must create a user named ocspTest that has at least two certificates and at" +
+        		"least one of them must be revoked. (Could not fetch certificate.)", null);
         return null;
     }
 

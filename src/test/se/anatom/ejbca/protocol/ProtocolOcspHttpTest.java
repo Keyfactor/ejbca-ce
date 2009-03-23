@@ -14,7 +14,6 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -132,7 +131,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     protected static int caid = 0;
     protected static Admin admin;
     protected static X509Certificate cacert = null;
-    private static X509Certificate ocspTestCert = null;
+    protected static X509Certificate ocspTestCert = null;
     private static X509Certificate unknowncacert = null;
 
     protected OcspJunitHelper helper = null;
@@ -258,8 +257,8 @@ public class ProtocolOcspHttpTest extends TestCase {
         // send OCSP req and get bad status
         // (send crap message and get good error)
 
-        // Make user and ocspTestCert that we know...
-        createUserCert(caid);
+        // Get user and ocspTestCert that we know...
+        loadUserCert(caid);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -380,6 +379,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     }
 
     public void test07SignedOcsp() throws Exception {
+    	assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
 
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
@@ -464,7 +464,8 @@ public class ProtocolOcspHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test08OcspEcdsaGood() throws Exception {
-
+    	assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
+    	
         int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "prime192v1");
         helper.reloadKeys();
@@ -497,7 +498,8 @@ public class ProtocolOcspHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
-
+    	assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
+    	
         int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
         helper.reloadKeys();
@@ -534,9 +536,8 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
 
-        // Make user and ocspTestCert that we know...
-        createUserCert(caid);
-        
+        // Get user and ocspTestCert that we know...
+        loadUserCert(caid);
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         Hashtable exts = new Hashtable();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
@@ -646,6 +647,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     public void test13GetRequests() throws Exception {
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
+        loadUserCert(caid);
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.generate();
         SingleResp[] singleResps = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespGenerator.SUCCESSFUL, 200);
@@ -687,6 +689,7 @@ public class ProtocolOcspHttpTest extends TestCase {
      * be RFC 2560 compatible and support this as long as the total request URL is smaller than 256 bytes.
      */
     public void test15MultipleGetRequests() throws Exception {
+        loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -711,8 +714,16 @@ public class ProtocolOcspHttpTest extends TestCase {
         Object obj1 = context.lookup("CAAdminSession");
         ICAAdminSessionHome cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
         ICAAdminSessionRemote cacheAdmin = cacheHome.create();
-        cacheAdmin.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
-        cacheAdmin.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
+        try {
+            cacheAdmin.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
+        } catch(Exception e) {
+        	log.info("Could not remove CA with SubjectDN CN=OCSPECDSATEST");
+        }
+        try {
+        	cacheAdmin.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
+        } catch(Exception e) {
+        	log.info("Could not remove CA with SubjectDN CN=OCSPECDSAIMPCATEST");
+        }
         log.trace("<test99RemoveECDSACA()");
     }
 
@@ -829,6 +840,10 @@ public class ProtocolOcspHttpTest extends TestCase {
         assertTrue("Creating ECDSA CA failed", ret);
         log.trace("<addECDSACA()");
         return cacert;
+    }
+    
+    protected void loadUserCert(int caid) throws Exception {
+    	createUserCert(caid);
     }
     
     private KeyPair createUserCert(int caid) throws AuthorizationDeniedException,

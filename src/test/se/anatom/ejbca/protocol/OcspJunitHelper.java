@@ -62,7 +62,7 @@ public class OcspJunitHelper extends TestCase {
             return null; // if it is an http error code we don't need to test any more
         }
         // Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
-        assertNotNull(con.getContentType());
+        assertNotNull("No Content-Type in reply.", con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(inputStreamToBytes(con.getInputStream())));
         assertEquals("Response status not the expected.", respCode, response.getStatus());
@@ -139,16 +139,8 @@ public class OcspJunitHelper extends TestCase {
     }
     
     protected void reloadKeys() throws IOException, OCSPException, NoSuchProviderException {
-        // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp+"?reloadkeys=true");
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
-        // we are going to do a POST
-        con.setDoOutput(true);
-        con.setRequestMethod("GET");
-
-        // POST it
-        con.setRequestProperty("reloadkeys", "true");
-        con.connect();
         assertEquals("Response code", 200, con.getResponseCode());
         con.disconnect();
     }
