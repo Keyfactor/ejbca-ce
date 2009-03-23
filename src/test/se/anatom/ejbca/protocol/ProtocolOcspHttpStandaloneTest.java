@@ -62,7 +62,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
 
     private static final int myCaId = -1688117755;	//1584670546;
-    private static final String myOcspIp = "ocsp"; //"127.0.0.1";	//"ocsp";
+    private static final String myOcspIp = "127.0.0.1";	//"ocsp";
     
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
