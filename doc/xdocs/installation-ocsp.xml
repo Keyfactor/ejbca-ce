@@ -568,10 +568,72 @@ actual OCSP consumers. HTTP cache headers is enabled by configuring configuring
   </p><p>
 When using RFC 5019 style HTTP headers, JBoss users should be aware that the
 Date header is overwritten with a cached value. Since generating the
-Date-string is computationlly heavy for regular small GET requests, it is
+Date-string is computationally heavy for regular small GET requests, it is
 generated about once per second. So a response will have a Last-Modified that
 is one second in the future from Date from time to time.
+  </p><p>
+A regular Apache HTTP server can be used for caching requests, load-balancing
+and dropping some unwanted requests:
   </p>
+  <source>
+&lt;VirtualHost *:80>
+        # Use as much memory as possible for the cache (in 1 kB blocks)
+        # 1GB of memory at ~2kB/ocsp request would hold about 500000 different requests
+        CacheEnable mem /
+        MCacheSize 1048576
+        MCacheMaxObjectCount 1000000
+        MCacheMinObjectSize 1
+        MCacheMaxObjectSize 4096
+
+        # Using disk-cache will allow a much larger pool of cached entires and the operation system
+        # will cache those files, but you are responsible for cleaning up old cache-entries using
+        # the "htcacheclean" tool. A disk cache will also live through a server restart.
+        # The user running apache has to have read/write access to "/var/cache/ocsp".
+        #CacheEnable disk /
+        #CacheRoot /var/cache/ocsp
+
+        # Ignore requests for uncached responses.. this will protect the OCSP from
+        # DOS attacks using "Cache-Control: no-cache" or "Pragma: no-cache"
+        CacheIgnoreCacheControl On
+
+        ProxyRequests Off
+
+        &lt;Location />
+                # Everybody is welcome here..
+                Allow from all
+                Order allow,deny
+
+                # ..or just those from networks that is supposed to use the service
+                #Deny from all
+                #Order deny,allow
+                #allow from 127.
+                #allow from 172.16.212.1
+
+                ProxyPassReverse balancer://mycluster-kerb/
+        &lt;/Location>
+
+        # Proxy requests to OCSP instances (only one machine currently configured)
+        &lt;Proxy balancer://mycluster-kerb>
+                # proxy_ajp has to be enabled for ajp-proxying
+                BalancerMember ajp://127.0.0.1:8009/ejbca/publicweb/status/ocsp
+                # proxy_http has to be enabled for http-proxying
+                #BalancerMember http://ocsp2.domain.org:8080/ejbca/publicweb/status/ocsp
+                #BalancerMember http://ocsp3.domain.org:8080/ejbca/publicweb/status/ocsp
+        &lt;/Proxy>
+
+        # We only want RFC 5019 URLs to be forwarded to the OCSP, the rest should get a "404 Not found"
+        AllowEncodedSlashes On
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} get [NC]
+        RewriteRule ^/([a-zA-Z0-9+=/]+)$ balancer://mycluster-kerb/$1 [P,L]
+
+        # Possible values include: debug, info, notice, warn, error, crit,
+        # alert, emerg.
+        LogLevel debug
+        CustomLog /var/log/apache2/access.log combined
+        ErrorLog /var/log/apache2/error.log
+&lt;/VirtualHost>
+  </source>  
   </section>
 
 </body>

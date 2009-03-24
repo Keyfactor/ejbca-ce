@@ -811,7 +811,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					try {
 						// We have to extract the pathInfo manually, to avoid multiple slashes being converted to a single
 						final String fullServletpath = request.getContextPath() + request.getServletPath();
-						final String requestString = url.substring(url.indexOf(fullServletpath) + fullServletpath.length() + 1);
+						final String requestString = url.substring(Math.max(url.indexOf(fullServletpath), 0) + fullServletpath.length() + 1);
 						decodedRequest = URLDecoder.decode(requestString, "UTF-8").replaceAll(" ", "+");
 //						if (m_log.isDebugEnabled()) {
 //							m_log.debug("URL: "+url.toString());

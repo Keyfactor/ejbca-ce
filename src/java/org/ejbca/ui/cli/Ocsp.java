@@ -216,7 +216,7 @@ public class Ocsp extends ClientToolBox {
                 System.out.println("Usage 1: OCSP <KeyStoreFilename> <KeyStorePassword> <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName>  [<POST | GET>]");
                 System.out.println("Usage 2: OCSP <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName> [<POST | GET>]");
                 System.out.println("Usage 3: OCSP stress ...");
-                System.out.println("Keystore should be a PKCS12.");
+                System.out.println("Keystore should be a PKCS12. GET requests will not use a nonce.");
                 System.out.println("OCSPUrl is like: http://127.0.0.1:8080/ejbca/publicweb/status/ocsp or https://127.0.0.1:8443/ejbca/publicweb/status/ocsp");
                 System.out.println("OCSP response status is: GOOD="+OCSPUnidResponse.OCSP_GOOD+", REVOKED="+OCSPUnidResponse.OCSP_REVOKED+", UNKNOWN="+OCSPUnidResponse.OCSP_UNKNOWN);
                 System.out.println("OcspUrl can be set to 'null', in that case the program looks for an AIA extension containing the OCSP URI.");
