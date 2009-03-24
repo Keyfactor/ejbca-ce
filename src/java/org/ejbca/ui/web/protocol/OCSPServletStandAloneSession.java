@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -79,6 +80,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     final private String mStorePassword;
     final private CardKeys mCardTokenObject;
 	final private Map<Integer, SigningEntity> signEntity;
+	final private Map<Integer, SigningEntity> newSignEntity;
     final private P11Slot slot;
     final private String mP11Password;
     final private OCSPServletStandAlone servlet;
@@ -86,15 +88,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 
     OCSPServletStandAloneSession(ServletConfig config,
                                  OCSPServletStandAlone _servlet) throws ServletException {
-        this.signEntity = new HashMap<Integer, SigningEntity>();
+        this.signEntity = new ConcurrentHashMap<Integer, SigningEntity>();
+        this.newSignEntity = new HashMap<Integer, SigningEntity>();
         this.isActive = false;
         this.servlet = _servlet;
         try {
             final boolean isIndex;
             final String sharedLibrary = config.getInitParameter("sharedLibrary");
-            if ( sharedLibrary==null || sharedLibrary.length()<1 ) {
-                throw new ServletException("No shared library.");
-            }{
+            if ( sharedLibrary!=null && sharedLibrary.length()>0 ) {
                 final String sSlot;
                 final String sSlotRead = config.getInitParameter("slot");
                 if ( sSlotRead==null || sSlotRead.length()<1 ) {
@@ -109,10 +110,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     isIndex = false;
                 }
                 this.slot = P11Slot.getInstance(sSlot, sharedLibrary, isIndex, null, this);
+    			m_log.debug("sharedLibrary is: "+sharedLibrary);
+            } else {
+            	this.slot = null;
+            	m_log.debug("No shared P11 library.");
             }
             this.mP11Password = config.getInitParameter("p11password");
-			m_log.debug("sharedLibrary is: "+sharedLibrary);
-
 			this.mKeyPassword = config.getInitParameter("keyPassword");
 			if ( this.mKeyPassword==null || this.mKeyPassword.length()==0 ) {
 			    throw new ServletException("no keystore password given");
@@ -297,7 +300,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 final String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
                 m_log.warn(wMsg);
             }
-            this.signEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerHandler) );
+            this.newSignEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerHandler) );
             m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
         }
         return true;
@@ -473,7 +476,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 	    	m_log.trace("<loadPrivateKeys: using cache");
 			return;
 		}
-        this.signEntity.clear();
+        this.newSignEntity.clear();
         loadFromP11HSM(adm);
         final File dir = this.mKeystoreDirectoryName!=null ? new File(this.mKeystoreDirectoryName) : null;
         if ( dir!=null && dir.isDirectory() ) {
@@ -486,21 +489,36 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 }
             } else {
             	m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
-                if ( this.signEntity.size()<1 ) {
+                if ( this.newSignEntity.size()<1 ) {
                     throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());            	
                 }
             }
         } else {
         	m_log.debug((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
-            if ( this.signEntity.size()<1 ) {
+            if ( this.newSignEntity.size()<1 ) {
                 throw new ServletException((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
             }
         }
-        
-        // Hmm, I don't think we can ever get into this if clause
-        if ( this.signEntity.size()<1 ) {
+        // No P11 keys, there are files, but none are valid keys or certs for cards
+        if ( this.newSignEntity.size()<1 ) {
         	String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
             throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
+        }
+        // Replace old signEntity references with new ones or null if they no longer exist
+        Iterator<Integer> iterator = signEntity.keySet().iterator();
+        while (iterator.hasNext()) {
+        	Integer key = iterator.next();
+        	if (newSignEntity.get(key) != null) {
+            	signEntity.put(key, newSignEntity.get(key));
+        	} else {
+        		signEntity.remove(key);
+        	}
+        }
+        // Replace existing signEntity references and add new ones. (Yes, we have some overlap here..)
+        iterator = newSignEntity.keySet().iterator();
+        while (iterator.hasNext()) {
+        	Integer key = iterator.next();
+        	signEntity.put(key, newSignEntity.get(key));
         }
 
         m_log.debug("We have keys, returning");
