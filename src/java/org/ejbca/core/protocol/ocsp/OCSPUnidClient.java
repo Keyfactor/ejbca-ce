@@ -253,30 +253,22 @@ public class OCSPUnidClient {
         	}
         	return ret;
         }
-        ByteArrayOutputStream baos = null;
-        InputStream in = null;
-        byte[] respBytes = null;
-        try {
-            baos = new ByteArrayOutputStream();
-            // This works for small requests, and OCSP requests are small
-            in = con.getInputStream();
-            int b = in.read();
-            while (b != -1) {
-                baos.write(b);
-                b = in.read();
+        final OCSPResp response; {
+            final InputStream in = con.getInputStream();
+            if ( in!=null ) {
+                try {
+                    response = new OCSPResp(in);
+                } finally {
+                    in.close();
+                }
+            } else {
+                response = null;
             }
-            baos.flush();
-            in.close();
-            respBytes = baos.toByteArray();        	
-        } finally {
-        	if (baos != null) baos.close();
-        	if (in != null) in.close();
         }
-        if (respBytes == null) {
+        if (response == null) {
         	ret.setErrorCode(OCSPUnidResponse.ERROR_NO_RESPONSE);
         	return ret;
         }
-        final OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
         ret.setResp(response);
         final BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         if ( brep==null ) {
@@ -299,11 +291,10 @@ public class OCSPUnidClient {
 		final DERTaggedObject to = (DERTaggedObject)id.toASN1Object().toASN1Object();
 		final RespID respId;
         final X509Certificate[] chain = brep.getCerts("BC");
-        final X509Certificate cert = chain[0];
-        final PublicKey signerPub = cert.getPublicKey();
+        final PublicKey signerPub = chain[0].getPublicKey();
 		if (to.getTagNo() == 1) {
 			// This is Name
-			respId = new RespID(cert.getSubjectX500Principal());
+			respId = new RespID(chain[0].getSubjectX500Principal());
 		} else {
 			// This is KeyHash
 			respId = new RespID(signerPub);
@@ -312,17 +303,23 @@ public class OCSPUnidClient {
 			// Response responderId does not match signer certificate responderId!
 			ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERID);
 		}
-        boolean verify = brep.verify(signerPub, "BC");
-        if (!verify) {
+        if (!brep.verify(signerPub, "BC")) {
         	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNATURE);
         	return ret;
         }
-        // Also verify the signers certificate
-        try {
-            cert.verify(cacert.getPublicKey());        	 
-        } catch (SignatureException e) {
-        	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
-        	return ret;        	
+        // Verify the certificate chain.
+        for (int i=0; i<chain.length; i++) {
+            try {
+                chain[i].verify(chain[Math.min(i+1, chain.length-1)].getPublicKey());          
+            } catch (SignatureException e) {
+                ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
+                return ret;         
+            }
+        }
+        // the CA could either have signed the respons directly or else it might have been signed a special ocsp responder signing key with a certificate signed by the CA.
+        if ( !chain[0].equals(cacert) && !chain[1].equals(cacert) ) {
+            ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
+            return ret;         
         }
         String fnr = getFnr(brep);
         if (fnr != null) {
