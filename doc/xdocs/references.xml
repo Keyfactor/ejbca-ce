@@ -24,6 +24,7 @@
 		<li> <a href="http://www.faqs.org/rfcs/rfc2256.html">RFC 2256</a> - X.500(96) User Schema for use with LDAPv3</li>
 		<li> <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> - HTTP/1.1</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2818.html">RFC 2818</a> - HTTP Over TLS</li>
+		<li> <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a> - URI Generic Syntax</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2595.html">RFC 2595</a> - Using TLS with IMAP, POP3 and ACAP</li>
 		<li> <a href="http://www.ietf.org/rfc/rfc4945.txt">RFC 4945</a> - IP Security PKI Profile</li>
 		<li> <a href="http://www.ietf.org/rfc/rfc5055.txt">RFC 5055</a> - Server-Based Certificate Validation Protocol (SCVP)</li>

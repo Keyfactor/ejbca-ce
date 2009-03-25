@@ -810,6 +810,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					final String decodedRequest;
 					try {
 						// We have to extract the pathInfo manually, to avoid multiple slashes being converted to a single
+						// According to RFC 2396 2.2 chars only have to encoded if they conflict with the purpose, so
+						// we can for example expect both '/' and "%2F" in the request.
 						final String fullServletpath = request.getContextPath() + request.getServletPath();
 						final String requestString = url.substring(Math.max(url.indexOf(fullServletpath), 0) + fullServletpath.length() + 1);
 						decodedRequest = URLDecoder.decode(requestString, "UTF-8").replaceAll(" ", "+");
