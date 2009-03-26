@@ -159,6 +159,34 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     }
 
     /**
+     * Just verify that a both escaped and non-encoded GET requests work.
+     */
+    public void test13GetRequests() throws Exception {
+    	super.test13GetRequests();
+    	// See if the OCSP Servlet can also read escaped requests
+    	final String urlEncReq = httpReqPath + '/' + resourceOcsp + '/' + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCCzdx5N0v9XwoiEwHzAdBgkrBgEFBQcwAQIEECrZswo%2Fa7YW%2Bhyi5Sn85fs%3D";
+        URL url = new URL(urlEncReq);
+        System.out.println(url.toString());	// Dump the exact string we use for access
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        assertEquals("Response code did not match. (Make sure you allow encoded slashes in your appserver.. add -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true in Tomcat)", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
+    	final String dubbleSlashEncReq = httpReqPath + '/' + resourceOcsp + '/' + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB%2F%2FHJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
+        url = new URL(dubbleSlashEncReq);
+        System.out.println(url.toString());	// Dump the exact string we use for access
+        con = (HttpURLConnection)url.openConnection();
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
+    }
+    
+    /**
      * Verify the headers of a successful GET request.
      * ocsp.untilNextUpdate has to be configured for this test.
      */

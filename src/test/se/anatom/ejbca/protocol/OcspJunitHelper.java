@@ -101,8 +101,8 @@ public class OcspJunitHelper extends TestCase {
     protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException {
         // GET the OCSP request
     	String b64 = new String(Base64.encode(ocspPackage, false));
-    	String urls = URLEncoder.encode(b64, "UTF-8");
-    	URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + urls);
+    	//String urls = URLEncoder.encode(b64, "UTF-8");	// JBoss/Tomcat will not accept escaped '/'-characters by default
+    	URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + b64);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         if (con.getResponseCode() != httpCode) {
         	System.out.println("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
