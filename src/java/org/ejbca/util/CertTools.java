@@ -2918,5 +2918,22 @@ public class CertTools {
     	 return returnval;
     } // orderCertificateChain
 
+    /**
+     * @return true if the chains are nonempty, contain the same certificates in the same order
+     */
+    public static boolean compareCertificateChains(Certificate[] chainA, Certificate[] chainB) {
+    	if (chainA == null || chainB == null) {
+    		return false;
+    	}
+    	if (chainA.length != chainB.length) {
+    		return false;
+    	}
+    	for (int i=0; i< chainA.length; i++) {
+    		if (chainA[i] == null || !chainA[i].equals(chainB[i])) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
 
 } // CertTools

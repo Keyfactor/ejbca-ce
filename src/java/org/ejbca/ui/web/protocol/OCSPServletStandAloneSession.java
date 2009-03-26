@@ -296,7 +296,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         if ( chain!=null ) {
             final int caid = this.servlet.getCaid(chain[1]);
             final SigningEntity oldSigningEntity = this.signEntity.get(new Integer(caid));
-            if ( oldSigningEntity!=null && !oldSigningEntity.getCertificateChain().equals(chain) ) {
+            if ( oldSigningEntity!=null && !CertTools.compareCertificateChains(oldSigningEntity.getCertificateChain(), chain) ) {
                 final String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
                 m_log.warn(wMsg);
             }
