@@ -547,6 +547,19 @@ a remote batch job can be used to verify the database integrity periodically ins
   </p>
   </section>
 
+  <section name="OCSP GET">
+  <p>
+The GET OCSP request is defined in RFC 2560 A.1.1 as: <code>'GET {url}/{url-encoding of base-64 encoding
+of the DER encoding of the OCSPRequest}'</code>. A base64-encoded request can contain the reserved
+characters '+', '/' and '=', but will be handled correctly both in their %-escaped and original form
+by the responder, since it's unclear if they do conflict as defined in RFC 2395 2.2. 
+  </p><p>
+Not all web-product handles the encoded '/' (%2F) nicely. JBoss/Tomcat has to be started with
+<code>-Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true</code> added to JAVA_OPT in
+JBOSS_HOME/bin/run.conf.
+  </p>
+  </section>
+
   <section name="Responses with longer validity and caching">
   <p>
 <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> defines thisUpdate, nextUpdate and producedAt. producedAt is always
@@ -621,8 +634,9 @@ and dropping some unwanted requests:
                 #BalancerMember http://ocsp3.domain.org:8080/ejbca/publicweb/status/ocsp
         &lt;/Proxy>
 
-        # We only want RFC 5019 URLs to be forwarded to the OCSP, the rest should get a "404 Not found"
-        AllowEncodedSlashes On
+        # We only want RFC 5019 compliant URLs to be forwarded to the OCSP, the rest
+        # should get a "404 Not found" or "414 Request-URI Too Large."
+        LimitRequestLine 257
         RewriteEngine On
         RewriteCond %{REQUEST_METHOD} get [NC]
         RewriteRule ^/([a-zA-Z0-9+=/]+)$ balancer://mycluster-kerb/$1 [P,L]
