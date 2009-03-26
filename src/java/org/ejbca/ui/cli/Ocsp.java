@@ -261,6 +261,7 @@ public class Ocsp extends ClientToolBox {
 	                case OCSPUnidResponse.OCSP_REVOKED: System.out.println("revoked)"); break;
 	                case OCSPUnidResponse.OCSP_UNKNOWN: System.out.println("unknown)"); break;
                 }
+                System.out.println("producedAt: " + response.getProducedAt() + "  thisUpdate: " + response.getThisUpdate() + "  nextUpdate: " + response.getNextUpdate());
                 if (response.getFnr() != null) {
                     System.out.println("Returned Fnr is: "+response.getFnr());            	
                 }            	
