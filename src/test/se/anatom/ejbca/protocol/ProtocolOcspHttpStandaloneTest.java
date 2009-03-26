@@ -51,12 +51,12 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-/** Tests http pages of a standalone ocsp
+/** Tests HTTP pages of a stand-alone OCSP
  * To run this test you must create a user named ocspTest that has at least two certificates and
  * at least one of them must be revoked.
  * 
- * Change the adress 127.0.0.1 to where you standalone OCSP server is running.
- * Change caid to the CA that ocspTest blongs to
+ * Change the address 127.0.0.1 to where you stand-alone OCSP server is running.
+ * Change caid to the CA that ocspTest belongs to
  **/
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
