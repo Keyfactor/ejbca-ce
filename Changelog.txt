@@ -1,3 +1,35 @@
+3.8.2, 2009-03-27
+---
+New Feature
+    * [ECA-552] - Add support for nextUpdate, thisUpdate and producedAt in OCSP responses
+    * [ECA-1124] - Configurable to use HTTP headers for standalone OCSP
+    * [ECA-1053] - Pseudonym as a subject DN attribute
+    * [ECA-1133] - Configurable in ExternalOCSPPublisher to only publish certificates with and OCSP URI extension.
+
+Improvement
+    * [ECA-1123] - Create dummy object for TransactionLogger and AuditLogger
+    * [ECA-1088] - Default public exponent for lunaHSM.sh should be 65537 (0x1001)
+    * [ECA-1055] - Support OCSP by HTTP GET
+    * [ECA-1117] - Use info instead of error messages in Standalone OCSP Responder.
+    * [ECA-1144] - Add "userPassword" attribute in LDAP publisher  
+    * [ECA-1114] - Add street DN component
+    * [ECA-1096] - Improve handling of invalid requests and streams in OCSP responder
+    * [ECA-1146] - Stress Test does not print out no of failed tests
+    * [ECA-748] - Order certificates in view certificates with newest first
+    * [ECA-1121] - Unnecessary signing operations      
+Bug
+    * [ECA-1158] - CA-certificate, but no signing key from a CA on the external OCSP generates an Exception
+    * [ECA-1141] - CRL Distribution Point in CRLs must be encapsulated into an Issuing Distribution Point
+    * [ECA-1092] - Code not thread-safe in certificate-request Servlet
+    * [ECA-1154] - Concurrency issue when reloading soft keys for external OCSP responder
+    * [ECA-1113] - JCE error on JBoss 5 on some platforms  
+    * [ECA-1148] - ServiceData cached in bean making synchronization between cluster nodes fail.
+    * [ECA-1090] - Wrong encoding of issuer DN on retrieval public web pages
+    * [ECA-1150] - Wrong language tag for "Certificate Validity End Time" in viewendentity.jsp
+    * [ECA-1095] - Allow comma in directoryName subject alt names
+    * [ECA-1145] - CvcRequestMessage not serializable  
+    * [ECA-1143] - Freshest CRL is lost when creating a new CA  
+
 3.8.1, 2009-01-29
 ---
 Improvement

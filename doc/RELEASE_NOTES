@@ -6,7 +6,7 @@ install and configure the RA CA service in EJBCA 3.9.
 
 EJBCA 3.8.2
 -----------
-This is a minor release addingimprovements and bugfixes
+This is a minor release adding improvements and bugfixes
 Read the changelog for details.
 - Add street and pseudonym DN attributes.
 - OCSP improvements, RFC 5019, nextUpdate, support for requests using GET, improved configuration and error handling.
