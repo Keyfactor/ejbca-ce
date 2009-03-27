@@ -252,15 +252,29 @@ Note, that this can usually not be done from a windows machine, to a Linux machi
 
   <section name="Running several responders">
   <p>
-In many case it is desirable to have several responders on different computers. This is easily
-achieved if it is a mysql database that EJBCA is publishing to (see section "Building and
-configuring EJBCA"). All you have to do is to set up the publishing database as a master. Then one
-slave data base is created on each computer that should host a responder.
-How to do it is described in the mysql documentation. Depending on which which version you are using
-please read one of the followings:<br/>
-http://dev.mysql.com/doc/refman/5.0/en/replication-howto.html
-<br/>
-http://dev.mysql.com/doc/refman/5.1/en/replication-howto.html
+Additional OCSP DataSources for OCSP responders have to be added manually. The easiest way to do this
+on JBoss is to clone the initially deployed OCSP DataSource JBOSS_HOME/server/default/deploy/ocsp-ds.xml
+to JBOSS_HOME/server/default/deploy/ocsp2-ds.xml and change 
+  </p>
+<source>
+      &lt;jndi-name>OcspDS&lt;/jndi-name>
+      &lt;connection-url>jdbc:mysql://ocsp1.domain.org:3306/ejbca&lt;/connection-url>
+</source>
+  <p>to</p>
+<source>
+      &lt;jndi-name>Ocsp2DS&lt;/jndi-name>
+      &lt;connection-url>jdbc:mysql://ocsp2.domain.org:3306/ejbca&lt;/connection-url>
+</source>
+  <p>
+and configure an additional publisher to use this new DataSource 'java:/Ocsp2DS'.
+  </p>
+  <p>
+An alternative approach for MySQL users is to use the tools for database replication. Either you could
+replicate CertificateData from you master EJBCA database to slave-responders or you could publish
+to a master OCSP responders database that in turn is replicated to the other responders. How to do it
+is described in the mysql documentation. Depending on which which version you are using please read one
+of the followings: <a href="http://dev.mysql.com/doc/refman/5.0/en/replication-howto.html">MySQL 5.0 Replication Howto</a> 
+<a href="http://dev.mysql.com/doc/refman/5.1/en/replication-howto.html">MySQL 5.1 Replication Howto</a>
   </p>
   </section>
 
