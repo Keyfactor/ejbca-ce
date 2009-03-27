@@ -59,7 +59,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
-import org.ejbca.ui.web.protocol.OCSPServletStandAlone.SigningEntity;
 import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
