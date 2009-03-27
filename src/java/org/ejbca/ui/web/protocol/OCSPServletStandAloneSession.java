@@ -59,6 +59,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
+import org.ejbca.ui.web.protocol.OCSPServletStandAlone.SigningEntity;
 import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
@@ -710,6 +711,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     }
     OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         SigningEntity se = this.signEntity.get(new Integer(caid));
+        if ( se==null ) {
+        	if (m_log.isDebugEnabled()) {
+            	m_log.debug("No key is available for caid=" + caid + " even though a valid certificate was present. Trying to use the default responder's key instead.");
+        	}
+        	se = this.signEntity.get(new Integer(this.servlet.getCaid(null)));	// Use the key issued by the default responder ID instead
+        }
         if ( se!=null ) {
             return se.sign(request);            
         }

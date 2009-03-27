@@ -1038,7 +1038,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					// on this server, we sign the response with the default responderId (from params in web.xml).
 					// We have to look up the ca-certificate for each certId in the request though, as we will check
 					// for revocation on the ca-cert as well when checking for revocation on the certId. 
-					cacert = m_caCertCache.findByHash(certId);
+					cacert = m_caCertCache.findByHash(certId);	// Get the issuer of certId
 					if (cacert == null) {
 						// We could not find certificate for this request so get certificate for default responder
 						cacert = m_caCertCache.findLatestBySubjectDN(m_defaultResponderId);
