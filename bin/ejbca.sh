@@ -59,6 +59,11 @@ fi
 # discard $1 from the command line args
 shift
 
+x=`cat "$EJBCA_HOME/conf/ejbca.properties" | grep appserver.home | grep -v "#appserver"`
+if [ -d "${x#*=}" ] ; then
+	APPSRV_HOME="${x#*=}"
+fi 
+
 # J2EE server classpath
 if [ ! -n "$APPSRV_HOME" ]; then
     if [ -n "$JBOSS_HOME" ]; then
@@ -84,7 +89,7 @@ if [ -n "$APPSRV_HOME" ]; then
     fi
 else
     echo "Could not find a valid J2EE server for JNDI provider.." 1>&2
-    echo "Specify a APPSRV_HOME environment variable" 1>&2
+    echo "Configure appserver.home in ejbca.properties or specify a APPSRV_HOME environment variable" 1>&2
     exit 1
 fi
 

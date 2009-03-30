@@ -25,6 +25,23 @@ if %class_name% == "" (
 )
 rem echo Class name to run is %class_name%
 
+rem library classpath
+set EJBCA_HOME=..
+rem It must work to call both as bin\ejbca.cmd or from within bin
+if not exist ejbca.cmd set EJBCA_HOME=.
+set EJBCA_CP=%EJBCA_HOME%\lib\ldap.jar;%EJBCA_HOME%\lib\log4j.jar;%EJBCA_HOME%\lib\bcprov-jdk15.jar;%EJBCA_HOME%\lib\bcmail-jdk15.jar;%EJBCA_HOME%\lib\cert-cvc.jar;%EJBCA_HOME%\lib\commons-lang-2.4.jar
+set CP=%EJBCA_HOME%\tmp\bin\classes
+
+rem check that we have built the classes
+if not exist %CP% (
+    echo You must build EJBCA before using the cli, use 'ant'.
+    goto end
+)
+
+For /f "tokens=1,2 delims==" %%a in ("%EJBCA_HOME%\conf\ejbca.properties") Do (
+	If "%%a"=="appserver.home" set APPSRV_HOME=%%b
+)
+
 rem J2EE server classpath
 set J2EE_DIR=""
 set J2EE_CP=""
@@ -57,19 +74,6 @@ if not "%APPSRV_HOME%" == ""  (
     goto end
 )
 rem echo J2EE directory is %J2EE_DIR%
-
-rem library classpath
-set EJBCA_HOME=..
-rem It must work to call both as bin\ejbca.cmd or from within bin
-if not exist ejbca.cmd set EJBCA_HOME=.
-set EJBCA_CP=%EJBCA_HOME%\lib\ldap.jar;%EJBCA_HOME%\lib\log4j.jar;%EJBCA_HOME%\lib\bcprov-jdk15.jar;%EJBCA_HOME%\lib\bcmail-jdk15.jar;%EJBCA_HOME%\lib\cert-cvc.jar;%EJBCA_HOME%\lib\commons-lang-2.4.jar
-set CP=%EJBCA_HOME%\tmp\bin\classes
-
-rem check that we have built the classes
-if not exist %CP% (
-    echo You must build EJBCA before using the cli, use 'ant'.
-    goto end
-)
 
 rem Due to short limit of windows command line, we can not use the below to
 rem automgically construct the classpath, as we can du with unices.
