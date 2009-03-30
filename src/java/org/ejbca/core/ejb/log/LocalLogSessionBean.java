@@ -449,7 +449,10 @@ public class LocalLogSessionBean extends BaseSessionBean {
     				getLogSession().doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
     			}
     		} catch (Throwable e) {
-    			String msg = intres.getLocalizedMessage("log.errormissingentry");            	
+            	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
+            			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
+               			+CertTools.getIssuerDN(certificate))+" "+event+" "+comment+" "+ex));
+    			String msg = intres.getLocalizedMessage("log.errormissingentry");
     			log.error(msg, e);
     		}
         }

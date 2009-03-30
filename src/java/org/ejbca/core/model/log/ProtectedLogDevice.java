@@ -16,6 +16,8 @@ package org.ejbca.core.model.log;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -452,20 +454,31 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		}
 		ProtectedLogEventIdentifier[] linkedInEventIdentifiers = new ProtectedLogEventIdentifier[1];
 		linkedInEventIdentifiers[0] = new ProtectedLogEventIdentifier(nodeGUID, counter-1);
+		byte[] linkedInEventsHash = null;
+		try {
+			MessageDigest messageDigest = MessageDigest.getInstance(protectionHashAlgorithm, "BC");
+			linkedInEventsHash = messageDigest.digest(((HashTime) lastProtectedLogRowHashTime.get(counter-1)).getHash());
+		} catch (NoSuchAlgorithmException e1) {
+			// Nothing to do about it.. the has will be null
+		} catch (NoSuchProviderException e1) {
+			// Nothing to do about it.. the has will be null
+		}
 		ProtectedLogEventRow protectedLogEventRow = new ProtectedLogEventRow(
 				admininfo.getAdminType(), admininfo.getAdminData(), caid, module, time.getTime(), username, certificateSerialNumber, 
 				certificateIssuerDN, event, comment, new ProtectedLogEventIdentifier(nodeGUID, counter), nodeIP, linkedInEventIdentifiers,
-				((HashTime) lastProtectedLogRowHashTime.get(counter)).getHash(), protectionHashAlgorithm, protectedLogToken.getIdentifier(),
+				linkedInEventsHash, protectionHashAlgorithm, protectedLogToken.getIdentifier(),
 				protectedLogToken.getProtectionAlgorithm(), null);
 		try {
 			getProtectedLogSession().addProtectedLogEventRow(protectedLogEventRow);
 		} catch (Exception e) {
-        	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
-					+certificate+" "+event+" "+comment+" "+exception, e.getMessage()));
+        	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admininfo.getAdminType()+" "+admininfo.getAdminData()+" "
+        			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
+        			+CertTools.getIssuerDN(certificate))+" "+event+" "+comment+" "+exception));
 			return;
 		}
-    	log.error(intres.getLocalizedMessage("protectedlog.error.logunprotected",admininfo+" "+caid+" "+" "+module+" "+" "+time+" "+username+" "
-				+certificate+" "+event+" "+comment+" "+exception));
+    	log.error(intres.getLocalizedMessage("protectedlog.error.logunprotected",admininfo.getAdminType()+" "+admininfo.getAdminData()+" "
+    			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
+       			+CertTools.getIssuerDN(certificate))+" "+event+" "+comment+" "+exception));
 		lastProtectedLogRowHashTime.put(counter, new HashTime(protectedLogEventRow.calculateHash(), protectedLogEventRow.getEventTime()));
 		counter++;
 	}
