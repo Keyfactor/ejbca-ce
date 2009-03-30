@@ -20,6 +20,7 @@ import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -51,17 +52,20 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 /**
  * This test requires:
  * cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=pbe, cmp.ra.authenticationsecret=password,
- * Allow CN, O, C in DN and rfc822Name, UPN in altNames in the end entity profile configured in cmp.properties
+ * Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override". Configure this profile in cmp.ra.certificateprofile=CmpRA
+ * Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check 'Modifyable'), MS UPN in altNames in the end entity profile. Configure this profile in cmp.ra.endentityprofile=CmpRA
  * 
  * You need a CMP tcp listener configured on port 5587.
  * (cmp.tcp.enabled=true, cmp.tcp.portno=5587)
+ * 
+ * 'ant clean; ant bootstrap' to deploy configuration changes.
  * 
  * @author tomas
  * @version $Id$
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
-    private static Logger log = Logger.getLogger(CrmfRAPbeRequestTest.class);
+    private static final Logger log = Logger.getLogger(CrmfRAPbeRequestTest.class);
 
     // This must be the same password as in cmp.properties if PBE is used.
     private static final String PBEPASSWORD = "password";
@@ -125,7 +129,16 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
+        Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_WEEK, 1);
+		cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds in validity
+		Date notBefore = cal.getTime();
+		cal.add(Calendar.DAY_OF_WEEK, 2);
+		cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds in validity
+		Date notAfter = cal.getTime();
+
+		// In this we also test validity override using notBefore and notAfter from above
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -140,6 +153,9 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
 		X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+		// Check that validity override works
+		assertTrue(cert.getNotBefore().equals(notBefore));
+		assertTrue(cert.getNotAfter().equals(notAfter));
 		String altNames = CertTools.getSubjectAlternativeName(cert);
 		assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
 		assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -200,7 +216,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();

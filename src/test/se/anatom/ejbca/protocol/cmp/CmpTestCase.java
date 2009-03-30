@@ -117,10 +117,18 @@ public class CmpTestCase extends TestCase {
 		super(arg0);
 	}
 
-	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
-		myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
-		myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
+		org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+		if (notBefore != null) {
+			nb = new org.bouncycastle.asn1.x509.Time(notBefore);
+		}
+		org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+		if (notAfter != null) {
+			na = new org.bouncycastle.asn1.x509.Time(notAfter);
+		}
+		myOptionalValidity.setNotBefore(nb);
+		myOptionalValidity.setNotAfter(na);
 		
 		CertTemplate myCertTemplate = new CertTemplate();
 		myCertTemplate.setValidity( myOptionalValidity );
