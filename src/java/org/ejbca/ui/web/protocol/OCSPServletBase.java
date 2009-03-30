@@ -51,7 +51,6 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.CertificateStatus;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPResp;
@@ -61,6 +60,7 @@ import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.MalformedRequestException;
 import org.ejbca.core.model.ca.SignRequestException;
@@ -312,7 +312,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 
 	abstract OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
-	abstract RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber);
+    abstract CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber);
 
 	/** returns a CertificateCache of appropriate type */
 	abstract CertificateCache createCertificateCache(Properties prop);
@@ -875,9 +875,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			m_log.trace(">service()");
 		}
         mTransactionID += 1;
-		ITransactionLogger transactionLogger;
-		IAuditLogger auditLogger;
-		Date startTime = new Date();
+		final ITransactionLogger transactionLogger;
+		final IAuditLogger auditLogger;
+		final Date startTime = new Date();
 		if (mDoTransactionLog) {
 			transactionLogger = new TransactionLogger();
 		} else {
@@ -888,7 +888,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		} else {
 			auditLogger = new DummyAuditLogger();	// Ignores everything
 		}
-		String remoteAddress = request.getRemoteAddr();
+		final String remoteAddress = request.getRemoteAddr();
 		auditLogger.paramPut(IAuditLogger.OCSPREQUEST, ""); // No request bytes yet
 		auditLogger.paramPut(IAuditLogger.LOG_ID, mTransactionID);
 		auditLogger.paramPut(IAuditLogger.SESSION_ID, m_SessionID);
@@ -943,10 +943,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(ITransactionLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
 					if (m_reqMustBeSigned) {
 						// If it verifies OK, check if it is revoked
-						RevokedCertInfo rci = isRevoked(m_adm, CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
+						final CertificateStatus status = getStatus(m_adm, CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
 						// If rci == null it means the certificate does not exist in database, we then treat it as ok,
 						// because it may be so that only revoked certificates is in the (external) OCSP database.
-						if ((rci != null) && rci.isRevoked()) {
+						if ( status.equals(CertificateStatus.REVOKED) ) {
 							String serno = signercertSerNo.toString(16);
 							String infoMsg = intres.getLocalizedMessage("ocsp.infosigner.revoked", signercertSubjectName, signercertIssuerName, serno);
 							m_log.info(infoMsg);
@@ -1069,63 +1069,52 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					 *    been compromised, it MAY return the revoked state for all
 					 *    certificates issued by that CA.
 					 */
-					RevokedCertInfo rci;
-					// Check if the cacert (or the default responderid) is revoked
-					rci = isRevoked(m_adm, CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
-					if (null != rci && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
-						rci = null;
-					}
-					CertificateStatus certStatus = null; // null means good
+					final org.bouncycastle.ocsp.CertificateStatus certStatus;
 					transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); // it seems to be correct
-					if (null == rci) {
+                    // Check if the cacert (or the default responderid) is revoked
+                    final CertificateStatus cacertStatus = getStatus(m_adm, CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
+					if ( !cacertStatus.equals(CertificateStatus.REVOKED) ) {
 						// Check if cert is revoked
-						rci = isRevoked(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
-						if (null == rci) {
+						final CertificateStatus status = getStatus(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
+                        final String sStatus;
+						if (status.equals(CertificateStatus.NOT_AVAILABLE)) {
 							// No revocation info available for this cert, handle it
 							if (m_log.isDebugEnabled()) {
 								m_log.debug("Unable to find revocation information for certificate with serial '"
 										+ certId.getSerialNumber().toString(16) + "'"
 										+ " from issuer '" + cacert.getSubjectDN().getName() + "'");                                
 							}
-							String status = "good";
-							certStatus = null; // null means "good" in OCSP
-							transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
 							// If we do not treat non existing certificates as good 
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
 							// then we return unknown
 							if ( (!m_nonExistingIsGood) || (m_caCertCache.findByHash(certId) == null) ) {
-								status = "unknown";
+								sStatus = "unknown";
 								certStatus = new UnknownStatus();
 								transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN);
-							}
-							infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
-							m_log.info(infoMsg);
-							responseList.add(new OCSPResponseItem(certId, certStatus, untilNextUpdate));
-							transactionLogger.writeln();
-						} else {
-							// Revocation info available for this cert, handle it
-							if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
-								certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
-										new CRLReason(rci.getReason())));
-								transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
 							} else {
-								certStatus = null;
-							}
-							String status = "good";
-							transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
-							if (certStatus != null) {
-								status ="revoked";
-								transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
-							}
-							infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
-							m_log.info(infoMsg);
-							responseList.add(new OCSPResponseItem(certId, certStatus, untilNextUpdate));
-							transactionLogger.writeln();
+                                sStatus = "good";
+                                certStatus = null; // null means "good" in OCSP
+                                transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+                            }
+						} else if ( status.equals(CertificateStatus.REVOKED) ) {
+						    // Revocation info available for this cert, handle it
+						    sStatus ="revoked";
+						    certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(status.revocationDate),
+						                                                   new CRLReason(status.revocationReason)));
+						    transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
+						} else {
+						    sStatus = "good";
+						    certStatus = null;
+						    transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
 						}
+                        infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+                        m_log.info(infoMsg);
+                        responseList.add(new OCSPResponseItem(certId, certStatus, untilNextUpdate));
+                        transactionLogger.writeln();
 					} else {
-						certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
-								new CRLReason(rci.getReason())));
+						certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(cacertStatus.revocationDate),
+								new CRLReason(cacertStatus.revocationReason)));
 						infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 						m_log.info(infoMsg);
 						responseList.add(new OCSPResponseItem(certId, certStatus, untilNextUpdate));

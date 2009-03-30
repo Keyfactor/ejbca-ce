@@ -48,6 +48,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -175,13 +176,13 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     
     private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
     	String issuerDN = CertTools.getIssuerDN(cert);
-        RevokedCertInfo revokedInfo = isRevoked(adm, issuerDN, CertTools.getSerialNumber(cert));
-        if ( revokedInfo==null ) {
+        final CertificateStatus status = this.servlet.getStatus(adm, issuerDN, CertTools.getSerialNumber(cert));
+        if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
     		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN);
             m_log.warn(wMsg);
             return null;
         }
-        if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
+        if ( status.equals(CertificateStatus.REVOKED) ) {
     		String wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", CertTools.getSerialNumberAsString(cert), issuerDN);
             m_log.warn(wMsg);
             return null;
@@ -720,9 +721,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             return se.sign(request);            
         }
         throw new ExtendedCAServiceNotActiveException("No ocsp signing key for caid "+caid);
-    }
-    RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
-        return this.servlet.getStoreSessionOnlyData().isRevoked(adm, name, serialNumber);
     }
     CertificateCache createCertificateCache(Properties prop) {
 		return new CertificateCacheStandalone(prop);

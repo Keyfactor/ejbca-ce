@@ -193,13 +193,13 @@ public class CertificateDataUtil {
         }
     } // findCertificatesByType
 
-    static public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno,
-                                            CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
+    static public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno,
+                                              CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
         if (adapter.getLogger().isTraceEnabled()) {
-            adapter.getLogger().trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+            adapter.getLogger().trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(issuerDN);
+        final String dn = CertTools.stringToBCDNString(issuerDN);
 
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
@@ -211,29 +211,24 @@ public class CertificateDataUtil {
                 }
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
-                	RevokedCertInfo revinfo = null;
-                	CertificateDataLocal data = (CertificateDataLocal) iter.next();
+                	final CertificateDataLocal data = (CertificateDataLocal) iter.next();
                 	if (protectHome != null) {
                 		verifyProtection(data, protectHome, adapter);
                 	}
-                	revinfo = new RevokedCertInfo(data.getFingerprint(), serno, new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
-                	// Make sure we have it as NOT revoked if it isn't
-                	if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
-                		revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
-                	}
+                    final CertificateStatus result = CertificateStatus.getIt(data);
                 	if (adapter.getLogger().isTraceEnabled()) {
-                		adapter.getLogger().trace("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                		adapter.getLogger().trace("<getStatus() returned " + result + " for cert number "+serno);
                 	}
-                	return revinfo;
+                	return result;
                 }
             }
             if (adapter.getLogger().isTraceEnabled()) {
-            	adapter.getLogger().trace("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
+            	adapter.getLogger().trace("<getStatus() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
-        return null;
+        return CertificateStatus.NOT_AVAILABLE;
     } //isRevoked
     
 
@@ -264,7 +259,7 @@ public class CertificateDataUtil {
     }
 
 
-    private static void verifyProtection(CertificateDataLocal data, TableProtectSessionLocalHome protectHome, Adapter adapter) {
+    static void verifyProtection(CertificateDataLocal data, TableProtectSessionLocalHome protectHome, Adapter adapter) {
 		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason());
 		TableProtectSessionLocal protect;
 		try {

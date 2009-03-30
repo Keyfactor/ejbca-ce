@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
@@ -1238,8 +1239,59 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, protecthome, adapter);
+        if (adapter.getLogger().isTraceEnabled()) {
+            adapter.getLogger().trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        }
+        // First make a DN in our well-known format
+        String dn = CertTools.stringToBCDNString(issuerDN);
+
+        try {
+            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
+            if (coll != null) {
+                if (coll.size() > 1) {
+                    String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));             
+                    //adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
+                    adapter.error(msg);
+                }
+                Iterator iter = coll.iterator();
+                if (iter.hasNext()) {
+                    RevokedCertInfo revinfo = null;
+                    CertificateDataLocal data = (CertificateDataLocal) iter.next();
+                    if (protecthome != null) {
+                        CertificateDataUtil.verifyProtection(data, protecthome, adapter);
+                    }
+                    revinfo = new RevokedCertInfo(data.getFingerprint(), serno, new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
+                    // Make sure we have it as NOT revoked if it isn't
+                    if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
+                        revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
+                    }
+                    if (adapter.getLogger().isTraceEnabled()) {
+                        adapter.getLogger().trace("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                    }
+                    return revinfo;
+                }
+            }
+            if (adapter.getLogger().isTraceEnabled()) {
+                adapter.getLogger().trace("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
+            }
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+        return null;
     } //isRevoked
+
+    /**
+     * Get status fast.
+     * 
+     * @param admin
+     * @param issuerDN
+     * @param serno
+     * @return the status of the certificate
+     * @ejb.interface-method
+     */
+    public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno) {
+        return CertificateDataUtil.getStatus(admin, issuerDN, serno, certHome, protecthome, adapter);
+    }
 
     /**
      * Checks if a certificate is revoked.

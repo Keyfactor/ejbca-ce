@@ -22,6 +22,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -142,8 +143,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                                                                                                     ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         return this.session.extendedService(caid, request);
     }
-    RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
-        return getStoreSessionOnlyData().isRevoked(adm, name, serialNumber);
+    CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber) {
+        return getStoreSessionOnlyData().getStatus(adm, name, serialNumber);
     }
     CertificateCache createCertificateCache(Properties prop) {
 		return new CertificateCacheStandalone(prop);

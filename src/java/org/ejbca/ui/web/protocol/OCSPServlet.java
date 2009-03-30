@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -120,11 +121,11 @@ public class OCSPServlet extends OCSPServletBase {
         return (OCSPCAServiceResponse)getSignSession().extendedService(adm, caid, request);
     }
 
-    protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
-        return getStoreSession().isRevoked(adm, name, serialNumber);
+    protected CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber) {
+        return getStoreSession().getStatus(adm, name, serialNumber);
     }
 
-	protected CertificateCache createCertificateCache(Properties prop) {
+    protected CertificateCache createCertificateCache(Properties prop) {
 		return new CertificateCacheInternal(prop);
 	}
 

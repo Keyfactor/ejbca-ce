@@ -101,17 +101,17 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
     }
 
     /**
-     * Checks if a certificate is revoked.
-     *
-     * @param admin    Administrator performing the operation
-     * @param issuerDN the DN of the issuer.
-     * @param serno    the serialnumber of the certificate that will be checked
-     * @return RevokedCertInfo with revocation information, with reason RevokedCertInfo.NOT_REVOKED if NOT revoked. Returns null if certificate is not found.
+     * Get status fast
+     * 
+     * @param admin
+     * @param issuerDN
+     * @param serno
+     * @return the status of the certificate
      * @ejb.interface-method
      */
-    public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, protecthome, adapter);
-    } //isRevoked
+    public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno) {
+        return CertificateDataUtil.getStatus(admin, issuerDN, serno, certHome, protecthome, adapter);
+    }
 
     /**
      * Finds a certificate specified by issuer DN and serial number.
