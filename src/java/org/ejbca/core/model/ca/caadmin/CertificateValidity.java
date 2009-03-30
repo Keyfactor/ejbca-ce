@@ -38,6 +38,10 @@ public class CertificateValidity {
 	public CertificateValidity(UserDataVO subject, CertificateProfile certProfile, 
 			Date notBefore, Date notAfter, 
 			Certificate cacert, boolean isRootCA) {
+		if (log.isDebugEnabled()) {
+			log.debug("Requested notBefore: "+notBefore);
+			log.debug("Requested notAfter: "+notAfter);
+		}
         // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
         Date now = new Date((new Date()).getTime() - 10 * 60 * 1000);
 		Date startTimeDate = null; 
