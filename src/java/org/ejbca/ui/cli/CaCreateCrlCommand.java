@@ -45,6 +45,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
         if (args.length == 1) {
         	try{
         	  createCRL((String) null, false);
+        	  getOutputStream().println("You can also run this command with \"CA createcrl <caname> <-delta>\" to force CRL creation for a CA.");
         	} catch (Exception e) {
         		throw new ErrorAdminCommandException(e);
         	}        	
@@ -59,8 +60,13 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
               		deltaCRL = true;
               	}
               }
-              // createCRL prints info about crl generation            
-              createCRL(getIssuerDN(caname), deltaCRL);
+              // createCRL prints info about crl generation
+              String issuerName = getIssuerDN(caname);
+              if (issuerName != null) {
+                  createCRL(issuerName, deltaCRL);
+              } else {
+            	  error("No such CA exists.");
+              }
           } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
           }

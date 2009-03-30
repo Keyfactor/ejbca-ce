@@ -142,7 +142,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     
    protected String getIssuerDN(String caname) throws Exception{            
       CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caname);
-      return cainfo.getSubjectDN();  
+      return cainfo!=null ? cainfo.getSubjectDN() : null;  
    }
    
    protected CAInfo getCAInfo(String caname) throws Exception {
