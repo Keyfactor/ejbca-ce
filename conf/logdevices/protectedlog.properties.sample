@@ -1,6 +1,6 @@
 # This is the configuration file for the ProtectedLogDevice
 #
-# All the gory details on how it works can be found in the lastest version of
+# All the gory details on how it works can be found in the latest version of
 # the design document at https://jira.primekey.se/browse/ECA-633
 #
 # Enable log protection by
