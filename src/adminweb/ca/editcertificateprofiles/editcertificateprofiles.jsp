@@ -781,6 +781,7 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
            if(request.getParameter(BUTTON_SAVE) != null) {
                cabean.changeCertificateProfile(certprofile, certificateprofiledata);
                cabean.setTempCertificateProfile(null);
+               includefile="certificateprofilespage.jspf";
            }
              /*
              * Add policy.
@@ -852,18 +853,18 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                for(int i = 0; i < certificateprofiledata.getCaIssuers().size(); i++) {
                    value = request.getParameter(BUTTON_DELETE_CAISSUERURI + i);
                    if(value != null) {
-                       certificateprofiledata.removeCaIssuer(request.getParameter(TEXTFIELD_CAISSUERURI + i).trim());
-                                                 
+                       certificateprofiledata.removeCaIssuer(request.getParameter(TEXTFIELD_CAISSUERURI + i).trim());                                                 
                        cabean.setTempCertificateProfile(certificateprofiledata);
+                       includefile = "certificateprofilepage.jspf";
                    }
                }         
-               includefile = "certificateprofilepage.jspf";
              }
 
            
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
               cabean.setTempCertificateProfile(null);
+              includefile="certificateprofilespage.jspf";
            }
            if(includefile == null ) {
                  includefile="certificateprofilespage.jspf";
