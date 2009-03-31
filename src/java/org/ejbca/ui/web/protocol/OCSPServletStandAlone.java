@@ -30,7 +30,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
@@ -102,7 +101,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private static final long serialVersionUID = -7093480682721604160L;
 
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
-    private OCSPServletStandAloneSession session;
+    private IOCSPServletStandAloneSession session;
 
     public OCSPServletStandAlone() {
         super();
@@ -130,10 +129,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     public String healthCheck() {
-        return this.session.healthCheck();
+        return getStoreSessionOnlyData().healthCheck(this.session);
     }
     void loadPrivateKeys(Admin adm) throws Exception {
-        this.session.loadPrivateKeys(adm);
+        getStoreSessionOnlyData().loadPrivateKeys(this.session, adm);
     }
     
     Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
@@ -141,7 +140,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
     OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
                                                                                                     ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
-        return this.session.extendedService(caid, request);
+        return getStoreSessionOnlyData().extendedService(this.session, caid, request);
     }
     CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber) {
         return getStoreSessionOnlyData().getStatus(adm, name, serialNumber);

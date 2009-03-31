@@ -55,7 +55,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
@@ -70,7 +69,7 @@ import org.ejbca.util.keystore.P11Slot.P11SlotUser;
  * @author Lars Silven PrimeKey
  * @version  $Id
  */
-class OCSPServletStandAloneSession implements P11SlotUser {
+public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletStandAloneSession {
 
     static final private Logger m_log = Logger.getLogger(OCSPServletStandAloneSession.class);
     /** Internal localization of logs and errors */
@@ -306,7 +305,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
         return true;
     }
-    String healthCheck() {
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.IOCSPServletStandAloneSession#healthCheck()
+     */
+    public String healthCheck() {
     	StringWriter sw = new StringWriter();
     	PrintWriter pw = new PrintWriter(sw);
         try {
@@ -470,7 +472,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
     	m_log.trace("<loadFromKeyCards");
     }
-    void loadPrivateKeys(Admin adm) throws Exception {
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.IOCSPServletStandAloneSession#loadPrivateKeys(org.ejbca.core.model.log.Admin)
+     */
+    public void loadPrivateKeys(Admin adm) throws Exception {
     	m_log.trace(">loadPrivateKeys");
     	// We will only load private keys if the cache time has run out
 		if ( (this.signEntity != null) && (this.signEntity.size() > 0) && (this.servlet.mKeysValidTo > new Date().getTime()) ) {
@@ -506,20 +511,20 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
         }
         // Replace old signEntity references with new ones or null if they no longer exist
-        Iterator<Integer> iterator = signEntity.keySet().iterator();
+        Iterator<Integer> iterator = this.signEntity.keySet().iterator();
         while (iterator.hasNext()) {
         	Integer key = iterator.next();
-        	if (newSignEntity.get(key) != null) {
-            	signEntity.put(key, newSignEntity.get(key));
+        	if (this.newSignEntity.get(key) != null) {
+            	this.signEntity.put(key, this.newSignEntity.get(key));
         	} else {
-        		signEntity.remove(key);
+        		this.signEntity.remove(key);
         	}
         }
         // Replace existing signEntity references and add new ones. (Yes, we have some overlap here..)
-        iterator = newSignEntity.keySet().iterator();
+        iterator = this.newSignEntity.keySet().iterator();
         while (iterator.hasNext()) {
         	Integer key = iterator.next();
-        	signEntity.put(key, newSignEntity.get(key));
+        	this.signEntity.put(key, this.newSignEntity.get(key));
         }
 
         m_log.debug("We have keys, returning");
@@ -709,7 +714,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
         return this.servlet.getStoreSessionOnlyData().findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
-    OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.IOCSPServletStandAloneSession#extendedService(int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
+     */
+    public OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         SigningEntity se = this.signEntity.get(new Integer(caid));
         if ( se==null ) {
         	if (m_log.isDebugEnabled()) {
