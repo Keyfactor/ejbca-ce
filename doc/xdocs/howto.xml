@@ -43,7 +43,7 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
 	<subsection name="Managing certificates">
 	<p>
 	<ul>
-    <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Using Mozilla</a></li>
+    <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Using Firefox</a></li>
     <li><a href="sensornet/IEHowTo/ManagingCertificateIE.html">Using Microsoft Internet Explorer</a></li>
     </ul>
     </p>
@@ -52,7 +52,7 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
 	<subsection name="Configuring email client and LDAP">
 	<p>
 	<ul>
-    <li><a href="sensornet/LDAPHowTo/SecureEmailNS-Moz/LDAPandMail.html">Using Mozilla</a></li>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailNS-Moz/LDAPandMail.html">Using Firefox</a></li>
     <li><a href="sensornet/LDAPHowTo/SecureEmailO/SecureEmailUsingOutlook.html">Using Microsoft Outlook</a></li>
     <li><a href="sensornet/LDAPHowTo/SecureEmailOE/Securee-mail%20OutlookExpress.html">Using Microsoft Outlook Express</a></li>
     </ul>

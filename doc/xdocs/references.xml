@@ -56,12 +56,12 @@ PKCS12 files generated from EJBCA works excellent as PGP-keys.
 </p>
 </subsection>
 
-<subsection name="Netscape/Mozilla Key Generation">
+<subsection name="Firefox Key Generation">
 <ul>
   <li>KEYGEN - <a href="http://home.netscape.com/eng/security/comm4-keygen.html">Netscape Extension for Key Generation</a></li>
 </ul>
 <p>
-For Netscape/Mozilla to be able to verify client certificates
+For Firefox to be able to verify client certificates
 the CA-certificates must have the extensions BasicConstraints and
 AuthorityKeyIdentifier. Client certificates also need AuthorityKeyIdentifier
 </p>

@@ -1348,22 +1348,22 @@ Example to generate an OCSP request using OpenSSL (works with both internal and 
 openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
 </source>
 <p>
-If Mozilla is to request and accept OCSP-responses from a CA it must be configured:
+If Firefox is to request and accept OCSP-responses from a CA it must be configured:
 <ol>
 <li>'Use OCSP to validate all certificates using this URL and signer' in 'Privacy &amp; Security->Validation'.
 Choose the CA from EJBCA (which you should have made Trusted by right clicking in 
 'Privacy &amp; Security->Certificates->Manage Certificates->Authorities' and checking the appropriate checkboxes).
 </li>
-<li>If using a Certificate Profile that includes a OCSP Service URL for client certificates, the Validation option in Mozilla 
+<li>If using a Certificate Profile that includes a OCSP Service URL for client certificates, the Validation option in Firefox 
 'Use OCSP to validate only certificates that specify an OCSP service URL' also works fine. When this option is checked you may need to restart Mozilla.
 </li>
 </ol>
 </p><p>
-When the validation settings are set, Mozilla will query the OCSP server when for example double-clicking on a certificate in the 
+When the validation settings are set, Firefox will query the OCSP server when for example double-clicking on a certificate in the 
 certificate manager.
 An appropriate URL for validation is: http://<i>hostname</i>:8080/ejbca/publicweb/status/ocsp
 </p><p>
-If using a dedicated OCSP responder certificate, this certificate must probably not be imported in Mozilla as a Trusted CA certificate.
+If using a dedicated OCSP responder certificate, this certificate must probably not be imported in Firefox as a Trusted CA certificate.
 But if you want to, you can do this through 'View Certificates' in EJBCA 
 (http://<i>hostname</i>:8080/ejbca/retrieve/ca_certs.jsp).
 </p><p>
@@ -3824,7 +3824,7 @@ The attributes that EJBCA creates or replaces are:
 
 <subsection name="Using LDAP">
 <p>
-In Mozilla you can for example enter a URL like:
+In Firefox you can for example enter a URL like:
 <br></br>
 ldap://ip-address-of-ldap-server:389/cn=Tomas Gustavsson,dc=se,dc=bigcorp,dc=com
 <br></br>
@@ -3834,7 +3834,7 @@ including the certificate.
 The LDAP url format is described in <a
 href="http://www.ietf.org/rfc/rfc2255.txt">RFC2255</a>.
 </p><p>
-Examples of using LDAP with Netscape/Mozilla can be found in the
+Examples of using LDAP with Firefox can be found in the
 howto-section of this web page.
 </p><p>
 To use LDAP top fetch user certificates and use them for encrypting email
@@ -3842,13 +3842,13 @@ there seems to be a requirement to use SSL connection to the LDAP server
 (Account Options->Compositions &amp; Addressing->Edit directories->Edit->Use
 Secure Connection), see also below how to configure OpenLDAP for SSL.
 </p><p>
-Note: When fetching certificates from LDAP with Mozilla for example with
+Note: When fetching certificates from LDAP with Firefox for example with
 URL:
 <br></br>
 ldap://ldap-server-host/dc=bigcorp,dc=com??sub?(cn=MyName)?(objectclass=*)
 <br></br>
 To get a checkbox at the fetched certificate, the CA certificate must be
-installed in the Windows truststore, not only in Mozillas.
+installed in the Windows truststore, not only in Firefox's.
 </p><p>
 To use SSL against an LDAP server with MS Outlook you must make sure the CN
 in the LDAP servers certificate is the same as the hostname. 
@@ -4833,7 +4833,7 @@ To set up the demo servlet:
 <li>If using UTF-8 to display the web-page containing the demo form to the users, change ISO-8859-1 to UTF-8 for the env-entry 'contentEncoding'. Otherwise national characters in names will be encoded/displayed incorrectly in the certificates.</li>
 <li>Deploy with 'ant deploy'.</li>
 <li>Create an end entity profile and a certificate profile that should be used for the demo certificates.</li>
-<li>Create a demo apply page containing something similar to the sample form below for Mozilla/Firefox. There are some sample scripts under src/publicweb/publicweb.</li>
+<li>Create a demo apply page containing something similar to the sample form below for Firefox. There are some sample scripts under src/publicweb/publicweb.</li>
 </ol>
 <source>
 &lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/democertreq" method="post">
@@ -4970,7 +4970,7 @@ http://localhost:8080/ejbca/
 Alternative:
 Install the generated PKCS12 (p12/superadmin.p12) file in the
 browser.
-In Mozilla this is done by Edit->Preferences->Privacy&amp;Security->
+In Firefox this is done by Edit->Preferences->Privacy&amp;Security->
 Certificates->Manage Certificates->Import
 In IE it is done by double-clicking on the .p12 file.
 </p><p>

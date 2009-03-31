@@ -28,7 +28,7 @@
 <li>Supports different architectures; all-in-one, clustered, external RA, external OCSP, etc.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
-<li>Browser enrollment with Netscape, Mozilla, IE, etc.</li>
+<li>Browser enrollment with Firefox, IE, etc.</li>
 <li>Enrollment for other applications through open APIs and tools.</li>
 <li>Enrollment generating complete OpenVPN installers for VPN users.</li>
 <li>Smart card logon certificates.</li>
