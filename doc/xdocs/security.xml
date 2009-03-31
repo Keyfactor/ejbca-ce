@@ -149,10 +149,30 @@ http://wiki.jboss.org/wiki/Wiki.jsp?page=EncryptingDataSourcePasswords</a>
 </p>
 </section>
 
+<section name="Database privileges">
+<p>
+During the installation process of EJBCA, JBoss creates all the required database
+tables. To do this the EJBCA-database user has to have CREATE TABLE privileges. During
+upgrades EJCBA needs CREATE and ALTER TABLE privileges. (SELECT, UPDATE, INSERT and DELETE
+privileges are also required.)
+</p><p>
+After the installation during normal operations only regular SELECT, UPDATE, INSERT
+and DELETE commands are needed. The table LogEntryData will only be used with SELECT and
+INSERT.
+</p><p>
+Instead of changing the privileges of the EJBCA-user, it's recommended to have two
+different users "ejbca" and "ejbca-admin". For regular operations "ejbca" is used, but
+for the installation and upgrades, EJBCA is re-deployed with "ejbca-admin" configured
+in conf/database.properties. 
+</p>
+</section>
+
 <section name="SSL connections in MySQL">
 <p>
 <a href="http://dev.mysql.com/doc/refman/5.0/en/secure-using-ssl.html">
 http://dev.mysql.com/doc/refman/5.0/en/secure-using-ssl.html</a>
+<a href="http://dev.mysql.com/doc/refman/5.1/en/secure-using-ssl.html">
+http://dev.mysql.com/doc/refman/5.1/en/secure-using-ssl.html</a>
 </p>
 </section>
 
