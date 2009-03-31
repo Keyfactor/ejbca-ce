@@ -26,6 +26,10 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
+/** Validates hexadecimal serial numbers entered in the admin-GUI. Does it by constructing a biginteger.
+ * 
+ * @version $Id$
+ */
 public class HexSerialNumberValidator implements Validator{
 	private static final Logger log = Logger.getLogger(HexSerialNumberValidator.class);
 
@@ -36,11 +40,6 @@ public class HexSerialNumberValidator implements Validator{
 		Map<String, String> map = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
 		for(String key :  map.keySet()) {
 			if (key.contains("matchWith") && map.get(key).equals(AdminEntity.MATCHWITHTEXTS[AdminEntity.WITH_SERIALNUMBER])) {
-				if (((String) object).length() != 16) {	// Entered the number as decimal?
-					FacesMessage message = new FacesMessage();
-					message.setSummary(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("HEXREQUIRED"));
-					throw new ValidatorException(message);
-				}
 				try {
 					new BigInteger((String) object, 16);
 				} catch (NumberFormatException e) {
