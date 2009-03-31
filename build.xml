@@ -676,9 +676,11 @@
     <target name="deploy" depends="build, buildwithcmptcpservice" description="Deploy the main EJBCA application">
         <antcall target="externalra.deploy" />
         <antcall target="j2ee:deploy" />
+        <antcall target="showtime" />
     </target>
     <target name="ocsp-deploy" depends="ocsp-ear" description="Deploy the standalone OCSP reponder" >
         <antcall target="j2ee:deployocsp" />
+        <antcall target="showtime" />
     </target>
 
     <!-- ======================================================================= -->
@@ -953,4 +955,12 @@
             </fileset>  
         </jar>
     </target>
+	
+	<target name="showtime" >
+		<tstamp>
+			<format property="completiontime" pattern="yyyy-MM-dd HH:mm:ss Z"/>
+		</tstamp>
+		<echo message="Task completed ${completiontime}."/>
+	</target>
+
 </project>
