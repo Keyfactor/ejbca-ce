@@ -53,14 +53,14 @@
 		<ul>
 		  	<li><a href="${der}">DER format</a></li> 
 		  	<li><a href="${pem}">PEM format</a></li> 
-		  	<li><a href="${moz}">Mozilla/Netscape direct import</a></li>
+		  	<li><a href="${moz}">Firefox direct import</a></li>
 		</ul>
 		</td>
 		<td>
 		<ul>
 		  	<li><a href="${derdelta}">DER format</a></li> 
 		  	<li><a href="${pemdelta}">PEM format</a></li> 
-		  	<li><a href="${mozdelta}">Mozilla/Netscape direct import</a></li>
+		  	<li><a href="${mozdelta}">Firefox direct import</a></li>
 		</ul>
 		</td>
 		</tr>

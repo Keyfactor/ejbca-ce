@@ -38,10 +38,10 @@ import org.ejbca.util.Base64;
  * Checks that the administrator is authorized to view the user before sending the certificate<br>
  *
  * cert - returns certificate in PEM-format
- * nscert - returns certificate for Netscape/Mozilla
+ * nscert - returns certificate for Firefox
  * iecert - returns certificate for Internet Explorer
  *
- * cert, nscert and iecert also takes  parameters issuer and certificatesn were issuer is the DN of issuer and certificate serienumber 
+ * cert, nscert and iecert also takes  parameters issuer and certificate sn were issuer is the DN of issuer and certificate serienumber 
  * is in hex format.
  *
  * @version $Id$

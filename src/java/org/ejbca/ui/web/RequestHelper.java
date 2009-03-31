@@ -92,7 +92,7 @@ public class RequestHelper {
     }
 
     /**
-     * Handles NetScape certificate request (KEYGEN), these are constructed as: <code>
+     * Handles Firefox certificate request (KEYGEN), these are constructed as: <code>
      * SignedPublicKeyAndChallenge ::= SEQUENCE { publicKeyAndChallenge    PublicKeyAndChallenge,
      * signatureAlgorithm   AlgorithmIdentifier, signature        BIT STRING }</code> PublicKey's
      * encoded-format has to be RSA X.509.
@@ -131,7 +131,7 @@ public class RequestHelper {
         X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator,
                 username, password, nscr.getPublicKey());
 
-        // Don't include certificate chain in the PKCS7 to mozilla
+        // Don't include certificate chain in the PKCS7 to Firefox
         byte[] pkcs7 = signsession.createPKCS7(administrator, cert, false);
         log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
@@ -362,7 +362,7 @@ public class RequestHelper {
     } // sendNewCertToIEClient
 
     /**
-     * Sends back cert to NS/Mozilla for installation of cert
+     * Sends back cert to Firefox for installation of cert
      *
      * @param certs DER encoded certificates to be installed in browser
      * @param out output stream to send to

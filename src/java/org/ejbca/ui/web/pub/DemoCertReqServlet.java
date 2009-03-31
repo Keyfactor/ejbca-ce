@@ -187,7 +187,7 @@ public class DemoCertReqServlet extends HttpServlet {
               type = 1;
           }
       } else if (request.getParameter("pkcs10req") != null) {
-          // if not netscape, check if it's IE
+          // if not firefox, check if it's IE
           reqBytes=request.getParameter("pkcs10req").getBytes();
           log.debug("Received IE request:"+new String(reqBytes));
           if (reqBytes != null) {

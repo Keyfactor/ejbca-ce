@@ -41,7 +41,7 @@ import org.ejbca.util.CertTools;
  * Servlet used to distribute CA certificates <br>
  *
  * cacert - returns ca certificate in PEM-format
- * nscacert - returns ca certificate for Netscape/Mozilla
+ * nscacert - returns ca certificate for Firefox
  * iecacert - returns ca certificate for Internet Explorer
  *
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is

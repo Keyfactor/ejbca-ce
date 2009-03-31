@@ -232,7 +232,7 @@ public class KeyTools {
 	}
 
     /**
-     * Creates PKCS12-file that can be imported in IE or Netscape. The alias for the private key is
+     * Creates PKCS12-file that can be imported in IE or Firefox. The alias for the private key is
      * set to 'privateKey' and the private key password is null.
      *
      * @param alias the alias used for the key entry
@@ -259,7 +259,7 @@ public class KeyTools {
     } // createP12
 
     /**
-     * Creates PKCS12-file that can be imported in IE or Netscape.
+     * Creates PKCS12-file that can be imported in IE or Firefox.
      * The alias for the private key is set to 'privateKey' and the private key password is null.
      * @param alias the alias used for the key entry
      * @param privKey RSA private key
@@ -283,7 +283,7 @@ public class KeyTools {
     } // createP12
 
     /**
-     * Creates PKCS12-file that can be imported in IE or Netscape. The alias for the private key is
+     * Creates PKCS12-file that can be imported in IE or Firefox. The alias for the private key is
      * set to 'privateKey' and the private key password is null.
      *
      * @param alias the alias used for the key entry

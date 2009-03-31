@@ -281,7 +281,7 @@ public class CertReqServlet extends HttpServlet {
                 }
                 if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
 
-                  // first check if it is a netscape request,
+                  // first check if it is a Firefox request,
                   if (getParameter("keygen") != null) {
                       byte[] reqBytes=getParameter("keygen").getBytes();
                       if ((reqBytes != null) && (reqBytes.length>0)) {
@@ -303,7 +303,7 @@ public class CertReqServlet extends HttpServlet {
                     	  throw new SignRequestException("No request bytes received.");
                       }
                   } else if ( (getParameter("pkcs10") != null) || (getParameter("PKCS10") != null) ) {
-                      // if not netscape, check if it's IE
+                      // if not firefox, check if it's IE
                       byte[] reqBytes = getParameter("pkcs10").getBytes();
                       if (reqBytes == null)
                           reqBytes=getParameter("PKCS10").getBytes();

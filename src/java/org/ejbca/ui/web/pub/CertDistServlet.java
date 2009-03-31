@@ -62,7 +62,7 @@ import org.ejbca.util.CertTools;
  * <li>listcerts - lists all certificates of a user, takes argument 'subject=<subjectDN>'.
  * <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
  * <li>cacert - returns ca certificate in PEM-format, takes argument 'issuer=<issuerDN>&level=<ca-level, 0=root>'
- * <li>nscacert - returns ca certificate for Netscape/Mozilla, same args as above
+ * <li>nscacert - returns ca certificate for Firefox, same args as above
  * <li>iecacert - returns ca certificate for Internet Explorer, same args as above
  * </ul>
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is

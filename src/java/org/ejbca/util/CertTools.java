@@ -1448,7 +1448,7 @@ public class CertTools {
             certgen.addExtension(X509Extensions.KeyUsage.getId(), true, ku);
         }
 
-        // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Mozilla.
+        // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
             if (isCA == true) {
                 SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(
