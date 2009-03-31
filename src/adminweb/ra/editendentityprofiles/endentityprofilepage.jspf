@@ -355,16 +355,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="70%"> 
         <input type="text" name="<%=TEXTFIELD_USERNAME%>" size="40" maxlength="1024" 
            value="<%= profiledata.getValue(EndEntityProfile.USERNAME,0)%>"><br>
-           <%= ejbcawebbean.getText("REQUIRED") %>
-           <input type="checkbox" name="<%=CHECKBOX_REQUIRED_USERNAME %>" value="<%=CHECKBOX_VALUE %>" 
-           <%  if(profiledata.isRequired(EndEntityProfile.USERNAME,0))
-                 out.write(" CHECKED ");
-           %>> 
-        &nbsp;&nbsp;<%= ejbcawebbean.getText("MODIFYABLE") %> 
-        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_USERNAME %>" value="<%=CHECKBOX_VALUE %>" 
-           <%if(profiledata.isModifyable(EndEntityProfile.USERNAME,0))
-                 out.write("CHECKED");
-           %>> 
       </td>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
@@ -1062,6 +1052,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%" align="right"> 
         <%= ejbcawebbean.getText("CARDNUMBER") %>
+        <%= ejbcawebbean.getHelpReference("/manual.html#Cardnumber") %>
         <br />&nbsp;
       </td>
       <td width="70%"> 

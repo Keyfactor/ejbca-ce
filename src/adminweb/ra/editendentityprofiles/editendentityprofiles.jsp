@@ -74,7 +74,6 @@
   static final String CHECKBOX_ALLOW_MERGEDN_WEBSERVICES = "checkboxallowmergednwebservices";
   
   
-  static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
   static final String CHECKBOX_REQUIRED_SUBJECTDN         = "checkboxrequiredsubjectdn";
@@ -87,7 +86,6 @@
   static final String CHECKBOX_REQUIRED_PRINTING          = "checkboxrequiredprinting";
 
 
-  static final String CHECKBOX_MODIFYABLE_USERNAME          = "checkboxmodifyableusername";
   static final String CHECKBOX_MODIFYABLE_PASSWORD          = "checkboxmodifyablepassword";
   static final String CHECKBOX_MODIFYABLE_SUBJECTDN         = "checkboxmodifyablesubjectdn";
   static final String CHECKBOX_MODIFYABLE_SUBJECTALTNAME    = "checkboxmodifyablesubjectaltname";
@@ -96,7 +94,6 @@
 
 
   static final String CHECKBOX_USE_CARDNUMBER        = "checkboxusecardnumber";
-  static final String CHECKBOX_USE_USERNAME          = "checkboxuseusername";
   static final String CHECKBOX_USE_PASSWORD          = "checkboxusepassword";
   static final String CHECKBOX_USE_CLEARTEXTPASSWORD = "checkboxusecleartextpassword";
   static final String CHECKBOX_USE_SUBJECTDN         = "checkboxusesubjectdn";
@@ -334,8 +331,8 @@
              profiledata.setAllowMergeDnWebServices(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_ALLOW_MERGEDN_WEBSERVICES)));
              
              profiledata.setValue(EndEntityProfile.USERNAME , 0, request.getParameter(TEXTFIELD_USERNAME));
-             profiledata.setRequired(EndEntityProfile.USERNAME, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_USERNAME)));
-             profiledata.setModifyable(EndEntityProfile.USERNAME, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_USERNAME)));
+             profiledata.setRequired(EndEntityProfile.USERNAME, 0 ,true); // Always required
+             profiledata.setModifyable(EndEntityProfile.USERNAME, 0 ,true); // Always modifyable
 
              profiledata.setValue(EndEntityProfile.PASSWORD, 0  ,request.getParameter(TEXTFIELD_PASSWORD));
              profiledata.setUse(EndEntityProfile.PASSWORD, 0  , !ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_PASSWORD)));
