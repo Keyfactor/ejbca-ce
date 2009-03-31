@@ -22,6 +22,7 @@ import org.ejbca.core.model.log.Admin;
 
 /**
  * @author lars
+ * @versioon $Id$
  *
  */
 public interface IOCSPServletStandAloneSession {
