@@ -59,10 +59,12 @@ fi
 # discard $1 from the command line args
 shift
 
-x=`cat "$EJBCA_HOME/conf/ejbca.properties" | grep appserver.home | grep -v "#appserver"`
-if [ -d "${x#*=}" ] ; then
-	APPSRV_HOME="${x#*=}"
-fi 
+if [ -f "$EJBCA_HOME/conf/ejbca.properties" ] ; then
+    x=`cat "$EJBCA_HOME/conf/ejbca.properties" | grep appserver.home | grep -v "#appserver"`
+    if [ -d "${x#*=}" ] ; then
+	    APPSRV_HOME="${x#*=}"
+    fi 
+fi
 
 # J2EE server classpath
 if [ ! -n "$APPSRV_HOME" ]; then
