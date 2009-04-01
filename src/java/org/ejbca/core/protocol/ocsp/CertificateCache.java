@@ -116,7 +116,7 @@ public class CertificateCache {
 
 		loadCertificates(); // refresh cache?
 
-		X509Certificate ret = null;
+		final X509Certificate ret;
 		// Do the actual lookup
 		String dn = CertTools.stringToBCDNString(subjectDN);
 		if (log.isDebugEnabled()) {
@@ -127,7 +127,9 @@ public class CertificateCache {
 			String key = (String)certsFromSubjectDN.get(dn);
 			if (key != null) {
 				ret = (X509Certificate)certCache.get(key);
-			} 
+			} else {
+                ret = null;
+            }
 		} // rebuildlock
 		if (log.isDebugEnabled()) {
 			if (ret != null) {

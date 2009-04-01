@@ -138,7 +138,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public String healthCheck(IOCSPServletStandAloneSession session) {
-        return session.healthCheck();
+        return session.healthCheck(this);
     }
     /**
      * @param session
@@ -147,7 +147,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void loadPrivateKeys(IOCSPServletStandAloneSession session, Admin adm) throws Exception {
-        session.loadPrivateKeys(adm);
+        session.loadPrivateKeys(adm, this);
     }
 
     /**

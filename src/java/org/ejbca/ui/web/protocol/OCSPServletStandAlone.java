@@ -109,12 +109,19 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         this.session = new OCSPServletStandAloneSession(config, this);
+        if ( this.session.isActive() ) {
+            try {
+                loadPrivateKeys(this.m_adm);
+            } catch( Exception e ) {
+                throw new ServletException(e);
+            }
+        }
     }
     
     /**
      * Returns the certificate data only session bean
      */
-    synchronized ICertificateStoreOnlyDataSessionLocal getStoreSessionOnlyData(){
+    private synchronized ICertificateStoreOnlyDataSessionLocal getStoreSessionOnlyData(){
     	if(this.m_certStore == null){	
     		try {
                 ServiceLocator locator = ServiceLocator.getInstance();

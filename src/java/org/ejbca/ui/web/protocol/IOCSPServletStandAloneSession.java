@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.protocol;
 
+import org.ejbca.core.ejb.ca.store.LocalCertificateStoreOnlyDataSessionBean;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
@@ -36,13 +37,18 @@ public interface IOCSPServletStandAloneSession {
      */
     OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException;
     /**
-     * @return The string to be placed in the servlet response
+     * @param bean . The calling object
+     * @return  The string to be placed in the servlet response
      */
-    String healthCheck();
+    String healthCheck(LocalCertificateStoreOnlyDataSessionBean bean);
     /**
-     * load all keys (again).
      * @param adm
+     * @param bean . The calling object
      * @throws Exception
      */
-    void loadPrivateKeys(Admin adm) throws Exception;
+    void loadPrivateKeys(Admin adm, LocalCertificateStoreOnlyDataSessionBean bean) throws Exception;
+    /**
+     * @return Tells if the servlet is usable.
+     */
+    boolean isActive();
 }
