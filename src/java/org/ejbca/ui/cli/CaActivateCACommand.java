@@ -20,6 +20,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
+import org.ejbca.ui.cli.util.ConsolePasswordReader;
 
 
 
@@ -48,13 +49,22 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            if (args.length < 3) {
-                getOutputStream().println("Usage: CA activateca <CA name> <authorization code>");
+            if (args.length < 2) {
+                getOutputStream().println("Usage: CA activateca <CA name> [<authorization code>]");
+                getOutputStream().println("Leaving out authorization code will prompt for it.");
                 return;
             }
 
             String caname = args[1];
-            String authorizationcode = args[2];
+            String authorizationcode = null;
+            if (args.length > 2) {
+            	authorizationcode = args[2];
+            } else {
+                getOutputStream().print("Enter authorization code: ");
+                // Read the password, but mask it so we don't display it on the console
+                ConsolePasswordReader r = new ConsolePasswordReader();
+                authorizationcode = String.valueOf(r.readPassword());            	
+            }
                         
             // Get the CAs info and id
             CAInfo cainfo = getCAAdminSession().getCAInfo(administrator, caname);
