@@ -21,6 +21,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
 
+import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
@@ -71,7 +72,9 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 	encryptionAlias = args[4];
                 }
                 getOutputStream().print("Enter keystore password: ");
-                String kspwd = new BufferedReader(new InputStreamReader(System.in)).readLine();
+                // Read the password, but mask it so we don't display it on the console
+                ConsolePasswordReader r = new ConsolePasswordReader();
+                String kspwd = String.valueOf(r.readPassword());
                 // Read old keystore file in the beginning so we know it's good
                 byte[] keystorebytes = null;
                 keystorebytes = FileTools.readFiletoBuffer(p12file);
