@@ -83,13 +83,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     final private P11Slot slot;
     final private String mP11Password;
     final private OCSPServletStandAlone servlet;
-    private boolean isActive;
 
     OCSPServletStandAloneSession(ServletConfig config,
                                  OCSPServletStandAlone _servlet) throws ServletException {
         this.signEntity = new ConcurrentHashMap<Integer, SigningEntity>();
         this.newSignEntity = new HashMap<Integer, SigningEntity>();
-        this.isActive = false;
         this.servlet = _servlet;
         try {
             final boolean isIndex;
@@ -169,7 +167,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             m_log.error(errMsg, e);
             throw new ServletException(e);
         }
-        this.isActive = true;
     }
     
     private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
@@ -622,13 +619,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         }
                     }
                     OCSPServletStandAloneSession.this.slot.reset();
-                    OCSPServletStandAloneSession.this.isActive = true;
                     {
                         final Iterator<PrivateKeyFactory> i = P11ProviderHandler.this.sKeyFacrory.iterator();
                         while ( i.hasNext() ) {
                             PrivateKeyFactory pkf = i.next();
                             errorMessage = pkf.toString();
+                            m_log.debug("Trying to reload: "+errorMessage);
                             pkf.set(P11ProviderHandler.this.getKeyStore(P11ProviderHandler.this.getPwd()));
+                            m_log.info("Reloaded: "+errorMessage);
                         }
                     }
                     synchronized( this ) {
@@ -731,7 +729,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#deactivate()
      */
     public boolean deactivate() throws Exception {
-        this.isActive = false;
         this.slot.removeProviderIfNoTokensActive();
         // should allways be active
         return true;
@@ -740,7 +737,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#isActive()
      */
     public boolean isActive() {
-        // is allways active
-        return this.isActive;
+        return false; // it should allways be possible to clear the token
     }
 }
