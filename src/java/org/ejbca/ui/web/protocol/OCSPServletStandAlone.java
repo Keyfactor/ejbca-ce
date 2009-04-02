@@ -47,38 +47,6 @@ import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
  * @web.servlet-mapping url-pattern = "/ocsp"
  * @web.servlet-mapping url-pattern = "/ocsp/*"
  *
- * @web.servlet-init-param description="Directory name of the soft keystores. The signing keys will be fetched from all files in this directory. Valid formats of the files are JKS and PKCS12 (p12)."
- *   name="softKeyDirectoryName"
- *   value="${ocsp.keys.dir}"
- *
- * @web.servlet-init-param description="The password for the all the soft keys of the OCSP responder."
- *   name="keyPassword"
- *   value="${ocsp.keys.keyPassword}"
- *
- * @web.servlet-init-param description="The password to all soft keystores."
- *   name="storePassword"
- *   value="${ocsp.keys.storePassword}"
- *
- * @web.servlet-init-param description="The password for all keys stored on card."
- *   name="cardPassword"
- *   value="${ocsp.keys.cardPassword}"
- *
- * @web.servlet-init-param description="The class that implements card signing of the OCSP response."
- *   name="hardTokenClassName"
- *   value="${ocsp.hardToken.className}"
- *
- * @web.servlet-init-param description="P11 shared library path name."
- *   name="sharedLibrary"
- *   value="${ocsp.p11.sharedLibrary}"
- *
- * @web.servlet-init-param description="P11 password."
- *   name="p11password"
- *   value="${ocsp.p11.p11password}"
- *
- * @web.servlet-init-param description="P11 slot number."
- *   name="slot"
- *   value="${ocsp.p11.slot}"
- *
  * @web.resource-ref
  *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *  type="javax.sql.DataSource"
@@ -96,9 +64,6 @@ import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -7093480682721604160L;
 
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
@@ -109,7 +74,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        this.session = new OCSPServletStandAloneSession(config, this);
+        this.session = new OCSPServletStandAloneSession(this);
     }
     
     /**

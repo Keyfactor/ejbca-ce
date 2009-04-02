@@ -248,41 +248,6 @@
     <property name="ca.xkmskeystorepass" value="foo123"/>
     <property name="ca.cmskeystorepass" value="foo123"/>
     <property name="ca.serialnumberoctetsize" value="8"/>
-    <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
-    <property name="ocsp.signingCertsValidTime" value="300"/>
-    <property name="ocsp.usecasigningcert" value="true"/>
-    <property name="ocsp.responderidtype" value="keyhash"/>
-    <property name="ocsp.includecertchain" value="true"/>
-    <property name="ocsp.nonexistingisgood" value="false"/>
-    <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA"/>
-    <property name="ocsp.signaturerequired" value="false"/>
-    <property name="ocsp.restrictsignatures" value="false"/>
-    <property name="ocsp.restrictsignaturesbymethod" value="issuer"/>
-    <property name="ocsp.signtrustvalidtime" value="180"/>
-    <property name="ocsp.extensionoid" value=""/>
-    <property name="ocsp.extensionclass" value=""/>
-    <property name="ocsp.uniddatsource" value=""/>
-    <property name="ocsp.unidcacert" value=""/>
-    <property name="ocsp.keys.dir" value="./keys"/>
-    <property name="ocsp.keys.keyPassword" value="foo123"/>
-    <property name="ocsp.keys.storePassword" value=""/>
-    <property name="ocsp.keys.cardPassword" value=""/>
-    <property name="ocsp.hardToken.className" value="se.primeKey.caToken.card.CardKeysImpl"/>
-    <property name="ocsp.p11.sharedLibrary" value=""/>
-    <property name="ocsp.p11.p11password" value="foo123"/>
-    <property name="ocsp.p11.slot" value="i1"/>
-    <property name="ocsp.trx-log" value="false"/>
-    <property name="ocsp.log-date" value="yyyy-MM-dd:HH:mm:ss:z"/>
-    <property name="ocsp.log-timezone" value="GMT"/>
-    <property name="ocsp.trx-log-pattern" value="\$$\{(.+?)\}"/>
-    <property name="ocsp.trx-log-order" value="$${SESSION_ID};$${LOG_ID};$${STATUS};$${REQ_NAME}'$${CLIENT_IP}';'$${SIGN_ISSUER_NAME_DN}';'$${SIGN_SUBJECT_NAME}';$${SIGN_SERIAL_NO};'$${LOG_TIME}';${REPLY_TIME};$${NUM_CERT_ID};0;0;0;0;0;0;0;'$${ISSUER_NAME_DN}';$${ISSUER_NAME_HASH};$${ISSUER_KEY};$${DIGEST_ALGOR};$${SERIAL_NOHEX};$${CERT_STATUS}"/>
-    <property name="ocsp.audit-log" value="false"/>
-    <property name="ocsp.audit-log-pattern" value="\$$\{(.+?)\}"/>
-    <property name="ocsp.audit-log-order" value="SESSION_ID:$${SESSION_ID};LOG ID:$${LOG_ID};'$${LOG_TIME}';TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n'$${OCSPREQUEST}';\nOCSP RESPONSE:\n'$${OCSPRESPONSE}';\nSTATUS:${STATUS}"/>
-    <property name="ocsp.audit-log" value="false"/>
-    <property name="ocsp.log-safer" value="false"/>
-    <property name="ocsp.untilNextUpdate" value="0"/>
-    <property name="ocsp.maxAge" value="30"/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />

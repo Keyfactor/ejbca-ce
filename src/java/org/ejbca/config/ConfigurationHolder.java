@@ -49,7 +49,7 @@ public class ConfigurationHolder {
 	/** This is a singleton so it's not allowed to create an instance explicitly */ 
 	private ConfigurationHolder() {}
 	
-	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties", "externalra-caservice.properties"};
+	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties", "externalra-caservice.properties", "ocsp.properties"};
 
 	public static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
 
@@ -119,6 +119,9 @@ public class ConfigurationHolder {
 					log.error("Failed to load configuration from resource " + "/conf/" + CONFIG_FILES[i], e);
 				}
 			}
+			if (config.getProperty("app.name.cap")==null) {
+				config.setProperty("app.name.cap", "EJBCA");
+			}
 		}
 		return config;
 	}
@@ -137,7 +140,16 @@ public class ConfigurationHolder {
 	}
 
 	public static String getString(String property, String defaultValue) {
-		return instance().getString(property, defaultValue);
+		// Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
+		String ret = "";
+		String rets[] = instance().getStringArray(property);
+		for (int i=0; i<rets.length; i++) {
+			ret += (i==0?"":",") + rets[i];
+		}
+		if (ret.length()==0) {
+			ret = defaultValue;
+		}
+		return ret;
 	}
 	
 	/**
@@ -148,8 +160,7 @@ public class ConfigurationHolder {
 	 * @param defaultValue to use if no property of such a name is found
 	 */
 	public static String getExpandedString(String property, String defaultValue) {
-		//String orderString = "${jboss.home}/server/default";
-		String ret = instance().getString(property, defaultValue);
+		String ret = getString(property, defaultValue);
 		while (ret.indexOf("${") != -1) {
 			ret = interpolate(ret);
 		}

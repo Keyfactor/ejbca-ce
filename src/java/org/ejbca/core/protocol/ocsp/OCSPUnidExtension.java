@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
+import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.CertTools;
@@ -72,14 +73,14 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	 * @param config ServletConfig that can be used to read init-params from web-xml
 	 */
 	public void init(ServletConfig config) {
-		// Datasource
-		dataSourceJndi = config.getInitParameter("unidDataSource");
+		// DataSource
+		dataSourceJndi = OcspConfiguration.getUnidDataSource();
         if (StringUtils.isEmpty(dataSourceJndi)) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidDataSource");
             m_log.error(errMsg);
             throw new IllegalArgumentException(errMsg);
         }
-        String trustDir = config.getInitParameter("unidTrustDir");
+        String trustDir = OcspConfiguration.getUnidTrustDir();
         if (StringUtils.isEmpty(trustDir)) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidTrustDir");
             m_log.error(errMsg);
@@ -120,7 +121,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
             m_log.error(errMsg, e);
             throw new IllegalArgumentException(errMsg);
         }
-        String cacertfile = config.getInitParameter("unidCACert");
+        String cacertfile = OcspConfiguration.getUnidCaCert();
         if (StringUtils.isEmpty(cacertfile)) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidCACert");
             m_log.error(errMsg);

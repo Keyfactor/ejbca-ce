@@ -52,7 +52,7 @@ public abstract class PatternLogger implements IPatternLogger {
 	 * @param logDateFormat A string that specifies how the log-time is formatted
 	 */
 	public PatternLogger(Matcher m, String orderString, Logger logger, String logDateFormat) {
-		this .m = m;
+		this.m = m;
 		this.orderString=orderString;
 		this.logger = logger;
 		this.logDateFormat = logDateFormat;
@@ -60,7 +60,7 @@ public abstract class PatternLogger implements IPatternLogger {
 	}
 	
 	public PatternLogger(Matcher m, String orderString, Logger logger, String logDateFormat, String timeZone) {
-		this .m = m;
+		this.m = m;
 		this.orderString=orderString;
 		this.logger = logger;
 		this.logDateFormat = logDateFormat;

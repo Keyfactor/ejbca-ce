@@ -43,10 +43,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -74,28 +74,27 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    final private String mKeystoreDirectoryName;
-    final private String mKeyPassword;
-    final private String mStorePassword;
+    final private String mKeystoreDirectoryName = OcspConfiguration.getSoftKeyDirectoryName();
+    final private String mKeyPassword = OcspConfiguration.getKeyPassword();
+    final private String mStorePassword = OcspConfiguration.getStorePassword();
     final private CardKeys mCardTokenObject;
 	final private Map<Integer, SigningEntity> signEntity;
 	final private Map<Integer, SigningEntity> newSignEntity;
     final private P11Slot slot;
-    final private String mP11Password;
+    final private String mP11Password = OcspConfiguration.getP11Password();
     final private OCSPServletStandAlone servlet;
 
-    OCSPServletStandAloneSession(ServletConfig config,
-                                 OCSPServletStandAlone _servlet) throws ServletException {
+    OCSPServletStandAloneSession(OCSPServletStandAlone _servlet) throws ServletException {
         this.signEntity = new ConcurrentHashMap<Integer, SigningEntity>();
         this.newSignEntity = new HashMap<Integer, SigningEntity>();
         this.servlet = _servlet;
         try {
             final boolean isIndex;
-            final String sharedLibrary = config.getInitParameter("sharedLibrary");
-            if ( sharedLibrary!=null && sharedLibrary.length()>0 ) {
+            final String sharedLibrary = OcspConfiguration.getSharedLibrary();
+            if ( sharedLibrary.length()>0 ) {
                 final String sSlot;
-                final String sSlotRead = config.getInitParameter("slot");
-                if ( sSlotRead==null || sSlotRead.length()<1 ) {
+                final String sSlotRead = OcspConfiguration.getSlot();
+                if ( sSlotRead.length()<1 ) {
                     throw new ServletException("No slot number given.");
                 }
                 final char firstChar = sSlotRead.charAt(0);
@@ -112,14 +111,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             	this.slot = null;
             	m_log.debug("No shared P11 library.");
             }
-            this.mP11Password = config.getInitParameter("p11password");
-			this.mKeyPassword = config.getInitParameter("keyPassword");
-			if ( this.mKeyPassword==null || this.mKeyPassword.length()==0 ) {
+			if ( this.mKeyPassword.length()==0 ) {
 			    throw new ServletException("no keystore password given");
 			}
-			final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
-			if ( hardTokenClassName!=null && hardTokenClassName.length()>0 ) {
-			    String sCardPassword = config.getInitParameter("cardPassword");
+			final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
+			if ( hardTokenClassName.length()>0 ) {
+			    String sCardPassword = OcspConfiguration.getCardPassword();
 			    sCardPassword = sCardPassword!=null ? sCardPassword.trim() : null;
                 CardKeys tmp = null;
 			    if ( sCardPassword!=null && sCardPassword.length()>0 ) {
@@ -140,15 +137,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 			    String iMsg = intres.getLocalizedMessage("ocsp.nohwsigningclass");
 			    m_log.info(iMsg);
 			}
-			{
-			    final String sTmp = config.getInitParameter("storePassword");
-			    if ( sTmp==null || sTmp.length()==0 ) {
-			        this.mStorePassword = this.mKeyPassword;
-			    } else {
-			        this.mStorePassword = sTmp;
-			    }
-			}            
-            this.mKeystoreDirectoryName = config.getInitParameter("softKeyDirectoryName");
             m_log.debug("softKeyDirectoryName is: "+this.mKeystoreDirectoryName);
             if ( this.mKeystoreDirectoryName!=null && this.mKeystoreDirectoryName.length()>0 ) {
                 ExtOCSPHealthCheck.setHealtChecker(this.servlet);

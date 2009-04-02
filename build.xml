@@ -340,6 +340,9 @@
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
         	</fileset>	
+            <fileset dir="${ejbca.home}">
+				<include name="conf/**/*.properties"/>
+			</fileset>	
         </jar>
     </target>
 
@@ -503,6 +506,7 @@
                 <include name="${lib}/commons-lang-*.jar" />
                 <include name="${lib}/commons-collections-3.2.jar" />
                 <include name="${lib}/commons-fileupload-1.0.jar" />
+                <include name="${lib}/commons-configuration-1.5.jar" />
             </fileset>
             <fileset dir="${ocsp-dist.dir}">
                 <include name="*-ejb.jar" />
