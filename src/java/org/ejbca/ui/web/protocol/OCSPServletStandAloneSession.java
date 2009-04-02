@@ -23,7 +23,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.Signature;
 import java.security.KeyStore.PasswordProtection;
 import java.security.cert.Certificate;
@@ -258,7 +257,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 if (m_log.isDebugEnabled()) {
                     m_log.debug("Trying to load signing keys for signer with subjectDN (EJBCA ordering) '"+CertTools.getSubjectDN(cert)+"', keystore alias '"+alias+"'");                	
                 }
-                final PrivateKeyFactory pkf = new PrivateKeyFactoryKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore);
+                final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore);
                 if ( pkf.getKey()!=null && cert!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
                     putSignEntity(pkf, cert, adm, providerHandler);
                 } else {
@@ -272,7 +271,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
         }
     }
-    private boolean putSignEntity( PrivateKeyFactory keyFactory, X509Certificate cert, Admin adm, ProviderHandler providerHandler ) {
+    private boolean putSignEntity( PrivateKeyContainer keyFactory, X509Certificate cert, Admin adm, ProviderHandler providerHandler ) {
         if ( keyFactory==null || cert==null )
             return false;
         providerHandler.addKeyFactory(keyFactory);
@@ -312,7 +311,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     	pw.flush();
     	return sw.toString();
     }
-    private interface PrivateKeyFactory {
+    private interface PrivateKeyContainer {
         /**
          * @return the key
          * @throws Exception
@@ -332,11 +331,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 		 */
 		boolean isOK();
     }
-    private class PrivateKeyFactoryKeyStore implements PrivateKeyFactory {
+    private class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
         final private char password[];
         final private String alias;
         private PrivateKey privateKey;
-        PrivateKeyFactoryKeyStore( String a, char pw[], KeyStore keyStore) throws Exception {
+        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore keyStore) throws Exception {
             this.alias = a;
             this.password = pw;
             set(keyStore);
@@ -371,12 +370,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         @Override
         public String toString() {
-            return "PrivateKeyFactoryKeyStore for key with alias "+this.alias+'.';
+            return "PrivateKeyContainerKeyStore for key with alias "+this.alias+'.';
         }
     }
-    private class PrivateKeyFactoryCard implements PrivateKeyFactory {
+    private class PrivateKeyContainerCard implements PrivateKeyContainer {
         final private RSAPublicKey publicKey;
-        PrivateKeyFactoryCard( RSAPublicKey key) {
+        PrivateKeyContainerCard( RSAPublicKey key) {
             this.publicKey = key;
         }
         /* (non-Javadoc)
@@ -407,7 +406,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     private boolean putSignEntityCard( Certificate _cert, Admin adm ) {
         if ( _cert!=null &&  _cert instanceof X509Certificate) {
             final X509Certificate cert = (X509Certificate)_cert;
-            final PrivateKeyFactory keyFactory = new PrivateKeyFactoryCard((RSAPublicKey)cert.getPublicKey());
+            final PrivateKeyContainer keyFactory = new PrivateKeyContainerCard((RSAPublicKey)cert.getPublicKey());
             putSignEntity( keyFactory, cert, adm, new CardProviderHandler() );
             m_log.debug("HW key added. Serial number: "+cert.getSerialNumber().toString(0x10));
             return true;
@@ -521,7 +520,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         /**
          * @param keyFactory to be updated at reload
          */
-        void addKeyFactory(PrivateKeyFactory keyFactory);
+        void addKeyFactory(PrivateKeyContainer keyFactory);
         /**
          * start a threads that tryes to reload the provider until it is none
          */
@@ -543,7 +542,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#addKeyFactory(org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory)
          */
-        public void addKeyFactory(PrivateKeyFactory keyFactory) {
+        public void addKeyFactory(PrivateKeyContainer keyFactory) {
             // do nothing
         }
     }
@@ -560,22 +559,18 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         public void reload() {
             // no use reloading a SW provider
         }
-        public void addKeyFactory(PrivateKeyFactory keyFactory) {
+        public void addKeyFactory(PrivateKeyContainer keyFactory) {
             // do nothing
             
         }
     }
     private class P11ProviderHandler implements ProviderHandler {
-        private String name;
+        final private String name;
         private boolean isOK;
-        final Set<PrivateKeyFactory> sKeyFacrory = new HashSet<PrivateKeyFactory>();
+        final Set<PrivateKeyContainer> sKeyFacrory = new HashSet<PrivateKeyContainer>();
         P11ProviderHandler() throws Exception {
-            addProvider();
-            this.isOK = true;
-        }
-        private void addProvider() throws Exception {
-            Security.addProvider( OCSPServletStandAloneSession.this.slot.getProvider() );
             this.name = OCSPServletStandAloneSession.this.slot.getProvider().getName();
+            this.isOK = true;
         }
         public KeyStore getKeyStore(PasswordProtection pwp) throws Exception {
             final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
@@ -601,24 +596,24 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 while ( true ) try {
                     errorMessage = "";
                     {
-                        final Iterator<PrivateKeyFactory> i = P11ProviderHandler.this.sKeyFacrory.iterator();
+                        final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyFacrory.iterator();
                         while ( i.hasNext() ) {
-                            i.next().clear();
+                            i.next().clear(); // clear all not useable old keys
                         }
                     }
                     OCSPServletStandAloneSession.this.slot.reset();
+                    synchronized( this ) {
+                        this.wait(10000); // wait 10 seconds to make system recover before trying again. all threads with ongoing operations has to stop
+                    }
                     {
-                        final Iterator<PrivateKeyFactory> i = P11ProviderHandler.this.sKeyFacrory.iterator();
+                        final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyFacrory.iterator();
                         while ( i.hasNext() ) {
-                            PrivateKeyFactory pkf = i.next();
+                            PrivateKeyContainer pkf = i.next();
                             errorMessage = pkf.toString();
                             m_log.debug("Trying to reload: "+errorMessage);
                             pkf.set(P11ProviderHandler.this.getKeyStore(P11ProviderHandler.this.getPwd()));
                             m_log.info("Reloaded: "+errorMessage);
                         }
-                    }
-                    synchronized( this ) {
-                        this.wait(10000); // wait
                     }
                     P11ProviderHandler.this.isOK = true;
                     return;
@@ -639,15 +634,15 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#addKeyFactory(org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory)
          */
-        public void addKeyFactory(PrivateKeyFactory keyFactory) {
+        public void addKeyFactory(PrivateKeyContainer keyFactory) {
             this.sKeyFacrory.add(keyFactory);
         }
     }
     private class SigningEntity {
         final private X509Certificate mChain[];
-        final private PrivateKeyFactory mKeyFactory;
+        final private PrivateKeyContainer mKeyFactory;
         final private ProviderHandler providerHandler;
-        SigningEntity(X509Certificate c[], PrivateKeyFactory f, ProviderHandler ph) {
+        SigningEntity(X509Certificate c[], PrivateKeyContainer f, ProviderHandler ph) {
             this.mChain = c;
             this.mKeyFactory = f;
             this.providerHandler = ph;

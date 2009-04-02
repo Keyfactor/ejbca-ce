@@ -120,12 +120,13 @@ public class P11Slot {
      * @throws CATokenOfflineException
      */
     public synchronized Provider getProvider() throws CATokenOfflineException {
-        while ( this.isSettingProvider )
+        while ( this.isSettingProvider ) {
             try {
                 this.wait();
             } catch (InterruptedException e1) {
                 log.fatal("This should never happend", e1);
             }
+        }
         if ( this.provider!=null )
             return this.provider;
         try {
@@ -142,6 +143,9 @@ public class P11Slot {
         }
         if ( this.provider==null )
             throw new CATokenOfflineException("Provider is null");
+        if ( Security.getProvider(this.provider.getName())==null ) {
+            Security.addProvider( this.provider );
+        }
         log.debug("Provider successfully added: "+this.provider);
         return this.provider;
     }
