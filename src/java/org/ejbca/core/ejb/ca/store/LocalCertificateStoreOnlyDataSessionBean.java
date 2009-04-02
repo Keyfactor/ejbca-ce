@@ -25,13 +25,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.ui.web.protocol.IOCSPServletStandAloneSession;
 import org.ejbca.util.CertTools;
 
 /**
@@ -102,7 +97,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
     public LocalCertificateStoreOnlyDataSessionBean() {
         super();
         CertTools.installBCProvider();
-        this.adapter = new MyAdapter();
+        adapter = new MyAdapter();
     }
 
     /**
@@ -115,39 +110,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(admin, issuerDN, serno, this.certHome, this.protecthome, this.adapter);
-    }
-
-    /**
-     * @param session
-     * @param adm
-     * @param caid
-     * @param request
-     * @return The signed OCSP response
-     * @throws ExtendedCAServiceRequestException
-     * @throws ExtendedCAServiceNotActiveException
-     * @throws IllegalExtendedCAServiceRequestException
-     * @ejb.interface-method
-     */
-    public OCSPCAServiceResponse extendedService(IOCSPServletStandAloneSession session, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
-        return session.extendedService(caid, request);
-    }
-    /**
-     * @param session
-     * @return Health check answer to be placed in the health check servlet response.
-     * @ejb.interface-method
-     */
-    public String healthCheck(IOCSPServletStandAloneSession session) {
-        return session.healthCheck(this);
-    }
-    /**
-     * @param session
-     * @param adm
-     * @throws Exception
-     * @ejb.interface-method
-     */
-    public void loadPrivateKeys(IOCSPServletStandAloneSession session, Admin adm) throws Exception {
-        session.loadPrivateKeys(adm, this);
+        return CertificateDataUtil.getStatus(admin, issuerDN, serno, certHome, protecthome, adapter);
     }
 
     /**
@@ -160,7 +123,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
-    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, this.certHome, this.adapter);
+    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, certHome, adapter);
     } //findCertificateByIssuerAndSerno
 
     /**
@@ -232,7 +195,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
-        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, this.certHome, this.adapter);
+        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, certHome, adapter);
     } // findCertificatesByType
 
     private class MyAdapter implements CertificateDataUtil.Adapter {
@@ -240,7 +203,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#getLogger()
          */
         public Logger getLogger() {
-            return LocalCertificateStoreOnlyDataSessionBean.this.log;
+            return log;
         }
         /* (non-Javadoc)
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
@@ -274,13 +237,10 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        this.certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
-        if ( this.certHome==null ) {
-            throw new CreateException("Home can not be created.");
-        }
+        certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         String sign = getLocator().getString("java:comp/env/certSigning");
         if (StringUtils.equalsIgnoreCase(sign, "true")) {
-        	this.protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
+        	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
         }
     }
 

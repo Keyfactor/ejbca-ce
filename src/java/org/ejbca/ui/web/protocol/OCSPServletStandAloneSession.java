@@ -48,7 +48,6 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.LocalCertificateStoreOnlyDataSessionBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -69,7 +68,7 @@ import org.ejbca.util.keystore.P11Slot.P11SlotUser;
  * @author Lars Silven PrimeKey
  * @version  $Id
  */
-public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletStandAloneSession {
+class OCSPServletStandAloneSession implements P11SlotUser {
 
     static final private Logger m_log = Logger.getLogger(OCSPServletStandAloneSession.class);
     /** Internal localization of logs and errors */
@@ -159,6 +158,10 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         		String errMsg = intres.getLocalizedMessage("ocsp.errornovalidkeys");
             	throw new ServletException(errMsg);
             }
+            
+    		// Load OCSP responders private keys into cache in init to speed things up for the first request
+            loadPrivateKeys(this.servlet.m_adm);	
+            
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -169,9 +172,9 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         this.isActive = true;
     }
     
-    private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm, LocalCertificateStoreOnlyDataSessionBean bean) {
+    private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
     	String issuerDN = CertTools.getIssuerDN(cert);
-        final CertificateStatus status = bean.getStatus(adm, issuerDN, CertTools.getSerialNumber(cert));
+        final CertificateStatus status = this.servlet.getStatus(adm, issuerDN, CertTools.getSerialNumber(cert));
         if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
     		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN);
             m_log.warn(wMsg);
@@ -205,7 +208,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         }
         return chain;
     }
-    private boolean loadFromP11HSM(Admin adm, LocalCertificateStoreOnlyDataSessionBean bean) throws Exception {
+    private boolean loadFromP11HSM(Admin adm) throws Exception {
     	m_log.trace(">loadFromP11HSM");
         if ( this.slot==null ) {
         	m_log.trace("<loadFromP11HSM: no shared library");
@@ -213,12 +216,12 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         }
         final P11ProviderHandler providerHandler = new P11ProviderHandler();
         final PasswordProtection pwp = providerHandler.getPwd();
-        loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, this.slot.toString(), providerHandler, bean);
+        loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, this.slot.toString(), providerHandler);
         pwp.destroy();
     	m_log.trace("<loadFromP11HSM");
         return true;
     }
-    private boolean loadFromSWKeyStore(Admin adm, String fileName, LocalCertificateStoreOnlyDataSessionBean bean) {
+    private boolean loadFromSWKeyStore(Admin adm, String fileName) {
     	m_log.trace(">loadFromSWKeyStore");
     	boolean ret = false;
         try {
@@ -230,7 +233,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
                 keyStore = KeyStore.getInstance("PKCS12", "BC");
                 keyStore.load(new FileInputStream(fileName), this.mStorePassword.toCharArray());
             }
-            loadFromKeyStore(adm, keyStore, this.mKeyPassword, fileName, new SWProviderHandler(), bean);
+            loadFromKeyStore(adm, keyStore, this.mKeyPassword, fileName, new SWProviderHandler());
             ret = true;
         } catch( Exception e ) {
             m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
@@ -261,8 +264,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         return result;
     }
     private void loadFromKeyStore(Admin adm, KeyStore keyStore, String keyPassword,
-                                  String errorComment, ProviderHandler providerHandler,
-                                  LocalCertificateStoreOnlyDataSessionBean bean ) throws KeyStoreException {
+                                  String errorComment, ProviderHandler providerHandler) throws KeyStoreException {
         final Enumeration<String> eAlias = keyStore.aliases();
         while( eAlias.hasMoreElements() ) {
             final String alias = eAlias.nextElement();
@@ -273,7 +275,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
                 }
                 final PrivateKeyFactory pkf = new PrivateKeyFactoryKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore);
                 if ( pkf.getKey()!=null && cert!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
-                    putSignEntity(pkf, cert, adm, providerHandler, bean);
+                    putSignEntity(pkf, cert, adm, providerHandler);
                 } else {
                     if (m_log.isDebugEnabled()) {
                     	m_log.debug("Not adding a signEntity for: "+CertTools.getSubjectDN(cert));
@@ -285,12 +287,11 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
             }
         }
     }
-    private boolean putSignEntity( PrivateKeyFactory keyFactory, X509Certificate cert, Admin adm, ProviderHandler providerHandler,
-                                   LocalCertificateStoreOnlyDataSessionBean bean ) {
+    private boolean putSignEntity( PrivateKeyFactory keyFactory, X509Certificate cert, Admin adm, ProviderHandler providerHandler ) {
         if ( keyFactory==null || cert==null )
             return false;
         providerHandler.addKeyFactory(keyFactory);
-        final X509Certificate[] chain = getCertificateChain(cert, adm, bean);
+        final X509Certificate[] chain = getCertificateChain(cert, adm);
         if ( chain!=null ) {
             final int caid = this.servlet.getCaid(chain[1]);
             final SigningEntity oldSigningEntity = this.signEntity.get(new Integer(caid));
@@ -303,14 +304,11 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         }
         return true;
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.IOCSPServletStandAloneSession#healthCheck()
-     */
-    public String healthCheck(LocalCertificateStoreOnlyDataSessionBean bean) {
+    String healthCheck() {
     	StringWriter sw = new StringWriter();
     	PrintWriter pw = new PrintWriter(sw);
         try {
-        	loadPrivateKeys(this.servlet.m_adm, bean);
+        	loadPrivateKeys(this.servlet.m_adm);
             Iterator<SigningEntity> i = this.signEntity.values().iterator();
 	    	while ( i.hasNext() ) {
 	    		SigningEntity signingEntity = i.next();
@@ -421,17 +419,17 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
             // not used by cards.
         }
     }
-    private boolean putSignEntityCard( Certificate _cert, Admin adm, LocalCertificateStoreOnlyDataSessionBean bean ) {
+    private boolean putSignEntityCard( Certificate _cert, Admin adm ) {
         if ( _cert!=null &&  _cert instanceof X509Certificate) {
             final X509Certificate cert = (X509Certificate)_cert;
             final PrivateKeyFactory keyFactory = new PrivateKeyFactoryCard((RSAPublicKey)cert.getPublicKey());
-            putSignEntity( keyFactory, cert, adm, new CardProviderHandler(), bean );
+            putSignEntity( keyFactory, cert, adm, new CardProviderHandler() );
             m_log.debug("HW key added. Serial number: "+cert.getSerialNumber().toString(0x10));
             return true;
         }
         return false;
     }
-    private void loadFromKeyCards(Admin adm, String fileName, LocalCertificateStoreOnlyDataSessionBean bean) {
+    private void loadFromKeyCards(Admin adm, String fileName) {
     	m_log.trace(">loadFromKeyCards");
         final CertificateFactory cf;
         try {
@@ -445,7 +443,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
             if ( c!=null && !c.isEmpty() ) {
                 Iterator<? extends Certificate> i = c.iterator();
                 while (i.hasNext()) {
-                    if ( putSignEntityCard(i.next(), adm, bean) )
+                    if ( putSignEntityCard(i.next(), adm) )
                         fileType = "PKCS#7";
                 }
             }
@@ -456,7 +454,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
             try {// read concatenated certificate in PEM format
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
                 while (bis.available() > 0) {
-                    if ( putSignEntityCard(cf.generateCertificate(bis), adm, bean) )
+                    if ( putSignEntityCard(cf.generateCertificate(bis), adm) )
                         fileType="PEM";
                 }
             } catch(Exception e){
@@ -470,10 +468,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         }
     	m_log.trace("<loadFromKeyCards");
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.IOCSPServletStandAloneSession#loadPrivateKeys(org.ejbca.core.model.log.Admin)
-     */
-    public void loadPrivateKeys(Admin adm, LocalCertificateStoreOnlyDataSessionBean bean) throws Exception {
+    void loadPrivateKeys(Admin adm) throws Exception {
     	m_log.trace(">loadPrivateKeys");
     	// We will only load private keys if the cache time has run out
 		if ( (this.signEntity != null) && (this.signEntity.size() > 0) && (this.servlet.mKeysValidTo > new Date().getTime()) ) {
@@ -481,15 +476,15 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
 			return;
 		}
         this.newSignEntity.clear();
-        loadFromP11HSM(adm, bean);
+        loadFromP11HSM(adm);
         final File dir = this.mKeystoreDirectoryName!=null ? new File(this.mKeystoreDirectoryName) : null;
         if ( dir!=null && dir.isDirectory() ) {
             final File files[] = dir.listFiles();
             if ( files!=null && files.length>0 ) {
                 for ( int i=0; i<files.length; i++ ) {
                     final String fileName = files[i].getCanonicalPath();
-                    if ( !loadFromSWKeyStore(adm, fileName, bean) )
-                        loadFromKeyCards(adm, fileName, bean);
+                    if ( !loadFromSWKeyStore(adm, fileName) )
+                        loadFromKeyCards(adm, fileName);
                 }
             } else {
             	m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
@@ -636,6 +631,9 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
                             pkf.set(P11ProviderHandler.this.getKeyStore(P11ProviderHandler.this.getPwd()));
                         }
                     }
+                    synchronized( this ) {
+                        this.wait(10000); // wait
+                    }
                     P11ProviderHandler.this.isOK = true;
                     return;
                 } catch ( Throwable t ) {
@@ -669,22 +667,26 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
             this.providerHandler = ph;
         }
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException {
-        	PrivateKey privKey;
             final String hsmErrorString = "HSM not functional";
+            final String providerName = this.providerHandler.getProviderName();
+            if ( providerName==null ) {
+                throw new ExtendedCAServiceRequestException(hsmErrorString);
+            }
+            final PrivateKey privKey;
 			try {
 				privKey = this.mKeyFactory.getKey();
-                if ( privKey==null )
-                    throw new ExtendedCAServiceRequestException(hsmErrorString);
             } catch (ExtendedCAServiceRequestException e) {
                 this.providerHandler.reload();
                 throw e;
             } catch (Exception e) {
+                this.providerHandler.reload();
                 throw new ExtendedCAServiceRequestException(e);
             }
-        	if ( this.providerHandler.getProviderName()==null )
+            if ( privKey==null ) {
                 throw new ExtendedCAServiceRequestException(hsmErrorString);
+            }
             try {
-                return OCSPUtil.createOCSPCAServiceResponse(request, privKey, this.providerHandler.getProviderName(), this.mChain);
+                return OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, this.mChain);
             } catch( ExtendedCAServiceRequestException e) {
                 this.providerHandler.reload();
                 throw e;
@@ -709,10 +711,7 @@ public class OCSPServletStandAloneSession implements P11SlotUser, IOCSPServletSt
         	return this.mChain;
         }
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.IOCSPServletStandAloneSession#extendedService(int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
-     */
-    public OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
+   	OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         SigningEntity se = this.signEntity.get(new Integer(caid));
         if ( se==null ) {
         	if (m_log.isDebugEnabled()) {

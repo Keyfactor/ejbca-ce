@@ -30,6 +30,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
@@ -101,7 +102,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private static final long serialVersionUID = -7093480682721604160L;
 
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
-    private IOCSPServletStandAloneSession session;
+    private OCSPServletStandAloneSession session;
 
     public OCSPServletStandAlone() {
         super();
@@ -109,19 +110,12 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         this.session = new OCSPServletStandAloneSession(config, this);
-        if ( this.session.isActive() ) {
-            try {
-                loadPrivateKeys(this.m_adm);
-            } catch( Exception e ) {
-                throw new ServletException(e);
-            }
-        }
     }
     
     /**
      * Returns the certificate data only session bean
      */
-    private synchronized ICertificateStoreOnlyDataSessionLocal getStoreSessionOnlyData(){
+    synchronized ICertificateStoreOnlyDataSessionLocal getStoreSessionOnlyData(){
     	if(this.m_certStore == null){	
     		try {
                 ServiceLocator locator = ServiceLocator.getInstance();
@@ -136,10 +130,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     public String healthCheck() {
-        return getStoreSessionOnlyData().healthCheck(this.session);
+        return this.session.healthCheck();
     }
     void loadPrivateKeys(Admin adm) throws Exception {
-        getStoreSessionOnlyData().loadPrivateKeys(this.session, adm);
+        this.session.loadPrivateKeys(adm);
     }
     
     Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
@@ -147,7 +141,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
     OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
                                                                                                     ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
-        return getStoreSessionOnlyData().extendedService(this.session, caid, request);
+        return this.session.extendedService(caid, request);
     }
     CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber) {
         return getStoreSessionOnlyData().getStatus(adm, name, serialNumber);
