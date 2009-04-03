@@ -692,16 +692,83 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         	return this.mChain;
         }
     }
-   	OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
+    /**
+     * Runnable that will do the response signing.
+     * The signing is runned in a separate thread since it in rare occasion does not return.
+     */
+    private class SignerThread implements Runnable{
+        final private SigningEntity se;
+        final private OCSPCAServiceRequest request;
+        private OCSPCAServiceResponse result = null;
+        private ExtendedCAServiceRequestException extendedCAServiceRequestException = null;
+        private IllegalExtendedCAServiceRequestException illegalExtendedCAServiceRequestException = null;
+        SignerThread( SigningEntity _se, OCSPCAServiceRequest _request) {
+            this.se = _se;
+            this.request = _request;
+        }
+        /* (non-Javadoc)
+         * @see java.lang.Runnable#run()
+         */
+        public void run() {
+            OCSPCAServiceResponse _result = null;
+            ExtendedCAServiceRequestException _extendedCAServiceRequestException = null;
+            IllegalExtendedCAServiceRequestException _illegalExtendedCAServiceRequestException = null;
+            try {
+                _result = this.se.sign(this.request);
+            } catch (ExtendedCAServiceRequestException e) {
+                _extendedCAServiceRequestException = e;
+            } catch (IllegalExtendedCAServiceRequestException e) {
+                _illegalExtendedCAServiceRequestException = e;
+            }
+            synchronized(this) { // setting the results must be synchronized. The main thread may not access these attributes during this time.
+                this.result = _result;
+                this.extendedCAServiceRequestException = _extendedCAServiceRequestException;
+                this.illegalExtendedCAServiceRequestException = _illegalExtendedCAServiceRequestException;
+                this.notifyAll();
+            }
+        }
+        /**
+         * This method is called by the main thread to get the signing result. The method waits until the result is ready or until a timeout is reached.
+         * @return the result
+         * @throws ExtendedCAServiceRequestException
+         * @throws IllegalExtendedCAServiceRequestException
+         */
+        synchronized OCSPCAServiceResponse getSignResult() throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException {
+            final long HSM_TIMEOUT=30000; // in milliseconds
+            if ( this.result==null && this.extendedCAServiceRequestException==null && this.illegalExtendedCAServiceRequestException==null ) {
+                try {
+                    this.wait(HSM_TIMEOUT);
+                } catch (InterruptedException e) {
+                    throw new Error(e);
+                }
+            }
+            if ( this.illegalExtendedCAServiceRequestException!=null ) {
+                throw this.illegalExtendedCAServiceRequestException;
+            }
+            if ( this.extendedCAServiceRequestException!=null ) {
+                throw this.extendedCAServiceRequestException;
+            }
+            if ( this.result==null ) {
+                throw new ExtendedCAServiceRequestException("HSM has not responded within time limit. The timeout is set to "+HSM_TIMEOUT/1000+" seconds.");
+            }
+            return this.result;
+        }
+    }
+    OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         SigningEntity se = this.signEntity.get(new Integer(caid));
         if ( se==null ) {
-        	if (m_log.isDebugEnabled()) {
-            	m_log.debug("No key is available for caid=" + caid + " even though a valid certificate was present. Trying to use the default responder's key instead.");
-        	}
-        	se = this.signEntity.get(new Integer(this.servlet.getCaid(null)));	// Use the key issued by the default responder ID instead
+            if (m_log.isDebugEnabled()) {
+                m_log.debug("No key is available for caid=" + caid + " even though a valid certificate was present. Trying to use the default responder's key instead.");
+            }
+            se = this.signEntity.get(new Integer(this.servlet.getCaid(null)));	// Use the key issued by the default responder ID instead
         }
         if ( se!=null ) {
-            return se.sign(request);            
+            final SignerThread runnable = new SignerThread(se,request);
+            final Thread thread = new Thread(runnable);
+            thread.start();
+            final OCSPCAServiceResponse result = runnable.getSignResult();
+            thread.interrupt();
+            return result;
         }
         throw new ExtendedCAServiceNotActiveException("No ocsp signing key for caid "+caid);
     }
