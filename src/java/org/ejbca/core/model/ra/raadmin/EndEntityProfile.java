@@ -437,7 +437,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     /**
-     * Function that returns the number of one kind of field.
+     * Function that returns the number of one kind of field in the profile.
      *
      */
     protected int getNumberOfField(String parameter){
@@ -1405,7 +1405,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setModifyable(ALLOWEDREQUESTS, 0, true);            	
             }
 
-            // Support for allowed requests in profile version 10
+            // Support for merging DN from WS-API with default values in profile, in profile version 10
             if (getVersion() < 10) {
                 setAllowMergeDnWebServices(false);
             }

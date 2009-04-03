@@ -13,6 +13,12 @@
 
 package org.ejbca.ui.web;
 
+/**
+ * Represents a link to another view. Used by approvals to link from approvals list to certificate views.
+ * 
+ * @version $Id$
+ *
+ */
 public class LinkView {
 
 	private String URI;

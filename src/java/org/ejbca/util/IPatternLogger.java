@@ -13,6 +13,11 @@
 
 package org.ejbca.util;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
 public interface IPatternLogger {
 
 	public static final String LOG_TIME = "LOG_TIME";// The Date and time the request.

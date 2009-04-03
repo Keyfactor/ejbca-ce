@@ -18,6 +18,11 @@ import org.ejbca.core.model.log.ProtectedLogVerifier;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
+/**
+ * javadoc this one!
+ * @version $Id$
+ *
+ */
 public class ProtectedLogVerificationWorker extends BaseWorker {
 
 	private static final Logger log = Logger.getLogger(ProtectedLogVerificationWorker.class);

@@ -22,6 +22,8 @@ import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
+ * 
+ * @version $Id$
  */
 public class OcspConfiguration {
 

@@ -24,6 +24,8 @@ import org.apache.log4j.Logger;
  * Cache that keeps track of requestes and adds a part of them to the cache if requested to.
  * 
  * Used by ProtectedLogSession to avoid iterating over the same interval several times.
+ * 
+ * @version $Id$
  */
 public class ManualUpdateCache {
 

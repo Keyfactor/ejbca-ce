@@ -46,7 +46,12 @@ import org.quickserver.net.server.ClientHandler;
 import org.quickserver.net.server.DataMode;
 import org.quickserver.net.server.DataType;
 
-
+/**
+ * Class receiving TCP messages from QuickServer (receives quickserver events) and routing them to the correct CMP handler class.
+ * 
+ * @author tomas
+ * @version $Id$
+ */
 public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHandler  {
 	private static final Logger log = Logger.getLogger(CmpTcpCommandHandler.class.getName());
     /** Internal localization of logs and errors */

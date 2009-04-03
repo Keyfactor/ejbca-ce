@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 

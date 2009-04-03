@@ -106,7 +106,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
 
     /** 
      * Method returning a Collection of authorized AdminGroups.
-     * Only the fields admingroupname and CA id is filled in these objects.
+     * Only the fields admingroup name and CA id is filled in these objects.
      */
    
     public Collection getAdminGroupNames(){ 
@@ -165,7 +165,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     
     
     /**
-     * Method réturning all the available access rules authorized to administrator to manage.
+     * Method returning all the available access rules authorized to administrator to manage.
      *
      * @returns a Collection of String with available access rules.
      */
@@ -177,7 +177,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        * Method to add a Collection of AdminEntity to an admingroup.
        *
        * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs 
-       * administrative priviledges.
+       * administrative privileges.
        */
     public void addAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(admingroupname);	  
@@ -190,7 +190,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        * Method to remove a Collection of AdminEntity from an admingroup.
        *
        * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs 
-       * administrative priviledges.
+       * administrative privileges.
        */
     public void removeAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(admingroupname);
@@ -200,7 +200,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
 
 
     private void authorizedToEditAdministratorPrivileges(String admingroup) throws AuthorizationDeniedException{
-       // Authorized to edit administrative priviledges
+       // Authorized to edit administrative privileges
       authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.REGULAR_EDITADMINISTRATORPRIVILEDGES);
       // Authorized to group
       authorizationsession.isAuthorizedToGroup(administrator, admingroup);
