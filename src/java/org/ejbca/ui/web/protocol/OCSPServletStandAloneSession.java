@@ -650,8 +650,16 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException {
             final String hsmErrorString = "HSM not functional";
             final String providerName = this.providerHandler.getProviderName();
+            final long HSM_DOWN_ANSWER_TIME = 15000; 
             if ( providerName==null ) {
-                throw new ExtendedCAServiceRequestException(hsmErrorString);
+                synchronized(this) {
+                    try {
+                        this.wait(HSM_DOWN_ANSWER_TIME); // Wait here to prevent the client repeat the request right away. Some CPU power might be needed to recover the HSM.
+                    } catch (InterruptedException e) {
+                        throw new Error(e); //should never ever happend. The main thread should never be interupted.
+                    }
+                }
+                throw new ExtendedCAServiceRequestException(hsmErrorString+". Waited "+HSM_DOWN_ANSWER_TIME/1000+" seconds to throw the exception");
             }
             final PrivateKey privKey;
 			try {
