@@ -19,7 +19,7 @@ import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
- * javadoc this one!
+ * EJBCA Service wrapper for ProtectedLogVerifier to run as a worker.
  * @version $Id$
  *
  */
