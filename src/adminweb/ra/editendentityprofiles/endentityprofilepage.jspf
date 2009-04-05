@@ -586,7 +586,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         &nbsp
       </td>
       <td width="25%"  align="right"> 
-            <%= ejbcawebbean.getText("REVERSEFIELDCHECKS") %> 
+            <%= ejbcawebbean.getText("REVERSEFIELDCHECKS") %> <%= ejbcawebbean.getHelpReference("/manual.html#Reverse%20Subject%20DN%20Alt%20Name%20Checks") %>
       </td>
       <td width="70%">                   
         <input type="checkbox" name="<%=CHECKBOX_REVERSEFIELDCHECKS %>" value="<%=CHECKBOX_VALUE %>"   <% if(profiledata.getReverseFieldChecks()) out.write("CHECKED"); %>>          

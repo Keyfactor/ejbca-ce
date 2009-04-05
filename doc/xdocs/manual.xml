@@ -541,6 +541,14 @@ added. You can also specify a default value for the end entity profile. Differen
 in the end entity profile page.   
 </p>
 </subsection>
+<subsection name="Reverse Subject DN Alt Name Checks">
+<p>
+This checkbox is not recommended to be used in normal operations. When using the External RA and more than one DN field type is set in the profile,
+for example one optional OU and one required OU, it might be needed to check this checkbox for the profile validation to work.
+<br/>
+Only use it in such a special case, if nothing else work. This option may be removed in the future.
+</p>
+</subsection>
 </section>
 
 <section name="Export and import profiles">
