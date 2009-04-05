@@ -2503,19 +2503,20 @@ public class CertTools {
  
       return newdn;
     } // insertCNPostfix
-    
-    /** Simple method that looks at the certificate and determines, from EJBCA's standpoint, which signature algorithm it is
+
+    /** Simple methods that returns the signature algorithm value from the certificate. Not usable for setting
+     * signature algorithms names in EJBCA, only for human presentation.
      * 
-     * @param cert the cert to examine
-     * @return Signature algorithm from CATokenInfo.SIGALG_SHA1_WITH_RSA etc.
+     * @return Signature algorithm from the certificate as a human readable string, for example SHA1WithRSA.
      */
-    public static String getSignatureAlgorithm(Certificate cert) {
-		// Assume that the same hash algorithm is used for signing that was used to sign this CA cert
-		String signatureAlgorithm = null;
+    public static String getCertSignatureAlgorithmAsString(Certificate cert) {
 		String certSignatureAlgorithm  = null;
 		if (cert instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) cert;
     		certSignatureAlgorithm = x509cert.getSigAlgName();
+    		if (log.isDebugEnabled()) {
+        		log.info("certSignatureAlgorithm is: "+certSignatureAlgorithm);    			
+    		}
 		} else if (StringUtils.equals(cert.getType(), "CVC")) {
 			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
 			CVCPublicKey cvcpk;
@@ -2525,10 +2526,26 @@ public class CertTools {
 				certSignatureAlgorithm = AlgorithmUtil.getAlgorithmName(oid);
 			} catch (NoSuchFieldException e) {
 				log.error("NoSuchFieldException: ", e);
-				return null;
 			}
 		}
-
+		// Try to make it easier to display some signature algorithms that cert.getSigAlgName() does not have a good string for.
+		if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.113549.1.1.10")) {
+			certSignatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1;					
+		}
+		return certSignatureAlgorithm;
+    }
+    
+    /** Simple method that looks at the certificate and determines, from EJBCA's standpoint, which signature algorithm it is
+     * 
+     * @param cert the cert to examine
+     * @return Signature algorithm from CATokenInfo.SIGALG_SHA1_WITH_RSA etc.
+     */
+    public static String getSignatureAlgorithm(Certificate cert) {
+		String signatureAlgorithm = null;
+		String certSignatureAlgorithm  = getCertSignatureAlgorithmAsString(cert);
+		
+		// The signature strign returned from the certificate is often not usable as the signature algorithm we must
+		// specify for a CA in EJBCA, for example SHA1WithECDSA is returned as only ECDSA, so we need some magic to fix it up.
 		PublicKey publickey = cert.getPublicKey();
 		if ( publickey instanceof RSAPublicKey ) {
 		    boolean isMgf = true;
@@ -2565,6 +2582,7 @@ public class CertTools {
 				signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_ECDSA;
 			}
 		}
+
 		log.debug("getSignatureAlgorithm: "+signatureAlgorithm);
 		return signatureAlgorithm;
     } // getSignatureAlgorithm

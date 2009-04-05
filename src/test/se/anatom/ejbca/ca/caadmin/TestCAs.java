@@ -156,6 +156,8 @@ public class TestCAs extends TestCase {
 
             rootcacertchain = info.getCertificateChain();
             X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_RSA, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TEST"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TEST"));
             PublicKey pk = cert.getPublicKey();
@@ -299,6 +301,8 @@ public class TestCAs extends TestCase {
             CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTECDSA");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_ECDSA, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSA"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSA"));
             PublicKey pk = cert.getPublicKey();
@@ -499,6 +503,8 @@ public class TestCAs extends TestCase {
             CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSha256WithMGF1");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(cadn));
             assertTrue("Creating CA failed", info.getSubjectDN().equals(cadn));
             PublicKey pk = cert.getPublicKey();
@@ -530,7 +536,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncKeySpec("2048");
             catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
             catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
@@ -589,6 +595,8 @@ public class TestCAs extends TestCase {
             CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTRSA4096");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_RSA, sigAlg);
             assertTrue("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()).equals(dn));
             assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             // Normal order
@@ -682,6 +690,8 @@ public class TestCAs extends TestCase {
             CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, name);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_RSA, sigAlg);
             assertEquals("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()),dn);
             assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             // reverse order
@@ -754,6 +764,8 @@ public class TestCAs extends TestCase {
             assertEquals(CAInfo.CATYPE_CVC, cvcainfo.getCAType());
 
             Certificate cert = (Certificate)cvcainfo.getCertificateChain().iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1, sigAlg);
             assertEquals("CVC", cert.getType());
             assertEquals(rootcadn, CertTools.getSubjectDN(cert));
             assertEquals(rootcadn, CertTools.getIssuerDN(cert));
@@ -1073,6 +1085,8 @@ public class TestCAs extends TestCase {
             info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             Iterator iter = info.getCertificateChain().iterator();
             X509Certificate cert = (X509Certificate) iter.next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_RSA, sigAlg);
             assertTrue("Error in created ca certificate", CertTools.getSubjectDN(cert).equals("CN=TESTSIGNEDBYEXTERNAL"));
             assertTrue("Error in created ca certificate", CertTools.getIssuerDN(cert).equals("CN=TEST"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTSIGNEDBYEXTERNAL"));

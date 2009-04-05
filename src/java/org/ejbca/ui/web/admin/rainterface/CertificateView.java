@@ -191,7 +191,8 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public String getSignatureAlgoritm() {
-      return CertTools.getSignatureAlgorithm(certificate);
+    	// Only used for displaying to user so we can use this value that always works
+    	return CertTools.getCertSignatureAlgorithmAsString(certificate);
     }
 
     /** Method that returns if key is allowed for given usage. Usage must be one of this class key usage constants. */
