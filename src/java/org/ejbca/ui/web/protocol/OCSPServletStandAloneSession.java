@@ -56,7 +56,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
-import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.keystore.P11Slot.P11SlotUser;
@@ -81,6 +80,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     final private String mP11Password = OcspConfiguration.getP11Password();
     final private OCSPServletStandAlone servlet;
 
+    /**
+     * Called when a servlet is initialized. This should only occur once.
+     * 
+     * @param _servlet The servlet object.
+     * @throws ServletException
+     */
     OCSPServletStandAloneSession(OCSPServletStandAlone _servlet) throws ServletException {
         this.servlet = _servlet;
         try {
@@ -133,15 +138,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             if ( this.mKeystoreDirectoryName==null || this.mKeystoreDirectoryName.length()<1 ) {
             	throw new ServletException(intres.getLocalizedMessage("ocsp.errornovalidkeys"));
             }
-            ExtOCSPHealthCheck.setHealtChecker(this.servlet);
     		// Load OCSP responders private keys into cache in init to speed things up for the first request
             // signEntity is also set
             loadPrivateKeys(this.servlet.m_adm);
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errorinitialize");
-            m_log.error(errMsg, e);
             throw new ServletException(e);
         }
     }
@@ -271,7 +273,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         final X509Certificate[] chain = getCertificateChain(cert, adm);
         if ( chain!=null ) {
             final int caid = this.servlet.getCaid(chain[1]);
-            final SigningEntity oldSigningEntity = this.signEntity.get(new Integer(caid));
+            final SigningEntity oldSigningEntity = this.signEntity!=null ? this.signEntity.get(new Integer(caid)): null;
             if ( oldSigningEntity!=null && !CertTools.compareCertificateChains(oldSigningEntity.getCertificateChain(), chain) ) {
                 final String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
                 m_log.warn(wMsg);

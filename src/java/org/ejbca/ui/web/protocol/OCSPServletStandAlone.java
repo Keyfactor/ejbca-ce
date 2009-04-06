@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
+import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -75,6 +76,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         this.session = new OCSPServletStandAloneSession(this);
+        // session must be crated before health check could be done
+        ExtOCSPHealthCheck.setHealtChecker(this);
     }
     
     /**
@@ -94,23 +97,40 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     	return this.m_certStore;
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.IHealtChecker#healthCheck()
+     */
     public String healthCheck() {
         return this.session.healthCheck();
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin)
+     */
     void loadPrivateKeys(Admin adm) throws Exception {
         this.session.loadPrivateKeys(adm);
     }
-    
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#findCertificateByIssuerAndSerno(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
+     */
     Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
         return getStoreSessionOnlyData().findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#extendedService(org.ejbca.core.model.log.Admin, int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
+     */
     OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
                                                                                                     ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         return this.session.extendedService(caid, request);
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#getStatus(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
+     */
     CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber) {
         return getStoreSessionOnlyData().getStatus(adm, name, serialNumber);
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#createCertificateCache(java.util.Properties)
+     */
     CertificateCache createCertificateCache(Properties prop) {
 		return new CertificateCacheStandalone(prop);
 	}

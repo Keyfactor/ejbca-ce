@@ -18,7 +18,9 @@ package org.ejbca.ui.web.protocol;
 public interface IHealtChecker {
 
 	/**
-	 * @return
+     * To be called by healthcheck servlet.
+     * 
+	 * @return health check answer. "" means everything OK.
 	 */
 	String healthCheck();
 
