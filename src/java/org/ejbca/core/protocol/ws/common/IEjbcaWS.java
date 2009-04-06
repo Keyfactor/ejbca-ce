@@ -93,12 +93,12 @@ public interface IEjbcaWS {
 
 	/**
 	 * Method that should be used to edit/add a user to the EJBCA database,
-	 * if the user doesn't already exists it will be added othervise it will be
+	 * if the user doesn't already exists it will be added otherwise it will be
 	 * overwritten.
 	 * 
 	 * Observe: if the user doesn't already exists, it's status will always be set to 'New'.
 	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
+	 * Authorization requirements: the client certificate must have the following privileges set
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
