@@ -271,16 +271,24 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             return false;
         providerHandler.addKeyFactory(keyFactory);
         final X509Certificate[] chain = getCertificateChain(cert, adm);
-        if ( chain!=null ) {
-            final int caid = this.servlet.getCaid(chain[1]);
-            final SigningEntity oldSigningEntity = this.signEntity!=null ? this.signEntity.get(new Integer(caid)): null;
-            if ( oldSigningEntity!=null && !CertTools.compareCertificateChains(oldSigningEntity.getCertificateChain(), chain) ) {
-                final String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
-                m_log.warn(wMsg);
-            }
-            newSignEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerHandler) );
-            m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
+        if ( chain==null ) {
+            return false;
         }
+        final Integer caid = new Integer(this.servlet.getCaid(chain[1]));
+        {
+            SigningEntity entityForSameCA = newSignEntity.get(caid);
+            if ( entityForSameCA!=null && entityForSameCA.mChain[0].getNotBefore().after(cert.getNotBefore())) {
+                m_log.debug("CA with ID "+caid+" has duplicated keys. Certificate for older key that is not used has serial number: "+cert.getSerialNumber().toString(0x10));
+                return true; // the entity allready in the map is newer.
+            }
+        }{
+            final SigningEntity oldSigningEntity = this.signEntity!=null ? this.signEntity.get(caid) : null;
+            if ( oldSigningEntity!=null && !CertTools.compareCertificateChains(oldSigningEntity.getCertificateChain(), chain) ) {
+                m_log.warn(intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN()));
+            }
+        }
+        newSignEntity.put( caid, new SigningEntity(chain, keyFactory, providerHandler) );
+        m_log.debug("CA with ID "+caid+" now has a OCSP signing key. Certificate with serial number: "+cert.getSerialNumber().toString(0x10));
         return true;
     }
     String healthCheck() {
@@ -403,9 +411,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         if ( _cert!=null &&  _cert instanceof X509Certificate) {
             final X509Certificate cert = (X509Certificate)_cert;
             final PrivateKeyContainer keyFactory = new PrivateKeyContainerCard((RSAPublicKey)cert.getPublicKey());
-            putSignEntity( keyFactory, cert, adm, new CardProviderHandler(), newSignEntity );
-            m_log.debug("HW key added. Serial number: "+cert.getSerialNumber().toString(0x10));
-            return true;
+            return putSignEntity( keyFactory, cert, adm, new CardProviderHandler(), newSignEntity );
         }
         return false;
     }
@@ -423,8 +429,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             if ( c!=null && !c.isEmpty() ) {
                 Iterator<? extends Certificate> i = c.iterator();
                 while (i.hasNext()) {
-                    if ( putSignEntityCard(i.next(), adm, newSignEntity) )
+                    if ( putSignEntityCard(i.next(), adm, newSignEntity) ) {
                         fileType = "PKCS#7";
+                    }
                 }
             }
         } catch( Exception e) {
@@ -434,8 +441,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             try {// read concatenated certificate in PEM format
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
                 while (bis.available() > 0) {
-                    if ( putSignEntityCard(cf.generateCertificate(bis), adm, newSignEntity) )
+                    if ( putSignEntityCard(cf.generateCertificate(bis), adm, newSignEntity) ) {
                         fileType="PEM";
+                    }
                 }
             } catch(Exception e){
                 // do nothing
