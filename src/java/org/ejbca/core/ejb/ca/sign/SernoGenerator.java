@@ -38,6 +38,24 @@ import org.ejbca.core.model.InternalResources;
  * 
  * Therefore, minimum 4 octets value is 00800000 and maximum value is 7FFFFFFF."
  * 
+ * X.690:
+ * 
+ * 8.3 Encoding of an integer value
+ * 8.3.1 The encoding of an integer value shall be primitive. The contents octets shall consist of one or more octets.
+ * 8.3.2 If the contents octets of an integer value encoding consist of more than one octet, then the bits of the first octet
+ * and bit 8 of the second octet:
+ * a) shall not all be ones; and
+ * b) shall not all be zero.
+ * NOTE – These rules ensure that an integer value is always encoded in the smallest possible number of octets.
+ * 8.3.3 The contents octets shall be a two's complement binary number equal to the integer value, and consisting of
+ * bits 8 to 1 of the first octet, followed by bits 8 to 1 of the second octet, followed by bits 8 to 1 of each octet in turn up to
+ * and including the last octet of the contents octets.
+ * NOTE – The value of a two's complement binary number is derived by numbering the bits in the contents octets, starting with bit
+ * 1 of the last octet as bit zero and ending the numbering with bit 8 of the first octet. Each bit is assigned a numerical value of 2N,
+ * where N is its position in the above numbering sequence. The value of the two's complement binary number is obtained by
+ * summing the numerical values assigned to each bit for those bits which are set to one, excluding bit 8 of the first octet, and then
+ * reducing this value by the numerical value assigned to bit 8 of the first octet if that bit is set to one.
+ *
  * @version $Id$
  */
 public class SernoGenerator implements ISernoGenerator {
