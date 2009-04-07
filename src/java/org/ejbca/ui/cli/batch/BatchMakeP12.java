@@ -273,7 +273,10 @@ public class BatchMakeP12 {
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
             try {
-                cachain[cachain.length - 1].verify(cachain[cachain.length - 1].getPublicKey());
+            	// Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1 will not verify (at least not as of jdk6)
+            	Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length-1].getEncoded());
+            	cacert.verify(cacert.getPublicKey());
+                //cachain[cachain.length - 1].verify(cachain[cachain.length - 1].getPublicKey());
             } catch (GeneralSecurityException se) {
         		String errMsg = intres.getLocalizedMessage("batch.errorrootnotverify");
                 throw new Exception(errMsg);
@@ -285,7 +288,10 @@ public class BatchMakeP12 {
 
         // Verify that the user-certificate is signed by our CA
         try {
-            cert.verify(cachain[0].getPublicKey());
+        	// Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1 will not verify (at least not as of jdk6)
+        	Certificate cacert = CertTools.getCertfromByteArray(cachain[0].getEncoded());
+        	Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded());
+            usercert.verify(cacert.getPublicKey());
         } catch (GeneralSecurityException se) {
     		String errMsg = intres.getLocalizedMessage("batch.errorgennotverify");
             throw new Exception(errMsg);
