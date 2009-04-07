@@ -75,10 +75,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     final private String mKeyPassword = OcspConfiguration.getKeyPassword();
     final private String mStorePassword = OcspConfiguration.getStorePassword();
     final private CardKeys mCardTokenObject;
-	private Map<Integer, SigningEntity> signEntity;
+	final private SigningEntityContainer signEntitycontainer;
     final private P11Slot slot;
     final private String mP11Password = OcspConfiguration.getP11Password();
     final private OCSPServletStandAlone servlet;
+    private boolean isOK=true;
 
     /**
      * Called when a servlet is initialized. This should only occur once.
@@ -87,6 +88,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * @throws ServletException
      */
     OCSPServletStandAloneSession(OCSPServletStandAlone _servlet) throws ServletException {
+        this.signEntitycontainer = new SigningEntityContainer();
         this.servlet = _servlet;
         try {
             final boolean isIndex;
@@ -296,7 +298,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     	PrintWriter pw = new PrintWriter(sw);
         try {
         	loadPrivateKeys(this.servlet.m_adm);
-            final Iterator<SigningEntity> i = this.signEntity.values().iterator();
+            final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
 	    	while ( i.hasNext() ) {
 	    		SigningEntity signingEntity = i.next();
 	    		if ( !signingEntity.isOK() ) {
@@ -456,50 +458,102 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
     	m_log.trace("<loadFromKeyCards");
     }
-    void loadPrivateKeys(Admin adm) throws Exception {
-    	m_log.trace(">loadPrivateKeys");
-    	// We will only load private keys if the cache time has run out
-    	synchronized(this) {
-    	    if ( (this.signEntity != null) && (this.signEntity.size() > 0) && (this.servlet.mKeysValidTo > new Date().getTime()) ) {
-    	        m_log.trace("<loadPrivateKeys: using cache");
-    	        return;
-    	    }
-    	    // Update cache time
-    	    // If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
-    	    this.servlet.mKeysValidTo = this.servlet.m_valid_time>0 ? new Date().getTime()+this.servlet.m_valid_time : Long.MAX_VALUE;
-    	}
-        final HashMap<Integer, SigningEntity> newSignEntity = new HashMap<Integer, SigningEntity>();
-        loadFromP11HSM(adm, newSignEntity);
-        final File dir = this.mKeystoreDirectoryName!=null ? new File(this.mKeystoreDirectoryName) : null;
-        if ( dir!=null && dir.isDirectory() ) {
-            final File files[] = dir.listFiles();
-            if ( files!=null && files.length>0 ) {
-                for ( int i=0; i<files.length; i++ ) {
-                    final String fileName = files[i].getCanonicalPath();
-                    if ( !loadFromSWKeyStore(adm, fileName, newSignEntity) )
-                        loadFromKeyCards(adm, fileName, newSignEntity);
+    private class  SigningEntityContainer {
+        private class Mutex {
+            boolean locked;
+            Mutex() {
+                super();
+                this.locked = false;
+                m_log.debug("mutex created.");
+            }
+            synchronized void getMutex() {
+                while( this.locked ) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException e) {
+                        throw new Error(e);
+                    }
+                }
+                this.locked = true;
+            }
+            synchronized void releaseMutex() {
+                this.locked = false;
+                this.notify();
+            }
+        }
+        private HashMap<Integer, SigningEntity> signEntity;
+        private Mutex mutex = new Mutex();
+        private boolean updating = false;
+        void loadPrivateKeys(Admin adm) throws Exception {
+            m_log.trace(">loadPrivateKeys");
+            try {
+                this.mutex.getMutex();
+                if ( (this.signEntity!=null && this.signEntity.size()>0 && OCSPServletStandAloneSession.this.servlet.mKeysValidTo>new Date().getTime()) || !OCSPServletStandAloneSession.this.isOK ) {
+                    m_log.trace("<loadPrivateKeys: using cache");
+                    return;
+                }
+                this.updating  = true; // stops new action on token
+                // We will only load private keys if the cache time has run out
+                // Update cache time
+                // If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
+                OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ? new Date().getTime()+OCSPServletStandAloneSession.this.servlet.m_valid_time : Long.MAX_VALUE;
+                m_log.debug("time: "+new Date().getTime()+" next update: "+OCSPServletStandAloneSession.this.servlet.mKeysValidTo);
+            } finally {
+                this.mutex.releaseMutex();
+            }
+            final HashMap<Integer, SigningEntity> newSignEntity = new HashMap<Integer, SigningEntity>();
+            synchronized(this) {
+                this.wait(500); // wait for actions on token to get ready
+            }
+            loadFromP11HSM(adm, newSignEntity);
+            final File dir = OCSPServletStandAloneSession.this.mKeystoreDirectoryName!=null ? new File(OCSPServletStandAloneSession.this.mKeystoreDirectoryName) : null;
+            if ( dir!=null && dir.isDirectory() ) {
+                final File files[] = dir.listFiles();
+                if ( files!=null && files.length>0 ) {
+                    for ( int i=0; i<files.length; i++ ) {
+                        final String fileName = files[i].getCanonicalPath();
+                        if ( !loadFromSWKeyStore(adm, fileName, newSignEntity) ) {
+                            loadFromKeyCards(adm, fileName, newSignEntity);
+                        }
+                    }
+                } else {
+                    m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
+                    if ( newSignEntity.size()<1 ) {
+                        throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());            	
+                    }
                 }
             } else {
-            	m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
+                m_log.debug((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
                 if ( newSignEntity.size()<1 ) {
-                    throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());            	
+                    throw new ServletException((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
                 }
             }
-        } else {
-        	m_log.debug((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
+            // No P11 keys, there are files, but none are valid keys or certs for cards
             if ( newSignEntity.size()<1 ) {
-                throw new ServletException((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
+                String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
+                throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
             }
+            this.signEntity = newSignEntity; // atomic change. after this new entity is used.
+            synchronized(this) {
+                this.updating = false;
+                this.notifyAll();
+            }
+            m_log.trace("<loadPrivateKeys");
         }
-        // No P11 keys, there are files, but none are valid keys or certs for cards
-        if ( newSignEntity.size()<1 ) {
-        	String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
-            throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
+        synchronized HashMap<Integer, SigningEntity> getSigningEntityMap() {
+            while ( this.updating ) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    throw new Error(e);
+                }
+            }
+            return this.signEntity;
         }
-        this.signEntity = newSignEntity; // atomic change. after this new entity is used.
-    	m_log.trace("<loadPrivateKeys");
     }
-    
+    void loadPrivateKeys(Admin adm) throws Exception {
+        this.signEntitycontainer.loadPrivateKeys(adm);
+    }
     private interface ProviderHandler {
         /**
          * @return name of the provider if an provider is available otherwise null
@@ -554,12 +608,16 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     }
     private class P11ProviderHandler implements ProviderHandler {
         final private String name;
-        private boolean isOK;
         final Set<PrivateKeyContainer> sKeyFacrory = new HashSet<PrivateKeyContainer>();
         P11ProviderHandler() throws Exception {
             this.name = OCSPServletStandAloneSession.this.slot.getProvider().getName();
-            this.isOK = true;
         }
+        /**
+         * Get the keystore for the slot
+         * @param pwp the password for the slot
+         * @return the keystore for the provider
+         * @throws Exception
+         */
         public KeyStore getKeyStore(PasswordProtection pwp) throws Exception {
             final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
                                                                           OCSPServletStandAloneSession.this.slot.getProvider(),
@@ -569,6 +627,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             keyStore.load(null, null);
             return keyStore;
         }
+        /**
+         * @return get P11 password.
+         */
         public PasswordProtection getPwd() {
             return new PasswordProtection( (OCSPServletStandAloneSession.this.mP11Password!=null && OCSPServletStandAloneSession.this.mP11Password.length()>0)? OCSPServletStandAloneSession.this.mP11Password.toCharArray():null );
         }
@@ -576,7 +637,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#getProviderName()
          */
         public String getProviderName() {
-            return this.isOK ? this.name : null;
+            return OCSPServletStandAloneSession.this.isOK ? this.name : null;
         }
         private class Reloader implements Runnable {
             public void run() {
@@ -603,7 +664,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             m_log.info("Reloaded: "+errorMessage);
                         }
                     }
-                    P11ProviderHandler.this.isOK = true;
+                    OCSPServletStandAloneSession.this.isOK = true;
                     return;
                 } catch ( Throwable t ) {
                     m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
@@ -614,9 +675,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#reload()
          */
         public synchronized void reload() {
-            if ( !this.isOK )
+            if ( !OCSPServletStandAloneSession.this.isOK )
                 return;
-            this.isOK = false;
+            OCSPServletStandAloneSession.this.isOK = false;
             new Thread(new Reloader()).start();
         }
         /* (non-Javadoc)
@@ -751,12 +812,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
     }
     OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
-        SigningEntity se = this.signEntity.get(new Integer(caid));
+        SigningEntity se = this.signEntitycontainer.getSigningEntityMap().get(new Integer(caid));
         if ( se==null ) {
             if (m_log.isDebugEnabled()) {
                 m_log.debug("No key is available for caid=" + caid + " even though a valid certificate was present. Trying to use the default responder's key instead.");
             }
-            se = this.signEntity.get(new Integer(this.servlet.getCaid(null)));	// Use the key issued by the default responder ID instead
+            se = this.signEntitycontainer.getSigningEntityMap().get(new Integer(this.servlet.getCaid(null)));	// Use the key issued by the default responder ID instead
         }
         if ( se!=null ) {
             final SignerThread runnable = new SignerThread(se,request);
