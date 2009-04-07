@@ -92,6 +92,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Christian Kleinewächter, &#x63;&#x68;&#x72;&#105;&#115;&#x74;&#105;&#x61;&#x6E;&#x2E;&#107;&#108;&#x65;&#x69;&#110;&#x65;&#x77;&#97;&#x65;&#99;&#x68;&#x74;&#101;&#x72;&#64;&#105;&#x6E;&#x66;&#105;&#110;&#x69;&#x74;&#x79;&#x2D;&#x33;&#46;&#x64;&#x65;, Support PostgreSQL in Glassfish</li> 
 <li>Dirk-Willem van Gulik, &#x64;&#x69;&#x72;&#107;&#45;&#x77;&#105;&#x6C;&#x6C;&#x65;&#109;&#46;&#x76;&#x61;&#110;&#x2E;&#x67;&#117;&#x6C;&#105;&#x6B;&#x40;&#98;&#x62;&#99;&#46;&#x63;&#x6F;&#46;&#117;&#x6B;, Substitutions in sender and rcpt in email notificaitons.</li> 
 <li>Dai Tokunaga, &#x65;&#x74;&#x65;&#114;&#110;&#x61;&#108;&#x76;&#x69;&#x72;&#116;&#117;&#x65;&#x40;&#103;&#x6D;&#x61;&#105;&#x6C;&#46;&#x63;&#x6F;&#109;, XKMS working on Java 6 and Glassfish.</li> 
+<li>Martin Simka, &#x6D;&#x2E;&#x73;&#105;&#109;&#x6B;&#97;&#x40;&#x70;&#x77;&#112;&#119;&#x2E;&#x70;&#108;, cvcwscli.cmd.</li> 
 </ul>
     </section>
   </body>
