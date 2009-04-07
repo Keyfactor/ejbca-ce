@@ -9,8 +9,9 @@ The following databases have in some stage been tested with EJBCA:
 * Oracle 8i, 9i and 10g (http://www.oracle.com/)
 * Sybase
 * MS-SQL2000 and 2003
-* Informix 9.2
 * DB2
+* Informix 9.2
+* Derby
 
 Unless you are adventurous and know what you're doing, it is recommended to define
 another datasource for ejbca and not reconfigure DefaultDS with another database
@@ -205,33 +206,84 @@ driver, so I suggest you take it for a spin.
 
 DB2 specifics
 ----------------
-IBMs JDBC driver:
+DB2 Express 9.1.2 and Enterprise 9.1 has been tested.
 
-- db2jcc.jar
-- db2jcc_license_c.jar
+IBMs JDBC driver for DB2 is named "db2jcc.jar" or "db2jcc_license_c.jar".
 
-How to install DB2 for Linux is explained in DB2_for_EJBCA_under_Linux.odt.
+1. DB2 does not manage users, so DB2 users have to be local's or ldap's. We create a system user
+called "ejbca" to be used by DB2.
+2. Login as db2inst1 ("su - db2inst1"). Type db2cc, it will launch the administration control center
+of DB2.
+3. Choose your DB2 server and your instance db2inst1 and the Databases directory
+(http://img231.imageshack.us/img231/8499/snapshot1yt1.png)
+4. Create a new database named "EJBCA" (http://img231.imageshack.us/img231/9127/snapshot2jz9.png) and
+the rest default.
+5. Create a new Schema for the EJBCA database (http://img231.imageshack.us/img231/8136/snapshot3up8.png)
+with "EJBCA" as "Schema Name" and "EJBCA" as "Authorization name".
+(http://img231.imageshack.us/img231/9907/snapshot4sh9.png)
+6. Create a new BufferPool "BP16K" with SIZE 2500 and PAGESIZE 16K.
+7. Create a new Tablespace "EJBCADB_DATA_01" with PAGESIZE 16K, EXTENTSIZE 32 and PREFETCHSIZE 32.
+8. Verify that that your temporary tablespace (e.g. TEMPSPACE1) uses a bufferpool
+(e.g. IMBDEFAULTBP or BP16K) with a page size of 16K.
+9. Configure EJBCA_HOME/conf/database.properties and install EJBCA.
 
-How to set up and install EJBCA and JBoss is described in DB2_with_EJBCA_installation.odt
+Using "Select Tools→Command Editor", 6 & 7 would look something like this:
+    CREATE BUFFERPOOL "BP16K" SIZE 2500 PAGESIZE 16384 NOT EXTENDED STORAGE;
+    CONNECT RESET;
+    CONNECT TO EJBCA;
+    CREATE REGULAR TABLESPACE EJBCADB_DATA_01 IN DATABASE PARTITION
+    GROUP IBMDEFAULTGROUP PAGESIZE 16384 MANAGED BY DATABASE USING
+    (FILE '/home/db2inst1/db2inst1/EJBCA/ejbcadb_data_01.dbf'512000) EXTENTSIZE 32
+    PREFETCHSIZE 32 BUFFERPOOL BP16K OVERHEAD 7.500000
+    TRANSFERRATE 0.060000 FILE SYSTEM CACHING DROPPED TABLE RECOVERY ON;
+'512000' here is not the size of the table space in pages, so 512000*16384 equal 7.9 Gb. You can
+add more space for your database by selecting the tablespace "EJBCA_DATA_01", click on
+"Alter Tablespace", then click on "Containers", then select the only container and click on
+"Change..." and now change the value of the container size
+(http://img230.imageshack.us/img230/8379/snapshot7ve3.png).
 
-Old reference text below (ignore this):
-In DB2 the name of constraints can not exceed 18 characters, when JBoss starts EJBCA a normal create table statement is:
-  CREATE TABLE HARDTOKENISSUERDATA (id INTEGER NOT NULL, alias VARCHAR(254), adminGroupId INTEGER NOT NULL, data BLOB(2000), CONSTRAINT PK_HARDTOKENISSUERDATA PRIMARY KEY (id))
-which does not work, instead we want to use:
-  CREATE TABLE HARDTOKENISSUERDATA (id INTEGER NOT NULL, alias VARCHAR(254), adminGroupId INTEGER NOT NULL, data BLOB(2000), PRIMARY KEY (id))
+On DB2 you have a database, a schema id and a table name. The default database properties works,
+because when you don't specify a schema id, the userid is used. But you can specify the schema name
+in the connection string: 
+    database.url=jdbc:db2://bigfatiron.foo.com:5021/DB2T:currentSchema=EJBCA;
+    
+Earlier DB2 documentation for EJBCA suggest changes in standardjbosscmp-jdbc.xml, but this does not
+seem to be neccessary with the latest EJBCA on DB2 9.1.2 Express Edition. Especially the BLOB(2000)
+change is solved by explicit CMP mapping. Old doc follows:
 
-To do this we edit JBOSS_HOME/server/default/conf/standardjbosscmp-jdbc.xml
-In the <name>DB2</name> section change:
-  <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
-to
-  <pk-constraint-template>PRIMARY KEY (?2)</pk-constraint-template>
+The size of the constraints names have a limit of 18 characters in DB2, so it is required to unset
+the automatic naming of the constraints at the creation of the scheme by EJBCA under JBOSS. It is
+also required to increase the size limit columns of type BLOB to 200000 bytes in the creation of
+the schema by EJBCA under JBOSS. Indeed under DB2 the size limit  columns of type BLOB created is
+2000 bytes which is insufficient for storing data inserted by EJBCA.
 
-To create the needed tables you will probably also need a larger tablespace than default (at least on DB2 Express):
-  CREATE BUFFERPOOL "BP16K"  SIZE 2500 PAGESIZE 16384 NOT EXTENDED STORAGE;
-  CONNECT RESET;
-  CONNECT TO EJBCA;
-  CREATE REGULAR TABLESPACE EJBCADB_DATA_01 IN DATABASE PARTITION GROUP IBMDEFAULTGROUP PAGESIZE 16384 MANAGED BY DATABASE USING (FILE '/home/db2inst1/db2inst1/EJBCA/ejbcadb_data_01.dbf'512000) EXTENTSIZE 32 PREFETCHSIZE 32 BUFFERPOOL BP16K OVERHEAD 7.500000 TRANSFERRATE 0.060000  FILE SYSTEM CACHING DROPPED TABLE RECOVERY ON;
-  
+To do those change, it is necessary to modify the file
+$HOME_JBOSS/server/default/conf/standardjbosscmp-jdbc.xml which describe the behavior of driver's
+database. The DB2 section have to be changed like this :
+      ...
+      <type-mapping>
+         <name>DB2</name>
+         <!--
+         | This type-mapping applies to DB2 V7.2 and V8.0
+         -->
+         <row-locking-template/>
+         <pk-constraint-template>PRIMARY KEY (?2)</pk-constraint-template>
+         <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
+         <alias-header-prefix>t</alias-header-prefix>
+         <alias-header-suffix>_</alias-header-suffix>
+         <alias-max-length>18</alias-max-length>
+         <subquery-supported>true</subquery-supported>
+         <true-mapping>1</true-mapping>
+         <false-mapping>0</false-mapping>
+      ...
+        <mapping>
+            <java-type>java.lang.Object</java-type>
+            <jdbc-type>VARBINARY</jdbc-type>
+            <sql-type>BLOB(200000)</sql-type>
+         </mapping>
+      </type-mapping>
+
+
   
 Informix specifics
 ------------------
