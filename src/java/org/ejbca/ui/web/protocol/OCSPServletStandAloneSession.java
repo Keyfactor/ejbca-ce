@@ -283,11 +283,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 m_log.debug("CA with ID "+caid+" has duplicated keys. Certificate for older key that is not used has serial number: "+cert.getSerialNumber().toString(0x10));
                 return true; // the entity allready in the map is newer.
             }
-        }{
-            final SigningEntity oldSigningEntity = this.signEntity!=null ? this.signEntity.get(caid) : null;
-            if ( oldSigningEntity!=null && !CertTools.compareCertificateChains(oldSigningEntity.getCertificateChain(), chain) ) {
-                m_log.warn(intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN()));
-            }
         }
         newSignEntity.put( caid, new SigningEntity(chain, keyFactory, providerHandler) );
         m_log.debug("CA with ID "+caid+" now has a OCSP signing key. Certificate with serial number: "+cert.getSerialNumber().toString(0x10));
