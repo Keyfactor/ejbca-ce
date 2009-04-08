@@ -854,14 +854,14 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 			} catch (InvalidKeyException e) {
-				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, null);	// RFC 2560: responseBytes are not set on error.
 				transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 			} catch (Throwable e) {
-				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.error(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.
 				transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
@@ -895,7 +895,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			response.getOutputStream().write(respBytes);
 			response.getOutputStream().flush();
 		} catch (OCSPException e) {
-			String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+			String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 			m_log.error(errMsg, e);
 			throw new ServletException(e);
 		} catch (Exception e ) {
