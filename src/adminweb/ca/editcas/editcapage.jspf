@@ -528,11 +528,16 @@ function checkallfields(){
     </tr>
     <% if(editca){ 
         String issuerDN = "unknown";
-        Collection cachain = cainfo.getCertificateChain();
-        if (cachain != null) {
-    	    Iterator iter = cachain.iterator();
-    	    Certificate cacert = (Certificate)iter.next();
-    	    issuerDN = CertTools.getIssuerDN(cacert);
+        try {
+            Collection cachain = cainfo.getCertificateChain();
+            if (cachain != null) {
+    	        Iterator iter = cachain.iterator();
+    	        Certificate cacert = (Certificate)iter.next();
+        	    issuerDN = CertTools.getIssuerDN(cacert);
+            }
+        } catch (Exception e) {
+        	// En error happended
+        	issuerDN = e.getMessage();
         }
     %>
         <tr id="Row<%=row++%2%>"> 
