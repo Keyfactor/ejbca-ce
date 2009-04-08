@@ -526,6 +526,24 @@ function checkallfields(){
         <% } %>
       </td>
     </tr>
+    <% if(editca){ 
+        String issuerDN = "unknown";
+        Collection cachain = cainfo.getCertificateChain();
+        if (cachain != null) {
+    	    Iterator iter = cachain.iterator();
+    	    Certificate cacert = (Certificate)iter.next();
+    	    issuerDN = CertTools.getIssuerDN(cacert);
+        }
+    %>
+        <tr id="Row<%=row++%2%>"> 
+          <td width="50%"  align="right"> 
+            <%= ejbcawebbean.getText("ISSUERDN") %>
+          </td>
+          <td width="50%"> 
+              <% out.write(issuerDN + "<br>"); %> 
+          </td>
+        </tr>
+    <% } %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SIGNEDBY") %>
