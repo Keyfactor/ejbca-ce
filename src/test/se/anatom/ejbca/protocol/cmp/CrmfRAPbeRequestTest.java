@@ -129,11 +129,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
+		// We should be able to back date the start time when alow validity override is enabled in the certificate profile
         Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DAY_OF_WEEK, 1);
+		cal.add(Calendar.DAY_OF_WEEK, -1);
 		cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds in validity
 		Date notBefore = cal.getTime();
-		cal.add(Calendar.DAY_OF_WEEK, 2);
+		cal.add(Calendar.DAY_OF_WEEK, 3);
 		cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds in validity
 		Date notAfter = cal.getTime();
 

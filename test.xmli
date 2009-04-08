@@ -33,7 +33,7 @@
                     <include name="org/ejbca/core/model/Test*" />
                     <include name="org/ejbca/core/model/approval/approvalrequests/Test*" />
                     <include name="org/ejbca/util/**/Test*" />
-                    <include name="org/ejbca/core/model/ca/certextensions/Test*" />
+                    <include name="org/ejbca/core/model/ca/**/Test*" />
                     <include name="se/anatom/ejbca/util/**/Test*" />
                     <include name="**/protocol/**/Test*" />
                     <include name="**/ra/Test*" />

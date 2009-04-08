@@ -437,10 +437,20 @@ The validity of a certificate is determined as follows:
 <li>The Validity field in the profile specifies the maximum allowed validity, which will be the validity if nothing else is specified.</li>
 <li>If 'Allow validity override' is enabled in the profile the profile value can be overridden with:
 <ul><li>Start and end time specified when adding the end entity, of allowed in the End Entity Profile.</li>
-<li>Requested validity form the certificate request (CMP for example).</li>
+<li>Requested validity from the certificate request (CMP for example).</li>
 </ul>
 </li>
 </ul>
+<p>There are some constraints for the validity of a certificate issued by the CA:
+<ul>
+<li>The notAfter time if issued certificates can never be longer than the validity time specified in the certificate profile used.</li>
+<li>The notAfter time of issued certificate can never be longer than the CAs own validity.</li>
+<li>notAfter can never be before nofBefore and vice versa.</li>
+<li>notBefore is normally 10 minutes before the current time, to avoid problems with clocks that are a few minutes out of sync.</li>
+<li>notBefore can be set to any desired value if allow validity override is enabled, except for the limitation with regard to notAfter.</li>
+<li>notAfter can be set to any desired value if allow validity override is enabled, except for the limitation of max and min value specified above.</li>
+</ul>
+</p>
 </p>
 <p>If the validity is for a CA the certificate profile specifies the maximum validity, but it can be shorter if specified when adding the CA.
 The validity of the CA can never be longer than the value specified in the profile.

@@ -112,8 +112,10 @@ public class CertificateValidity {
         	lastDate = firstDate;
         	firstDate = tmp;
         }
-		// Limit validity: We do not allow a certificate to be valid before the current date, i.e. not backdated start dates
-    	if (firstDate.before(now)) {
+		// Limit validity: We do not allow a certificate to be valid before the current date, i.e. not back dated start dates
+        // Unless allowValidityOverride is set, then we allow everything
+        // So this check is probably completely unneeded and can never be true
+    	if (firstDate.before(now) && !certProfile.getAllowValidityOverride()) {
 			log.error(intres.getLocalizedMessage("signsession.errorbeforecurrentdate",firstDate,subject.getUsername()));
     		firstDate = now;
     		// Update valid length from the profile since the starting point has changed

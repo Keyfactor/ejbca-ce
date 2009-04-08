@@ -807,16 +807,18 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         Date certNotBefore = cert.getNotBefore();
-        // Override was enabled, but we can not get a certificate valid before current time
+        // Override was enabled, and we can not get a certificate valid before current time
         cal = Calendar.getInstance();
-        // the certificate should be valid like 10 minutes before current date though...
+        cal.add(Calendar.DAY_OF_MONTH, -1);
+        // the certificate should be valid 2 days before current date...
         assertTrue(certNotBefore.compareTo(cal.getTime()) < 0);
-        cal.add(Calendar.MINUTE, -20);
+        cal.add(Calendar.DAY_OF_MONTH, -2);
         assertTrue(certNotBefore.compareTo(cal.getTime()) > 0);
         cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, 49);
+        cal.add(Calendar.DAY_OF_MONTH, 47);
         notAfter = cert.getNotAfter();
-        // Override was enabled, the cert should have notAfter more than 49 days in the future since we requested 200 and validity is 50
+        // Override was enabled, the cert should have notAfter more than 47 days in the future (50 days starting from -2 days since notBefore was set before current date)
+        // since we requested 200 and validity is 50
         assertTrue(notAfter.compareTo(cal.getTime()) > 0);
         cal.add(Calendar.DAY_OF_MONTH, 2);
         // Since we are not allowed to request validity longer than the certificate profile allows, validity is less than 51 days, even though we requested 200
