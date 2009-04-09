@@ -262,14 +262,14 @@
   An example command to generate keys and a request for an IS using SHA224WithECDSA and brainpoolp224r1 curve:
   </p>
   <source>
-./ejbcawsracli.sh edituser isbrainpool47 foo123 false "CN=ISBPOOL47,C=SE" NULL NULL DV-BrainPool 1 USERGENERATED NEW IS IS
+./ejbcawsracli.sh edituser isbrainpool foo123 false "CN=ISBPOOL,C=SE" NULL NULL DV-BrainPool 1 USERGENERATED NEW IS IS
   </source>
   <p>This command adds the IS as end end entity in EJBCA. It only has to be done the first time, or if the IS previous certificates expire.
   When using authenticated requests these are used instead of the one-time password, but if the previous certificate expires, a new one-time password is
   needed to authenticate the request.
   </p> 
   <source>
-./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL47" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpool
+./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpool
   </source>
   <p>
   Where your DV is called DV-BrainPool in EJBCA and uses algorithm SHA224WithECDSA with brainpoolp224r1 curve.
@@ -285,7 +285,7 @@
   To create an authenticated request for this user you can issue the following command, which authenticates the new request with the old key and certificate. 
   </p>  
   <source>
-./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL47" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpoolnew isbrainpool.pkcs8 isbrainpool.cvcert
+./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpoolnew isbrainpool.pkcs8 isbrainpool.cvcert
   </source>
   <p>
   The request will be automatically granted (the password passed will be ignored) and the new certificate will be written to 'isbrainpoolnew.cvcert'.
