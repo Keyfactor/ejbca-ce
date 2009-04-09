@@ -258,7 +258,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private ISignSessionLocal signsession;
 
     /** The local interface of the job runner session bean used to create crls.*/
-    private ICreateCRLSessionLocal jobrunner;
+    private ICreateCRLSessionLocal crlsession;
     
     /**
      * The local interface of the approval session bean
@@ -562,6 +562,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	if(castatus == SecConst.CA_ACTIVE){
         		//  create initial CRL
         		this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
+        		if(cainfo.getDeltaCRLPeriod() > 0) {
+        			this.getCRLCreateSession().runDeltaCRL(admin, cainfo.getSubjectDN());
+        		}
         	}
     		String msg = intres.getLocalizedMessage("caadmin.createdca", cainfo.getName(), new Integer(castatus));            	
         	getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
@@ -2614,15 +2617,15 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @return Connection
      */
     private ICreateCRLSessionLocal getCRLCreateSession() {
-      if(jobrunner == null){
+      if(crlsession == null){
          try{
             ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-            jobrunner = home.create();
+            crlsession = home.create();
          }catch(Exception e){
             throw new EJBException(e);
          }
       }
-      return jobrunner;
+      return crlsession;
     }
 
     /** Gets connection to certificate store session bean
