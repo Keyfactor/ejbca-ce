@@ -89,11 +89,11 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private int eeProfileId = 0;
 	/** The certificate profile to use when adding users in RA mode */
 	private int certProfileId = 0;
-	/** Tha CA to user when adding users in RA mode */
+	/** The CA to user when adding users in RA mode */
 	private int caId = 0;
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 	private String raAuthenticationSecret = null;
-	/** Parameter used to determine the type of prtection for the response message */
+	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
 	private Admin admin;
