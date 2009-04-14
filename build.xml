@@ -797,7 +797,7 @@
     <!-- Target updating svn revision string in propertiesAndPaths.xml           -->
     <!-- ======================================================================= -->
 	<target name="update-svnrev" description="Updates propertiesAndPaths.xmli file with current trunk SVN revision">
-		<echo>Updating propertiesAndPAths.xmli with SVN revision of COMMITTED.</echo>
+		<echo>Updating propertiesAndPaths.xmli with SVN revision of COMMITTED.</echo>
         <property name="revision" value="COMMITTED"/>	
 		
         <!-- find out svn.revision of HEAD, need svn.exe installed on local machine will end up in property ${Revision} -->
