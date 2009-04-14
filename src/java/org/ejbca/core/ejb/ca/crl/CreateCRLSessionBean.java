@@ -282,7 +282,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      *
      * @param admin administrator performing the task
      * @param issuerdn of the ca
-     *
+     * @return the bytes of the Delta CRL generated or null of no delta CRL was generated.
+     * 
      * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
      * @ejb.interface-method
      */
@@ -290,6 +291,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	if (log.isTraceEnabled()) {
         	log.trace(">runDeltaCRL: "+issuerdn);
     	}
+    	byte[] crlBytes = null;
     	int caid = issuerdn.hashCode();
     	try {
     		ICAAdminSessionLocal caadmin = caadminHome.create();
@@ -298,34 +300,35 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     		if (cainfo == null) {
     			throw new CADoesntExistsException("CA not found: "+issuerdn);
     		}
-    		CRLInfo basecrlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(), false);
-    		// Find all revoked certificates
-    		Collection revcertinfos = store.listRevokedCertInfo(admin, issuerdn, basecrlinfo.getCreateDate().getTime());
-    		debug("Found "+revcertinfos.size()+" revoked certificates.");
-    		// Go through them and create a CRL, at the same time archive expired certificates
-    		ArrayList certs = new ArrayList();
-    		Iterator iter = revcertinfos.iterator();
-    		while (iter.hasNext()) {
-    			RevokedCertInfo ci = (RevokedCertInfo)iter.next();
-    			if (ci.getRevocationDate() == null) {
-    				ci.setRevocationDate(new Date());
+    		if (cainfo instanceof X509CAInfo) { // Only create CRLs for X509 CAs
+    			CRLInfo basecrlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(), false);
+    			// Find all revoked certificates
+    			Collection revcertinfos = store.listRevokedCertInfo(admin, issuerdn, basecrlinfo.getCreateDate().getTime());
+    			debug("Found "+revcertinfos.size()+" revoked certificates.");
+    			// Go through them and create a CRL, at the same time archive expired certificates
+    			ArrayList certs = new ArrayList();
+    			Iterator iter = revcertinfos.iterator();
+    			while (iter.hasNext()) {
+    				RevokedCertInfo ci = (RevokedCertInfo)iter.next();
+    				if (ci.getRevocationDate() == null) {
+    					ci.setRevocationDate(new Date());
+    				}
+    				certs.add(ci);
     			}
-    			certs.add(ci);
+    			ISignSessionLocal sign = signHome.create();
+    			// create a delta CRL
+    			crlBytes = sign.createCRL(admin, caid, certs, basecrlinfo.getLastCRLNumber());
+    			X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
+    			debug("Created delta CRL with expire date: "+crl.getNextUpdate());
     		}
-    		ISignSessionLocal sign = signHome.create();
-    		// create a delta CRL
-    		byte[] crlBytes = sign.createCRL(admin, caid, certs, basecrlinfo.getLastCRLNumber());
-    		X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
-    		debug("Created delta CRL with expire date: "+crl.getNextUpdate());
-
-        	if (log.isTraceEnabled()) {
-            	log.trace("<runDeltaCRL: "+issuerdn);
-        	}
-    		return crlBytes;
     	} catch (Exception e) {
     		logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,e.getMessage());
     		throw new EJBException(e);
     	}
+    	if (log.isTraceEnabled()) {
+        	log.trace("<runDeltaCRL: "+issuerdn);
+    	}
+		return crlBytes;
     } // runDeltaCRL
         
         
