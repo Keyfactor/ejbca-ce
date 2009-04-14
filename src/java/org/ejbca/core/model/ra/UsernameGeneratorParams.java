@@ -44,7 +44,7 @@ public class UsernameGeneratorParams {
 	private int mode = MODE_RANDOM;
 	private int randomNameLength = 12;
 	private String randomGeneratorType = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
-	private String dNGeneratorComponent = "CN"; // Can be CN or UID
+	private String dNGeneratorComponent = "CN"; // Can be CN, UID, SN etc, or CN;UID;SN
 	private String prefix = null;
 	private String postfix = null;
 	private int randomPrefixLength = 12;

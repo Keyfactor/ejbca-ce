@@ -62,8 +62,9 @@
 # Default: DN
 #cmp.ra.namegenerationscheme=DN
 
-# Parameters for name generation, for DN it can be CN or UID. 
-# Either the CN or the UID from the request can be used.
+# Parameters for name generation, for DN it can be for example CN, UID or SN. 
+# Either the CN or the UID from the request can be used. 
+# You can add several in order to have fall-back in case the first does not exist in the DN, for example UID;SN;CN. First try UID, if it does not exist try SN (SerialNumber) etc. 
 #
 # Default: CN
 #cmp.ra.namegenerationparameters=CN

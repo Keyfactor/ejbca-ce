@@ -83,7 +83,14 @@ public class UsernameGenerator {
 			if (str == null) {
 				throw new IllegalArgumentException("Input name can not be null in MODE_DN!");
 			}
-	        str = CertTools.getPartFromDN(name, params.getDNGeneratorComponent());
+			String[] parts = StringUtils.split(params.getDNGeneratorComponent(), ';');
+			for (int i = 0; i < parts.length; i++) {
+		        str = CertTools.getPartFromDN(name, parts[i]);
+		        // If this DN component exists, break here.
+		        if (str != null) {
+		        	break;
+		        }
+			}
 	        break;
 		case UsernameGeneratorParams.MODE_USERNAME:
 			if (str == null) {
