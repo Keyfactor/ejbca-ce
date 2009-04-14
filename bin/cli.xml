@@ -54,7 +54,7 @@
         <property name="ca.validity" value="3650"/>
         <property name="ca.policy" value="null"/>
         <property name="httpsserver.hostname" value="localhost"/>
-        <property name="httpsserver.dn" value="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
+        <property name="httpsserver.dn" value="CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE"/>
 		<property name="superadmin.password" value="ejbca"/>
 		<property name="superadmin.batch" value="true"/>
         <property name="java.trustpassword" value="changeit"/>
@@ -68,8 +68,8 @@
         <input message="Please enter the CA signature algorithm (default: SHA1WithRSA) ?" addproperty="ca.signaturealgorithm" defaultvalue="SHA1WithRSA" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
-        <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
-        <input message="Please enter the server dn (default: CN=localhost,O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
+        <input message="Please enter the server hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
+        <input message="Please enter the server dn (default: CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}"/>
         <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>
         <input message="Please enter the CA certificate password (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
@@ -125,6 +125,7 @@ appserver.home         : ${appserver.home}
 
 	<target name="ejbca:adminweb">
 		<ejbca:cli name="setup" arg="setdefaultbaseurl ${httpsserver.hostname} ${app.name}"/>
+		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost -->
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>

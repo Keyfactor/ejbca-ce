@@ -27,7 +27,7 @@ httpsserver.hostname=localhost
 
 # The Distinguished Name of the SSL server certificate used by the administrative web gui.
 # The CN part  should match your hosts DNS name to avoid browser warnings.
-httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
+httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 
 # The public port JBoss will listen to http on
 # Default 8080

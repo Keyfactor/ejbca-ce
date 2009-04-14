@@ -45,6 +45,14 @@
     <!-- Create the time stamp and build directory -->
     <!-- =================================================================== -->
     <target name="init" depends="xdoc-or-precompiled-check, set.jsfimpl, j2ee:check">
+    
+        <!-- httpsserver.hostname must be set cause it's used in preprocess -->
+        <condition property="httpsserver.hostname" value="localhost" else="null">
+            <not>
+	            <isset property="httpsserver.hostname"/>
+	        </not>
+	    </condition>
+    
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
 appserver.type           = ${appserver.type}
