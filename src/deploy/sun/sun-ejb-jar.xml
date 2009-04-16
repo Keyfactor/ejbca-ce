@@ -40,17 +40,6 @@
         </ejb>
 
         <ejb>
-            <ejb-name>OldLogConfigurationData</ejb-name>
-
-            <jndi-name>OldLogConfigurationData</jndi-name>
-
-            <cmp>
-
-            </cmp>
-
-        </ejb>
-
-        <ejb>
             <ejb-name>CAAdminSession</ejb-name>
 
             <jndi-name>CAAdminSession</jndi-name>

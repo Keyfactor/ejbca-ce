@@ -65,31 +65,6 @@
     <inputs xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_CertReqHistoryData"/>
     <outputs xmi:type="OracleModel:OracleTable" href="META-INF/backends/ORACLE_V10_1/TopDown1.dbm#_COP2ccXMEdyJ9fNjQsJh8A"/>
   </nested>
-  <nested xmi:type="ejbrdbmapping:RDBEjbMapper" xmi:id="RDBEjbMapper_1200664102839">
-    <helper xmi:type="ejbrdbmapping:PrimaryTableStrategy" xmi:id="PrimaryTableStrategy_1200664102839">
-      <table xmi:type="OracleModel:OracleTable" href="META-INF/backends/ORACLE_V10_1/TopDown1.dbm#_COREkMXMEdyJ9fNjQsJh8A"/>
-    </helper>
-    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1200664102847">
-      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_11"/>
-      <outputs xmi:type="SQLTables:Column" href="META-INF/backends/ORACLE_V10_1/TopDown1.dbm#_COREkcXMEdyJ9fNjQsJh8A"/>
-      <typeMapping href="JavatoORACLE_V10TypeMaps.V7.xmi#Integer-INTEGER"/>
-    </nested>
-    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1200664102848">
-      <helper xmi:type="ejbrdbmapping:EJBConverter" xmi:id="EJBConverter_1200664102839">
-        <targetClass href="java:/java.io#Serializable"/>
-        <transformerClass href="java:/com.ibm.vap.converters.streams#VapBinaryStreamToSerializableObjectConverter"/>
-      </helper>
-      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_12"/>
-      <outputs xmi:type="SQLTables:Column" href="META-INF/backends/ORACLE_V10_1/TopDown1.dbm#_CORElcXMEdyJ9fNjQsJh8A"/>
-    </nested>
-    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1200664102849" optimistic="true">
-      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_13"/>
-      <outputs xmi:type="SQLTables:Column" href="META-INF/backends/ORACLE_V10_1/TopDown1.dbm#_COREm8XMEdyJ9fNjQsJh8A"/>
-      <typeMapping href="JavatoORACLE_V10TypeMaps.V7.xmi#int-INTEGER"/>
-    </nested>
-    <inputs xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_OldLogConfigurationData"/>
-    <outputs xmi:type="OracleModel:OracleTable" href="META-INF/backends/ORACLE_V10_1/TopDown1.dbm#_COREkMXMEdyJ9fNjQsJh8A"/>
-  </nested>
   <nested xmi:type="ejbrdbmapping:RDBEjbMapper" xmi:id="RDBEjbMapper_1200664102840">
     <helper xmi:type="ejbrdbmapping:PrimaryTableStrategy" xmi:id="PrimaryTableStrategy_1200664102840">
       <table xmi:type="OracleModel:OracleTable" href="META-INF/backends/ORACLE_V10_1/TopDown1.dbm#_CORroMXMEdyJ9fNjQsJh8A"/>

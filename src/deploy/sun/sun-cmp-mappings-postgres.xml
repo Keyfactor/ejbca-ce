@@ -83,31 +83,6 @@
         </entity-mapping>
 
         <entity-mapping>
-            <ejb-name>OldLogConfigurationData</ejb-name>
-            <table-name>logconfigurationdata</table-name>
-
-            <cmp-field-mapping>
-                <field-name>id</field-name>
-                <column-name>id</column-name>
-
-            </cmp-field-mapping>
-
-            <cmp-field-mapping>
-                <field-name>logConfiguration</field-name>
-                <column-name>logconfiguration</column-name>
-
-            </cmp-field-mapping>
-
-            <cmp-field-mapping>
-                <field-name>logEntryRowNumber</field-name>
-                <column-name>logentryrownumber</column-name>
-
-            </cmp-field-mapping>
-
-
-        </entity-mapping>
-
-        <entity-mapping>
             <ejb-name>TableProtectData</ejb-name>
             <table-name>tableprotectdata</table-name>
 

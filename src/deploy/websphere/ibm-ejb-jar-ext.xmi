@@ -281,14 +281,6 @@
     </ejbExtensions>
 
     <ejbExtensions 
-        xmi:type="ejbext:ContainerManagedEntityExtension" xmi:id="ContainerManagedEntity_ext_22">
-        <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_OldLogConfigurationData"/>
-        <structure xmi:id="OldLogConfigurationData_BeanStructure" inheritenceRoot="false"/>
-        <internationalization xmi:id="ContainerManagedEntity_BeanInternationalization_22" invocationLocale="CALLER"/>
-
-    </ejbExtensions>
-
-    <ejbExtensions 
         xmi:type="ejbext:ContainerManagedEntityExtension" xmi:id="ContainerManagedEntity_ext_23">
         <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_ProtectedLogTokenData"/>
         <structure xmi:id="ProtectedLogTokenData_BeanStructure" inheritenceRoot="false"/>

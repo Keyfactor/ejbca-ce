@@ -100,33 +100,6 @@
     </columns>
     <constraints xsi:type="SQLConstraints:PrimaryKey" xmi:id="_VG0o3tCqEdyiD5420jEyaQ" name="PK_CERTREQHISTORYDATA" members="_VG0B0dCqEdyiD5420jEyaQ"/>
   </SQLTables:PersistentTable>
-  <SQLTables:PersistentTable xmi:id="_VG4TMNCqEdyiD5420jEyaQ" name="OLDLOGCONFIGURATIONDATA" schema="_VGobkNCqEdyiD5420jEyaQ">
-    <columns xmi:id="_VG4TMdCqEdyiD5420jEyaQ" name="id" nullable="false">
-      <containedType xsi:type="SQLDataTypes:IntegerDataType" xmi:id="_VG4TMtCqEdyiD5420jEyaQ" name="INTEGER" primitiveType="INTEGER">
-        <eAnnotations xmi:id="_VG4TM9CqEdyiD5420jEyaQ" source="JDBC_ENUM">
-          <details xmi:id="_VG4TNNCqEdyiD5420jEyaQ" key="JDBC_ENUM_KEY" value="4"/>
-        </eAnnotations>
-      </containedType>
-    </columns>
-    <columns xmi:id="_VG4TNdCqEdyiD5420jEyaQ" name="logconfiguration">
-      <containedType xsi:type="SQLDataTypes:BinaryStringDataType" xmi:id="_VG4TNtCqEdyiD5420jEyaQ" name="BIT VARYING" primitiveType="BINARY_VARYING" length="8000">
-        <eAnnotations xmi:id="_VG4TN9CqEdyiD5420jEyaQ" source="JDBC_ENUM">
-          <details xmi:id="_VG4TONCqEdyiD5420jEyaQ" key="JDBC_ENUM_KEY" value="-3"/>
-        </eAnnotations>
-        <eAnnotations xmi:id="_VG4TOdCqEdyiD5420jEyaQ" source="TYPEMAP_TYPEDEFID">
-          <details xmi:id="_VG4TOtCqEdyiD5420jEyaQ" key="TYPEMAP_TYPEDEFID_KEY" value="BINARY_VARYING_1000"/>
-        </eAnnotations>
-      </containedType>
-    </columns>
-    <columns xmi:id="_VG4TO9CqEdyiD5420jEyaQ" name="logentryrownumber" nullable="false">
-      <containedType xsi:type="SQLDataTypes:IntegerDataType" xmi:id="_VG4TPNCqEdyiD5420jEyaQ" name="INTEGER" primitiveType="INTEGER">
-        <eAnnotations xmi:id="_VG4TPdCqEdyiD5420jEyaQ" source="JDBC_ENUM">
-          <details xmi:id="_VG4TPtCqEdyiD5420jEyaQ" key="JDBC_ENUM_KEY" value="4"/>
-        </eAnnotations>
-      </containedType>
-    </columns>
-    <constraints xsi:type="SQLConstraints:PrimaryKey" xmi:id="_VG4TP9CqEdyiD5420jEyaQ" name="PK_OLDLOGCONFIGURATIONDATA" members="_VG4TMdCqEdyiD5420jEyaQ"/>
-  </SQLTables:PersistentTable>
   <SQLTables:PersistentTable xmi:id="_VG4TQNCqEdyiD5420jEyaQ" name="TABLEPROTECTDATA" schema="_VGobkNCqEdyiD5420jEyaQ">
     <columns xmi:id="_VG4TQdCqEdyiD5420jEyaQ" name="id" nullable="false">
       <containedType xsi:type="SQLDataTypes:CharacterStringDataType" xmi:id="_VG4TQtCqEdyiD5420jEyaQ" name="VARCHAR" primitiveType="CHARACTER_VARYING" length="250">

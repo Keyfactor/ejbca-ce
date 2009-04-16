@@ -841,13 +841,6 @@
             <local>org.ejbca.core.ejb.log.LogConfigurationDataLocal</local>
             <ejb-link>LogConfigurationData</ejb-link>
          </ejb-local-ref>
-         <ejb-local-ref id="EJBLocalRef_69">
-            <ejb-ref-name>ejb/OldLogConfigurationDataLocal</ejb-ref-name>
-            <ejb-ref-type>Entity</ejb-ref-type>
-            <local-home>se.anatom.ejbca.log.OldLogConfigurationDataLocalHome</local-home>
-            <local>se.anatom.ejbca.log.OldLogConfigurationDataLocal</local>
-            <ejb-link>OldLogConfigurationData</ejb-link>
-         </ejb-local-ref>
          <ejb-local-ref id="EJBLocalRef_70">
             <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
             <ejb-ref-type>Session</ejb-ref-type>
@@ -1567,48 +1560,6 @@
             <ejb-ql><![CDATA[SELECT OBJECT(a) from CertReqHistoryDataBean a WHERE a.username=?1]]></ejb-ql>
          </query>
 	  <!-- Write a file named ejb-finders-CertReqHistoryDataBean.xml if you want to define extra finders. -->
-
-      </entity>
-
-      <entity id="ContainerManagedEntity_OldLogConfigurationData">
-         <description><![CDATA[This enterprise bean entity represents a Log Entry with accompanying data]]></description>
-         <display-name>OldLogConfigurationDataEB</display-name>
-
-         <ejb-name>OldLogConfigurationData</ejb-name>
-
-         <local-home>se.anatom.ejbca.log.OldLogConfigurationDataLocalHome</local-home>
-         <local>se.anatom.ejbca.log.OldLogConfigurationDataLocal</local>
-
-         <ejb-class>se.anatom.ejbca.log.OldLogConfigurationDataBean</ejb-class>
-         <persistence-type>Container</persistence-type>
-         <prim-key-class>java.lang.Integer</prim-key-class>
-         <reentrant>False</reentrant>
-         <cmp-version>2.x</cmp-version>
-         <abstract-schema-name>OldLogConfigurationDataBean</abstract-schema-name>
-         <cmp-field id="CMPAttribute_11">
-            <description><![CDATA[]]></description>
-            <field-name>id</field-name>
-         </cmp-field>
-         <cmp-field id="CMPAttribute_12">
-            <description><![CDATA[]]></description>
-            <field-name>logConfiguration</field-name>
-         </cmp-field>
-         <cmp-field id="CMPAttribute_13">
-            <description><![CDATA[]]></description>
-            <field-name>logEntryRowNumber</field-name>
-         </cmp-field>
-         <primkey-field>id</primkey-field>
-
-         <query>
-            <description><![CDATA[findAll]]></description>
-            <query-method>
-               <method-name>findAll</method-name>
-               <method-params>
-               </method-params>
-            </query-method>
-            <ejb-ql><![CDATA[SELECT OBJECT(a) from OldLogConfigurationDataBean a]]></ejb-ql>
-         </query>
-	  <!-- Write a file named ejb-finders-OldLogConfigurationDataBean.xml if you want to define extra finders. -->
 
       </entity>
 
@@ -3845,13 +3796,6 @@
    <container-transaction id="MethodTransaction_2">
       <method id="MethodElement_26">
          <ejb-name>CertReqHistoryData</ejb-name>
-          <method-name>*</method-name>
-       </method>
-       <trans-attribute>Required</trans-attribute>
-    </container-transaction>
-   <container-transaction id="MethodTransaction_3">
-      <method id="MethodElement_27">
-         <ejb-name>OldLogConfigurationData</ejb-name>
           <method-name>*</method-name>
        </method>
        <trans-attribute>Required</trans-attribute>

@@ -103,33 +103,6 @@
     </columns>
     <constraints xsi:type="SQLConstraints:PrimaryKey" xmi:id="_COQdgcXMEdyJ9fNjQsJh8A" name="PK_CERTREQHISTORYDATA" members="_COP2eMXMEdyJ9fNjQsJh8A"/>
   </OracleModel:OracleTable>
-  <OracleModel:OracleTable xmi:id="_COREkMXMEdyJ9fNjQsJh8A" name="OLDLOGCONFIGURATIONDATA" schema="_COPPYMXMEdyJ9fNjQsJh8A">
-    <columns xmi:id="_COREkcXMEdyJ9fNjQsJh8A" name="ID" nullable="false">
-      <containedType xsi:type="SQLDataTypes:IntegerDataType" xmi:id="_COREksXMEdyJ9fNjQsJh8A" name="INT" primitiveType="INTEGER">
-        <eAnnotations xmi:id="_COREk8XMEdyJ9fNjQsJh8A" source="JDBC_ENUM">
-          <details xmi:id="_CORElMXMEdyJ9fNjQsJh8A" key="JDBC_ENUM_KEY" value="4"/>
-        </eAnnotations>
-      </containedType>
-    </columns>
-    <columns xmi:id="_CORElcXMEdyJ9fNjQsJh8A" name="LOGCONFIGURATION">
-      <containedType xsi:type="SQLDataTypes:BinaryStringDataType" xmi:id="_CORElsXMEdyJ9fNjQsJh8A" name="LONG RAW" primitiveType="BINARY_VARYING" length="1000">
-        <eAnnotations xmi:id="_COREl8XMEdyJ9fNjQsJh8A" source="JDBC_ENUM">
-          <details xmi:id="_COREmMXMEdyJ9fNjQsJh8A" key="JDBC_ENUM_KEY" value="-3"/>
-        </eAnnotations>
-        <eAnnotations xmi:id="_COREmcXMEdyJ9fNjQsJh8A" source="TYPEMAP_TYPEDEFID">
-          <details xmi:id="_COREmsXMEdyJ9fNjQsJh8A" key="TYPEMAP_TYPEDEFID_KEY" value="BINARY_VARYING_1000"/>
-        </eAnnotations>
-      </containedType>
-    </columns>
-    <columns xmi:id="_COREm8XMEdyJ9fNjQsJh8A" name="LOGENTRYROWNUMBER" nullable="false">
-      <containedType xsi:type="SQLDataTypes:IntegerDataType" xmi:id="_COREnMXMEdyJ9fNjQsJh8A" name="INT" primitiveType="INTEGER">
-        <eAnnotations xmi:id="_COREncXMEdyJ9fNjQsJh8A" source="JDBC_ENUM">
-          <details xmi:id="_COREnsXMEdyJ9fNjQsJh8A" key="JDBC_ENUM_KEY" value="4"/>
-        </eAnnotations>
-      </containedType>
-    </columns>
-    <constraints xsi:type="SQLConstraints:PrimaryKey" xmi:id="_COREn8XMEdyJ9fNjQsJh8A" name="PK_OLDLOGCONFIGURATIONDATA" members="_COREkcXMEdyJ9fNjQsJh8A"/>
-  </OracleModel:OracleTable>
   <OracleModel:OracleTable xmi:id="_CORroMXMEdyJ9fNjQsJh8A" name="TABLEPROTECTDATA" schema="_COPPYMXMEdyJ9fNjQsJh8A">
     <columns xmi:id="_CORrocXMEdyJ9fNjQsJh8A" name="ID" nullable="false">
       <containedType xsi:type="SQLDataTypes:CharacterStringDataType" xmi:id="_CORrosXMEdyJ9fNjQsJh8A" name="VARCHAR2" primitiveType="CHARACTER_VARYING" length="250">

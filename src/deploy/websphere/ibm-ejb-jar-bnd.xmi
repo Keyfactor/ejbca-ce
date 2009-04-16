@@ -308,9 +308,6 @@
             <ejbRefBindings xmi:id="EJBLocalRef_68" jndiName="LogConfigurationDataLocal">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_68"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_69" jndiName="OldLogConfigurationDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_69"/>
-            </ejbRefBindings>
             <ejbRefBindings xmi:id="EJBLocalRef_70" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_70"/>
             </ejbRefBindings>
@@ -727,16 +724,6 @@
         >
 
             <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_HardTokenData"/>
-
-        </ejbBindings>
-
-        <ejbBindings
-            xmi:id="ContainerManagedEntity_bnd_22"
-
-            jndiName="OldLogConfigurationDataLocal"
-        >
-
-            <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_OldLogConfigurationData"/>
 
         </ejbBindings>
 

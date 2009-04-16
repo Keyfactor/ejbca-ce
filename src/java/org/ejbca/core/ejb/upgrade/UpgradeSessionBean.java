@@ -84,15 +84,6 @@ import org.ejbca.util.SqlExecutor;
  *   home="org.ejbca.core.ejb.log.LogConfigurationDataLocalHome"
  *   business="org.ejbca.core.ejb.log.LogConfigurationDataLocal"
  *   link="LogConfigurationData"
- *   
- * @ejb.ejb-external-ref
- *   description="The Old Log Configuration Data Entity bean"
- *   view-type="local"
- *   ref-name="ejb/OldLogConfigurationDataLocal"
- *   type="Entity"
- *   home="se.anatom.ejbca.log.OldLogConfigurationDataLocalHome"
- *   business="se.anatom.ejbca.log.OldLogConfigurationDataLocal"
- *   link="OldLogConfigurationData"
  * 
  * @ejb.ejb-external-ref
  *   description="The CA Admin Session"

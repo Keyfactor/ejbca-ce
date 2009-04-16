@@ -65,31 +65,6 @@
     <inputs xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_CertReqHistoryData"/>
     <outputs xmi:type="SQLTables:PersistentTable" href="META-INF/backends/CLOUDSCAPE_V51_1/ejbca.dbm#_VG0BytCqEdyiD5420jEyaQ"/>
   </nested>
-  <nested xmi:type="ejbrdbmapping:RDBEjbMapper" xmi:id="RDBEjbMapper_1201859090360">
-    <helper xmi:type="ejbrdbmapping:PrimaryTableStrategy" xmi:id="PrimaryTableStrategy_1201859090360">
-      <table xmi:type="SQLTables:PersistentTable" href="META-INF/backends/CLOUDSCAPE_V51_1/ejbca.dbm#_VG4TMNCqEdyiD5420jEyaQ"/>
-    </helper>
-    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1201859090366">
-      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_11"/>
-      <outputs xmi:type="SQLTables:Column" href="META-INF/backends/CLOUDSCAPE_V51_1/ejbca.dbm#_VG4TMdCqEdyiD5420jEyaQ"/>
-      <typeMapping href="JavatoCLOUDSCAPE_V51TypeMaps.V7.xmi#Integer-INTEGER"/>
-    </nested>
-    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1201859090367">
-      <helper xmi:type="ejbrdbmapping:EJBConverter" xmi:id="EJBConverter_1201859090361">
-        <targetClass href="java:/java.io#Serializable"/>
-        <transformerClass href="java:/com.ibm.vap.converters.streams#VapBinaryStreamToSerializableObjectConverter"/>
-      </helper>
-      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_12"/>
-      <outputs xmi:type="SQLTables:Column" href="META-INF/backends/CLOUDSCAPE_V51_1/ejbca.dbm#_VG4TNdCqEdyiD5420jEyaQ"/>
-    </nested>
-    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1201859090368" optimistic="true">
-      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_13"/>
-      <outputs xmi:type="SQLTables:Column" href="META-INF/backends/CLOUDSCAPE_V51_1/ejbca.dbm#_VG4TO9CqEdyiD5420jEyaQ"/>
-      <typeMapping href="JavatoCLOUDSCAPE_V51TypeMaps.V7.xmi#int-INTEGER"/>
-    </nested>
-    <inputs xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_OldLogConfigurationData"/>
-    <outputs xmi:type="SQLTables:PersistentTable" href="META-INF/backends/CLOUDSCAPE_V51_1/ejbca.dbm#_VG4TMNCqEdyiD5420jEyaQ"/>
-  </nested>
   <nested xmi:type="ejbrdbmapping:RDBEjbMapper" xmi:id="RDBEjbMapper_1201859090396">
     <helper xmi:type="ejbrdbmapping:PrimaryTableStrategy" xmi:id="PrimaryTableStrategy_1201859090396">
       <table xmi:type="SQLTables:PersistentTable" href="META-INF/backends/CLOUDSCAPE_V51_1/ejbca.dbm#_VG4TQNCqEdyiD5420jEyaQ"/>

@@ -96,7 +96,6 @@
 		</session-deployment>
 		<session-deployment name="UpgradeSession" location="UpgradeSession" local-location="ejbca-ejb_UpgradeSessionLocal" persistence-filename="UpgradeSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogConfigurationDataLocal" />
-			<ejb-ref-mapping name="ejb/OldLogConfigurationDataLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 		</session-deployment>
 		<session-deployment name="RSASignSession" location="RSASignSession" local-location="ejbca-ejb_RSASignSessionLocal" persistence-filename="RSASignSession.ejbca_default_group_1">
@@ -167,8 +166,6 @@
 		<entity-deployment name="PublisherData" location="PublisherData" local-location="ejbca-ejb_PublisherDataLocal" concrete-bean-class="PublisherData_ConcreteSubClass60" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="PublisherData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 		<entity-deployment name="CertReqHistoryData" location="CertReqHistoryData" local-location="ejbca-ejb_CertReqHistoryDataLocal" concrete-bean-class="CertReqHistoryData_ConcreteSubClass61" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CertReqHistoryData_LocalHomeProxy_634lm59">
-		</entity-deployment>
-		<entity-deployment name="OldLogConfigurationData" location="OldLogConfigurationData" local-location="ejbca-ejb_OldLogConfigurationDataLocal" concrete-bean-class="OldLogConfigurationData_ConcreteSubClass62" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="OldLogConfigurationData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 		<entity-deployment name="TableProtectData" location="TableProtectData" local-location="ejbca-ejb_TableProtectDataLocal" concrete-bean-class="TableProtectData_ConcreteSubClass63" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="TableProtectData_LocalHomeProxy_634lm59">
 		</entity-deployment>

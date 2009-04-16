@@ -557,23 +557,6 @@
 
    </weblogic-enterprise-bean>
    <weblogic-enterprise-bean>
-      <ejb-name>OldLogConfigurationData</ejb-name>
-      <entity-descriptor>
-         <persistence>
-            <persistence-use>
-               <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-               <type-version>6.0</type-version>
-               <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-            </persistence-use>
-         </persistence>
-      </entity-descriptor>
-      <reference-descriptor>
-      </reference-descriptor>
-
-      <local-jndi-name>OldLogConfigurationDataLocal</local-jndi-name>
-
-   </weblogic-enterprise-bean>
-   <weblogic-enterprise-bean>
       <ejb-name>ProtectedLogTokenData</ejb-name>
       <entity-descriptor>
          <persistence>
