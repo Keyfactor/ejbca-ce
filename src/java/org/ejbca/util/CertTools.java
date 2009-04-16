@@ -920,6 +920,9 @@ public class CertTools {
     	if (provider == null) {
     		prov = "BC";
     	}
+    	if (StringUtils.equals(prov, "BC")) {
+        	installBCProviderIfNotAvailable();    		
+    	}
         try {
             return CertificateFactory.getInstance("X.509", prov);
         } catch (NoSuchProviderException nspe) {
@@ -931,7 +934,6 @@ public class CertTools {
     }
     
     public static CertificateFactory getCertificateFactory() {
-    	installBCProviderIfNotAvailable();
     	return getCertificateFactory("BC");
     }
     
