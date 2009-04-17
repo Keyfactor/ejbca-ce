@@ -18,6 +18,7 @@ import java.util.HashSet;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.LocalRaAdminSessionBean;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -146,9 +147,14 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
         
         HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
        
+        boolean issuperadministrator = false;
+        try {
+        	issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");  
+        } catch(AuthorizationDeniedException ade) {}
+
        if(profile == null && editcheck){
 			authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-       }	
+       }
        if(profile == null){  
            returnval = true;                                           
        }else{
@@ -159,8 +165,12 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
             String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
             allexists = true;
             for(int j=0; j < availablecas.length; j++){
-              if(!authorizedcaids.contains( new Integer(availablecas[j]))){
-                allexists = false;
+            	Integer caid = new Integer(availablecas[j]);
+              if(!authorizedcaids.contains(caid)){
+            	  // superadmin is allowed to select ALLCAS
+            	  if ( !(issuperadministrator && (caid.intValue() == SecConst.ALLCAS)) ) {
+                      allexists = false;            		              		  
+            	  } 
               }
             }
           }  

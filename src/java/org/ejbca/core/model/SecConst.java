@@ -104,6 +104,7 @@ public class SecConst extends Object {
 
     public static final int EMPTY_ENDENTITYPROFILE = 1;
 
+    /** Used in end entity profiles */
     public static final int ALLCAS = 1;
         
     /**

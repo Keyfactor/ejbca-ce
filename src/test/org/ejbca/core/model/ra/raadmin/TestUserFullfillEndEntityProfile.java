@@ -960,4 +960,68 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
 
         log.trace("<test01fulfillEndEntityProfiles()");
     } // test01fulfillEndEntityProfiles
+    
+    public void test02fulfillEndEntityProfilesAvailableCAs() throws Exception {
+        EndEntityProfile profile = new EndEntityProfile();
+        
+        // Dummy caids
+        int testca1 = 2;
+        int testca2 = 3;
+        
+        // Set so CN=modifyable required, OU0={DEP1_1,DEP1_2} required, OU1={DEP2_1,DEP2_2} required, C=OU1={SE,DK} not required 
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.COUNTRY);
+        
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,0,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,1,true);
+        
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,0,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,1,false);
+        profile.setModifyable(DnComponents.COUNTRY,0,false);
+        
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,0,"DEP1_1;DEP1_2");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,1,"DEP2_1;DEP2_2");
+        profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
+        
+        profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
+
+        // Test right CA
+        try{ 
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
+        	assertTrue(e.getMessage(), false);
+        }
+        
+        // Test Wrong CA
+        try{ 
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
+        	assertTrue("Improper check of available ca's.", false);
+        }catch(UserDoesntFullfillEndEntityProfile e){
+        	//System.out.println(e.getMessage());
+        	assertEquals("Couldn't find CA (3) among End Entity Profiles Available CAs.", e.getMessage());
+        }
+
+        // Set Any CA available
+        profile.setValue(EndEntityProfile.AVAILCAS,0,""+SecConst.ALLCAS);
+
+        // Test right CA
+        try{ 
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
+        	assertTrue(e.getMessage(), false);
+        }
+        
+        // Test Wrong CA
+        try{ 
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
+        }catch(UserDoesntFullfillEndEntityProfile e){
+        	assertTrue(e.getMessage(), false);
+        }
+
+    }
 } // TestUserFullfillEndEntityProfile
