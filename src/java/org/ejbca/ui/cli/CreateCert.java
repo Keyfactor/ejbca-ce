@@ -30,7 +30,7 @@ import org.ejbca.util.RequestMessageUtils;
 /**
  * Implements the password encryption mechanism
  *
- * @version $Id: EncryptPwd.java 5585 2008-05-01 20:55:00Z anatom $
+ * @version $Id$
  */
 public class CreateCert extends BaseCommand {
 
