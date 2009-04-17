@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol;
+package org.ejbca.util;
 
 import java.io.IOException;
 import java.security.PrivateKey;
@@ -19,9 +19,10 @@ import java.security.cert.Certificate;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
+import org.ejbca.core.protocol.CVCRequestMessage;
+import org.ejbca.core.protocol.IRequestMessage;
+import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.PKCS10RequestMessage;
 
 
 

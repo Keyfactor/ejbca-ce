@@ -25,6 +25,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.ejbca.util.RequestMessageUtils;
 
 
 

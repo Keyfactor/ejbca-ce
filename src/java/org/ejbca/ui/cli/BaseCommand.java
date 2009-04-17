@@ -38,6 +38,8 @@ import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
+import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
@@ -83,6 +85,7 @@ public abstract class BaseCommand {
     private IHardTokenSessionRemote hardTokenSession = null;
     private IKeyRecoverySessionRemote keyRecoverySession = null;
     private IUserDataSourceSessionRemote userDataSourceSession = null;
+    private ISignSessionRemote signSession = null;
     
 	protected Admin administrator = null;
     
@@ -331,6 +334,24 @@ public abstract class BaseCommand {
 		}
 		baseLog.trace("<getUserDataSourceSession()");
         return userDataSourceSession;
+    }
+
+    /**
+     *@return a reference to a ISIgnSessionBean
+     */
+    public ISignSessionRemote getSignSession(){
+    	baseLog.trace(">getSignSession()");
+		try {
+			if (signSession == null) {
+				signSession = ((ISignSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						ISignSessionHome.JNDI_NAME, ISignSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.trace("<getSignSession()");
+        return signSession;
     }
 
     /**

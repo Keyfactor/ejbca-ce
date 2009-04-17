@@ -1195,7 +1195,7 @@
          try{           
              byte[] reqbytes = FileTools.readInputStreamtoBuffer(file);
              if (reqbytes != null) {
-            	 IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(reqbytes);
+            	 IRequestMessage certreq = org.ejbca.util.RequestMessageUtils.parseRequestMessage(reqbytes);
 
                  if (certreq != null) {    
                    cabean.saveRequestData(reqbytes);                                
@@ -1353,7 +1353,7 @@
                if (cainfo != null) {
                    try{
                        byte[] req = cabean.getRequestData(); 
-                       IRequestMessage certreq = org.ejbca.core.protocol.RequestMessageUtils.parseRequestMessage(req);
+                       IRequestMessage certreq = org.ejbca.util.RequestMessageUtils.parseRequestMessage(req);
                        Certificate result = cadatahandler.processRequest(cainfo, certreq);
                        cabean.saveProcessedCertificate(result);
                        filemode = CERTGENMODE;   

@@ -45,12 +45,12 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.RequestMessageUtils;
 
 /**
  * Helper class for handling certificate request from browsers or general PKCS#10

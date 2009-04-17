@@ -18,8 +18,10 @@ if "%1" == "ocsp" set class_name=org.ejbca.ui.cli.Ocsp
 if "%1" == "asn1dump" set class_name=org.ejbca.ui.cli.Asn1Dump
 if "%1" == "encryptpwd" set class_name=org.ejbca.ui.cli.EncryptPwd
 if "%1" == "log" set class_name=org.ejbca.ui.cli.log
+if "%1" == "admins" set class_name=org.ejbca.ui.cli.admins
+if "%1" == "createcert" set class_name=org.ejbca.ui.cli.CreateCert
 if %class_name% == "" (
-    echo "Usage: %0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump|log] options"
+    echo "Usage: %0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump|encryptpwd|log|admins|createcert] options"
 	echo For options information, specify a command directive
     goto end
 )

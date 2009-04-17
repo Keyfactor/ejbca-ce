@@ -37,6 +37,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.RequestMessageUtils;
 
 
 

@@ -19,7 +19,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 
-import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -32,6 +31,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
+import org.ejbca.util.RequestMessageUtils;
 
 
 /**
