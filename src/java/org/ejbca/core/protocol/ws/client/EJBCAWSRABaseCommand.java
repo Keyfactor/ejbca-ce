@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.security.AuthProvider;
+import java.security.Provider;
 import java.security.Security;
 import java.util.Properties;
 
@@ -23,6 +24,7 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
+import org.ejbca.util.provider.TLSProvider;
 
 /**
  * Base class inherited by all EJBCA RA WS cli commands.
@@ -122,9 +124,9 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
                 System.setProperty("javax.net.ssl.keyStoreProvider", providerName);
                 System.setProperty("javax.net.ssl.keyStore", "NONE");
                 if ( trustStorePath==null ) {
-                    System.setProperty("javax.net.ssl.trustStoreProvider", providerName);
-                    System.setProperty("javax.net.ssl.trustStoreType", "pkcs11");
-                    System.setProperty("javax.net.ssl.trustStore", "NONE");
+                    final Provider tlsProvider = new TLSProvider();
+                    Security.addProvider(tlsProvider);
+                    Security.setProperty("ssl.TrustManagerFactory.algorithm", "AcceptAll");
                 }
             } else {
                 final String keyStorePath = props.getProperty("ejbcawsracli.keystore.path", "keystore.jks");
