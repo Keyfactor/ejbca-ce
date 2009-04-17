@@ -5,7 +5,7 @@
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView" %>
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException" %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -1158,6 +1158,8 @@
               throw e;
           }catch(EjbcaException e){ 
               errormessage = e.getMessage(); 
+          } catch(ExtCertPathValidatorException e){
+        	  errormessage = e.getMessage();  
           } catch(Exception e){   
               errorrecievingfile = true; 
           } 
@@ -1401,6 +1403,8 @@
               throw e;
           }catch(EjbcaException e){                       
               errormessage = e.getMessage(); 
+          } catch(ExtCertPathValidatorException e){
+        	  errormessage = e.getMessage();  
           } catch(Exception e){                       
               errorrecievingfile = true; 
           }  
