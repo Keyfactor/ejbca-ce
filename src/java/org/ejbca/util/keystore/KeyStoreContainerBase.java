@@ -359,4 +359,14 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         }
         this.keyStore.setKeyEntry(alias, this.keyStore.getKey(alias, null), null, chain);
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#installTrustedRoot(java.lang.String)
+     */
+    public void installTrustedRoot(String fileName) throws Exception {
+        final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
+        if ( chain.length<1 )
+            throw new Exception("No certificate in file");
+        // assume last cert in chain is root if more than 1
+        this.keyStore.setCertificateEntry("trusted", chain[chain.length-1]);
+    }
 }

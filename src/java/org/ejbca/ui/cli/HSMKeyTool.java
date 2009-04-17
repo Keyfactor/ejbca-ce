@@ -44,6 +44,7 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String CERT_REQ = "certreq";
     private static final String INSTALL_CERT = "installcert";
     private static final String RENAME = "rename";
+    private static final String INSTALL_TRUSTED_ROOT = "installtrusted";
 
     /**
      * To be overided if the HSM implementation knows the value of some parameters.
@@ -147,9 +148,16 @@ public class HSMKeyTool extends ClientToolBox {
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
                 if ( args.length < 7 ) {
-                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate in PEM format>");
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain in PEM format>");
                 } else {
                     KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).installCertificate(args[6]);
+                }
+                return;
+            } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(INSTALL_TRUSTED_ROOT)) {
+                if ( args.length < 7 ) {
+                    System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <trusted root certificate in PEM format>");
+                } else {
+                    KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).installTrustedRoot(args[6]);
                 }
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {

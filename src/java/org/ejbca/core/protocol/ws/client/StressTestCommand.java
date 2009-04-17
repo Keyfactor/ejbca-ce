@@ -66,19 +66,19 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             kpg.initialize(1024);
             final EjbcaWS ejbcaWS = getEjbcaRAWSFNewReference();
             final JobData jobData = new JobData();
-            switch (testType) {
+            switch (this.testType) {
             case BASIC:
                 return new Command[]{
-                                     new EditUserCommand(ejbcaWS, caName, endEntityProfileName, certificateProfileName, jobData, true),
+                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
             case REVOKE:
                 return new Command[]{
-                                     new EditUserCommand(ejbcaWS, caName, endEntityProfileName, certificateProfileName, jobData, true),
+                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData),
                                      new FindUserCommand(ejbcaWS, jobData),
                                      new ListCertsCommand(ejbcaWS, jobData),
                                      new RevokeCertCommand(ejbcaWS, jobData),
-                                     new EditUserCommand(ejbcaWS, caName, endEntityProfileName, certificateProfileName, jobData, false),
+                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, false),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
             default:
                 return null;
@@ -90,7 +90,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         String passWord;
         X509Certificate userCertsToBeRevoked[];
         String getDN() {
-            return "CN="+userName;
+            return "CN="+this.userName;
         }
     }
     private class Pkcs10RequestCommand implements Command {
@@ -103,23 +103,23 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
-            final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(jobData.userName, jobData.passWord,
-                                                                                       new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(this.jobData.userName, this.jobData.passWord,
+                                                                                       new String(Base64.encode(this.pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
             final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
             X509Certificate cert = null;
             while ( i.hasNext() )
                 cert = i.next();
             if ( cert==null ) {
-                performanceTest.getLog().error("no certificate generated for user "+jobData.userName);
+                StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+this.jobData.userName);
                 return false;
             }
             final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
-            if ( commonName.equals(jobData.userName) ) {
-                performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
-                performanceTest.getLog().result(CertTools.getSerialNumber(cert));
+            if ( commonName.equals(this.jobData.userName) ) {
+                StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
+                StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
                 return true;
             }
-            performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
+            StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+this.jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
             return false;
         }
         public String getJobTimeDescription() {
@@ -136,18 +136,18 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         public boolean doIt() throws Exception {
             final org.ejbca.core.protocol.ws.client.gen.UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
             match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
-            match.setMatchvalue(jobData.getDN());
+            match.setMatchvalue(this.jobData.getDN());
             match.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_DN);
-            final List<UserDataVOWS> result = ejbcaWS.findUser(match);
+            final List<UserDataVOWS> result = this.ejbcaWS.findUser(match);
             if (result.size()<1) {
-                performanceTest.getLog().error("No users found for DN \""+jobData.getDN()+"\"");
+                StressTestCommand.this.performanceTest.getLog().error("No users found for DN \""+this.jobData.getDN()+"\"");
                 return false;
             }
             final Iterator<UserDataVOWS> i = result.iterator();
             while ( i.hasNext() ) {
                 final String userName = i.next().getUsername();
-                if( !userName.equals(jobData.userName) ) {
-                    performanceTest.getLog().error("wrong user name \""+userName+"\" for certificate with DN \""+jobData.getDN()+"\"");
+                if( !userName.equals(this.jobData.userName) ) {
+                    StressTestCommand.this.performanceTest.getLog().error("wrong user name \""+userName+"\" for certificate with DN \""+this.jobData.getDN()+"\"");
                     return false;
                 }
             }
@@ -165,13 +165,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
-            final List<Certificate> result = this.ejbcaWS.findCerts(jobData.userName, true);
+            final List<Certificate> result = this.ejbcaWS.findCerts(this.jobData.userName, true);
             final Iterator<Certificate> i = result.iterator();
-            jobData.userCertsToBeRevoked = new X509Certificate[result.size()];
+            this.jobData.userCertsToBeRevoked = new X509Certificate[result.size()];
             for( int j=0; i.hasNext(); j++ )
-                jobData.userCertsToBeRevoked[j] = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(Base64.decode(i.next().getCertificateData())));
-            if ( jobData.userCertsToBeRevoked.length < 1 ) {
-                performanceTest.getLog().error("no cert found for user "+jobData.userName);
+                this.jobData.userCertsToBeRevoked[j] = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(Base64.decode(i.next().getCertificateData())));
+            if ( this.jobData.userCertsToBeRevoked.length < 1 ) {
+                StressTestCommand.this.performanceTest.getLog().error("no cert found for user "+this.jobData.userName);
                 return false;
             }
 
@@ -189,9 +189,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
-            for (int i=0; i<jobData.userCertsToBeRevoked.length; i++)
-                this.ejbcaWS.revokeCert(jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
-                                        jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
+            for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++)
+                this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+                                        this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
                                         REVOKATION_REASON_UNSPECIFIED);
             return true;
         }
@@ -207,7 +207,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         EditUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName, JobData _jobData, boolean _doCreateNewUser) {
             this.doCreateNewUser = _doCreateNewUser;
             this.jobData = _jobData;
-            ejbcaWS = _ejbcaWS;
+            this.ejbcaWS = _ejbcaWS;
             this.user = new UserDataVOWS();
             this.user.setClearPwd(true);
             this.user.setCaName(caName);
@@ -219,18 +219,18 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.user.setCertificateProfileName(certificateProfileName);
         }
         public boolean doIt() throws Exception {
-            if ( doCreateNewUser ) {
-                jobData.passWord = "foo123";
-                jobData.userName = "WSTESTUSER"+performanceTest.getRandom().nextInt();
+            if ( this.doCreateNewUser ) {
+                this.jobData.passWord = "foo123";
+                this.jobData.userName = "WSTESTUSER"+StressTestCommand.this.performanceTest.getRandom().nextInt();
             }
-            this.user.setSubjectDN(jobData.getDN());
-            this.user.setUsername(jobData.userName);
-            this.user.setPassword(jobData.passWord);
-            this.ejbcaWS.editUser(user);
+            this.user.setSubjectDN(this.jobData.getDN());
+            this.user.setUsername(this.jobData.userName);
+            this.user.setPassword(this.jobData.passWord);
+            this.ejbcaWS.editUser(this.user);
             return true;
         }
         public String getJobTimeDescription() {
-            if ( doCreateNewUser )
+            if ( this.doCreateNewUser )
                 return "Relative time spent registring new users";
 
             return "Relative time spent setting status of user to NEW";
@@ -241,7 +241,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
      */
     public StressTestCommand(String[] _args) {
         super(_args);
-        performanceTest = new PerformanceTest();
+        this.performanceTest = new PerformanceTest();
     }
 
     /* (non-Javadoc)
@@ -271,18 +271,18 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
         try {
-            if(args.length <  2){
+            if(this.args.length <  2){
                 usage();
                 System.exit(-1);
             }
-            final int numberOfThreads = args.length>2 ? Integer.parseInt(args[2]) : 1;
-            final int waitTime = args.length>3 ? Integer.parseInt(args[3]) : -1;
-            final String caName = args[1];
-            final String endEntityProfileName = args.length>4 ? args[4] : "EMPTY";
-            final String certificateProfileName = args.length>5 ? args[5] : "ENDUSER";
-            final TestType testType = args.length>6 ? TestType.valueOf(args[6]) : TestType.BASIC;
-            performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName, testType),
-                                    numberOfThreads, waitTime, getPrintStream());
+            final int numberOfThreads = this.args.length>2 ? Integer.parseInt(this.args[2]) : 1;
+            final int waitTime = this.args.length>3 ? Integer.parseInt(this.args[3]) : -1;
+            final String caName = this.args[1];
+            final String endEntityProfileName = this.args.length>4 ? this.args[4] : "EMPTY";
+            final String certificateProfileName = this.args.length>5 ? this.args[5] : "ENDUSER";
+            final TestType testType = this.args.length>6 ? TestType.valueOf(this.args[6]) : TestType.BASIC;
+            this.performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName, testType),
+                                         numberOfThreads, waitTime, getPrintStream());
             getPrintStream().println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
             synchronized(this) {
                 wait();
@@ -292,7 +292,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         } catch( Exception e) {
             throw new ErrorAdminCommandException(e);
         }finally{
-            performanceTest.getLog().close();
+            this.performanceTest.getLog().close();
         }
     }
 }

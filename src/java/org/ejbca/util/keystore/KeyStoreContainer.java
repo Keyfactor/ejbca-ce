@@ -66,10 +66,18 @@ public interface KeyStoreContainer {
     void generateCertReq(String string, String dn) throws Exception;
 
     /**
-     * @param string
+     * Install certificate chain to key in keystore.
+     * @param file name of the file with chain. Starting with the certificate of the key. Ending with the root certificate.
      * @throws Exception
      */
     void installCertificate(String string) throws Exception;
+
+    /**
+     * Install trusted root in trust store
+     * @param File name of the trusted root.
+     * @throws Exception
+     */
+    void installTrustedRoot(String string) throws Exception;
 
     /**
      * @param stream
