@@ -136,6 +136,18 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Default: empty
 #ocsp.p11.sharedLibrary=/opt/nfast/toolkits/pkcs11/libcknfast.so
 
+# Sun P11 Configuration file. Must be used instead of 'ocsp.p11.sharedLibrary' if new key should be generated automaticaly before certificate of old expires.
+# Default: empty
+# ocsp.p11.sunConfigurationFile=./ocs4.cfg
+
+# Renew time before certificate expires. Specifies how long time before a certificate expires that a new key should be generated. <0 means that no keys are automatically generated.
+# Default: -1 
+# ocsp.renewTimeBeforeCertExpiresInSeconds=60*60*24
+
+# URL to webservice from which the certificate for a newly generated OCSP reponder key should be fetched.
+# Default: empty
+# ocsp.ejbcawsracli.url = https://milton:8443/ejbca/ejbcaws/ejbcaws
+
 # P11 password.
 # Default: foo123
 #ocsp.p11.p11password=foo123
