@@ -150,41 +150,34 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
     }
     
-    private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
+    private List<X509Certificate> getCertificateChain(X509Certificate cert, Admin adm) {
     	String issuerDN = CertTools.getIssuerDN(cert);
         final CertificateStatus status = this.servlet.getStatus(adm, issuerDN, CertTools.getSerialNumber(cert));
         if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
-    		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN);
-            m_log.warn(wMsg);
+            m_log.warn(intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN));
             return null;
         }
         if ( status.equals(CertificateStatus.REVOKED) ) {
-    		String wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", CertTools.getSerialNumberAsString(cert), issuerDN);
-            m_log.warn(wMsg);
+            m_log.warn(intres.getLocalizedMessage("ocsp.signcertrevoked", CertTools.getSerialNumberAsString(cert), issuerDN));
             return null;
         }
-        X509Certificate chain[] = null;
         final List<X509Certificate> list = new ArrayList<X509Certificate>();
         X509Certificate current = cert;
         while( true ) {
-        	list.add(current);
         	if ( CertTools.isSelfSigned(current) ) {
-        		chain = list.toArray(new X509Certificate[0]);
-        		break;
+                return list;
         	}
         	// Is there a CA certificate?
-        	X509Certificate target = this.servlet.m_caCertCache.findLatestBySubjectDN(CertTools.getIssuerDN(current));
+        	final X509Certificate target = this.servlet.m_caCertCache.findLatestBySubjectDN(CertTools.getIssuerDN(current));
         	if (target != null) {
     			current = target;
+                list.add(current);
         	} else {
         		break;        		
         	}
         }
-        if ( chain==null ) {
-    		String wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", CertTools.getSerialNumberAsString(cert), issuerDN);
-        	m_log.warn(wMsg);
-        }
-        return chain;
+        m_log.warn(intres.getLocalizedMessage("ocsp.signcerthasnochain", CertTools.getSerialNumberAsString(cert), issuerDN));
+        return null;
     }
     private boolean loadFromP11HSM(Admin adm, HashMap<Integer, SigningEntity> newSignEntity) throws Exception {
     	m_log.trace(">loadFromP11HSM");
@@ -253,7 +246,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 if (m_log.isDebugEnabled()) {
                     m_log.debug("Trying to load signing keys for signer with subjectDN (EJBCA ordering) '"+CertTools.getSubjectDN(cert)+"', keystore alias '"+alias+"'");                	
                 }
-                final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore);
+                final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore, cert);
                 if ( pkf.getKey()!=null && cert!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
                     putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);
                 } else {
@@ -272,14 +265,15 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         if ( keyFactory==null || cert==null )
             return false;
         providerHandler.addKeyFactory(keyFactory);
-        final X509Certificate[] chain = getCertificateChain(cert, adm);
-        if ( chain==null ) {
+        final List<X509Certificate> chain = getCertificateChain(cert, adm);
+        if ( chain==null || chain.size()<1 ) {
             return false;
         }
-        final Integer caid = new Integer(this.servlet.getCaid(chain[1]));
+        final Integer caid = new Integer(this.servlet.getCaid(chain.get(0)));
         {
-            SigningEntity entityForSameCA = newSignEntity.get(caid);
-            if ( entityForSameCA!=null && entityForSameCA.mChain[0].getNotBefore().after(cert.getNotBefore())) {
+            final SigningEntity entityForSameCA = newSignEntity.get(caid);
+            final X509Certificate otherChainForSameCA[] = entityForSameCA!=null ? entityForSameCA.getCertificateChain() : null;
+            if ( otherChainForSameCA!=null && otherChainForSameCA[0].getNotBefore().after(cert.getNotBefore())) {
                 m_log.debug("CA with ID "+caid+" has duplicated keys. Certificate for older key that is not used has serial number: "+cert.getSerialNumber().toString(0x10));
                 return true; // the entity allready in the map is newer.
             }
@@ -330,14 +324,20 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 		 * @return is key OK to use.
 		 */
 		boolean isOK();
+        /**
+         * @return the certificate of the key
+         */
+        X509Certificate getCertificate();
     }
     private class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
         final private char password[];
         final private String alias;
+        final private X509Certificate certificate;
         private PrivateKey privateKey;
-        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore keyStore) throws Exception {
+        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore keyStore, X509Certificate cert) throws Exception {
             this.alias = a;
             this.password = pw;
+            this.certificate = cert;
             set(keyStore);
         }
         /* (non-Javadoc)
@@ -372,23 +372,29 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         public String toString() {
             return "PrivateKeyContainerKeyStore for key with alias "+this.alias+'.';
         }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#getCertificate()
+         */
+        public X509Certificate getCertificate() {
+            return this.certificate;
+        }
     }
     private class PrivateKeyContainerCard implements PrivateKeyContainer {
-        final private RSAPublicKey publicKey;
-        PrivateKeyContainerCard( RSAPublicKey key) {
-            this.publicKey = key;
+        final private X509Certificate certificate;
+        PrivateKeyContainerCard( X509Certificate cert) {
+            this.certificate = cert;
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#getKey()
          */
         public PrivateKey getKey() throws Exception {
-            return OCSPServletStandAloneSession.this.mCardTokenObject.getPrivateKey(this.publicKey);
+            return OCSPServletStandAloneSession.this.mCardTokenObject.getPrivateKey((RSAPublicKey)this.certificate.getPublicKey());
         }
 		/* (non-Javadoc)
 		 * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#isOK()
 		 */
 		public boolean isOK() {
-			return OCSPServletStandAloneSession.this.mCardTokenObject.isOK(this.publicKey);
+			return OCSPServletStandAloneSession.this.mCardTokenObject.isOK((RSAPublicKey)this.certificate.getPublicKey());
 		}
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#clear()
@@ -402,12 +408,18 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         public void set(KeyStore keyStore) throws Exception {
             // not used by cards.
         }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#getCertificate()
+         */
+        public X509Certificate getCertificate() {
+            return this.certificate;
+        }
     }
     private boolean putSignEntityCard( Certificate _cert, Admin adm,
                                        HashMap<Integer, SigningEntity> newSignEntity) {
         if ( _cert!=null &&  _cert instanceof X509Certificate) {
             final X509Certificate cert = (X509Certificate)_cert;
-            final PrivateKeyContainer keyFactory = new PrivateKeyContainerCard((RSAPublicKey)cert.getPublicKey());
+            final PrivateKeyContainer keyFactory = new PrivateKeyContainerCard(cert);
             return putSignEntity( keyFactory, cert, adm, new CardProviderHandler(), newSignEntity );
         }
         return false;
@@ -683,13 +695,23 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
     }
     private class SigningEntity {
-        final private X509Certificate mChain[];
+        final private List<X509Certificate> mChain;
         final private PrivateKeyContainer mKeyFactory;
         final private ProviderHandler providerHandler;
-        SigningEntity(X509Certificate c[], PrivateKeyContainer f, ProviderHandler ph) {
+        SigningEntity(List<X509Certificate> c, PrivateKeyContainer f, ProviderHandler ph) {
             this.mChain = c;
             this.mKeyFactory = f;
             this.providerHandler = ph;
+        }
+        X509Certificate[] getCertificateChain() {
+            final List<X509Certificate> entityChain = new ArrayList<X509Certificate>(this.mChain);
+            final X509Certificate entityCert = this.mKeyFactory.getCertificate();
+            if ( entityCert==null ) {
+                m_log.error("CA "+this.mChain.get(0).getSubjectDN()+" has no signer.");
+                return null;
+            }
+            entityChain.add(0, entityCert);
+            return entityChain.toArray(new X509Certificate[0]);
         }
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException {
             final String hsmErrorString = "HSM not functional";
@@ -719,7 +741,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 throw new ExtendedCAServiceRequestException(hsmErrorString);
             }
             try {
-                return OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, this.mChain);
+                return OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, this.getCertificateChain());
             } catch( ExtendedCAServiceRequestException e) {
                 this.providerHandler.reload();
                 throw e;
@@ -739,9 +761,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 				m_log.info("Exception thrown when accessing the private key: ", e);
 				return false;
 			}
-        }
-        X509Certificate[] getCertificateChain() {
-        	return this.mChain;
         }
     }
     /**
