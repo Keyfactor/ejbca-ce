@@ -633,34 +633,40 @@ public class KeyTools {
      */
     private static Provider getP11Provider(final InputStream is, Properties prop) throws IOException {
 
-    	// We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because 
-    	// the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
-    	// The below code replaces the single line (for the SUN provider):
-    	//   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
-    	
-    	// We will first try to construct the more competent IAIK provider, if it exists in the classpath
-    	// if that does not exist, we will revert back to use the SUN provider
-    	try {
-    		final Class implClass = Class.forName(IAIKPKCS11CLASS);
-    		log.info("Using IAIK PKCS11 provider: "+IAIKPKCS11CLASS);
-    		// iaik PKCS11 has Properties as constructor argument
-    		Constructor construct = implClass.getConstructor(Properties.class);    			
-    		Provider prov = (Provider)construct.newInstance(new Object[] {prop});
-    		return prov;
-    	} catch (Exception e) {
-    		try {
-    			// Sun PKCS11 has InputStream as constructor argument
-    			final Class implClass = Class.forName(SUNPKCS11CLASS);
-    			log.info("Using SUN PKCS11 provider: "+SUNPKCS11CLASS);
-    			Constructor construct = implClass.getConstructor(InputStream.class);    			
-    			return (Provider)construct.newInstance(new Object[] {is});
-    		} catch (Exception e2) {
-    			log.error("Error constructing pkcs11 provider: "+e2.getMessage());
-    			IOException ioe = new IOException("Error constructing pkcs11 provider: "+e2.getMessage());
-    			ioe.initCause(e2);
-    			throw ioe;
-    		}
-    	} 
+        // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because 
+        // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
+        // The below code replaces the single line (for the SUN provider):
+        //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
+
+        // We will first try to construct the more competent IAIK provider, if it exists in the classpath
+        // if that does not exist, we will revert back to use the SUN provider
+        if (prop!=null) try {
+            final Class implClass = Class.forName(IAIKPKCS11CLASS);
+            log.info("Using IAIK PKCS11 provider: "+IAIKPKCS11CLASS);
+            // iaik PKCS11 has Properties as constructor argument
+            return (Provider)implClass.getConstructor(Properties.class).newInstance(new Object[] {prop});
+        } catch (Exception e) {
+            // do nothing here. Sun provider is tested below.
+        }
+        try {
+            // Sun PKCS11 has InputStream as constructor argument
+            final Class implClass = Class.forName(SUNPKCS11CLASS);
+            log.info("Using SUN PKCS11 provider: "+SUNPKCS11CLASS);
+            return (Provider)implClass.getConstructor(InputStream.class).newInstance(new Object[] {is});
+        } catch (Exception e2) {
+            log.error("Error constructing pkcs11 provider: "+e2.getMessage());
+            IOException ioe = new IOException("Error constructing pkcs11 provider: "+e2.getMessage());
+            ioe.initCause(e2);
+            throw ioe;
+        }
+    }
+    /**
+     * @param Input stream for sun configuration file.
+     * @return The Sun provider
+     * @throws IOException
+     */
+    public static Provider getSunP11Provider(final InputStream is) throws IOException {
+        return getP11Provider(is, null);
     }
 
     /**

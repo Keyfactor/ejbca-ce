@@ -1,6 +1,7 @@
 package org.ejbca.util.keystore;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.AuthProvider;
 import java.security.Provider;
@@ -30,6 +31,7 @@ public class P11Slot {
     final private String sharedLibrary;
     final private boolean isIndex;
     final private Set<P11SlotUser> caTokens;
+    final private String sunP11ConfigFileName;
     private String atributesFile;
     private Provider provider;
     private boolean isSettingProvider = false;
@@ -38,19 +40,35 @@ public class P11Slot {
         this.sharedLibrary = _sharedLibrary;
         this.isIndex = _isIndex;
         this.caTokens = new HashSet<P11SlotUser>();
+        this.sunP11ConfigFileName = null;
+    }
+    private P11Slot( String configFileName ) {
+        this.sunP11ConfigFileName = configFileName;
+        this.slotNr = null;
+        this.sharedLibrary = null;
+        this.isIndex = false;
+        this.caTokens = new HashSet<P11SlotUser>();
     }
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
+        if ( this.slotNr==null && this.sharedLibrary==null ) {
+            return "P11, Sun configuration file name: "+this.sunP11ConfigFileName;
+        }
         return "P11 slot "+(this.isIndex ? "index ":"#")+this.slotNr+" using library "+this.sharedLibrary+'.';
     }
+    /**
+     * Used for library key map when a sun configuration file is used to specify a token (slot). In this case only one lib could be used.
+     */
+    static private String ONLY_ONE = "onlyOne";
     /**
      * Reset the HSM. Could be done if it has stopped working in a try to get it working again.
      */
     public void reset() {
-        final Iterator<P11Slot> i = libMap.get(new File(P11Slot.this.sharedLibrary).getName()).iterator();
+        final String mapName = this.sharedLibrary!=null ? new File(this.sharedLibrary).getName() : ONLY_ONE;
+        final Iterator<P11Slot> i = libMap.get(mapName).iterator();
         while( i.hasNext() ) {
             Iterator<P11SlotUser> i2 = i.next().caTokens.iterator();
             while( i2.hasNext() ) {
@@ -88,6 +106,23 @@ public class P11Slot {
             libSet.add(slot);
         }
         slot.atributesFile = _atributesFile;
+        slot.caTokens.add(token);
+        return slot;
+    }
+    static public P11Slot getInstance(String configFileName, P11SlotUser token) {
+        final String slotLabel = new File(configFileName).getName();
+        P11Slot slot = slotMap.get(slotLabel);
+        if (slot==null) {
+            slot = new P11Slot(configFileName);
+            slotMap.put(slotLabel, slot);
+            Set<P11Slot> libSet = libMap.get(ONLY_ONE);
+            if (libSet==null) {
+                libSet=new HashSet<P11Slot>();
+                libMap.put(ONLY_ONE, libSet);
+            }
+            libSet.add(slot);
+        }
+        slot.atributesFile = null;
         slot.caTokens.add(token);
         return slot;
     }
@@ -131,8 +166,14 @@ public class P11Slot {
             return this.provider;
         try {
             this.isSettingProvider = true;
-            this.provider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
-                                                    this.isIndex, this.atributesFile);
+            if ( this.slotNr!=null && this.sharedLibrary!=null ) {
+                this.provider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
+                                                        this.isIndex, this.atributesFile);
+            } else if ( this.sunP11ConfigFileName!=null ) {
+                this.provider = KeyTools.getSunP11Provider(new FileInputStream(this.sunP11ConfigFileName));
+            } else {
+                throw new Error("Should never happend.");
+            }
         } catch (IOException e) {
             final CATokenOfflineException e2 = new CATokenOfflineException("Not possible to create provider. See cause.");
             e2.initCause(e);

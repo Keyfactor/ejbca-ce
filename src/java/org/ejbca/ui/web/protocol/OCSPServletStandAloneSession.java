@@ -93,10 +93,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         try {
             final boolean isIndex;
             final String sharedLibrary = OcspConfiguration.getSharedLibrary();
-            if ( sharedLibrary.length()>0 ) {
+            final String configFile = OcspConfiguration.getSunP11ConfigurationFile();
+            if ( sharedLibrary!=null && sharedLibrary.length()>0 ) {
                 final String sSlot;
                 final String sSlotRead = OcspConfiguration.getSlot();
-                if ( sSlotRead.length()<1 ) {
+                if ( sSlotRead==null || sSlotRead.length()<1 ) {
                     throw new ServletException("No slot number given.");
                 }
                 final char firstChar = sSlotRead.charAt(0);
@@ -109,6 +110,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 }
                 this.slot = P11Slot.getInstance(sSlot, sharedLibrary, isIndex, null, this);
     			m_log.debug("sharedLibrary is: "+sharedLibrary);
+            } else if ( configFile!=null && configFile.length()>0 ) {
+                this.slot = P11Slot.getInstance(configFile, this);
+                m_log.debug("Sun P11 configuration file is: "+sharedLibrary);
             } else {
             	this.slot = null;
             	m_log.debug("No shared P11 library.");
@@ -117,7 +121,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 			    throw new ServletException("no keystore password given");
 			}
 			final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
-			if ( hardTokenClassName.length()>0 ) {
+			if ( hardTokenClassName!=null && hardTokenClassName.length()>0 ) {
 			    String sCardPassword = OcspConfiguration.getCardPassword();
 			    sCardPassword = sCardPassword!=null ? sCardPassword.trim() : null;
                 CardKeys tmp = null;

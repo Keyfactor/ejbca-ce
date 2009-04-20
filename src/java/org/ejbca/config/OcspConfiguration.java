@@ -331,7 +331,38 @@ public class OcspConfiguration {
 	public static String getHardTokenClassName() {
 		return ConfigurationHolder.getString("ocsp.hardToken.className", "se.primeKey.caToken.card.CardKeysImpl");
 	}
-	
+
+    /**
+     * @return Sun P11 configuration file name.
+     */
+    public static String getSunP11ConfigurationFile() {
+        return ConfigurationHolder.getString("ocsp.p11.sunConfigurationFile", "");
+    }
+
+    /**
+     * @return time before the experation of the OCSP signing cert that the signing key should be renewed.
+     */
+    public static int getRenewTimeBeforeCertExpiresInSeconds() {
+        final String key = "ocsp.renewTimeBeforeCertExpiresInSeconds";
+        final String sValue = ConfigurationHolder.getString(key, "");
+        if ( sValue==null || sValue.length()<1 ) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(sValue);
+        } catch ( NumberFormatException e ) {
+            log.error("Could not parse value of "+key+" to integer.", e);
+        }
+        return -1;
+    }
+
+    /**
+     * @return EJBCA web service URL
+     */
+    public static String getEjbcawsracliUrl() {
+        return ConfigurationHolder.getString("ocsp.ejbcawsracli.url", "");
+    }
+
 	/**
 	 * P11 shared library path name.
 	 */
