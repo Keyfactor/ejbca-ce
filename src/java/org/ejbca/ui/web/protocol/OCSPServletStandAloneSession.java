@@ -19,10 +19,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.KeyStore.PasswordProtection;
 import java.security.cert.Certificate;
@@ -42,6 +45,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletException;
+import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
@@ -56,9 +60,14 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.keystore.P11Slot.P11SlotUser;
+import org.ejbca.util.provider.TLSProvider;
+import org.ejbca.util.query.BasicMatch;
 
 /** 
   *
@@ -78,7 +87,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
 	final private SigningEntityContainer signEntitycontainer;
     final private P11Slot slot;
     final private String mP11Password = OcspConfiguration.getP11Password();
+    final private int mRenewTimeBeforeCertExpiresInSeconds = OcspConfiguration.getRenewTimeBeforeCertExpiresInSeconds();
     final private OCSPServletStandAlone servlet;
+    final private EjbcaWS ejbcaWS;
     private boolean isOK=true;
 
     /**
@@ -140,13 +151,38 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 this.mCardTokenObject = null;
                 m_log.info( intres.getLocalizedMessage("ocsp.nohwsigningclass") );
 			}
-            m_log.debug("softKeyDirectoryName is: "+this.mKeystoreDirectoryName);
             if ( this.mKeystoreDirectoryName==null || this.mKeystoreDirectoryName.length()<1 ) {
             	throw new ServletException(intres.getLocalizedMessage("ocsp.errornovalidkeys"));
             }
-    		// Load OCSP responders private keys into cache in init to speed things up for the first request
+            m_log.debug("softKeyDirectoryName is: "+this.mKeystoreDirectoryName);
+            // Load OCSP responders private keys into cache in init to speed things up for the first request
             // signEntity is also set
             loadPrivateKeys(this.servlet.m_adm);
+            // Setting system properties to ssl resources to be used
+            System.setProperty("javax.net.ssl.keyStoreType", "pkcs11");
+            System.setProperty("javax.net.ssl.keyStoreProvider", this.slot.getProvider().getName());
+            System.setProperty("javax.net.ssl.keyStore", "NONE");
+            // setting ejbca trust provider that accept all server certs
+            final Provider tlsProvider = new TLSProvider();
+            Security.addProvider(tlsProvider);
+            Security.setProperty("ssl.TrustManagerFactory.algorithm", "AcceptAll");
+            Security.setProperty("ssl.KeyManagerFactory.algorithm", "NewSunX509");
+            // setting the web service object 
+            final String webURL = OcspConfiguration.getEjbcawsracliUrl();
+            if ( webURL!=null && webURL.length()>0 ) {
+                final QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+                final URL url = new URL(webURL + "?wsdl");
+                m_log.debug("web service. URL: "+url+" QName: "+qname);
+                this.ejbcaWS = new EjbcaWSService(url, qname).getEjbcaWSPort();
+                if ( this.mRenewTimeBeforeCertExpiresInSeconds<0 ) {
+                    m_log.error("No \"renew time before exires\" defined but WS URL defined.");
+                }
+            } else {
+                this.ejbcaWS = null;
+                if ( this.mRenewTimeBeforeCertExpiresInSeconds>=0 ) {
+                    m_log.error("\"renew time before exires\" defined but no WS URL defined.");
+                }
+            }
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -343,6 +379,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             this.password = pw;
             this.certificate = cert;
             set(keyStore);
+            new KeyRenewer();
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#set(java.security.KeyStore)
@@ -381,6 +418,50 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         public X509Certificate getCertificate() {
             return this.certificate;
+        }
+        private class KeyRenewer {
+            
+            private class Runner implements Runnable {
+                /* (non-Javadoc)
+                 * @see java.lang.Runnable#run()
+                 */
+                public synchronized void run() {
+                    while( true ) {
+                        try {
+                            wait(1000*OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds);
+                            updateKey();
+                        } catch (InterruptedException e) {
+                            throw new Error(e);
+                        }
+                    }
+                }
+            }
+            private void updateKey() {
+                final org.ejbca.core.protocol.ws.client.gen.UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
+                match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
+                match.setMatchvalue("CN=hej");
+                match.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_DN);
+                final List<UserDataVOWS> result;
+                try {
+                    result = OCSPServletStandAloneSession.this.ejbcaWS.findUser(match);
+                } catch (Exception e) {
+                    m_log.error("WS not working", e);
+                    return;
+                }
+                if (result.size()<1) {
+                    m_log.info("no CN match");
+                    return;
+                }
+                final Iterator<UserDataVOWS> i = result.iterator();
+                while ( i.hasNext() ) {
+                    m_log.info("user name found:"+ i.next().getUsername());
+                }
+            }
+            KeyRenewer() {
+                if ( OCSPServletStandAloneSession.this.ejbcaWS!=null && OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds>=0 ) {
+                    new Thread(new Runner()).start();
+                }
+            }
         }
     }
     private class PrivateKeyContainerCard implements PrivateKeyContainer {
