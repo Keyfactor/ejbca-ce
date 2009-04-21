@@ -51,6 +51,7 @@
         <property name="ca.dn" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
         <property name="ca.keyspec" value="2048"/>
         <property name="ca.keytype" value="RSA"/>
+    	<property name="ca.signaturealgorithm" value="SHA1WithRSA"/>
         <property name="ca.validity" value="3650"/>
         <property name="ca.policy" value="null"/>
         <property name="httpsserver.hostname" value="localhost"/>
