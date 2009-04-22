@@ -135,7 +135,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 							adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
 						}	
 					} else {
-						log.error("Trying do send notification to user, but no UserData can be found for user: "+username);
+						log.info("Trying do send notification to user, but no UserData can be found for user: "+username);
 					}
 				}
 				if (count == 0) {
