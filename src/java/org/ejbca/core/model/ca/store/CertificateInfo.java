@@ -25,7 +25,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.protect.Protectable;
 
 /**
- * Holds information about a certificate but not the certiifcate itself.
+ * Holds information about a certificate but not the certificate itself.
  *
  * @version $Id$
  */

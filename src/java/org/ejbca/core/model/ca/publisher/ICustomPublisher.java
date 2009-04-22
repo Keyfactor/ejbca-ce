@@ -24,7 +24,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 
 
 /**
- * Interface contating methods that need to be implementet in order 
+ * Interface containing methods that need to be implemented in order 
  * to have a custom publisher. All Custom publishers must implement this interface.
  * 
  * @version $Id$
@@ -39,22 +39,22 @@ public interface ICustomPublisher {
 	public abstract void init(Properties properties);
 
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate
 	 */    
 	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation)throws PublisherException;
 	
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL
 	 */ 
 	public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)throws PublisherException;
 	
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#revokeCertificate
 	 */    
 	public abstract void revokeCertificate(Admin admin, Certificate cert, int reason)throws PublisherException;
 	
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
 	 */    
 	public abstract void testConnection(Admin admin) throws PublisherConnectionException;
 	
