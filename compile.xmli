@@ -199,6 +199,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <classpath refid="compile.classpath" />
             <exclude name="**/appserver/**" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
+            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
         	<exclude name="org/ejbca/core/protocol/ws/**" />
         	<exclude name="org/ejbca/core/protocol/xkms/**/**" />
