@@ -72,7 +72,7 @@ import org.ejbca.util.query.BasicMatch;
 /** 
   *
  * @author Lars Silven PrimeKey
- * @version  $Id
+ * @version  $Id$
  */
 class OCSPServletStandAloneSession implements P11SlotUser {
 
