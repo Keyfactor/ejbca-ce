@@ -42,7 +42,6 @@ public class TestDnComponents extends TestCase {
         String[] s = DnComponents.getDnObjects();
         assertEquals(28, s.length);
         int i = 0;
-        assertEquals("name",s[i++]);
         assertEquals("street",s[i++]);
         assertEquals("pseudonym",s[i++]);
         assertEquals("telephonenumber",s[i++]);
@@ -55,6 +54,7 @@ public class TestDnComponents extends TestCase {
         assertEquals("dn",s[i++]);
         assertEquals("uid",s[i++]);
         assertEquals("cn",s[i++]);
+        assertEquals("name",s[i++]);
         i+=6;
         assertEquals("t",s[i]);
         i+=6;
@@ -62,33 +62,33 @@ public class TestDnComponents extends TestCase {
 
         String[] s1 = DnComponents.getDnObjectsReverse();
         assertEquals(28, s1.length);
-        assertEquals("name",s1[27]);
-        assertEquals("street",s1[26]);
-        assertEquals("telephonenumber",s1[24]);
-        assertEquals("businesscategory",s1[22]);
-        assertEquals("postalcode",s1[21]);
-        assertEquals("unstructuredaddress",s1[20]);
-        assertEquals("unstructuredname",s1[19]);
-        assertEquals("uid",s1[14]);
-        assertEquals("cn",s1[13]);
+        assertEquals("street",s1[27]);
+        assertEquals("telephonenumber",s1[25]);
+        assertEquals("businesscategory",s1[23]);
+        assertEquals("postalcode",s1[22]);
+        assertEquals("unstructuredaddress",s1[21]);
+        assertEquals("unstructuredname",s1[20]);
+        assertEquals("uid",s1[15]);
+        assertEquals("cn",s1[14]);
+        assertEquals("name",s1[13]);
         assertEquals("t",s1[6]);
         assertEquals("c",s1[0]);
 
         String[] s2 = DnComponents.getDnObjects();
         assertEquals(28, s2.length);
-        assertEquals("businesscategory",s2[5]);
-        assertEquals("postalcode",s2[6]);
-        assertEquals("unstructuredaddress",s2[7]);
-        assertEquals("unstructuredname",s2[8]);
-        assertEquals("uid",s2[13]);
-        assertEquals("cn",s2[14]);
+        assertEquals("businesscategory",s2[4]);
+        assertEquals("postalcode",s2[5]);
+        assertEquals("unstructuredaddress",s2[6]);
+        assertEquals("unstructuredname",s2[7]);
+        assertEquals("uid",s2[12]);
+        assertEquals("cn",s2[13]);
         assertEquals("t",s2[21]);
         assertEquals("c",s2[27]);
 
     }
     public void test02() {
-        String dn = CertTools.stringToBCDNString("uri=fff,CN=oid,C=se");
-        assertEquals("CN=oid,C=se", dn);
+        String dn = CertTools.stringToBCDNString("uri=fff,CN=oid,SN=12345,NAME=name,C=se");
+        assertEquals("CN=oid,Name=name,SERIALNUMBER=12345,C=se", dn);
     }
 
 }
