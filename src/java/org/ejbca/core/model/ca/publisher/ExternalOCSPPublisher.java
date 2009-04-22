@@ -89,8 +89,8 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
         }
         public void prepare(PreparedStatement ps) throws Exception {
             ps.setString(1, new String(Base64.encode(incert.getEncoded(), true)));
-            ps.setString(2, CertTools.getSubjectDN((X509Certificate)incert));
-            ps.setString(3, CertTools.getIssuerDN((X509Certificate)incert));
+            ps.setString(2, CertTools.getSubjectDN(incert));
+            ps.setString(3, CertTools.getIssuerDN(incert));
             ps.setString(4, cafp);
             ps.setString(5, ((X509Certificate)incert).getSerialNumber().toString());
             ps.setInt(6, status);
@@ -99,10 +99,10 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             ps.setLong(9, ((X509Certificate)incert).getNotAfter().getTime());
             ps.setLong(10, revocationDate);
             ps.setInt(11, reason);
-            ps.setString(12,CertTools.getFingerprintAsString((X509Certificate)incert));
+            ps.setString(12,CertTools.getFingerprintAsString(incert));
         }
         public String getInfoString() {
-        	return "Store:, Username: "+username+", Issuer:"+CertTools.getIssuerDN((X509Certificate)incert)+", Serno: "+((X509Certificate)incert).getSerialNumber().toString()+", Subject: "+CertTools.getSubjectDN((X509Certificate)incert);
+        	return "Store:, Username: "+username+", Issuer:"+CertTools.getIssuerDN(incert)+", Serno: "+CertTools.getSerialNumberAsString(incert)+", Subject: "+CertTools.getSubjectDN(incert);
         }
     }
 
@@ -116,7 +116,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     throws PublisherException {
     	boolean fail = true;
     	if (log.isDebugEnabled()) {
-    		String fingerprint = CertTools.getFingerprintAsString((X509Certificate)incert);
+    		String fingerprint = CertTools.getFingerprintAsString(incert);
     		log.debug("Publishing certificate with fingerprint "+fingerprint+", status "+status+", type "+type+" to external OCSP");
     	}
     	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
@@ -195,10 +195,10 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             ps.setInt(1, status);
             ps.setLong(2, date);
             ps.setInt(3, reason);
-            ps.setString(4, CertTools.getFingerprintAsString((X509Certificate)cert));
+            ps.setString(4, CertTools.getFingerprintAsString(cert));
         }
         public String getInfoString() {
-        	return "Revoke:, Issuer:"+CertTools.getIssuerDN((X509Certificate)cert)+", Serno: "+((X509Certificate)cert).getSerialNumber().toString()+", Subject: "+CertTools.getSubjectDN((X509Certificate)cert);
+        	return "Revoke:, Issuer:"+CertTools.getIssuerDN(cert)+", Serno: "+CertTools.getSerialNumberAsString(cert)+", Subject: "+CertTools.getSubjectDN(cert);
         	
         }
     }
@@ -207,7 +207,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public void revokeCertificate(Admin admin, Certificate incert, int reason) throws PublisherException {
     	if (log.isDebugEnabled()) {
-    		String fingerprint = CertTools.getFingerprintAsString((X509Certificate)incert);
+    		String fingerprint = CertTools.getFingerprintAsString(incert);
     		log.debug("Revoking certificate with fingerprint "+fingerprint+", reason "+reason+" in external OCSP");
     	}
     	boolean fail = true;
@@ -257,7 +257,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public void testConnection(Admin admin) throws PublisherConnectionException {
         try {
-        	JDBCUtil.execute("select 1 from CertificateData", new DoNothingPreparer(), dataSource);
+        	JDBCUtil.execute("select 1 from CertificateData where fingerprint='XX'", new DoNothingPreparer(), dataSource);
         } catch (Exception e) {
         	log.error("Connection test failed: ", e);
             final PublisherConnectionException pce = new PublisherConnectionException("Connection in init failed: "+e.getMessage());
