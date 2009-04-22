@@ -158,30 +158,41 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             // Load OCSP responders private keys into cache in init to speed things up for the first request
             // signEntity is also set
             loadPrivateKeys(this.servlet.m_adm);
-            // Setting system properties to ssl resources to be used
-            System.setProperty("javax.net.ssl.keyStoreType", "pkcs11");
-            System.setProperty("javax.net.ssl.keyStoreProvider", this.slot.getProvider().getName());
-            System.setProperty("javax.net.ssl.keyStore", "NONE");
-            // setting ejbca trust provider that accept all server certs
-            final Provider tlsProvider = new TLSProvider();
-            Security.addProvider(tlsProvider);
-            Security.setProperty("ssl.TrustManagerFactory.algorithm", "AcceptAll");
-            Security.setProperty("ssl.KeyManagerFactory.algorithm", "NewSunX509");
-            // setting the web service object 
-            final String webURL = OcspConfiguration.getEjbcawsracliUrl();
-            if ( webURL!=null && webURL.length()>0 ) {
-                final QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
-                final URL url = new URL(webURL + "?wsdl");
-                m_log.debug("web service. URL: "+url+" QName: "+qname);
-                this.ejbcaWS = new EjbcaWSService(url, qname).getEjbcaWSPort();
-                if ( this.mRenewTimeBeforeCertExpiresInSeconds<0 ) {
-                    m_log.error("No \"renew time before exires\" defined but WS URL defined.");
+            if ( this.slot!=null ){
+                // Setting system properties to ssl resources to be used
+                System.setProperty("javax.net.ssl.keyStoreType", "pkcs11");
+                final String sslProviderName = this.slot.getProvider().getName();
+                if ( sslProviderName==null ) {
+                    throw new ServletException("Problem with provider. No name.");
+                }
+                m_log.debug("P11 provider name for WS: "+sslProviderName);
+                System.setProperty("javax.net.ssl.keyStoreProvider", sslProviderName);
+                System.setProperty("javax.net.ssl.trustStore", "NONE");
+                System.setProperty("javax.net.ssl.keyStore", "NONE");
+                // setting ejbca trust provider that accept all server certs
+                final Provider tlsProvider = new TLSProvider();
+                Security.addProvider(tlsProvider);
+                Security.setProperty("ssl.TrustManagerFactory.algorithm", "AcceptAll");
+                Security.setProperty("ssl.KeyManagerFactory.algorithm", "NewSunX509");
+                // setting the web service object 
+                final String webURL = OcspConfiguration.getEjbcawsracliUrl();
+                if ( webURL!=null && webURL.length()>0 ) {
+                    final QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+                    final URL url = new URL(webURL + "?wsdl");
+                    m_log.debug("web service. URL: "+url+" QName: "+qname);
+                    this.ejbcaWS = new EjbcaWSService(url, qname).getEjbcaWSPort();
+                    if ( this.mRenewTimeBeforeCertExpiresInSeconds<0 ) {
+                        m_log.error("No \"renew time before exires\" defined but WS URL defined.");
+                    }
+                } else {
+                    this.ejbcaWS = null;
+                    if ( this.mRenewTimeBeforeCertExpiresInSeconds>=0 ) {
+                        m_log.error("\"renew time before expires\" defined but no WS URL defined.");
+                    }
                 }
             } else {
                 this.ejbcaWS = null;
-                if ( this.mRenewTimeBeforeCertExpiresInSeconds>=0 ) {
-                    m_log.error("\"renew time before exires\" defined but no WS URL defined.");
-                }
+                m_log.debug("No P11 token. WS can not be used.");
             }
         } catch( ServletException e ) {
             throw e;
@@ -304,7 +315,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                                    final Map<Integer, SigningEntity> newSignEntity) {
         if ( keyFactory==null || cert==null )
             return false;
-        providerHandler.addKeyFactory(keyFactory);
         final List<X509Certificate> chain = getCertificateChain(cert, adm);
         if ( chain==null || chain.size()<1 ) {
             return false;
@@ -347,6 +357,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     }
     private interface PrivateKeyContainer {
         /**
+         * Initiates the container. Start to wait to renew key.
+         */
+        void init();
+        /**
          * @return the key
          * @throws Exception
          */
@@ -368,18 +382,28 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @return the certificate of the key
          */
         X509Certificate getCertificate();
+        /**
+         * Destroys the container. Waiting to renew keys stoped.
+         */
+        void destroy();
     }
     private class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
         final private char password[];
         final private String alias;
         final private X509Certificate certificate;
         private PrivateKey privateKey;
+        private KeyRenewer keyRenewer;
         PrivateKeyContainerKeyStore( String a, char pw[], KeyStore keyStore, X509Certificate cert) throws Exception {
             this.alias = a;
             this.password = pw;
             this.certificate = cert;
             set(keyStore);
-            new KeyRenewer();
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init()
+         */
+        public void init() {
+            this.keyRenewer = new KeyRenewer();
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#set(java.security.KeyStore)
@@ -420,6 +444,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             return this.certificate;
         }
         private class KeyRenewer {
+            private Runner runner;
+            private boolean doUpdateKey;
             
             private class Runner implements Runnable {
                 /* (non-Javadoc)
@@ -437,6 +463,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 }
             }
             private void updateKey() {
+                if ( !this.doUpdateKey )
+                    return;
                 final org.ejbca.core.protocol.ws.client.gen.UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
                 match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
                 match.setMatchvalue("CN=hej");
@@ -458,9 +486,28 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 }
             }
             KeyRenewer() {
+                this.doUpdateKey = false;
                 if ( OCSPServletStandAloneSession.this.ejbcaWS!=null && OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds>=0 ) {
-                    new Thread(new Runner()).start();
+                    this.runner = new Runner();
+                    new Thread(this.runner).start();
+                    this.doUpdateKey = true;
                 }
+            }
+            void shutdown() {
+                this.doUpdateKey = false;
+                if ( this.runner!=null ) {
+                    synchronized( this.runner ) {
+                        this.runner.notifyAll();
+                    }
+                }
+            }
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#destroy()
+         */
+        public void destroy() {
+            if ( this.keyRenewer!=null ) {
+                this.keyRenewer.shutdown();
             }
         }
     }
@@ -498,6 +545,18 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         public X509Certificate getCertificate() {
             return this.certificate;
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init()
+         */
+        public void init() {
+            // do nothing
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#destroy()
+         */
+        public void destroy() {
+            // do nothing
         }
     }
     private boolean putSignEntityCard( Certificate _cert, Admin adm,
@@ -624,6 +683,23 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             if ( newSignEntity.size()<1 ) {
                 String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
                 throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
+            }
+            if ( this.signEntity!=null ){
+                Collection<SigningEntity> values=this.signEntity.values();
+                if ( values!=null ) {
+                    final Iterator<SigningEntity> i = values.iterator();
+                    while( i.hasNext() ) {
+                        i.next().shutDown();
+                    }
+                }
+            }{
+                Collection<SigningEntity> values=newSignEntity.values();
+                if ( values!=null ) {
+                    final Iterator<SigningEntity> i = values.iterator();
+                    while( i.hasNext() ) {
+                        i.next().init();
+                    }
+                }
             }
             this.signEntity = newSignEntity; // atomic change. after this new entity is used.
             synchronized(this) {
@@ -797,6 +873,13 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
             entityChain.add(0, entityCert);
             return entityChain.toArray(new X509Certificate[0]);
+        }
+        void init() {
+            this.providerHandler.addKeyFactory(this.mKeyFactory);
+            this.mKeyFactory.init();
+        }
+        void shutDown() {
+            this.mKeyFactory.destroy();
         }
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException {
             final String hsmErrorString = "HSM not functional";
