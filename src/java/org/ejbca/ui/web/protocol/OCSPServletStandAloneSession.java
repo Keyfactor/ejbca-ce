@@ -20,8 +20,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
@@ -41,8 +44,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.xml.namespace.QName;
@@ -57,11 +60,10 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.ocsp.CertificateCache;
-import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
@@ -90,6 +92,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     final private int mRenewTimeBeforeCertExpiresInSeconds = OcspConfiguration.getRenewTimeBeforeCertExpiresInSeconds();
     final private OCSPServletStandAlone servlet;
     final private EjbcaWS ejbcaWS;
+    final Map<Integer, String> mCA = new HashMap<Integer, String>();
     private boolean isOK=true;
 
     /**
@@ -183,6 +186,13 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     this.ejbcaWS = new EjbcaWSService(url, qname).getEjbcaWSPort();
                     if ( this.mRenewTimeBeforeCertExpiresInSeconds<0 ) {
                         m_log.error("No \"renew time before exires\" defined but WS URL defined.");
+                    } {
+                        final Iterator<NameAndId> i = OCSPServletStandAloneSession.this.ejbcaWS.getAvailableCAs().iterator();
+                        while( i.hasNext() ) {
+                            final NameAndId nameAndId = i.next();
+                            this.mCA.put(new Integer(nameAndId.getId()), nameAndId.getName());
+                            m_log.debug("CA. id: "+nameAndId.getId()+" name: "+nameAndId.getName());
+                        }
                     }
                 } else {
                     this.ejbcaWS = null;
@@ -358,8 +368,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     private interface PrivateKeyContainer {
         /**
          * Initiates the container. Start to wait to renew key.
+         * @param name 
+         * @param caid 
          */
-        void init();
+        void init(List<X509Certificate> name, int caid);
         /**
          * @return the key
          * @throws Exception
@@ -393,17 +405,19 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         final private X509Certificate certificate;
         private PrivateKey privateKey;
         private KeyRenewer keyRenewer;
-        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore keyStore, X509Certificate cert) throws Exception {
+        private KeyStore keyStore;
+        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert) throws Exception {
             this.alias = a;
             this.password = pw;
             this.certificate = cert;
-            set(keyStore);
+            this.keyStore = _keyStore;
+            set(_keyStore);
         }
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init()
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init(java.util.List, int)
          */
-        public void init() {
-            this.keyRenewer = new KeyRenewer();
+        public void init(List<X509Certificate> caChain, int caid) {
+            this.keyRenewer = new KeyRenewer(caChain, caid);
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#set(java.security.KeyStore)
@@ -444,17 +458,24 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             return this.certificate;
         }
         private class KeyRenewer {
-            private Runner runner;
+            final private Runner runner;
             private boolean doUpdateKey;
+            final private List<X509Certificate> caChain;
+            final private String caName;
             
             private class Runner implements Runnable {
                 /* (non-Javadoc)
                  * @see java.lang.Runnable#run()
                  */
                 public synchronized void run() {
-                    while( true ) {
+                    while( KeyRenewer.this.doUpdateKey ) {
+                        if ( PrivateKeyContainerKeyStore.this.certificate==null ) {
+                            return;
+                        }
+                        final long timeToRenew = PrivateKeyContainerKeyStore.this.certificate.getNotAfter().getTime()-new Date().getTime()-1000*(long)OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds;
+                        m_log.debug("time to renew signing key for CA "+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+" : "+timeToRenew );
                         try {
-                            wait(1000*OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds);
+                            wait(timeToRenew>0 ? timeToRenew : 15000); // set to 15 seconds if long time to renew before expire 
                             updateKey();
                         } catch (InterruptedException e) {
                             throw new Error(e);
@@ -465,9 +486,31 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             private void updateKey() {
                 if ( !this.doUpdateKey )
                     return;
+                final KeyPair keyPair; {
+                    final RSAPublicKey oldPublicKey; {
+                        final PublicKey tmpPublicKey = PrivateKeyContainerKeyStore.this.certificate.getPublicKey();
+                        if ( !(tmpPublicKey instanceof RSAPublicKey) ) {
+                            m_log.error("Only RSA keys could be renewed.");
+                            return;
+                        }
+                        oldPublicKey = (RSAPublicKey)tmpPublicKey;
+                    }
+                    final KeyPairGenerator kpg;
+                    try {
+                        kpg = KeyPairGenerator.getInstance("RSA", PrivateKeyContainerKeyStore.this.keyStore.getProvider());
+                        kpg.initialize(oldPublicKey.getModulus().bitLength());
+                        keyPair = kpg.generateKeyPair();
+                    } catch (Throwable e) {
+                        m_log.error("Key generation problem.", e);
+                        return;
+                    }
+                }
+                m_log.debug("public key: "+keyPair.getPublic() );
+
                 final org.ejbca.core.protocol.ws.client.gen.UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
+                final String subjectDN = PrivateKeyContainerKeyStore.this.certificate.getSubjectDN().getName();
                 match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
-                match.setMatchvalue("CN=hej");
+                match.setMatchvalue(subjectDN);
                 match.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_DN);
                 final List<UserDataVOWS> result;
                 try {
@@ -476,21 +519,33 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     m_log.error("WS not working", e);
                     return;
                 }
-                if (result.size()<1) {
-                    m_log.info("no CN match");
+                if ( result==null || result.size()<1) {
+                    m_log.info("no match for subject DN:"+subjectDN);
                     return;
                 }
+                m_log.debug("at least one user found for cert with DN: "+subjectDN+" Trying to match it with CA name: "+this.caName);
                 final Iterator<UserDataVOWS> i = result.iterator();
                 while ( i.hasNext() ) {
-                    m_log.info("user name found:"+ i.next().getUsername());
+                    final UserDataVOWS userData = i.next();
+                    final String userName = userData.getUsername();
+                    if ( this.caName!=null && this.caName.equals(userData.getCaName()) ) {
+                        m_log.info("user name found: "+ userName);
+                    }
                 }
             }
-            KeyRenewer() {
+            KeyRenewer(List<X509Certificate> _caChain, int caid) {
+                this.caChain = _caChain;
                 this.doUpdateKey = false;
                 if ( OCSPServletStandAloneSession.this.ejbcaWS!=null && OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds>=0 ) {
                     this.runner = new Runner();
-                    new Thread(this.runner).start();
                     this.doUpdateKey = true;
+                    new Thread(this.runner).start();
+                } else {
+                    this.runner = null;
+                }
+                this.caName=OCSPServletStandAloneSession.this.mCA.get(new Integer(caid));
+                if ( this.caName==null || this.caName.length()<1 ) {
+                    m_log.debug("CA ID "+caid+" has no name.");
                 }
             }
             void shutdown() {
@@ -547,9 +602,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             return this.certificate;
         }
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init()
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init(java.util.List, int)
          */
-        public void init() {
+        public void init(List<X509Certificate> name, int caid) {
             // do nothing
         }
         /* (non-Javadoc)
@@ -693,12 +748,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     }
                 }
             }{
-                Collection<SigningEntity> values=newSignEntity.values();
-                if ( values!=null ) {
-                    final Iterator<SigningEntity> i = values.iterator();
-                    while( i.hasNext() ) {
-                        i.next().init();
-                    }
+                final Iterator<Entry<Integer, SigningEntity>> i=newSignEntity.entrySet().iterator();
+                while( i.hasNext() ) {
+                    Entry<Integer, SigningEntity> entry = i.next();
+                    entry.getValue().init(entry.getKey().intValue());
                 }
             }
             this.signEntity = newSignEntity; // atomic change. after this new entity is used.
@@ -874,9 +927,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             entityChain.add(0, entityCert);
             return entityChain.toArray(new X509Certificate[0]);
         }
-        void init() {
+        void init(int caid) {
             this.providerHandler.addKeyFactory(this.mKeyFactory);
-            this.mKeyFactory.init();
+            this.mKeyFactory.init(this.mChain, caid);
         }
         void shutDown() {
             this.mKeyFactory.destroy();
@@ -1001,19 +1054,16 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
             se = this.signEntitycontainer.getSigningEntityMap().get(new Integer(this.servlet.getCaid(null)));	// Use the key issued by the default responder ID instead
         }
-        if ( se!=null ) {
-            final SignerThread runnable = new SignerThread(se,request);
-            final Thread thread = new Thread(runnable);
-            thread.start();
-            final OCSPCAServiceResponse result = runnable.getSignResult();
-            thread.interrupt();
-            return result;
+        if ( se==null ) {
+            throw new ExtendedCAServiceNotActiveException("No ocsp signing key for caid "+caid);
         }
-        throw new ExtendedCAServiceNotActiveException("No ocsp signing key for caid "+caid);
+        final SignerThread runnable = new SignerThread(se,request);
+        final Thread thread = new Thread(runnable);
+        thread.start();
+        final OCSPCAServiceResponse result = runnable.getSignResult();
+        thread.interrupt();
+        return result;
     }
-    CertificateCache createCertificateCache(Properties prop) {
-		return new CertificateCacheStandalone(prop);
-	}
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#deactivate()
      */
