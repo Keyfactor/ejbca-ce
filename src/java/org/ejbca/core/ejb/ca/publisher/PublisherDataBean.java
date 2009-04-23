@@ -227,7 +227,7 @@ public abstract class PublisherDataBean extends BaseEntityBean {
             setPublisher(publisher);
         }
 
-        log.debug("Created Hard Token Profile " + name);
+        log.debug("Created Publisher " + name);
         return id;
     }
 
