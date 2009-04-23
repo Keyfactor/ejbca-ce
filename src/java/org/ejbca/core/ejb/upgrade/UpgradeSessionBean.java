@@ -16,10 +16,7 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -137,48 +134,6 @@ public class UpgradeSessionBean extends BaseSessionBean {
         return caadminsession;
     } //getCaAdminSession
 
-    /** Runs a preCheck to see if an upgrade is possible
-     *
-     * @return true if ok to upgrade or false if not
-     */
-    private boolean preCheck() {
-        trace(">preCheck");
-        boolean ret = false;
-        Connection con = null;
-        PreparedStatement ps = null;
-        try {
-            error("Getting connection for: "+dataSource);
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select userDataVO from CertReqHistoryData");
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                try {
-                    String ud = rs.getString(1);
-                    java.beans.XMLDecoder decoder = null;
-                    try {
-                      decoder = new java.beans.XMLDecoder(
-                                new java.io.ByteArrayInputStream(ud.getBytes("UTF8")));
-                    } catch (UnsupportedEncodingException e) {
-                        error("Can not decode old UserDataVO: ", e);
-                    }
-                    se.anatom.ejbca.common.UserDataVO oldud  = (se.anatom.ejbca.common.UserDataVO)decoder.readObject();                          
-                    decoder.close();
-                    // If we came this far, we have an old UserDataVO.
-                    ret = true;
-                    error("(this is not an error) during pre-check successfully decoded old UserDataVO with username="+oldud.getUsername());
-                } catch (Exception e) {
-                    error("Can not decode old UserDataVO: ", e);
-                }                
-            }
-        } catch (Exception e) {
-        	error("Database error during preCheck: ", e);
-        } finally {
-            JDBCUtil.close(ps);
-            JDBCUtil.close(con);
-        }
-        trace("<preCheck("+ret+")");
-        return ret;
-    }
 
     /** Upgrades the database
      * @ejb.interface-method
@@ -211,10 +166,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         	error("Upgrade from EJBCA 3.1.x is no longer supported in EJBCA 3.9.x and later.");
         	return false;
         }
-        if (!preCheck()) {
-         	info("preCheck failed, no upgrade performed.");
-            return false;
-        }
+
         // Upgrade database change between ejbca 3.3.x and 3.4.x if needed
         if (oldVersion <= 303) {
         	if (!migrateDatabase33(dbtype)) {
