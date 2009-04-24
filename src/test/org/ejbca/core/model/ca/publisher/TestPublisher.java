@@ -113,7 +113,7 @@ public class TestPublisher extends TestCase {
         log.trace(">setUp()");
         ctx = getInitialContext();
         
-        Object obj = ctx.lookup("PublisherSession");
+        Object obj = ctx.lookup(IPublisherSessionHome.JNDI_NAME);
         IPublisherSessionHome home = (IPublisherSessionHome) javax.rmi.PortableRemoteObject.narrow(obj,
                 IPublisherSessionHome.class);
         pub = home.create();
