@@ -976,6 +976,10 @@
          <dbms-column>tryCounter</dbms-column>
       </field-map>
       <field-map>
+         <cmp-field>publishType</cmp-field>
+         <dbms-column>publishType</dbms-column>
+      </field-map>
+      <field-map>
          <cmp-field>fingerprint</cmp-field>
          <dbms-column>fingerprint</dbms-column>
       </field-map>

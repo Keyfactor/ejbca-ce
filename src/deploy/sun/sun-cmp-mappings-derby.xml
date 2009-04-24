@@ -73,6 +73,11 @@
 
             </cmp-field-mapping>
             <cmp-field-mapping>
+                <field-name>publishType</field-name>
+                <column-name>PUBLISHTYPE</column-name>
+
+            </cmp-field-mapping>
+            <cmp-field-mapping>
                 <field-name>fingerprint</field-name>
                 <column-name>FINGERPRINT</column-name>
 

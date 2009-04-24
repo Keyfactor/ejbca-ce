@@ -40,6 +40,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -276,14 +277,14 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             Integer id = (Integer) iter.next();
             try {
             	PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
+            	String fingerprint = CertTools.getFingerprintAsString(cert);
             	try {
             		returnval = pdl.getPublisher().storeCertificate(admin, cert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
             		String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());            	
             		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
             	} catch (PublisherException pe) {
-            		String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName());            	
+            		String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), fingerprint);            	
             		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, pe);
-
             	}
             	// If we failed to publish we will store the failed publish in the publisher queue instead
             	if (!returnval) {
@@ -293,7 +294,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             		pqvd.setExtendedInformation(extendedinformation);
             		String fp = CertTools.getFingerprintAsString(cert); 
             		try {
-            			getPublisherQueueSession().addQueueData(id.intValue(), fp, pqvd);
+            			getPublisherQueueSession().addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CERT, fp, pqvd);
                 		String msg = intres.getLocalizedMessage("publisher.storequeue", pdl.getName(), fp, status);            	
                 		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
             		} catch (CreateException e) {
@@ -330,18 +331,26 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                 try {
                     returnval = pdl.getPublisher().storeCRL(admin, incrl, cafp, number);
                 	String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());            	
-                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null,
-                            null, LogConstants.EVENT_INFO_STORECRL, msg);
+                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
                 } catch (PublisherException pe) {
-                	String msg = intres.getLocalizedMessage("publisher.errorstorecert", pdl.getName());            	
-                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
-                            LogConstants.EVENT_ERROR_STORECRL, msg, pe);
+                	String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), "CRL");            	
+                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg, pe);
 
                 }
+            	if (!returnval) {
+            		String fp = CertTools.getFingerprintAsString(incrl); 
+            		try {
+            			getPublisherQueueSession().addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CRL, fp, null);
+                		String msg = intres.getLocalizedMessage("publisher.storequeue", pdl.getName(), fp, "CRL");            	
+                		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
+            		} catch (CreateException e) {
+            			String msg = intres.getLocalizedMessage("publisher.errorstorequeue", pdl.getName(), fp, "CRL");            	
+            			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg, e);
+            		}
+            	}
             } catch (FinderException fe) {
             	String msg = intres.getLocalizedMessage("publisher.nopublisher", id);            	
-                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_ERROR_STORECRL, msg);
+                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
 
             }
         }

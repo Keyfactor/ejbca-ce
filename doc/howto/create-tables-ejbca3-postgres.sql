@@ -310,6 +310,7 @@ CREATE TABLE publisherqueuedata (
   timePublished TIMESTAMP,
   publishStatus INT4 NOT NULL,
   tryCounter INT4 NOT NULL,
+  publishType INT4 NOT NULL,
   fingerprint TEXT,
   publisherId INT4 NOT NULL,
   volatileData TEXT,

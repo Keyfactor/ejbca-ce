@@ -89,15 +89,17 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     /**
      * Adds an entry to the publisher queue.
 	 *
+	 * @param publisherId the publisher that this should be published to
+	 * @param publishType the type of entry it is, {@link PublisherQueueData#PUBLISH_TYPE_CERT} or CRL
      * @throws CreateException if the entry can not be created
      *
      * @ejb.interface-method view-type="both"
      */
-    public void addQueueData(int publisherId, String fingerprint, PublisherQueueVolatileData queueData) throws CreateException {
+    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData) throws CreateException {
     	if (log.isTraceEnabled()) {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
     	}
-    	queuehome.create(publisherId, fingerprint, queueData);
+    	queuehome.create(publisherId, publishType, fingerprint, queueData);
         trace("<addQueueData()");
     } // addEntry
 
@@ -130,14 +132,14 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public Collection getEntriesForPublisher(int publisherId) throws CreateException {
+    public Collection getPendingEntriesForPublisher(int publisherId) {
     	if (log.isTraceEnabled()) {
             log.trace(">getEntriesForPublisher(publisherId: " + publisherId + ")");
     	}
     	Collection datas = null;
     	Collection ret = new ArrayList();
 		try {
-			datas = queuehome.findDataByPublisherId(publisherId);
+			datas = queuehome.findDataByPublisherIdAndStatus(publisherId, PublisherQueueData.STATUS_PENDING);
 		} catch (FinderException e) {
 			log.debug("No publisher queue entries found for publisher "+publisherId);
 		}
@@ -145,7 +147,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    	Iterator iter = datas.iterator();
 	    	while (iter.hasNext()) {
 	    		PublisherQueueDataLocal d = (PublisherQueueDataLocal)iter.next();
-	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), d.getTimeCreated(), d.getTimePublish(), d.getPublishStatus(), d.getTryCounter(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
+	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), d.getTimeCreated(), d.getTimePublish(), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
 	    		ret.add(pqd);
 	    	}			
 		}

@@ -75,8 +75,8 @@ import org.ejbca.util.GUIDGenerator;
  *
 * @ejb.finder
 *   description="finds queue data by publisherId"
-*   signature="java.util.Collection findDataByPublisherId(int publisherId)"
-*   query="SELECT OBJECT(a) from PublisherQueueDataBean a WHERE a.publisherId=?1"
+*   signature="java.util.Collection findDataByPublisherIdAndStatus(int publisherId, int status)"
+*   query="SELECT OBJECT(a) from PublisherQueueDataBean a WHERE a.publisherId=?1 and a.publishStatus=?2"
  * 
  * @ejb.transaction type="Required"
  *
@@ -118,7 +118,7 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
      */
     public abstract void setTimePublish(Date timePublish);
 
-    /** PublishStatus is one of PublisherQueueData.PENDING or SUCCESS.
+    /** PublishStatus is one of PublisherQueueData.STATUS_PENDING or SUCCESS.
      * 
      * @ejb.persistence column-name="publishStatus"
      * @ejb.interface-method view-type="local"
@@ -140,6 +140,18 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
      */
     public abstract void setTryCounter(int tryCounter);
+
+    /** PublishType is one of PublishQueueData.PUBLISH_TYPE_CERT or CRL
+     * 
+     * @ejb.persistence column-name="publishType"
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract int getPublishType();
+
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setPublishType(int publishType);
 
     /** Foreign key to certificate of crl
      * 
@@ -249,16 +261,18 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
     /**
      * Entity Bean.
      *
+     * @param publishType is one of PublishQueueData.PUBLISH_TYPE_CERT or CRL
      * @return null
      * @ejb.create-method view-type="local"
      */
-    public String ejbCreate(int publisherId, String fingerprint, PublisherQueueVolatileData queueData) throws CreateException {
+    public String ejbCreate(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData) throws CreateException {
     	String pk = GUIDGenerator.generateGUID(this); 
 		setPk(pk);
 		Date now = new Date();
         setTimeCreated(now);
         setPublishStatus(PublisherQueueData.STATUS_PENDING);
         setTryCounter(0);
+        setPublishType(publishType);
         setFingerprint(fingerprint);
         setPublisherId(publisherId);
         setPublisherQueueVolatileData(queueData);
@@ -266,7 +280,7 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
         return null;
     }
 
-    public void ejbPostCreate(int publisherId, String fingerprint, PublisherQueueVolatileData queueData) {
+    public void ejbPostCreate(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData) {
         // Do nothing. Required.
     }
 }

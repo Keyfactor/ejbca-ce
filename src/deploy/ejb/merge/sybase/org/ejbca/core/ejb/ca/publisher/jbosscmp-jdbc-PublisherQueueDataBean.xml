@@ -19,6 +19,10 @@
     <column-name>tryCounter</column-name>
 </cmp-field>
 <cmp-field>
+    <field-name>publishType</field-name>
+    <column-name>publishType</column-name>
+</cmp-field>
+<cmp-field>
     <field-name>fingerprint</field-name>
     <column-name>fingerprint</column-name>
 </cmp-field>

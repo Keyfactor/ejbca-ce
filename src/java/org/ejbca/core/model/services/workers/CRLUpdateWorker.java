@@ -17,6 +17,7 @@ import javax.ejb.CreateException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
@@ -31,7 +32,9 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 public class CRLUpdateWorker extends BaseWorker {
 
     private static final Logger log = Logger.getLogger(CRLUpdateWorker.class);	
-	
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+
     private ICreateCRLSessionLocal createcrlsession = null;
 
 	private static boolean running = false;
@@ -57,7 +60,8 @@ public class CRLUpdateWorker extends BaseWorker {
 				running = false;
 			}			
 		} else {
-			log.info("Service "+CRLUpdateWorker.class.getName()+" is already running in this VM! Not starting work.");
+    		String msg = intres.getLocalizedMessage("publisher.alreadyrunninginvm", CRLUpdateWorker.class.getName());            	
+			log.info(msg);
 		}
 	}
 

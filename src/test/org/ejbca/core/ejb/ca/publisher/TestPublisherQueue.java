@@ -88,10 +88,10 @@ public class TestPublisherQueue extends TestCase {
     }
 
     public void test01QueueData() throws Exception {
-    	remote.addQueueData(123456, "XX", null);
-    	Collection<PublisherQueueData> c = remote.getEntriesForPublisher(12345);
+    	remote.addQueueData(123456, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null);
+    	Collection<PublisherQueueData> c = remote.getPendingEntriesForPublisher(12345);
     	assertEquals(0, c.size());
-    	c = remote.getEntriesForPublisher(123456);
+    	c = remote.getPendingEntriesForPublisher(123456);
     	assertEquals(1, c.size());
     	Iterator<PublisherQueueData> i = c.iterator();
     	PublisherQueueData d = i.next();
@@ -111,9 +111,9 @@ public class TestPublisherQueue extends TestCase {
     	ExtendedInformation ei = new ExtendedInformation();
     	ei.setSubjectDirectoryAttributes("directoryAttr");
     	vd.setExtendedInformation(ei);
-    	remote.addQueueData(123456, "YY", vd);
+    	remote.addQueueData(123456, PublisherQueueData.PUBLISH_TYPE_CRL, "YY", vd);
     	
-    	c = remote.getEntriesForPublisher(123456);
+    	c = remote.getPendingEntriesForPublisher(123456);
     	assertEquals(2, c.size());
     	boolean testedXX = false;
     	boolean testedYY = false;
@@ -121,6 +121,7 @@ public class TestPublisherQueue extends TestCase {
     	while (i.hasNext()) {
         	d = i.next();
         	if (d.getFingerprint().equals("XX")) {
+        		assertEquals(PublisherQueueData.PUBLISH_TYPE_CERT, d.getPublishType());
             	assertNotNull(d.getTimePublish());
             	assertNotNull(d.getTimeCreated());
             	assertEquals(PublisherQueueData.STATUS_SUCCESS, d.getPublishStatus());
@@ -128,6 +129,7 @@ public class TestPublisherQueue extends TestCase {
             	testedXX = true;
         	}
         	if (d.getFingerprint().equals("YY")) {
+        		assertEquals(PublisherQueueData.PUBLISH_TYPE_CRL, d.getPublishType());
             	assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
             	assertEquals(0,d.getTryCounter());
             	PublisherQueueVolatileData v = d.getVolatileData();
@@ -170,7 +172,7 @@ public class TestPublisherQueue extends TestCase {
         assertFalse("Storing certificate to external ocsp publisher should fail.", ret);
         
         // Now this certificate fingerprint should be in the queue
-    	Collection<PublisherQueueData> c = remote.getEntriesForPublisher(id);
+    	Collection<PublisherQueueData> c = remote.getPendingEntriesForPublisher(id);
     	assertEquals(1, c.size());
     	Iterator<PublisherQueueData> i = c.iterator();
     	PublisherQueueData d = i.next();
@@ -209,12 +211,12 @@ public class TestPublisherQueue extends TestCase {
         assertTrue("Storing certificate to external ocsp publisher should succeed.", ret);
         
         // Now this certificate fingerprint should NOT be in the queue
-    	Collection<PublisherQueueData> c = remote.getEntriesForPublisher(id);
+    	Collection<PublisherQueueData> c = remote.getPendingEntriesForPublisher(id);
     	assertEquals(0, c.size());
     }
 
     public void test99CleanUp() throws Exception {
-    	Collection<PublisherQueueData> c = remote.getEntriesForPublisher(123456);
+    	Collection<PublisherQueueData> c = remote.getPendingEntriesForPublisher(123456);
     	Iterator<PublisherQueueData> i = c.iterator();
     	while (i.hasNext()) {
     		PublisherQueueData d = i.next();

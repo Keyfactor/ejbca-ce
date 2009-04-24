@@ -283,6 +283,7 @@ CREATE TABLE PublisherQueueData (
     timePublished TIMESTAMP,
     publishStatus integer NOT NULL,
     tryCounter integer NOT NULL,
+    publishType integer NOT NULL,
     fingerprint varchar(256),
     publisherId integer NOT NULL,
     volatileData long varchar,

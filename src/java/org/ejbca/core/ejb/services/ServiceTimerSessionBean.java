@@ -184,8 +184,24 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   link="RSASignSession"
  *
- *  @jonas.bean ejb-name="ServiceTimerSession"
- *  
+ * @ejb.ejb-external-ref
+ *   description="The publisher bean"
+ *   view-type="local"
+ *   ref-name="ejb/PublisherSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
+ *   link="PublisherSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The publisher queue bean"
+ *   view-type="local"
+ *   ref-name="ejb/PublisherQueueSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal"
+ *   link="PublisherQueueSession"
+ *
  *  @version $Id$
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {

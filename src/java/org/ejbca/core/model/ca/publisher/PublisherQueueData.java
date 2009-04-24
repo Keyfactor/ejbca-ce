@@ -32,6 +32,9 @@ public class PublisherQueueData implements java.io.Serializable {
     public static final int STATUS_PENDING = 20; // If we should retry publishing
     public static final int STATUS_FAILED = 30; // If publishing failed completely so we will not try again
     
+    public static final int PUBLISH_TYPE_CERT = 1; // Is it a certificate we publish
+    public static final int PUBLISH_TYPE_CRL  = 2; // Is it a CRL we publish
+    
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -47,8 +50,11 @@ public class PublisherQueueData implements java.io.Serializable {
     private String pk;
 	private Date timeCreated;
     private Date timePublish;
+    /** PublisherQueueData.STATUS_SUCCESS etc */
     private int publishStatus;
     private int tryCounter;
+    /** PublisherQueueData.PUBLISH_TYPE_CERT etc */
+    private int publishType;
     private String fingerprint;
     private int publisherId;
     private PublisherQueueVolatileData volatileData;
@@ -59,7 +65,7 @@ public class PublisherQueueData implements java.io.Serializable {
     // Public methods.
     
 	public PublisherQueueData(String pk, Date timeCreated, Date timePublish,
-			int publishStatus, int tryCounter, String fingerprint,
+			int publishStatus, int tryCounter, int publishType, String fingerprint,
 			int publisherId, PublisherQueueVolatileData volatileData) {
 		super();
 		this.pk = pk;
@@ -67,12 +73,21 @@ public class PublisherQueueData implements java.io.Serializable {
 		this.timePublish = timePublish;
 		this.publishStatus = publishStatus;
 		this.tryCounter = tryCounter;
+		this.publishType = publishType;
 		this.fingerprint = fingerprint;
 		this.publisherId = publisherId;
 		this.volatileData = volatileData;
 	}
     
-    public String getPk() {
+    public int getPublishType() {
+		return publishType;
+	}
+
+	public void setPublishType(int publishType) {
+		this.publishType = publishType;
+	}
+
+	public String getPk() {
 		return pk;
 	}
 	public void setPk(String pk) {
