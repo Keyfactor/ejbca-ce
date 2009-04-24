@@ -40,6 +40,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECParameterSpec;
@@ -91,8 +92,8 @@ public class KeyTools {
     /**
      * Generates a keypair
      *
-     * @param keyspec specification of keys to generate, typical value is 1024 for RSA keys or prime192v1 for ECDSA keys
-     * @param keyalg algorithm of keys to generate, typical value is RSA or ECDSA, see org.ejbca.core.model.ca.catoken.CATokenConstants.KEYALGORITHM_XX
+     * @param keyspec specification of keys to generate, typical value is 1024 for RSA or DSA keys, or prime192v1 for ECDSA keys
+     * @param keyalg algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see org.ejbca.core.model.ca.catoken.CATokenConstants.KEYALGORITHM_XX
      * 
      * @see org.ejbca.core.model.ca.catoken.CATokenConstants
      * @see org.bouncycastle.asn1.x9.X962NamedCurves
@@ -127,7 +128,7 @@ public class KeyTools {
         	}
         	keygen.initialize(ecSpec, new SecureRandom());
         } else {
-        	// RSA keys
+        	// RSA or DSA keys
         	int keysize = Integer.parseInt(keySpec);
             keygen.initialize(keysize);
         }
@@ -227,7 +228,14 @@ public class KeyTools {
 				// We support the key, but we don't know the key length
 				len = 0;
 			}
-		}
+		} else if (pk instanceof DSAPublicKey) {
+			DSAPublicKey dsapub = (DSAPublicKey) pk;
+			if ( dsapub.getParams() != null ) {
+				len = dsapub.getParams().getP().bitLength();
+			} else {
+				len = dsapub.getY().bitLength();
+			}
+		} 
 		return len;
 	}
 

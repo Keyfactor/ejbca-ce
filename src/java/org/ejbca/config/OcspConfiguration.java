@@ -36,7 +36,7 @@ public class OcspConfiguration {
 	 * Algorithm used by server to generate signature on OCSP responses
 	 */
 	public static String getSignatureAlgorithm() {
-		return ConfigurationHolder.getString("ocsp.signaturealgorithm", "SHA1WithRSA;SHA1WithECDSA");
+		return ConfigurationHolder.getString("ocsp.signaturealgorithm", "SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA");
 	}
 
 	/**

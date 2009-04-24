@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1333,6 +1334,23 @@ public class TestCertTools extends TestCase {
 		certroot = (Certificate)iter.next();
 		assertEquals("CN=AdminCA1,O=EJBCA TomasLaptop MySQL,C=SE", CertTools.getSubjectDN(certroot));
 		
+	}
+	
+	public void test23GenSelfCertDSA() throws Exception {
+		KeyPair kp = KeyTools.genKeys("1024", "DSA");
+		Certificate cert = CertTools.genSelfCertForPurpose("CN=foo1", 10, null,
+				kp.getPrivate(), kp.getPublic(),
+				CATokenInfo.SIGALG_SHA1_WITH_DSA, true,
+				X509KeyUsage.keyCertSign);
+		assertNotNull(cert);
+		PublicKey pk = cert.getPublicKey();
+		assertNotNull(pk);
+		assertEquals("DSA", pk.getAlgorithm());
+		assertTrue(pk instanceof DSAPublicKey);
+		String subjectdn = CertTools.getSubjectDN(cert);
+		assertEquals("CN=foo1", subjectdn);
+		String issuerdn = CertTools.getIssuerDN(cert);
+		assertEquals("CN=foo1", issuerdn);
 	}
 	
 	public void testKrb5PrincipalName() throws Exception {

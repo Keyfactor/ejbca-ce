@@ -26,6 +26,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -725,6 +726,64 @@ public class ProtocolOcspHttpTest extends TestCase {
         assertTrue("Status is not unknown", singleResps[1].getCertStatus() instanceof UnknownStatus);
     }
 
+     /** Tests ocsp message
+     * @throws Exception error
+     */
+    public void test16OcspDsaGood() throws Exception {
+    	assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
+    	
+        int dsacaid = "CN=OCSPDSATEST".hashCode();
+        X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "1024");
+        helper.reloadKeys();
+        
+        // Make user and ocspTestCert that we know...
+        createUserCert(dsacaid);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Send the request and receive a singleResponse
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
+        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+        SingleResp singleResp = singleResps[0];
+
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertEquals("Status is not null (good)", status, null);
+        
+    } // test16OcspDsaGood 
+
+    /**
+     * removes DSA CA
+     *
+     * @throws Exception error
+     */
+    public void test98RemoveDSACA() throws Exception {
+        log.trace(">test98RemoveDSACA()");
+        Context context = getInitialContext();
+        Object obj1 = context.lookup("CAAdminSession");
+        ICAAdminSessionHome cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
+        ICAAdminSessionRemote cacheAdmin = cacheHome.create();
+        try {
+            cacheAdmin.removeCA(admin, "CN=OCSPDSATEST".hashCode());
+        } catch(Exception e) {
+        	log.info("Could not remove CA with SubjectDN CN=OCSPDSATEST");
+        }
+        try {
+        	cacheAdmin.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
+        } catch(Exception e) {
+        	log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
+        }
+        log.trace("<test98RemoveDSACA()");
+    } // test98OcspDsaGood
+    
     /**
      * removes ECDSA CA
      *
@@ -861,6 +920,106 @@ public class ProtocolOcspHttpTest extends TestCase {
 
         assertTrue("Creating ECDSA CA failed", ret);
         log.trace("<addECDSACA()");
+        return cacert;
+    }
+    
+    
+    /**
+     * adds a CA Using DSA keys to the database.
+     *
+     * It also checks that the CA is stored correctly.
+     *
+     * @throws Exception error
+     */
+    private X509Certificate addDSACA(String dn, String keySpec) throws Exception {
+        log.trace(">addDSACA()");
+        boolean ret = false;
+        X509Certificate cacert = null;
+        try {
+            Context context = getInitialContext();
+            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
+            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
+            authorizationsession.initialize(admin, dn.hashCode());
+            Object obj1 = context.lookup("CAAdminSession");
+            ICAAdminSessionHome cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
+            ICAAdminSessionRemote cacheAdmin = cacheHome.create();
+
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setSignKeySpec(keySpec);
+            catokeninfo.setEncKeySpec("1024");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_DSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_DSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                    "CN=OCSPSignerCertificate, " + dn,
+                    "",
+                    keySpec,
+                    CATokenConstants.KEYALGORITHM_DSA));
+
+            ArrayList policies = new ArrayList(1);
+            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+            
+            X509CAInfo cainfo = new X509CAInfo(dn,
+                    dn, SecConst.CA_ACTIVE, new Date(),
+                    "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                    365,
+                    null, // Expiretime
+                    CAInfo.CATYPE_X509,
+                    CAInfo.SELFSIGNED,
+                    (Collection) null,
+                    catokeninfo,
+                    "JUnit DSA CA",
+                    -1, null,
+                    policies, // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    0, // DeltaCRLPeriod
+                    new ArrayList(),
+                    true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
+                    null, // defaultocsplocator
+                    null, // defaultfreshestcrl
+                    true, // Finish User
+                    extendedcaservices,
+                    false, // use default utf8 settings
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false, // Use UTF8 subject DN by default 
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false,  // CRL Distribution Point on CRL critical
+                    true // Include in Health Check
+                    );
+
+
+            cacheAdmin.createCA(admin, cainfo);
+
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, dn);
+
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
+            assertTrue(cert.getPublicKey() instanceof DSAPublicKey);
+
+            ret = true;
+            Collection coll = info.getCertificateChain();
+            Object[] certs = coll.toArray();
+            cacert = (X509Certificate)certs[0];
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        assertTrue("Creating DSA CA failed", ret);
+        log.trace("<addDSACA()");
         return cacert;
     }
     

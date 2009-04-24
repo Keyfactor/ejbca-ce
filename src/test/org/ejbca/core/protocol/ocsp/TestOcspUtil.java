@@ -13,10 +13,17 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -26,6 +33,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPReq;
@@ -82,7 +90,7 @@ public class TestOcspUtil extends TestCase {
 		responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), 0));
 
 		// First check that the whole chain is included and the responderId is keyHash
-		OCSPCAServiceRequest ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithECDSA", false, true);
+		OCSPCAServiceRequest ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithDSA;SHA1WithECDSA", false, true);
 		ocspServiceReq.setRespIdType(OCSPUtil.RESPONDERIDTYPE_KEYHASH);
 
 		OCSPCAServiceResponse response = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, certChain);
@@ -96,7 +104,7 @@ public class TestOcspUtil extends TestCase {
 		assertFalse(respId.equals(testName));
 
 		// Second check that the whole chain is NOT included and the responderId is Name
-		ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithECDSA", false, false);
+		ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithDSA;SHA1WithECDSA", false, false);
 		ocspServiceReq.setRespIdType(OCSPUtil.RESPONDERIDTYPE_NAME);
 		response = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, certChain);
 		basicResp = response.getBasicOCSPResp();
@@ -115,6 +123,115 @@ public class TestOcspUtil extends TestCase {
 		assertEquals(certId, myid);
 	}
 
+	public void test02getSigningAlgFromAlgSelection() throws Exception {
+		
+		RSAPublicKey rsa = new MockRSAPublicKey();
+		assertEquals("SHA1WithRSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithRSA;SHA1WithECDSA", rsa));
+		assertEquals("SHA1WithRSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA256WithECDSA;SHA1WithECDSA;SHA1WithRSA", rsa));
+		assertEquals("SHA1WithRSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithRSA", rsa));
+		assertEquals("SHA1WithRSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithECDSA;SHA1WithRSA", rsa));
+
+		ECPublicKey ecdsa = new MockECDSAPublicKey();
+		assertEquals("SHA1WithECDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithECDSA;SHA1WithDSA", ecdsa));
+		assertEquals("SHA1WithECDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithDSA;SHA1WithRSA;SHA1WithECDSA", ecdsa));
+		assertEquals("SHA1WithECDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithECDSA", ecdsa));
+		assertEquals("SHA1WithECDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithDSA;SHA1WithECDSA", ecdsa));
+		
+		DSAPublicKey dsa = new MockDSAPublicKey();
+		assertEquals("SHA1WithDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithECDSA;SHA1WithDSA", dsa));
+		assertEquals("SHA1WithDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA256WithECDSA;SHA1WithECDSA;SHA1WithDSA", dsa));
+		assertEquals("SHA1WithDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithDSA", dsa));
+		assertEquals("SHA1WithDSA", OCSPUtil.getSigningAlgFromAlgSelection("SHA1WithECDSA;SHA1WithDSA", dsa));
+		
+		assertNull(OCSPUtil.getSigningAlgFromAlgSelection("", dsa));
+	}
+	
+	private static class MockRSAPublicKey implements RSAPublicKey {
+
+		@Override
+		public BigInteger getPublicExponent() {
+			return null;
+		}
+
+		@Override
+		public String getAlgorithm() {
+			return null;
+		}
+
+		@Override
+		public byte[] getEncoded() {
+			return null;
+		}
+
+		@Override
+		public String getFormat() {
+			return null;
+		}
+
+		@Override
+		public BigInteger getModulus() {
+			return null;
+		}
+
+	};
+	
+	private static class MockECDSAPublicKey implements ECPublicKey {
+
+		@Override
+		public ECPoint getW() {
+			return null;
+		}
+
+		@Override
+		public String getAlgorithm() {
+			return null;
+		}
+
+		@Override
+		public byte[] getEncoded() {
+			return null;
+		}
+
+		@Override
+		public String getFormat() {
+			return null;
+		}
+
+		@Override
+		public ECParameterSpec getParams() {
+			return null;
+		}
+
+	};
+	
+	private static class MockDSAPublicKey implements DSAPublicKey {
+
+		@Override
+		public BigInteger getY() {
+			return null;
+		}
+
+		@Override
+		public DSAParams getParams() {
+			return null;
+		}
+
+		@Override
+		public String getAlgorithm() {
+			return null;
+		}
+
+		@Override
+		public byte[] getEncoded() {
+			return null;
+		}
+
+		@Override
+		public String getFormat() {
+			return null;
+		}
+		
+	}
 	
 	private static byte[] sceprap12 = Base64
 	.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCA+gwgDCABgkqhkiG9w0BBwGggCSABIID"+

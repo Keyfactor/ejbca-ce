@@ -38,8 +38,8 @@ public class GenerateToken {
      * @param username username in ejbca
      * @param password password for user
      * @param caid caid of the CA the user is registered for
-     * @param keyspec length of RSA keys or name of ECDSA 
-     * @param keyalg CATokenConstants.KEYALGORITHM_RSA or CATokenConstants.KEYALGORITHM_ECDSA
+     * @param keyspec name of ECDSA key or length of RSA and DSA keys  
+     * @param keyalg CATokenConstants.KEYALGORITHM_RSA, CATokenConstants.KEYALGORITHM_DSA or CATokenConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @param loadkeys true if keys should be recovered
      * @param savekeys true if generated keys should be stored for keyrecovery

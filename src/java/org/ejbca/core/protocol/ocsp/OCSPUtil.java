@@ -26,7 +26,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -45,7 +44,6 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
@@ -59,7 +57,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
@@ -214,32 +212,20 @@ public class OCSPUtil {
      * Returns a signing algorithm to use selecting from a list of possible algorithms.
      * 
      * @param sigalgs the list of possible algorithms, ;-separated. Example "SHA1WithRSA;SHA1WithECDSA".
-     * @param pk public key of signer, so we can choose between RSA and ECDSA algorithms
-     * @return A singe algorithm to use Example: SHA1WithRSA or SHA1WithECDSA
+     * @param pk public key of signer, so we can choose between RSA, DSA and ECDSA algorithms
+     * @return A single algorithm to use Example: SHA1WithRSA, SHA1WithDSA or SHA1WithECDSA
      */
     public static String getSigningAlgFromAlgSelection(String sigalgs, PublicKey pk) {
     	String sigAlg = null;
-        String[] algs = StringUtils.split(sigalgs, ';');
-        if ( (algs != null) && (algs.length > 1) ) {
-        	if (pk instanceof RSAPublicKey) {
-        		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_RSA)) {
-        			sigAlg = algs[0];
-        		}
-        		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_RSA)) {
-        			sigAlg = algs[1];
-        		}
-        	} else if (pk instanceof JCEECPublicKey) {
-        		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_ECDSA)) {
-        			sigAlg = algs[0];
-        		}
-        		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_ECDSA)) {
-        			sigAlg = algs[1];
-        		}
-        	}
-        	m_log.debug("Using signature algorithm for response: "+sigAlg);
-        }
+    	String[] algs = StringUtils.split(sigalgs, ';');
+    	for(int i = 0; i < algs.length; i++) {
+    		if ( AlgorithmTools.isCompatibleSigAlg(pk, algs[i]) ) {
+    			sigAlg = algs[i];
+    			break;
+    		}
+    	}
+        m_log.debug("Using signature algorithm for response: "+sigAlg);
         return sigAlg;
-
     }
 
     /** Checks the signature on an OCSP request and checks that it is signed by an allowed CA.

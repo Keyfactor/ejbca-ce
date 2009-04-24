@@ -19,6 +19,7 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -141,12 +142,14 @@ public class TestSignSession extends TestCase {
     private static KeyPair rsakeys=null;
     private static KeyPair ecdsakeys=null;
     private static KeyPair ecdsaimplicitlyca=null;
+    private static KeyPair dsakeys=null;
     private static int rsacaid = 0;
     private static int rsareversecaid = 0;
     private static int ecdsacaid = 0;
     private static int ecdsaimplicitlycacaid = 0;
     private static int rsamgf1cacaid = 0;
     private static int cvccaid = 0;
+    private static int dsacaid = 0;
     
     X509Certificate rsacacert = null;
     X509Certificate rsarevcacert = null;
@@ -154,6 +157,7 @@ public class TestSignSession extends TestCase {
     X509Certificate ecdsaimplicitlycacacert = null;
     X509Certificate rsamgf1cacacert = null;
     Certificate cvccacert = null;
+    X509Certificate dsacacert = null;
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
     /**
@@ -175,6 +179,9 @@ public class TestSignSession extends TestCase {
         if (ecdsaimplicitlyca == null) {
         	ecdsaimplicitlyca = KeyTools.genKeys("implicitlyCA", CATokenConstants.KEYALGORITHM_ECDSA);
         }
+        if (dsakeys == null) {
+        	dsakeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_DSA);
+        }
         // Add this again since it will be removed by the other tests in the batch..
         assertTrue("Could not create TestCA.", TestTools.createTestCA());
         CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
@@ -195,6 +202,9 @@ public class TestSignSession extends TestCase {
         CAInfo infocvcca = TestTools.getCAAdminSession().getCAInfo(admin, "TESTDV-D");
         assertTrue("No active CVC CA! Must have at least one active CA to run tests!", infocvcca != null);
         cvccaid = infocvcca.getCAId();
+        CAInfo infodsa = TestTools.getCAAdminSession().getCAInfo(admin, "TESTDSA");
+        assertTrue("No active DSA CA! Must have at least one active CA to run tests!", infodsa != null);
+        dsacaid = infodsa.getCAId();
         Collection coll = inforsa.getCertificateChain();
         Object[] objs = coll.toArray();
         rsacacert = (X509Certificate)objs[0]; 
@@ -213,6 +223,9 @@ public class TestSignSession extends TestCase {
         coll = infocvcca.getCertificateChain();
         objs = coll.toArray();
         cvccacert = (Certificate)objs[0]; 
+        coll = infodsa.getCertificateChain();
+        objs = coll.toArray();
+        dsacacert = (X509Certificate)objs[0];
     }
 
     protected void setUp() throws Exception {
@@ -298,6 +311,20 @@ public class TestSignSession extends TestCase {
         if (userExists) {
             log.info("User foorsamgf1ca already exists, resetting status.");
             TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        userExists = false;
+        try {
+            TestTools.getUserAdminSession().addUser(admin,"foodsa","foo123","C=SE,O=AnaTom,CN=foodsa",null,"foodsa@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,dsacaid);
+            log.debug("created user: foodsa, foo123, C=SE, O=AnaTom, CN=foodsa");
+        } catch (RemoteException re) {
+        	userExists = true;
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+        if (userExists) {
+            log.info("User foodsa already exists, resetting status.");
+            TestTools.getUserAdminSession().setUserStatus(admin,"foodsa",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -1383,6 +1410,173 @@ public class TestSignSession extends TestCase {
     }
 
     /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test23SignSessionDSAWithRSACA() throws Exception {
+        log.trace(">test23SignSessionDSAWithRSACA()");
+
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foo' to NEW");
+        // user that we know exists...
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(), CATokenConstants.SIGALG_SHA1_WITH_DSA, false);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", selfcert);
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof DSAPublicKey) {
+			DSAPublicKey ecpk = (DSAPublicKey) pk;
+			assertEquals(ecpk.getAlgorithm(), "DSA");
+		} else {
+			assertTrue("Public key is not DSA", false);
+		}
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+
+        //FileOutputStream fos = new FileOutputStream("testcert1615.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        log.trace("<test23SignSessionDSAWithRSACA()");
+    }
+
+    /**
+     * tests bouncy PKCS10
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test24TestBCPKCS10DSAWithRSACA() throws Exception {
+        log.trace(">test24TestBCPKCS10DSAWithRSACA()");
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foo' to NEW");
+        // Create certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithDSA",
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), dsakeys.getPublic(), new DERSet(),
+                dsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        boolean verify = req2.verify();
+        log.debug("Verify returned " + verify);
+        if (verify == false) {
+            log.debug("Aborting!");
+            return;
+        }
+        log.debug("CertificationRequest generated successfully.");
+        byte[] bcp10 = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof DSAPublicKey) {
+			DSAPublicKey dsapk = (DSAPublicKey) pk;
+			assertEquals(dsapk.getAlgorithm(), "DSA");
+		} else {
+			assertTrue("Public key is not DSA", false);
+		}
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        log.trace("<test24TestBCPKCS10DSAWithRSACA()");
+    }
+    /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test25SignSessionDSAWithDSACA() throws Exception {
+        log.trace(">test25SignSessionDSAWithDSACA()");
+
+        TestTools.getUserAdminSession().setUserStatus(admin,"foodsa",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foodsa' to NEW");
+        // user that we know exists...
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(), CATokenConstants.SIGALG_SHA1_WITH_DSA, false);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foodsa", "foo123", selfcert);
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof DSAPublicKey) {
+			DSAPublicKey dsapk = (DSAPublicKey) pk;
+			assertEquals(dsapk.getAlgorithm(), "DSA");
+		} else {
+			assertTrue("Public key is not DSA", false);
+		}
+        try {
+            cert.verify(dsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+
+        //FileOutputStream fos = new FileOutputStream("testcert.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        log.trace("<test25SignSessionDSAWithDSACA()");
+    }
+
+    /**
+     * tests bouncy PKCS10
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test26TestBCPKCS10DSAWithDSACA() throws Exception {
+        log.trace(">test26TestBCPKCS10DSAWithDSACA()");
+        TestTools.getUserAdminSession().setUserStatus(admin,"foodsa",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foodsa' to NEW");
+        // Create certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithDSA",
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foodsa"), dsakeys.getPublic(), new DERSet(),
+                dsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        boolean verify = req2.verify();
+        log.debug("Verify returned " + verify);
+        if (verify == false) {
+            log.debug("Aborting!");
+            return;
+        }
+        log.debug("CertificationRequest generated successfully.");
+        byte[] bcp10 = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+        p10.setUsername("foodsa");
+        p10.setPassword("foo123");
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof DSAPublicKey) {
+			DSAPublicKey dsapk = (DSAPublicKey) pk;
+			assertEquals(dsapk.getAlgorithm(), "DSA");
+		} else {
+			assertTrue("Public key is not DSA", false);
+		}
+        try {
+            cert.verify(dsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        log.trace("<test26TestBCPKCS10DSAWithDSACA()");
+    }
+    
+    /**
      * creates new user
      *
      * @throws Exception if en error occurs...
@@ -1410,6 +1604,10 @@ public class TestSignSession extends TestCase {
         try {        	
         	TestTools.getUserAdminSession().deleteUser(admin, "cvc");
         	log.debug("deleted user: cvc, foo123, C=SE,O=RPS,CN=10001");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+        	TestTools.getUserAdminSession().deleteUser(admin, "foodsa");
+        	log.debug("deleted user: foodsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */ }
 
 		TestTools.removeTestCA();

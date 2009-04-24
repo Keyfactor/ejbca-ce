@@ -61,15 +61,16 @@ public class CaInitCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         // Create new CA.
         if (args.length < 7) {
-           String msg = "Used to create a Root CA using RSA keys.";
+           String msg = "Used to create a Root CA.";
            msg += "\nUsage: CA init <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [<catokenproperties>]";
            msg += "\ncatokentype defines if the CA should be created with soft keys or on a HSM. Use soft for software keys and org.ejbca.core.model.ca.catoken.NFastCAToken for nCipher.";
            msg += "\ncatokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs";
-           msg += "\nkeytype is RSA or ECDSA.";
+           msg += "\nkeytype is RSA, DSA or ECDSA.";
            msg += "\nkeyspec for RSA keys is size of RSA keys (1024, 2048, 4096).";
+           msg += "\nkeyspec for DSA keys is size of DSA keys (1024).";
            msg += "\nkeyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.";
            msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and crlurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".";
-           msg += "\nsignalgorithm is SHA1WithRSA or SHA1WithECDSA.";
+           msg += "\nsignalgorithm is SHA1WithRSA, SHA1WithDSA or SHA1WithECDSA.";
            msg += "\ncatokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui";
            throw new IllegalAdminCommandException(msg);
         }

@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.util.StringTools;
 
 
@@ -80,13 +81,12 @@ public abstract class BaseCAToken implements ICAToken {
     private void testKey( KeyPair pair ) throws Exception {
         final byte input[] = "Lillan gick p� v�gen ut, m�tte d�r en katt ...".getBytes();
         final byte signBV[];
-        String keyalg = pair.getPublic().getAlgorithm();
         if (log.isDebugEnabled()) {
-            log.debug("Testing keys with algorithm: "+keyalg);        	
+            log.debug("Testing keys with algorithm: "+pair.getPublic().getAlgorithm());        	
         }
-        String testSigAlg = "SHA1withRSA";
-        if (StringUtils.equals(keyalg, "EC")) {
-        	testSigAlg = "SHA1withECDSA";
+        String testSigAlg = (String)AlgorithmTools.getSignatureAlgorithms(pair.getPublic()).iterator().next();
+        if ( testSigAlg == null ) {
+        	testSigAlg = "SHA1WithRSA";
         }
         {
             Signature signature = Signature.getInstance(testSigAlg, getProvider());

@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1115,6 +1116,109 @@ public class TestCAs extends TestCase {
 
         assertTrue("Creating RSA CA (signed by external) failed", ret);
         log.trace("<test10RSASignedByExternal");
+    }
+    
+    /**
+     * adds a CA using DSA keys to the database.
+     *
+     * It also checks that the CA is stored correctly.
+     *
+     * @throws Exception error
+     */
+    public void test11AddDSACA() throws Exception {
+        log.trace(">test11AddDSACA()");
+        boolean ret = false;
+        try {
+        	TestTools.removeTestCA("TESTDSA");	// We cant be sure this CA was not left over from some other failed test
+            TestTools.getAuthorizationSession().initialize(admin, TestTools.getTestCAId());
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setSignKeySpec("1024");
+            catokeninfo.setEncKeySpec("1024");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_DSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_DSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                    "CN=OCSPSignerCertificate, " + "CN=TESTDSA",
+                    "",
+                    "1024",
+                    CATokenConstants.KEYALGORITHM_DSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                    "CN=XKMSCertificate, " + "CN=TESTDSA",
+                    "",
+                    "1024",
+                    CATokenConstants.KEYALGORITHM_DSA));
+
+
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA",
+                    "TESTDSA", SecConst.CA_ACTIVE, new Date(),
+                    "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                    3650,
+                    null, // Expiretime
+                    CAInfo.CATYPE_X509,
+                    CAInfo.SELFSIGNED,
+                    (Collection) null,
+                    catokeninfo,
+                    "JUnit DSA CA",
+                    -1, null,
+                    null, // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(),
+                    true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
+                    null, // defaultocsplocator
+                    null, // defaultfreshestcrl
+                    true, // Finish User
+                    extendedcaservices,
+                    false, // use default utf8 settings
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false, // Use UTF8 subject DN by default
+            		true, // Use LDAP DN order by default
+            		false, // Use CRL Distribution Point on CRL
+            		false,  // CRL Distribution Point on CRL critical
+            		true);
+
+            TestTools.getCAAdminSession().createCA(admin, cainfo);
+
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTDSA");
+
+            rootcacertchain = info.getCertificateChain();
+            X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_DSA, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTDSA"));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTDSA"));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof DSAPublicKey) {
+            	DSAPublicKey rsapk = (DSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "DSA");
+			} else {
+				assertTrue("Public key is not DSA", false);
+			}
+            assertTrue("CA is not valid for the specified duration.",cert.getNotAfter().after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && cert.getNotAfter().before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+            ret = true;
+            
+            // Test to generate a certificate request from the CA
+            Collection cachain = info.getCertificateChain();
+            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, null, false);
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTDSA", msg.getRequestDN());
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        assertTrue("Creating DSA CA failed", ret);
+        log.trace("<test11AddDSACA()");
     }
 
 }

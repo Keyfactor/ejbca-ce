@@ -33,7 +33,7 @@
 
       <init-param>
          <param-name>SignatureAlgorithm</param-name>
-         <param-value>SHA1WithRSA;SHA1WithECDSA</param-value>
+         <param-value>SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA</param-value>
          <description><![CDATA[Algorithm used by server to generate signature on OCSP responses]]></description>
       </init-param>
       <init-param>

@@ -414,9 +414,11 @@ function confirmrepublish(){
        
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("PUBLICKEY") %></td>
-	 <td><%= certificatedata.getPublicKeyAlgorithm() %> <% if(certificatedata.getPublicKeyLength() != null){
-                                                                 out.write(" ( " + certificatedata.getPublicKeyLength() + ejbcawebbean.getText("BITS") + "): "+certificatedata.getPublicKeyModulus());  
-                                                               } %>
+	 <td><%= certificatedata.getPublicKeyAlgorithm() %> 
+	 	 <% out.write(" (" + certificatedata.getKeySpec(ejbcawebbean) + ")");
+	 	    if (certificatedata.getPublicKeyModulus() != null) {
+	 	    	out.write(": "+certificatedata.getPublicKeyModulus());  
+            } %>
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">

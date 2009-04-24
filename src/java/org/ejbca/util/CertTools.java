@@ -52,6 +52,7 @@ import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
@@ -2575,6 +2576,8 @@ public class CertTools {
 					signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA;
 				}
 			}
+		} else if ( publickey instanceof DSAPublicKey ) { 
+			signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_DSA;
 		} else {
 			if (certSignatureAlgorithm.indexOf("256") != -1) {
 				signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;

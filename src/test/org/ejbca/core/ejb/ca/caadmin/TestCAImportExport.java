@@ -159,6 +159,24 @@ public class TestCAImportExport extends TestCase  {
 		subTestPublicAccess(catokeninfo, new Admin(Admin.TYPE_PUBLIC_WEB_USER));
 	    log.trace("<test05ImportExport()");
 	} // test05ImportExport
+	
+	/**
+     * Tries to export and import a CA that is using SHA1withDSA as signature algorithm.
+     *
+     * @throws Exception
+     */
+	public void test06ImportExportSHA1withDSA() throws Exception {
+	    log.trace("<test06ImportExport..()");
+        CATokenInfo catokeninfo = new SoftCATokenInfo();
+        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_DSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_DSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeySpec("1024");
+        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
+        subTest(catokeninfo);
+	    log.trace("<test06ImportExport()");
+	} // test02ImportExport
 
     /**
      * Creates a CAinfo for testing.

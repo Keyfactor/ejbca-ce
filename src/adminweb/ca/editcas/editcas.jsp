@@ -7,7 +7,9 @@
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
                org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException" %>
 
-<html>
+
+
+<%@page import="org.ejbca.core.model.util.AlgorithmTools"%><html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
@@ -125,6 +127,7 @@
   static final String SELECT_CATOKEN                              = "selectcatoken";
   static final String SELECT_SIGNEDBY                             = "selectsignedby"; 
   static final String SELECT_KEYSIZE                              = "selectsize";
+  static final String SELECT_KEYSIZE_DSA                          = "selectsizedsa";
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
@@ -361,19 +364,22 @@
          
          if(catokentype == CATokenInfo.CATOKENTYPE_P12){
            String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
-           String encalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
-           signkeyspec = request.getParameter(SELECT_KEYSIZE);
+           String encalg = AlgorithmTools.getEncSigAlgFromSigAlg(signalg);
            String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
            String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
-           signkeytype = CATokenConstants.KEYALGORITHM_RSA;
            String enckeyspec = request.getParameter(SELECT_KEYSIZE);
            String enckeytype = CATokenConstants.KEYALGORITHM_RSA;
+           signkeytype = AlgorithmTools.getKeyAlgorithmFromSigAlg(signalg);
            if (signalg.indexOf("ECDSA") != -1) {
         	   signkeyspec = request.getParameter(TEXTFIELD_KEYSPEC);
-               signkeytype = CATokenConstants.KEYALGORITHM_ECDSA;
-               encalg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+        	   encalg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+           } else if(signalg.indexOf("DSA") != -1) {
+        	   signkeyspec = request.getParameter(SELECT_KEYSIZE_DSA);
+        	   encalg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+           } else {
+        	   signkeyspec = request.getParameter(SELECT_KEYSIZE);
            }
-           if(signkeyspec == null || signalg == null)
+           if(signkeyspec == null || signalg == null || signkeytype == null)
              throw new Exception("Error in CATokenData");  
            catoken = new SoftCATokenInfo();
            catoken.setSignatureAlgorithm(signalg);

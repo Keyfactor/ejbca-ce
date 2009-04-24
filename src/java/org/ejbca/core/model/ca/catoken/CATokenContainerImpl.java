@@ -21,8 +21,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,11 +29,9 @@ import java.util.Properties;
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.interfaces.ECPrivateKey;
-import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -477,7 +473,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 
 	/**
 	 * Method that import CA token keys from a P12 file. Was originally used when upgrading from 
-	 * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA.
+	 * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA and SHA1 with DSA.
 	 */
 	public void importKeys(String authenticationCode, PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey,
 			PublicKey publicEncryptionKey, Certificate[] caSignatureCertChain) throws Exception{
@@ -491,12 +487,11 @@ public class CATokenContainerImpl extends CATokenContainer {
 		Certificate cacert = caSignatureCertChain[0]; 
 		// Assume that the same hash algorithm is used for signing that was used to sign this CA cert
 		String signatureAlgorithm = CertTools.getSignatureAlgorithm(cacert);
-		String keyAlg = null;
-		if ( publickey instanceof RSAPublicKey ) {
-			keyAlg  = CATokenInfo.KEYALGORITHM_RSA;
-		} else {
-			keyAlg = CATokenInfo.KEYALGORITHM_ECDSA;
+		String keyAlg = AlgorithmTools.getKeyAlgorithm(publickey);
+		if (keyAlg == null) {
+			throw new Exception("Unknown public key type: " + publickey.getAlgorithm() + " (" + publickey.getClass() + ")");
 		}
+		
 		// If this is a CVC CA we need to find out the sequence
 		if (cacert instanceof CardVerifiableCertificate) {
 			CardVerifiableCertificate cvccacert = (CardVerifiableCertificate) cacert;
@@ -510,27 +505,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		}
 
 		// import sign keys.
-		String keyspec = null;
-		if ( publickey instanceof RSAPublicKey ) {
-			keyspec = Integer.toString( ((RSAPublicKey) publickey).getModulus().bitLength() );
-			log.debug("KeySize="+keyspec);
-		} else {
-			Enumeration en = ECNamedCurveTable.getNames();
-			while ( en.hasMoreElements() ) {
-				String currentCurveName = (String) en.nextElement();
-				if ( (ECNamedCurveTable.getParameterSpec(currentCurveName)).getCurve().equals( ((ECPrivateKey) privatekey).getParameters().getCurve() ) ) {
-					keyspec = currentCurveName;
-					break;
-				}
-			}
-
-			if ( keyspec==null ) {
-				keyspec = "unknown";
-			}
-			privatekey = (ECPrivateKey) privatekey;
-			publickey = (ECPublicKey) publickey;
-			log.debug("ECName="+keyspec);
-		}
+		String keyspec = AlgorithmTools.getKeySpecification(publickey);
 		Certificate[] certchain = new Certificate[1];
 		certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, privatekey, publickey, signatureAlgorithm, true);
 		
@@ -541,14 +516,9 @@ public class CATokenContainerImpl extends CATokenContainer {
 
 		// generate enc keys.  
 		// Encryption keys must be RSA still
-		String encryptionSignatureAlgorithm = signatureAlgorithm;
-		keyAlg = CATokenInfo.KEYALGORITHM_RSA;
+		String encryptionSignatureAlgorithm = AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm);
+		keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(encryptionSignatureAlgorithm);
 		keyspec = "2048";
-		if ( signatureAlgorithm.equals(CATokenInfo.SIGALG_SHA256_WITH_ECDSA) ) {
-			encryptionSignatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA;
-		} else if ( signatureAlgorithm.equals(CATokenInfo.SIGALG_SHA1_WITH_ECDSA) ) {
-			encryptionSignatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_RSA;
-		}
 		KeyPair enckeys = null;
 		if ( publicEncryptionKey == null ||  privateEncryptionKey == null ) {
 			enckeys = KeyTools.genKeys(keyspec, keyAlg);

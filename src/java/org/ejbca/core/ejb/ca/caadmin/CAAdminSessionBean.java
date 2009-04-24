@@ -31,7 +31,6 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,7 +38,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -48,10 +46,8 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
@@ -111,6 +107,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -1866,12 +1863,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
             Certificate caSignatureCertificate = (Certificate) signatureCertChain[0];
             PublicKey p12PublicSignatureKey = caSignatureCertificate.getPublicKey();
             PrivateKey p12PrivateSignatureKey = null;
-            if ( p12PublicSignatureKey instanceof RSAPublicKey ) {
-                p12PrivateSignatureKey = (PrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray());
-            } else {
-            	p12PrivateSignatureKey = (ECPrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray());
-                log.debug("ImportSignatureKeyAlgorithm (expecting ECDSA)="+((ECPrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray())).getAlgorithm());
-            }
+            p12PrivateSignatureKey = (PrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray());
+            log.debug("ImportSignatureKeyAlgorithm="+p12PrivateSignatureKey.getAlgorithm());
+
             // Extract encryption keys
             PrivateKey p12PrivateEncryptionKey = null;
             PublicKey p12PublicEncryptionKey = null;
@@ -1933,18 +1927,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
 					p12PublicEncryptionKey, signatureCertChain);
 		log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + catoken.getCATokenInfo().getEncryptionAlgorithm());
 		// Identify the key algorithms for extended CA services, OCSP, XKMS, CMS
-		String keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
-		String keySpecification = "2048";
-		if (!(p12PublicSignatureKey instanceof RSAPublicKey)) {
-			Enumeration en = ECNamedCurveTable.getNames();
-			while ( en.hasMoreElements() ) {
-				String currentCurveName = (String) en.nextElement();
-				if ( (ECNamedCurveTable.getParameterSpec(currentCurveName)).getCurve().equals( ((ECPrivateKey) p12PrivateSignatureKey).getParameters().getCurve() ) ) {
-					keySpecification = currentCurveName;
-					keyAlgorithm = CATokenConstants.KEYALGORITHM_ECDSA;
-					break;
-				}
-			}
+		String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(p12PublicSignatureKey);
+		String keySpecification = AlgorithmTools.getKeySpecification(p12PublicSignatureKey);
+		if (keyAlgorithm == null || keyAlgorithm == CATokenConstants.KEYALGORITHM_RSA) {
+			keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
+			keySpecification = "2048";
 		}
 		// Do the general import
 		CA ca = importCA(admin, caname, keystorepass, signatureCertChain, catoken, keyAlgorithm, keySpecification);

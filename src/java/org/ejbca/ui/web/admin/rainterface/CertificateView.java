@@ -22,6 +22,8 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -36,6 +39,7 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
 import org.ejbca.util.dn.DNFieldExtractor;
+import org.ejbca.util.keystore.KeyTools;
 
 
 
@@ -171,19 +175,28 @@ public class CertificateView implements java.io.Serializable {
     public String getPublicKeyAlgorithm(){
       return certificate.getPublicKey().getAlgorithm();
     }
+    
+    public String getKeySpec(EjbcaWebBean ejbcawebbean) {
+    	if( certificate.getPublicKey() instanceof ECPublicKey ) {
+    		return AlgorithmTools.getKeySpecification(certificate.getPublicKey());
+    	} else {
+    		return "" + KeyTools.getKeyLength(certificate.getPublicKey()) + " " + ejbcawebbean.getText("BITS");
+    	}
+    }
 
     public String getPublicKeyLength(){
-      String keylength = null;
-      if( certificate.getPublicKey() instanceof RSAPublicKey){
-        keylength = "" + ((RSAPublicKey)certificate.getPublicKey()).getModulus().bitLength();
-      }
-      return keylength;
+      int len = KeyTools.getKeyLength(certificate.getPublicKey());
+      return len > 0 ? ""+len : null; 
     }
 
     public String getPublicKeyModulus(){
     	String mod = null;
     	if( certificate.getPublicKey() instanceof RSAPublicKey){
     		mod = "" + ((RSAPublicKey)certificate.getPublicKey()).getModulus().toString(16);
+    		mod = mod.toUpperCase();
+    		mod = StringUtils.abbreviate(mod, 50);
+    	} else if( certificate.getPublicKey() instanceof DSAPublicKey){
+    		mod = "" + ((DSAPublicKey)certificate.getPublicKey()).getY().toString(16);
     		mod = mod.toUpperCase();
     		mod = StringUtils.abbreviate(mod, 50);
     	}

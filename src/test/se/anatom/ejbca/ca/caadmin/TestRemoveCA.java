@@ -171,4 +171,17 @@ public class TestRemoveCA extends TestCase {
         assertTrue("Removing RSA CA failed", ret);
         log.trace("<test09removeRSASignedByExternal()");
     }
+    
+    public void test10removeDSACA() throws Exception {
+        log.trace(">test10removeDSACA()");
+        boolean ret = false;
+        try {
+            TestTools.getCAAdminSession().removeCA(admin, "CN=TESTDSA".hashCode());
+            ret = true;
+        } catch (Exception pee) {
+        }
+        assertTrue("Removing DSA CA failed", ret);
+
+        log.trace("<test10removeDSACA()");
+    }
 }
