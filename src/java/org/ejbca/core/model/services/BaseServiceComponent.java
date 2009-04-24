@@ -69,7 +69,7 @@ public abstract class BaseServiceComponent {
     } //getLogSession
     
     /**
-     * Gets connection to cerificate data home 
+     * Gets connection to certificate data home 
      *
      * @return Connection
      */
