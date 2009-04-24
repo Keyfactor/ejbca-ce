@@ -175,6 +175,42 @@ public class TestPublisherQueue extends TestCase {
     	Iterator<PublisherQueueData> i = c.iterator();
     	PublisherQueueData d = i.next();
     	assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
+    	
+    }
+
+    public void test03ExternalOCSPPublisherOk() throws Exception {
+        boolean ret = false;
+
+        // Remove publisher since we probably have one from the test above
+    	try {
+    		pub.removePublisher(admin, "TESTEXTOCSPQUEUE");            
+    	} catch (Exception pee) {}
+
+        ret = false;
+		try {
+            CustomPublisherContainer publisher = new CustomPublisherContainer();
+            publisher.setClassPath(ExternalOCSPPublisher.class.getName());
+		    // We use a datasource that we know don't exist, so we know publishing will fail
+            publisher.setPropertyData("dataSource java:/EjbcaDS");
+            publisher.setDescription("Used in Junit Test, Remove this one");
+            pub.addPublisher(admin, "TESTEXTOCSPQUEUE", publisher);
+            ret = true;
+        } catch (PublisherExistsException pee) {
+        	// Do nothing
+        }        
+        assertTrue("Creating External OCSP Publisher failed", ret);
+        int id = pub.getPublisherId(admin, "TESTEXTOCSPQUEUE");
+        
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        ArrayList publishers = new ArrayList();
+        publishers.add(new Integer(pub.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
+        
+        ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
+        assertTrue("Storing certificate to external ocsp publisher should succeed.", ret);
+        
+        // Now this certificate fingerprint should NOT be in the queue
+    	Collection<PublisherQueueData> c = remote.getEntriesForPublisher(id);
+    	assertEquals(0, c.size());
     }
 
     public void test99CleanUp() throws Exception {
@@ -187,8 +223,6 @@ public class TestPublisherQueue extends TestCase {
 
     	try {
     		pub.removePublisher(admin, "TESTEXTOCSPQUEUE");            
-    	} catch (Exception pee) {
-    		assertTrue(false);
-    	}
+    	} catch (Exception pee) {}
     }
 }
