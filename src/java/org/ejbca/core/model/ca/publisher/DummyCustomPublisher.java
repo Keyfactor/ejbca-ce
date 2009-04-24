@@ -67,14 +67,6 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	}
 
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#revokeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, int)
-	 */
-	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException {
-        log.debug("DummyCustomPublisher, Rekoving Certificate");
-		
-	}	
-
-	/**
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection(org.ejbca.core.model.log.Admin)
 	 */
 	public void testConnection(Admin admin) throws PublisherConnectionException {

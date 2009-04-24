@@ -68,7 +68,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
         log.debug("dataSource='"+dataSource+"'.");
     }
 
-    protected class StoreCertPreparer implements JDBCUtil.Preparer {
+    private class StoreCertPreparer implements JDBCUtil.Preparer {
         final Certificate incert;
         final String username;
         final String cafp;
@@ -129,14 +129,12 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     		if (e instanceof SQLException) {
 				String msg = intres.getLocalizedMessage("publisher.entryexists");
     			log.info(msg);
-    			//JDBCPreparer uprep = new UpdatePreparer(incert, status, revocationDate, revocationReason);
-    			StoreCertPreparer uprep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
     			try {
         			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=? WHERE fingerprint=?",
-            				uprep, dataSource );
+            				prep, dataSource );
             		fail = false;    				
     			} catch (Exception ue) {
-    				String lmsg = intres.getLocalizedMessage("publisher.errorextocsppubl", uprep.getInfoString());
+    				String lmsg = intres.getLocalizedMessage("publisher.errorextocsppubl", prep.getInfoString());
     	            log.error(lmsg, ue);
     	            PublisherException pe = new PublisherException(lmsg);
     	            pe.initCause(ue);
@@ -178,71 +176,6 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
     throws PublisherException {
         return true;
-    }
-
-    protected class UpdatePreparer implements JDBCUtil.Preparer {
-        final Certificate cert;
-        final int reason;
-        final int status;
-        final long date;
-        UpdatePreparer(Certificate c, int s, long d, int r) {
-            cert = c;
-            reason = r;
-            date = d;
-            status = s;
-        }
-        public void prepare(PreparedStatement ps) throws Exception {
-            ps.setInt(1, status);
-            ps.setLong(2, date);
-            ps.setInt(3, reason);
-            ps.setString(4, CertTools.getFingerprintAsString(cert));
-        }
-        public String getInfoString() {
-        	return "Revoke:, Issuer:"+CertTools.getIssuerDN(cert)+", Serno: "+CertTools.getSerialNumberAsString(cert)+", Subject: "+CertTools.getSubjectDN(cert);
-        	
-        }
-    }
-    /* (non-Javadoc)
-     * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#revokeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, int)
-     */
-    public void revokeCertificate(Admin admin, Certificate incert, int reason) throws PublisherException {
-    	if (log.isDebugEnabled()) {
-    		String fingerprint = CertTools.getFingerprintAsString(incert);
-    		log.debug("Revoking certificate with fingerprint "+fingerprint+", reason "+reason+" in external OCSP");
-    	}
-    	boolean fail = true;
-    	long now = System.currentTimeMillis();
-    	UpdatePreparer prep = new UpdatePreparer(incert, 40, now, reason);
-    	try {
-			JDBCUtil.execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?",
-			         prep, dataSource);
-			fail = false;
-		} catch (Exception e) {
-			String msg = intres.getLocalizedMessage("publisher.errorextocsppubl", prep.getInfoString());
-            log.error(msg, e);
-            PublisherException pe = new PublisherException(msg);
-            pe.initCause(e);
-            throw pe;
-		}
-    	// If we managed to update the OCSP database, and protection is enabled, we have to update the protection database
-    	if (!fail && protect) {
-    		X509Certificate cert = (X509Certificate)incert;
-    		String fp = CertTools.getFingerprintAsString(cert);
-    		String serno = cert.getSerialNumber().toString();
-    		String issuer = CertTools.getIssuerDN(cert);
-    		String subject = CertTools.getSubjectDN(cert);
-    		long expire = cert.getNotAfter().getTime();
-    		// Cafp and type we don't have access to here, we don't use them so enter dummy values
-    		CertificateInfo entry = new CertificateInfo(fp, null, serno, issuer, subject, 40, SecConst.USER_ENDUSER, expire, now, reason);
-    		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
-            try {
-				TableProtectSessionRemote remote = home.create();
-				remote.protectExternal(admin, entry, dataSource);
-			} catch (Exception e) {
-				String msg = intres.getLocalizedMessage("protect.errorcreatesession");
-				log.error(msg, e);
-			} 
-    	}
     }
 
     protected class DoNothingPreparer implements JDBCUtil.Preparer {

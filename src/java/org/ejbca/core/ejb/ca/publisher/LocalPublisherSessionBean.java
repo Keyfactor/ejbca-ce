@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.ca.publisher;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
@@ -40,14 +40,15 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.util.CertTools;
 
 
 /**
- * Stores data used by web server clients.
- * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
+ * Handles management of Publishers.
  *
  * @ejb.bean description="Session bean handling interface with publisher data"
  *   display-name="PublisherSessionSB"
@@ -61,10 +62,6 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * @ejb.transaction type="Required"
  *
  * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry name="DataSource"
- *   type="java.lang.String"
- *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
  *
  * @ejb.ejb-external-ref description="The Publisher entity bean"
@@ -99,6 +96,14 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
  *
+ * @ejb.ejb-external-ref description="The publisher queue"
+ *   view-type="local"
+ *   ref-name="ejb/PublisherQueueSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal"
+ *   link="PublisherQueueSession"
+ *   
  * @ejb.home extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
  *   local-class="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
@@ -131,6 +136,11 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      */
     private IAuthorizationSessionLocal authorizationsession = null;
 
+    /**
+     * Local interface to the publisher queue, that handles failed publishings.
+     */
+    private IPublisherQueueSessionLocal pubqueuesession = null;
+    
     /**
      * The remote interface of  log session bean
      */
@@ -199,6 +209,22 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         return caadminsession;
     } //getCAAdminSession
 
+    /**
+     * Gets connection to publisher queue session bean
+     *
+     * @return IAuthorizationSessionLocal
+     */
+    private IPublisherQueueSessionLocal getPublisherQueueSession() {
+        if (pubqueuesession == null) {
+            try {
+            	IPublisherQueueSessionLocalHome pqhome = (IPublisherQueueSessionLocalHome) getLocator().getLocalHome(IPublisherQueueSessionLocalHome.COMP_NAME);
+                pubqueuesession = pqhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return pubqueuesession;
+    } //getPublisherQueueSession
 
     /**
      * Stores the certificate to the given collection of publishers.
@@ -210,31 +236,77 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) {
+    	return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
+    }
+
+    /**
+     * Revokes the certificate in the given collection of publishers.
+     * See BasePublisher class for further documentation about function
+     *
+     * @param publisherids a Collection (Integer) of publisherids.
+     * @ejb.interface-method view-type="both"
+     * @see org.ejbca.core.model.ca.publisher.BasePublisher
+     */
+    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, String cafp, int type, int reason, long revocationDate) {
+    	storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, cafp, CertificateDataBean.CERT_REVOKED, type, revocationDate, reason, null);
+    }
+
+
+    /** The same basic method is be used for both store and revoke
+     * 
+     * @param admin
+     * @param logInfoEvent
+     * @param logErrorEvent
+     * @param publisherids
+     * @param cert
+     * @param username
+     * @param password
+     * @param cafp
+     * @param status
+     * @param type
+     * @param revocationDate
+     * @param revocationReason
+     * @param extendedinformation
+     * @return true if publishing was successful, false if not
+     */
+    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) {
         Iterator iter = publisherids.iterator();
-        boolean returnval = true;
+        boolean returnval = false;
         while (iter.hasNext()) {
             Integer id = (Integer) iter.next();
             try {
-                PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
-                try {
-                    returnval &= pdl.getPublisher().storeCertificate(admin, incert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
-                	String msg = intres.getLocalizedMessage("publisher.store", ((X509Certificate) incert).getSubjectDN().toString(), pdl.getName());            	
-                    getLogSession().log(admin, (X509Certificate) incert, LogConstants.MODULE_CA, new java.util.Date(), username,
-                            (X509Certificate) incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
-                } catch (PublisherException pe) {
-                	String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName());            	
-                    getLogSession().log(admin, (X509Certificate) incert, LogConstants.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert,
-                            LogConstants.EVENT_ERROR_STORECERTIFICATE, msg, pe);
+            	PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
+            	try {
+            		returnval = pdl.getPublisher().storeCertificate(admin, cert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
+            		String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());            	
+            		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
+            	} catch (PublisherException pe) {
+            		String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName());            	
+            		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, pe);
 
-                }
+            	}
+            	// If we failed to publish we will store the failed publish in the publisher queue instead
+            	if (!returnval) {
+            		PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
+            		pqvd.setUsername(username);
+            		pqvd.setPassword(password);
+            		pqvd.setExtendedInformation(extendedinformation);
+            		String fp = CertTools.getFingerprintAsString(cert); 
+            		try {
+            			getPublisherQueueSession().addQueueData(id.intValue(), fp, pqvd);
+                		String msg = intres.getLocalizedMessage("publisher.storequeue", pdl.getName(), fp, status);            	
+                		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
+            		} catch (CreateException e) {
+            			String msg = intres.getLocalizedMessage("publisher.errorstorequeue", pdl.getName(), fp, status);            	
+            			getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, e);
+            		}
+            	}
             } catch (FinderException fe) {
             	String msg = intres.getLocalizedMessage("publisher.nopublisher", id);            	
-                getLogSession().log(admin, (X509Certificate) incert, LogConstants.MODULE_CA, new java.util.Date(), null, (X509Certificate) incert,
-                        LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
+            	getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), null, cert, logErrorEvent, msg);
 
             }
         }
-
         return returnval;
     }
 
@@ -256,7 +328,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             try {
                 PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
                 try {
-                    returnval &= pdl.getPublisher().storeCRL(admin, incrl, cafp, number);
+                    returnval = pdl.getPublisher().storeCRL(admin, incrl, cafp, number);
                 	String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());            	
                     getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null,
                             null, LogConstants.EVENT_INFO_STORECRL, msg);
@@ -275,40 +347,6 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         }
     	log.trace("<storeCRL");
         return returnval;
-    }
-
-    /**
-     * Revokes the certificate in the given collection of publishers.
-     * See BasePublisher class for further documentation about function
-     *
-     * @param publisherids a Collection (Integer) of publisherids.
-     * @ejb.interface-method view-type="both"
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher
-     */
-    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, int reason) {
-        Iterator iter = publisherids.iterator();
-        while (iter.hasNext()) {
-            Integer id = (Integer) iter.next();
-            try {
-                PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
-                try {
-                    pdl.getPublisher().revokeCertificate(admin, cert, username, reason);
-                	String msg = intres.getLocalizedMessage("publisher.store", ((X509Certificate) cert).getSubjectDN().toString(), pdl.getName());            	
-                    getLogSession().log(admin, (X509Certificate) cert, LogConstants.MODULE_CA, new java.util.Date(), null,
-                            (X509Certificate) cert, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
-                } catch (PublisherException pe) {
-                	String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName());            	
-                    getLogSession().log(admin, (X509Certificate) cert, LogConstants.MODULE_CA, new java.util.Date(), null, (X509Certificate) cert,
-                            LogConstants.EVENT_ERROR_REVOKEDCERT, msg, pe);
-
-                }
-            } catch (FinderException fe) {
-            	String msg = intres.getLocalizedMessage("publisher.nopublisher", id);            	
-                getLogSession().log(admin, (X509Certificate) cert, LogConstants.MODULE_CA, new java.util.Date(), null, (X509Certificate) cert,
-                        LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
-
-            }
-        }
     }
 
     /**
@@ -368,11 +406,10 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * Adds a publisher to the database.
      * Used for importing and exporting profiles from xml-files.
      *
-     * @throws PublisherExistsException if hard token already exists.
-     * @throws EJBException             if a communication or other error occurs.
+     * @throws PublisherExistsException if publisher already exists.
+     * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-
     public void addPublisher(Admin admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ", id: " + id + ")");
@@ -625,7 +662,6 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
-
     public int getPublisherUpdateCount(Admin admin, int publisherid) {
         int returnval = 0;
 

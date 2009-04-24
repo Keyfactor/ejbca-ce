@@ -445,22 +445,13 @@ public abstract class UserDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public void setExtendedInformation(ExtendedInformation extendedinformation) {
-    	if(extendedinformation != null){
-            // We must base64 encode string for UTF safety
-            HashMap a = new Base64PutHashMap();
-            a.putAll((HashMap)extendedinformation.saveData());
+		try {
+	    	String eidata = UserDataVO.extendedInformationToStringData(extendedinformation);
+			setExtendedInformationData(eidata);
+		} catch (UnsupportedEncodingException e) {
+			throw new EJBException("Problems storing extended information for user :" + getUsername(), e);
+		}	
 
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-    		encoder.writeObject(a);
-    		encoder.close();
-    		try {
-    			setExtendedInformationData(baos.toString("UTF8"));
-    		} catch (UnsupportedEncodingException e) {
-    			throw new EJBException("Problems storing extended information for user :" + getUsername(),e);
-    		}
-    		
-    	}
     }
 
     /**

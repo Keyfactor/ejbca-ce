@@ -123,6 +123,10 @@
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/PublisherQueueSessionLocal" />
+		</session-deployment>
+		<session-deployment name="PublisherQueueSession" location="PublisherQueueSession" local-location="ejbca-ejb_PublisherQueueSessionLocal" persistence-filename="PublisherQueueSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/PublisherQueueDataLocal" />
 		</session-deployment>
 		<session-deployment name="ApprovalSession" location="ApprovalSession" local-location="ejbca-ejb_ApprovalSessionLocal" persistence-filename="ApprovalSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/ApprovalDataLocal" />
@@ -164,6 +168,8 @@
 			<ejb-ref-mapping name="ejb/AdminGroupDataLocal" />
 		</session-deployment>
 		<entity-deployment name="PublisherData" location="PublisherData" local-location="ejbca-ejb_PublisherDataLocal" concrete-bean-class="PublisherData_ConcreteSubClass60" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="PublisherData_LocalHomeProxy_634lm59">
+		</entity-deployment>
+		<entity-deployment name="PublisherQueueData" location="PublisherQueueData" local-location="ejbca-ejb_PublisherQueueDataLocal" concrete-bean-class="PublisherQueueData_ConcreteSubClass60" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="PublisherQueueData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 		<entity-deployment name="CertReqHistoryData" location="CertReqHistoryData" local-location="ejbca-ejb_CertReqHistoryDataLocal" concrete-bean-class="CertReqHistoryData_ConcreteSubClass61" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CertReqHistoryData_LocalHomeProxy_634lm59">
 		</entity-deployment>

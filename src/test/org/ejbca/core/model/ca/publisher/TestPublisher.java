@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -519,7 +520,7 @@ public class TestPublisher extends TestCase {
         ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, CertificateDataBean.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime());
 	    log.trace("<test14ExternalOCSPPublisher()");
     }
 

@@ -1678,6 +1678,78 @@
          </toplink:tables>
       </opm:class-mapping-descriptor>
       <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
+         <opm:class>org.ejbca.core.ejb.ca.publisher.PublisherQueueDataBean</opm:class>
+         <opm:alias>PublisherQueueDataBean</opm:alias>
+         <opm:primary-key>
+            <opm:field name="PK" xsi:type="opm:column"/>
+         </opm:primary-key>
+         <opm:events xsi:type="toplink:event-policy"/>
+         <opm:querying xsi:type="toplink:query-policy">
+            <opm:queries>
+               <opm:query name="findDataByPublisherId" xsi:type="toplink:read-all-query">
+                  <toplink:call xsi:type="toplink:ejbql-call">
+                     <toplink:ejbql>SELECT OBJECT(a) from PublisherQueueDataBean a WHERE a.publisherId=?1</toplink:ejbql>
+                  </toplink:call>
+                  <toplink:reference-class>org.ejbca.core.ejb.ca.publisher.PublisherQueueDataBean</toplink:reference-class>
+                  <toplink:cache-usage>conform</toplink:cache-usage>
+                  <toplink:container xsi:type="toplink:list-container-policy">
+                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
+                  </toplink:container>
+               </opm:query>
+               <opm:query name="findByPrimaryKey" xsi:type="toplink:read-object-query">
+                  <opm:arguments>
+                     <opm:argument name="primaryKey">
+                        <opm:type>java.lang.String</opm:type>
+                     </opm:argument>
+                  </opm:arguments>
+                  <toplink:reference-class>org.ejbca.core.ejb.ca.publisher.PublisherQueueDataBean</toplink:reference-class>
+                  <toplink:cache-usage>conform</toplink:cache-usage>
+               </opm:query>
+            </opm:queries>
+         </opm:querying>
+         <opm:attribute-mappings>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>pk</opm:attribute-name>
+               <opm:field name="PK" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>timeCreated</opm:attribute-name>
+               <opm:field name="TIMECREATED" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>timePublisher</opm:attribute-name>
+               <opm:field name="TIMEPUBLISHED" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>publishStatus</opm:attribute-name>
+               <opm:field name="PUBLISHSTATUS" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>tryCounter</opm:attribute-name>
+               <opm:field name="TRYCOUNTER" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fingerprint</opm:attribute-name>
+               <opm:field name="FINGERPRINT" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>publisherId</opm:attribute-name>
+               <opm:field name="PUBLISHERID" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>volatileData</opm:attribute-name>
+               <opm:field name="VOLATILEDATA" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+         </opm:attribute-mappings>
+         <toplink:descriptor-type>independent</toplink:descriptor-type>
+         <toplink:instantiation/>
+         <toplink:copying xsi:type="toplink:instantiation-copy-policy"/>
+         <toplink:change-policy xsi:type="toplink:deferred-detection-change-policy"/>
+         <toplink:tables>
+            <toplink:table name="PUBLISHERQUEUEDATA"/>
+         </toplink:tables>
+      </opm:class-mapping-descriptor>
+      <opm:class-mapping-descriptor xsi:type="toplink:relational-class-mapping-descriptor">
          <opm:class>org.ejbca.core.ejb.hardtoken.HardTokenDataBean</opm:class>
          <opm:alias>HardTokenDataBean</opm:alias>
          <opm:primary-key>

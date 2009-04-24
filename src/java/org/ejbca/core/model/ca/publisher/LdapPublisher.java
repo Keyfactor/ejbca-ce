@@ -162,180 +162,183 @@ public class LdapPublisher extends BasePublisher {
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCertificate(username="+username+")");
 		}
-		// Don't publish non-active certificates
-		if (status != CertificateDataBean.CERT_ACTIVE) {
-			String msg = intres.getLocalizedMessage("publisher.notpublrevoked", new Integer(status));
-			log.info(msg);
-			return true;
-		}
-		int ldapVersion = LDAPConnection.LDAP_V3;
-		LDAPConnection lc = createLdapConnection();
+        if ( (status == CertificateDataBean.CERT_REVOKED) || (status == CertificateDataBean.CERT_TEMP_REVOKED) ) {
+        	// Call separate script for revocation
+        	revokeCertificate(admin, incert, username, revocationReason);
+        } else if (status == CertificateDataBean.CERT_ACTIVE) {
+            // Don't publish non-active certificates
+    		int ldapVersion = LDAPConnection.LDAP_V3;
+    		LDAPConnection lc = createLdapConnection();
 
-		String dn = null;
-		String certdn = null;
-		try {
-			// Extract the users DN from the cert.
-			certdn = CertTools.getSubjectDN(incert);
-			log.debug( "Constructing DN for: " + username);
-			dn = constructLDAPDN(certdn);
-			log.debug("LDAP DN for user " +username +" is '" + dn+"'");
-		} catch (Exception e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
-			log.error(msg, e);            
-			throw new PublisherException(msg);            
-		}
+    		String dn = null;
+    		String certdn = null;
+    		try {
+    			// Extract the users DN from the cert.
+    			certdn = CertTools.getSubjectDN(incert);
+    			log.debug( "Constructing DN for: " + username);
+    			dn = constructLDAPDN(certdn);
+    			log.debug("LDAP DN for user " +username +" is '" + dn+"'");
+    		} catch (Exception e) {
+    			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
+    			log.error(msg, e);            
+    			throw new PublisherException(msg);            
+    		}
 
-		// Extract the users email from the cert.
-		String email = CertTools.getEMailAddress(incert);
+    		// Extract the users email from the cert.
+    		String email = CertTools.getEMailAddress(incert);
 
-		// Check if the entry is already present, we will update it with the new certificate.
-		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the 
-		// search function, and not only the LDAP DN. The regular publisher should only use the LDAP DN though, 
-		// but the searchOldEntity function will take care of that.
-		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, email);
+    		// Check if the entry is already present, we will update it with the new certificate.
+    		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the 
+    		// search function, and not only the LDAP DN. The regular publisher should only use the LDAP DN though, 
+    		// but the searchOldEntity function will take care of that.
+    		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, email);
 
-		// PART 2: Create LDAP entry
-		LDAPEntry newEntry = null;
-		ArrayList modSet = new ArrayList();
-		LDAPAttributeSet attributeSet = null;
-		String attribute = null;
-		String objectclass = null;
+    		// PART 2: Create LDAP entry
+    		LDAPEntry newEntry = null;
+    		ArrayList modSet = new ArrayList();
+    		LDAPAttributeSet attributeSet = null;
+    		String attribute = null;
+    		String objectclass = null;
 
-		if (type == CertificateDataBean.CERTTYPE_ENDENTITY) {
-			log.debug("Publishing end user certificate to first available server of " + getHostnames());
+    		if (type == CertificateDataBean.CERTTYPE_ENDENTITY) {
+    			log.debug("Publishing end user certificate to first available server of " + getHostnames());
 
-			if (oldEntry != null) {
-				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true, password);
-			} else {
-				objectclass = getUserObjectClass(); // just used for logging
-				attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, email, true, true, password, extendedinformation);
-			}
+    			if (oldEntry != null) {
+    				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true, password);
+    			} else {
+    				objectclass = getUserObjectClass(); // just used for logging
+    				attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, email, true, true, password, extendedinformation);
+    			}
 
-			try {
-				attribute = getUserCertAttribute();
-				LDAPAttribute certAttr = new LDAPAttribute(getUserCertAttribute(), incert.getEncoded());
-				if (oldEntry != null) {
-					String oldDn = oldEntry.getDN();
-					if (getAddMultipleCertificates()) {
-						modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
-						log.debug("Appended new certificate in user entry; " + username+": "+oldDn);
-					} else {
-						modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
-						log.debug("Replaced certificate in user entry; " + username+": "+oldDn);
-					}
-				} else {
-					attributeSet.add(certAttr);
-					log.debug("Added new certificate to user entry; " + username+": "+dn);
-				}
-			} catch (CertificateEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
-				log.error(msg, e);
-				throw new PublisherException(msg);                
-			}
-		} else if ((type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
-			log.debug("Publishing CA certificate to first available server of " + getHostnames());
+    			try {
+    				attribute = getUserCertAttribute();
+    				LDAPAttribute certAttr = new LDAPAttribute(getUserCertAttribute(), incert.getEncoded());
+    				if (oldEntry != null) {
+    					String oldDn = oldEntry.getDN();
+    					if (getAddMultipleCertificates()) {
+    						modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
+    						log.debug("Appended new certificate in user entry; " + username+": "+oldDn);
+    					} else {
+    						modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
+    						log.debug("Replaced certificate in user entry; " + username+": "+oldDn);
+    					}
+    				} else {
+    					attributeSet.add(certAttr);
+    					log.debug("Added new certificate to user entry; " + username+": "+dn);
+    				}
+    			} catch (CertificateEncodingException e) {
+    				String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
+    				log.error(msg, e);
+    				throw new PublisherException(msg);                
+    			}
+    		} else if ((type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
+    			log.debug("Publishing CA certificate to first available server of " + getHostnames());
 
-			if (oldEntry != null) {
-				modSet = getModificationSet(oldEntry, certdn, null, false, false, password);
-			} else {
-				objectclass = getCAObjectClass(); // just used for logging
-				attributeSet = getAttributeSet(incert, getCAObjectClass(), certdn, null, true, false, password, extendedinformation);
-			}
-			try {
-				attribute = getCACertAttribute();
-				LDAPAttribute certAttr = new LDAPAttribute(getCACertAttribute(), incert.getEncoded());
-				if (oldEntry != null) {
-					modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));
-				} else {
-					attributeSet.add(certAttr);
-					// Also create using the crlattribute, it may be required
-					LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), getFakeCRL());
-					attributeSet.add(crlAttr);
-					// Also create using the arlattribute, it may be required
-					LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), getFakeCRL());
-					attributeSet.add(arlAttr);
-					log.debug("Added (fake) attribute for CRL and ARL.");
-				}
-			} catch (CertificateEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
-				log.error(msg, e);
-				throw new PublisherException(msg);            
-			}
-		} else {
-			String msg = intres.getLocalizedMessage("publisher.notpubltype", new Integer(type));
-			log.info(msg);
-			throw new PublisherException(msg);                      
-		}
+    			if (oldEntry != null) {
+    				modSet = getModificationSet(oldEntry, certdn, null, false, false, password);
+    			} else {
+    				objectclass = getCAObjectClass(); // just used for logging
+    				attributeSet = getAttributeSet(incert, getCAObjectClass(), certdn, null, true, false, password, extendedinformation);
+    			}
+    			try {
+    				attribute = getCACertAttribute();
+    				LDAPAttribute certAttr = new LDAPAttribute(getCACertAttribute(), incert.getEncoded());
+    				if (oldEntry != null) {
+    					modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));
+    				} else {
+    					attributeSet.add(certAttr);
+    					// Also create using the crlattribute, it may be required
+    					LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), getFakeCRL());
+    					attributeSet.add(crlAttr);
+    					// Also create using the arlattribute, it may be required
+    					LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), getFakeCRL());
+    					attributeSet.add(arlAttr);
+    					log.debug("Added (fake) attribute for CRL and ARL.");
+    				}
+    			} catch (CertificateEncodingException e) {
+    				String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
+    				log.error(msg, e);
+    				throw new PublisherException(msg);            
+    			}
+    		} else {
+    			String msg = intres.getLocalizedMessage("publisher.notpubltype", new Integer(type));
+    			log.info(msg);
+    			throw new PublisherException(msg);                      
+    		}
 
-		// PART 3: MODIFICATION AND ADDITION OF NEW USERS
-		// Try all the listed servers
-		Iterator servers = getHostnameList().iterator();
-		boolean connectionFailed;
-		do {
-			connectionFailed = false;
-			String currentServer = (String) servers.next();
-			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
-				lc.connect(currentServer, Integer.parseInt(getPort()));
-				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
-				// Add or modify the entry
-				if (oldEntry != null && getModifyExistingUsers()) {
-					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
-					mods = (LDAPModification[])modSet.toArray(mods);
-					String oldDn = oldEntry.getDN();
-					log.debug("Writing modification to DN: "+oldDn);
-					lc.modify(oldDn, mods);
-					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
-					log.info(msg);  
-				} else {
-					if(this.getCreateNonExistingUsers()){     
-						if (oldEntry == null) {           
-							// Check if the intermediate parent node is present, and if it is not
-							// we can create it, of allowed to do so by the publisher configuration
-							if(getCreateIntermediateNodes()) {
-								final String parentDN = dn.substring(dn.indexOf(',') + 1);
-								try {
-									lc.read(parentDN);
-								} catch(LDAPException e) {
-									if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-										this.createIntermediateNodes(lc, dn);
-										String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", parentDN);
-										log.info(msg);
-									}
-								}
-							}
-							newEntry = new LDAPEntry(dn, attributeSet);
-							log.debug("Adding DN: "+dn);
-							lc.add(newEntry);
-							String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
-							log.info(msg);
-						}
-					}  
-				}
-			} catch (LDAPException e) {
-				connectionFailed = true;
-				if (servers.hasNext()) {
-					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
-				} else {
-					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn, e.getMessage());
-					log.error(msg, e);  
-					throw new PublisherException(msg);            
-				}
-			} catch (UnsupportedEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-				log.error(msg, e);
-				throw new PublisherException(msg);            
-			} finally {
-				// disconnect with the server
-				try {
-					lc.disconnect();
-				} catch (LDAPException e) {
-					String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
-					log.error(msg, e);
-				}
-			}
-		} while (connectionFailed && servers.hasNext()) ;
+    		// PART 3: MODIFICATION AND ADDITION OF NEW USERS
+    		// Try all the listed servers
+    		Iterator servers = getHostnameList().iterator();
+    		boolean connectionFailed;
+    		do {
+    			connectionFailed = false;
+    			String currentServer = (String) servers.next();
+    			try {
+    				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+    				lc.connect(currentServer, Integer.parseInt(getPort()));
+    				// authenticate to the server
+    				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
+    				// Add or modify the entry
+    				if (oldEntry != null && getModifyExistingUsers()) {
+    					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
+    					mods = (LDAPModification[])modSet.toArray(mods);
+    					String oldDn = oldEntry.getDN();
+    					log.debug("Writing modification to DN: "+oldDn);
+    					lc.modify(oldDn, mods);
+    					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
+    					log.info(msg);  
+    				} else {
+    					if(this.getCreateNonExistingUsers()){     
+    						if (oldEntry == null) {           
+    							// Check if the intermediate parent node is present, and if it is not
+    							// we can create it, of allowed to do so by the publisher configuration
+    							if(getCreateIntermediateNodes()) {
+    								final String parentDN = dn.substring(dn.indexOf(',') + 1);
+    								try {
+    									lc.read(parentDN);
+    								} catch(LDAPException e) {
+    									if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+    										this.createIntermediateNodes(lc, dn);
+    										String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", parentDN);
+    										log.info(msg);
+    									}
+    								}
+    							}
+    							newEntry = new LDAPEntry(dn, attributeSet);
+    							log.debug("Adding DN: "+dn);
+    							lc.add(newEntry);
+    							String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
+    							log.info(msg);
+    						}
+    					}  
+    				}
+    			} catch (LDAPException e) {
+    				connectionFailed = true;
+    				if (servers.hasNext()) {
+    					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
+    				} else {
+    					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn, e.getMessage());
+    					log.error(msg, e);  
+    					throw new PublisherException(msg);            
+    				}
+    			} catch (UnsupportedEncodingException e) {
+    				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+    				log.error(msg, e);
+    				throw new PublisherException(msg);            
+    			} finally {
+    				// disconnect with the server
+    				try {
+    					lc.disconnect();
+    				} catch (LDAPException e) {
+    					String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
+    					log.error(msg, e);
+    				}
+    			}
+    		} while (connectionFailed && servers.hasNext()) ;
+        } else {
+			String msg = intres.getLocalizedMessage("publisher.notpublwithstatus", new Integer(status));
+			log.info(msg);        	
+        }
 		log.trace("<storeCertificate()");
 		return true;
 
@@ -518,7 +521,7 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
+	 * Revokes a certificate, which means for LDAP that we may remove the certificate or the whole user entry.
 	 */    
 	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException{
 		log.trace(">revokeCertificate()");

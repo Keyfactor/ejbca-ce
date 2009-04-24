@@ -276,6 +276,19 @@ CREATE TABLE PublisherData (
     PRIMARY KEY (id)
 );
 
+DROP TABLE PublisherQueueData;
+CREATE TABLE PublisherQueueData (
+    pk varchar(250) binary NOT NULL DEFAULT NULL,
+    timeCreated datetime NULL default NULL,
+    timePublished datetime NULL default NULL,
+    publishStatus int(11) NOT NULL DEFAULT '0',
+    tryCounter int(11) NOT NULL DEFAULT '0',
+    fingerprint varchar(250) binary NULL DEFAULT NULL,
+    publisherId int(11) NOT NULL DEFAULT '0',
+    volatileData text NULL DEFAULT NULL,
+    PRIMARY KEY (pk)
+);
+
 DROP TABLE ServiceData;
 CREATE TABLE ServiceData (
     id int(11) NOT NULL DEFAULT '0',

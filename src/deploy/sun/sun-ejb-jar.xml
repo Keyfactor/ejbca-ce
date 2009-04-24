@@ -29,6 +29,17 @@
         </ejb>
 
         <ejb>
+            <ejb-name>PublisherQueueData</ejb-name>
+
+            <jndi-name>PublisherQueueData</jndi-name>
+
+            <cmp>
+
+            </cmp>
+
+        </ejb>
+
+        <ejb>
             <ejb-name>CertReqHistoryData</ejb-name>
 
             <jndi-name>CertReqHistoryData</jndi-name>
@@ -341,6 +352,13 @@
             <ejb-name>PublisherSession</ejb-name>
 
             <jndi-name>PublisherSession</jndi-name>
+
+        </ejb>
+
+        <ejb>
+            <ejb-name>PublisherQueueSession</ejb-name>
+
+            <jndi-name>PublisherQueueSession</jndi-name>
 
         </ejb>
 

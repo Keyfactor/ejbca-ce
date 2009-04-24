@@ -49,11 +49,6 @@ public interface ICustomPublisher {
 	public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)throws PublisherException;
 	
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#revokeCertificate
-	 */    
-	public abstract void revokeCertificate(Admin admin, Certificate cert, int reason)throws PublisherException;
-	
-	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
 	 */    
 	public abstract void testConnection(Admin admin) throws PublisherConnectionException;

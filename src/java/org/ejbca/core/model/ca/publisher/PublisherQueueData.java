@@ -1,0 +1,124 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
+package org.ejbca.core.model.ca.publisher;
+
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+
+
+/**
+ * Value object holding the data contained in a PublisherQueueData record in the database. 
+ *
+ * @author Tomas Gustavsson
+ * @version $Id$
+ */
+public class PublisherQueueData implements java.io.Serializable {
+
+	private static final Logger log = Logger.getLogger(PublisherQueueData.class);
+
+	public static final int STATUS_SUCCESS = 10; // If the entry has been published successfully
+    public static final int STATUS_PENDING = 20; // If we should retry publishing
+    public static final int STATUS_FAILED = 30; // If publishing failed completely so we will not try again
+    
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = 100L;
+    
+    // private fields.
+    private String pk;
+	private Date timeCreated;
+    private Date timePublish;
+    private int publishStatus;
+    private int tryCounter;
+    private String fingerprint;
+    private int publisherId;
+    private PublisherQueueVolatileData volatileData;
+            
+    
+    // Public constants
+
+    // Public methods.
+    
+	public PublisherQueueData(String pk, Date timeCreated, Date timePublish,
+			int publishStatus, int tryCounter, String fingerprint,
+			int publisherId, PublisherQueueVolatileData volatileData) {
+		super();
+		this.pk = pk;
+		this.timeCreated = timeCreated;
+		this.timePublish = timePublish;
+		this.publishStatus = publishStatus;
+		this.tryCounter = tryCounter;
+		this.fingerprint = fingerprint;
+		this.publisherId = publisherId;
+		this.volatileData = volatileData;
+	}
+    
+    public String getPk() {
+		return pk;
+	}
+	public void setPk(String pk) {
+		this.pk = pk;
+	}
+	public Date getTimeCreated() {
+		return timeCreated;
+	}
+	public void setTimeCreated(Date timeCreated) {
+		this.timeCreated = timeCreated;
+	}
+	public Date getTimePublish() {
+		return timePublish;
+	}
+	public void setTimePublish(Date timePublish) {
+		this.timePublish = timePublish;
+	}
+	public int getPublishStatus() {
+		return publishStatus;
+	}
+	public void setPublishStatus(int publishStatus) {
+		this.publishStatus = publishStatus;
+	}
+	public int getTryCounter() {
+		return tryCounter;
+	}
+	public void setTryCounter(int tryCounter) {
+		this.tryCounter = tryCounter;
+	}
+	public String getFingerprint() {
+		return fingerprint;
+	}
+	public void setFingerprint(String fingerprint) {
+		this.fingerprint = fingerprint;
+	}
+	public int getPublisherId() {
+		return publisherId;
+	}
+	public void setPublisherId(int publisherId) {
+		this.publisherId = publisherId;
+	}
+	public PublisherQueueVolatileData getVolatileData() {
+		return volatileData;
+	}
+	public void setVolatileData(PublisherQueueVolatileData volatileData) {
+		this.volatileData = volatileData;
+	}
+    
+}

@@ -112,13 +112,6 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException{
-		this.getCustomPublisher().revokeCertificate(admin,cert,reason);
-	}
-    
-	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
-	 */    
 	public void testConnection(Admin admin) throws PublisherConnectionException{
         this.getCustomPublisher().testConnection(admin);
 	} 

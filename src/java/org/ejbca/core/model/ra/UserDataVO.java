@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ra;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -22,6 +23,7 @@ import javax.ejb.EJBException;
 import org.ejbca.core.ejb.ra.UserDataBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.Base64GetHashMap;
+import org.ejbca.util.Base64PutHashMap;
 import org.ejbca.util.StringTools;
 
 
@@ -278,5 +280,21 @@ public class UserDataVO implements Serializable {
             }
         }
         return returnval;
+    }
+    
+    public static String extendedInformationToStringData(ExtendedInformation extendedinformation) throws UnsupportedEncodingException {
+    	String ret = null;
+    	if(extendedinformation != null){
+            // We must base64 encode string for UTF safety
+            HashMap a = new Base64PutHashMap();
+            a.putAll((HashMap)extendedinformation.saveData());
+
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+    		encoder.writeObject(a);
+    		encoder.close();
+    		ret = baos.toString("UTF8");
+    	}
+    	return ret;
     }
 }

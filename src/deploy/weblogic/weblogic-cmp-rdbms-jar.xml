@@ -951,6 +951,46 @@
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
+      <ejb-name>PublisherQueueData</ejb-name>
+      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+      <table-map>
+      <table-name>PublisherQueueData</table-name>
+      <field-map>
+         <cmp-field>pk</cmp-field>
+         <dbms-column>pk</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>timeCreated</cmp-field>
+         <dbms-column>timeCreated</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>timePublished</cmp-field>
+         <dbms-column>timePublished</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>publishStatus</cmp-field>
+         <dbms-column>publishStatus</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>tryCounter</cmp-field>
+         <dbms-column>tryCounter</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>fingerprint</cmp-field>
+         <dbms-column>fingerprint</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>publisherId</cmp-field>
+         <dbms-column>publisherId</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>volatileData</cmp-field>
+         <dbms-column>volatileData</dbms-column>
+      </field-map>
+      </table-map>
+
+   </weblogic-rdbms-bean>
+   <weblogic-rdbms-bean>
       <ejb-name>CertificateProfileData</ejb-name>
       <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>

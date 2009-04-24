@@ -1038,17 +1038,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
     	CertificateDataLocal rev = certHome.findByPrimaryKey(revpk); 
     	String username = rev.getUsername();
+    	String cafp = rev.getCaFingerprint();
+    	int type = rev.getType();
     	String serialNo = CertTools.getSerialNumber(certificate).toString(16); // for logging
     	if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
     			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
     		rev.setStatus(CertificateDataBean.CERT_REVOKED);
-    		rev.setRevocationDate(new Date());
+    		Date revocationDate = new Date();
+    		rev.setRevocationDate(revocationDate);
     		rev.setRevocationReason(reason);            	  
     		String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
     		getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
     		if (publishers != null) {
-    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, reason);
+    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, cafp, type, reason, revocationDate.getTime());
     		}            	  
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {

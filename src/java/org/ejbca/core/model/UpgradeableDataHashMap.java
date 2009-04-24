@@ -79,9 +79,18 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     	this.data = (HashMap) data;
     	
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
-    		upgrade();            
+    		upgrade();     
+    		isUpgraded = true;
     	}
     }
+
+    /** So you can poll to see if the data has been upgraded
+     * 
+     * @return true if data has been upgraded, false otherwise
+     */
+    public boolean isUpgraded() {
+		return isUpgraded;
+	}
 
     /**
      * Function that should handle the update if of the data in the class so it's up to date with
@@ -90,5 +99,6 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     public abstract void upgrade();
 
     protected HashMap data;
-    public static final String VERSION = "version";
+    private boolean isUpgraded = false;
+	public static final String VERSION = "version";
 }

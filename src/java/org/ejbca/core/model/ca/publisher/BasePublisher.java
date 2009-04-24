@@ -16,6 +16,7 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -71,6 +72,9 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * to not publish the certificate, for instance if revoke removes a certificate from LDAP,
      * re-publishing the certificate should not add it again if the status is revoked.
      *
+     * To revoke a certificate (already revoked by the CA) call with status=CertificateDataBean.CERT_ACTIVE, the Publisher decides what to do, if
+     * anything.
+     * 
      * @param incert The certificate to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param username Username of end entity owning the certificate.
@@ -99,18 +103,6 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @throws PublisherException if a communication or other error occurs.
      */    
     public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException;
-    
-    /**
-     * Revokes a certificate (already revoked by the CA), the Publisher decides what to do, if
-     * anything.
-     *
-     * @param cert The DER coded Certificate that has been revoked.
-     * @param username the username of the user holding the certificate
-     * @param reason revocation reason, from RevokedCertInfo.XX
-     *
-     * @throws PublisherException if a communication or other error occurs.
-     */
-    public abstract void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException;
     
     /**
      * Method used to test the connection to a publisher.

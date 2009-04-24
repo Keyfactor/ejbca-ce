@@ -302,6 +302,20 @@ CREATE TABLE publisherdata (
 CONSTRAINT pk_publisherdata PRIMARY KEY (id)
 );
 
+DROP TABLE PUBLISHERQUEUEDATA;
+
+CREATE TABLE publisherqueuedata (
+  pk TEXT NOT NULL, 
+  timeCreated TIMESTAMP,
+  timePublished TIMESTAMP,
+  publishStatus INT4 NOT NULL,
+  tryCounter INT4 NOT NULL,
+  fingerprint TEXT,
+  publisherId INT4 NOT NULL,
+  volatileData TEXT,
+CONSTRAINT pk_publisherqueuedata PRIMARY KEY (pk)
+);
+
 DROP TABLE SERVICEDATA;
 
 CREATE TABLE servicedata (

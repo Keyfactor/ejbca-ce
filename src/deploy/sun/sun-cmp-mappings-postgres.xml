@@ -40,6 +40,57 @@
         </entity-mapping>
 
         <entity-mapping>
+            <ejb-name>PublisherQueueData</ejb-name>
+            <table-name>publisherqueuedata</table-name>
+
+            <cmp-field-mapping>
+                <field-name>pk</field-name>
+                <column-name>pk</column-name>
+
+            </cmp-field-mapping>
+
+            <cmp-field-mapping>
+                <field-name>timeCreated</field-name>
+                <column-name>timecreated</column-name>
+
+            </cmp-field-mapping>
+
+            <cmp-field-mapping>
+                <field-name>timePublished</field-name>
+                <column-name>timepublished</column-name>
+
+            </cmp-field-mapping>
+
+            <cmp-field-mapping>
+                <field-name>publishStatus</field-name>
+                <column-name>publishstatus</column-name>
+
+            </cmp-field-mapping>
+
+            <cmp-field-mapping>
+                <field-name>tryCounter</field-name>
+                <column-name>trycounter</column-name>
+
+            </cmp-field-mapping>
+            <cmp-field-mapping>
+                <field-name>fingerprint</field-name>
+                <column-name>fingerprint</column-name>
+
+            </cmp-field-mapping>
+            <cmp-field-mapping>
+                <field-name>publisherId</field-name>
+                <column-name>publisherid</column-name>
+
+            </cmp-field-mapping>
+            <cmp-field-mapping>
+                <field-name>volatileData</field-name>
+                <column-name>volatiledata</column-name>
+
+            </cmp-field-mapping>
+
+        </entity-mapping>
+
+        <entity-mapping>
             <ejb-name>CertReqHistoryData</ejb-name>
             <table-name>certreqhistorydata</table-name>
 

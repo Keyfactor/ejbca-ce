@@ -100,29 +100,32 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
         if (log.isTraceEnabled()) {
         	log.trace(">storeCertificate, Storing Certificate for user: " + username);	
         }
-        // Don't publish non-active certificates
-        if (status != CertificateDataBean.CERT_ACTIVE) {
-        	return true;
+        
+        if ( (status == CertificateDataBean.CERT_REVOKED) || (status == CertificateDataBean.CERT_TEMP_REVOKED) ) {
+        	// Call separate script for revocation
+        	revokeCertificate(admin, incert, revocationReason);
+        } else if (status == CertificateDataBean.CERT_ACTIVE) {
+            // Don't publish non-active certificates
+            // Make sure that an external command was specified
+    		if ( certExternalCommandFileName == null ) {
+    			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", certExternalCommandPropertyName);
+            	log.error(msg);
+    			throw new PublisherException(msg);
+    		}
+    		// Run internal method to create tempfile and run the command
+    		List arguments = new ArrayList();	//<String>
+    		arguments.add(String.valueOf(type));
+    		try {
+    			arguments.add(CertTools.getSubjectDN(incert));
+    			arguments.add(CertTools.getIssuerDN(incert));
+    			arguments.add(CertTools.getSerialNumberAsString(incert));
+    			runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError, arguments);
+    		} catch (CertificateEncodingException e) {
+    			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
+            	log.error(msg);
+    			throw new PublisherException(msg);
+    		}        	
         }
-        // Make sure that an external command was specified
-		if ( certExternalCommandFileName == null ) {
-			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", certExternalCommandPropertyName);
-        	log.error(msg);
-			throw new PublisherException(msg);
-		}
-		// Run internal method to create tempfile and run the command
-		List arguments = new ArrayList();	//<String>
-		arguments.add(String.valueOf(type));
-		try {
-			arguments.add(CertTools.getSubjectDN(incert));
-			arguments.add(CertTools.getIssuerDN(incert));
-			arguments.add(CertTools.getSerialNumberAsString(incert));
-			runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError, arguments);
-		} catch (CertificateEncodingException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
-        	log.error(msg);
-			throw new PublisherException(msg);
-		}
 		return true;
 	} // storeCertificate
 
@@ -147,12 +150,11 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	}
 
 	/**
-	 * Writes crtificate to temporary file and executes an external command with the full pathname
+	 * Writes certificate to temporary file and executes an external command with the full pathname
 	 * of the temporary file as argument. The temporary file is the encoded form of the certificate
 	 * e.g. X.509 certificates would be encoded as ASN.1 DER. All parameters but cert are ignored.
 	 * @param cert The certificate
 	 * 
-	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#revokeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, int)
 	 */
 	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException {
         log.trace(">revokeCertificate, Rekoving Certificate");
