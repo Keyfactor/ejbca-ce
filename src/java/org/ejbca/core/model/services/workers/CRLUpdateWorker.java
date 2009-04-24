@@ -42,7 +42,7 @@ public class CRLUpdateWorker extends BaseWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work() throws ServiceExecutionFailedException {
-		// A metaphor used to not run parallel CRL generation jobs if it is slow
+		// A semaphore used to not run parallel CRL generation jobs if it is slow
 		// in generating CRLs, and this job runs very often
 		if (!running) {
 			try {
