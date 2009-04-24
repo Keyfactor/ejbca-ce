@@ -464,8 +464,13 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
     		} else {
     			log.info("Worker has empty classpath for service "+serviceName);
     		}
-		} catch (Exception e) {						
-			log.error("Worker is missconfigured, check the classpath",e);
+		} catch (Exception e) {
+			// Only display a real error if it is a worker that we are actually using
+			if (serviceConfiguration.isActive()) {
+				log.error("Worker is missconfigured, check the classpath",e);
+			} else {
+				log.info("Worker is missconfigured, check the classpath: "+e.getMessage());
+			}
 		}    	
     	
 		return worker;
