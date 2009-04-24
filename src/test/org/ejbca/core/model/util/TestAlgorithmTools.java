@@ -13,18 +13,11 @@
 
 package org.ejbca.core.model.util;
 
-import java.math.BigInteger;
-import java.security.PublicKey;
-import java.security.interfaces.DSAParams;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Collection;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
-
-import org.bouncycastle.crypto.params.ECPublicKeyParameters;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
+import static org.ejbca.core.model.util.AlgorithmToolsHelper.*;
 
 /**
  * Tests for AlgorithmTools.
@@ -81,29 +74,4 @@ public class TestAlgorithmTools extends TestCase {
 
 	public void testIsCompatibleSigAlg() {
 	}
-	
-	private static class MockPublicKey implements PublicKey {
-		@Override public String getAlgorithm() { return null; }
-		@Override public byte[] getEncoded() { return null; }
-		@Override public String getFormat() { return null; }		
-	}
-	
-	private static class MockNotSupportedPublicKey extends MockPublicKey {}
-	
-	private static class MockRSAPublicKey extends MockPublicKey implements RSAPublicKey {
-		@Override public BigInteger getPublicExponent() { return null; }
-		@Override public BigInteger getModulus() { return null; }
-	}
-	
-	private static class MockDSAPublicKey extends MockPublicKey implements DSAPublicKey {
-		@Override public BigInteger getY() { return null; }
-		@Override public DSAParams getParams() { return null; }
-	}
-	
-	private static class MockECDSAPublicKey extends JCEECPublicKey {
-		public MockECDSAPublicKey() {
-			super("ECDSA", new ECPublicKeyParameters(null, null));
-		}
-	}
-
 }

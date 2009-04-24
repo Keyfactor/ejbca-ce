@@ -13,17 +13,13 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
-import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.ECPoint;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -33,7 +29,6 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPReq;
@@ -45,6 +40,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import static org.ejbca.core.protocol.ocsp.OcspUtilMockups.*;
 
 /**
  * 
@@ -146,92 +142,9 @@ public class TestOcspUtil extends TestCase {
 		assertNull(OCSPUtil.getSigningAlgFromAlgSelection("", dsa));
 	}
 	
-	private static class MockRSAPublicKey implements RSAPublicKey {
-
-		@Override
-		public BigInteger getPublicExponent() {
-			return null;
-		}
-
-		@Override
-		public String getAlgorithm() {
-			return null;
-		}
-
-		@Override
-		public byte[] getEncoded() {
-			return null;
-		}
-
-		@Override
-		public String getFormat() {
-			return null;
-		}
-
-		@Override
-		public BigInteger getModulus() {
-			return null;
-		}
-
-	};
 	
-	private static class MockECDSAPublicKey implements ECPublicKey {
-
-		@Override
-		public ECPoint getW() {
-			return null;
-		}
-
-		@Override
-		public String getAlgorithm() {
-			return null;
-		}
-
-		@Override
-		public byte[] getEncoded() {
-			return null;
-		}
-
-		@Override
-		public String getFormat() {
-			return null;
-		}
-
-		@Override
-		public ECParameterSpec getParams() {
-			return null;
-		}
-
-	};
 	
-	private static class MockDSAPublicKey implements DSAPublicKey {
-
-		@Override
-		public BigInteger getY() {
-			return null;
-		}
-
-		@Override
-		public DSAParams getParams() {
-			return null;
-		}
-
-		@Override
-		public String getAlgorithm() {
-			return null;
-		}
-
-		@Override
-		public byte[] getEncoded() {
-			return null;
-		}
-
-		@Override
-		public String getFormat() {
-			return null;
-		}
-		
-	}
+	
 	
 	private static byte[] sceprap12 = Base64
 	.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCA+gwgDCABgkqhkiG9w0BBwGggCSABIID"+
