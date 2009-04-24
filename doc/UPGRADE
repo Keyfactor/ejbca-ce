@@ -24,7 +24,7 @@ SELECT, UPDATE, INSERT and DELETE.
 
 From EJBCA 3.8.x to EJBCA 3.9.x
 -------------------------------
-Upgrade from EJBCA 3.8.x to 3.9.x is a plug-in upgrade.
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 
 If you are upgrading a cluster, you should run the upgrade process with only one node running,
 and then simply update the software on the other nodes.
@@ -40,9 +40,15 @@ and then simply update the software on the other nodes.
 
 5. Go into the admin-GUI and verify you settings.
 
-You should be able to upgrade from EJBCA 3.1.x directly to 3.9.x, by following the same instructions
+EJBCA 3.9 has a new table in the database. If you are using JBOss this is created automatically for you.
+If you are using another application server, created the table in your database using the create statement for
+the table PublisherQueueData from one of the create-tables scripts in doc/howto.
+ 
+You should be able to upgrade from EJBCA 3.2.x directly to 3.9.x, by following the same instructions
 as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
 Also see instructions below for additional issues when upgrading all the way from a much older version.
+
+Note! Upgrades from EJBCA 3.1.x is no longer supported.
 
 Note! If you are using the external RA you need to upgrade to ExtRA 3.9 and follow upgrade instructions 
 in the ExtRA package.
