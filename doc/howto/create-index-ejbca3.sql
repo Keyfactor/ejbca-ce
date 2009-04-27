@@ -60,3 +60,7 @@ create index accessrules_idx1 on AccessRulesData (AdminGroupData_accessRules);
 
 -- Indexes on AdminEntityData
 create index adminentity_idx1 on AdminEntityData (AdminGroupData_adminEntities);
+
+-- Indexes on PublisherQueueData
+create index publisherqueue_idx1 on PublisherQueueData (publisherId, publishStatus);
+create index publisherqueue_idx2 on PublisherQueueData (fingerprint);

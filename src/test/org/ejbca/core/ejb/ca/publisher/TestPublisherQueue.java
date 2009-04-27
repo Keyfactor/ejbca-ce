@@ -102,9 +102,8 @@ public class TestPublisherQueue extends TestCase {
     	assertEquals(0,d.getTryCounter());
     	assertNull(d.getVolatileData());
     	
-    	Date now = new Date();
-    	remote.updateData(d.getPk(), PublisherQueueData.STATUS_SUCCESS, now, 4);
-
+    	String xxpk = d.getPk(); // Keep for later so we can set to success
+    	
     	PublisherQueueVolatileData vd = new PublisherQueueVolatileData();
     	vd.setUsername("foo");
     	vd.setPassword("bar");
@@ -122,10 +121,10 @@ public class TestPublisherQueue extends TestCase {
         	d = i.next();
         	if (d.getFingerprint().equals("XX")) {
         		assertEquals(PublisherQueueData.PUBLISH_TYPE_CERT, d.getPublishType());
-            	assertNotNull(d.getTimePublish());
+            	assertNull(d.getTimePublish());
             	assertNotNull(d.getTimeCreated());
-            	assertEquals(PublisherQueueData.STATUS_SUCCESS, d.getPublishStatus());
-            	assertEquals(4,d.getTryCounter());
+            	assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
+            	assertEquals(0,d.getTryCounter());
             	testedXX = true;
         	}
         	if (d.getFingerprint().equals("YY")) {
@@ -144,6 +143,17 @@ public class TestPublisherQueue extends TestCase {
     	assertTrue(testedXX);
     	assertTrue(testedYY);
     	
+    	Date now = new Date();
+    	remote.updateData(xxpk, PublisherQueueData.STATUS_SUCCESS, now, 4);
+    	c = remote.getEntriesByFingerprint("XX");
+    	assertEquals(1, c.size());
+    	i = c.iterator();
+    	d = i.next();
+    	assertEquals("XX", d.getFingerprint());
+    	assertNotNull(d.getTimePublish());
+    	assertNotNull(d.getTimeCreated());
+    	assertEquals(PublisherQueueData.STATUS_SUCCESS, d.getPublishStatus());
+    	assertEquals(4,d.getTryCounter());    	
     }
 
     public void test02ExternalOCSPPublisherFail() throws Exception {
@@ -216,8 +226,14 @@ public class TestPublisherQueue extends TestCase {
     }
 
     public void test99CleanUp() throws Exception {
-    	Collection<PublisherQueueData> c = remote.getPendingEntriesForPublisher(123456);
+    	Collection<PublisherQueueData> c = remote.getEntriesByFingerprint("XX");
     	Iterator<PublisherQueueData> i = c.iterator();
+    	while (i.hasNext()) {
+    		PublisherQueueData d = i.next();
+    		remote.removeQueueData(d.getPk());
+    	}    
+    	c = remote.getEntriesByFingerprint("YY");
+    	i = c.iterator();
     	while (i.hasNext()) {
     		PublisherQueueData d = i.next();
     		remote.removeQueueData(d.getPk());

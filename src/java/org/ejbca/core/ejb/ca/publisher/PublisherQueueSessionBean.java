@@ -124,7 +124,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     } // addEntry
 
     /**
-     * Finds all entries for a specific publisherId.
+     * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
 	 *
 	 * @return Collection of PublisherQueueData, never null
 	 * 
@@ -134,7 +134,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
      */
     public Collection getPendingEntriesForPublisher(int publisherId) {
     	if (log.isTraceEnabled()) {
-            log.trace(">getEntriesForPublisher(publisherId: " + publisherId + ")");
+            log.trace(">getPendingEntriesForPublisher(publisherId: " + publisherId + ")");
     	}
     	Collection datas = null;
     	Collection ret = new ArrayList();
@@ -151,10 +151,43 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    		ret.add(pqd);
 	    	}			
 		}
-        trace("<getEntriesForPublisher()");
+        trace("<getPendingEntriesForPublisher()");
     	return ret;
-    } // getEntriesForPublisher
+    } // getPendingEntriesForPublisher
 
+    /**
+     * Finds all entries for a specific fingerprint.
+	 *
+	 * @return Collection of PublisherQueueData, never null
+	 * 
+     * @throws CreateException if the entry can not be created
+     *
+     * @ejb.interface-method view-type="both"
+     */
+    public Collection getEntriesByFingerprint(String fingerprint) {
+    	if (log.isTraceEnabled()) {
+            log.trace(">getEntriesByFingerprint(fingerprint: " + fingerprint + ")");
+    	}
+    	Collection datas = null;
+    	Collection ret = new ArrayList();
+		try {
+			datas = queuehome.findDataByFingerprint(fingerprint);
+		} catch (FinderException e) {
+			log.debug("No publisher queue entries found for fingerprint "+fingerprint);
+		}
+		if (datas != null) {
+	    	Iterator iter = datas.iterator();
+	    	while (iter.hasNext()) {
+	    		PublisherQueueDataLocal d = (PublisherQueueDataLocal)iter.next();
+	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), d.getTimeCreated(), d.getTimePublish(), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
+	    		ret.add(pqd);
+	    	}			
+		}
+        trace("<getEntriesByFingerprint()");
+    	return ret;
+    } // getEntriesByFingerprint
+
+    
     /** Updates a record with new status
      * 
      * @param pk primary key of data entry

@@ -73,11 +73,16 @@ import org.ejbca.util.GUIDGenerator;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.publisher.PublisherQueueDataLocal"
  *
-* @ejb.finder
-*   description="finds queue data by publisherId"
-*   signature="java.util.Collection findDataByPublisherIdAndStatus(int publisherId, int status)"
-*   query="SELECT OBJECT(a) from PublisherQueueDataBean a WHERE a.publisherId=?1 and a.publishStatus=?2"
+ * @ejb.finder
+ *   description="finds queue data by publisherId"
+ *   signature="java.util.Collection findDataByPublisherIdAndStatus(int publisherId, int status)"
+ *   query="SELECT OBJECT(a) from PublisherQueueDataBean a WHERE a.publisherId=?1 and a.publishStatus=?2"
  * 
+ * @ejb.finder
+ *   description="finds queue data by fingerprint"
+ *   signature="java.util.Collection findDataByFingerprint(java.lang.String fingerprint)"
+ *   query="SELECT OBJECT(a) from PublisherQueueDataBean a WHERE a.fingerprint=?1"
+ *   
  * @ejb.transaction type="Required"
  *
  * @author Tomas Gustavsson
