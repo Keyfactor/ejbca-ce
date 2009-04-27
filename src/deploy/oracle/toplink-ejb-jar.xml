@@ -2194,6 +2194,10 @@
                <opm:field name="USERNAME" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>tag</opm:attribute-name>
+               <opm:field name="TAG" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
                <opm:attribute-name>fingerprint</opm:attribute-name>
                <opm:field name="FINGERPRINT" xsi:type="opm:column"/>
             </opm:attribute-mapping>

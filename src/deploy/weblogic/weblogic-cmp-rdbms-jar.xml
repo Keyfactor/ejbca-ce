@@ -522,6 +522,10 @@
          <cmp-field>username</cmp-field>
          <dbms-column>username</dbms-column>
       </field-map>
+      <field-map>
+         <cmp-field>tag</cmp-field>
+         <dbms-column>tag</dbms-column>
+      </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>

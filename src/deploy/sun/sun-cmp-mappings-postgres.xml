@@ -1104,6 +1104,12 @@
 
             </cmp-field-mapping>
 
+            <cmp-field-mapping>
+                <field-name>tag</field-name>
+                <column-name>tag</column-name>
+
+            </cmp-field-mapping>
+
         </entity-mapping>
 
         <entity-mapping>

@@ -113,6 +113,7 @@ CREATE TABLE CertificateData (
     revocationReason integer NOT NULL,
     base64Cert long varchar,
     username varchar(256),
+    tag varchar(256),
     PRIMARY KEY (fingerprint)
 );
 

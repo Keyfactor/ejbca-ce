@@ -113,6 +113,7 @@ CREATE TABLE CertificateData (
     revocationReason int(11) NOT NULL DEFAULT '0',
     base64Cert text NULL DEFAULT NULL,
     username varchar(250) binary NULL DEFAULT NULL,
+    tag varchar(250) binary NULL DEFAULT NULL,
     PRIMARY KEY (fingerprint)
 );
 

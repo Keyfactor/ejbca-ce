@@ -98,6 +98,7 @@ CREATE TABLE certificatedata (
   revocationReason INT4 NOT NULL, 
   base64Cert TEXT, 
   username TEXT, 
+  tag TEXT, 
 CONSTRAINT pk_certificatedata PRIMARY KEY (fingerprint)
 );
 
