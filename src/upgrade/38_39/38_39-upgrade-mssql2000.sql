@@ -1,0 +1,1 @@
+ALTER TABLE CertificateData ADD tag VARCHAR(256) DEFAULT NULL;
