@@ -66,6 +66,7 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.keystore.P11Slot.P11SlotUser;
@@ -520,8 +521,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     m_log.debug("No CA for caid "+this.caid+" found.");
                     return;
                 }
-                final org.ejbca.core.protocol.ws.client.gen.UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
-                final String subjectDN = PrivateKeyContainerKeyStore.this.certificate.getSubjectDN().getName();
+                final UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
+                final String subjectDN = CertTools.getSubjectDN(PrivateKeyContainerKeyStore.this.certificate);
                 match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
                 match.setMatchvalue(subjectDN);
                 match.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_DN);
