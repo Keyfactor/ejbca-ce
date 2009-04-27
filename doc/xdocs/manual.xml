@@ -2607,9 +2607,9 @@ If an attacker gets hold of the encrypted value it is easy to decrypt using the 
 </p>
 </subsection>
 
-<subsection name="HSMs and ECDSA">
+<subsection name="HSMs and DSA or ECDSA">
 <p>
-Support for ECDSA in HSMs are dependant on the support for ECDSA in the HSM manufacturers JCE provider.
+Support for DSA or ECDSA in HSMs are dependant on the support for the algorithms in the HSM manufacturers JCE provider.
 You have to check if that support is available.
 </p>
 </subsection>
@@ -4337,7 +4337,7 @@ All certificates signed by an ECDSA CA will naturally use ECDSA signatures, rega
 </p>
 <p>
 When batch generating client keys using the cli command 'bin/ejbca.sh batch' you configure the type of client keys that will 
-be generated in the file <i>bin/batch.properties</i>. The possible parameters are explained there. 
+be generated in the file <i>bin/batchtool.properties</i>. The possible parameters are explained there. 
 If using the implicitlyCA facility the same parameters as configured for the ca in <i>conf/ejbca.properties</i> are used.
 </p>
 </subsection>

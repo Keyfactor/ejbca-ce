@@ -14,6 +14,7 @@
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
 <li>Unlimited number of Root CAs and SubCAs. Request cross certificates and bridge certificates from other CAs and Bridge CAs. Issue cross certificates to other CAs.</li>
 <li>Supports RSA key algorithm up to 4096 bits.</li>
+<li>Supports DSA key algorithm with 1024 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
 <li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-256.</li>
 <li>Support for X.509 certificates and Card Verifiable certificates (CVC used by EU EAC ePassports).</li> 
