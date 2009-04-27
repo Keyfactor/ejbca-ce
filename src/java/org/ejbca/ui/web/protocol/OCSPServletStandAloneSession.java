@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.protocol;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,6 +53,9 @@ import javax.servlet.ServletException;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.InternalResources;
@@ -61,12 +65,15 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
+import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
+import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.keystore.P11Slot.P11SlotUser;
@@ -404,10 +411,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     private class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
         final private char password[];
         final private String alias;
-        final private X509Certificate certificate;
+        private X509Certificate certificate;
         private PrivateKey privateKey;
         private KeyRenewer keyRenewer;
         private KeyStore keyStore;
+        private boolean isUpdatingKey;
         PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert) throws Exception {
             this.alias = a;
             this.password = pw;
@@ -437,7 +445,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#getKey()
          */
-        public PrivateKey getKey() throws Exception {
+        public synchronized PrivateKey getKey() throws Exception {
+            while( this.isUpdatingKey ) {
+                this.wait();
+            }
             return this.privateKey;
         }
 		/* (non-Javadoc)
@@ -489,38 +500,71 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             private void updateKey() {
                 if ( !this.doUpdateKey )
                     return;
-                final EjbcaWS ejbcaWS;{
-                    final URL ws_url;
-                    try {
-                        ws_url = new URL(OCSPServletStandAloneSession.this.webURL + "?wsdl");
-                    } catch (MalformedURLException e) {
-                        m_log.debug("Problem with URL: '"+OCSPServletStandAloneSession.this.webURL+"'", e);
-                        return;
-                    }
-                    final QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
-                    m_log.debug("web service. URL: "+ws_url+" QName: "+qname);
-                    ejbcaWS = new EjbcaWSService(ws_url, qname).getEjbcaWSPort();
+                final EjbcaWS ejbcaWS = getEjbcaWS();
+                if ( ejbcaWS==null ) {
+                    return;
                 }
-                final String caName;{
+                final String caName = getCAName(ejbcaWS);
+                if ( caName==null ) {
+                    m_log.debug("No CA for caid "+this.caid+" found.");
+                    return;
+                }
+                final UserDataVOWS userData=getUserDataVOWS(ejbcaWS, caName);
+                if ( userData==null ) {
+                    return;
+                }
+                m_log.debug("user name found: "+ userData.getUsername());
+                synchronized(PrivateKeyContainerKeyStore.this) {
+                    try {
+                        PrivateKeyContainerKeyStore.this.isUpdatingKey = true;
+                        final KeyPair keyPair = generateKeyPair();
+                        if ( keyPair==null ) {
+                            return;
+                        }
+                        m_log.debug("public key: "+keyPair.getPublic() );
+                        if ( !editUser(ejbcaWS, userData) )
+                            return;
+                        final X509Certificate certChain[] = storeKey(ejbcaWS, userData, keyPair);
+                        if ( certChain==null )
+                            return;
+                        PrivateKeyContainerKeyStore.this.privateKey = keyPair.getPrivate();
+                        PrivateKeyContainerKeyStore.this.certificate = certChain[0];
+                    } finally {
+                        PrivateKeyContainerKeyStore.this.isUpdatingKey = false;
+                        PrivateKeyContainerKeyStore.this.notifyAll();
+                    }
+                }
+                m_log.info("New OCSP signing key generated for CA '"+ userData.getCaName()+"'. Username: '"+userData.getUsername()+"'. Subject DN: '"+userData.getSubjectDN()+"'.");
+            }
+            private EjbcaWS getEjbcaWS() {
+                final URL ws_url;
+                try {
+                    ws_url = new URL(OCSPServletStandAloneSession.this.webURL + "?wsdl");
+                } catch (MalformedURLException e) {
+                    m_log.debug("Problem with URL: '"+OCSPServletStandAloneSession.this.webURL+"'", e);
+                    return null;
+                }
+                final QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+                m_log.debug("web service. URL: "+ws_url+" QName: "+qname);
+                return new EjbcaWSService(ws_url, qname).getEjbcaWSPort();
+            }
+            private String getCAName(EjbcaWS ejbcaWS) {
                     final Map<Integer, String> mCA = new HashMap<Integer, String>();
                     final Iterator<NameAndId> i;
                     try {
                         i = ejbcaWS.getAvailableCAs().iterator();
                     } catch (Exception e) {
                         m_log.error("WS not working", e);
-                        return;
+                        return null;
                     }
                     while( i.hasNext() ) {
                         final NameAndId nameAndId = i.next();
                         mCA.put(new Integer(nameAndId.getId()), nameAndId.getName());
                         m_log.debug("CA. id: "+nameAndId.getId()+" name: "+nameAndId.getName());
                     }
-                    caName = mCA.get(new Integer(this.caid));
-                }
-                if ( caName==null ) {
-                    m_log.debug("No CA for caid "+this.caid+" found.");
-                    return;
-                }
+                    return mCA.get(new Integer(this.caid));
+            }
+            private UserDataVOWS getUserDataVOWS(EjbcaWS ejbcaWS, String caName) {
                 final UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
                 final String subjectDN = CertTools.getSubjectDN(PrivateKeyContainerKeyStore.this.certificate);
                 match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
@@ -531,51 +575,98 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     result = ejbcaWS.findUser(match);
                 } catch (Exception e) {
                     m_log.error("WS not working", e);
-                    return;
+                    return null;
                 }
                 if ( result==null || result.size()<1) {
                     m_log.info("no match for subject DN:"+subjectDN);
-                    return;
+                    return null;
                 }
                 m_log.debug("at least one user found for cert with DN: "+subjectDN+" Trying to match it with CA name: "+caName);
-                final String userName;{
-                    String tmpName = null;
-                    final Iterator<UserDataVOWS> i = result.iterator();
-                    while ( i.hasNext() ) {
-                        final UserDataVOWS userData = i.next();
-                        if ( caName.equals(userData.getCaName()) ) {
-                            tmpName = userData.getUsername();
-                            break;
-                        }
+                UserDataVOWS userData = null;
+                final Iterator<UserDataVOWS> i = result.iterator();
+                while ( i.hasNext() ) {
+                    final UserDataVOWS tmpUserData = i.next();
+                    if ( caName.equals(tmpUserData.getCaName()) ) {
+                        userData = tmpUserData;
+                        break;
                     }
-                    if ( tmpName==null ) {
-                        m_log.error("No user found for certificate '"+subjectDN+"' on CA '"+caName+"'.");
-                        return;
-                    }
-                    userName = tmpName;
                 }
-                m_log.info("user name found: "+ userName);
+                if ( userData==null ) {
+                    m_log.error("No user found for certificate '"+subjectDN+"' on CA '"+caName+"'.");
+                    return null;
+                }
+                return userData;
+            }
+            private KeyPair generateKeyPair() {
 
-                final KeyPair keyPair; {
-                    final RSAPublicKey oldPublicKey; {
-                        final PublicKey tmpPublicKey = PrivateKeyContainerKeyStore.this.certificate.getPublicKey();
-                        if ( !(tmpPublicKey instanceof RSAPublicKey) ) {
-                            m_log.error("Only RSA keys could be renewed.");
-                            return;
-                        }
-                        oldPublicKey = (RSAPublicKey)tmpPublicKey;
+                final RSAPublicKey oldPublicKey; {
+                    final PublicKey tmpPublicKey = PrivateKeyContainerKeyStore.this.certificate.getPublicKey();
+                    if ( !(tmpPublicKey instanceof RSAPublicKey) ) {
+                        m_log.error("Only RSA keys could be renewed.");
+                        return null;
                     }
-                    final KeyPairGenerator kpg;
-                    try {
-                        kpg = KeyPairGenerator.getInstance("RSA", PrivateKeyContainerKeyStore.this.keyStore.getProvider());
-                        kpg.initialize(oldPublicKey.getModulus().bitLength());
-                        keyPair = kpg.generateKeyPair();
-                    } catch (Throwable e) {
-                        m_log.error("Key generation problem.", e);
-                        return;
-                    }
+                    oldPublicKey = (RSAPublicKey)tmpPublicKey;
                 }
-                m_log.debug("public key: "+keyPair.getPublic() );
+                final KeyPairGenerator kpg;
+                try {
+                    kpg = KeyPairGenerator.getInstance("RSA", PrivateKeyContainerKeyStore.this.keyStore.getProvider());
+                    kpg.initialize(oldPublicKey.getModulus().bitLength());
+                    return kpg.generateKeyPair();
+                } catch (Throwable e) {
+                    m_log.error("Key generation problem.", e);
+                    return null;
+                }
+            }
+            private boolean editUser(EjbcaWS ejbcaWS, UserDataVOWS userData) {
+                userData.setStatus(UserDataConstants.STATUS_NEW);
+                userData.setPassword("foo123");
+                try {
+                    ejbcaWS.editUser(userData);
+                } catch (Exception e) {
+                    m_log.error("Problem to edit user.", e);
+                    return false;
+                }
+                return true;
+            }
+            private X509Certificate[] storeKey(EjbcaWS ejbcaWS, UserDataVOWS userData, KeyPair keyPair) {
+                X509Certificate tmpCert = null;
+                final Iterator<X509Certificate> i;
+                try {
+                    final PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keyPair.getPublic(), new DERSet(),
+                                                                                             keyPair.getPrivate(), PrivateKeyContainerKeyStore.this.keyStore.getProvider().getName() );
+                    final CertificateResponse certificateResponse = ejbcaWS.pkcs10Request(userData.getUsername(), userData.getPassword(),
+                                                                                          new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+                    i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
+                } catch (Exception e) {
+                    m_log.error("Certificate generation problem.", e);
+                    return null;
+                }
+                while ( i.hasNext() ) {
+                    tmpCert = i.next();
+                    try {
+                        tmpCert.verify(this.caChain.get(0).getPublicKey());
+                    } catch (Exception e) {
+                        tmpCert = null;
+                        continue;
+                    }
+                    if ( keyPair.getPublic().equals(tmpCert.getPublicKey()) )
+                        break;
+                    tmpCert = null;
+                }
+                if ( tmpCert==null ) {
+                    m_log.error("No certificate signed by correct CA generated.");
+                    return null;
+                }
+                final List<X509Certificate> lCertChain = new ArrayList<X509Certificate>(this.caChain);
+                lCertChain.add(0, tmpCert);
+                final X509Certificate certChain[] = lCertChain.toArray(new X509Certificate[0]);
+                try {
+                    PrivateKeyContainerKeyStore.this.keyStore.setKeyEntry(PrivateKeyContainerKeyStore.this.alias, keyPair.getPrivate(), null, certChain);
+                } catch (KeyStoreException e) {
+                    m_log.error("Problem to store new key in HSM.", e);
+                    return null;
+                }
+                return certChain;
             }
             KeyRenewer(List<X509Certificate> _caChain, int _caid) {
                 this.caid = _caid;
@@ -958,9 +1049,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             this.mKeyFactory = f;
             this.providerHandler = ph;
         }
-        X509Certificate[] getCertificateChain() {
+        private X509Certificate[] getCertificateChain() {
+            return getCertificateChain(this.mKeyFactory.getCertificate());
+        }
+        private X509Certificate[] getCertificateChain(final X509Certificate entityCert) {
             final List<X509Certificate> entityChain = new ArrayList<X509Certificate>(this.mChain);
-            final X509Certificate entityCert = this.mKeyFactory.getCertificate();
             if ( entityCert==null ) {
                 m_log.error("CA "+this.mChain.get(0).getSubjectDN()+" has no signer.");
                 return null;
@@ -990,8 +1083,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 throw new ExtendedCAServiceRequestException(hsmErrorString+". Waited "+HSM_DOWN_ANSWER_TIME/1000+" seconds to throw the exception");
             }
             final PrivateKey privKey;
+            final X509Certificate entityCert;
 			try {
 				privKey = this.mKeyFactory.getKey();
+                entityCert = this.mKeyFactory.getCertificate();
             } catch (ExtendedCAServiceRequestException e) {
                 this.providerHandler.reload();
                 throw e;
@@ -1003,7 +1098,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 throw new ExtendedCAServiceRequestException(hsmErrorString);
             }
             try {
-                return OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, this.getCertificateChain());
+                return OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, getCertificateChain(entityCert));
             } catch( ExtendedCAServiceRequestException e) {
                 this.providerHandler.reload();
                 throw e;
