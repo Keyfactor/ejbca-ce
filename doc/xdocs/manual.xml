@@ -2501,6 +2501,8 @@ This service will try to re-publish entries from this queue. The specific settin
 <li><i>Publishers to check</i> - which publishers should this service check and re-publish for. You can run one service for each publisher or one service for all publishers.</li>
 </ul>
 </p>
+<p>To read on how the algorithm to prevent excessive database load etc is done, the easiest way is to read in the java file for class PublishQueueProcessWorker.
+</p>
 
 </subsection>
 

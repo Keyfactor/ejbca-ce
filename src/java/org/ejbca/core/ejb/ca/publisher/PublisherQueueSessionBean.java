@@ -13,6 +13,10 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -24,9 +28,11 @@ import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.util.JDBCUtil;
 
 
 /**
@@ -45,6 +51,11 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
  *
  * @weblogic.enable-call-by-reference True
  *
+ * @ejb.env-entry description="JDBC datasource to be used"
+ * name="DataSource"
+ * type="java.lang.String"
+ * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
+ * 
  * @ejb.ejb-external-ref description="The Publisher entity bean"
  *   view-type="local"
  *   ref-name="ejb/PublisherQueueDataLocal"
@@ -128,8 +139,6 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	 *
 	 * @return Collection of PublisherQueueData, never null
 	 * 
-     * @throws CreateException if the entry can not be created
-     *
      * @ejb.interface-method view-type="both"
      */
     public Collection getPendingEntriesForPublisher(int publisherId) {
@@ -156,12 +165,74 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     } // getPendingEntriesForPublisher
 
     /**
+     * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
+	 *
+	 * @param orderBy order by clause for the SQL to the database, for example "order by timeCreated desc".
+	 * 
+	 * @return Collection of PublisherQueueData, never null
+	 * 
+     * @ejb.interface-method view-type="both"
+     */
+    public Collection getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy) {
+    	if (log.isTraceEnabled()) {
+            log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
+    	}
+    	Collection ret = new ArrayList();
+    	Connection con = null;
+    	PreparedStatement ps = null;
+    	ResultSet result = null;
+    	try {
+    		// This should only list a few thousand certificates at a time, in case there
+    		// are really many entries.
+    		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+    		String sql = "select pk, timeCreated, timePublished, tryCounter, publishType, fingerprint from PublisherQueueData where publisherId=? and publishStatus=?";
+    		if (orderBy != null) {
+    			sql += " "+orderBy;
+    		}
+    		if (log.isDebugEnabled()) {
+        		log.debug("Executing SQL: "+sql);    			
+    		}
+    		ps = con.prepareStatement(sql);
+    		ps.setInt(1, publisherId);
+    		ps.setInt(2, PublisherQueueData.STATUS_PENDING);
+    		ps.setFetchSize(limit);
+    		ps.setMaxRows(limit);
+    		ps.setQueryTimeout(timeout);
+    		result = ps.executeQuery();
+    		while (result.next()) {
+    			String pk = result.getString(1);
+    			Date timeCreated = result.getDate(2);
+    			Date timePublished = result.getDate(3);
+    			int tryCounter = result.getInt(4);
+    			int publishType = result.getInt(5);
+    			String fingerprint = result.getString(6);
+	    		PublisherQueueData pqd = new PublisherQueueData(pk, timeCreated, timePublished, PublisherQueueData.STATUS_PENDING, tryCounter, publishType, fingerprint, publisherId, null);
+	    		try {
+					PublisherQueueDataLocal dl = queuehome.findByPrimaryKey(pk);
+					PublisherQueueVolatileData vol = dl.getPublisherQueueVolatileData();
+					pqd.setVolatileData(vol);
+					ret.add(pqd); // We finally have an object to return...
+					if (log.isDebugEnabled()) {
+						log.debug("Return pending record with pk "+pk+", and timeCreated "+timeCreated);
+					}
+				} catch (FinderException e) {
+					log.debug("All of a sudden entry with primaryKey vanished: "+pk);
+				}
+    		}
+    	} catch (SQLException e) {
+    		throw new EJBException(e);
+    	} finally {
+    		JDBCUtil.close(con, ps, result);
+    	}
+        trace("<getPendingEntriesForPublisherWithLimit()");
+    	return ret;
+    } // getPendingEntriesForPublisherWithLimit
+
+    /**
      * Finds all entries for a specific fingerprint.
 	 *
 	 * @return Collection of PublisherQueueData, never null
 	 * 
-     * @throws CreateException if the entry can not be created
-     *
      * @ejb.interface-method view-type="both"
      */
     public Collection getEntriesByFingerprint(String fingerprint) {

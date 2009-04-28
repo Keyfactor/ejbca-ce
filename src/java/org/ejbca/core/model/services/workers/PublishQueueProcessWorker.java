@@ -38,6 +38,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
  * Class processing the publisher queue. Can only run on instance in one VM on one node.
+ * See method docs below for information about algorithms used.
  * 
  * @author Tomas Gustavsson
  * @version $Id$
@@ -76,7 +77,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 					for (int i = 0; i < ids.length; i++) {
 						int publisherId = Integer.valueOf(ids[i]).intValue();
 						// Get everything from the queue for this publisher id
-						plainFifoTryAlwaysNoLimit(publisherId);
+						plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(publisherId);
 					}
 				} else {
 					log.debug("No publisher ids configured for worker.");
@@ -131,9 +132,43 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 	 */
 	private void plainFifoTryAlwaysNoLimit(int publisherId) {
 		Collection c = getPublishQueueSession().getPendingEntriesForPublisher(publisherId);
+		// This always published everything so no need for a loop as we have for plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated
+		doPublish(publisherId, c);
+	}
+
+	/** Publishing algorithm that is a plain fifo queue, but limited to selecting entries to republish at 100 records at a time. It will select from the database for this particular publisher id, and process 
+	 * the record that is returned one by one. The records are ordered by date, descending so the oldest record is returned first. 
+	 * Publishing is tried every time for every record returned, with no limit.
+     * Repeat this process as long as we actually manage to publish something this is because when publishing starts to work we want to publish everything in one go, if possible.
+     * However we don't want to publish more than 5000 certificates each time, because we want to commit to the database some time as well.
+	 * 
+	 * @param publisherId
+	 */
+	private void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(int publisherId) {
+		int successcount = 0;
+		// Repeat this process as long as we actually manage to publish something
+		// this is because when publishing starts to work we want to publish everything in one go, if possible.
+		// However we don't want to publish more than 5000 certificates each time, because we want to commit to the database some time as well.
+		int totalcount = 0;
+		do {
+			Collection c = getPublishQueueSession().getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
+			successcount = doPublish(publisherId, c);
+			totalcount += successcount;
+			log.debug("Totalcount="+totalcount);
+		} while ( (successcount > 0) && (totalcount < 5000) );
+	}
+
+	/**
+	 * @param publisherId
+	 * @param c
+	 * @return how many publishes that succeeded
+	 */
+	private int doPublish(int publisherId, Collection c) {
 		if (log.isDebugEnabled()) {
 			log.debug("Found "+c.size()+" certificates to republish for publisher "+publisherId);
 		}
+		int successcount = 0;
+		int failcount = 0;
 		Iterator iter = c.iterator();
 		while (iter.hasNext()) {
 			PublisherQueueData pqd = (PublisherQueueData)iter.next();
@@ -158,15 +193,31 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 			} catch (PublisherException e) {
 				// Publisher session have already logged this error nicely to getLogSession().log
 				log.debug(e.getMessage());
+				// We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
+				failcount++;
 			}
 			if (published) {
 				// Update with information that publishing was successful
 				getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, new Date(), pqd.getTryCounter());
+				successcount++; // jipeee update success counter
 			} else {
 				// Update with new tryCounter, but same status as before and no timePublished
 				int tryCount = pqd.getTryCounter()+1;
 				getPublishQueueSession().updateData(pqd.getPk(), pqd.getPublishStatus(), null, tryCount);								
 			}
+			// If we don't manage to publish anything, but fails on all the first ten ones we expect that this publisher is dead for now. We don't have to try with every record.
+			if ( (successcount == 0) && (failcount > 10) ) {
+				if (log.isDebugEnabled()) {
+					log.debug("Breaking out of publisher loop because everything seems to fail (at least the first 10 entries)");
+				}
+				break;
+			}
 		}
+		if (log.isDebugEnabled()) {
+			log.debug("Returning from publisher with "+successcount+" entries published successfully.");
+		}
+		return successcount;
 	}
+	
+	
 }
