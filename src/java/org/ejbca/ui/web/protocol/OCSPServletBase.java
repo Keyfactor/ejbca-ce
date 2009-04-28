@@ -235,6 +235,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	    return caserviceresp.getBasicOCSPResp();
 	}
 
+	/* (non-Javadoc)
+	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
+	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		CertTools.installBCProvider();

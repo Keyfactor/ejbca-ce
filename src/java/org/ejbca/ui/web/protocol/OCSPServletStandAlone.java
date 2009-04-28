@@ -73,6 +73,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public OCSPServletStandAlone() {
         super();
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#init(javax.servlet.ServletConfig)
+     */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         this.session = new OCSPServletStandAloneSession(this);

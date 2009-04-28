@@ -81,26 +81,63 @@ import org.ejbca.util.provider.TLSProvider;
 import org.ejbca.util.query.BasicMatch;
 
 /** 
-  *
+ * It will be only one instance of this class. This instance is created when the OCSP Servlet session is initiated with {@link OCSPServletStandAlone#init()}.
  * @author Lars Silven PrimeKey
  * @version  $Id$
  */
 class OCSPServletStandAloneSession implements P11SlotUser {
 
+    /**
+     * Log object.
+     */
     static final private Logger m_log = Logger.getLogger(OCSPServletStandAloneSession.class);
-    /** Internal localization of logs and errors */
+    /**
+     * Internal localization of logs and errors
+     */
     private static final InternalResources intres = InternalResources.getInstance();
-
+    /**
+     * The directory containing all soft keys (p12s or jks) and all card certificates.
+     */
     final private String mKeystoreDirectoryName = OcspConfiguration.getSoftKeyDirectoryName();
+    /**
+     * Password for all soft keys.
+     */
     final private String mKeyPassword = OcspConfiguration.getKeyPassword();
+    /**
+     * The password to all soft key stores.
+     */
     final private String mStorePassword = OcspConfiguration.getStorePassword();
+    /**
+     * Refernece of the object that handles all card OCSP signing keys.
+     */
     final private CardKeys mCardTokenObject;
+	/**
+	 * Reference to an object that holds all entities used for the OCSP signing.
+	 */
 	final private SigningEntityContainer signEntitycontainer;
+    /**
+     * Reference to the object that all information about the PKCS#11 slot.
+     */
     final private P11Slot slot;
+    /**
+     * User password for the PKCS#11 slot. Used to logon to the slot.
+     */
     final private String mP11Password = OcspConfiguration.getP11Password();
+    /**
+     * The time before a OCSP signing certificate will expire that it should be removed.
+     */
     final private int mRenewTimeBeforeCertExpiresInSeconds = OcspConfiguration.getRenewTimeBeforeCertExpiresInSeconds();
+    /**
+     * Reference to the servlet object.
+     */
     final private OCSPServletStandAlone servlet;
+    /**
+     * The URL of the EJBCAWS used when "rekeying" is activated.
+     */
     final private String webURL;
+    /**
+     * {@link #isOK} tells if the servlet is ready to be used. It is false during the time when the HSM has failed until its keys is reloaded.
+     */
     private boolean isOK=true;
 
     /**
@@ -370,20 +407,25 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     	pw.flush();
     	return sw.toString();
     }
+    /**
+     * An object of this class is used to handle an OCSP signing key.
+     */
     private interface PrivateKeyContainer {
         /**
          * Initiates the container. Start to wait to renew key.
-         * @param name 
-         * @param caid 
+         * @param the certificate chain for the key
+         * @param the EJBCA id of the key.
          */
-        void init(List<X509Certificate> name, int caid);
+        void init(List<X509Certificate> chain, int caid);
         /**
+         * Gets the OCSP signing key.
          * @return the key
          * @throws Exception
          */
         PrivateKey getKey() throws Exception;
         /**
-         * @param keyStore sets key from keystore
+         * Sets the keystore to be used.
+         * @param keyStore
          * @throws Exception
          */
         void set(KeyStore keyStore) throws Exception;
@@ -391,11 +433,13 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * removes key
          */
         void clear();
-		/**
-		 * @return is key OK to use.
-		 */
-		boolean isOK();
         /**
+         * Checks if key is OK to use
+         * @return true if OK
+         */
+        boolean isOK();
+        /**
+         * Gets the cert
          * @return the certificate of the key
          */
         X509Certificate getCertificate();
@@ -430,20 +474,20 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             this.keyRenewer = new KeyRenewer(caChain, caid);
         }
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#set(java.security.KeyStore)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#set(java.security.KeyStore)
          */
         public void set(KeyStore _keyStore) throws Exception {
             this.privateKey = _keyStore!=null ? (PrivateKey)_keyStore.getKey(this.alias, this.password) : null;
             this.keyStore = _keyStore;
         }
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#clear()
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#clear()
          */
         public void clear() {
             this.privateKey = null;
         }
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#getKey()
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#getKey()
          */
         public synchronized PrivateKey getKey() throws Exception {
             while( this.isUpdatingKey ) {
@@ -471,6 +515,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         public X509Certificate getCertificate() {
             return this.certificate;
         }
+        /**
+         *
+         */
         private class KeyRenewer {
             final private Runner runner;
             private boolean doUpdateKey;
@@ -698,31 +745,38 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
         }
     }
+    /**
+     * Card implementation.
+     */
     private class PrivateKeyContainerCard implements PrivateKeyContainer {
         final private X509Certificate certificate;
+        /**
+         * Initiates the object.
+         * @param the signing certificate
+         */
         PrivateKeyContainerCard( X509Certificate cert) {
             this.certificate = cert;
         }
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#getKey()
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#getKey()
          */
         public PrivateKey getKey() throws Exception {
             return OCSPServletStandAloneSession.this.mCardTokenObject.getPrivateKey((RSAPublicKey)this.certificate.getPublicKey());
         }
 		/* (non-Javadoc)
-		 * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#isOK()
+		 * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#isOK()
 		 */
 		public boolean isOK() {
 			return OCSPServletStandAloneSession.this.mCardTokenObject.isOK((RSAPublicKey)this.certificate.getPublicKey());
 		}
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#clear()
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#clear()
          */
         public void clear() {
             // not used by cards.
         }
         /* (non-Javadoc)
-         * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.PrivateKeyFactory#set(java.security.KeyStore)
+         * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#set(java.security.KeyStore)
          */
         public void set(KeyStore keyStore) throws Exception {
             // not used by cards.
@@ -907,20 +961,30 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     void loadPrivateKeys(Admin adm) throws Exception {
         this.signEntitycontainer.loadPrivateKeys(adm);
     }
+    /**
+     * Holds information about a provider.
+     * Used to be able to reload a provider when a HSM has stoped working.
+     * For other sub classes but {@link P11ProviderHandler} nothing is done at reload when {@link #reload()} is called.
+     */
     private interface ProviderHandler {
         /**
-         * @return name of the provider if an provider is available otherwise null
+         * Gets the name of the provider.
+         * @return the name. null if the provider is not working (reloading).
          */
         String getProviderName();
         /**
-         * @param keyFactory to be updated at reload
+         * Must be called for all {@link PrivateKeyContainer} objects using this object.
+         * @param {@link PrivateKeyContainer} to be updated at reload
          */
         void addKeyFactory(PrivateKeyContainer keyFactory);
         /**
-         * start a threads that tryes to reload the provider until it is none
+         * Start a threads that tries to reload the provider until it is done or does nothing if reloading does't help.
          */
         void reload();
     }
+    /**
+     * Card implementation. No reload needed.
+     */
     private class CardProviderHandler implements ProviderHandler {
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#getProviderName()
@@ -941,6 +1005,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             // do nothing
         }
     }
+    /**
+     * SW implementation. No reload needed.
+     */
     private class SWProviderHandler implements ProviderHandler {
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#getProviderName()
@@ -959,8 +1026,17 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             
         }
     }
+    /**
+     * P11 implementation. Reload the provider when {@link #reload()} is called.
+     */
     private class P11ProviderHandler implements ProviderHandler {
+        /**
+         * Provider name.
+         */
         final private String name;
+        /**
+         * Set of all {@link PrivateKeyContainer} using this provider.
+         */
         final Set<PrivateKeyContainer> sKeyFacrory = new HashSet<PrivateKeyContainer>();
         P11ProviderHandler() throws Exception {
             this.name = OCSPServletStandAloneSession.this.slot.getProvider().getName();
@@ -981,7 +1057,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             return keyStore;
         }
         /**
-         * @return get P11 password.
+         * Gets the P11 slot user password used to logon to a P11 session.
+         * @return The passord.
          */
         public PasswordProtection getPwd() {
             return new PasswordProtection( (OCSPServletStandAloneSession.this.mP11Password!=null && OCSPServletStandAloneSession.this.mP11Password.length()>0)? OCSPServletStandAloneSession.this.mP11Password.toCharArray():null );
@@ -992,7 +1069,13 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         public String getProviderName() {
             return OCSPServletStandAloneSession.this.isOK ? this.name : null;
         }
+        /**
+         * An object of this class reloads the provider in a separate thread.
+         */
         private class Reloader implements Runnable {
+            /* (non-Javadoc)
+             * @see java.lang.Runnable#run()
+             */
             public void run() {
                 String errorMessage ="";
                 while ( true ) try {
