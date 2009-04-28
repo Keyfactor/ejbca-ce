@@ -85,7 +85,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 				running = false;
 			}			
 		} else {
-    		String msg = intres.getLocalizedMessage("publisher.alreadyrunninginvm", PublishQueueProcessWorker.class.getName());            	
+    		String msg = intres.getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName());            	
 			log.info(msg);
 		}
 		log.trace("<work");

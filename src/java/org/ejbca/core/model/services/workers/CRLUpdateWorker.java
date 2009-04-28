@@ -60,7 +60,7 @@ public class CRLUpdateWorker extends BaseWorker {
 				running = false;
 			}			
 		} else {
-    		String msg = intres.getLocalizedMessage("publisher.alreadyrunninginvm", CRLUpdateWorker.class.getName());            	
+    		String msg = intres.getLocalizedMessage("services.alreadyrunninginvm", CRLUpdateWorker.class.getName());            	
 			log.info(msg);
 		}
 	}
