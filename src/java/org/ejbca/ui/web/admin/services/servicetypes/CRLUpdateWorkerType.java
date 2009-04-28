@@ -27,9 +27,10 @@ public class CRLUpdateWorkerType extends BaseWorkerType {
 	
 	public CRLUpdateWorkerType() {
 		super("crlupdateworker.jsp", NAME, true, CRLUpdateWorker.class.getName());
-		
-		addCompatibleActionTypeName(NoActionType.NAME);
-		
+
+		// No action available for this worker
+		addCompatibleActionTypeName(NoActionType.NAME);		
+		// Only periodical interval available for this worker
 		addCompatibleIntervalTypeName(PeriodicalIntervalType.NAME);
 	}
 

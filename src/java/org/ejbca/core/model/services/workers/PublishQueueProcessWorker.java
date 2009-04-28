@@ -34,7 +34,6 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
@@ -43,14 +42,14 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * @author Tomas Gustavsson
  * @version $Id$
  */
-public class PublishQueueProcessWorker extends BaseWorker {
+public class PublishQueueProcessWorker extends EmailSendingWorker {
 
     private static final Logger log = Logger.getLogger(PublishQueueProcessWorker.class);	
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    private static final String PUBLISHER_IDS = "publisherids";
+    public static final String PROP_PUBLISHER_IDS = "publisherids";
     
     private IPublisherQueueSessionLocal pqsession = null;
     private IPublisherSessionLocal psession = null;
@@ -63,56 +62,21 @@ public class PublishQueueProcessWorker extends BaseWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work() throws ServiceExecutionFailedException {
+		log.trace(">work");
 		// A semaphore used to not run parallel processing jobs
 		if (!running) {
 			try {
 				running = true;
-				Object o = properties.get(PUBLISHER_IDS);
+				Object o = properties.get(PROP_PUBLISHER_IDS);
 				if (o != null) {
 					String idstr = (String)o;
 					log.debug("Ids: "+idstr);
 					// Loop through all handled publisher ids and process anything in the queue
 					String[] ids = StringUtils.split(idstr, ';');
 					for (int i = 0; i < ids.length; i++) {
+						int publisherId = Integer.valueOf(ids[i]).intValue();
 						// Get everything from the queue for this publisher id
-						Collection c = getPublishQueueSession().getPendingEntriesForPublisher(Integer.valueOf(ids[i]));
-						if (log.isDebugEnabled()) {
-							log.debug("Found "+c.size()+" certificates to republish for publisher "+ids[i]);
-						}
-						Iterator iter = c.iterator();
-						while (iter.hasNext()) {
-							PublisherQueueData pqd = (PublisherQueueData)iter.next();
-							int id = pqd.getPublisherId();
-							if (log.isDebugEnabled()) {
-								log.debug("Publishing from queue to publisher: "+id+", fingerprint: "+pqd.getFingerprint()+", pk: "+pqd.getPk());
-							}
-							// Get the publisher
-							BasePublisher publisher = getPublisherSession().getPublisher(getAdmin(), id);
-							PublisherQueueVolatileData vold = pqd.getVolatileData();
-							CertificateDataLocal certlocal;
-							boolean published = false;
-							Certificate cert = null;
-							try {
-								// Read the actual certificate and try to publish it again
-								certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(pqd.getFingerprint()));
-								cert = certlocal.getCertificate();
-								published = publisher.storeCertificate(getAdmin(), cert, vold.getUsername(), vold.getPassword(), certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), vold.getExtendedInformation());
-							} catch (FinderException e) {
-			            		String msg = intres.getLocalizedMessage("publisher.errornocert", pqd.getFingerprint());            	
-			            		getLogSession().log(getAdmin(), getAdmin().getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), vold.getUsername(), null, LogConstants.EVENT_INFO_STORECRL, msg, e);
-							} catch (PublisherException e) {
-								// Publisher session have already logged this error nicely to getLogSession().log
-								log.debug(e.getMessage());
-							}
-							if (published) {
-								// Update with information that publishing was successful
-								getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, new Date(), pqd.getTryCounter());
-							} else {
-								// Update with new tryCounter, but same status as before and no timePublished
-								int tryCount = pqd.getTryCounter()+1;
-								getPublishQueueSession().updateData(pqd.getPk(), pqd.getPublishStatus(), null, tryCount);								
-							}
-						}
+						plainFifoTryAlwaysNoLimit(publisherId);
 					}
 				} else {
 					log.debug("No publisher ids configured for worker.");
@@ -124,8 +88,16 @@ public class PublishQueueProcessWorker extends BaseWorker {
     		String msg = intres.getLocalizedMessage("publisher.alreadyrunninginvm", PublishQueueProcessWorker.class.getName());            	
 			log.info(msg);
 		}
+		log.trace("<work");
 	}
 
+	/** Method that must be implemented by all subclasses to EmailSendingWorker, used to update status of 
+	 * a certificate, user, or similar
+	 * @param pk primary key of object to update
+	 * @param status status to update to 
+	 */
+	protected void updateStatus(String pk, int status) {
+	}
 	
 	public IPublisherQueueSessionLocal getPublishQueueSession(){
 		if(pqsession == null){
@@ -151,4 +123,50 @@ public class PublishQueueProcessWorker extends BaseWorker {
 		return psession;
 	}
 
+	/** Publishing algorithm that is a plain fifo queue. It will select from the database for this particular publisher id, and process 
+	 * the record that is returned one by one. The database determines which order the records are returned, usually the reverse order in which they were inserted.
+	 * Publishing is tried every time for every pending record returned, with no limit.
+	 * 
+	 * @param publisherId
+	 */
+	private void plainFifoTryAlwaysNoLimit(int publisherId) {
+		Collection c = getPublishQueueSession().getPendingEntriesForPublisher(publisherId);
+		if (log.isDebugEnabled()) {
+			log.debug("Found "+c.size()+" certificates to republish for publisher "+publisherId);
+		}
+		Iterator iter = c.iterator();
+		while (iter.hasNext()) {
+			PublisherQueueData pqd = (PublisherQueueData)iter.next();
+			int id = pqd.getPublisherId();
+			if (log.isDebugEnabled()) {
+				log.debug("Publishing from queue to publisher: "+id+", fingerprint: "+pqd.getFingerprint()+", pk: "+pqd.getPk());
+			}
+			// Get the publisher
+			BasePublisher publisher = getPublisherSession().getPublisher(getAdmin(), id);
+			PublisherQueueVolatileData vold = pqd.getVolatileData();
+			CertificateDataLocal certlocal;
+			boolean published = false;
+			Certificate cert = null;
+			try {
+				// Read the actual certificate and try to publish it again
+				certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(pqd.getFingerprint()));
+				cert = certlocal.getCertificate();
+				published = publisher.storeCertificate(getAdmin(), cert, vold.getUsername(), vold.getPassword(), certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), vold.getExtendedInformation());
+			} catch (FinderException e) {
+				String msg = intres.getLocalizedMessage("publisher.errornocert", pqd.getFingerprint());            	
+				getLogSession().log(getAdmin(), getAdmin().getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), vold.getUsername(), null, LogConstants.EVENT_INFO_STORECRL, msg, e);
+			} catch (PublisherException e) {
+				// Publisher session have already logged this error nicely to getLogSession().log
+				log.debug(e.getMessage());
+			}
+			if (published) {
+				// Update with information that publishing was successful
+				getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, new Date(), pqd.getTryCounter());
+			} else {
+				// Update with new tryCounter, but same status as before and no timePublished
+				int tryCount = pqd.getTryCounter()+1;
+				getPublishQueueSession().updateData(pqd.getPk(), pqd.getPublishStatus(), null, tryCount);								
+			}
+		}
+	}
 }

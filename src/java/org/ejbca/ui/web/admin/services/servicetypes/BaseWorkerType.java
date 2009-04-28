@@ -28,10 +28,15 @@ public abstract class BaseWorkerType extends WorkerType {
 	protected void addCompatibleActionTypeName(String name) {
 		compatibleActionTypeNames.add(name);
 	}
+	protected void deleteAllCompatibleActionTypes() {
+		compatibleActionTypeNames = new ArrayList();
+	}
 	protected void addCompatibleIntervalTypeName(String name) {
 		compatibleIntervalTypeNames.add(name);
 	}
-	
+	protected void deleteAllCompatibleIntervalTypes() {
+		compatibleIntervalTypeNames = new ArrayList();
+	}
 	//
 	// Methods implementing WorkerType
 	// 

@@ -371,16 +371,14 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
     	}
         try {
             PublisherDataLocal pdl = publisherhome.findByPrimaryKey(new Integer(publisherid));
+            String name = pdl.getName();
             try {
                 pdl.getPublisher().testConnection(admin);
-            	String msg = intres.getLocalizedMessage("publisher.testedpublisher", pdl.getName());            	
-                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null,
-                        null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+            	String msg = intres.getLocalizedMessage("publisher.testedpublisher", name);            	
+                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
             } catch (PublisherConnectionException pe) {
-            	String msg = intres.getLocalizedMessage("publisher.errortestpublisher", pdl.getName());            	
-                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, pe);
-
+            	String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);            	
+                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, pe);
                 throw new PublisherConnectionException(pe.getMessage());
             }
         } catch (FinderException fe) {

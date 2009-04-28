@@ -17,6 +17,8 @@ import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
@@ -32,7 +34,7 @@ import org.ejbca.ui.web.RequestHelper;
 
 
 /**
- * Class used to intergrate the old jsp framework with the new JSF one.
+ * Class used to integrate the old jsp framework with the new JSF one.
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
@@ -54,6 +56,7 @@ public class EjbcaJSFHelper  {
 	private IApprovalSessionLocal approvalsession;
 	private IServiceSessionLocal servicesession;
 	private IUserDataSourceSessionLocal userdatasourcesession;
+	private IPublisherSessionLocal publishersession;
 	
 	private FacesContext ctx = FacesContext.getCurrentInstance();
 	  
@@ -259,6 +262,19 @@ public class EjbcaJSFHelper  {
     		}
     	}
     	return userdatasourcesession;
+    }
+
+    public IPublisherSessionLocal getPublisherSession(){
+		if(publishersession  == null){ 
+    		ServiceLocator locator = ServiceLocator.getInstance();
+    		IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
+    		try {
+    			publishersession = publishersessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}
+    	}
+    	return publishersession;
     }
 
 }

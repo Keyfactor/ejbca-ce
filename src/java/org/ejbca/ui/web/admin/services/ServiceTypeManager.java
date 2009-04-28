@@ -30,6 +30,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.PublishQueueWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
 import org.ejbca.ui.web.admin.services.servicetypes.UserPasswordExpireWorkerType;
@@ -81,6 +82,7 @@ public class ServiceTypeManager implements java.io.Serializable {
 		ServiceTypeManager.registerServiceType(new CertificateExpirationNotifierWorkerType());
 		ServiceTypeManager.registerServiceType(new UserPasswordExpireWorkerType());
 		ServiceTypeManager.registerServiceType(new RenewCAWorkerType());
+		ServiceTypeManager.registerServiceType(new PublishQueueWorkerType());
 	}
 	
 

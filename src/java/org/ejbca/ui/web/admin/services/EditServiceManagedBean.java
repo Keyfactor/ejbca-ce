@@ -26,6 +26,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -39,6 +40,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.PublishQueueWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.UserPasswordExpireWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
@@ -176,6 +178,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
 			if ( (cp != null) && cp.equals(RenewCAWorker.class.getName()) ) {
 				name = RenewCAWorkerType.NAME;
 			}			
+			if ( (cp != null) && cp.equals(PublishQueueProcessWorker.class.getName()) ) {
+				name = PublishQueueWorkerType.NAME;
+			}			
 		} catch (IOException e) {
 			log.error(e);
 		}
@@ -190,6 +195,12 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return (RenewCAWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
 	}
 
+	/** Help method to edit data in the publish queue worker type
+	 */
+	public PublishQueueWorkerType getPublishWorkerType() {
+		return (PublishQueueWorkerType)serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PublishQueueWorkerType.NAME);
+	}
+	
 	/**
 	 * Help method used to edit data in the custom interval type.
 	 */
@@ -236,12 +247,23 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		Iterator iter = cAIds.iterator();
 		while(iter.hasNext()){
 			int next = ((Integer) iter.next()).intValue();
-			availableCANames.add(new SelectItem(new Integer(EjbcaJSFHelper.getBean().getCAAdminSession().getCAInfo(getAdmin(), next).getCAId()).toString(),EjbcaJSFHelper.getBean().getCAAdminSession().getCAInfo(getAdmin(), next).getName()));
+			availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), EjbcaJSFHelper.getBean().getCAAdminSession().getCAInfo(getAdmin(), next).getName()));
 		}
-		
-		return availableCANames;
-		
+		return availableCANames;		
 	}
+	
+	public List getAvailablePublishers(){
+		List availablePublisherNames = new ArrayList();
+		Collection publisherIds = EjbcaJSFHelper.getBean().getPublisherSession().getAuthorizedPublisherIds(getAdmin());
+		Iterator iter = publisherIds.iterator();
+		while(iter.hasNext()){
+			int next = ((Integer) iter.next()).intValue();
+			// Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
+			availablePublisherNames.add(new SelectItem(Integer.valueOf(next).toString(), EjbcaJSFHelper.getBean().getPublisherSession().getPublisherName(getAdmin(), next)+" ("+next+")"));
+		}
+		return availablePublisherNames;		
+	}
+
 
 }
 

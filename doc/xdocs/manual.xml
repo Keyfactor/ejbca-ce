@@ -2370,7 +2370,7 @@ To create a new report:
 
 <section name="Services Framework">
 <p>
-New to EJBCA 3.4 is a framework for timer services, i.e. procedures 
+EJBCA has a framework for timer services, i.e. procedures 
 that should be run on a timely basis. Currently there exists four types of 
 services:
 <ul>
@@ -2387,16 +2387,46 @@ A service consists of the components, a worker doing the actual work, an interva
 determining the time to the next time the service should run and an action (optional) 
 of what should be done if a certain condition occurs.
 </p>
-<subsection name="Currently Available Services">
+
+<subsection name="Configuration">
 <subsubsection name="Workers">
-<p><i>CRL Update Worker</i></p>
+<p>
+The worker is the class that will be executed when the service runs. Each worker can have different worker specific configuration. 
+</p>
+</subsubsection>
+<subsubsection name="Intervals">
+<p><i>Periodical Interval</i></p>
+<p>
+Defines in days/hours/minutes/seconds of how often the worker will be run.
+</p>
+</subsubsection>
+<subsubsection name="Actions">
+<p><i>Mail Action</i></p>
+<p>
+Action that sends an email notification when the service is executed and have the following settings:
+<ul>
+<li>
+<i>Sender Address</i> - The from-address used in the email.
+</li>
+<li>
+<i>Receiver Address</i> - The to-address of the email of it 
+isn't specified by the worker.
+</li>
+</ul>
+</p>
+</subsubsection>
+</subsection>
+
+<subsection name="Currently Available Workers">
+
+<p><b>CRL Update Worker</b></p>
 <p>
 The CRL Updater have the same functionality as the current JBoss Service and will in 
 the future replace the old variant. I checks if any of the CA:s need a new CRL 
 and updates it if necessary. The worker have no settings and only supports the 
 periodical interval and no action.
 </p>
-<p><i>Certificate Expiration Check Worker</i></p>
+<p><b>Certificate Expiration Check Worker</b></p>
 <p>
 A worker that checks if a CA have certificates about to expire and sends an email 
 notification the the end user and/or administrator. 
@@ -2436,7 +2466,8 @@ substitution variables be used defined in the 'Email Notifications' section.
 </li>
 </ul>
 </p>
-<p><i>User Password Expire Service</i></p>
+
+<p><b>User Password Expire Service</b></p>
 <p>
 A worker that checks if a user has not enrolled for a new certificate within a specified amount of time
 after the user was last edited. If the user has not enrolled within this time, the user's status is set to 
@@ -2451,7 +2482,7 @@ enroll for a certificate, i.e. the time before the user's password expire.
 </ul>
 </p>
 
-<p><i>Renew CA Service</i></p>
+<p><b>Renew CA Service</b></p>
 <p>
 The renew CA service can be used to automatically renew CAs that are about to expire. This might be used for SubCAs that
 are valid only short periods of time. The specific settings are:
@@ -2459,32 +2490,20 @@ are valid only short periods of time. The specific settings are:
 <li><i>CAs to Check</i> - which CAs should be checked, and renewed if they are about to expire.</li>
 <li><i>Time before CA expires to renew</i> - the amount of time before the CA actually expires that the service should renew the CA.</li>
 </ul>
-For CAs not using soft keystores using the default password, auto-activation is required. 
+For CAs using soft keystores and not using the default password, auto-activation is required. 
 </p>
 
-</subsubsection>
-<subsubsection name="Intervals">
-<p><i>Periodical Interval</i></p>
+<p><b>Publisher queue process service</b></p>
 <p>
-Defines in days/hours/minutes/seconds of how often the worker will be run.
-</p>
-</subsubsection>
-<subsubsection name="Actions">
-<p><i>Mail Action</i></p>
-<p>
-Action that's sends an email notification and have the following settings:
+The publisher queue process service processes the publisher queue. In the publisher queue, entries where publishing failed is collected. 
+This service will try to re-publish entries from this queue. The specific settings are:
 <ul>
-<li>
-<i>Sender Address</i> - The from-address used in the email.
-</li>
-<li>
-<i>Receiver Address</i> - The to-address of the email of it 
-isn't specified by the worker.
-</li>
+<li><i>Publishers to check</i> - which publishers should this service check and re-publish for. You can run one service for each publisher or one service for all publishers.</li>
 </ul>
 </p>
-</subsubsection>
+
 </subsection>
+
 <subsection name="Writing Customized Services">
 <p>
 It is possible to write customized component plug-ins that can be used with 
