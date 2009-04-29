@@ -63,7 +63,7 @@
 
             <cmp-field-mapping>
                 <field-name>publishStatus</field-name>
-                <column-name>PUBLISHTATUS</column-name>
+                <column-name>PUBLISHSTATUS</column-name>
 
             </cmp-field-mapping>
 
