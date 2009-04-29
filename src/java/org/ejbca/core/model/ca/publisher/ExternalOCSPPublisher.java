@@ -17,6 +17,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -40,32 +42,69 @@ import org.ejbca.util.JDBCUtil;
  * @version $Id$
  *
  */
-public class ExternalOCSPPublisher implements ICustomPublisher {
+public class ExternalOCSPPublisher extends BasePublisher implements ICustomPublisher {
 
     private static final Logger log = Logger.getLogger(ExternalOCSPPublisher.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    private String dataSource;
-    private boolean protect = false;
+    
+    public static final float LATEST_VERSION = 1;
+    
+    public static final int TYPE_EXTOCSPPUBLISHER = 5;
+    
+    protected static final String DATASOURCE 				= "dataSource";
+    protected static final String PROTECT 					= "protect";
+    
+    // Default values
+    public static final String DEFAULT_DATASOURCE 			= "java:/OcspDS";
+    public static final boolean DEFAULT_PROTECT 			= false;
 
     /**
      * 
      */
     public ExternalOCSPPublisher() {
         super();
+        data.put(TYPE, new Integer(TYPE_EXTOCSPPUBLISHER));
+        setDataSource(DEFAULT_DATASOURCE);
+        setProtect(DEFAULT_PROTECT);
     }
 
-    /* (non-Javadoc)
+    /**
+     *  Sets the data source property for the publisher.
+     */
+    public void setDataSource(String dataSource) {
+		data.put(DATASOURCE, dataSource);
+	}
+    
+    /**
+     *  Sets the property protect for the publisher.
+     */
+    public void setProtect(boolean protect) {
+		data.put(PROTECT, Boolean.valueOf(protect));
+	}
+    
+    /**
+     * @return The value of the property data source
+     */
+    public String getDataSource() {
+    	return (String) data.get(DATASOURCE);
+    }
+    
+    /**
+     * @return The value of the property protect
+     */
+    public boolean getProtect() {
+    	return ((Boolean) data.get(PROTECT)).booleanValue();
+    }
+
+	/* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#init(java.util.Properties)
      */
     public void init(Properties properties) {
-        dataSource = properties.getProperty("dataSource");
-        String prot = properties.getProperty("protect");
-        if (StringUtils.equalsIgnoreCase(prot, "true")) {
-        	protect = true;
-        }
-        log.debug("dataSource='"+dataSource+"'.");
+        setDataSource(properties.getProperty(DATASOURCE));
+        String prot = properties.getProperty(PROTECT);
+        setProtect(StringUtils.equalsIgnoreCase(prot, "true"));
+        log.debug("dataSource='"+getDataSource()+"'.");
     }
 
     private class StoreCertPreparer implements JDBCUtil.Preparer {
@@ -122,7 +161,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
     	try {
     		JDBCUtil.execute( "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-    				prep, dataSource);
+    				prep, getDataSource());
     		fail = false;
     	} catch (Exception e) {
     		// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
@@ -131,7 +170,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     			log.info(msg);
     			try {
         			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=? WHERE fingerprint=?",
-            				prep, dataSource );
+            				prep, getDataSource() );
             		fail = false;    				
     			} catch (Exception ue) {
     				String lmsg = intres.getLocalizedMessage("publisher.errorextocsppubl", prep.getInfoString());
@@ -149,7 +188,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
 			}
     	}
     	// If we managed to update the OCSP database, and protection is enabled, we have to update the protection database
-    	if (!fail && protect) {
+    	if (!fail && getProtect()) {
     		X509Certificate cert = (X509Certificate)incert;
     		String fp = CertTools.getFingerprintAsString(cert);
     		String serno = cert.getSerialNumber().toString();
@@ -160,7 +199,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
             try {
 				TableProtectSessionRemote remote = home.create();
-				remote.protectExternal(admin, entry, dataSource);
+				remote.protectExternal(admin, entry, getDataSource());
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("protect.errorcreatesession");
 				log.error(msg, e);
@@ -190,7 +229,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public void testConnection(Admin admin) throws PublisherConnectionException {
         try {
-        	JDBCUtil.execute("select 1 from CertificateData where fingerprint='XX'", new DoNothingPreparer(), dataSource);
+        	JDBCUtil.execute("select 1 from CertificateData where fingerprint='XX'", new DoNothingPreparer(), getDataSource());
         } catch (Exception e) {
         	log.error("Connection test failed: ", e);
             final PublisherConnectionException pce = new PublisherConnectionException("Connection in init failed: "+e.getMessage());
@@ -198,4 +237,21 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             throw pce;
         }
     }
+
+	public Object clone() throws CloneNotSupportedException {
+		ExternalOCSPPublisher clone = new ExternalOCSPPublisher();
+		HashMap clonedata = (HashMap) clone.saveData();
+
+		Iterator i = (data.keySet()).iterator();
+		while(i.hasNext()){
+			Object key = i.next();
+			clonedata.put(key, data.get(key));
+		}
+		clone.loadData(clonedata);
+		return clone;
+	}
+
+	public float getLatestVersion() {
+		return LATEST_VERSION;
+	}
 }

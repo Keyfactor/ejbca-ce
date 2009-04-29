@@ -18,6 +18,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.ExternalOCSPPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.util.Base64GetHashMap;
@@ -164,6 +165,9 @@ public abstract class PublisherDataBean extends BaseEntityBean {
                     break;
                 case CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER:
                     publisher = new CustomPublisherContainer();
+                    break;
+                case ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER:
+                    publisher = new ExternalOCSPPublisher();
                     break;
             }
 

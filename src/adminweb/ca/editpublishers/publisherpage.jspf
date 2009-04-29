@@ -8,8 +8,9 @@
   int[] publishertypes = {LdapPublisher.TYPE_LDAPPUBLISHER, 
                           LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER,
                           ActiveDirectoryPublisher.TYPE_ADPUBLISHER,
+                          ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER,
                           CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER};
-  String[] publishertypetexts = {"LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER", "CUSTOMPUBLISHER"};
+  String[] publishertypetexts = {"LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER", "EXTERNALOCSPPUBLISHER", "CUSTOMPUBLISHER"};
 
   int row = 0;
 %>
@@ -96,6 +97,13 @@ function checkallfields(){
     }
     
  <% } %>
+ <% if( publisherdata instanceof ExternalOCSPPublisher){ %>
+
+	if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_EXTOCSP_DATASOURCE%>.value == ""){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("DATASOURCE", true)%>");
+      illegalfields++;
+    }
+<% } %>
  <% if( publisherdata instanceof CustomPublisherContainer){ %>
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CLASSPATH", true)%>");
@@ -195,6 +203,9 @@ function checkallfields(){
     <% }
       if(publisherhelper.publisherdata instanceof ActiveDirectoryPublisher){%>
          <%@ include file="adpublisherpage.jspf" %> 
+    <% }
+       if(publisherhelper.publisherdata instanceof ExternalOCSPPublisher){%>
+         <%@ include file="externalocsppublisherpage.jspf" %>
     <% }
        if(publisherhelper.publisherdata instanceof CustomPublisherContainer){%>
          <%@ include file="custompublisherpage.jspf" %> 
