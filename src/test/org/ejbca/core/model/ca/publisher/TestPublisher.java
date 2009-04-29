@@ -493,7 +493,7 @@ public class TestPublisher extends TestCase {
 	    log.trace("<test13GenPurpCustPublStandardError()");
 	} // test13GenPurpCustPublConnection
 
-    public void test14ExternalOCSPPublisher() throws Exception {
+    public void test14ExternalOCSPPublisherCustom() throws Exception {
 	    log.trace(">test14ExternalOCSPPublisher()");
         boolean ret = false;
 
@@ -521,7 +521,37 @@ public class TestPublisher extends TestCase {
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
         pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, CertificateDataBean.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime());
-	    log.trace("<test14ExternalOCSPPublisher()");
+	    log.trace("<test14ExternalOCSPPublisherCustom()");
+    }
+    
+    public void test15ExternalOCSPPublisher() throws Exception {
+	    log.trace(">test15ExternalOCSPPublisher()");
+        boolean ret = false;
+
+        ret = false;
+		try {
+			ExternalOCSPPublisher publisher = new ExternalOCSPPublisher();
+		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
+            publisher.setDataSource("java:/EjbcaDS");
+            publisher.setDescription("Used in Junit Test, Remove this one");
+            pub.addPublisher(admin, "TESTEXTOCSP2", publisher);
+            ret = true;
+        } catch (PublisherExistsException pee) {
+        	log.error(pee);
+        }        
+        assertTrue("Creating External OCSP Publisher failed", ret);
+        int id = pub.getPublisherId(admin, "TESTEXTOCSP2");
+        pub.testConnection(admin, id);
+        
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        ArrayList publishers = new ArrayList();
+        publishers.add(new Integer(pub.getPublisherId(admin, "TESTEXTOCSP2")));
+        
+        ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
+        assertTrue("Error storing certificate to external ocsp publisher", ret);
+
+        pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, CertificateDataBean.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime());
+	    log.trace("<test15ExternalOCSPPublisher()");
     }
 
     /**
@@ -546,6 +576,9 @@ public class TestPublisher extends TestCase {
         } catch (Exception pee) {ret = false;}
         try {
             pub.removePublisher(admin, "TESTEXTOCSP");            
+        } catch (Exception pee) {ret = false;}
+        try {
+            pub.removePublisher(admin, "TESTEXTOCSP2");            
         } catch (Exception pee) {ret = false;}
         assertTrue("Removing Publisher failed", ret);
         
