@@ -230,7 +230,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 m_log.debug("No P11 token. WS can not be used.");
             }
             // Load OCSP responders private keys into cache in init to speed things up for the first request
-            // signEntity is also set
+            // signEntityMap is also set
             loadPrivateKeys(this.servlet.m_adm);
         } catch( ServletException e ) {
             throw e;
@@ -238,174 +238,32 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             throw new ServletException(e);
         }
     }
-    
-    private List<X509Certificate> getCertificateChain(X509Certificate cert, Admin adm) {
-    	String issuerDN = CertTools.getIssuerDN(cert);
-        final CertificateStatus status = this.servlet.getStatus(adm, issuerDN, CertTools.getSerialNumber(cert));
-        if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
-            m_log.warn(intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN));
-            return null;
-        }
-        if ( status.equals(CertificateStatus.REVOKED) ) {
-            m_log.warn(intres.getLocalizedMessage("ocsp.signcertrevoked", CertTools.getSerialNumberAsString(cert), issuerDN));
-            return null;
-        }
-        final List<X509Certificate> list = new ArrayList<X509Certificate>();
-        X509Certificate current = cert;
-        while( true ) {
-        	if ( CertTools.isSelfSigned(current) ) {
-                return list;
-        	}
-        	// Is there a CA certificate?
-        	final X509Certificate target = this.servlet.m_caCertCache.findLatestBySubjectDN(CertTools.getIssuerDN(current));
-        	if (target != null) {
-    			current = target;
-                list.add(current);
-        	} else {
-        		break;        		
-        	}
-        }
-        m_log.warn(intres.getLocalizedMessage("ocsp.signcerthasnochain", CertTools.getSerialNumberAsString(cert), issuerDN));
-        return null;
-    }
-    private boolean loadFromP11HSM(Admin adm, HashMap<Integer, SigningEntity> newSignEntity) throws Exception {
-    	m_log.trace(">loadFromP11HSM");
-        if ( this.slot==null ) {
-        	m_log.trace("<loadFromP11HSM: no shared library");
-            return false;        	
-        }
-        this.slot.reset();
-        final P11ProviderHandler providerHandler = new P11ProviderHandler();
-        final PasswordProtection pwp = providerHandler.getPwd();
-        loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, this.slot.toString(), providerHandler, newSignEntity);
-        pwp.destroy();
-    	m_log.trace("<loadFromP11HSM");
-        return true;
-    }
-    private boolean loadFromSWKeyStore(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity) {
-    	m_log.trace(">loadFromSWKeyStore");
-    	boolean ret = false;
-        try {
-            KeyStore keyStore;
-            try {
-                keyStore = KeyStore.getInstance("JKS");
-                keyStore.load(new FileInputStream(fileName), this.mStorePassword.toCharArray());
-            } catch( IOException e ) {
-                keyStore = KeyStore.getInstance("PKCS12", "BC");
-                keyStore.load(new FileInputStream(fileName), this.mStorePassword.toCharArray());
-            }
-            loadFromKeyStore(adm, keyStore, this.mKeyPassword, fileName, new SWProviderHandler(), newSignEntity);
-            ret = true;
-        } catch( Exception e ) {
-            m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
-        }
-    	m_log.trace("<loadFromSWKeyStore");
-        return ret;
-    }
-    private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
-        final String sigAlgName = "SHA1withRSA";
-        final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
-        final byte signBA[];
-        final boolean result;{
-            Signature signature = Signature.getInstance(sigAlgName, providerName);
-            signature.initSign( privateKey );
-            signature.update( signInput );
-            signBA = signature.sign();
-        }
-        {
-            Signature signature = Signature.getInstance(sigAlgName);
-            signature.initVerify(publicKey);
-            signature.update(signInput);
-            result = signature.verify(signBA);
-            m_log.debug("Signature test of key "+alias+
-                        ": signature length " + signBA.length +
-                        "; first byte " + Integer.toHexString(0xff&signBA[0]) +
-                        "; verifying " + result);
-        }
-        return result;
-    }
-    private boolean isOCSPCert(X509Certificate cert) {
-        final String ocspKeyUsage = "1.3.6.1.5.5.7.3.9";
-        final List<String> keyUsages;
-        try {
-            keyUsages = cert.getExtendedKeyUsage();
-        } catch (CertificateParsingException e) {
-            return false;
-        }
-        return keyUsages!=null && keyUsages.contains(ocspKeyUsage);
-    }
-    private void loadFromKeyStore(Admin adm, KeyStore keyStore, String keyPassword,
-                                  String errorComment, ProviderHandler providerHandler,
-                                  HashMap<Integer, SigningEntity> newSignEntity) throws KeyStoreException {
-        final Enumeration<String> eAlias = keyStore.aliases();
-        while( eAlias.hasMoreElements() ) {
-            final String alias = eAlias.nextElement();
-            try {
-                final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
-                if ( cert==null ) {
-                    m_log.debug("No certificate found for keystore alias '"+alias+"'");
-                    continue;
-                }
-                if ( !isOCSPCert(cert) ) {
-                    m_log.debug("Certificate "+cert.getSubjectDN()+" has not ocsp signing as extended key usage"+"', keystore alias '"+alias+"'");
-                    continue;
-                }
-                final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore, cert);
-                if ( pkf.getKey()!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
-                    m_log.debug("Adding sign entity for '"+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
-                    putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);
-                } else {
-                    m_log.debug("Not adding signer entity for: "+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
-                }
-            } catch (Exception e) {
-                String errMsg = intres.getLocalizedMessage("ocsp.errorgetalias", alias, errorComment);
-                m_log.error(errMsg, e);
-            }
-        }
-    }
-    private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, Admin adm, ProviderHandler providerHandler,
-                                   final Map<Integer, SigningEntity> newSignEntity) {
-        if ( keyContainer==null || cert==null )
-            return false;
-        final List<X509Certificate> chain = getCertificateChain(cert, adm);
-        if ( chain==null || chain.size()<1 ) {
-            return false;
-        }
-        final Integer caid = new Integer(this.servlet.getCaid(chain.get(0)));
-        {
-            final SigningEntity entityForSameCA = newSignEntity.get(caid);
-            final X509Certificate otherChainForSameCA[] = entityForSameCA!=null ? entityForSameCA.getCertificateChain() : null;
-            if ( otherChainForSameCA!=null && otherChainForSameCA[0].getNotBefore().after(cert.getNotBefore())) {
-                m_log.debug("CA with ID "+caid+" has duplicated keys. Certificate for older key that is not used has serial number: "+cert.getSerialNumber().toString(0x10));
-                return true; // the entity allready in the map is newer.
-            }
-        }
-        newSignEntity.put( caid, new SigningEntity(chain, keyContainer, providerHandler) );
-        m_log.debug("CA with ID "+caid+" now has a OCSP signing key. Certificate with serial number: "+cert.getSerialNumber().toString(0x10));
-        return true;
-    }
+    /**
+     * Fixes the answer for the call to {@link OCSPServletStandAlone#healthCheck()}
+     * @return The answer to be returned by the health-check servlet.
+     */
     String healthCheck() {
-    	StringWriter sw = new StringWriter();
-    	PrintWriter pw = new PrintWriter(sw);
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
         try {
-        	loadPrivateKeys(this.servlet.m_adm);
+            loadPrivateKeys(this.servlet.m_adm);
             final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
-	    	while ( i.hasNext() ) {
-	    		SigningEntity signingEntity = i.next();
-	    		if ( !signingEntity.isOK() ) {
+            while ( i.hasNext() ) {
+                SigningEntity signingEntity = i.next();
+                if ( !signingEntity.isOK() ) {
                     pw.println();
-            		String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
-	    			pw.print(errMsg);
-	    			m_log.error(errMsg);
-	    		}
-	    	}
-		} catch (Exception e) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
+                    String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
+                    pw.print(errMsg);
+                    m_log.error(errMsg);
+                }
+            }
+        } catch (Exception e) {
+            String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
             m_log.error(errMsg, e);
-			pw.print(errMsg + ": "+e.getMessage());
-		}
-    	pw.flush();
-    	return sw.toString();
+            pw.print(errMsg + ": "+e.getMessage());
+        }
+        pw.flush();
+        return sw.toString();
     }
     /**
      * An object of this class is used to handle an OCSP signing key.
@@ -444,11 +302,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         X509Certificate getCertificate();
         /**
-         * Destroys the container. Waiting to renew keys stoped.
+         * Destroys the container. Waiting to renew keys stopped.
          */
         void destroy();
     }
-
+    /**
+     * Tells if we should renew a key before the certificate expires.
+     * @return true if we should renew the key.
+     */
     private boolean doKeyRenewal() {
         return this.webURL!=null && this.webURL.length()>0 && OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds>=0;
     }
@@ -474,7 +335,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         private PrivateKey privateKey;
         /**
-         * Object that runns a thread that is renewing a specified period before the certificate expires.
+         * Object that runs a thread that is renewing a specified period before the certificate expires.
          */
         private KeyRenewer keyRenewer;
         /**
@@ -839,6 +700,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * Card implementation.
      */
     private class PrivateKeyContainerCard implements PrivateKeyContainer {
+        /**
+         * The signing certificate.
+         */
         final private X509Certificate certificate;
         /**
          * Initiates the object.
@@ -890,64 +754,41 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             // do nothing
         }
     }
-    private boolean putSignEntityCard( Certificate _cert, Admin adm,
-                                       HashMap<Integer, SigningEntity> newSignEntity) {
-        if ( _cert!=null &&  _cert instanceof X509Certificate) {
-            final X509Certificate cert = (X509Certificate)_cert;
-            final PrivateKeyContainer keyContainer = new PrivateKeyContainerCard(cert);
-            return putSignEntity( keyContainer, cert, adm, new CardProviderHandler(), newSignEntity );
-        }
-        return false;
-    }
-    private void loadFromKeyCards(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity) {
-    	m_log.trace(">loadFromKeyCards");
-        final CertificateFactory cf;
-        try {
-            cf = CertificateFactory.getInstance("X.509");
-        } catch (java.security.cert.CertificateException e) {
-            throw new Error(e);
-        }
-        String fileType = null;
-        try {// read certs from PKCS#7 file
-            final Collection<? extends Certificate> c = cf.generateCertificates(new FileInputStream(fileName));
-            if ( c!=null && !c.isEmpty() ) {
-                Iterator<? extends Certificate> i = c.iterator();
-                while (i.hasNext()) {
-                    if ( putSignEntityCard(i.next(), adm, newSignEntity) ) {
-                        fileType = "PKCS#7";
-                    }
-                }
-            }
-        } catch( Exception e) {
-            // do nothing
-        }
-        if ( fileType==null ) {
-            try {// read concatenated certificate in PEM format
-                final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
-                while (bis.available() > 0) {
-                    if ( putSignEntityCard(cf.generateCertificate(bis), adm, newSignEntity) ) {
-                        fileType="PEM";
-                    }
-                }
-            } catch(Exception e){
-                // do nothing
-            }
-        }
-        if ( fileType!=null ) {
-            m_log.debug("Certificate(s) found in file "+fileName+" of "+fileType+".");
-        } else {
-            m_log.debug("File "+fileName+" has no cert.");
-        }
-    	m_log.trace("<loadFromKeyCards");
-    }
+    /**
+     * Holds a {@link SigningEntity} for each CA that the responder is capable of signing a response for.
+     */
     private class  SigningEntityContainer {
+        /**
+         * Mapping of {@link SigningEntity} to EJBCA CA ID.
+         */
+        private Map<Integer, SigningEntity> signEntityMap;
+        /**
+         * Mutex used to assure that only one thread is executing a part of the code at a time.
+         */
+        private Mutex mutex = new Mutex();
+        /**
+         * Flag telling if the {@link #signEntityMap} is beeing updated.
+         */
+        private boolean updating = false;
+        /**
+         * The implementation of the mutex.
+         */
         private class Mutex {
-            boolean locked;
+            /**
+             * This flag is true when this mutex is owned by a thread
+             */
+            private boolean locked;
+            /**
+             * Construct a mutex initially not owned by any thread,
+             */
             Mutex() {
                 super();
                 this.locked = false;
                 m_log.debug("mutex created.");
             }
+            /**
+             * Get ownership of the mutex.
+             */
             synchronized void getMutex() {
                 while( this.locked ) {
                     try {
@@ -958,19 +799,24 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 }
                 this.locked = true;
             }
+            /**
+             * Give away the mutex.
+             */
             synchronized void releaseMutex() {
                 this.locked = false;
                 this.notify();
             }
         }
-        private HashMap<Integer, SigningEntity> signEntity;
-        private Mutex mutex = new Mutex();
-        private boolean updating = false;
+        /**
+         * Create a {@link SigningEntity} for all OCSP signing keys that could be found.
+         * @param adm Administrator to be used when getting the certificate chain from the DB.
+         * @throws Exception
+         */
         void loadPrivateKeys(Admin adm) throws Exception {
             m_log.trace(">loadPrivateKeys");
             try {
                 this.mutex.getMutex();
-                if ( (this.signEntity!=null && this.signEntity.size()>0 && OCSPServletStandAloneSession.this.servlet.mKeysValidTo>new Date().getTime()) || !OCSPServletStandAloneSession.this.isOK ) {
+                if ( (this.signEntityMap!=null && this.signEntityMap.size()>0 && OCSPServletStandAloneSession.this.servlet.mKeysValidTo>new Date().getTime()) || !OCSPServletStandAloneSession.this.isOK ) {
                     m_log.trace("<loadPrivateKeys: using cache");
                     return;
                 }
@@ -983,61 +829,68 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             } finally {
                 this.mutex.releaseMutex();
             }
-            final HashMap<Integer, SigningEntity> newSignEntity = new HashMap<Integer, SigningEntity>();
-            synchronized(this) {
-                this.wait(500); // wait for actions on token to get ready
-            }
-            loadFromP11HSM(adm, newSignEntity);
-            final File dir = OCSPServletStandAloneSession.this.mKeystoreDirectoryName!=null ? new File(OCSPServletStandAloneSession.this.mKeystoreDirectoryName) : null;
-            if ( dir!=null && dir.isDirectory() ) {
-                final File files[] = dir.listFiles();
-                if ( files!=null && files.length>0 ) {
-                    for ( int i=0; i<files.length; i++ ) {
-                        final String fileName = files[i].getCanonicalPath();
-                        if ( !loadFromSWKeyStore(adm, fileName, newSignEntity) ) {
-                            loadFromKeyCards(adm, fileName, newSignEntity);
+            try {
+                final HashMap<Integer, SigningEntity> newSignEntity = new HashMap<Integer, SigningEntity>();
+                synchronized(this) {
+                    this.wait(500); // wait for actions on token to get ready
+                }
+                loadFromP11HSM(adm, newSignEntity);
+                final File dir = OCSPServletStandAloneSession.this.mKeystoreDirectoryName!=null ? new File(OCSPServletStandAloneSession.this.mKeystoreDirectoryName) : null;
+                if ( dir!=null && dir.isDirectory() ) {
+                    final File files[] = dir.listFiles();
+                    if ( files!=null && files.length>0 ) {
+                        for ( int i=0; i<files.length; i++ ) {
+                            final String fileName = files[i].getCanonicalPath();
+                            if ( !loadFromSWKeyStore(adm, fileName, newSignEntity) ) {
+                                loadFromKeyCards(adm, fileName, newSignEntity);
+                            }
+                        }
+                    } else {
+                        m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
+                        if ( newSignEntity.size()<1 ) {
+                            throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());            	
                         }
                     }
                 } else {
-                    m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
+                    m_log.debug((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
                     if ( newSignEntity.size()<1 ) {
-                        throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());            	
+                        throw new ServletException((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
                     }
                 }
-            } else {
-                m_log.debug((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
+                // No P11 keys, there are files, but none are valid keys or certs for cards
                 if ( newSignEntity.size()<1 ) {
-                    throw new ServletException((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
+                    String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
+                    throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
                 }
-            }
-            // No P11 keys, there are files, but none are valid keys or certs for cards
-            if ( newSignEntity.size()<1 ) {
-                String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
-                throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
-            }
-            if ( this.signEntity!=null ){
-                Collection<SigningEntity> values=this.signEntity.values();
-                if ( values!=null ) {
-                    final Iterator<SigningEntity> i = values.iterator();
+                if ( this.signEntityMap!=null ){
+                    Collection<SigningEntity> values=this.signEntityMap.values();
+                    if ( values!=null ) {
+                        final Iterator<SigningEntity> i = values.iterator();
+                        while( i.hasNext() ) {
+                            i.next().shutDown();
+                        }
+                    }
+                }{
+                    final Iterator<Entry<Integer, SigningEntity>> i=newSignEntity.entrySet().iterator();
                     while( i.hasNext() ) {
-                        i.next().shutDown();
+                        Entry<Integer, SigningEntity> entry = i.next();
+                        entry.getValue().init(entry.getKey().intValue());
                     }
                 }
-            }{
-                final Iterator<Entry<Integer, SigningEntity>> i=newSignEntity.entrySet().iterator();
-                while( i.hasNext() ) {
-                    Entry<Integer, SigningEntity> entry = i.next();
-                    entry.getValue().init(entry.getKey().intValue());
+                this.signEntityMap = newSignEntity; // atomic change. after this new entity is used.
+            } finally {
+                synchronized(this) {
+                    this.updating = false;
+                    this.notifyAll();
                 }
-            }
-            this.signEntity = newSignEntity; // atomic change. after this new entity is used.
-            synchronized(this) {
-                this.updating = false;
-                this.notifyAll();
             }
             m_log.trace("<loadPrivateKeys");
         }
-        synchronized HashMap<Integer, SigningEntity> getSigningEntityMap() {
+        /**
+         * Gets all {@link SigningEntity}s mapped to EJBCA CA IDs.
+         * @return The map.
+         */
+        synchronized Map<Integer, SigningEntity> getSigningEntityMap() {
             while ( this.updating ) {
                 try {
                     this.wait();
@@ -1045,9 +898,278 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     throw new Error(e);
                 }
             }
-            return this.signEntity;
+            return this.signEntityMap;
+        }
+        /**
+         * Adds OCSP signing keys from the HSM to the newSignEntity (parameter).
+         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+         * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
+         * @return true if keys where found on the HSM
+         * @throws Exception
+         */
+        private boolean loadFromP11HSM(Admin adm, Map<Integer, SigningEntity> newSignEntity) throws Exception {
+            m_log.trace(">loadFromP11HSM");
+            if ( OCSPServletStandAloneSession.this.slot==null ) {
+                m_log.trace("<loadFromP11HSM: no shared library");
+                return false;           
+            }
+            OCSPServletStandAloneSession.this.slot.reset();
+            final P11ProviderHandler providerHandler = new P11ProviderHandler();
+            final PasswordProtection pwp = providerHandler.getPwd();
+            loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, OCSPServletStandAloneSession.this.slot.toString(), providerHandler, newSignEntity);
+            pwp.destroy();
+            m_log.trace("<loadFromP11HSM");
+            return true;
+        }
+        /**
+         * Adds the OCSP signing key from the java SW keystore to the newSignEntity (parameter).
+         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+         * @param fileName The name of a file with a SW java keystore.
+         * @param newSignEntity The map where the signing entity should be stored for the key if the certificate is a valid OCSP certificate.
+         * @return true if the key in the SW java keystore was valid.
+         */
+        private boolean loadFromSWKeyStore(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity) {
+            m_log.trace(">loadFromSWKeyStore");
+            boolean ret = false;
+            try {
+                KeyStore keyStore;
+                try {
+                    keyStore = KeyStore.getInstance("JKS");
+                    keyStore.load(new FileInputStream(fileName), OCSPServletStandAloneSession.this.mStorePassword.toCharArray());
+                } catch( IOException e ) {
+                    keyStore = KeyStore.getInstance("PKCS12", "BC");
+                    keyStore.load(new FileInputStream(fileName), OCSPServletStandAloneSession.this.mStorePassword.toCharArray());
+                }
+                loadFromKeyStore(adm, keyStore, OCSPServletStandAloneSession.this.mKeyPassword, fileName, new SWProviderHandler(), newSignEntity);
+                ret = true;
+            } catch( Exception e ) {
+                m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
+            }
+            m_log.trace("<loadFromSWKeyStore");
+            return ret;
+        }
+        /**
+         * Tests a key.
+         * @param privateKey The private part of the key.
+         * @param publicKey The public part of the key.
+         * @param alias The alias of the for the key. Just used for debug output.
+         * @param providerName The provider name.
+         * @return True if the key is OK.
+         * @throws Exception
+         */
+        private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
+            final String sigAlgName = "SHA1withRSA";
+            final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
+            final byte signBA[];
+            final boolean result;{
+                Signature signature = Signature.getInstance(sigAlgName, providerName);
+                signature.initSign( privateKey );
+                signature.update( signInput );
+                signBA = signature.sign();
+            }
+            {
+                Signature signature = Signature.getInstance(sigAlgName);
+                signature.initVerify(publicKey);
+                signature.update(signInput);
+                result = signature.verify(signBA);
+                m_log.debug("Signature test of key "+alias+
+                            ": signature length " + signBA.length +
+                            "; first byte " + Integer.toHexString(0xff&signBA[0]) +
+                            "; verifying " + result);
+            }
+            return result;
+        }
+        /**
+         * Is OCSP extended key usage set for a certificate?
+         * @param cert to check.
+         * @return true if the extended key usage for OCSP is check
+         */
+        private boolean isOCSPCert(X509Certificate cert) {
+            final String ocspKeyUsage = "1.3.6.1.5.5.7.3.9";
+            final List<String> keyUsages;
+            try {
+                keyUsages = cert.getExtendedKeyUsage();
+            } catch (CertificateParsingException e) {
+                return false;
+            }
+            return keyUsages!=null && keyUsages.contains(ocspKeyUsage);
+        }
+        /**
+         * Adds OCSP signing keys from a java keystore to the newSignEntity (parameter).
+         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+         * @param keyStore The keystore.
+         * @param keyPassword Password for the key. Set to null if not protected.
+         * @param errorComment Comment to be used in possible error message.
+         * @param providerHandler The provider to be used.
+         * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
+         * @throws KeyStoreException
+         */
+        private void loadFromKeyStore(Admin adm, KeyStore keyStore, String keyPassword,
+                                      String errorComment, ProviderHandler providerHandler,
+                                      Map<Integer, SigningEntity> newSignEntity) throws KeyStoreException {
+            final Enumeration<String> eAlias = keyStore.aliases();
+            while( eAlias.hasMoreElements() ) {
+                final String alias = eAlias.nextElement();
+                try {
+                    final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
+                    if ( cert==null ) {
+                        m_log.debug("No certificate found for keystore alias '"+alias+"'");
+                        continue;
+                    }
+                    if ( !isOCSPCert(cert) ) {
+                        m_log.debug("Certificate "+cert.getSubjectDN()+" has not ocsp signing as extended key usage"+"', keystore alias '"+alias+"'");
+                        continue;
+                    }
+                    final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore, cert);
+                    if ( pkf.getKey()!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
+                        m_log.debug("Adding sign entity for '"+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                        putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);
+                    } else {
+                        m_log.debug("Not adding signer entity for: "+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                    }
+                } catch (Exception e) {
+                    String errMsg = intres.getLocalizedMessage("ocsp.errorgetalias", alias, errorComment);
+                    m_log.error(errMsg, e);
+                }
+            }
+        }
+        /**
+         * Gets the chain for a certificate. The certificate must be valid and in the DB.
+         * @param cert The certificate that should be first in the chain.
+         * @param adm  Administrator performing the operation. 
+         * @return The chain of the certificate. Null if the certificate is not valid.
+         */
+        private List<X509Certificate> getCertificateChain(X509Certificate cert, Admin adm) {
+            String issuerDN = CertTools.getIssuerDN(cert);
+            final CertificateStatus status = OCSPServletStandAloneSession.this.servlet.getStatus(adm, issuerDN, CertTools.getSerialNumber(cert));
+            if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
+                m_log.warn(intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN));
+                return null;
+            }
+            if ( status.equals(CertificateStatus.REVOKED) ) {
+                m_log.warn(intres.getLocalizedMessage("ocsp.signcertrevoked", CertTools.getSerialNumberAsString(cert), issuerDN));
+                return null;
+            }
+            final List<X509Certificate> list = new ArrayList<X509Certificate>();
+            X509Certificate current = cert;
+            while( true ) {
+                if ( CertTools.isSelfSigned(current) ) {
+                    return list;
+                }
+                // Is there a CA certificate?
+                final X509Certificate target = OCSPServletStandAloneSession.this.servlet.m_caCertCache.findLatestBySubjectDN(CertTools.getIssuerDN(current));
+                if (target != null) {
+                    current = target;
+                    list.add(current);
+                } else {
+                    break;              
+                }
+            }
+            m_log.warn(intres.getLocalizedMessage("ocsp.signcerthasnochain", CertTools.getSerialNumberAsString(cert), issuerDN));
+            return null;
+        }
+        /**
+         * Constructs a new {@link SigningEntity} and puts it in the map 'newSignEntitys'.
+         * If 'newSignEntitys' allready contains a certificate for the same CA which is newer than 'cert' the one in the map is kept (nothing is done).
+         * @param keyContainer The key.
+         * @param cert The certificate of the key
+         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+         * @param providerHandler The provider.
+         * @param newSignEntitys The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
+         * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
+         */
+        private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, Admin adm, ProviderHandler providerHandler,
+                                       final Map<Integer, SigningEntity> newSignEntitys) {
+            if ( keyContainer==null || cert==null ) {
+                return false;
+            }
+            final List<X509Certificate> chain = getCertificateChain(cert, adm);
+            if ( chain==null || chain.size()<1 ) {
+                return false;
+            }
+            final Integer caid = new Integer(OCSPServletStandAloneSession.this.servlet.getCaid(chain.get(0)));
+            {
+                final SigningEntity entityForSameCA = newSignEntitys.get(caid);
+                final X509Certificate otherChainForSameCA[] = entityForSameCA!=null ? entityForSameCA.getCertificateChain() : null;
+                if ( otherChainForSameCA!=null && otherChainForSameCA[0].getNotBefore().after(cert.getNotBefore())) {
+                    m_log.debug("CA with ID "+caid+" has duplicated keys. Certificate for older key that is not used has serial number: "+cert.getSerialNumber().toString(0x10));
+                    return true; // the entity allready in the map is newer.
+                }
+            }
+            newSignEntitys.put( caid, new SigningEntity(chain, keyContainer, providerHandler) );
+            m_log.debug("CA with ID "+caid+" now has a OCSP signing key. Certificate with serial number: "+cert.getSerialNumber().toString(0x10));
+            return true;
+        }
+        /**
+         * Constructs a new {@link SigningEntity} and puts it in the map 'newSignEntitys'.
+         * If 'newSignEntitys' allready contains a certificate for the same CA which is newer than 'cert' the one in the map is kept (nothing is done).
+         * @param cert The certificate of the key
+         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+         * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
+         * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
+         */
+        private boolean putSignEntityCard( Certificate cert, Admin adm,
+                                           Map<Integer, SigningEntity> newSignEntity) {
+            if ( cert!=null &&  cert instanceof X509Certificate) {
+                final X509Certificate x509cert = (X509Certificate)cert;
+                final PrivateKeyContainer keyContainer = new PrivateKeyContainerCard(x509cert);
+                return putSignEntity( keyContainer, x509cert, adm, new CardProviderHandler(), newSignEntity );
+            }
+            return false;
+        }
+        /**
+         * Adds OCSP signing keys from the card to the newSignEntity (parameter).
+         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+         * @param fileName The name of the file where the certificates are stored.
+         * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
+         */
+        private void loadFromKeyCards(Admin adm, String fileName, Map<Integer, SigningEntity> newSignEntity) {
+            m_log.trace(">loadFromKeyCards");
+            final CertificateFactory cf;
+            try {
+                cf = CertificateFactory.getInstance("X.509");
+            } catch (java.security.cert.CertificateException e) {
+                throw new Error(e);
+            }
+            String fileType = null;
+            try {// read certs from PKCS#7 file
+                final Collection<? extends Certificate> c = cf.generateCertificates(new FileInputStream(fileName));
+                if ( c!=null && !c.isEmpty() ) {
+                    Iterator<? extends Certificate> i = c.iterator();
+                    while (i.hasNext()) {
+                        if ( putSignEntityCard(i.next(), adm, newSignEntity) ) {
+                            fileType = "PKCS#7";
+                        }
+                    }
+                }
+            } catch( Exception e) {
+                // do nothing
+            }
+            if ( fileType==null ) {
+                try {// read concatenated certificate in PEM format
+                    final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
+                    while (bis.available() > 0) {
+                        if ( putSignEntityCard(cf.generateCertificate(bis), adm, newSignEntity) ) {
+                            fileType="PEM";
+                        }
+                    }
+                } catch(Exception e){
+                    // do nothing
+                }
+            }
+            if ( fileType!=null ) {
+                m_log.debug("Certificate(s) found in file "+fileName+" of "+fileType+".");
+            } else {
+                m_log.debug("File "+fileName+" has no cert.");
+            }
+            m_log.trace("<loadFromKeyCards");
         }
     }
+    /**
+     * Adds {@link SigningEntity} to the {@link SigningEntityContainer} object for all OCSP signing keys that could be found.
+     * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+     * @throws Exception
+     */
     void loadPrivateKeys(Admin adm) throws Exception {
         this.signEntitycontainer.loadPrivateKeys(adm);
     }
@@ -1154,7 +1276,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
         /**
          * Gets the P11 slot user password used to logon to a P11 session.
-         * @return The passord.
+         * @return The password.
          */
         public PasswordProtection getPwd() {
             return new PasswordProtection( (OCSPServletStandAloneSession.this.mP11Password!=null && OCSPServletStandAloneSession.this.mP11Password.length()>0)? OCSPServletStandAloneSession.this.mP11Password.toCharArray():null );
@@ -1219,18 +1341,45 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             this.sKeyContainer.add(keyContainer);
         }
     }
+    /**
+     * An object of this class is used to sign OCSP responses for certificates belonging to one CA.
+     */
     private class SigningEntity {
+        /**
+         * The certificate chain with the CA of the signer on top.
+         */
         final private List<X509Certificate> chain;
+        /**
+         * The signing key.
+         */
         final private PrivateKeyContainer keyContainer;
+        /**
+         * The provider to be used when signing.
+         */
         final private ProviderHandler providerHandler;
+        /**
+         * The object is ready to sign after this constructor has been called.
+         * @param c Certificate chain with CA for which OCSP requests should be signed on top.
+         * @param f The signing key.
+         * @param ph The provider.
+         */
         SigningEntity(List<X509Certificate> c, PrivateKeyContainer f, ProviderHandler ph) {
             this.chain = c;
             this.keyContainer = f;
             this.providerHandler = ph;
         }
+        /**
+         * Get certificate chain. With signing certificate on top.
+         * @return The chain.
+         */
         private X509Certificate[] getCertificateChain() {
             return getCertificateChain(this.keyContainer.getCertificate());
         }
+        /**
+         * Add certificate on top of certificate chain.
+         * @param entityCert The certificate to be on top.
+         * @return The certificate chain.
+         */
         private X509Certificate[] getCertificateChain(final X509Certificate entityCert) {
             final List<X509Certificate> entityChain = new ArrayList<X509Certificate>(this.chain);
             if ( entityCert==null ) {
@@ -1240,13 +1389,27 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             entityChain.add(0, entityCert);
             return entityChain.toArray(new X509Certificate[0]);
         }
+        /**
+         * Initiates key key renewal.
+         * @param caid The EJBCA CA id for the CA.
+         */
         void init(int caid) {
             this.providerHandler.addKeyContainer(this.keyContainer);
             this.keyContainer.init(this.chain, caid);
         }
+        /**
+         * Stops key renewal.
+         */
         void shutDown() {
             this.keyContainer.destroy();
         }
+        /**
+         * Signs a OCSP response.
+         * @param request The response to be signed.
+         * @return The signed response.
+         * @throws ExtendedCAServiceRequestException
+         * @throws IllegalExtendedCAServiceRequestException
+         */
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException {
             final String hsmErrorString = "HSM not functional";
             final String providerName = this.providerHandler.getProviderName();
@@ -1256,7 +1419,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     try {
                         this.wait(HSM_DOWN_ANSWER_TIME); // Wait here to prevent the client repeat the request right away. Some CPU power might be needed to recover the HSM.
                     } catch (InterruptedException e) {
-                        throw new Error(e); //should never ever happend. The main thread should never be interupted.
+                        throw new Error(e); //should never ever happen. The main thread should never be interrupted.
                     }
                 }
                 throw new ExtendedCAServiceRequestException(hsmErrorString+". Waited "+HSM_DOWN_ANSWER_TIME/1000+" seconds to throw the exception");
@@ -1290,6 +1453,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 throw e1;
             }
         }
+        /**
+         * Checks if the signer could be used.
+         * @return True if OK.
+         */
         boolean isOK() {
             try {
                 return this.keyContainer.isOK();
@@ -1361,6 +1528,15 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             return this.result;
         }
     }
+    /**
+     * Answers the OCSP request. The answer is assembled in a separate thread by an object of the class {@link SignerThread}.
+     * @param caid EJBCA id for the CA.
+     * @param request Object with for the request.
+     * @return the response.
+     * @throws ExtendedCAServiceRequestException
+     * @throws ExtendedCAServiceNotActiveException
+     * @throws IllegalExtendedCAServiceRequestException
+     */
     OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         SigningEntity se = this.signEntitycontainer.getSigningEntityMap().get(new Integer(caid));
         if ( se==null ) {

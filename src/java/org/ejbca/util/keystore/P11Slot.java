@@ -21,8 +21,28 @@ public class P11Slot {
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(P11Slot.class);
 
+    /**
+     * All users of the {@link P11Slot} slot must implement this interface.
+     * The user may decide whether deactivation is allowed or not. Deactivation of a user is done when the {@link P11Slot} object wants to reset P11 session (disconnect and reconnect).
+     * <p>
+     * If deactivation is allowed and {@link #deactivate()} called the user should:<br>
+     * Deactivate itself (answer false to {@link #isActive()}) and call {@link P11Slot#removeProviderIfNoTokensActive()}
+     * Then {@link P11Slot#getProvider()} must be called before using the provider again.
+     * </p><p>
+     * If deactivation is not allowed then the user may just continue to answer true to {@link #isActive()}.
+     * </p>
+     */
     public interface P11SlotUser {
+        /**
+         * Called by the {@link P11Slot} when resetting the slot.
+         * @return false if any problem with the deactivation. Otherwise true.
+         * @throws Exception
+         */
         boolean deactivate() throws Exception;
+        /**
+         * The user should return true if not accepting a slot reset.
+         * @return true if the slot is being used.
+         */
         boolean isActive();
     }
     private final static Map<String,P11Slot> slotMap = new HashMap<String, P11Slot>();
