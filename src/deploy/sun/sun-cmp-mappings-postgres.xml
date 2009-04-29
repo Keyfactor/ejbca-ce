@@ -56,8 +56,8 @@
             </cmp-field-mapping>
 
             <cmp-field-mapping>
-                <field-name>timePublished</field-name>
-                <column-name>timepublished</column-name>
+                <field-name>timePublish</field-name>
+                <column-name>timepublish/column-name>
 
             </cmp-field-mapping>
 

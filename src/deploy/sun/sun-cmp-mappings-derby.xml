@@ -41,7 +41,7 @@
 
         <entity-mapping>
             <ejb-name>PublisherQueueData</ejb-name>
-            <table-name>publisherqueuedata</table-name>
+            <table-name>PUBLISHERQUEUEDATA</table-name>
 
             <cmp-field-mapping>
                 <field-name>pk</field-name>

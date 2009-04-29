@@ -156,7 +156,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    	Iterator iter = datas.iterator();
 	    	while (iter.hasNext()) {
 	    		PublisherQueueDataLocal d = (PublisherQueueDataLocal)iter.next();
-	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), d.getTimeCreated(), d.getTimePublish(), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
+	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), d.getTimeCreated(), d.getTimePublished(), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
 	    		ret.add(pqd);
 	    	}			
 		}
@@ -250,7 +250,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    	Iterator iter = datas.iterator();
 	    	while (iter.hasNext()) {
 	    		PublisherQueueDataLocal d = (PublisherQueueDataLocal)iter.next();
-	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), d.getTimeCreated(), d.getTimePublish(), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
+	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), d.getTimeCreated(), d.getTimePublished(), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
 	    		ret.add(pqd);
 	    	}			
 		}
@@ -278,7 +278,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
         		data.setPublishStatus(status);    			
     		}
     		if (publishDate != null) {
-    			data.setTimePublish(publishDate);
+    			data.setTimePublished(publishDate);
     		}
     		if (tryCounter > -1) {
     			data.setTryCounter(tryCounter);

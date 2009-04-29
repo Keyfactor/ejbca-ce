@@ -116,12 +116,12 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="timePublished"
      * @ejb.interface-method view-type="local"
      */
-    public abstract Date getTimePublish();
+    public abstract Date getTimePublished();
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public abstract void setTimePublish(Date timePublish);
+    public abstract void setTimePublished(Date timePublished);
 
     /** PublishStatus is one of PublisherQueueData.STATUS_PENDING or SUCCESS.
      * 
