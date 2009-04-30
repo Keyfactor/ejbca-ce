@@ -129,7 +129,10 @@ public class OCSPServlet extends OCSPServletBase {
 		return new CertificateCacheInternal(prop);
 	}
 
-    protected void loadPrivateKeys(Admin adm) {
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
+     */
+    protected void loadPrivateKeys(Admin adm, String password) {
         // not used by this servlet
     }
 } // OCSPServlet

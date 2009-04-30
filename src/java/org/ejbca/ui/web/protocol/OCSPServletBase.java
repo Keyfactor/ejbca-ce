@@ -189,7 +189,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 	}
 
-	abstract void loadPrivateKeys(Admin adm) throws Exception;
+	abstract void loadPrivateKeys(Admin adm, String password) throws Exception;
 
 	abstract Certificate findCertificateByIssuerAndSerno(Admin adm, String issuerDN, BigInteger serno);
 
@@ -389,9 +389,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	throws IOException, ServletException {
 		m_log.trace(">doGet()");
 		// We have a command to force reloading of keys that can only be run from localhost
-		String reloadCAKeys = request.getParameter("reloadkeys");
-		if (StringUtils.equals(reloadCAKeys, "true")) {
-			String remote = request.getRemoteAddr();
+		final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
+        final String password = request.getParameter("activate");
+		if ( doReload || password!=null ) {
+			final String remote = request.getRemoteAddr();
 			if (StringUtils.equals(remote, "127.0.0.1")) {
 				String iMsg = intres.getLocalizedMessage("ocsp.reloadkeys", remote);
 				m_log.info(iMsg);
@@ -400,7 +401,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				try {
 					// Also reload signing keys
 					mKeysValidTo = 0;
-					loadPrivateKeys(m_adm);
+					loadPrivateKeys(m_adm, password);
 				} catch (Exception e) {
 					m_log.error(e);
 					throw new ServletException(e);
@@ -583,7 +584,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(ITransactionLogger.REQ_NAME, req.getRequestorName().toString());
 				}
 				// Make sure our signature keys are updated
-				loadPrivateKeys(m_adm);
+				loadPrivateKeys(m_adm, null);
 
 				/**
 				 * check the signature if contained in request.

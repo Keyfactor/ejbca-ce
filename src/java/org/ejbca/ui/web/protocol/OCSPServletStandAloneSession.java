@@ -102,15 +102,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     /**
      * Password for all soft keys.
      */
-    final private String mKeyPassword = OcspConfiguration.getKeyPassword();
+    private String mKeyPassword = OcspConfiguration.getKeyPassword();
     /**
      * The password to all soft key stores.
      */
-    final private String mStorePassword = OcspConfiguration.getStorePassword();
-    /**
-     * Refernece of the object that handles all card OCSP signing keys.
-     */
-    final private CardKeys mCardTokenObject;
+    private String mStorePassword = OcspConfiguration.getStorePassword();
 	/**
 	 * Reference to an object that holds all entities used for the OCSP signing.
 	 */
@@ -122,7 +118,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     /**
      * User password for the PKCS#11 slot. Used to logon to the slot.
      */
-    final private String mP11Password = OcspConfiguration.getP11Password();
+    private String mP11Password = OcspConfiguration.getP11Password();
     /**
      * The time before a OCSP signing certificate will expire that it should be removed.
      */
@@ -139,6 +135,18 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * {@link #isOK} tells if the servlet is ready to be used. It is false during the time when the HSM has failed until its keys is reloaded.
      */
     private boolean isOK=true;
+    /**
+     * Password should not be stored in memory if this is true.
+     */
+    private final boolean doNotStorePasswordsInMemory = OcspConfiguration.getDoNotStorePasswordsInMemory();
+    /**
+     * Class name for "card" implementation.
+     */
+    private final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
+    /**
+     * Card password.
+     */
+    private String cardPassword = OcspConfiguration.getCardPassword();
 
     /**
      * Called when a servlet is initialized. This should only occur once.
@@ -150,6 +158,31 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         this.signEntitycontainer = new SigningEntityContainer();
         this.servlet = _servlet;
         try {
+            if ( this.doNotStorePasswordsInMemory ) {
+                final Set<String> sError = new HashSet<String>();
+                if ( this.mKeyPassword!=null ) {
+                    sError.add(OcspConfiguration.KEY_PASSWORD);
+                }
+                if ( this.mP11Password!=null ) {
+                    sError.add(OcspConfiguration.P11_PASSWORD);
+                }
+                if ( this.cardPassword!=null ) {
+                    sError.add(OcspConfiguration.CARD_PASSWORD);
+                }
+                if ( sError.size()>0 ) {
+                    final StringWriter sw = new StringWriter();
+                    final PrintWriter pw = new PrintWriter(sw);
+                    pw.print("When "+OcspConfiguration.DO_NOT_STORE_PASSWORDS_IN_MEMORY+" is configured you must remove these configurations: \"");
+                    final Iterator<String> i = sError.iterator();
+                    while( i.hasNext() ) {
+                        pw.print(i.next());
+                        if ( i.hasNext() )
+                            pw.print("\" and \"");
+                    }
+                    pw.print("\"."); pw.flush(); pw.close();
+                    throw new ServletException(sw.toString());
+                }
+            }
             final boolean isIndex;
             final String sharedLibrary = OcspConfiguration.getSharedLibrary();
             final String configFile = OcspConfiguration.getSunP11ConfigurationFile();
@@ -176,29 +209,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             	this.slot = null;
             	m_log.debug("No shared P11 library.");
             }
-			if ( this.mKeyPassword.length()==0 ) {
-			    throw new ServletException("no keystore password given");
-			}
-			final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
-			if ( hardTokenClassName!=null && hardTokenClassName.length()>0 ) {
-			    String sCardPassword = OcspConfiguration.getCardPassword();
-			    sCardPassword = sCardPassword!=null ? sCardPassword.trim() : null;
-                CardKeys tmp = null;
-			    if ( sCardPassword!=null && sCardPassword.length()>0 ) {
-			        try {
-			            tmp = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
-			            tmp.autenticate(sCardPassword);
-			        } catch( ClassNotFoundException e) {
-			            m_log.info(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
-			        }
-			    } else {
-			        m_log.info(intres.getLocalizedMessage("ocsp.nocardpwd"));
-			    }
-                this.mCardTokenObject = tmp;
-			} else {
-                this.mCardTokenObject = null;
-                m_log.info( intres.getLocalizedMessage("ocsp.nohwsigningclass") );
-			}
             if ( this.mKeystoreDirectoryName==null || this.mKeystoreDirectoryName.length()<1 ) {
             	throw new ServletException(intres.getLocalizedMessage("ocsp.errornovalidkeys"));
             }
@@ -231,7 +241,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
             // Load OCSP responders private keys into cache in init to speed things up for the first request
             // signEntityMap is also set
-            loadPrivateKeys(this.servlet.m_adm);
+            loadPrivateKeys(this.servlet.m_adm, null);
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -246,7 +256,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         try {
-            loadPrivateKeys(this.servlet.m_adm);
+            loadPrivateKeys(this.servlet.m_adm, null);
             final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
             while ( i.hasNext() ) {
                 SigningEntity signingEntity = i.next();
@@ -305,6 +315,23 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * Destroys the container. Waiting to renew keys stopped.
          */
         void destroy();
+    }
+    /**
+     * Gets the P11 slot user password used to logon to a P11 session.
+     * @param password Password to be used. Set to null if configured should be used
+     * @return
+     */
+    public PasswordProtection getP11Pwd(String password) throws Exception {
+        if ( password!=null ) {
+            if ( this.mP11Password!=null ) {
+                throw new Exception("Trying to activate even tought password has been configured.");
+            }
+            return new PasswordProtection(password.toCharArray());
+        }
+        if ( this.mP11Password!=null ) {
+            return new PasswordProtection(this.mP11Password.toCharArray());
+        }
+        return null;
     }
     /**
      * Tells if we should renew a key before the certificate expires.
@@ -456,8 +483,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
              * Updating of the key.
              */
             private void updateKey() {
-                if ( !this.doUpdateKey )
+                if ( !this.doUpdateKey ) {
                     return;
+                }
                 final EjbcaWS ejbcaWS = getEjbcaWS();
                 if ( ejbcaWS==null ) {
                     return;
@@ -503,7 +531,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 try {
                     ws_url = new URL(OCSPServletStandAloneSession.this.webURL + "?wsdl");
                 } catch (MalformedURLException e) {
-                    m_log.debug("Problem with URL: '"+OCSPServletStandAloneSession.this.webURL+"'", e);
+                    m_log.error("Problem with URL: '"+OCSPServletStandAloneSession.this.webURL+"'", e);
                     return null;
                 }
                 final QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
@@ -705,23 +733,29 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         final private X509Certificate certificate;
         /**
+         * The keys on the card.
+         */
+        final private CardKeys cardKeys;
+        /**
          * Initiates the object.
          * @param cert the signing certificate
+         * @param keys The keys on the card.
          */
-        PrivateKeyContainerCard( X509Certificate cert) {
+        PrivateKeyContainerCard( X509Certificate cert, CardKeys keys) {
             this.certificate = cert;
+            this.cardKeys = keys;
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#getKey()
          */
         public PrivateKey getKey() throws Exception {
-            return OCSPServletStandAloneSession.this.mCardTokenObject.getPrivateKey((RSAPublicKey)this.certificate.getPublicKey());
+            return this.cardKeys.getPrivateKey((RSAPublicKey)this.certificate.getPublicKey());
         }
 		/* (non-Javadoc)
 		 * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#isOK()
 		 */
 		public boolean isOK() {
-			return OCSPServletStandAloneSession.this.mCardTokenObject.isOK((RSAPublicKey)this.certificate.getPublicKey());
+			return this.cardKeys.isOK((RSAPublicKey)this.certificate.getPublicKey());
 		}
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#clear()
@@ -771,6 +805,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         private boolean updating = false;
         /**
+         * Refernece of the object that handles all card OCSP signing keys.
+         */
+        private CardKeys cardKeys;
+        /**
          * The implementation of the mutex.
          */
         private class Mutex {
@@ -810,18 +848,22 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         /**
          * Create a {@link SigningEntity} for all OCSP signing keys that could be found.
          * @param adm Administrator to be used when getting the certificate chain from the DB.
+         * @param password Activation password. If null no activation is done.
          * @throws Exception
          */
-        void loadPrivateKeys(Admin adm) throws Exception {
-            m_log.trace(">loadPrivateKeys");
+        /**
+         * @param adm
+         * @param password
+         * @throws Exception
+         */
+        void loadPrivateKeys(Admin adm, String password ) throws Exception {
             try {
                 this.mutex.getMutex();
+                // We will only load private keys if the cache time has run out
                 if ( (this.signEntityMap!=null && this.signEntityMap.size()>0 && OCSPServletStandAloneSession.this.servlet.mKeysValidTo>new Date().getTime()) || !OCSPServletStandAloneSession.this.isOK ) {
-                    m_log.trace("<loadPrivateKeys: using cache");
                     return;
                 }
-                this.updating  = true; // stops new action on token
-                // We will only load private keys if the cache time has run out
+                m_log.trace(">loadPrivateKeys");
                 // Update cache time
                 // If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
                 OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ? new Date().getTime()+OCSPServletStandAloneSession.this.servlet.m_valid_time : Long.MAX_VALUE;
@@ -830,18 +872,34 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 this.mutex.releaseMutex();
             }
             try {
+                this.updating  = true; // stops new action on token
+                if ( this.cardKeys==null && OCSPServletStandAloneSession.this.hardTokenClassName!=null && OCSPServletStandAloneSession.this.hardTokenClassName.length()>0 ) {
+                    final String tmpPassword = password!=null ? password : OCSPServletStandAloneSession.this.cardPassword;
+                    if ( tmpPassword!=null  ) {
+                        try {
+                            this.cardKeys = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(OCSPServletStandAloneSession.this.hardTokenClassName).newInstance();
+                            this.cardKeys.autenticate(tmpPassword);
+                        } catch( ClassNotFoundException e) {
+                            m_log.info(intres.getLocalizedMessage("ocsp.classnotfound", OCSPServletStandAloneSession.this.hardTokenClassName));
+                        }
+                    } else {
+                        m_log.info(intres.getLocalizedMessage("ocsp.nocardpwd"));
+                    }
+                } else {
+                    m_log.info( intres.getLocalizedMessage("ocsp.nohwsigningclass") );
+                }
                 final HashMap<Integer, SigningEntity> newSignEntity = new HashMap<Integer, SigningEntity>();
                 synchronized(this) {
                     this.wait(500); // wait for actions on token to get ready
                 }
-                loadFromP11HSM(adm, newSignEntity);
+                loadFromP11HSM(adm, newSignEntity, password);
                 final File dir = OCSPServletStandAloneSession.this.mKeystoreDirectoryName!=null ? new File(OCSPServletStandAloneSession.this.mKeystoreDirectoryName) : null;
                 if ( dir!=null && dir.isDirectory() ) {
                     final File files[] = dir.listFiles();
                     if ( files!=null && files.length>0 ) {
                         for ( int i=0; i<files.length; i++ ) {
                             final String fileName = files[i].getCanonicalPath();
-                            if ( !loadFromSWKeyStore(adm, fileName, newSignEntity) ) {
+                            if ( !loadFromSWKeyStore(adm, fileName, newSignEntity, password) ) {
                                 loadFromKeyCards(adm, fileName, newSignEntity);
                             }
                         }
@@ -904,10 +962,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * Adds OCSP signing keys from the HSM to the newSignEntity (parameter).
          * @param adm Adminstrator to be used when getting the certificate chain from the DB.
          * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
+         * @param password Used for activation.
          * @return true if keys where found on the HSM
          * @throws Exception
          */
-        private boolean loadFromP11HSM(Admin adm, Map<Integer, SigningEntity> newSignEntity) throws Exception {
+        private boolean loadFromP11HSM(Admin adm, Map<Integer, SigningEntity> newSignEntity,
+                                       String password) throws Exception {
             m_log.trace(">loadFromP11HSM");
             if ( OCSPServletStandAloneSession.this.slot==null ) {
                 m_log.trace("<loadFromP11HSM: no shared library");
@@ -915,7 +975,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
             OCSPServletStandAloneSession.this.slot.reset();
             final P11ProviderHandler providerHandler = new P11ProviderHandler();
-            final PasswordProtection pwp = providerHandler.getPwd();
+            final PasswordProtection pwp = getP11Pwd(password);
             loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, OCSPServletStandAloneSession.this.slot.toString(), providerHandler, newSignEntity);
             pwp.destroy();
             m_log.trace("<loadFromP11HSM");
@@ -928,19 +988,23 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @param newSignEntity The map where the signing entity should be stored for the key if the certificate is a valid OCSP certificate.
          * @return true if the key in the SW java keystore was valid.
          */
-        private boolean loadFromSWKeyStore(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity) {
+        private boolean loadFromSWKeyStore(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity,
+                                           String password) {
             m_log.trace(">loadFromSWKeyStore");
             boolean ret = false;
             try {
                 KeyStore keyStore;
+                final String storePassword = OCSPServletStandAloneSession.this.mStorePassword!=null ? OCSPServletStandAloneSession.this.mStorePassword : password;
+                final char storePassChars[] = storePassword!=null ? storePassword.toCharArray() : null;
                 try {
                     keyStore = KeyStore.getInstance("JKS");
-                    keyStore.load(new FileInputStream(fileName), OCSPServletStandAloneSession.this.mStorePassword.toCharArray());
+                    keyStore.load(new FileInputStream(fileName), storePassChars);
                 } catch( IOException e ) {
                     keyStore = KeyStore.getInstance("PKCS12", "BC");
-                    keyStore.load(new FileInputStream(fileName), OCSPServletStandAloneSession.this.mStorePassword.toCharArray());
+                    keyStore.load(new FileInputStream(fileName), storePassChars);
                 }
-                loadFromKeyStore(adm, keyStore, OCSPServletStandAloneSession.this.mKeyPassword, fileName, new SWProviderHandler(), newSignEntity);
+                final String keyPassword = OCSPServletStandAloneSession.this.mKeyPassword!=null ? OCSPServletStandAloneSession.this.mKeyPassword : password;
+                loadFromKeyStore(adm, keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity);
                 ret = true;
             } catch( Exception e ) {
                 m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
@@ -1112,7 +1176,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                                            Map<Integer, SigningEntity> newSignEntity) {
             if ( cert!=null &&  cert instanceof X509Certificate) {
                 final X509Certificate x509cert = (X509Certificate)cert;
-                final PrivateKeyContainer keyContainer = new PrivateKeyContainerCard(x509cert);
+                final PrivateKeyContainer keyContainer = new PrivateKeyContainerCard(x509cert, this.cardKeys);
                 return putSignEntity( keyContainer, x509cert, adm, new CardProviderHandler(), newSignEntity );
             }
             return false;
@@ -1168,10 +1232,39 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     /**
      * Adds {@link SigningEntity} to the {@link SigningEntityContainer} object for all OCSP signing keys that could be found.
      * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+     * @param password Password for activation. If null then ust key loading.
      * @throws Exception
      */
-    void loadPrivateKeys(Admin adm) throws Exception {
-        this.signEntitycontainer.loadPrivateKeys(adm);
+    void loadPrivateKeys(Admin adm, String password) throws Exception {
+        if ( this.doNotStorePasswordsInMemory ) {
+            if ( password==null ) {
+                m_log.debug("Not possible to update keys without password");
+                return;
+            }
+            if( this.signEntitycontainer.getSigningEntityMap()!=null ) {
+                m_log.debug("Not possible to activate more than once.");
+                return;
+            }
+            this.signEntitycontainer.loadPrivateKeys(adm, password);
+            return;
+        }
+        if ( password==null ) {
+            this.signEntitycontainer.loadPrivateKeys(adm, null);
+            return;
+        }
+        if ( this.mKeyPassword==null ) {
+            this.mKeyPassword=password;
+        }
+        if ( this.mStorePassword==null ) {
+            this.mStorePassword=password;
+        }
+        if ( this.mP11Password==null ) {
+            this.mP11Password=password;
+        }
+        if ( this.cardPassword==null ) {
+            this.cardPassword = password;
+        }
+        this.signEntitycontainer.loadPrivateKeys(adm, null);
     }
     /**
      * Holds information about a provider.
@@ -1274,13 +1367,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             keyStore.load(null, null);
             return keyStore;
         }
-        /**
-         * Gets the P11 slot user password used to logon to a P11 session.
-         * @return The password.
-         */
-        public PasswordProtection getPwd() {
-            return new PasswordProtection( (OCSPServletStandAloneSession.this.mP11Password!=null && OCSPServletStandAloneSession.this.mP11Password.length()>0)? OCSPServletStandAloneSession.this.mP11Password.toCharArray():null );
-        }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.ProviderHandler#getProviderName()
          */
@@ -1314,7 +1400,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             PrivateKeyContainer pkf = i.next();
                             errorMessage = pkf.toString();
                             m_log.debug("Trying to reload: "+errorMessage);
-                            pkf.set(P11ProviderHandler.this.getKeyStore(P11ProviderHandler.this.getPwd()));
+                            pkf.set(P11ProviderHandler.this.getKeyStore(getP11Pwd(null)));
                             m_log.info("Reloaded: "+errorMessage);
                         }
                     }
@@ -1329,8 +1415,13 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.ProviderHandler#reload()
          */
         public synchronized void reload() {
-            if ( !OCSPServletStandAloneSession.this.isOK )
+            if ( OCSPServletStandAloneSession.this.doNotStorePasswordsInMemory ) {
+                m_log.info("Not possible to recover a lost HSM with no passowrd.");
                 return;
+            }
+            if ( !OCSPServletStandAloneSession.this.isOK ) {
+                return;
+            }
             OCSPServletStandAloneSession.this.isOK = false;
             new Thread(new Reloader()).start();
         }

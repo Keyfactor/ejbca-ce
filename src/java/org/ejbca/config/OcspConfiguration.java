@@ -298,12 +298,13 @@ public class OcspConfiguration {
 	public static String getSoftKeyDirectoryName() {
 		return ConfigurationHolder.getString("ocsp.keys.dir", "./keys");
 	}
-	
-	/**
+
+    public final static String KEY_PASSWORD="ocsp.keys.keyPassword";
+    /**
 	 * The password for the all the soft keys of the OCSP responder.
 	 */
 	public static String getKeyPassword() {
-		return ConfigurationHolder.getString("ocsp.keys.keyPassword", "foo123");
+		return ConfigurationHolder.getString(KEY_PASSWORD, null);
 	}
 	
 	/**
@@ -311,18 +312,19 @@ public class OcspConfiguration {
 	 * @return the value of getKeyPassword() if property isn't set.
 	 */
 	public static String getStorePassword() {
-		String value = ConfigurationHolder.getString("ocsp.keys.storePassword", "");
-		if (value == null || value.length()==0) {
+		String value = ConfigurationHolder.getString("ocsp.keys.storePassword", null);
+		if ( value == null ) {
 			value = getKeyPassword();
 		}
 		return value;
 	}
 	
-	/**
+	public final static String CARD_PASSWORD="ocsp.keys.cardPassword";
+    /**
 	 * The password for all keys stored on card.
 	 */
 	public static String getCardPassword() {
-		return ConfigurationHolder.getString("ocsp.keys.cardPassword", "");
+		return ConfigurationHolder.getString(CARD_PASSWORD, null);
 	}
 	
 	/**
@@ -364,23 +366,40 @@ public class OcspConfiguration {
     }
 
 	/**
-	 * P11 shared library path name.
+     * P11 shared library path name.
+	 * @return The value;
 	 */
 	public static String getSharedLibrary() {
-		return ConfigurationHolder.getString("ocsp.p11.sharedLibrary", "");
+		return ConfigurationHolder.getString("ocsp.p11.sharedLibrary", null);
 	}
 	
-	/**
-	 * P11 password.
+	public static final String P11_PASSWORD="ocsp.p11.p11password";
+    /**
+     * P11 password.
+	 * @return The value
 	 */
 	public static String getP11Password() {
-		return ConfigurationHolder.getString("ocsp.p11.p11password", "foo123");
+		return ConfigurationHolder.getString(P11_PASSWORD, null);
 	}
 	
 	/**
-	 * P11 slot number.
+     * P11 slot number.
+	 * @return The value.
 	 */
 	public static String getSlot() {
 		return ConfigurationHolder.getString("ocsp.p11.slot", "i1");
 	}
+
+	public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY="ocsp.doNotStorePasswordsInMemory";
+    /**
+     * Should passwords be stored in memory.
+     * @return True if password should not be stored in memory.
+     */
+    public static boolean getDoNotStorePasswordsInMemory() {
+        final String s = ConfigurationHolder.getString(DO_NOT_STORE_PASSWORDS_IN_MEMORY, null);
+        if ( s==null || s.toLowerCase().indexOf("false")>=0 || s.toLowerCase().indexOf("no")>=0 ) {
+            return false;
+        }
+        return true;
+    }
 }
