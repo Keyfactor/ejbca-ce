@@ -149,7 +149,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         log.log(priority, logline, null);
 
         if (exception != null) {
-            log.error("Exception : ", exception);
+            log.log(priority, "Exception : ", exception);
         }
     }
 
