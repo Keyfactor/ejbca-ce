@@ -30,25 +30,25 @@ import java.security.spec.ECPoint;
 class AlgorithmToolsHelper {
 	
 	static class MockPublicKey implements PublicKey {
-		@Override public String getAlgorithm() { return null; }
-		@Override public byte[] getEncoded() { return null; }
-		@Override public String getFormat() { return null; }		
+		public String getAlgorithm() { return null; }
+		public byte[] getEncoded() { return null; }
+		public String getFormat() { return null; }		
 	}
 	
 	static class MockNotSupportedPublicKey extends MockPublicKey {}
 	
 	static class MockRSAPublicKey extends MockPublicKey implements RSAPublicKey {
-		@Override public BigInteger getPublicExponent() { return null; }
-		@Override public BigInteger getModulus() { return null; }
+		public BigInteger getPublicExponent() { return null; }
+		public BigInteger getModulus() { return null; }
 	}
 	
 	static class MockDSAPublicKey extends MockPublicKey implements DSAPublicKey {
-		@Override public BigInteger getY() { return null; }
-		@Override public DSAParams getParams() { return null; }
+		public BigInteger getY() { return null; }
+		public DSAParams getParams() { return null; }
 	}
 	
 	static class MockECDSAPublicKey extends MockPublicKey implements ECPublicKey {
-		@Override public ECPoint getW() { return null; }
-		@Override public ECParameterSpec getParams() { return null; }
+		public ECPoint getW() { return null; }
+		public ECParameterSpec getParams() { return null; }
 	}
 }
