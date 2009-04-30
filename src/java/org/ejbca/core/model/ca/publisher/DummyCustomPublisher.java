@@ -17,14 +17,13 @@ import java.security.cert.Certificate;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 
 
 /**
- * This is an class used for testing and example purposes.
- * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
+ * This is a class used for testing and example purposes.
+ * It is supposed to illustrate how to implement a custom publisher in EJBCA 3.
  *  
  *
  * @version $Id$
@@ -42,7 +41,6 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
 	 */
 	public void init(Properties properties) {
-	  // This method sets up the communication with the publisher
 	  log.debug("Initializing DummyCustomPublisher " + properties.getProperty(BasePublisher.DESCRIPTION, ""));
 	}
 
@@ -51,10 +49,6 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	 */
 	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException {
         log.debug("DummyCustomPublisher, Storing Certificate for user: " + username);	
-        // Don't publish non-active certificates
-        if (status != CertificateDataBean.CERT_ACTIVE) {
-        	return true;
-        }
 		return true;
 	}
 
@@ -71,14 +65,6 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	 */
 	public void testConnection(Admin admin) throws PublisherConnectionException {
         log.debug("DummyCustomPublisher, Testing connection");			
-	}
-
-	
-	protected void finalize() throws Throwable {
-        log.debug("DummyCustomPublisher, closing connection");
-		// This method closes the communication with the publisher.	
-			
-		super.finalize(); 
 	}
 	
 }

@@ -17,6 +17,10 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
@@ -64,7 +68,10 @@ public class TestTools {
     private static IRaAdminSessionRemote raAdminSession;
     private static IServiceSessionRemote serviceSession;
 	private static ISignSessionRemote signSession;
-    private static IUserAdminSessionRemote userAdminSession;    
+    private static IUserAdminSessionRemote userAdminSession;
+    private static IPublisherQueueSessionRemote publisherQueueSession;
+    private static IPublisherSessionRemote publisherSession;
+    
 
 	public static IApprovalSessionRemote getApprovalSession() {
 		try {
@@ -234,6 +241,30 @@ public class TestTools {
 		return userAdminSession;
 	}
 
+
+	public static IPublisherQueueSessionRemote getPublisherQueueSession() {
+		try {
+			if (publisherQueueSession == null) {
+				publisherQueueSession = ((IPublisherQueueSessionHome) ServiceLocator.getInstance().getRemoteHome(IPublisherQueueSessionHome.JNDI_NAME, IPublisherQueueSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+		return publisherQueueSession;
+	}
+
+	public static IPublisherSessionRemote getPublisherSession() {
+		try {
+			if (publisherSession == null) {
+				publisherSession = ((IPublisherSessionHome) ServiceLocator.getInstance().getRemoteHome(IPublisherSessionHome.JNDI_NAME, IPublisherSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+		return publisherSession;
+	}
 
 	/**
 	 * Makes sure the Test CA with subject DN "CN=TEST" exists.

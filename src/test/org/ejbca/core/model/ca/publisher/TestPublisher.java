@@ -21,19 +21,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 
 
@@ -89,9 +85,7 @@ public class TestPublisher extends TestCase {
             + "0EGU/RgM3AWhyTAps66tdyipRavKmH6MMrN4ypW/qbhsd4o8JE9pxxn9zsQaNxYZ"
             + "SNbXM2/YxkdoRSjkrbb9DUdCmCR/kEA=").getBytes());
     
-    private static Logger log = Logger.getLogger(TestPublisher.class);
-    private static Context ctx;
-    private static IPublisherSessionRemote pub;
+    private static final Logger log = Logger.getLogger(TestPublisher.class);
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
@@ -109,31 +103,13 @@ public class TestPublisher extends TestCase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
-        log.trace(">setUp()");
-        ctx = getInitialContext();
-        
-        Object obj = ctx.lookup(IPublisherSessionHome.JNDI_NAME);
-        IPublisherSessionHome home = (IPublisherSessionHome) javax.rmi.PortableRemoteObject.narrow(obj,
-                IPublisherSessionHome.class);
-        pub = home.create();
-        
+    protected void setUp() throws Exception {        
         CertTools.installBCProvider();
-        
-        log.trace("<setUp()");
-        
     }
     
     protected void tearDown() throws Exception {
     }
     
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        
-        return ctx;
-    }
     
     /**
      * adds ldap publisher
@@ -147,7 +123,7 @@ public class TestPublisher extends TestCase {
             LdapPublisher publisher = new LdapPublisher();
             publisher.setHostnames("localhost");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            pub.addPublisher(admin, "TESTLDAP", publisher);
+            TestTools.getPublisherSession().addPublisher(admin, "TESTLDAP", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -168,7 +144,7 @@ public class TestPublisher extends TestCase {
             ActiveDirectoryPublisher publisher = new ActiveDirectoryPublisher();
             publisher.setHostnames("localhost");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            pub.addPublisher(admin, "TESTAD", publisher);
+            TestTools.getPublisherSession().addPublisher(admin, "TESTAD", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -189,7 +165,7 @@ public class TestPublisher extends TestCase {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath("org.ejbca.core.model.ca.publisher.DummyCustomPublisher");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            pub.addPublisher(admin, "TESTDUMMYCUSTOM", publisher);
+            TestTools.getPublisherSession().addPublisher(admin, "TESTDUMMYCUSTOM", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -209,7 +185,7 @@ public class TestPublisher extends TestCase {
         
         boolean ret = false;
         try {
-            pub.renamePublisher(admin, "TESTDUMMYCUSTOM", "TESTNEWDUMMYCUSTOM");
+        	TestTools.getPublisherSession().renamePublisher(admin, "TESTDUMMYCUSTOM", "TESTNEWDUMMYCUSTOM");
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -228,7 +204,7 @@ public class TestPublisher extends TestCase {
         log.trace(">test05ClonePublisher()");
         
         boolean ret = false;
-        pub.clonePublisher(admin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
+        TestTools.getPublisherSession().clonePublisher(admin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
         ret = true;
         assertTrue("Cloning Custom Publisher failed", ret);
         
@@ -246,9 +222,9 @@ public class TestPublisher extends TestCase {
         
         boolean ret = false;
         
-        BasePublisher publisher = pub.getPublisher(admin, "TESTCLONEDUMMYCUSTOM");
+        BasePublisher publisher = TestTools.getPublisherSession().getPublisher(admin, "TESTCLONEDUMMYCUSTOM");
         publisher.setDescription(publisher.getDescription().toUpperCase());
-        pub.changePublisher(admin, "TESTCLONEDUMMYCUSTOM", publisher);
+        TestTools.getPublisherSession().changePublisher(admin, "TESTCLONEDUMMYCUSTOM", publisher);
         ret = true;
         
         assertTrue("Editing Custom Publisher failed", ret);
@@ -266,9 +242,9 @@ public class TestPublisher extends TestCase {
         log.trace(">test07StoreCertToDummy()");
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList publishers = new ArrayList();
-        publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
+        publishers.add(new Integer(TestTools.getPublisherSession().getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
         
-        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
+        boolean ret = TestTools.getPublisherSession().storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
         log.trace("<test07StoreCertToDummyr()");
     }
@@ -282,8 +258,8 @@ public class TestPublisher extends TestCase {
         log.trace(">test08storeCRLToDummy()");
         
         ArrayList publishers = new ArrayList();
-        publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
-        boolean ret = pub.storeCRL(admin, publishers, testcrl, null, 1);
+        publishers.add(new Integer(TestTools.getPublisherSession().getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
+        boolean ret = TestTools.getPublisherSession().storeCRL(admin, publishers, testcrl, null, 1);
         assertTrue("Storing CRL to dummy publisher failed", ret);
         
         log.trace("<test08storeCRLToDummy()");
@@ -504,23 +480,23 @@ public class TestPublisher extends TestCase {
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
             publisher.setPropertyData("dataSource java:/EjbcaDS");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            pub.addPublisher(admin, "TESTEXTOCSP", publisher);
+            TestTools.getPublisherSession().addPublisher(admin, "TESTEXTOCSP", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         	log.error(pee);
         }        
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = pub.getPublisherId(admin, "TESTEXTOCSP");
-        pub.testConnection(admin, id);
+        int id = TestTools.getPublisherSession().getPublisherId(admin, "TESTEXTOCSP");
+        TestTools.getPublisherSession().testConnection(admin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList publishers = new ArrayList();
-        publishers.add(new Integer(pub.getPublisherId(admin, "TESTEXTOCSP")));
+        publishers.add(new Integer(TestTools.getPublisherSession().getPublisherId(admin, "TESTEXTOCSP")));
         
-        ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
+        ret = TestTools.getPublisherSession().storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, CertificateDataBean.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime());
+        TestTools.getPublisherSession().revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, CertificateDataBean.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime());
 	    log.trace("<test14ExternalOCSPPublisherCustom()");
     }
     
@@ -534,23 +510,23 @@ public class TestPublisher extends TestCase {
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
             publisher.setDataSource("java:/EjbcaDS");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            pub.addPublisher(admin, "TESTEXTOCSP2", publisher);
+            TestTools.getPublisherSession().addPublisher(admin, "TESTEXTOCSP2", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         	log.error(pee);
         }        
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = pub.getPublisherId(admin, "TESTEXTOCSP2");
-        pub.testConnection(admin, id);
+        int id = TestTools.getPublisherSession().getPublisherId(admin, "TESTEXTOCSP2");
+        TestTools.getPublisherSession().testConnection(admin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList publishers = new ArrayList();
-        publishers.add(new Integer(pub.getPublisherId(admin, "TESTEXTOCSP2")));
+        publishers.add(new Integer(TestTools.getPublisherSession().getPublisherId(admin, "TESTEXTOCSP2")));
         
-        ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
+        ret = TestTools.getPublisherSession().storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        pub.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, CertificateDataBean.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime());
+        TestTools.getPublisherSession().revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, CertificateDataBean.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime());
 	    log.trace("<test15ExternalOCSPPublisher()");
     }
 
@@ -563,22 +539,22 @@ public class TestPublisher extends TestCase {
         log.trace(">test99removePublishers()");
         boolean ret = true;
         try {
-            pub.removePublisher(admin, "TESTLDAP");            
+        	TestTools.getPublisherSession().removePublisher(admin, "TESTLDAP");            
         } catch (Exception pee) {ret = false;}
         try {
-            pub.removePublisher(admin, "TESTAD");
+        	TestTools.getPublisherSession().removePublisher(admin, "TESTAD");
         } catch (Exception pee) {ret = false;}
         try {
-            pub.removePublisher(admin, "TESTNEWDUMMYCUSTOM");
+        	TestTools.getPublisherSession().removePublisher(admin, "TESTNEWDUMMYCUSTOM");
         } catch (Exception pee) {ret = false;}
         try {
-            pub.removePublisher(admin, "TESTCLONEDUMMYCUSTOM");
+        	TestTools.getPublisherSession().removePublisher(admin, "TESTCLONEDUMMYCUSTOM");
         } catch (Exception pee) {ret = false;}
         try {
-            pub.removePublisher(admin, "TESTEXTOCSP");            
+        	TestTools.getPublisherSession().removePublisher(admin, "TESTEXTOCSP");            
         } catch (Exception pee) {ret = false;}
         try {
-            pub.removePublisher(admin, "TESTEXTOCSP2");            
+        	TestTools.getPublisherSession().removePublisher(admin, "TESTEXTOCSP2");            
         } catch (Exception pee) {ret = false;}
         assertTrue("Removing Publisher failed", ret);
         

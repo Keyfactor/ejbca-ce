@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
@@ -124,18 +125,6 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 		return psession;
 	}
 
-	/** Publishing algorithm that is a plain fifo queue. It will select from the database for this particular publisher id, and process 
-	 * the record that is returned one by one. The database determines which order the records are returned, usually the reverse order in which they were inserted.
-	 * Publishing is tried every time for every pending record returned, with no limit.
-	 * 
-	 * @param publisherId
-	 */
-	private void plainFifoTryAlwaysNoLimit(int publisherId) {
-		Collection c = getPublishQueueSession().getPendingEntriesForPublisher(publisherId);
-		// This always published everything so no need for a loop as we have for plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated
-		doPublish(publisherId, c);
-	}
-
 	/** Publishing algorithm that is a plain fifo queue, but limited to selecting entries to republish at 100 records at a time. It will select from the database for this particular publisher id, and process 
 	 * the record that is returned one by one. The records are ordered by date, descending so the oldest record is returned first. 
 	 * Publishing is tried every time for every record returned, with no limit.
@@ -143,6 +132,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * However we don't want to publish more than 5000 certificates each time, because we want to commit to the database some time as well.
 	 * 
 	 * @param publisherId
+	 * @throws PublisherException 
 	 */
 	private void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(int publisherId) {
 		int successcount = 0;
@@ -162,6 +152,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 	 * @param publisherId
 	 * @param c
 	 * @return how many publishes that succeeded
+	 * @throws PublisherException 
 	 */
 	private int doPublish(int publisherId, Collection c) {
 		if (log.isDebugEnabled()) {
@@ -169,27 +160,39 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 		}
 		int successcount = 0;
 		int failcount = 0;
+		// Get the publisher. Beware this can be null!
+		BasePublisher publisher = getPublisherSession().getPublisher(getAdmin(), publisherId);
 		Iterator iter = c.iterator();
 		while (iter.hasNext()) {
 			PublisherQueueData pqd = (PublisherQueueData)iter.next();
-			int id = pqd.getPublisherId();
 			if (log.isDebugEnabled()) {
-				log.debug("Publishing from queue to publisher: "+id+", fingerprint: "+pqd.getFingerprint()+", pk: "+pqd.getPk());
+				log.debug("Publishing from queue to publisher: "+publisherId+", fingerprint: "+pqd.getFingerprint()+", pk: "+pqd.getPk());
 			}
-			// Get the publisher
-			BasePublisher publisher = getPublisherSession().getPublisher(getAdmin(), id);
-			PublisherQueueVolatileData vold = pqd.getVolatileData();
+			PublisherQueueVolatileData voldata = pqd.getVolatileData();
+			String username = null;
+			String password = null;
+			ExtendedInformation ei = null;
+			if (voldata != null) {
+				username = voldata.getUsername();
+				password = voldata.getPassword();
+				ei = voldata.getExtendedInformation();
+			}
 			CertificateDataLocal certlocal;
 			boolean published = false;
 			Certificate cert = null;
 			try {
-				// Read the actual certificate and try to publish it again
-				certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(pqd.getFingerprint()));
-				cert = certlocal.getCertificate();
-				published = publisher.storeCertificate(getAdmin(), cert, vold.getUsername(), vold.getPassword(), certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), vold.getExtendedInformation());
+				if (publisher != null) {
+					// Read the actual certificate and try to publish it again
+					certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(pqd.getFingerprint()));
+					cert = certlocal.getCertificate();
+					published = publisher.storeCertificate(getAdmin(), cert, username, password, certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), ei);
+				} else {
+					String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
+					log.info(msg);
+				}
 			} catch (FinderException e) {
 				String msg = intres.getLocalizedMessage("publisher.errornocert", pqd.getFingerprint());            	
-				getLogSession().log(getAdmin(), getAdmin().getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), vold.getUsername(), null, LogConstants.EVENT_INFO_STORECRL, msg, e);
+				getLogSession().log(getAdmin(), getAdmin().getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), username, null, LogConstants.EVENT_INFO_STORECERTIFICATE, msg, e);
 			} catch (PublisherException e) {
 				// Publisher session have already logged this error nicely to getLogSession().log
 				log.debug(e.getMessage());
