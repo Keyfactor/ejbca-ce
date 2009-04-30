@@ -400,9 +400,9 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	/** @return a viewable list of the possible values for a access rule */
 	public Collection<SelectItem> getAccessRuleRules() {
 		Collection<SelectItem> result = new ArrayList<SelectItem>();
-		result.add(new SelectItem(AccessRule.RULE_NOTUSED, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_NOTUSED])));
-		result.add(new SelectItem(AccessRule.RULE_ACCEPT, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_ACCEPT])));
-		result.add(new SelectItem(AccessRule.RULE_DECLINE, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_DECLINE])));
+		result.add(new SelectItem(AccessRule.RULE_NOTUSED, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_NOTUSED], true)));
+		result.add(new SelectItem(AccessRule.RULE_ACCEPT, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_ACCEPT], true)));
+		result.add(new SelectItem(AccessRule.RULE_DECLINE, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_DECLINE], true)));
 		return result;
 	}
 
