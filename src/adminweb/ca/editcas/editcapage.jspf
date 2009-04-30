@@ -903,103 +903,100 @@ function checkallfields(){
          <% } %>
       </td>
     </tr>    
-    <% } %>        
-   <%  } 
-    } // if(catype == CAInfo.CATYPE_X509){
+    <% }        
+     } 
+   if(!processrequest && !isexternal){ %>
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%" align="right"> 
+       <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
+     </td>
+     <td width="50%"> 
+       <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
+          <%   Collection usedpublishers = null;
+               if(editca) usedpublishers = cainfo.getCRLPublishers(); 
+               Iterator iter = publisheridtonamemap.keySet().iterator(); 
+               while(iter.hasNext()){
+                 Integer next = (Integer) iter.next(); %>
+          <option  value="<%= next %>" 
+             <%    if(editca && usedpublishers.contains(next))
+                     out.write(" selected ");
+                 %>>
+             <%= publisheridtonamemap.get(next) %>         
+          </option>  
+             <% } %>
+       </select>
+     </td>
+   </tr>
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRLPERIOD") %>
+     </td>
+     <td width="50%">
+          <% if(isexternal){
+               out.write("" + cainfo.getCRLPeriod());
+             }else{ %>
+        <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
+           <% if(editca) { out.write(" value='" + cainfo.getCRLPeriod()+ "'");
+                         } else { out.write(" value='24'"); }%>>
+          <% } %> 
+     </td>
+   </tr>
+   
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %>
+     </td>
+     <td width="50%">
+          <% if(isexternal){
+               out.write("" + cainfo.getCRLIssueInterval());
+             }else{ %>
+        <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
+           <% if(editca) { out.write(" value='" + cainfo.getCRLIssueInterval()+ "'");
+                         } else { out.write(" value='0'"); }%>>
+          <% } %> 
+     </td>
+   </tr>
+
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRLOVERLAPTIME") %>
+     </td>
+     <td width="50%">
+          <% if(isexternal){
+               out.write("" + cainfo.getCRLOverlapTime());
+             }else{ %>
+        <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
+           <% if(editca) { out.write(" value='" + cainfo.getCRLOverlapTime()+ "'");
+                         } else { out.write(" value='10'"); }%>>
+          <% } %> 
+     </td>
+   </tr>
+
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("DELTACRLPERIOD") %>
+       <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %><br/>
+       <%= ejbcawebbean.getText("NODELTACRLTIP") %>
+     </td>
+     <td width="50%">
+          <% if(isexternal){
+               out.write("" + cainfo.getDeltaCRLPeriod());
+             }else{ %>
+        <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
+           <% if(editca) { out.write(" value='" + cainfo.getDeltaCRLPeriod()+ "'");
+                         } else { out.write(" value='0'"); }%>>
+          <% } %> 
+     </td>
+   </tr>
+   <%
+      } // if(catype == CAInfo.CATYPE_X509){
    %>
 
    <% if(catype == CAInfo.CATYPE_CVC){ 
 	     CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
-        %>
-                 
-   <%
-    } // if(catype == CAInfo.CATYPE_CVC){
+      } // if(catype == CAInfo.CATYPE_CVC){
    %>
     
-   <%
-    if(!processrequest && !isexternal){ %>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
-      </td>
-      <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
-           <%   Collection usedpublishers = null;
-                if(editca) usedpublishers = cainfo.getCRLPublishers(); 
-                Iterator iter = publisheridtonamemap.keySet().iterator(); 
-                while(iter.hasNext()){
-                  Integer next = (Integer) iter.next(); %>
-           <option  value="<%= next %>" 
-              <%    if(editca && usedpublishers.contains(next))
-                      out.write(" selected ");
-                  %>>
-              <%= publisheridtonamemap.get(next) %>         
-           </option>  
-              <% } %>
-        </select>
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLPERIOD") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + cainfo.getCRLPeriod());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + cainfo.getCRLPeriod()+ "'");
-                          } else { out.write(" value='24'"); }%>>
-           <% } %> 
-      </td>
-    </tr>
-    
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + cainfo.getCRLIssueInterval());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + cainfo.getCRLIssueInterval()+ "'");
-                          } else { out.write(" value='0'"); }%>>
-           <% } %> 
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLOVERLAPTIME") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + cainfo.getCRLOverlapTime());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + cainfo.getCRLOverlapTime()+ "'");
-                          } else { out.write(" value='10'"); }%>>
-           <% } %> 
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DELTACRLPERIOD") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %><br/>
-        <%= ejbcawebbean.getText("NODELTACRLTIP") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){
-                out.write("" + cainfo.getDeltaCRLPeriod());
-              }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
-            <% if(editca) { out.write(" value='" + cainfo.getDeltaCRLPeriod()+ "'");
-                          } else { out.write(" value='0'"); }%>>
-           <% } %> 
-      </td>
-    </tr>
 
     <tr id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
