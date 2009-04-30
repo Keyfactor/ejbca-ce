@@ -49,4 +49,17 @@
            } %>>
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("ONLYUSEQUEUE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_ONLYUSEQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(extocsppublisher.getOnlyUseQueue()) {
+                 out.write(" CHECKED ");
+           } %>>
+      </td>
+    </tr>
     

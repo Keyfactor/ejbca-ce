@@ -41,7 +41,11 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
 	public static final String TYPE                           = "type";
 	
     protected static final String DESCRIPTION                    = "description";
-		
+    protected static final String ONLYUSEQUEUE					 = "onlyUseQueue";
+    
+    // Default values
+    public static final boolean DEFAULT_ONLYUSEQUEUE 			 = false;
+    
     // Public Methods
 
     /**
@@ -49,7 +53,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      */
     public BasePublisher() {
       setDescription("");	       
-  
+      setOnlyUseQueue(DEFAULT_ONLYUSEQUEUE);
     }
 
     // Public Methods mostly used by PrimeCard
@@ -63,7 +67,19 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
 	 */
 	public void setDescription(String description){ data.put(DESCRIPTION, description); }
 
-  
+
+    /**
+     * @return If only the publisher queue should be used instead of publishing directly.
+     */
+    public boolean getOnlyUseQueue() { return Boolean.TRUE.equals(data.get(ONLYUSEQUEUE));}
+    
+    /**
+     * Sets whether only the publisher queue should be used instead of publishing directly.
+     * @param onlyUseQueue true if only the queue should be used.
+     */
+    public void setOnlyUseQueue(boolean onlyUseQueue) { data.put(ONLYUSEQUEUE, Boolean.valueOf(onlyUseQueue));}
+
+	
     
     // Abstact methods.
     

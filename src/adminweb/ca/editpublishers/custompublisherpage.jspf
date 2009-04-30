@@ -42,3 +42,17 @@
          <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_CUSTOMPROPERTIES%>" cols=40 rows=6><% out.write(custompublisher.getPropertyData());%></textarea>
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("ONLYUSEQUEUE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_ONLYUSEQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(custompublisher.getOnlyUseQueue()) {
+                 out.write(" CHECKED ");
+           } %>>
+      </td>
+    </tr>
+    

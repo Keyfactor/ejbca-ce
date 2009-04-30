@@ -278,13 +278,16 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             try {
             	PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
             	String fingerprint = CertTools.getFingerprintAsString(cert);
-            	try {
-            		returnval = pdl.getPublisher().storeCertificate(admin, cert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
-            		String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());            	
-            		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
-            	} catch (PublisherException pe) {
-            		String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), fingerprint);            	
-            		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, pe);
+            	// If it should be published directly
+            	if (!pdl.getPublisher().getOnlyUseQueue()) {
+	            	try {
+	            		returnval = pdl.getPublisher().storeCertificate(admin, cert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
+	            		String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());            	
+	            		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
+	            	} catch (PublisherException pe) {
+	            		String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), fingerprint);            	
+	            		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, pe);
+	            	}
             	}
             	// If we failed to publish we will store the failed publish in the publisher queue instead
             	if (!returnval) {

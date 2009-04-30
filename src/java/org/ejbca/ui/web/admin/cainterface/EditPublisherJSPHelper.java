@@ -49,7 +49,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-	private static final long serialVersionUID = 436830207093078433L;
+	private static final long serialVersionUID = 436830207093078434L;
 	
     public static final String ACTION                              = "action";
     public static final String ACTION_EDIT_PUBLISHERS              = "editpublishers";
@@ -118,6 +118,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE = "checkboxldaprevokeuseroncertrevoke";
     public static final String CHECKBOX_LDAP_SET_USERPASSWORD  = "checkboxldapsetuserpassword";
     public static final String CHECKBOX_EXTOCSP_PROTECT        = "textfieldextocspprotect";
+    public static final String CHECKBOX_EXTOCSP_ONLYUSEQUEUE   = "textfieldextocsponlyusequeue";
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
 
     public static final String CHECKBOX_ADUSEPASSWORD          = "checkboxadusepassword";
@@ -271,6 +272,8 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                     value = value.trim();
                                     ((CustomPublisherContainer) publisherdata).setPropertyData(value);
                                 }
+                                value = request.getParameter(CHECKBOX_EXTOCSP_ONLYUSEQUEUE);
+                            	publisherdata.setOnlyUseQueue(value != null && value.equals(CHECKBOX_VALUE));
                             }
 
                             if(publisherdata instanceof LdapPublisher){
@@ -470,6 +473,9 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                             	
                             	value = request.getParameter(CHECKBOX_EXTOCSP_PROTECT);
                             	extocsppub.setProtect(value != null && value.equals(CHECKBOX_VALUE));
+                            	
+                            	value = request.getParameter(CHECKBOX_EXTOCSP_ONLYUSEQUEUE);
+                            	extocsppub.setOnlyUseQueue(value != null && value.equals(CHECKBOX_VALUE));
                             }
 
 
