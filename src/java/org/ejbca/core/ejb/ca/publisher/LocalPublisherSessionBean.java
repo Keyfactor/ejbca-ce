@@ -631,6 +631,8 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
     /**
      * Retrives a named publisher.
      *
+     * @return a BasePublisher or null of a publisher with the given id does not exist
+     * 
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
@@ -648,6 +650,8 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
     /**
      * Finds a publisher by id.
      *
+     * @return a BasePublisher or null of a publisher with the given id does not exist
+     * 
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
