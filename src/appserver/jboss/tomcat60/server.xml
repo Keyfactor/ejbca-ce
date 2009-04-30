@@ -51,6 +51,26 @@
          truststoreFile="${jboss.server.home.dir}/@truststore.file@" truststorePass="@java.trustpassword@" truststoreType="JKS"
          URIEncoding="@web.contentencoding@" />
 @definitions_away_end@
+
+<!-- If you want to use a native APR SSL Coyote HTTP/1.1 Connector, 
+     you can replace the above with with this instead. 
+     After doing this you need to change the "tomcat" user in EJBCA to use
+     a PEM keystore instead of a JKS keystore. You can then generate new PEM 
+     files with bin/ejbca.sh batch (for example). You have to manually copy the PEM files to the correct location. 
+     server.pem must contain both server.pem and server-CA.pem from ejbca/p12/pem. -->
+<!--
+<Connector protocol="org.apache.coyote.http11.Http11AprProtocol"
+           port="@httpserver.privhttps@" address="@httpsserver.bindaddress.privhttps@"
+           minSpareThreads="5" maxSpareThreads="75"
+           enableLookups="true" disableUploadTimeout="true"
+           acceptCount="100" maxThreads="200"
+           scheme="https" secure="true" SSLEnabled="true"
+           SSLCertificateFile="${jboss.server.home.dir}/conf/keystore/server.pem"
+           SSLCertificateKeyFile="${jboss.server.home.dir}/conf/keystore/server-Key.pem"
+           clientAuth="false" sslProtocol="TLS"
+           URIEncoding="@web.contentencoding@" />
+--> 
+
     <!-- Define an AJP 1.3 Connector on port 8009 -->
     <Connector port="8009" address="${jboss.bind.address}" protocol="AJP/1.3"
          emptySessionPath="true" enableLookups="false" redirectPort="8443" />

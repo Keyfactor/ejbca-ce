@@ -262,6 +262,14 @@ You must stop and start JBoss after doing this.
 </p>
 </subsection>
 
+<subsection name="Using JBoss/Tomcat native SSL connector">
+<p>Instead of the regular Tomcat SSL connector you can configure to use the native connector, which is supposed to 
+improve performance.
+</p><p>
+See documentation in src/appserver/jboss/tomcat60 (if using JBoss 4.2.3) or src/appserver/tomcat60jboss5 (if using JBoss 5).
+</p> 
+</subsection>
+
 <subsection name="Additional howtos">
 <p>
 In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
