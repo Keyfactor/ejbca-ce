@@ -45,6 +45,7 @@ import org.ejbca.util.CertTools;
  * Revocation reason (revocationReason)
  * Username (username)
  * Tag (tag)
+ * Certificate Profile Id when issued (certificateProfileId)
  * </pre>
  * 
  * KEEP THIS FILE IN SYNC WITH org.ejbca.core.ejb.ca.store.CertificateDataBean 
@@ -399,11 +400,26 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * tag in database. This field was added for the 3.9.0 release, but is not used yet.
      *
      * @param tag tag
-     *
-     * @see org.ejbca.util.StringTools
      * @ejb.interface-method
      */
     public abstract void setTag(String tag);
+
+    /**
+     * Certificate Profile Id that was used to issue this certificate.
+     *
+     * @return certificateProfileId
+     * @ejb.persistence column-name="certificateProfileId"
+     * @ejb.interface-method
+     */
+    public abstract Integer getCertificateProfileId();
+
+    /**
+     * Certificate Profile Id that was used to issue this certificate.
+     *
+     * @param certificateProfileId certificateProfileId
+     * @ejb.interface-method
+     */
+    public abstract void setCertificateProfileId(Integer certificateProfileId);
 
     //
     // Public business methods used to help us manage certificates
