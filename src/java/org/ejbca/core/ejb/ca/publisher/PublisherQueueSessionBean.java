@@ -263,12 +263,11 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
      * 
      * @param pk primary key of data entry
      * @param status status from PublisherQueueData.STATUS_SUCCESS etc, or -1 to not update status
-     * @param publishDate Date when successful publishing occurred or null if publishDate should not be updated
      * @param tryCounter an updated try counter, or -1 to not update counter
      * 
      * @ejb.interface-method view-type="both"
      */
-    public void updateData(String pk, int status, Date publishDate, int tryCounter) {
+    public void updateData(String pk, int status, int tryCounter) {
     	if (log.isTraceEnabled()) {
             log.trace(">updateData(pk: " + pk + ", status: "+status+")");
     	}
@@ -277,9 +276,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     		if (status > 0) {
         		data.setPublishStatus(status);    			
     		}
-    		if (publishDate != null) {
-    			data.setLastUpdate(publishDate.getTime());
-    		}
+    		data.setLastUpdate(new Date().getTime());
     		if (tryCounter > -1) {
     			data.setTryCounter(tryCounter);
     		}

@@ -14,7 +14,6 @@ package org.ejbca.core.model.services.workers;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
@@ -201,12 +200,12 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 			}
 			if (published) {
 				// Update with information that publishing was successful
-				getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, new Date(), pqd.getTryCounter());
+				getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, pqd.getTryCounter());
 				successcount++; // jipeee update success counter
 			} else {
 				// Update with new tryCounter, but same status as before and no timePublished
 				int tryCount = pqd.getTryCounter()+1;
-				getPublishQueueSession().updateData(pqd.getPk(), pqd.getPublishStatus(), null, tryCount);								
+				getPublishQueueSession().updateData(pqd.getPk(), pqd.getPublishStatus(), tryCount);								
 			}
 			// If we don't manage to publish anything, but fails on all the first ten ones we expect that this publisher is dead for now. We don't have to try with every record.
 			if ( (successcount == 0) && (failcount > 10) ) {

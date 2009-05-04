@@ -76,7 +76,8 @@ public class TestPublisherQueue extends TestCase {
     	Iterator<PublisherQueueData> i = c.iterator();
     	PublisherQueueData d = i.next();
     	assertEquals("XX", d.getFingerprint());
-    	assertNull(d.getTimePublish());
+    	Date lastUpdate1 = d.getLastUpdate();
+    	assertNotNull(lastUpdate1);
     	assertNotNull(d.getTimeCreated());
     	assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
     	assertEquals(0,d.getTryCounter());
@@ -101,7 +102,7 @@ public class TestPublisherQueue extends TestCase {
         	d = i.next();
         	if (d.getFingerprint().equals("XX")) {
         		assertEquals(PublisherQueueData.PUBLISH_TYPE_CERT, d.getPublishType());
-            	assertNull(d.getTimePublish());
+            	assertNotNull(d.getLastUpdate());
             	assertNotNull(d.getTimeCreated());
             	assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
             	assertEquals(0,d.getTryCounter());
@@ -123,14 +124,14 @@ public class TestPublisherQueue extends TestCase {
     	assertTrue(testedXX);
     	assertTrue(testedYY);
     	
-    	Date now = new Date();
-    	TestTools.getPublisherQueueSession().updateData(xxpk, PublisherQueueData.STATUS_SUCCESS, now, 4);
+    	TestTools.getPublisherQueueSession().updateData(xxpk, PublisherQueueData.STATUS_SUCCESS, 4);
     	c = TestTools.getPublisherQueueSession().getEntriesByFingerprint("XX");
     	assertEquals(1, c.size());
     	i = c.iterator();
     	d = i.next();
     	assertEquals("XX", d.getFingerprint());
-    	assertNotNull(d.getTimePublish());
+    	Date lastUpdate2 = d.getLastUpdate();
+    	assertTrue(lastUpdate2.after(lastUpdate1));
     	assertNotNull(d.getTimeCreated());
     	assertEquals(PublisherQueueData.STATUS_SUCCESS, d.getPublishStatus());
     	assertEquals(4,d.getTryCounter());    	

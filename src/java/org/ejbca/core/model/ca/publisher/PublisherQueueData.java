@@ -15,8 +15,6 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-
 
 /**
  * Value object holding the data contained in a PublisherQueueData record in the database. 
@@ -25,8 +23,6 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class PublisherQueueData implements java.io.Serializable {
-
-	private static final Logger log = Logger.getLogger(PublisherQueueData.class);
 
 	public static final int STATUS_SUCCESS = 10; // If the entry has been published successfully
     public static final int STATUS_PENDING = 20; // If we should retry publishing
@@ -44,12 +40,12 @@ public class PublisherQueueData implements java.io.Serializable {
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = 100L;
+    private static final long serialVersionUID = 101L;
     
     // private fields.
     private String pk;
 	private Date timeCreated;
-    private Date timePublish;
+    private Date lastUpdate;
     /** PublisherQueueData.STATUS_SUCCESS etc */
     private int publishStatus;
     private int tryCounter;
@@ -64,13 +60,13 @@ public class PublisherQueueData implements java.io.Serializable {
 
     // Public methods.
     
-	public PublisherQueueData(String pk, Date timeCreated, Date timePublish,
+	public PublisherQueueData(String pk, Date timeCreated, Date lastUpdate,
 			int publishStatus, int tryCounter, int publishType, String fingerprint,
 			int publisherId, PublisherQueueVolatileData volatileData) {
 		super();
 		this.pk = pk;
 		this.timeCreated = timeCreated;
-		this.timePublish = timePublish;
+		this.lastUpdate = lastUpdate;
 		this.publishStatus = publishStatus;
 		this.tryCounter = tryCounter;
 		this.publishType = publishType;
@@ -99,11 +95,11 @@ public class PublisherQueueData implements java.io.Serializable {
 	public void setTimeCreated(Date timeCreated) {
 		this.timeCreated = timeCreated;
 	}
-	public Date getTimePublish() {
-		return timePublish;
+	public Date getLastUpdate() {
+		return lastUpdate;
 	}
-	public void setTimePublish(Date timePublish) {
-		this.timePublish = timePublish;
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 	public int getPublishStatus() {
 		return publishStatus;
