@@ -319,7 +319,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     /**
      * Gets the P11 slot user password used to logon to a P11 session.
      * @param password Password to be used. Set to null if configured should be used
-     * @return
+     * @return The password.
      */
     public PasswordProtection getP11Pwd(String password) throws Exception {
         if ( password!=null ) {
@@ -383,9 +383,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert) throws Exception {
             this.alias = a;
-            this.password = pw;
+            this.password = pw!=null ? OCSPServletStandAloneSession.this.mKeyPassword.toCharArray() : null;
             this.certificate = cert;
             this.keyStore = _keyStore;
+            set(pw);
             set(_keyStore);
         }
         /* (non-Javadoc)
@@ -394,12 +395,20 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         public void init(List<X509Certificate> caChain, int caid) {
             this.keyRenewer = new KeyRenewer(caChain, caid);
         }
+        /**
+         * Sets the private key.
+         * @param pw The key password.
+         * @throws Exception
+         */
+        private void set(char pw[]) throws Exception {
+            this.privateKey = this.keyStore!=null ? (PrivateKey)this.keyStore.getKey(this.alias, pw) : null;
+        }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#set(java.security.KeyStore)
          */
         public void set(KeyStore _keyStore) throws Exception {
-            this.privateKey = _keyStore!=null ? (PrivateKey)_keyStore.getKey(this.alias, this.password) : null;
             this.keyStore = _keyStore;
+            set(this.password);
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#clear()
