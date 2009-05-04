@@ -46,6 +46,7 @@ import org.ejbca.util.CertTools;
  * Username (username)
  * Tag (tag)
  * Certificate Profile Id when issued (certificateProfileId)
+ * Row update time (updateTime)
  * </pre>
  * 
  * KEEP THIS FILE IN SYNC WITH org.ejbca.core.ejb.ca.store.CertificateDataBean 
@@ -420,6 +421,23 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public abstract void setCertificateProfileId(Integer certificateProfileId);
+
+    /**
+     * The time this row was last updated.
+     *
+     * @return updateTime
+     * @ejb.persistence column-name="updateTime"
+     * @ejb.interface-method
+     */
+    public abstract long getUpdateTime();
+
+    /**
+     * The time this row was last updated.
+     *
+     * @param updateTime updateTime
+     * @ejb.interface-method
+     */
+    public abstract void setUpdateTime(long updateTime);
 
     //
     // Public business methods used to help us manage certificates

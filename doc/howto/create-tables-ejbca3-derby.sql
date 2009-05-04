@@ -114,6 +114,8 @@ CREATE TABLE CertificateData (
     base64Cert long varchar,
     username varchar(256),
     tag varchar(256),
+    certificateProfileId integer,
+    updateTime bigint NOT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -280,8 +282,8 @@ CREATE TABLE PublisherData (
 DROP TABLE PublisherQueueData;
 CREATE TABLE PublisherQueueData (
     pk varchar(250) NOT NULL,
-    timeCreated TIMESTAMP,
-    timePublished TIMESTAMP,
+    timeCreated bigint NOT NULL,
+    lastUpdate bigint NOT NULL,
     publishStatus integer NOT NULL,
     tryCounter integer NOT NULL,
     publishType integer NOT NULL,

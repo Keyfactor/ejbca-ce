@@ -39,6 +39,9 @@
   <field-name>certificateProfileId</field-name>
 </cmp-field>
 <cmp-field>
+  <field-name>updateTime</field-name>
+</cmp-field>
+<cmp-field>
   <field-name>base64Cert</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
   <sql-type>TEXT</sql-type>

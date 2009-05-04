@@ -7,8 +7,8 @@
     <column-name>timeCreated</column-name>
 </cmp-field>
 <cmp-field>
-    <field-name>timePublished</field-name>
-    <column-name>timePublished</column-name>
+    <field-name>lastUpdate</field-name>
+    <column-name>lastUpdate</column-name>
 </cmp-field>
 <cmp-field>
     <field-name>publishStatus</field-name>

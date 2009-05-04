@@ -105,23 +105,23 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="timeCreated"
      * @ejb.interface-method view-type="local"
      */
-    public abstract Date getTimeCreated();
+    public abstract long getTimeCreated();
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public abstract void setTimeCreated(Date timeCreated);
+    public abstract void setTimeCreated(long timeCreated);
 
     /**
-     * @ejb.persistence column-name="timePublished"
+     * @ejb.persistence column-name="lastUpdate"
      * @ejb.interface-method view-type="local"
      */
-    public abstract Date getTimePublished();
+    public abstract long getLastUpdate();
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public abstract void setTimePublished(Date timePublished);
+    public abstract void setLastUpdate(long lastUpdate);
 
     /** PublishStatus is one of PublisherQueueData.STATUS_PENDING or SUCCESS.
      * 
@@ -274,7 +274,7 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
     	String pk = GUIDGenerator.generateGUID(this); 
 		setPk(pk);
 		Date now = new Date();
-        setTimeCreated(now);
+        setTimeCreated(now.getTime());
         setPublishStatus(PublisherQueueData.STATUS_PENDING);
         setTryCounter(0);
         setPublishType(publishType);

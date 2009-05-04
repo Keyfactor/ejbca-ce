@@ -99,6 +99,8 @@ CREATE TABLE certificatedata (
   base64Cert TEXT, 
   username TEXT, 
   tag TEXT, 
+  certificateProfileId INT4, 
+  updateTime INT8 NOT NULL, 
 CONSTRAINT pk_certificatedata PRIMARY KEY (fingerprint)
 );
 
@@ -307,8 +309,8 @@ DROP TABLE PUBLISHERQUEUEDATA;
 
 CREATE TABLE publisherqueuedata (
   pk TEXT NOT NULL, 
-  timeCreated TIMESTAMP,
-  timePublished TIMESTAMP,
+  timeCreated INT8 NOT NULL, 
+  lastUpdate INT8 NOT NULL,
   publishStatus INT4 NOT NULL,
   tryCounter INT4 NOT NULL,
   publishType INT4 NOT NULL,
