@@ -778,7 +778,7 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         profile.setUse(EndEntityProfile.ENDTIME, 0, false);
         profile.setValue(EndEntityProfile.STARTTIME, 0, "");
         profile.setValue(EndEntityProfile.ENDTIME, 0, "");
-        ei.setCustomData(EndEntityProfile.STARTTIME, "");
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "");
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -788,7 +788,7 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         } 
         profile.setUse(EndEntityProfile.STARTTIME, 0, false);
         profile.setUse(EndEntityProfile.ENDTIME, 0, true);
-        ei.setCustomData(EndEntityProfile.ENDTIME, "");
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "");
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -799,8 +799,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         // Static times work?
         profile.setUse(EndEntityProfile.STARTTIME, 0, true);
         profile.setUse(EndEntityProfile.ENDTIME, 0, true);
-        ei.setCustomData(EndEntityProfile.STARTTIME, staticNow);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -809,8 +809,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	assertTrue("Error: Static times does not work. ("+e.getMessage()+")", false);
         } 
         // Relative times work?
-        ei.setCustomData(EndEntityProfile.STARTTIME, relativeNow);
-        ei.setCustomData(EndEntityProfile.ENDTIME, relativeEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, relativeEndOfTime);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -819,8 +819,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	assertTrue("Error: Relative times does not work.", false);
         } 
         // Static start, rel end work?
-        ei.setCustomData(EndEntityProfile.STARTTIME, staticNow);
-        ei.setCustomData(EndEntityProfile.ENDTIME, relativeEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, relativeEndOfTime);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -829,8 +829,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	assertTrue("Error: Static start time w relative end time does not work.", false);
         } 
         // Rel start, static end work?
-        ei.setCustomData(EndEntityProfile.STARTTIME, relativeNow);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -839,8 +839,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	assertTrue("Error: Relative start time w static end time does not work.", false);
         } 
         // Negative relative start times work?
-        ei.setCustomData(EndEntityProfile.STARTTIME, relativeNegative);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeNegative);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -849,8 +849,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Negative relative end times work?
-        ei.setCustomData(EndEntityProfile.STARTTIME, staticNow);
-        ei.setCustomData(EndEntityProfile.ENDTIME, relativeNegative);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, relativeNegative);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -859,8 +859,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Static end before start ok?
-        ei.setCustomData(EndEntityProfile.STARTTIME, staticEndOfTime);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticNow);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -869,8 +869,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Relative end before start ok?
-        ei.setCustomData(EndEntityProfile.STARTTIME, relativeEndOfTime);
-        ei.setCustomData(EndEntityProfile.ENDTIME, relativeNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, relativeNow);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -879,8 +879,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid static start ok?
-        ei.setCustomData(EndEntityProfile.STARTTIME, staticInvalid);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticInvalid);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -889,8 +889,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid static end ok?
-        ei.setCustomData(EndEntityProfile.STARTTIME, staticNow);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticInvalid);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticInvalid);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -899,8 +899,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid relative start ok?
-        ei.setCustomData(EndEntityProfile.STARTTIME, relativeInvalid);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticEndOfTime);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeInvalid);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -909,8 +909,8 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid relative end ok?
-        ei.setCustomData(EndEntityProfile.STARTTIME, relativeNow);
-        ei.setCustomData(EndEntityProfile.ENDTIME, staticInvalid);
+        ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeNow);
+        ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticInvalid);
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -941,7 +941,7 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         } catch (UserDoesntFullfillEndEntityProfile e) {
         	assertTrue("Error: Allowedrequests not checked correctly, should be allowed.", false);
         } 
-        ei.setCustomData(EndEntityProfile.ALLOWEDREQUESTS, "2");
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "2");
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
