@@ -45,6 +45,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -1576,6 +1577,59 @@ public class TestSignSession extends TestCase {
         log.trace("<test26TestBCPKCS10DSAWithDSACA()");
     }
     
+    
+    /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test27IssuanceRevocationReason() throws Exception {
+        log.trace(">test27IssuanceRevocationReason()");
+
+        // Test that it works correctly with end entity profiles using the counter
+        int pid = 0;
+        try {
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.ORGANIZATION);
+            profile.addField(DnComponents.COUNTRY);
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setValue(EndEntityProfile.AVAILCAS,0,""+rsacaid);
+            profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
+            profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON,0,""+RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+            TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
+            pid = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
+        } catch (EndEntityProfileExistsException pee) {
+        	assertTrue("Can not create end entity profile", false);
+        }
+        
+        // Change already existing user 
+        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
+        TestTools.getUserAdminSession().setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        // create first cert
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create cert", cert);
+
+        // Check that it is active
+        RevokedCertInfo rev = TestTools.getCertificateStoreSession().isRevoked(admin, CertTools.getFingerprintAsString(cert));
+        assertEquals(RevokedCertInfo.NOT_REVOKED, rev.getReason());
+        
+        // Now add extended information with the revocation reason
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, ""+RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        user.setExtendedinformation(ei);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);
+        TestTools.getUserAdminSession().setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        // create first cert
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create cert", cert);
+
+        // Check that it is revoked
+        rev = TestTools.getCertificateStoreSession().isRevoked(admin, CertTools.getFingerprintAsString(cert));
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, rev.getReason());
+        log.trace("<test27IssuanceRevocationReason()");
+    }
+
     /**
      * creates new user
      *
@@ -1587,6 +1641,9 @@ public class TestSignSession extends TestCase {
         // Delete test end entity profile
         try {        	
             TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+            TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
         } catch (Exception e) { /* ignore */ }
         // delete users that we know...
         try {        	

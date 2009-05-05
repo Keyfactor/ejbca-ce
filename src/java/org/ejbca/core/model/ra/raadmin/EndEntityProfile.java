@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
@@ -59,7 +60,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 10;
+    public static final float LATEST_VERSION = 11;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -104,6 +105,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * enabled in the CA (by default it is)
      */
     public static final String ALLOWEDREQUESTS    = "ALLOWEDREQUESTS";
+    /** A revocation reason that will be applied immediately to certificates issued to a user. With this we can issue
+     * a certificate that is "on hold" directly when the user gets the certificate.
+     */
+    public static final String ISSUANCEREVOCATIONREASON = "ISSUANCEREVOCATIONREASON";
 
     // Default values
     // These must be in a strict order that can never change 
@@ -173,6 +178,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	// Load all DN, altName and directoryAttributes from DnComponents.
     	dataConstants.putAll(DnComponents.getProfilenameIdMap());
     	
+    	dataConstants.put(ISSUANCEREVOCATIONREASON, new Integer(94));
     	dataConstants.put(ALLOWEDREQUESTS, new Integer(97));
     	dataConstants.put(STARTTIME, new Integer(98));
     	dataConstants.put(ENDTIME, new Integer(99));
@@ -265,6 +271,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setRequired(AVAILKEYSTORE,0,true);
         setRequired(DEFAULTCA,0,true);
         setRequired(AVAILCAS,0,true);
+        setRequired(ISSUANCEREVOCATIONREASON,0,false);
         setRequired(STARTTIME,0,false);
         setRequired(ENDTIME,0,false);
         setRequired(ALLOWEDREQUESTS,0,false);
@@ -274,12 +281,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
         setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
         setValue(AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        setValue(ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.NOT_REVOKED);
         // Do not use hard token issuers by default.
         setUse(AVAILTOKENISSUER, 0, false);
         setUse(STARTTIME,0,false);
         setUse(ENDTIME,0,false);
         setUse(ALLOWEDREQUESTS,0,false);
         setUse(CARDNUMBER,0,false);
+        setUse(ISSUANCEREVOCATIONREASON,0,false);
         
       }else{
          // initialize profile data
@@ -301,6 +310,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(ENDTIME);         
          addField(ALLOWEDREQUESTS);
          addField(CARDNUMBER);
+         addField(ISSUANCEREVOCATIONREASON);         
          
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
@@ -315,12 +325,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setRequired(ENDTIME,0,false);
          setRequired(ALLOWEDREQUESTS,0,false);
          setRequired(CARDNUMBER,0,false);
+         setRequired(ISSUANCEREVOCATIONREASON,0,false);
       
          setValue(AUTOGENPASSWORDLENGTH, 0, "8");
          setValue(DEFAULTCERTPROFILE,0,"1");
          setValue(AVAILCERTPROFILES,0,"1;2;3");
          setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
          setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
+         setValue(ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.NOT_REVOKED);
 
          // Do not use hard token issuers by default.
          setUse(AVAILTOKENISSUER, 0, false);
@@ -328,6 +340,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setUse(ENDTIME,0,false);
          setUse(ALLOWEDREQUESTS,0,false);
          setUse(CARDNUMBER,0,false);
+         setUse(ISSUANCEREVOCATIONREASON,0,false);
 
       }
     }
@@ -1118,12 +1131,26 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 	  
       String allowedRequests = null;
       if ( ei != null ) {
-    	  allowedRequests = ei.getCustomData(EndEntityProfile.ALLOWEDREQUESTS);
+    	  allowedRequests = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
       }
       if ( (allowedRequests != null) && !getUse(ALLOWEDREQUESTS, 0) ) {
     	  throw new UserDoesntFullfillEndEntityProfile("Allowed requests used, but not permitted by profile.");
       }
 
+      String issuanceRevReason = null;
+      if ( ei != null ) {
+    	  issuanceRevReason = ei.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
+      }
+      if ( (issuanceRevReason != null) && !getUse(ISSUANCEREVOCATIONREASON, 0) ) {
+    	  throw new UserDoesntFullfillEndEntityProfile("Issuance revocation reason used, but not permitted by profile.");
+      }
+      if ( getUse(ISSUANCEREVOCATIONREASON, 0) && !isModifyable(ISSUANCEREVOCATIONREASON, 0) ) {
+    	  String value = getValue(ISSUANCEREVOCATIONREASON, 0);
+    	  if (!StringUtils.equals(issuanceRevReason, value)) {
+    		  throw new UserDoesntFullfillEndEntityProfile("Issuance revocation reason '"+issuanceRevReason+"' does not match required value '"+value+"'.");
+    	  }
+      }
+      
   	log.trace("<doesUserFullfillEndEntityProfileWithoutPassword()");
 
     } // doesUserFullfillEndEntityProfileWithoutPassword
@@ -1408,6 +1435,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             // Support for merging DN from WS-API with default values in profile, in profile version 10
             if (getVersion() < 10) {
                 setAllowMergeDnWebServices(false);
+            }
+
+            // Support for issuance revocation status in profile version 11
+            if (getVersion() < 11) {
+                setRequired(ISSUANCEREVOCATIONREASON, 0, false);
+                setUse(ISSUANCEREVOCATIONREASON, 0, false);
+                setModifyable(ISSUANCEREVOCATIONREASON, 0, true);
+                setValue(ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.NOT_REVOKED);
+
+                setRequired(CARDNUMBER, 0, false);
+                setUse(CARDNUMBER, 0, false);
+                setModifyable(CARDNUMBER, 0, true);            	
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));

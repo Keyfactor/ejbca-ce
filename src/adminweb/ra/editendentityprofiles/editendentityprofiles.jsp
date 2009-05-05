@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
                 org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
-                org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.ra.UserDataConstants,
+                org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.ra.UserDataConstants, org.ejbca.core.model.ca.crl.RevokedCertInfo,
                 org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
@@ -91,7 +91,7 @@
   static final String CHECKBOX_MODIFYABLE_SUBJECTALTNAME    = "checkboxmodifyablesubjectaltname";
   static final String CHECKBOX_MODIFYABLE_SUBJECTDIRATTR    = "checkboxmodifyablesubjectdirattr";
   static final String CHECKBOX_MODIFYABLE_EMAIL             = "checkboxmodifyableemail";
-
+  static final String CHECKBOX_MODIFYABLE_ISSUANCEREVOCATIONREASON = "checkboxmodifyableissuancerevocationreason";
 
   static final String CHECKBOX_USE_CARDNUMBER        = "checkboxusecardnumber";
   static final String CHECKBOX_USE_PASSWORD          = "checkboxusepassword";
@@ -104,9 +104,12 @@
   static final String CHECKBOX_USE_HARDTOKENISSUERS  = "checkboxusehardtokenissuers";
   static final String CHECKBOX_USE_PRINTING          = "checkboxuseprinting";
   static final String CHECKBOX_USE_ALLOWEDRQUESTS    = "checkboxuseallowedrequests";
+  static final String CHECKBOX_USE_ISSUANCEREVOCATIONREASON = "checkboxuseissuancerevocationreason";
   
   static final String SELECT_AUTOPASSWORDTYPE               = "selectautopasswordtype";
   static final String SELECT_AUTOPASSWORDLENGTH             = "selectautopasswordlength";
+
+  static final String SELECT_ISSUANCEREVOCATIONREASON       = "selectissuancerevocationreason";
   
   static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
   static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecertprofiles";
@@ -419,6 +422,15 @@
                profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0 ,EndEntityProfile.FALSE);
              profiledata.setRequired(EndEntityProfile.SENDNOTIFICATION, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SENDNOTIFICATION)));
              profiledata.setUse(EndEntityProfile.SENDNOTIFICATION, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_SENDNOTIFICATION))); 
+
+             String issrevreason =  request.getParameter(SELECT_ISSUANCEREVOCATIONREASON);
+             if(issrevreason != null)
+                 profiledata.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0,issrevreason);
+               else
+                 profiledata.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0,""+RevokedCertInfo.NOT_REVOKED);
+             profiledata.setModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_ISSUANCEREVOCATIONREASON)));
+             profiledata.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_ISSUANCEREVOCATIONREASON))); 
+             profiledata.setRequired(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0,true);
 
              String defaultcertprof =  request.getParameter(SELECT_DEFAULTCERTPROFILE);
              profiledata.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0,defaultcertprof);

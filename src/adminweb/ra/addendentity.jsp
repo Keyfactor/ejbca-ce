@@ -4,7 +4,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents,
-                 java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation" %>
+                 java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -46,6 +46,7 @@
   static final String SELECT_HARDTOKENISSUER      = "selecthardtokenissuer";
   static final String SELECT_CA                   = "selectca";
   static final String SELECT_ALLOWEDREQUESTS      = "selectallowedrequests"; 
+  static final String SELECT_ISSUANCEREVOCATIONREASON = "selectissuancerevocationreason";
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_SUBJECTDN                  = "checkboxsubjectdn";
@@ -73,11 +74,9 @@
   static final String USER_PARAMETER           = "username";
   static final String SUBJECTDN_PARAMETER      = "subjectdnparameter";
 
-
-
   static final String HIDDEN_USERNAME           = "hiddenusername";
   static final String HIDDEN_PROFILE            = "hiddenprofile";
-
+	
 %><%
   // Initialize environment.
 
@@ -455,8 +454,27 @@
              }
            }            
             
-           
-           
+           // Issuance revocation reason, what state a newly issued certificate will have
+			if ( oldprofile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) {
+				value = request.getParameter(SELECT_ISSUANCEREVOCATIONREASON);
+				// If it's not modifyable don't even try to modify it
+				if (!oldprofile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) {
+					value = oldprofile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+				}
+				if ( value != null ) {
+					ExtendedInformation ei = newuser.getExtendedInformation();
+					if ( ei == null ) {
+						ei = new ExtendedInformation();
+					}
+					ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, value);
+					newuser.setExtendedInformation(ei);
+					oldprofile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, value);
+				} else {
+					// Default value is to issue certificates active
+					oldprofile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, ""+RevokedCertInfo.NOT_REVOKED); 
+				}
+			}
+
 
            value = request.getParameter(SELECT_CERTIFICATEPROFILE);
            newuser.setCertificateProfileId(Integer.parseInt(value));   
@@ -499,7 +517,7 @@
 					if ( ei == null ) {
 						ei = new ExtendedInformation();
 					}
-					ei.setCustomData(EndEntityProfile.STARTTIME, storeValue);
+					ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, storeValue);
 					newuser.setExtendedInformation(ei);
 					oldprofile.setValue(EndEntityProfile.STARTTIME, 0, value);
 				}
@@ -520,7 +538,7 @@
 					if ( ei == null ) {
 						ei = new ExtendedInformation();
 					}
-					ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
+					ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, storeValue);
 					newuser.setExtendedInformation(ei);
 					oldprofile.setValue(EndEntityProfile.ENDTIME, 0, value);
 				}
@@ -1413,13 +1431,82 @@ function checkallfields(){
 			</td>
 		</tr>
 	<% } %> 
-       <tr id="Row<%=(row++)%2%>">
+     <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
-       </tr>
-       <tr id="Row<%=(row++)%2%>">
+     </tr>
+     
+        <% int revstatus = RevokedCertInfo.NOT_REVOKED;
+           String value = profile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON ,0);
+           if((value != null) && (((String) value).length() > 0)) {
+               revstatus = (Integer.valueOf(value).intValue());
+           }
+        %>
+     
+	<% if( profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td></td><td align="right"> 
+				<%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON") %>
+			</td><td> 
+        <select name="<%= SELECT_ISSUANCEREVOCATIONREASON %>" size="1" 
+        	<%	if ( !profile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
+			  disabled
+		   <% } %>
+        >
+          <option value="<%= RevokedCertInfo.NOT_REVOKED %>" class="lightgreen" <%
+                if(revstatus == RevokedCertInfo.NOT_REVOKED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("ACTIVE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD %>" class="lightyellow" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("CERTIFICATEHOLD") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("UNSPECIFIED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("KEYCOMPROMISE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CACOMPROMISE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AFFILIATIONCHANGED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_SUPERSEDED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_SUPERSEDED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("SUPERSEDED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CESSATIONOFOPERATION") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("PRIVILEGESWITHDRAWN") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AACOMPROMISE") %></option>
+					
+        </select>
+			</td>
+		</tr>
+	<% } %> 
+     
+     <tr id="Row<%=(row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td>&nbsp;</td>
+	 <td>&nbsp;</td>
+	 <td>&nbsp;</td>
+     </tr>
+     <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText("CERTIFICATEPROFILE") %></td>
 	 <td>

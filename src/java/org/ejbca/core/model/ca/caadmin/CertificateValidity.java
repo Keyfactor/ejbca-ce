@@ -23,7 +23,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
 
 public class CertificateValidity {
@@ -49,8 +48,8 @@ public class CertificateValidity {
         // Extract requested start and endtime from end endtity profile / user data
         ExtendedInformation ei = subject.getExtendedinformation();
         if ( ei != null ) {
-            String eiStartTime = ei.getCustomData(EndEntityProfile.STARTTIME);
-	        String eiEndTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+            String eiStartTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+	        String eiEndTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
         	if ( eiStartTime != null ) {
         		if ( eiStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
         			String[] startTimeArray = eiStartTime.split(":");

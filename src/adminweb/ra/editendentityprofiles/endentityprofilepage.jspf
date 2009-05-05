@@ -762,6 +762,81 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         />
       </td> 
     </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON",true) %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <% used = profiledata.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0); %>
+         <%= ejbcawebbean.getText("USE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_USE_ISSUANCEREVOCATIONREASON %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox2('<%=CHECKBOX_USE_ISSUANCEREVOCATIONREASON %>', '<%=CHECKBOX_MODIFYABLE_ISSUANCEREVOCATIONREASON%>');"
+           <% if(used)
+                 out.write("CHECKED");
+           %>>
+        <%= ejbcawebbean.getText("MODIFYABLE") %>
+        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_ISSUANCEREVOCATIONREASON %>" value="<%=CHECKBOX_VALUE %>"
+		<%	if ( profiledata.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) {
+				out.write(" CHECKED ");
+			} %>
+		<%	if ( !used ) {
+			out.write(" disabled ");
+			} %>
+        />
+      <br/>
+        <% int revstatus = RevokedCertInfo.NOT_REVOKED;
+           value = profiledata.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON ,0);
+
+           if((value != null) && (((String) value).length() > 0)) {
+               revstatus = (new Integer(value)).intValue();
+           }
+        %>
+        <select name="<%= SELECT_ISSUANCEREVOCATIONREASON %>" size="1">
+          <option value="<%= RevokedCertInfo.NOT_REVOKED %>" class="lightgreen" <%
+                if(revstatus == RevokedCertInfo.NOT_REVOKED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("ACTIVE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD %>" class="lightyellow" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("CERTIFICATEHOLD") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("UNSPECIFIED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("KEYCOMPROMISE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CACOMPROMISE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AFFILIATIONCHANGED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_SUPERSEDED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_SUPERSEDED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("SUPERSEDED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CESSATIONOFOPERATION") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("PRIVILEGESWITHDRAWN") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AACOMPROMISE") %></option>
+        </select>
+      </td>
+    </tr>
     
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
@@ -1068,7 +1143,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <input type="checkbox" name="<%=CHECKBOX_USE_CARDNUMBER %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox2('<%=CHECKBOX_USE_CARDNUMBER %>', '<%=CHECKBOX_REQUIRED_CARDNUMBER%>');"
            <% if(used)
                  out.write("CHECKED");
-           %>> <br>
+           %>>
         <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_CARDNUMBER%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.isRequired(EndEntityProfile.CARDNUMBER,0) && used)

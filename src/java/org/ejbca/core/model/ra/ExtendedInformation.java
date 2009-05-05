@@ -76,6 +76,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public static final String CUSTOM_ENDTIME = EndEntityProfile.ENDTIME;
     /** The (optional) counter is the counter how many request have been received, will decrease for every request until 0. */
     public static final String CUSTOM_REQUESTCOUNTER = "REQUESTCOUNTER";
+    /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */
+    public static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
     
     
     // Public constants

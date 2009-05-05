@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
-                 org.ejbca.core.model.ra.ExtendedInformation, java.text.DateFormat, java.util.Locale" %>
+                 org.ejbca.core.model.ra.ExtendedInformation, java.text.DateFormat, java.util.Locale, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -170,6 +170,33 @@
                 else out.write(ejbcawebbean.getText("NOCERTIFICATEPROFILEDEFINED")); %>
          </td>
        </tr>
+       
+        <% int revstatus = RevokedCertInfo.NOT_REVOKED;
+           ExtendedInformation revei = viewendentityhelper.userdata.getExtendedInformation();
+		   if ( revei != null ) {
+ 		       String value = revei.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
+	           if((value != null) && (((String) value).length() > 0)) {
+	               revstatus = (Integer.valueOf(value).intValue());
+	           }
+		   }
+        %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+    	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON") %></td>
+	     <td>
+	     <% if(revstatus == RevokedCertInfo.NOT_REVOKED) {%><%= ejbcawebbean.getText("ACTIVE") %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {%><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("CERTIFICATEHOLD")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("UNSPECIFIED")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("KEYCOMPROMISE")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CACOMPROMISE")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AFFILIATIONCHANGED")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_SUPERSEDED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("SUPERSEDED")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CESSATIONOFOPERATION")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("PRIVILEGESWITHDRAWN")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AACOMPROMISE")  %><%}%>
+         </td>
+       </tr>
+       
+       
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CA") %></td>
 	 <td><%= viewendentityhelper.userdata.getCAName()  %>

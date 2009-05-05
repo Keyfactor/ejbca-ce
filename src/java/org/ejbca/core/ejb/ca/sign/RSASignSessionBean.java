@@ -79,6 +79,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.FailInfo;
@@ -1522,7 +1523,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     Certificate cacert = ca.getCACertificate();
                     cafingerprint = CertTools.getFingerprintAsString(cacert);
                     try {
-                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
+                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());                        
                         stored = true;
                     } catch (CreateException e) {
                     	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
@@ -1548,9 +1549,16 @@ public class RSASignSessionBean extends BaseSessionBean {
                 certificateStore.addCertReqHistoryData(admin,cert,data);
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
-                if (certProfile.getPublisherList() != null) {
-                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, data.getExtendedinformation());
+                Collection publishers = certProfile.getPublisherList();
+                if (publishers != null) {
+                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, data.getExtendedinformation());
                 }
+                
+                // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 
+                int revreason = getIssuanceRevocationReason(data);
+                if (revreason != RevokedCertInfo.NOT_REVOKED) {
+                	certificateStore.revokeCertificate(admin, cert, publishers, revreason);
+                }                
 
                 trace("<createCertificate(pk, ku, notAfter)");
                 return cert;
@@ -1642,6 +1650,27 @@ public class RSASignSessionBean extends BaseSessionBean {
 
         return returnval;
 
+    }
+
+    /**
+     * Returns the issuance revocation code configured on the end entity extended information.
+     *
+     * @param data user data
+     * @return issuance revocation code configured on the end entity extended information, a constant from RevokedCertInfo. Default RevokedCertInfo.NOT_REVOKED. 
+     */
+    private int getIssuanceRevocationReason(UserDataVO data) {
+    	int ret = RevokedCertInfo.NOT_REVOKED;
+    	ExtendedInformation ei = data.getExtendedinformation();
+        if ( ei != null ) {
+            String revocationReason = ei.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
+            if (revocationReason != null) {
+                ret = Integer.valueOf(revocationReason);            	
+            }
+        }
+        if (log.isDebugEnabled()) {
+            debug("User revocation reason: "+ret);        	
+        }
+        return ret;
     }
 
 

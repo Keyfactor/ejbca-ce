@@ -50,3 +50,7 @@ tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Ge
 
 .commandLink { font-size: 10pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: 0.4cm; margin-right: 0.4cm; }
 .commandButton { vertical-align: bottom; font-size: 10pt; margin-left: 0.4cm; margin-right: 0.4cm; }
+
+select option.lightgreen { background-color: #80FF80 }
+select option.lightyellow { background-color: #FFFFB3 }
+select option.lightred { background-color: #FFB8B8 }
