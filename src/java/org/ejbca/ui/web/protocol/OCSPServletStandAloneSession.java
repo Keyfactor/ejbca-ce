@@ -160,8 +160,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         try {
             if ( this.doNotStorePasswordsInMemory ) {
                 final Set<String> sError = new HashSet<String>();
-                if ( this.mKeyPassword!=null ) {
-                    sError.add(OcspConfiguration.KEY_PASSWORD);
+                if ( this.mStorePassword!=null ) {
+                    sError.add(OcspConfiguration.STORE_PASSWORD);
                 }
                 if ( this.mP11Password!=null ) {
                     sError.add(OcspConfiguration.P11_PASSWORD);
@@ -204,7 +204,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     			m_log.debug("sharedLibrary is: "+sharedLibrary);
             } else if ( configFile!=null && configFile.length()>0 ) {
                 this.slot = P11Slot.getInstance(configFile, this);
-                m_log.debug("Sun P11 configuration file is: "+sharedLibrary);
+                m_log.debug("Sun P11 configuration file is: "+configFile);
             } else {
             	this.slot = null;
             	m_log.debug("No shared P11 library.");
@@ -374,18 +374,24 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         private boolean isUpdatingKey;
         /**
+         * Name of the provider to be used for signing.
+         */
+        final private String providerName;
+        /**
          * Contructs the key reference.
          * @param a sets {@link #alias}
          * @param pw sets {@link #password}
          * @param _keyStore sets {@link #keyStore}
          * @param cert sets {@link #certificate}
+         * @param _providerName sets {@link #providerName}
          * @throws Exception
          */
-        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert) throws Exception {
+        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert, String _providerName) throws Exception {
             this.alias = a;
             this.password = pw!=null ? OCSPServletStandAloneSession.this.mKeyPassword.toCharArray() : null;
             this.certificate = cert;
             this.keyStore = _keyStore;
+            this.providerName = _providerName;
             set(pw);
             set(_keyStore);
         }
@@ -623,7 +629,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 }
                 final KeyPairGenerator kpg;
                 try {
-                    kpg = KeyPairGenerator.getInstance("RSA", PrivateKeyContainerKeyStore.this.keyStore.getProvider());
+                    kpg = KeyPairGenerator.getInstance("RSA", PrivateKeyContainerKeyStore.this.providerName);
                     kpg.initialize(oldPublicKey.getModulus().bitLength());
                     return kpg.generateKeyPair();
                 } catch (Throwable e) {
@@ -640,6 +646,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             private boolean editUser(EjbcaWS ejbcaWS, UserDataVOWS userData) {
                 userData.setStatus(UserDataConstants.STATUS_NEW);
                 userData.setPassword("foo123");
+                userData.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
                 try {
                     ejbcaWS.editUser(userData);
                 } catch (Exception e) {
@@ -660,7 +667,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 final Iterator<X509Certificate> i;
                 try {
                     final PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keyPair.getPublic(), new DERSet(),
-                                                                                             keyPair.getPrivate(), PrivateKeyContainerKeyStore.this.keyStore.getProvider().getName() );
+                                                                                             keyPair.getPrivate(), PrivateKeyContainerKeyStore.this.providerName );
                     final CertificateResponse certificateResponse = ejbcaWS.pkcs10Request(userData.getUsername(), userData.getPassword(),
                                                                                           new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
                     i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
@@ -688,8 +695,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 lCertChain.add(0, tmpCert);
                 final X509Certificate certChain[] = lCertChain.toArray(new X509Certificate[0]);
                 try {
-                    PrivateKeyContainerKeyStore.this.keyStore.setKeyEntry(PrivateKeyContainerKeyStore.this.alias, keyPair.getPrivate(), null, certChain);
-                } catch (KeyStoreException e) {
+                    PrivateKeyContainerKeyStore.this.keyStore.setKeyEntry(PrivateKeyContainerKeyStore.this.alias, keyPair.getPrivate(),
+                                                                          OCSPServletStandAloneSession.this.mKeyPassword.toCharArray(), certChain);
+                } catch (Throwable e) {
                     m_log.error("Problem to store new key in HSM.", e);
                     return null;
                 }
@@ -1093,7 +1101,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         m_log.debug("Certificate "+cert.getSubjectDN()+" has not ocsp signing as extended key usage"+"', keystore alias '"+alias+"'");
                         continue;
                     }
-                    final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore(alias, keyPassword!=null ? keyPassword.toCharArray() : null, keyStore, cert);
+                    final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore( alias, keyPassword!=null ? keyPassword.toCharArray() : null,
+                                                                                     keyStore, cert, providerHandler.getProviderName() );
                     if ( pkf.getKey()!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
                         m_log.debug("Adding sign entity for '"+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
                         putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);

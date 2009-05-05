@@ -299,24 +299,33 @@ public class OcspConfiguration {
 		return ConfigurationHolder.getString("ocsp.keys.dir", "./keys");
 	}
 
-    public final static String KEY_PASSWORD="ocsp.keys.keyPassword";
-    /**
-	 * The password for the all the soft keys of the OCSP responder.
+	/**
+     * The password for the all the soft keys of the OCSP responder.
+	 * @return {@link #getStorePassword()} if property isn't set. If neither is set "".
 	 */
 	public static String getKeyPassword() {
-		return ConfigurationHolder.getString(KEY_PASSWORD, null);
+        {
+            final String value = ConfigurationHolder.getString("ocsp.keys.keyPassword", null);
+            if ( value!=null ) {
+                return value;
+            }
+        }
+        {
+            final String value = getStorePassword();
+            if ( value!=null ) {
+                return value;
+            }
+        }
+        return "";  // use zero length String as default. value allways needed when generating new SW key.
 	}
 	
+    public final static String STORE_PASSWORD="ocsp.keys.storePassword";
 	/**
 	 * The password to all soft keystores.
 	 * @return the value of getKeyPassword() if property isn't set.
 	 */
 	public static String getStorePassword() {
-		String value = ConfigurationHolder.getString("ocsp.keys.storePassword", null);
-		if ( value == null ) {
-			value = getKeyPassword();
-		}
-		return value;
+		return ConfigurationHolder.getString(STORE_PASSWORD, null);
 	}
 	
 	public final static String CARD_PASSWORD="ocsp.keys.cardPassword";
