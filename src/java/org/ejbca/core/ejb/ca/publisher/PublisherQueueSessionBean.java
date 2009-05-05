@@ -185,7 +185,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     		// This should only list a few thousand certificates at a time, in case there
     		// are really many entries.
     		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-    		String sql = "select pk, timeCreated, timePublished, tryCounter, publishType, fingerprint from PublisherQueueData where publisherId=? and publishStatus=?";
+    		String sql = "select pk, timeCreated, lastUpdate, tryCounter, publishType, fingerprint from PublisherQueueData where publisherId=? and publishStatus=?";
     		if (orderBy != null) {
     			sql += " "+orderBy;
     		}
@@ -201,12 +201,12 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     		result = ps.executeQuery();
     		while (result.next()) {
     			String pk = result.getString(1);
-    			Date timeCreated = result.getDate(2);
-    			Date timePublished = result.getDate(3);
+    			Date timeCreated = new Date(result.getLong(2));
+    			Date lastUpdate = new Date(result.getLong(3));
     			int tryCounter = result.getInt(4);
     			int publishType = result.getInt(5);
     			String fingerprint = result.getString(6);
-	    		PublisherQueueData pqd = new PublisherQueueData(pk, timeCreated, timePublished, PublisherQueueData.STATUS_PENDING, tryCounter, publishType, fingerprint, publisherId, null);
+	    		PublisherQueueData pqd = new PublisherQueueData(pk, timeCreated, lastUpdate, PublisherQueueData.STATUS_PENDING, tryCounter, publishType, fingerprint, publisherId, null);
 	    		try {
 					PublisherQueueDataLocal dl = queuehome.findByPrimaryKey(pk);
 					PublisherQueueVolatileData vol = dl.getPublisherQueueVolatileData();
