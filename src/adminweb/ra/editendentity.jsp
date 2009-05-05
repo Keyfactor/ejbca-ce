@@ -397,39 +397,37 @@
                
 			value = request.getParameter(TEXTFIELD_STARTTIME);
 			if ( value != null ) {
-				String storeValue = value;
 				value = value.trim();
-				if ( value.equals("") ) {
-					value = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(new Date());
-					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(new Date());
-				} else if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
-						DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
-        		}
-				ExtendedInformation ei = newuser.getExtendedInformation();
-				if ( ei == null ) {
-					ei = new ExtendedInformation();
+				if (value.length() > 0) {
+					String storeValue = value;
+	                if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
+							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+	        		}
+					ExtendedInformation ei = newuser.getExtendedInformation();
+					if ( ei == null ) {
+						ei = new ExtendedInformation();
+					}
+					ei.setCustomData(EndEntityProfile.STARTTIME, storeValue);
+					newuser.setExtendedInformation(ei);					
 				}
-				ei.setCustomData(EndEntityProfile.STARTTIME, storeValue);
-				newuser.setExtendedInformation(ei);
 			}
 			value = request.getParameter(TEXTFIELD_ENDTIME);
 			if ( value != null ) {
-				String storeValue = value;
 				value = value.trim();
-				if ( value.equals("") ) {
-					value = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(new Date(Long.MAX_VALUE));
-					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(new Date(Long.MAX_VALUE));
-				} else if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
-						DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
-        		}
-				ExtendedInformation ei = newuser.getExtendedInformation();
-				if ( ei == null ) {
-					ei = new ExtendedInformation();
+				if (value.length() > 0) {
+					String storeValue = value;
+	                if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
+							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+	        		}
+					ExtendedInformation ei = newuser.getExtendedInformation();
+					if ( ei == null ) {
+						ei = new ExtendedInformation();
+					}
+					ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
+					newuser.setExtendedInformation(ei);					
 				}
-				ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
-				newuser.setExtendedInformation(ei);
 			}
 
               if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
@@ -1236,17 +1234,17 @@ function checkUseInBatch(){
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
 						String startTime = null;
 						if ( ei != null ) {
-							startTime = ei.getCustomData(EndEntityProfile.STARTTIME);
+							startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+							if ( startTime == null ) {
+								startTime = "";
+							} 
 							if ( !startTime.trim().equals("") && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
 								startTime = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()
 									).format(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
 									).parse(startTime));
 							}
 						}
-					if ( startTime == null || startTime.equals("") ) {
-						startTime = DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT, ejbcawebbean.getLocale()
-							).format(new Date());
-					} %>
+                    %>
 					value="<%= startTime %>"
 					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
 					readonly="true"
@@ -1273,7 +1271,7 @@ function checkUseInBatch(){
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
 						String endTime = null;
 						if ( ei != null ) {
-							endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+							endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
 						}
 						if ( endTime == null ) {
 							endTime = "";

@@ -504,43 +504,41 @@
 			if ( oldprofile.getUse(EndEntityProfile.STARTTIME, 0) ) {
 				value = request.getParameter(TEXTFIELD_STARTTIME);
 				if ( value != null ) {
-					String storeValue = value;
 					value = value.trim();
-					if ( value.equals("") ) {
-						value = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(new Date());
-						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(new Date());
-					} else if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+					if (value.length() > 0) {
+						String storeValue = value;
+						if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
 						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
 							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
-	        		}
-					ExtendedInformation ei = newuser.getExtendedInformation();
-					if ( ei == null ) {
-						ei = new ExtendedInformation();
-					}
-					ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, storeValue);
-					newuser.setExtendedInformation(ei);
-					oldprofile.setValue(EndEntityProfile.STARTTIME, 0, value);
+  	        		    }
+						ExtendedInformation ei = newuser.getExtendedInformation();
+						if ( ei == null ) {
+							ei = new ExtendedInformation();
+						}
+						ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, storeValue);
+						newuser.setExtendedInformation(ei);
+						oldprofile.setValue(EndEntityProfile.STARTTIME, 0, value);
+			        }
 				}
 			}
 			if ( oldprofile.getUse(EndEntityProfile.ENDTIME, 0) ) {
 				value = request.getParameter(TEXTFIELD_ENDTIME);
 				if ( value != null ) {
-					String storeValue = value;
 					value = value.trim();
-					if ( value.equals("") ) {
-						value = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(new Date(Long.MAX_VALUE));
-						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(new Date(Long.MAX_VALUE));
-					} else if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
-							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
-	        		}
-					ExtendedInformation ei = newuser.getExtendedInformation();
-					if ( ei == null ) {
-						ei = new ExtendedInformation();
+					if (value.length() > 0) {
+						String storeValue = value;
+	                    if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+							storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
+								DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+		        		}
+						ExtendedInformation ei = newuser.getExtendedInformation();
+						if ( ei == null ) {
+							ei = new ExtendedInformation();
+						}
+						ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, storeValue);
+						newuser.setExtendedInformation(ei);
+						oldprofile.setValue(EndEntityProfile.ENDTIME, 0, value);
 					}
-					ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, storeValue);
-					newuser.setExtendedInformation(ei);
-					oldprofile.setValue(EndEntityProfile.ENDTIME, 0, value);
 				}
 			}
 
@@ -1388,11 +1386,7 @@ function checkallfields(){
 				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
-					<%	String startTime = profile.getValue(EndEntityProfile.STARTTIME, 0);
-					if ( startTime == null || startTime.equals("") ) {
-						startTime = DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT, ejbcawebbean.getLocale()
-							).format(new Date());
-					} %>
+					<%	String startTime = profile.getValue(EndEntityProfile.STARTTIME, 0); %>
 					value="<%= startTime %>"
 					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
 					readonly="true"
