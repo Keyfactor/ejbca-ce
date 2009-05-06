@@ -25,24 +25,23 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # DSA keys are used in the OCSP signing certificate, the algorithm with DSA will be used.
 #
 # Default: SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA
-# ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA
+#ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA
 
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.
-# nCipher P11 HSM is not working after an update so you should set 0 for this HSM
 # Default: 300
-# ocsp.signingCertsValidTime=0
+#ocsp.signingCertsValidTime=0
 
 # Specifies if the OCSP-responder should require signed requests or not.
 # If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
 #
 # Default: false
-# ocsp.signaturerequired=false
+#ocsp.signaturerequired=false
 
 # Specifies if the OCSP-responder should require signatures to be issued by a list of allowed CA's.
 #
 # Default: false
-# ocsp.restrictsignatures=false
+#ocsp.restrictsignatures=false
 
 # Specifies how to restrict OCSP-request signatures.
 # 'issuer' means that the OCSP-responder will require signatures to be issued by a CA in a list of allowed CA's.
@@ -50,18 +49,18 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Note that unless ocsp.restrictsignatures is set to true this variable will not be used.
 #
 # Default: issuer
-# ocsp.restrictsignaturesbymethod=issuer
+#ocsp.restrictsignaturesbymethod=issuer
 
 # Specifies a directory with CA's which are allowed
 # If signatures are restricted and required only requests signed by a certificate issued by a CA in this directory is accepted.
 #
-# ocsp.signtrustdir=~/signtrustdir
+#ocsp.signtrustdir=~/signtrustdir
 
-# Specifies an interval in seconds in which the server reloads certificates from the signtrustdir
-# if this variable is set to 0 certificates will not be reloaded after startup
-# 
+# Specifies an interval in seconds in which the server reloads certificates from the 'ocsp.signtrustdir'
+# if this variable is set to 0 certificates will not be reloaded after startup.
+#
 # Default: 180
-# ocsp.signtrustvalidtime=180
+#ocsp.signtrustvalidtime=180
 
 
 # If true a certificate that does not exist in the database, but is issued by a CA the responder handles
@@ -70,7 +69,7 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # all certificates.
 #
 # Default: false
-# ocsp.nonexistingisgood=false 
+#ocsp.nonexistingisgood=false 
 
 # Specifies OCSP extension oids that will result in a call to an extension class, 
 # separate multiple entries with ;"
@@ -101,13 +100,29 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # No default value, must be set if the extension is used
 #ocsp.unidcacert=
 
-# The ocsp.keys.* preferences has a meaning only to the External OCSP responder.
-# Please read the OCSP web docs for information.
-
 # If you are not using SSL on the external OCSP responder (normally not needed for OCSP), you should define
 # this property, e.g. remove the comment sign. See 'Configuring TLS on the Unid lookup server' in the Howto.
 # Note! If defining this property on the EJBCA server, SSL will not be configured there either, and the admin-GUI will not work.
 #j2ee.web-noconfigure=true
+
+
+#------------------- Custom signer used by external OCSP responder------------------------------
+# The used token is referred to as "card" since smart card was the first (and is the only) token a custom signer has been implemented for.
+
+# Directory of classes implementing hardware signing of the OCSP response
+# Default ./ocspHardTokenClasses
+#ocsp.hardToken.classes=../primeCard/ocspHardTokenClasses-1.6
+
+# The class that implements card signing of the OCSP response
+# Default: se.primeKey.caToken.card.CardKeysImpl
+#ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
+
+# The password for keys stored on card.
+# Default: null
+#ocsp.keys.cardPassword=foo123
+
+
+#------------------- Soft keys used by external OCSP responder------------------------------
 
 # Directory containing soft keys or certificates for keys on cards. The soft keys are in jks or p12 format.
 # The certificates of the cards keys are in pem format. All CAs using the OCSP responser must have a soft
@@ -117,49 +132,72 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 #ocsp.keys.dir=./keys
 
 # The password for the all the soft keys of the OCSP responder. All keys must have the same password.
-# Default: foo123
+# Note that the key password must be specified even if the activation feature is used.
+# If the keystore is created by EJBCA then this password is equal to ocsp.keys.storePassword.
+# If it is equal you may leave it empty if ocsp.keys.storePassword is defined.
+# Default: same as ocsp.keys.storePassword if not null otherwise empty.
 #ocsp.keys.keyPassword=foo123
 
-# The password to all soft keystores. If the keystore is created by EJBCA then this password is equal to 
-# the key password above. If it is equal you may leave it empty.
-# Default: empty
-#ocsp.keys.storePassword=
+# The password to all soft keystores.
+# Default: null
+#ocsp.keys.storePassword=foo123
 
-# The password for keys stored on card.
-# Default: empty
-#ocsp.keys.cardPassword=
 
-# The class that implements card signing of the OCSP response
-# Default: se.primeKey.caToken.card.CardKeysImpl
-#ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
+#------------------- PKCS#11 keys used by external OCSP responder------------------------------
+# Note that the PKCS#11 keys will not be updated by the periodical update defined by 'ocsp.signingCertsValidTime' method
+# if 'ocsp.rekeying.wsurl' or 'ocsp.activation.doNotStorePasswordsInMemory' is defined.
 
 # P11 shared library path name.
 # Default: empty
 #ocsp.p11.sharedLibrary=/opt/nfast/toolkits/pkcs11/libcknfast.so
 
-# Sun P11 Configuration file. Must be used instead of 'ocsp.p11.sharedLibrary' if new key should be generated automaticaly before certificate of old expires.
+# Sun P11 Configuration file. Must be used instead of 'ocsp.p11.sharedLibrary' if the feature 're-keying' .
 # Default: empty
-# ocsp.p11.sunConfigurationFile=./ocs4.cfg
-
-# Renew time before certificate expires. Specifies how long time before a certificate expires that a new key should be generated. <0 means that no keys are automatically generated.
-# Default: -1 
-# ocsp.renewTimeBeforeCertExpiresInSeconds=60*60*24
-
-# URL to webservice from which the certificate for a newly generated OCSP reponder key should be fetched.
-# Default: empty
-# ocsp.ejbcawsracli.url = https://milton:8443/ejbca/ejbcaws/ejbcaws
+#ocsp.p11.sunConfigurationFile=./ocs4.cfg
 
 # P11 password.
-# Default: foo123
+# Default: null
 #ocsp.p11.p11password=foo123
 
 # P11 slot number. Prefix with 'i' to indicate index in list.
 # Default: i1
 #ocsp.p11.slot=i1
 
-# Directory of classes implementing hardware signing of the OCSP response
-# Default ./ocspHardTokenClasses
-#ocspHardTokenClasses=../primeCard/ocspHardTokenClasses-1.5
+
+#------------------- Re-keying used by external OCSP responder------------------------------
+# When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.
+# A certificate for the new key will be fetched by WS from EJBCA.
+
+# URL to webservice from which the certificate for a newly generated OCSP reponder key should be fetched.
+# The re-keying feature is disabled if this property is not defined.
+# Default: null
+#ocsp.rekeying.wsurl = https://milton:8443/ejbca/ejbcaws/ejbcaws
+
+# Renew time before certificate expires. Specifies how long time before a certificate expires that a new key should be generated. <0 means that no keys are automatically generated.
+# Default: -1 
+#ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds=60*60*24
+
+# Keystore of soft key and certificate to be used as the SSL WS client when connecting to EJBCA.
+# Do not define this property if you want to use the HSM to store the client WS key.
+# If not defined a key in the used P11 slot will be used as client key.
+# The certificate of the P11 key must have "Key usage" set to "Digital Signature" and "Extended Key Usage" set to "Client Authentication".
+# Default: null
+#ocsp.rekeying.swKeystorePath = wsKeyStore.jks
+
+# The password of the SW keystore defined above.
+# Default: null
+#ocsp.rekeying.swKeystorePassword = foo123
+
+
+#------------------- External OCSP responder activation------------------------------
+# 'ocsp.keys.storePassword' and 'ocsp.p11.p11password' and 'ocsp.keys.cardPassword' should not be defined if you are using the activation feature.
+# 
+
+# This property defines whether the passwords should be stored in memory or not.
+# 
+# Default: false
+#ocsp.activation.doNotStorePasswordsInMemory=true
+
 
 #------------------- OCSP publisher db configuration------------------------------
 # All these "ocsp-database.*" properties is used to configure the connection to the database that the
@@ -234,47 +272,47 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Specifies if transaction logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
 # Change below to true if you want transaction information to be logged
 # Default: false
-# ocsp.trx-log = true
+#ocsp.trx-log = true
 
 # Configure how time of logging in auditlog will be output
 # Default: yyyy-MM-dd:HH:mm:ss:z
-# ocsp.log-date = yyyy-MM-dd:HH:mm:ss:z
+#ocsp.log-date = yyyy-MM-dd:HH:mm:ss:z
 
 # Configure which time zone will be used for logging
 # Default: GMT
-# ocsp.log-timezone = GMT
+#ocsp.log-timezone = GMT
 
 # A pattern for use with ocsp.trx-log-order to replace constants with values during logging
 # Default: \\$\\{(.+?)\\}
-# ocsp.trx-log-pattern = \\$\\{(.+?)\\}
+#ocsp.trx-log-pattern = \\$\\{(.+?)\\}
 
 # Use ocsp.trx-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
 # Default: ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
-# ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
+#ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
 
 # Audit logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
 # change ocsp.trxlog to true of you want audit logging turned on
 # Default: false
-# ocsp.audit-log = true
+#ocsp.audit-log = true
 
 A pattern for use with ocsp.audit-order to replace constants with values during logging
 # Default: \\$\\{(.+?)\\}
-# ocsp.audit-log-pattern = \\$\\{(.+?)\\}
+#ocsp.audit-log-pattern = \\$\\{(.+?)\\}
 
 # Use ocsp.audit-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
 # Default: ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
-# ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
+#ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
 
 # Set to true if you want transactions to be aborted when logging fails
 # This option needs other configuration changes as well, see HOWTO-OCSP-RESPONDER for more information
 # Default: false
-# ocsp.log-safer = true
+#ocsp.log-safer = true
 
 # untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
 # Default: 0
-# ocsp.untilNextUpdate = 0
+#ocsp.untilNextUpdate = 0
 
 # maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
 # Ignored if untilNextUpdate is disabled. 0 = disable.
 # Default: 30
-# ocsp.maxAge = 30
+#ocsp.maxAge = 30
