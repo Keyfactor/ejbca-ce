@@ -29,21 +29,23 @@ you must set up this datasource manually. It should be a datasource that is not 
 (a <i>no-tx-datasource</i> in JBoss), and is should have autocommit (should be default in JBoss).
 </p><p>
 When EJBCA has been started you have to add a new publisher. As a superadministrator you add this publisher
-on the "Edit Publishers" page in the admin GUI. Use publisher type "Custom Publisher". And these
-configurations (if ocsp-datasource.jndi-name=OcspDS):
+on the "Edit Publishers" page in the admin GUI. Use publisher type "External OCSP Publisher". 
 </p>
 <p>
-Class Path:
+External OCSP Settings:
 </p>
-<source>
-org.ejbca.core.model.ca.publisher.ExternalOCSPPublisher
-</source>
+<ul>
+<li>'Data Source' - is the database of the external OCSP where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS.</li>
+<li>'Database Integrity Protection' - enables the basic support for database protection.</li>
+</ul>
 <p>
-Properties of Custom Publisher:
+Publisher Queue:
 </p>
-<source>
-dataSource java:/OcspDS
-</source>
+<ul>
+<li>'Current length' - displays how long the queue is now and how long it was 5, 10 and 15 minutes ago.</li>
+<li>'No direct publishing, only use queue' - when enabled, the publisher does not try to publish directly but instead pushes the update to the queue for later processing by a Publish Queue Process Service.</li>
+</ul>
+
 <p>
 All certificate profiles for certificates that should be available to the OCSP responder should
 have a reference to this publisher. To configure this you must be a superadministrator.
@@ -539,14 +541,12 @@ If these conditions are not met, no Fnr is returned.
   <section name="Using database integrity protection">
   <p>
 Enable the basic support for database protection as described in HOWTO-logsigning.txt 
-(you don't have to enable log signing though).
-As a property in the ExternalOCSPPublisher you add the property:
+(you don't have to enable log signing though) and then select 'Database Integrity Protection' in the 
+External OCSP Publisher.
 </p>
-<source>
-protect true
-</source>
+
 <p>
-Thats all there is to it. When EJBCA publishes certificate entriess to the OCSP responder database, it will also write 
+Thats all there is to it. When EJBCA publishes certificate entries to the OCSP responder database, it will also write 
 entries in the TableProtectData table. 
 If protection is enabled also on the External OCSP responder, it will log errors:
 </p>

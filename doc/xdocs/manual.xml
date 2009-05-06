@@ -4214,10 +4214,18 @@ More advanced scripts or applications have the ability to use the additional arg
 separate table in the database, the PublishQueue. This queue can then be processed by a service (see Services Framework).
 </p>
 <p>
-Some publishers can also be configured not to publish directly at all, but to store everything in the queue, which is later processed.
+Publishers can also be configured not to publish directly at all, but to store everything in the queue, which is later processed.
 The benefit of this approach is that publishing is instant. When issuing certificates the CA does not have to wait for all publishers to 
 finish. If there are many publishers this might delay the issuing process slightly.
 </p>
+<p>
+Publisher Queue Settings:
+</p>
+<ul>
+<li>'Current length' - displays how long the queue is now and how long it was 5, 10 and 15 minutes ago.</li>
+<li>'No direct publishing, only use queue' - when enabled, the publisher does not try to publish directly but instead pushes the 
+update to the queue for later processing by a Publish Queue Process Service.</li>
+</ul>
 </subsection>
 
 </section>
