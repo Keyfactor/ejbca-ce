@@ -13,7 +13,9 @@
  
 package org.ejbca.ui.web.admin.configuration;
 
+import java.net.InetAddress;
 import java.net.URLDecoder;
+import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -628,6 +630,21 @@ public class EjbcaWebBean implements java.io.Serializable {
     public boolean isUsingExportableCryptography()
     {
     	return KeyTools.isUsingExportableCryptography();
+    }
+    
+    /**
+     * @return The host's name or "unknown" if it could not be determined.
+     */
+    public String getHostName() {
+    	String hostname = "unknown";
+    	try {
+	        InetAddress addr = InetAddress.getLocalHost();    
+	        // Get hostname
+	        hostname = addr.getHostName();
+	    } catch (UnknownHostException e) {
+	    	// Ignored
+	    }
+	    return hostname;
     }
 
     /**

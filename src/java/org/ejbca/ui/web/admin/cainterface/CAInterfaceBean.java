@@ -35,6 +35,8 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -72,8 +74,9 @@ import org.ejbca.util.CertTools;
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
-
-    /** Creates a new instance of CaInterfaceBean */
+	private static final long serialVersionUID = 2L;
+	
+	/** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() {
     }
 
@@ -107,7 +110,9 @@ public class CAInterfaceBean implements java.io.Serializable {
   	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
   	    publishersession = publishersessionhome.create();               
   	    
-  	    
+  	    IPublisherQueueSessionLocalHome publisherqueuesessionhome = (IPublisherQueueSessionLocalHome) locator.getLocalHome(IPublisherQueueSessionLocalHome.JNDI_NAME);
+  	    publisherqueuesession = publisherqueuesessionhome.create();
+  	      	    
           this.informationmemory = ejbcawebbean.getInformationMemory();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, informationmemory);
@@ -268,6 +273,14 @@ public class CAInterfaceBean implements java.io.Serializable {
       return publishersession.getPublisherIdToNameMap(administrator);
     }
     
+    public int getPublisherQueueLength(int publisherId) {
+    	return publisherqueuesession.getPendingEntriesCountForPublisher(publisherId);
+    }
+    
+    public int[] getPublisherQueueLength(int publisherId, int[] intervals) {
+    	return publisherqueuesession.getPendingEntriesCountForPublisherInIntervals(publisherId, intervals);
+    }
+    
     public PublisherDataHandler getPublisherDataHandler() {    
     	return this.publisherdatahandler;
     }
@@ -401,6 +414,7 @@ public class CAInterfaceBean implements java.io.Serializable {
     private ISignSessionLocal                  signsession;
     private IHardTokenSessionLocal             hardtokensession;
     private IPublisherSessionLocal             publishersession;
+    private IPublisherQueueSessionLocal        publisherqueuesession;
     private CertificateProfileDataHandler      certificateprofiles;
     private CADataHandler                      cadatahandler;
     private PublisherDataHandler               publisherdatahandler;

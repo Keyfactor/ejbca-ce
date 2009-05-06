@@ -220,6 +220,53 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
+         <%= ejbcawebbean.getText("PUBLISHERQUEUE") %>:
+      </td>
+      <td width="50%">
+         &nbsp;  
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CURRENTQUEUELENGTH") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+           <%
+           		int[] times = publisherhelper.getPublisherQueueLength(new int[]{0, 5*60, 10*60, 15*60});
+ 				for(int i = 0; i < times.length; i++) {
+ 					if(i != 0) {
+ 						out.write(", ");
+ 					}
+ 					out.write(""+times[i]);
+ 				}
+           %>
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("ONLYUSEQUEUE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_ONLYUSEQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(publisherdata.getOnlyUseQueue()) {
+                 out.write(" CHECKED ");
+           } %>>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right">         
+         &nbsp;
+      </td>
+      <td width="50%">
+         &nbsp;  
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right">         
          <%= ejbcawebbean.getText("GENERALSETTINGS") %>:
       </td>
       <td width="50%">

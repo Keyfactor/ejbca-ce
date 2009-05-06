@@ -557,6 +557,19 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
         return retval;
     }
 
+    public int getPublisherQueueLength() {
+    	return getPublisherQueueLength(publishername);
+    }
+    public int[] getPublisherQueueLength(int[] intervals) {
+    	return getPublisherQueueLength(publishername, intervals);
+    }
+    
+    public int getPublisherQueueLength(String publishername) {
+    	return cabean.getPublisherQueueLength(cabean.getPublisherDataHandler().getPublisherId(publishername));
+    }
+    public int[] getPublisherQueueLength(String publishername, int[] intervals) {
+    	return cabean.getPublisherQueueLength(cabean.getPublisherDataHandler().getPublisherId(publishername), intervals);
+    }
 
     // Private fields.
     private CAInterfaceBean cabean;

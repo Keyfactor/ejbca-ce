@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -164,6 +165,71 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     	return ret;
     } // getPendingEntriesForPublisher
 
+    /**
+     * Gets the number of pending entries for a publisher.
+     * @param publisherId The publisher to count the number of pending entries for.
+     * @return The number of pending entries.
+     * 
+     * @ejb.interface-method view-type="both"
+     */
+    public int getPendingEntriesCountForPublisher(int publisherId) {
+    	return getPendingEntriesCountForPublisherInIntervals(publisherId, new int[]{0})[0];
+    } // getPendingEntriesCountForPublisher
+    
+    /**
+     * Gets an array with the number of pending entries for a publisher where each element 
+     * is the number of entries at a time from now specified in the <i>intervals</i> array.
+     * 
+     * The elements in <i>intervals</i> is the time from now (in seconds) to include in the interval.
+     * 
+     * @param publisherId The publisher to count the number of pending entries for.
+     * @return Array with the number of pending entries corresponding to each element in <i>interval</i>.
+     * 
+     * @ejb.interface-method view-type="both"
+     */
+    public int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] intervals) {
+    	if (log.isTraceEnabled()) {
+            log.trace(">getPendingEntriesCountForPublisherInIntervals(publisherId: " + publisherId + ", intervals:" + Arrays.toString(intervals) +  ")");
+    	}
+    	int[] result = new int[intervals.length];
+    	Connection con = null;
+    	PreparedStatement ps = null;
+    	ResultSet rs = null;
+    	
+    	try {
+	    	con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+	    	StringBuilder sql = new StringBuilder();
+	    	long now = new Date().getTime();
+	    	
+	    	for(int i = 0; i < intervals.length; i++) {
+	    		sql.append("select count(*) from PublisherQueueData where publisherId=");
+	    		sql.append(publisherId);
+	    		sql.append(" and publishStatus=");
+	    		sql.append(PublisherQueueData.STATUS_PENDING);
+	    		sql.append(" and timeCreated <= ");
+	    		sql.append("'" + (now - 1000*intervals[i]) + "'");
+	    		if(i < intervals.length-1) {
+	    			sql.append(" union all ");
+	    		}
+	    	}
+	    	if (log.isDebugEnabled()) {
+	    		log.debug("Executing SQL: "+sql.toString());    			
+			}
+	    	ps = con.prepareStatement(sql.toString());
+	    	
+			rs = ps.executeQuery();
+			for(int i = 0; i < intervals.length && rs.next(); i++) {
+				result[i] = rs.getInt(1);
+			}
+    	} catch(SQLException e) {
+    		throw new EJBException(e);
+    	} finally {
+    		JDBCUtil.close(con, ps, rs);
+    	}
+    	trace("<getPendingEntriesCountForPublisherInIntervals()");
+    	return result;
+    } // getPendingEntriesCountForPublisher
+    
     /**
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
 	 *

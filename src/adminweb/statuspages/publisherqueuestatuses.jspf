@@ -1,0 +1,33 @@
+<%@page import="java.util.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper"%>
+<jsp:useBean id="publisherhelper" scope="session" class="org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
+<%
+	cabean.initialize(request, ejbcawebbean);
+	publisherhelper.initialize(request,ejbcawebbean, cabean);
+	
+	TreeMap publishernames = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
+	Iterator iter = publishernames.keySet().iterator();
+%>
+
+<table style="border: none; width: 50%">
+	<tr style="font-weight: bold;">
+		<td><%=ejbcawebbean.getText("PUBLISHER")%></td>
+		<td><%=ejbcawebbean.getText("QUEUELENGTH")%></td>
+	</tr>
+<%  if(!iter.hasNext()) { %>
+		<tr>
+			<td colspan="2" style="font-style: italic;"><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
+		</tr>
+	<% } else {
+
+		while(iter.hasNext()) {
+			String name = (String) iter.next();
+			int queueLength = publisherhelper.getPublisherQueueLength(name);
+		%>
+			<tr>	
+				<td><%=name %></td>
+				<td><%=queueLength %></td>
+			</tr>
+<% 		}
+	} %>
+</table>

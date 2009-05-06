@@ -21,19 +21,10 @@
 </div></H5> 
 
 <H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
-<%
-String hostname = "unknown";
-try {
-        InetAddress addr = InetAddress.getLocalHost();    
-        // Get hostname
-        hostname = addr.getHostName();
-    } catch (UnknownHostException e) {
-    }
-%>
-<div align=left><i><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "+hostname%></i></div> 
+<div align=left><i><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "+ejbcawebbean.getHostName()%></i></div> 
 
-<p><%= ejbcawebbean.getText("EJBCAISAFULLY") + " " + ejbcawebbean.getText("EJBCAISAFULLY2")%></p>
-<p><%= ejbcawebbean.getText("WRITTENEXCLUSIVELY") %></p>
+<p>&nbsp;</p>
+<%@ include file="statuspages/publisherqueuestatuses.jspf" %>
 
 <% // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
