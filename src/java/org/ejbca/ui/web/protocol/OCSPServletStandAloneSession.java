@@ -214,20 +214,32 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
             m_log.debug("softKeyDirectoryName is: "+this.mKeystoreDirectoryName);
             this.webURL = OcspConfiguration.getEjbcawsracliUrl();
-            if ( this.slot!=null && this.webURL!=null && this.webURL.length()>0 ){
+            if ( this.webURL!=null && this.webURL.length()>0 ){
                 if ( this.mRenewTimeBeforeCertExpiresInSeconds<0 ) {
-                    throw new ServletException("No \"renew time before exires\" defined but WS URL defined.");
+                    throw new ServletException(OcspConfiguration.RENEW_TIMR_BEFORE_CERT_EXPIRES_IN_SECONDS+" must be defined if "+OcspConfiguration.REKEYING_WSURL+" is defined.");
                 }
+                final String wsSwKeystorePath = OcspConfiguration.getWsSwKeystorePath();
                 // Setting system properties to ssl resources to be used
-                System.setProperty("javax.net.ssl.keyStoreType", "pkcs11");
-                final String sslProviderName = this.slot.getProvider().getName();
-                if ( sslProviderName==null ) {
-                    throw new ServletException("Problem with provider. No name.");
+                if ( wsSwKeystorePath!=null && wsSwKeystorePath.length()>0 ) {
+                    final String password = OcspConfiguration.getWsSwKeystorePassword();
+                    if ( password==null ) {
+                        throw new ServletException(OcspConfiguration.WSSWKEYSTOREPASSWORD+" must be specified if "+OcspConfiguration.WSSWKEYSTOREPATH+" is specified.");
+                    }
+                    System.setProperty("javax.net.ssl.keyStore", wsSwKeystorePath);
+                    System.setProperty("javax.net.ssl.keyStorePassword", password);
+                } else if ( this.slot!=null ) {
+                    System.setProperty("javax.net.ssl.keyStoreType", "pkcs11");
+                    final String sslProviderName = this.slot.getProvider().getName();
+                    if ( sslProviderName==null ) {
+                        throw new ServletException("Problem with provider. No name.");
+                    }
+                    m_log.debug("P11 provider name for WS: "+sslProviderName);
+                    System.setProperty("javax.net.ssl.keyStoreProvider", sslProviderName);
+                    System.setProperty("javax.net.ssl.trustStore", "NONE");
+                    System.setProperty("javax.net.ssl.keyStore", "NONE");
+                } else {
+                    throw new ServletException("If "+OcspConfiguration.REKEYING_WSURL+" is defined, either "+OcspConfiguration.WSSWKEYSTOREPATH+" or P11 must be defined.");
                 }
-                m_log.debug("P11 provider name for WS: "+sslProviderName);
-                System.setProperty("javax.net.ssl.keyStoreProvider", sslProviderName);
-                System.setProperty("javax.net.ssl.trustStore", "NONE");
-                System.setProperty("javax.net.ssl.keyStore", "NONE");
                 // setting ejbca trust provider that accept all server certs
                 final Provider tlsProvider = new TLSProvider();
                 Security.addProvider(tlsProvider);
@@ -235,9 +247,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 Security.setProperty("ssl.KeyManagerFactory.algorithm", "NewSunX509");
             } else {
                 if ( this.mRenewTimeBeforeCertExpiresInSeconds>=0 ) {
-                    throw new ServletException("\"renew time before expires\" defined but no WS URL or P11 slot defined.");
+                    throw new ServletException(OcspConfiguration.RENEW_TIMR_BEFORE_CERT_EXPIRES_IN_SECONDS+" must not be defined if "+OcspConfiguration.REKEYING_WSURL+" is not defined.");
                 }
-                m_log.debug("No P11 token. WS can not be used.");
+                m_log.debug("Key renewal is not enabled.");
             }
             // Load OCSP responders private keys into cache in init to speed things up for the first request
             // signEntityMap is also set

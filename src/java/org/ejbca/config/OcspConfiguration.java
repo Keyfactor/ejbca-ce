@@ -350,28 +350,29 @@ public class OcspConfiguration {
         return ConfigurationHolder.getString("ocsp.p11.sunConfigurationFile", "");
     }
 
+    public static final String RENEW_TIMR_BEFORE_CERT_EXPIRES_IN_SECONDS = "ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds";
     /**
      * @return time before the experation of the OCSP signing cert that the signing key should be renewed.
      */
     public static int getRenewTimeBeforeCertExpiresInSeconds() {
-        final String key = "ocsp.renewTimeBeforeCertExpiresInSeconds";
-        final String sValue = ConfigurationHolder.getString(key, "");
+        final String sValue = ConfigurationHolder.getString(RENEW_TIMR_BEFORE_CERT_EXPIRES_IN_SECONDS, "");
         if ( sValue==null || sValue.length()<1 ) {
             return -1;
         }
         try {
             return Integer.parseInt(sValue);
         } catch ( NumberFormatException e ) {
-            log.error("Could not parse value of "+key+" to integer.", e);
+            log.error("Could not parse value of "+RENEW_TIMR_BEFORE_CERT_EXPIRES_IN_SECONDS+" to integer.", e);
         }
         return -1;
     }
 
+    public final static String REKEYING_WSURL="ocsp.rekeying.wsurl";
     /**
      * @return EJBCA web service URL
      */
     public static String getEjbcawsracliUrl() {
-        return ConfigurationHolder.getString("ocsp.ejbcawsracli.url", "");
+        return ConfigurationHolder.getString(REKEYING_WSURL, null);
     }
 
 	/**
@@ -399,7 +400,7 @@ public class OcspConfiguration {
 		return ConfigurationHolder.getString("ocsp.p11.slot", "i1");
 	}
 
-	public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY="ocsp.doNotStorePasswordsInMemory";
+	public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY="ocsp.activation.doNotStorePasswordsInMemory";
     /**
      * Should passwords be stored in memory.
      * @return True if password should not be stored in memory.
@@ -410,5 +411,22 @@ public class OcspConfiguration {
             return false;
         }
         return true;
+    }
+
+    public static String WSSWKEYSTOREPATH = "ocsp.rekeying.swKeystorePath";
+    /**
+     * Path of the file to be used as SW keystore for the client certificate in the WS session when rekeying.
+     * @return null if SW keystore should not be used.
+     */
+    public static String getWsSwKeystorePath() {
+        return ConfigurationHolder.getString(WSSWKEYSTOREPATH, null);
+    }
+
+    public static String WSSWKEYSTOREPASSWORD = "ocsp.rekeying.swKeystorePassword";
+    /**
+     * @return
+     */
+    public static String getWsSwKeystorePassword() {
+        return ConfigurationHolder.getString(WSSWKEYSTOREPASSWORD, null);
     }
 }
