@@ -1378,7 +1378,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param admin Administrator performing the operation
      * @param issuerdn the CRL issuers DN (CAs subject DN)
      * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
-     * @return CRLInfo of last CRL by CA.
+     * @return CRLInfo of last CRL by CA or null if no CRL exists.
      * @ejb.interface-method
      */
     public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {

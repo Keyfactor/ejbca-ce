@@ -258,7 +258,7 @@ public class CAInterfaceBean implements java.io.Serializable {
     /**
      * @param issuerdn
      * @param deltaCRL false for complete CRL info, true for delta CRLInfo
-     * @return
+     * @return CRLInfo of last CRL by CA or null if no CRL exists.
      */
     public CRLInfo getLastCRLInfo(String issuerdn, boolean deltaCRL) {
       return certificatesession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
