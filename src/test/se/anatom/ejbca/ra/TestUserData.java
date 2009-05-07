@@ -28,6 +28,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
 
@@ -219,7 +220,13 @@ public class TestUserData extends TestCase {
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
         user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
-        TestTools.getUserAdminSession().changeUser(admin, user, false);
+        boolean thrown = false;
+        try {
+            TestTools.getUserAdminSession().changeUser(admin, user, false);        	
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	thrown = true;
+        }
+        assertTrue(thrown);
         // decrease the value, since we use the empty end entity profile, the counter will not be used
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
@@ -244,7 +251,13 @@ public class TestUserData extends TestCase {
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
         user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
-        TestTools.getUserAdminSession().changeUser(admin, user, false);
+        thrown = false;
+        try {
+            TestTools.getUserAdminSession().changeUser(admin, user, false);        	
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	thrown = true;
+        }
+        assertTrue(thrown);
         // decrease the value
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
@@ -257,6 +270,7 @@ public class TestUserData extends TestCase {
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
         TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        // This time changeUser will be ok
         TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value        
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
@@ -271,11 +285,14 @@ public class TestUserData extends TestCase {
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(-1, counter);  
         
-        // Now disallow the counter, it will be deleted form the user
+        // Now disallow the counter, it will be deleted from the user
         ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
         TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        TestTools.getUserAdminSession().changeUser(admin, user, false);
+        ei = user.getExtendedinformation();
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, null);
+        user.setExtendedinformation(ei);
+        TestTools.getUserAdminSession().changeUser(admin, user, false);        	
         // decrease the value        
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(0, counter);
@@ -285,6 +302,10 @@ public class TestUserData extends TestCase {
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
         TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        ei = user.getExtendedinformation();
+        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");
+        user.setExtendedinformation(ei);
+        user.setStatus(UserDataConstants.STATUS_NEW);
         TestTools.getUserAdminSession().changeUser(admin, user, false);
         // decrease the value        
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
@@ -297,6 +318,7 @@ public class TestUserData extends TestCase {
         assertEquals(-1, counter);  
 
         // test setuserstatus it will re-set the counter
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
         ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
