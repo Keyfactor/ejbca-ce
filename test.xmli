@@ -5,12 +5,24 @@
     <target name="test:compile" depends="compile">
         <mkdir dir="${test.dir}" />
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="jpa.classpath" />
             <classpath refid="test.compile.classpath" />
         	<exclude name="org/ejbca/core/protocol/ws/*" />
         	<exclude name="org/ejbca/core/protocol/xkms/*" />
+        	<exclude name="org/ejbca/ui/cli/TestOcspMonitoringTool.java" />
         </javac>
         <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
         <copy file="${src.java}/jndi.properties" todir="${test.dir}" failonerror="false"/>
+    </target>
+
+    <!-- compile JUnit testcases -->
+    <target name="test:compile-ctb" depends="test:compile,clientToolBox">
+        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="jpa.classpath" />
+            <classpath refid="test.base.classpath" />
+            <classpath location="${clientToolBox-dist.dir}/clientToolBox.jar" />
+        	<include name="org/ejbca/ui/cli/TestOcspMonitoringTool.java" />
+        </javac>
     </target>
 
     <target name="test:run" depends="test:compile,j2ee:assert-run" description="run JUnit testcases">
@@ -315,5 +327,37 @@
             <report format="frames" todir="${test.dir}/log/reports/html" />
         </junitreport>
     </target>
+
+    <target name="test:ctb" depends="test:compile-ctb" description="run JUnit ClientToolBox tests">
+		<echo message="Use ejbca-custom/clientToolBox/lib for your JDBC driver and ejbca-custom/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
+        <delete dir="${test.dir}/ctb/reports" />
+        <mkdir dir="${test.dir}/ctb/reports/html" />
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath>
+                <path refid="jpa.classpath" />
+                <path refid="test.base.classpath" />
+                <path location="${test.dir}" />
+                <path location="${clientToolBox-dist.dir}/properties" />
+                <!--path location="${clientToolBox-dist.dir}/lib/mysql-connector-java.jar" /-->
+                <path location="${clientToolBox.build}" />
+                <path>
+					<fileset dir="${clientToolBox-dist.dir}/lib" includes="*.jar" />
+				</path>
+            </classpath>
+            <formatter type="xml" />
+        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
+            <batchtest fork="yes" todir="${test.dir}/ctb/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/cli/TestOcspMonitoringTool*" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <junitreport todir="${test.dir}/ctb/reports">
+            <fileset dir="${test.dir}/ctb/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.dir}/ctb/reports/html" />
+        </junitreport>
+   	</target>
 
 </project>

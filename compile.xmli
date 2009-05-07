@@ -201,6 +201,16 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
+            <!--
+            	Don't include stuff that relies on JPA until EJBCA 4
+            -->
+            <exclude name="org/ejbca/core/ejb/ca/store/CertificateData.java" />
+            <exclude name="org/ejbca/ui/cli/*Tool.java" />
+            <exclude name="org/ejbca/ui/cli/*Test.java" />
+            <exclude name="org/ejbca/ui/cli/Ocsp.java" />
+            <exclude name="org/ejbca/ui/cli/EjbcaWsRaCli.java" />
+            <exclude name="org/ejbca/ui/cli/ClientToolBox.java" />
+
         	<exclude name="org/ejbca/core/protocol/ws/**" />
         	<exclude name="org/ejbca/core/protocol/xkms/**/**" />
             <src path="${src.java}" />

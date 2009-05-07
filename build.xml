@@ -917,6 +917,25 @@
                 <include name="cert-cvc.jar"/>
                 <include name="ldap.jar"/>
                 <include name="jline-0.9.94.jar"/>
+                <include name="commons-collections-3.2.jar"/><!-- Hibernate dependency -->
+            </fileset>
+            <fileset dir="${lib}/xdoclet/lib">
+                <include name="dom4j-1.6.1.jar"/><!-- Hibernate dependency -->
+            </fileset>
+        	<!-- These are also defined in propertiesAndPaths.xmli as jpa.classpath -->
+            <fileset dir="${lib}/hibernate">
+                <include name="antlr-2.7.6.jar"/>
+                <include name="hibernate3.jar"/>
+                <include name="hibernate-core.jar"/>
+                <include name="hibernate-annotations.jar"/>
+                <include name="hibernate-commons-annotations.jar"/>
+                <include name="hibernate-entitymanager.jar"/>
+                <include name="javassist-3.4.GA.jar"/>
+                <include name="ejb3-persistence.jar"/>
+                <include name="slf4j-api-1.5.2.jar"/>
+                <include name="slf4j-log4j12.jar"/>
+                <include name="jta-1.1.jar"/>
+                <include name="*.txt"/>
             </fileset>
         </copy>
         <copy todir="${clientToolBox-dist.dir}">
@@ -924,9 +943,6 @@
             <fileset dir="${mainsrc}/clientToolBox"/>
         </copy>
         <chmod file="${clientToolBox-dist.dir}/*.sh" perm="a+rx"/>
-        <copy todir="${clientToolBox-dist.dir}/properties">
-            <fileset file="${mainbin}/log4j.properties"/>
-        </copy>
         <copy todir="${src.java}">
             <fileset dir="${mainsrc}/java" />
         </copy>
@@ -939,12 +955,15 @@
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <include name="org/ejbca/ui/cli/HealthCheckTest.java" />
             <include name="org/ejbca/ui/cli/Ocsp.java" />
+            <include name="org/ejbca/ui/cli/OcspMonitoringTool.java" />
+            <include name="org/ejbca/ui/cli/DatabaseCopyTool.java" />
             <include name="org/ejbca/ui/cli/HSMKeyTool.java" />
             <include name="org/ejbca/ui/cli/PKCS11HSMKeyTool.java" />
             <include name="org/ejbca/ui/cli/NCipherHSMKeyTool.java" />
             <include name="org/ejbca/ui/cli/CMPTest.java" />
             <include name="org/ejbca/ui/cli/SCEPTest.java" />
             <include name="org/ejbca/ui/cli/EjbcaWsRaCli.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertificateData.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
@@ -954,6 +973,7 @@
             </classpath>
             <src path="${src.java}" />
             <src path="${mainsrc}/jaxws/gen-java/client" />
+            <src path="${mainsrc}/ejbca-entities" />
         </javac>
         <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
             <fileset dir="${clientToolBox.build}"/>

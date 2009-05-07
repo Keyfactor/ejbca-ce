@@ -174,7 +174,7 @@
         <fileset dir="lib/ext" includes="*.jar" />
     </path>
 
-    <path id="compile.classpath">
+    <path id="nonj2ee-compile.classpath">
         <path refid="ext.classpath" />
         <fileset dir="lib" includes="*.jar" excludes="bc*.jar"/>
         <fileset dir="lib/quickserver" includes="*.jar"/>
@@ -194,7 +194,29 @@
     	</fileset> 
     	<fileset dir="lib/xmlsign" includes="xmlsec-1.3.0.jar"/>
         <pathelement location="tmp/xkms/gen-classes"/>
+    </path>
+
+    <path id="compile.classpath">
+        <path refid="nonj2ee-compile.classpath" />
         <path refid="j2ee.classpath" />
+    </path>
+
+    <path id="jpa.classpath">
+        <fileset dir="${lib}/xdoclet/lib" includes="dom4j-1.6.1.jar.jar"/>
+        <fileset dir="${lib}/hibernate">
+            <include name="antlr-2.7.6.jar"/>
+            <include name="hibernate3.jar"/>
+            <include name="hibernate-core.jar"/>
+            <include name="hibernate-annotations.jar"/>
+            <include name="hibernate-commons-annotations.jar"/>
+            <include name="hibernate-entitymanager.jar"/>
+            <include name="hibernate-validator.jar"/>
+            <include name="javassist-3.4.GA.jar"/>
+            <include name="ejb3-persistence.jar"/>
+            <include name="slf4j-api-1.5.2.jar"/>
+            <include name="slf4j-log4j12.jar"/>
+            <include name="jta-1.1.jar"/>
+        </fileset>
     </path>
 
     <path id="j2ee.classpath">
@@ -231,9 +253,13 @@
         <path refid="j2ee.classpath" />
     </path>
 
-    <path id="test.compile.classpath">
-        <path refid="compile.classpath" />
+    <path id="test.base.classpath">
+        <path refid="nonj2ee-compile.classpath" />
         <path location="${build}" />
+    </path>
+
+    <path id="test.compile.classpath">
+        <path refid="test.base.classpath" />
         <path refid="j2ee.classpath" />
     </path>
 
