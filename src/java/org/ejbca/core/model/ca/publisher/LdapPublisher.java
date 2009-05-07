@@ -1400,7 +1400,7 @@ public class LdapPublisher extends BasePublisher {
 				}
 				
 				// If this is an objectClass which is a SecurityObject, such as simpleSecurityObject, we will add the password as well, if not null
-				if (getSetUserPassword() && (password != null)) {
+				if ( (getSetUserPassword() && (password != null)) && (addNonExisting || modifyExisting) ) {
 					log.debug("Modifying userPassword attribute");
 					LDAPAttribute attr = new LDAPAttribute("userPassword", password);
 					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
