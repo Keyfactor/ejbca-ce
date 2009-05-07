@@ -443,7 +443,7 @@ The validity of a certificate is determined as follows:
 </ul>
 <p>There are some constraints for the validity of a certificate issued by the CA:
 <ul>
-<li>The notAfter time if issued certificates can never be longer than the validity time specified in the certificate profile used.</li>
+<li>The notAfter time of issued certificates can never be longer than the validity time specified in the certificate profile used.</li>
 <li>The notAfter time of issued certificate can never be longer than the CAs own validity.</li>
 <li>notAfter can never be before nofBefore and vice versa.</li>
 <li>notBefore is normally 10 minutes before the current time, to avoid problems with clocks that are a few minutes out of sync.</li>
