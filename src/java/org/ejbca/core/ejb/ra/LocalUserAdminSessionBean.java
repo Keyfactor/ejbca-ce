@@ -1045,6 +1045,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     		if ( (status == UserDataConstants.STATUS_NEW) && (data1.getStatus() != UserDataConstants.STATUS_NEW) ) {
                 // If status is set to new, when it is not already new, we should re-set the allowed request counter to the default values
     			resetRequestCounter(admin, data1, false);
+    		} else {
+    			log.debug("Status not chaning from something else to new, not resetting requestCounter.");
     		}
             data1.setStatus(status);
             data1.setTimeModified((new java.util.Date()).getTime());
