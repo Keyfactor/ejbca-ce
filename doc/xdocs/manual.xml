@@ -3885,7 +3885,7 @@ is used instead.</li>
 <li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if it is no existing object 
 when EJBCA publishes the certificate.</li>
 <li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values and/or added
-when an entry is updated with a new certificate.</li>
+when an entry is updated with a new certificate. If this option is not activated, existing users will not be touched at all, even not updated with a new certificate.</li>
 <li> 'Overwrite Existing Attributes' When 'Modify Existing Users' is set to true this value determines whether to change values of attributes when 
 they already exist.</li>
 <li> 'Add Nonexisting Attributes' When 'Modify Existing Users' is set to true this value determines whether to add attributes when 
