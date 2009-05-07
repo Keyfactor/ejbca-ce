@@ -17,6 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -390,20 +391,26 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         final private String providerName;
         /**
+         * Name of file where a newly generated key should be stored. Only used by SW keystores.
+         */
+        final private String fileName;
+        /**
          * Contructs the key reference.
          * @param a sets {@link #alias}
          * @param pw sets {@link #password}
          * @param _keyStore sets {@link #keyStore}
          * @param cert sets {@link #certificate}
          * @param _providerName sets {@link #providerName}
+         * @param _fileName Only used SW keystores.
          * @throws Exception
          */
-        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert, String _providerName) throws Exception {
+        PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert, String _providerName, String _fileName) throws Exception {
             this.alias = a;
             this.password = pw!=null ? OCSPServletStandAloneSession.this.mKeyPassword.toCharArray() : null;
             this.certificate = cert;
             this.keyStore = _keyStore;
             this.providerName = _providerName;
+            this.fileName = _fileName;
             set(pw);
             set(_keyStore);
         }
@@ -411,6 +418,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init(java.util.List, int)
          */
         public void init(List<X509Certificate> caChain, int caid) {
+            destroy();
+            if ( !doKeyRenewal() ) {
+                return;
+            }
+            if ( this.fileName!=null && OCSPServletStandAloneSession.this.mStorePassword==null ) {
+                m_log.error("Not possible to renew keys whith no stored keystore password for certificate with DN: "+caChain.get(0).getSubjectDN());
+                return;
+            }
             this.keyRenewer = new KeyRenewer(caChain, caid);
         }
         /**
@@ -713,6 +728,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     m_log.error("Problem to store new key in HSM.", e);
                     return null;
                 }
+                if ( PrivateKeyContainerKeyStore.this.fileName!=null ) {
+                    try {
+                        PrivateKeyContainerKeyStore.this.keyStore.store(new FileOutputStream(PrivateKeyContainerKeyStore.this.fileName),
+                                                                        OCSPServletStandAloneSession.this.mStorePassword.toCharArray());
+                    } catch (Throwable e) {
+                        m_log.error("Not possible to store keystore on file.",e);
+                    }
+                }
                 return certChain;
             }
             /**
@@ -900,6 +923,15 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             } finally {
                 this.mutex.releaseMutex();
             }
+            if ( this.signEntityMap!=null ){
+                Collection<SigningEntity> values=this.signEntityMap.values();
+                if ( values!=null ) {
+                    final Iterator<SigningEntity> i = values.iterator();
+                    while( i.hasNext() ) {
+                        i.next().shutDown();
+                    }
+                }
+            }
             try {
                 this.updating  = true; // stops new action on token
                 if ( this.cardKeys==null && OCSPServletStandAloneSession.this.hardTokenClassName!=null && OCSPServletStandAloneSession.this.hardTokenClassName.length()>0 ) {
@@ -949,15 +981,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
                     throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
                 }
-                if ( this.signEntityMap!=null ){
-                    Collection<SigningEntity> values=this.signEntityMap.values();
-                    if ( values!=null ) {
-                        final Iterator<SigningEntity> i = values.iterator();
-                        while( i.hasNext() ) {
-                            i.next().shutDown();
-                        }
-                    }
-                }{
+                {
                     final Iterator<Entry<Integer, SigningEntity>> i=newSignEntity.entrySet().iterator();
                     while( i.hasNext() ) {
                         Entry<Integer, SigningEntity> entry = i.next();
@@ -1005,7 +1029,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             OCSPServletStandAloneSession.this.slot.reset();
             final P11ProviderHandler providerHandler = new P11ProviderHandler();
             final PasswordProtection pwp = getP11Pwd(password);
-            loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, OCSPServletStandAloneSession.this.slot.toString(), providerHandler, newSignEntity);
+            loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, OCSPServletStandAloneSession.this.slot.toString(),
+                             providerHandler, newSignEntity, null);
             pwp.destroy();
             m_log.trace("<loadFromP11HSM");
             return true;
@@ -1033,7 +1058,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     keyStore.load(new FileInputStream(fileName), storePassChars);
                 }
                 final String keyPassword = OCSPServletStandAloneSession.this.mKeyPassword!=null ? OCSPServletStandAloneSession.this.mKeyPassword : password;
-                loadFromKeyStore(adm, keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity);
+                loadFromKeyStore(adm, keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity, fileName);
                 ret = true;
             } catch( Exception e ) {
                 m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
@@ -1095,11 +1120,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @param errorComment Comment to be used in possible error message.
          * @param providerHandler The provider to be used.
          * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
+         * @param fileName Name of the keystore file. Use null for P11
          * @throws KeyStoreException
          */
         private void loadFromKeyStore(Admin adm, KeyStore keyStore, String keyPassword,
                                       String errorComment, ProviderHandler providerHandler,
-                                      Map<Integer, SigningEntity> newSignEntity) throws KeyStoreException {
+                                      Map<Integer, SigningEntity> newSignEntity, String fileName) throws KeyStoreException {
             final Enumeration<String> eAlias = keyStore.aliases();
             while( eAlias.hasMoreElements() ) {
                 final String alias = eAlias.nextElement();
@@ -1114,7 +1140,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         continue;
                     }
                     final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore( alias, keyPassword!=null ? keyPassword.toCharArray() : null,
-                                                                                     keyStore, cert, providerHandler.getProviderName() );
+                                                                                     keyStore, cert, providerHandler.getProviderName(), fileName );
                     if ( pkf.getKey()!=null && signTest(pkf.getKey(), cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
                         m_log.debug("Adding sign entity for '"+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
                         putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);
