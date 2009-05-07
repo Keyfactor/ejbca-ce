@@ -2464,6 +2464,18 @@ the future replace the old variant. I checks if any of the CA:s need a new CRL
 and updates it if necessary. The worker have no settings and only supports the 
 periodical interval and no action.
 </p>
+<p>
+The CRL update worker should never run simultaneously on two nodes, or simultaneously on one node.
+To avoid running more than one instance on a single node there is a semaphore that inhibits more than one 
+instance of the worker to run in a single JVM. If a worker starts and another worker is already running
+the worker is rescheduled to run on the next planned interval, and immediately terminated.
+<br/>
+To avoid running any two services on two nodes simultaneously, the service have a time stamp that is set when it runs, and 
+schedules the next run before the actual work is started. This time stamp makes it possible for another node to determine of 
+the service is already running on another node and not start running.
+</p><p>
+In practice what this leads to is that a service will always run on a single node, the same node every time.  
+</p>
 <p><b>Certificate Expiration Check Worker</b></p>
 <p>
 A worker that checks if a CA have certificates about to expire and sends an email 
@@ -2541,6 +2553,7 @@ This service will try to re-publish entries from this queue. The specific settin
 </p>
 <p>To read on how the algorithm to prevent excessive database load etc is done, the easiest way is to read in the java file for class PublishQueueProcessWorker.
 </p>
+<p>The same algorithm as for the CRL update worker is used to make sure the service only runs in one instance on one node.</p>
 
 </subsection>
 
@@ -4257,7 +4270,7 @@ The benefit of this approach is that publishing is instant. When issuing certifi
 finish. If there are many publishers this might delay the issuing process slightly.
 </p>
 <p>
-Publisher Queue Settings:
+Publisher Settings:
 </p>
 <ul>
 <li>'Current length' - displays the number of new entries in the queue less than 10 minutes from now, from 1 to 10 minutes, older than 1 hour and the total number of entries in the queue.</li>
