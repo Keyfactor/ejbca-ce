@@ -551,6 +551,18 @@ added. You can also specify a default value for the end entity profile. Differen
 in the end entity profile page.   
 </p>
 </subsection>
+<subsection name="Revocation reason to set after certificate issuance">
+<p>Using this option you can define that when adding a new user, the revocation state of an issued certificate can be set immediately to something else than 'Active'.
+<br/>
+Useful if you want to issue certificate that are 'On hold' for users. After the user receives the certificate they might be required to perform some action in order to have their certificate
+activated.
+<br/>
+Most useful when used in combination with OCSP since it will require, in practice, instant revocation checking.
+</p>
+<p>
+When enabling this option in the profile, a corresponding selection will be available when adding new users. The user data corresponding to this option is an ExtendedInformation attribute, ExtendedInformation.CUSTOM_REVOCATIONREASON.
+</p>
+</subsection>
 <subsection name="Reverse Subject DN Alt Name Checks">
 <p>
 This checkbox is not recommended to be used in normal operations. When using the External RA and more than one DN field type is set in the profile,

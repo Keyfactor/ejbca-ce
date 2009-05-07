@@ -768,7 +768,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="25%" align="right"> 
-        <%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON",true) %> <br>&nbsp;
+        <%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON",true) %> <%= ejbcawebbean.getHelpReference("/manual.html#Revocation%20reason%20to%20set%20after%20certificate%20issuance") %><br>&nbsp;
       </td>
       <td width="70%"> 
         <% used = profiledata.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0); %>
