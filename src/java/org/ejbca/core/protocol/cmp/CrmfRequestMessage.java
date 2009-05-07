@@ -283,17 +283,29 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		return null;
 	}
 
+    /**
+     * @see IRequestMessage#getRequestDN()
+     */
 	public String getRequestDN() {
 		String ret = null;
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		X509Name name = templ.getSubject();
+		X509Name name = getRequestX509Name();
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
 		}
 		log.debug("Request DN is: "+ret);
 		return ret;
 	}
-	
+
+    /**
+     * @see IRequestMessage#getRequestX509Name()
+     */
+	public X509Name getRequestX509Name() {
+		CertTemplate templ = getReq().getCertReq().getCertTemplate();
+		X509Name name = templ.getSubject();
+		log.debug("Request X509Name is: "+name);
+		return name;
+	}
+
     public String getRequestAltNames() {
     	String ret = null;
 		CertTemplate templ = getReq().getCertReq().getCertTemplate();

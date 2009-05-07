@@ -453,7 +453,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("ALLOWVALIDITYOVERRIDE") %>
+        <%= ejbcawebbean.getText("ALLOWVALIDITYOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/manual.html#Allow%20extension%20override") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_ALLOWVALIDITYOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
@@ -464,11 +464,22 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("ALLOWEXTENSIONOVERRIDE") %>
+        <%= ejbcawebbean.getText("ALLOWEXTENSIONOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/manual.html#Allow%20subject%20DN%20override") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_ALLOWEXTENSIONOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getAllowExtensionOverride())
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("ALLOWDNOVERRIDE") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_ALLOWDNOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getAllowDNOverride())
                  out.write("CHECKED");
            %>> 
       </td>

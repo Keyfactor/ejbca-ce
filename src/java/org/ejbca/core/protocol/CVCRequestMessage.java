@@ -27,6 +27,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -224,6 +225,15 @@ public class CVCRequestMessage implements IRequestMessage {
     public String getRequestDN() {
     	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getSubjectDN(cc);
+    }
+
+    /**
+     * @see IRequestMessage#getRequestX509Name()
+     */
+    public X509Name getRequestX509Name() {
+    	String dn = getRequestDN();
+    	X509Name name = new X509Name(dn);
+    	return name;
     }
 
     public String getRequestAltNames() {

@@ -46,6 +46,7 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
@@ -751,7 +752,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     					if ( (ki != null) && (ki.length > 0) ) {
         					sequence = new String(ki);    						
     					}
-                    	cert = createCertificate(admin, data, ca, reqpk, ku, notBefore, notAfter, exts, sequence);
+                    	cert = createCertificate(admin, data, req.getRequestX509Name(), ca, reqpk, ku, notBefore, notAfter, exts, sequence);
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -1418,7 +1419,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
 
             // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null, null);
+            Certificate cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
             // Call authentication session and tell that we are finished with this user
             if (ca.getFinishUser() == true) {
                 finishUser(admin, username, password);
@@ -1452,7 +1453,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return Certificate that has been generated and signed by the CA
      * @throws IllegalKeyException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException {
         trace(">createCertificate(pk, ku, notAfter)");
         try {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
@@ -1517,7 +1518,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 String cafingerprint = null;
                 String serialNo = "unknown";
                 while (!stored && retrycounter < 5) {
-                    cert = ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
+                    cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                     serialNo = CertTools.getSerialNumberAsString(cert);
                     // Store certificate in the database
                     Certificate cacert = ca.getCACertificate();

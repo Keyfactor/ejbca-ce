@@ -24,6 +24,7 @@ import java.security.cert.Certificate;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509Name;
 
 
 /**
@@ -68,6 +69,13 @@ public interface IRequestMessage extends Serializable {
      * @return requested DN or null.
      */
     public String getRequestDN();
+
+    /**
+     * Gets the requested DN in the pure form of an X508Name (the desired DN for the user).
+     *
+     * @return requested DN or null.
+     */
+    public X509Name getRequestX509Name();
 
     /**
      * Gets the requested altNames if contained in the request (the desired altNames for the user).

@@ -415,6 +415,7 @@ public class X509CA extends CA implements Serializable {
 	 * sequence is ignored by X509CA
 	 */
     public Certificate generateCertificate(UserDataVO subject, 
+    		                               X509Name requestX509Name,
                                            PublicKey publicKey, 
                                            int keyusage, 
                                            Date notBefore,
@@ -468,6 +469,10 @@ public class X509CA extends CA implements Serializable {
         }
         Vector dnorder = CertTools.getX509FieldOrder(ldapdnorder);
         X509Name subjectDNName = CertTools.stringToBcX509Name(dn, converter, dnorder);
+        if (certProfile.getAllowDNOverride() && (requestX509Name != null) ) {
+        	subjectDNName = requestX509Name;
+        	log.debug("Using X509Name from request instead of user's registered.");
+        }
         log.debug("Using subjectDN: "+subjectDNName.toString());
         certgen.setSubjectDN(subjectDNName);
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN

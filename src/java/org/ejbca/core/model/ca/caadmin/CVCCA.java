@@ -37,6 +37,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
@@ -319,9 +320,11 @@ public class CVCCA extends CA implements Serializable {
 	
 	/**
      * @param sequence an optional requested sequence number (serial number) for the certificate. If null a random sequence will be generated.
+     * requestX509Name is never used.
 	 */
 	public Certificate generateCertificate(UserDataVO subject, 
-			PublicKey publicKey, 
+    		X509Name requestX509Name,
+            PublicKey publicKey, 
 			int keyusage, 
 			Date notBefore,
 			Date notAfter,

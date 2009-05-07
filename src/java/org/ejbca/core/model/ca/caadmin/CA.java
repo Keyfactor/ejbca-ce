@@ -35,6 +35,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
@@ -499,7 +500,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws Exception
      */
-    public Certificate generateCertificate(UserDataVO subject, 
+    public Certificate generateCertificate(UserDataVO subject,
             PublicKey publicKey, 
             int keyusage, 
             long validity,
@@ -512,7 +513,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             notAfter.setTime(notAfter.getTime() + ( validity * 24 * 60 * 60 * 1000));        	
         }
         Date notBefore = new Date(); 
-    	return generateCertificate(subject, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence); 
+    	return generateCertificate(subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence); 
     }
 
     /**
@@ -529,6 +530,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws Exception
      */
     public abstract Certificate generateCertificate(UserDataVO subject, 
+                                             		X509Name requestX509Name,
                                                     PublicKey publicKey, 
                                                     int keyusage,
                                                     Date notBefore,

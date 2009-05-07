@@ -47,7 +47,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 30.0;
+    public static final float LATEST_VERSION = (float) 31.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -137,6 +137,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWVALIDITYOVERRIDE          = "allowvalidityoverride";
     protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
     protected static final String ALLOWEXTENSIONOVERRIDE         = "allowextensionoverride";
+    protected static final String ALLOWDNOVERRIDE                = "allowdnoverride";
     protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
     protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH      = "maximumavailablebitlength";
@@ -258,6 +259,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setAllowValidityOverride(false);
       
       setAllowExtensionOverride(false);
+      
+      setAllowDNOverride(false);
 
       setUseBasicConstraints(true);
       setBasicConstraintsCritical(true);
@@ -389,8 +392,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setAllowValidityOverride(boolean allowvalidityoverride) {data.put(ALLOWVALIDITYOVERRIDE, Boolean.valueOf(allowvalidityoverride));}
 
     /** If extension override is allowed, the X509 certificate extension created in a certificate can
-     * some from the request sent by the user. If the request contains an extension than will be used instead of the one defined in the profile.
-     * If the request does not caontain an extension, the one defined in the profile will be used.
+     * come from the request sent by the user. If the request contains an extension than will be used instead of the one defined in the profile.
+     * If the request does not contain an extension, the one defined in the profile will be used.
      */
     public boolean getAllowExtensionOverride(){ 
     	Object d = data.get(ALLOWEXTENSIONOVERRIDE);
@@ -401,6 +404,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     /** @see #getAllowExtensionOverride() */
     public void setAllowExtensionOverride(boolean allowextensionoverride) {data.put(ALLOWEXTENSIONOVERRIDE, Boolean.valueOf(allowextensionoverride));}
+
+    /** If DN override is allowed, the X509 subject DN extension created in a certificate can
+     * come directly from the request sent by the user. This is instead of the normal way where the user's registered DN is used.
+     */
+    public boolean getAllowDNOverride(){ 
+    	Object d = data.get(ALLOWDNOVERRIDE);
+    	if (d == null) {
+    		return false;
+    	}
+    	return ((Boolean)d).booleanValue(); 
+    }
+    /** @see #getAllowDNOverride() */
+    public void setAllowDNOverride(boolean allowdnoverride) {data.put(ALLOWDNOVERRIDE, Boolean.valueOf(allowdnoverride));}
 
     public boolean getUseBasicConstraints(){ return ((Boolean)data.get(USEBASICCONSTRAINTS)).booleanValue(); }
     public void setUseBasicConstraints(boolean usebasicconstraints) {data.put(USEBASICCONSTRAINTS, Boolean.valueOf(usebasicconstraints));}
@@ -1287,6 +1303,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     setUseCardNumber(false);            
                 } 
                 
+                if (data.get(ALLOWDNOVERRIDE) == null) {
+                	setAllowDNOverride(false); // v31
+                } 
 
             }
             data.put(VERSION, new Float(LATEST_VERSION));

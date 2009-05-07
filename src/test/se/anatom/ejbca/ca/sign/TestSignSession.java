@@ -34,6 +34,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -401,8 +402,7 @@ public class TestSignSession extends TestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin,
-                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1630,6 +1630,73 @@ public class TestSignSession extends TestCase {
         log.trace("<test27IssuanceRevocationReason()");
     }
 
+    public void test28TestDNOverride() throws Exception {
+        // Create a good certificate profile (good enough), using QC statement
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTDNOVERRIDE");
+        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        // Default profile does not allow DN override
+        certprof.setValidity(298);
+        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTDNOVERRIDE", certprof);
+        int cprofile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"TESTDNOVERRIDE");
+
+        // Create a good end entity profile (good enough), allowing multiple UPN names
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTDNOVERRIDE", profile);
+        int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTDNOVERRIDE");
+    	UserDataVO user = new UserDataVO("foo", "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+    	user.setPassword("foo123");
+    	user.setStatus(UserDataConstants.STATUS_NEW);
+    	// Change a user that we know...
+    	TestTools.getUserAdminSession().changeUser(admin, user, false);
+
+    	// Create a P10 with strange order DN
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+                new X509Name("CN=foo,C=SE, Name=AnaTom, O=My org"), rsakeys.getPublic(), new DERSet(),
+                rsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        boolean verify = req2.verify();
+        log.debug("Verify returned " + verify);
+        if (verify == false) {
+            log.debug("Aborting!");
+
+            return;
+        }
+        log.debug("CertificationRequest generated successfully.");
+        byte[] bcp10 = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+    	
+    	//PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
+
+        // Change so that we allow override of validity time
+        CertificateProfile prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
+        prof.setAllowDNOverride(true);
+        TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTDNOVERRIDE", prof);
+
+    	TestTools.getUserAdminSession().changeUser(admin, user, false);
+        resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
+
+    } // test28TestDNOverride
+
+    
     /**
      * creates new user
      *
@@ -1644,6 +1711,12 @@ public class TestSignSession extends TestCase {
         } catch (Exception e) { /* ignore */ }
         try {        	
             TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+            TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+            TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTDNOVERRIDE ");
         } catch (Exception e) { /* ignore */ }
         // delete users that we know...
         try {        	
