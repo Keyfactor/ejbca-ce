@@ -220,7 +220,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
-         <%= ejbcawebbean.getText("PUBLISHERQUEUE") %>:
+         <%= ejbcawebbean.getText("PUBLISHERQUEUE") %>: 
+         <%= ejbcawebbean.getHelpReference("/manual.html#Publisher%20Queue%20and%20failures") %>
       </td>
       <td width="50%">
          &nbsp;  

@@ -4234,7 +4234,7 @@ finish. If there are many publishers this might delay the issuing process slight
 Publisher Queue Settings:
 </p>
 <ul>
-<li>'Current length' - displays how long the queue is now and how long it was 5, 10 and 15 minutes ago.</li>
+<li>'Current length' - displays the number of new entries in the queue less than 10 minutes from now, from 1 to 10 minutes, older than 1 hour and the total number of entries in the queue.</li>
 <li>'No direct publishing, only use queue' - when enabled, the publisher does not try to publish directly but instead pushes the 
 update to the queue for later processing by a Publish Queue Process Service.</li>
 </ul>

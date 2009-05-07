@@ -39,14 +39,6 @@ External OCSP Settings:
 <li>'Database Integrity Protection' - enables the basic support for database protection.</li>
 </ul>
 <p>
-Publisher Queue:
-</p>
-<ul>
-<li>'Current length' - displays how long the queue is now and how long it was 5, 10 and 15 minutes ago.</li>
-<li>'No direct publishing, only use queue' - when enabled, the publisher does not try to publish directly but instead pushes the update to the queue for later processing by a Publish Queue Process Service.</li>
-</ul>
-
-<p>
 All certificate profiles for certificates that should be available to the OCSP responder should
 have a reference to this publisher. To configure this you must be a superadministrator.
 </p>
