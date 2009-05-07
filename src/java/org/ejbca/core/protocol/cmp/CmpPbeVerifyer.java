@@ -70,6 +70,10 @@ public class CmpPbeVerifyer {
 			PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
 			iterationCount = pp.getIterationCount().getPositiveValue().intValue();
 			log.debug("Iteration count is: "+iterationCount);
+			if (iterationCount > 10000) {
+				log.info("Received message with too many iterations in PBE protection: "+iterationCount);
+				throw new InvalidKeyException("Iteration count can not exceed 10000");
+			}			
 			AlgorithmIdentifier owfAlg = pp.getOwf();
 			// Normal OWF alg is 1.3.14.3.2.26 - SHA1
 			owfOid = owfAlg.getObjectId().getId();

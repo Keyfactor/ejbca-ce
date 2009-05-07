@@ -140,10 +140,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
 		// In this we also test validity override using notBefore and notAfter from above
         PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+		assertNotNull(req);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
 		DEROutputStream out = new DEROutputStream(bao);
 		out.writeObject(req);
@@ -165,7 +165,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
 		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(req1);
@@ -179,7 +179,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		
 		// Now revoke the bastard!
 		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid);
-        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
@@ -196,7 +196,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		
 		// Create a revocation request for a non existing cert, chould fail!
 		rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid);
-        revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+        revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
@@ -218,10 +218,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+		assertNotNull(req);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
 		DEROutputStream out = new DEROutputStream(bao);
 		out.writeObject(req);
@@ -237,7 +237,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
 		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(req1);
@@ -249,13 +249,30 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
 		checkCmpPKIConfirmMessage(userDN, cacert, resp);
 	}
-	
-	
-	public void test99CleanUp() throws Exception {
-		TestTools.getUserAdminSession().deleteUser(admin, "cmptest");
+
+	public void test03CrmfHttpTooManyIterations() throws Exception {
+
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
+		
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 10001);
+		assertNotNull(req);
+
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DEROutputStream out = new DEROutputStream(bao);
+		out.writeObject(req);
+		byte[] ba = bao.toByteArray();
+		// Send request and receive response
+		byte[] resp = sendCmpHttp(ba);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, 1); // We expect a FailInfo.BAD_MESSAGE_CHECK
 	}
+
 	
-	public void testRevocationApprovals() throws Exception {
+	public void test04RevocationApprovals() throws Exception {
 	    // Generate random username and CA name
 		String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
 		String caname = "cmpRevocationCA" + randomPostfix;
@@ -286,7 +303,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			ByteArrayOutputStream bao = new ByteArrayOutputStream();
 			DEROutputStream out = new DEROutputStream(bao);
 			PKIMessage rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid);
-	        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+	        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 			assertNotNull(revReq);
 			bao = new ByteArrayOutputStream();
 			out = new DEROutputStream(bao);
@@ -305,7 +322,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			bao = new ByteArrayOutputStream();
 			out = new DEROutputStream(bao);
 			rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid);
-	        revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+	        revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 			assertNotNull(revReq);
 			bao = new ByteArrayOutputStream();
 			out = new DEROutputStream(bao);
@@ -330,7 +347,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			bao = new ByteArrayOutputStream();
 			out = new DEROutputStream(bao);
 			rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid);
-	        revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+	        revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 			assertNotNull(revReq);
 			bao = new ByteArrayOutputStream();
 			out = new DEROutputStream(bao);
@@ -352,7 +369,13 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	        	TestTools.getCAAdminSession().removeCA(admin, cainfo.getCAId());
 	        }
 	    }
-	} // testRevocationApprovals
+	} // test04RevocationApprovals
+
+	
+	public void test99CleanUp() throws Exception {
+		TestTools.getUserAdminSession().deleteUser(admin, "cmptest");
+	}
+	
 
     //
     // Private helper methods

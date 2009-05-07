@@ -120,7 +120,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -139,7 +139,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage con = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
 		assertNotNull(con);
-        PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD);
+        PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(confirm);

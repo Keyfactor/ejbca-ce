@@ -192,7 +192,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		
 		// A message with the KeyId "foobarfoobar" should not be known by this
         PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "foobarfoobar");
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "foobarfoobar", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -214,7 +214,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1");
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -250,7 +250,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN1, cacert1, nonce, transid, hash, reqId);
 		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(req1);
@@ -264,7 +264,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		
 		// Now revoke the bastard!
 		PKIMessage rev = genRevReq(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, nonce, transid);
-        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
@@ -281,7 +281,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		
 		// Create a revocation request for a non existing cert, chould fail!
 		rev = genRevReq(issuerDN1, userDN1, new BigInteger("1"), cacert1, nonce, transid);
-        revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+        revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
@@ -303,7 +303,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1");
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -339,7 +339,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN1, cacert1, nonce, transid, hash, reqId);
 		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(req1);
@@ -358,7 +358,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2");
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -394,7 +394,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN2, cacert2, nonce, transid, hash, reqId);
 		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(req1);
@@ -413,7 +413,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2");
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -449,7 +449,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN2, cacert2, nonce, transid, hash, reqId);
 		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(req1);
@@ -463,7 +463,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		
 		// Now revoke the bastard!
 		PKIMessage rev = genRevReq(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, nonce, transid);
-        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
@@ -485,7 +485,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId3");
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId3", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -525,7 +525,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN2, cacert2, nonce, transid, hash, reqId);
 		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD);
+        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
 		out.writeObject(req1);
@@ -572,7 +572,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
 		// First test without extension override
         PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2");
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -610,7 +610,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		//
 		// Do the same with keyId4, that has full extension override
         one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null);
-        req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId4");
+        req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId4", 567);
 
         reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);

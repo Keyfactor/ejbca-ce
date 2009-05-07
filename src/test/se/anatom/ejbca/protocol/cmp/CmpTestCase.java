@@ -291,18 +291,18 @@ public class CmpTestCase extends TestCase {
 		return myPKIMessage;
 	}
 
-	protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
-		return protectPKIMessage(msg, badObjectId, password, "primekey");
+	protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+		return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
 	}
 	
-	protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+	protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
 		// Create the PasswordBased protection of the message
 		PKIHeader head = msg.getHeader();
 		head.setSenderKID(new DEROctetString(keyId.getBytes()));
 		// SHA1
 		AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
 		// 567 iterations
-		int iterationCount = 567;
+		int iterationCount = iterations;
 		DERInteger iteration = new DERInteger(iterationCount);
 		// HMAC/SHA1
 		AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");

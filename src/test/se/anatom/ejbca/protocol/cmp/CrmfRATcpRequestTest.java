@@ -121,7 +121,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -146,7 +146,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
@@ -215,7 +215,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, true, PBEPASSWORD);
+        PKIMessage req = protectPKIMessage(one, true, PBEPASSWORD, 567);
 
 		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
