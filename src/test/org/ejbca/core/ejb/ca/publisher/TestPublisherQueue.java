@@ -249,16 +249,17 @@ public class TestPublisherQueue extends TestCase {
     	assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
     }
     
-    public void test05PublisherQueueCountInInterval() throws Exception {
+    public void test05PublisherQueueCountInInterval1() throws Exception {
     	// Nothing in the queue from the beginning
     	assertEquals(0, TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisher(56789));
+    	assertEquals(0, TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0}, new int[]{-1})[0]);
     	
     	// Add data
     	TestTools.getPublisherQueueSession().addQueueData(56789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null);
     	
     	// One entry in the queue
     	assertEquals(1, TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisher(56789));
-    	int[] actual = TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0});
+    	int[] actual = TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0}, new int[]{-1});
     	assertEquals(1, actual.length);
     	assertEquals(1, actual[0]);
     	
@@ -271,11 +272,42 @@ public class TestPublisherQueue extends TestCase {
     	// Another entry in the queue, atleast 1s after the first one
     	TestTools.getPublisherQueueSession().addQueueData(56789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null);
     	 
-    	actual = TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0, 1, 10});
+    	actual = TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0, 1, 10}, new int[]{-1, -1, -1});
     	assertEquals(3, actual.length);
     	assertEquals(2, actual[0]); // 0s old = 2
     	assertEquals(1, actual[1]); // 1s old = 1
     	assertEquals(0, actual[2]); // 10s old = 0
+    }
+    
+    public void test06PublisherQueueCountInInterval2() throws Exception {
+    	// Nothing in the queue from the beginning
+    	assertEquals(0, TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisher(456789));
+    	assertEquals(0, TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0}, new int[]{-1})[0]);
+    	
+    	// Add data
+    	TestTools.getPublisherQueueSession().addQueueData(456789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null);
+    	
+    	// One entry in the queue
+    	assertEquals(1, TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisher(456789));
+    	int[] actual = TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0}, new int[]{-1});
+    	assertEquals(1, actual.length);
+    	assertEquals(1, actual[0]);
+    	
+    	// Wait a while and then add some more data
+    	try {
+    		Thread.sleep(2000);
+    	} catch(InterruptedException ex) {
+    		fail(ex.getMessage());
+    	}
+    	// Another entry in the queue, atleast 1s after the first one
+    	TestTools.getPublisherQueueSession().addQueueData(456789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null);
+    	 
+    	actual = TestTools.getPublisherQueueSession().getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0, 1, 10, 0}, new int[]{1, 10, -1, -1}); //new int[]{0, 1, 10});
+    	assertEquals(4, actual.length);
+    	assertEquals(1, actual[0]); // (0, 1) s  = 1
+    	assertEquals(1, actual[1]); // (1, 10) s = 1
+    	assertEquals(0, actual[2]); // (10, ~) s = 0
+    	assertEquals(2, actual[3]); // (0, ~) s = 2
     }
     
     public void test99CleanUp() throws Exception {

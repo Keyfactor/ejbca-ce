@@ -173,25 +173,30 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public int getPendingEntriesCountForPublisher(int publisherId) {
-    	return getPendingEntriesCountForPublisherInIntervals(publisherId, new int[]{0})[0];
+    	return getPendingEntriesCountForPublisherInIntervals(publisherId, new int[]{0}, new int[]{-1})[0];
     } // getPendingEntriesCountForPublisher
     
     /**
-     * Gets an array with the number of pending entries for a publisher where each element 
-     * is the number of entries at a time from now specified in the <i>intervals</i> array.
+     * Gets an array with the number of new pending entries for a publisher in each intervals specified by 
+     * <i>lowerBounds</i> and <i>upperBounds</i>. 
      * 
-     * The elements in <i>intervals</i> is the time from now (in seconds) to include in the interval.
+     * The interval is defined as from lowerBounds[i] to upperBounds[i] and the unit is seconds from now. 
+     * A negative value results in no boundary.
      * 
      * @param publisherId The publisher to count the number of pending entries for.
      * @return Array with the number of pending entries corresponding to each element in <i>interval</i>.
      * 
      * @ejb.interface-method view-type="both"
      */
-    public int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] intervals) {
+    public int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] lowerBounds, int[] upperBounds) {
     	if (log.isTraceEnabled()) {
-            log.trace(">getPendingEntriesCountForPublisherInIntervals(publisherId: " + publisherId + ", intervals:" + Arrays.toString(intervals) +  ")");
+            log.trace(">getPendingEntriesCountForPublisherInIntervals(publisherId: " + publisherId + ", lower:" + Arrays.toString(lowerBounds) + ", upper:" + Arrays.toString(upperBounds) +  ")");
     	}
-    	int[] result = new int[intervals.length];
+    	if(lowerBounds.length != upperBounds.length) {
+    		throw new IllegalArgumentException("lowerBounds and upperBounds must have equal length");
+    	}
+    	
+    	int[] result = new int[lowerBounds.length];
     	Connection con = null;
     	PreparedStatement ps = null;
     	ResultSet rs = null;
@@ -201,14 +206,20 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    	StringBuilder sql = new StringBuilder();
 	    	long now = new Date().getTime();
 	    	
-	    	for(int i = 0; i < intervals.length; i++) {
+	    	for(int i = 0; i < lowerBounds.length; i++) {
 	    		sql.append("select count(*) from PublisherQueueData where publisherId=");
 	    		sql.append(publisherId);
 	    		sql.append(" and publishStatus=");
 	    		sql.append(PublisherQueueData.STATUS_PENDING);
-	    		sql.append(" and timeCreated <= ");
-	    		sql.append("'" + (now - 1000*intervals[i]) + "'");
-	    		if(i < intervals.length-1) {
+	    		if(lowerBounds[i] > 0) {
+		    		sql.append(" and timeCreated < ");
+		    		sql.append("'" + (now - 1000 * lowerBounds[i]) + "'");
+	    		}
+	    		if(upperBounds[i] > 0) {
+		    		sql.append(" and timeCreated > ");
+		    		sql.append("'" + (now - 1000 * upperBounds[i]) + "'");
+	    		}
+	    		if(i < lowerBounds.length-1) {
 	    			sql.append(" union all ");
 	    		}
 	    	}
@@ -216,9 +227,9 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    		log.debug("Executing SQL: "+sql.toString());    			
 			}
 	    	ps = con.prepareStatement(sql.toString());
-	    	
+			
 			rs = ps.executeQuery();
-			for(int i = 0; i < intervals.length && rs.next(); i++) {
+			for(int i = 0; i < lowerBounds.length && rs.next(); i++) {
 				result[i] = rs.getInt(1);
 			}
     	} catch(SQLException e) {

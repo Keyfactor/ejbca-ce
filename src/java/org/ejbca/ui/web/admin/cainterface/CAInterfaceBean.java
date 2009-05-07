@@ -277,8 +277,8 @@ public class CAInterfaceBean implements java.io.Serializable {
     	return publisherqueuesession.getPendingEntriesCountForPublisher(publisherId);
     }
     
-    public int[] getPublisherQueueLength(int publisherId, int[] intervals) {
-    	return publisherqueuesession.getPendingEntriesCountForPublisherInIntervals(publisherId, intervals);
+    public int[] getPublisherQueueLength(int publisherId, int[] intervalLower, int[] intervalUpper) {
+    	return publisherqueuesession.getPendingEntriesCountForPublisherInIntervals(publisherId, intervalLower, intervalUpper);
     }
     
     public PublisherDataHandler getPublisherDataHandler() {    
