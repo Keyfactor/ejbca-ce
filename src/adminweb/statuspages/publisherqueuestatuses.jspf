@@ -1,6 +1,5 @@
 <%@page import="java.util.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper"%>
 <jsp:useBean id="publisherhelper" scope="session" class="org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper" />
-<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <%
 	cabean.initialize(request, ejbcawebbean);
 	publisherhelper.initialize(request,ejbcawebbean, cabean);
@@ -9,25 +8,37 @@
 	Iterator iter = publishernames.keySet().iterator();
 %>
 
-<table style="border: none; width: 50%">
-	<tr style="font-weight: bold;">
-		<td><%=ejbcawebbean.getText("PUBLISHER")%></td>
-		<td><%=ejbcawebbean.getText("QUEUELENGTH")%></td>
-	</tr>
-<%  if(!iter.hasNext()) { %>
-		<tr>
-			<td colspan="2" style="font-style: italic;"><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
-		</tr>
-	<% } else {
-
-		while(iter.hasNext()) {
-			String name = (String) iter.next();
-			int queueLength = publisherhelper.getPublisherQueueLength(name);
-		%>
-			<tr>	
-				<td><%=name %></td>
-				<td><%=queueLength %></td>
+<div id="projecthome" class="app">
+   <table width="50%">
+   <tr>
+   <td>
+        <div class="h4" id="publishqueuestatus" >
+        <h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/manual.html#Publish%20queue%20status") %></h4>
+		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
+			<tr>
+				<th><%=ejbcawebbean.getText("PUBLISHER")%></th>
+				<th><%=ejbcawebbean.getText("QUEUELENGTH")%></th>
 			</tr>
-<% 		}
-	} %>
-</table>
+		<%  if(!iter.hasNext()) { %>
+				<tr class="a">
+					<td colspan="2" style="font-style: italic;"><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
+				</tr>
+			<% } else {
+		
+				while(iter.hasNext()) {
+					String name = (String) iter.next();
+					int queueLength = publisherhelper.getPublisherQueueLength(name);
+				%>
+					<tr class="a">	
+						<td><%=name %></td>
+						<td><%=queueLength %></td>
+					</tr>
+		<% 		}
+			} %>
+		</table>
+		</div>
+    </td>
+    </tr>
+    </table>
+
+</div>

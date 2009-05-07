@@ -3,6 +3,7 @@
 <%@page errorPage="errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,java.net.InetAddress,java.net.UnknownHostException" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
@@ -24,7 +25,21 @@
 <div align=left><i><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "+ejbcawebbean.getHostName()%></i></div> 
 
 <p>&nbsp;</p>
+
+<div id="projecthome" class="app">
+   <table width="50%" align="top">
+   <tr>
+   
+   <td>
 <%@ include file="statuspages/publisherqueuestatuses.jspf" %>
+    </td>
+
+   <td>
+<%@ include file="statuspages/cacrlstatuses.jspf" %>
+    </td>
+    
+    </tr>
+    </table>
 
 <% // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>

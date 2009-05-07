@@ -1,3 +1,75 @@
+/* The css items below between "Tigris begin" and "Tigris end" tags have been copied from the
+   Tigris style project, http://style.tigris.org/. */ 
+/* Tigris begin */
+
+.app h3, .app h4, .tabs td, .tabs th, .functnbar {
+	background-image: url(../images/nw_maj_rond.gif);
+	background-repeat: no-repeat;
+}
+.app h3, .app h4 {
+	color: #fff;
+}
+.app h3 {
+	background-color: #333;
+}
+.app h3 a:link, .app h3 a:visited, .app h4 a:link, .app h4 a:visited {
+	color: #fff !important;
+	text-decoration: underline;
+}
+
+.app h4 {
+	background-color: #888;
+}
+.app th {
+	background-color: #bbb;
+}
+body, .app h3, .app h4, #rightcol h3, pre, code, #apphead h2 small {
+	font-size: x-small;
+	voice-family: "\"}\"";
+	voice-family: inherit;
+	font-size: small;
+}
+.app h3, .app h4 {
+	padding: 5px;
+	margin-right: 2px;
+	margin-left: 2px;
+}
+
+.app td, .app th {
+	padding: 2px 3px;
+}
+.app .axial td th {
+	text-align: left;
+}
+.app h3, .app h4, .bars {
+	clear: both;
+}
+body .grid td {
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	background-color: transparent;
+}
+.a td {
+	background: #ddd;
+}
+
+.b td {
+	background: #efefef;
+}
+h4, table {
+	font-size: 1em;
+}
+h3, h4 {
+	margin-bottom: 0;
+}
+
+.app table, th, td {
+	border: none;
+	vertical-align: top;
+	white-space: nowrap;
+}
+/* Tigris end */
+
 body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 H { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 body#menu {color: black; font-size: 9pt; font-weight: bold; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.2in; background-color: white}
