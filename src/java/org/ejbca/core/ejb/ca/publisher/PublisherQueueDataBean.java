@@ -275,6 +275,7 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
 		setPk(pk);
 		Date now = new Date();
         setTimeCreated(now.getTime());
+        setLastUpdate(0);
         setPublishStatus(PublisherQueueData.STATUS_PENDING);
         setTryCounter(0);
         setPublishType(publishType);
