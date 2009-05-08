@@ -1110,6 +1110,18 @@
 
             </cmp-field-mapping>
 
+            <cmp-field-mapping>
+                <field-name>certificateProfileId</field-name>
+                <column-name>CERTIFICATEPROFILEID</column-name>
+
+            </cmp-field-mapping>
+
+            <cmp-field-mapping>
+                <field-name>updateTime</field-name>
+                <column-name>UPDATETIME</column-name>
+
+            </cmp-field-mapping>
+
         </entity-mapping>
 
         <entity-mapping>
