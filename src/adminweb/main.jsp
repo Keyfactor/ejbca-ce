@@ -31,11 +31,11 @@
    <tr>
    
    <td>
-<%@ include file="statuspages/publisherqueuestatuses.jspf" %>
+<%@ include file="statuspages/cacrlstatuses.jspf" %>
     </td>
 
    <td>
-<%@ include file="statuspages/cacrlstatuses.jspf" %>
+<%@ include file="statuspages/publisherqueuestatuses.jspf" %>
     </td>
     
     </tr>

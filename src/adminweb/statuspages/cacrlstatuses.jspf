@@ -18,31 +18,33 @@
 			<%	while(caiter.hasNext()) {
 					Integer id = (Integer) caiter.next();
 					CAInfoView cainfo = cabean.getCAInfo(id);
-					String name = cainfo.getCAInfo().getName();
-					CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), false);
-					CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), true);
-					int castatus = cainfo.getCAInfo().getStatus();
-					int catokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
-					String caimg = ejbcawebbean.getImagefileInfix("true.png");
-					if (castatus != SecConst.CA_EXTERNAL) {
-						if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != ICAToken.STATUS_ACTIVE) ) {
-							caimg = ejbcawebbean.getImagefileInfix("false.png");
-						}						
-					}
-					String crlimg = ejbcawebbean.getImagefileInfix("true.png");
-					Date now = new Date();
-					if ( (crlinfo != null) && (now.after(crlinfo.getExpireDate())) ) {
-						crlimg = ejbcawebbean.getImagefileInfix("false.png");
-					}
-					if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
-						crlimg = ejbcawebbean.getImagefileInfix("false.png");
-					}
-				%>
-					<tr class="a">	
-						<td><%=name %></td>
-						<td><img src="<%=caimg %>" height="14" style="border-width:0" width="14"></td>
-						<td><img src="<%=crlimg %>" height="14" style="border-width:0" width="14"></td>
-					</tr>
-		<% 		} %>
+					if (cainfo != null) {
+						String name = cainfo.getCAInfo().getName();
+						CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), false);
+						CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), true);
+						int castatus = cainfo.getCAInfo().getStatus();
+						int catokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
+						String caimg = ejbcawebbean.getImagefileInfix("true.png");
+						if (castatus != SecConst.CA_EXTERNAL) {
+							if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != ICAToken.STATUS_ACTIVE) ) {
+								caimg = ejbcawebbean.getImagefileInfix("false.png");
+							}						
+						}
+						String crlimg = ejbcawebbean.getImagefileInfix("true.png");
+						Date now = new Date();
+						if ( (crlinfo != null) && (now.after(crlinfo.getExpireDate())) ) {
+							crlimg = ejbcawebbean.getImagefileInfix("false.png");
+						}
+						if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
+							crlimg = ejbcawebbean.getImagefileInfix("false.png");
+						}
+					%>
+						<tr class="a">	
+							<td><%=name %></td>
+							<td><img src="<%=caimg %>" height="14" style="border-width:0" width="14"></td>
+							<td><img src="<%=crlimg %>" height="14" style="border-width:0" width="14"></td>
+						</tr>
+		   <% 		}  
+		        }%>
 		</table>
 		</div>
