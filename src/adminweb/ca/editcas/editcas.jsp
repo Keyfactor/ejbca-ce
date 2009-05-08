@@ -9,7 +9,8 @@
 
 
 
-<%@page import="org.ejbca.core.model.util.AlgorithmTools"%><html>
+<%@page import="org.ejbca.core.model.util.AlgorithmTools"%>
+<%@page import="java.security.cert.CertificateException"%><html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
@@ -1112,7 +1113,7 @@
              } catch(Exception e){   
         	  includefile="choosecapage.jspf";
         	  cadatahandler.removeCA(caid); 
-              errorrecievingfile = true; 
+        	  errormessage = e.getMessage(); 
              } 
            }catch(CAExistsException caee){
               caexists = true; 
@@ -1121,8 +1122,10 @@
           throw e;
       }catch(EjbcaException e){ 
           errormessage = e.getMessage(); 
+      } catch(CertificateException ce){
+    	  errorrecievingfile = true;
       } catch(Exception e){   
-          errorrecievingfile = true; 
+          errormessage = e.getMessage(); 
       } 
        }else{
          cabean.saveRequestInfo((CAInfo) null); 
@@ -1146,9 +1149,12 @@
                   cabean.saveRequestData(certreq);     
                   filemode = CERTREQGENMODE;
                   includefile = "displayresult.jspf";
-                } catch(Exception e){   
+                } catch(CertificateException ce) {
+          			includefile="choosecapage.jspf";
+        			errorrecievingfile = true;
+          		} catch(Exception e){
                   includefile="choosecapage.jspf";
-                  errorrecievingfile = true; 
+                  errormessage = e.getMessage(); 
                 } 
           }
       }
@@ -1166,8 +1172,10 @@
               errormessage = e.getMessage(); 
           } catch(ExtCertPathValidatorException e){
         	  errormessage = e.getMessage();  
-          } catch(Exception e){   
+          } catch(CertificateException e){   
               errorrecievingfile = true; 
+          } catch(Exception e){   
+        	  errormessage = e.getMessage();
           } 
         }
       }
@@ -1190,8 +1198,10 @@
 	               filemode = CERTREQGENMODE;
 	               includefile = "displayresult.jspf";
                 }
-            }catch(Exception e){                      
+            }catch(IOException e){                      
               errorrecievingfile = true; 
+            } catch(Exception e){                      
+              errormessage = e.getMessage(); 
             } 
           }
       }
@@ -1210,8 +1220,8 @@
                    includefile="editcapage.jspf";
                  }            	 
              }
-         }catch(Exception e){                      
-           errorrecievingfile = true; 
+         } catch(Exception e){                      
+            errorrecievingfile = true;
          } 
        }else{
          cabean.saveRequestData(null);  
