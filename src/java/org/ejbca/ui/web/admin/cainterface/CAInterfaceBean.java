@@ -110,7 +110,7 @@ public class CAInterfaceBean implements java.io.Serializable {
   	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
   	    publishersession = publishersessionhome.create();               
   	    
-  	    IPublisherQueueSessionLocalHome publisherqueuesessionhome = (IPublisherQueueSessionLocalHome) locator.getLocalHome(IPublisherQueueSessionLocalHome.JNDI_NAME);
+  	    IPublisherQueueSessionLocalHome publisherqueuesessionhome = (IPublisherQueueSessionLocalHome) locator.getLocalHome(IPublisherQueueSessionLocalHome.COMP_NAME);
   	    publisherqueuesession = publisherqueuesessionhome.create();
   	      	    
           this.informationmemory = ejbcawebbean.getInformationMemory();
