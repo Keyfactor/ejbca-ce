@@ -1046,6 +1046,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		rev.setStatus(CertificateDataBean.CERT_REVOKED);
     		Date revocationDate = new Date();
     		rev.setRevocationDate(revocationDate);
+    		rev.setUpdateTime(revocationDate.getTime());
     		rev.setRevocationReason(reason);            	  
     		String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
     		getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
@@ -1058,6 +1059,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
     		rev.setStatus(CertificateDataBean.CERT_ACTIVE);
     		rev.setRevocationDate(null);
+    		rev.setUpdateTime(new Date().getTime());
     		rev.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
     		// Republish the certificate if possible
     		// If it is not possible, only log error but continue the operation of not revoking the certificate
