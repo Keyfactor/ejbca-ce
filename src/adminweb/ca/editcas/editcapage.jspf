@@ -428,6 +428,16 @@ function checkallfields(){
       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
       <input type="hidden" name='<%= HIDDEN_PROCESSREQUEST %>' value='<%= processrequest%>'>
       <input type="hidden" name='<%= HIDDEN_PROCESSREQUESTDN %>' value='<%= processedsubjectdn%>'>
+      <% if(editca) { %>
+      <tr id="Row<%=row++%2%>"> 
+        <td width="50%"  align="right"> 
+          <%= ejbcawebbean.getText("CAID") %>
+        </td>
+        <td width="50%" valign="top">
+            <%=cainfo.getCAId() %>
+        </td>
+      </tr>
+      <% } %>
       <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
           <%= ejbcawebbean.getText("TYPEOFCA") %> <%= ejbcawebbean.getHelpReference("/manual.html#Type%20of%20CA") %>
