@@ -203,7 +203,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 				getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, pqd.getTryCounter());
 				successcount++; // jipeee update success counter
 			} else {
-				// Update with new tryCounter, but same status as before and no timePublished
+				// Update with new tryCounter, but same status as before
 				int tryCount = pqd.getTryCounter()+1;
 				getPublishQueueSession().updateData(pqd.getPk(), pqd.getPublishStatus(), tryCount);								
 			}
