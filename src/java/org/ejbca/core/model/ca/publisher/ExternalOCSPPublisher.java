@@ -198,7 +198,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     	} catch (Exception e) {
     		// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
     		if (e instanceof SQLException) {
-				String msg = intres.getLocalizedMessage("publisher.entryexists");
+				String msg = intres.getLocalizedMessage("publisher.entryexists", e.getMessage());
     			log.info(msg);
     			try {
         			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=? WHERE fingerprint=?",
