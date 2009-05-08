@@ -1336,10 +1336,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 m_log.debug("Not possible to update keys without password");
                 return;
             }
-            if( this.signEntitycontainer.getSigningEntityMap()!=null ) {
-                m_log.debug("Not possible to activate more than once.");
-                return;
-            }
             this.signEntitycontainer.loadPrivateKeys(adm, password);
             return;
         }
