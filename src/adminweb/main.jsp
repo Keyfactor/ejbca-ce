@@ -19,6 +19,9 @@
 <%	if ( ejbcawebbean.isUsingExportableCryptography() ) { %>
 	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("EXPORTABLE") %></div>
 <%	} %>
+	<noscript>
+	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("JAVASCRIPTDISABLED") %></div>
+	</noscript>
 </div></H5> 
 
 <H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
