@@ -115,7 +115,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	private String matchType = null;
 	private String matchValue = null;
 
-	/** @return a List if authorized CA */
+	/** @return a List of (SelectItem<String, String>) authorized CA */
 	public List<SelectItem> getAvailableCaIds() {
 		List<SelectItem> list  = new ArrayList<SelectItem>();
 		Collection<Integer> availableCAs = getBasicRuleSet().getAvailableCAs();	// All the CAs (and no 'All' flag)
@@ -311,7 +311,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		Collection<SelectItem> cas = getAvailableCaIds();
 		try {
 			if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), AvailableAccessRules.CABASE)) {
-				cas.add(new SelectItem(BasicAccessRuleSet.CA_ALL, getEjbcaWebBean().getText("ALL")));
+				cas.add(new SelectItem(String.valueOf(BasicAccessRuleSet.CA_ALL), getEjbcaWebBean().getText("ALL")));
 			}
 		} catch (AuthorizationDeniedException e) {
 			// Ignore
