@@ -36,17 +36,5 @@
                value='<%= extocsppublisher.getDataSource()%>'> 
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("PROTECT") %>
-        </div>
-      </td>
-      <td width="50%" valign="top"> 
-          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_PROTECT %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
-           <%  if(extocsppublisher.getProtect()) {
-                 out.write(" CHECKED ");
-           } %>>
-      </td>
-    </tr>
+
         
