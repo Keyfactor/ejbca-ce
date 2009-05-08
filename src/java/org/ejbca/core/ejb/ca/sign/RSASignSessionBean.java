@@ -78,6 +78,7 @@ import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -1290,10 +1291,11 @@ public class RSASignSessionBean extends BaseSessionBean {
                 if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
                     certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type);
                 }
+                CertificateInfo info = certificateStore.getCertificateInfo(admin, fingerprint);
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null) {
-                    pub.storeCertificate(admin, usedpublishers, cert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, null);                	
+                    pub.storeCertificate(admin, usedpublishers, cert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), null);                	
                 }
             }
         } catch (javax.ejb.CreateException ce) {
@@ -1552,7 +1554,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 IPublisherSessionLocal pub = publishHome.create();
                 Collection publishers = certProfile.getPublisherList();
                 if (publishers != null) {
-                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, data.getExtendedinformation());
+                	CertificateInfo info = certificateStore.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), data.getExtendedinformation());
                 }
                 
                 // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 

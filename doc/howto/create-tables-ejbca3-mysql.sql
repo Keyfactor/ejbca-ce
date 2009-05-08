@@ -114,7 +114,7 @@ CREATE TABLE CertificateData (
     base64Cert text NULL DEFAULT NULL,
     username varchar(250) binary NULL DEFAULT NULL,
     tag varchar(250) binary NULL DEFAULT NULL,
-    certificateProfileId int(11) NULL DEFAULT NULL,
+    certificateProfileId int(11) NULL DEFAULT '0',
     updateTime bigint(20) NOT NULL DEFAULT '0',
     PRIMARY KEY (fingerprint)
 );

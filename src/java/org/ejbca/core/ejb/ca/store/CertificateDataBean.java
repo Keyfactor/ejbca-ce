@@ -558,7 +558,9 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             // Make sure names are always looking the same
             setSubjectDN(CertTools.getSubjectDN(incert));
             setIssuerDN(CertTools.getIssuerDN(incert));
-            log.debug("Creating certdata, subject=" + getSubjectDN() + ", issuer=" + getIssuerDN());
+            if (log.isDebugEnabled()) {
+                log.debug("Creating certdata, subject=" + getSubjectDN() + ", issuer=" + getIssuerDN()+", fingerprint="+fp);            	
+            }
             setSerialNumber(CertTools.getSerialNumber(incert).toString());
 
             // Default values for status and type
@@ -569,6 +571,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(new Date().getTime());
+            setCertificateProfileId(0);
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
             // TODO should throw an exception

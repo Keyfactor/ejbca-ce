@@ -84,7 +84,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
                     String username = getCertificateStoreSession().findUsernameByCertSerno(administrator, cacert.getSerialNumber(), cacert.getIssuerDN().getName());
         		    CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(administrator, fingerprint);
-        		    getPublisherSession().storeCertificate(administrator, capublishers, cacert, username, null, fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), null);                                
+        		    getPublisherSession().storeCertificate(administrator, capublishers, cacert, username, null, fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);                                
                     getOutputStream().println("Certificate published for "+caname);
                     if ( (crlbytes != null) && (crlbytes.length > 0) && (crlNumber > 0) ) {
                         getPublisherSession().storeCRL(administrator, capublishers, crlbytes, fingerprint, crlNumber);                        
@@ -161,7 +161,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 		try {
 		    String fingerprint = CertTools.getFingerprintAsString(cert);
 		    CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(administrator, fingerprint);
-		    getPublisherSession().storeCertificate(administrator, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), null);                                
+		    getPublisherSession().storeCertificate(administrator, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);                                
 		} catch (Exception e) {
 		    // catch failure to publish one user and continue with the rest
 		    error("Failed to publish certificate for user "+data.getUsername()+", continuing with next user.");

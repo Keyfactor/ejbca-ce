@@ -236,8 +236,8 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) {
-    	return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
+    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) {
+    	return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username, password, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
     }
 
     /**
@@ -248,8 +248,8 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, String cafp, int type, int reason, long revocationDate) {
-    	storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, cafp, CertificateDataBean.CERT_REVOKED, type, revocationDate, reason, null);
+    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
+    	storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, cafp, CertificateDataBean.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
     }
 
 
@@ -270,7 +270,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @param extendedinformation
      * @return true if publishing was successful, false if not
      */
-    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) {
+    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) {
         Iterator iter = publisherids.iterator();
         boolean returnval = false;
         while (iter.hasNext()) {
@@ -281,7 +281,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             	// If it should be published directly
             	if (!pdl.getPublisher().getOnlyUseQueue()) {
 	            	try {
-	            		returnval = pdl.getPublisher().storeCertificate(admin, cert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
+	            		returnval = pdl.getPublisher().storeCertificate(admin, cert, username, password, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
 	            		String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());            	
 	            		getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
 	            	} catch (PublisherException pe) {

@@ -16,6 +16,7 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -98,8 +99,8 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException{
-		return this.getCustomPublisher().storeCertificate(admin,incert,username,password, cafp,status,type, revocationDate, revocationReason, extendedinformation);		
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
+		return this.getCustomPublisher().storeCertificate(admin,incert,username,password, cafp,status,type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);		
 	}
 	
 	/**

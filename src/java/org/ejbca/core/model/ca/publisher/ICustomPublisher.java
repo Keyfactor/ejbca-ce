@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.security.cert.Certificate;
+import java.util.Date;
 import java.util.Properties;
 
 import org.ejbca.core.model.log.Admin;
@@ -41,7 +42,7 @@ public interface ICustomPublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate
 	 */    
-	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation)throws PublisherException;
+	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation)throws PublisherException;
 	
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL

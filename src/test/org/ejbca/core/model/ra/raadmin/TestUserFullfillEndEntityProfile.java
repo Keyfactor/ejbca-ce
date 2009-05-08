@@ -782,9 +782,9 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
-        	assertTrue("Error: Empty start time was not checked correctly.", false);
-        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	assertTrue("Error: Empty start time was not checked correctly.", false);
         } 
         profile.setUse(EndEntityProfile.STARTTIME, 0, false);
         profile.setUse(EndEntityProfile.ENDTIME, 0, true);
@@ -792,9 +792,9 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
-        	assertTrue("Error: Empty end time was not checked correctly.", false);
-        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	assertTrue("Error: Empty end time was not checked correctly.", false);
         } 
         // Static times work?
         profile.setUse(EndEntityProfile.STARTTIME, 0, true);

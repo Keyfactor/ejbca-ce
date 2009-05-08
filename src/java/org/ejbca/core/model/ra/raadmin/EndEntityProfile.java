@@ -1117,7 +1117,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  }
     	  }
       }
-      if ( (startTime != null) && (endTime != null) ) {
+      if ( (startTimeDate != null) && (endTimeDate != null) ) {
     	  if ( getUse(STARTTIME, 0) && getUse(ENDTIME, 0) && !startTimeDate.before(endTimeDate) ) {
     		  throw new UserDoesntFullfillEndEntityProfile("Dates must be in right order. "+startTime+" "+endTime+" "+
     				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(startTimeDate) + " "+

@@ -31,20 +31,23 @@ import org.ejbca.core.model.protect.Protectable;
  */
 public class CertificateInfo implements Serializable, Protectable {
 
-    protected String fingerprint;
-    protected String cafingerprint;
-    protected String serno;
-    protected String issuerdn;
-    protected String subjectdn;
-    protected int status;
-    protected int type;
-    protected Date expiredate;
-    protected Date revocationdate;
-    protected int revocationreason;
+	private String fingerprint;
+    private String cafingerprint;
+    private String serno;
+    private String issuerdn;
+    private String subjectdn;
+    private int status;
+    private int type;
+    private Date expiredate;
+    private Date revocationdate;
+    private int revocationreason;
+    private String tag;
+	private int certificateProfileId;
+    private Date updateTime;
     
     public CertificateInfo(String fingerprint, String cafingerprint, String serno, 
             String issuerdn, String subjectdn, int status, int type, 
-            long expiredate, long revocationdate, int revocationreason){
+            long expiredate, long revocationdate, int revocationreason, String tag, int certificateProfileId, long updateTime){
         this.fingerprint=fingerprint;
         this.cafingerprint=cafingerprint;
         this.serno=serno;
@@ -55,6 +58,9 @@ public class CertificateInfo implements Serializable, Protectable {
         this.expiredate=new Date(expiredate);
         this.revocationdate=new Date(revocationdate);
         this.revocationreason=revocationreason;
+        this.tag = tag;
+        this.certificateProfileId = certificateProfileId;
+        this.updateTime = new Date(updateTime);
     }
     
     public String getFingerprint() {return fingerprint;}
@@ -70,6 +76,29 @@ public class CertificateInfo implements Serializable, Protectable {
     public Date getRevocationDate() { return revocationdate; }
     public void setRevocationDate(Date d) { this.revocationdate=d; }
     public int getRevocationReason() { return revocationreason; }
+    public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+
+	public int getCertificateProfileId() {
+		return certificateProfileId;
+	}
+
+	public void setCertificateProfileId(int certificateProfileId) {
+		this.certificateProfileId = certificateProfileId;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
 
     // 
     // Protectable

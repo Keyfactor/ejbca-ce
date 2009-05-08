@@ -41,7 +41,6 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
@@ -329,10 +328,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         data1.setCaFingerprint(cafp);
         data1.setStatus(status);
         data1.setType(type);
+        data1.setUpdateTime(new Date().getTime());
         String msg = intres.getLocalizedMessage("store.storecert");            	
         getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         if (protect) {
-        	CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason());
+        	CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), data1.getTag(), data1.getCertificateProfileId(), data1.getUpdateTime());
         	TableProtectSessionLocal protect = protecthome.create();
         	protect.protect(admin, entry);            	
         }
@@ -863,8 +863,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = new CertificateInfo(res.getFingerprint(), res.getCaFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
-                    res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason());
-            trace("<getCertificateInfo()");
+                    res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason(), res.getTag(), res.getCertificateProfileId(), res.getUpdateTime());
         } catch (FinderException fe) {
             // Return null;
         } catch (Exception e) {
@@ -872,6 +871,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             log.error(msg);
             throw new EJBException(e);
         }
+        trace("<getCertificateInfo()");
         return ret;
     } // getCertificateInfo
 
@@ -1040,7 +1040,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	String username = rev.getUsername();
     	String cafp = rev.getCaFingerprint();
     	int type = rev.getType();
-    	String serialNo = CertTools.getSerialNumber(certificate).toString(16); // for logging
+    	String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
     	if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
     			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
     		rev.setStatus(CertificateDataBean.CERT_REVOKED);
@@ -1052,7 +1052,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
     		if (publishers != null) {
-    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, cafp, type, reason, revocationDate.getTime());
+    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, cafp, type, reason, revocationDate.getTime(), rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
     		}            	  
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
@@ -1081,7 +1081,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no publishers defined.");
     			}
     			boolean published = publishersession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
-    					certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certreqhist.getUserDataVO().getExtendedinformation());
+    					certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getUserDataVO().getExtendedinformation());
     			if ( !published ) {
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
     			}                	  
@@ -1097,7 +1097,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	}
     	// Update database protection
     	if (protect) {
-    		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason());
+    		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason(), rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
     		TableProtectSessionLocal protect;
     		try {
     			protect = protecthome.create();
@@ -1108,7 +1108,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		}
     	}
     	if (log.isTraceEnabled()) {
-        	log.trace("<setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumber(certificate).toString(16));
+        	log.trace("<setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
     	}
     } // setRevokeStatus
 
@@ -1207,7 +1207,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
                     CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
                     if (protect) {
-                		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason());
+                		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason(), rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
                     	TableProtectSessionLocal protect;
                     	try {
                     		protect = protecthome.create();

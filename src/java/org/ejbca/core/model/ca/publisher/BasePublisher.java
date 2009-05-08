@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.util.Date;
 
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
@@ -105,7 +106,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @throws PublisherException if a communication or other error occurs.
      */    
-    public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException;
+    public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
 	
     /**
      * Published a CRL to a CRL store.

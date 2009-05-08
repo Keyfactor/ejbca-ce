@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.security.cert.Certificate;
+import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -47,7 +48,7 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, int, int)
 	 */
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException {
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
         log.debug("DummyCustomPublisher, Storing Certificate for user: " + username);	
 		return true;
 	}

@@ -184,7 +184,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 					// Read the actual certificate and try to publish it again
 					certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(pqd.getFingerprint()));
 					cert = certlocal.getCertificate();
-					published = publisher.storeCertificate(getAdmin(), cert, username, password, certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), ei);
+					published = publisher.storeCertificate(getAdmin(), cert, username, password, certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), certlocal.getTag(), certlocal.getCertificateProfileId(), certlocal.getUpdateTime(), ei);
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
 					log.info(msg);

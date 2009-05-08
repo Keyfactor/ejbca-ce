@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -27,7 +28,6 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.protect.TableProtectSessionHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -182,7 +182,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
      */
     public boolean storeCertificate(Admin admin, Certificate incert,
                                     String username, String password,
-                                    String cafp, int status, int type, long revocationDate, int revocationReason,
+                                    String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
                                     ExtendedInformation extendedinformation)
     throws PublisherException {
     	boolean fail = true;
@@ -227,7 +227,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     		String issuer = CertTools.getIssuerDN(cert);
     		String subject = CertTools.getSubjectDN(cert);
     		long expire = cert.getNotAfter().getTime();
-    		CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason);
+    		CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate);
     		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
             try {
 				TableProtectSessionRemote remote = home.create();
