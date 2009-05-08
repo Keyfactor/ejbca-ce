@@ -54,6 +54,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     
     protected static final String DATASOURCE 				= "dataSource";
     protected static final String PROTECT 					= "protect";
+    protected static final String STORECERT					= "storeCert";
     
     // Default values
     public static final String DEFAULT_DATASOURCE 			= "java:/OcspDS";
@@ -97,14 +98,36 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     	return ((Boolean) data.get(PROTECT)).booleanValue();
     }
 
+    /**
+     *  Sets the property protect for the publisher.
+     */
+    public void setStoreCert(boolean storecert) {
+		data.put(STORECERT, Boolean.valueOf(storecert));
+	}
+    /**
+     * @return The value of the property protect
+     */
+    public boolean getStoreCert() {
+    	Object o = data.get(STORECERT);
+    	boolean ret = true; // default value is true
+    	if (o != null) {
+    		ret = ((Boolean)o).booleanValue();
+    	}
+    	return ret;
+    }
+
 	/* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#init(java.util.Properties)
      */
     public void init(Properties properties) {
         setDataSource(properties.getProperty(DATASOURCE));
-        String prot = properties.getProperty(PROTECT);
-        setProtect(StringUtils.equalsIgnoreCase(prot, "true"));
         log.debug("dataSource='"+getDataSource()+"'.");
+        String prot = properties.getProperty(PROTECT, "false"); // false is default for this
+        setProtect(StringUtils.equalsIgnoreCase(prot, "true"));
+        log.debug("protect='"+getProtect()+"'.");
+        String storecert = properties.getProperty(STORECERT, "true"); // true is default for this
+        setStoreCert(StringUtils.equalsIgnoreCase(storecert, "true"));
+        log.debug("storeCert='"+getStoreCert()+"'.");
     }
 
     private class StoreCertPreparer implements JDBCUtil.Preparer {
@@ -127,7 +150,16 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
             reason = r;
         }
         public void prepare(PreparedStatement ps) throws Exception {
-            ps.setString(1, new String(Base64.encode(incert.getEncoded(), true)));
+        	// We can select to publish the whole certificate, or not to. 
+        	// There are good reasons not to publish the whole certificate. It is large, thus making it a bit of heavy insert and it may 
+        	// contain sensitive information. 
+        	// On the other hand some OCSP Extension plug-ins may not work without the certificate.
+        	// A regular OCSP responder works fine without the certificate.
+        	String cert = null;
+        	if (getStoreCert()) {
+        		cert = new String(Base64.encode(incert.getEncoded(), true));
+        	}
+            ps.setString(1, cert);
             ps.setString(2, CertTools.getSubjectDN(incert));
             ps.setString(3, CertTools.getIssuerDN(incert));
             ps.setString(4, cafp);

@@ -36,5 +36,18 @@
                value='<%= extocsppublisher.getDataSource()%>'> 
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("STORECERT") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_STORECERT %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(extocsppublisher.getStoreCert()) {
+                 out.write(" CHECKED ");
+           } %>>
+      </td>
+    </tr>
 
         

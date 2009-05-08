@@ -36,7 +36,10 @@ External OCSP Settings:
 </p>
 <ul>
 <li>'Data Source' - is the database of the external OCSP where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS.</li>
-<li>'Database Integrity Protection' - enables the basic support for database protection.</li>
+<li>'Store certificate on responder' - stores the complete certificate on the responder. If this is unchecked only the information needed to answer OCSP requests are stored, but not the certificate itself.
+There are good reasons not to publish the whole certificate. It is large, thus making it a bit of heavy insert and it may contain sensitive information. 
+On the other hand some OCSP Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate.
+</li>
 </ul>
 <p>
 All certificate profiles for certificates that should be available to the OCSP responder should

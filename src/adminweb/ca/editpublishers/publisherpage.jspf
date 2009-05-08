@@ -103,6 +103,10 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("DATASOURCE", true)%>");
       illegalfields++;
     }
+	if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_EXTOCSP_STORECERT%>.value == ""){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("STORECERT", true)%>");
+      illegalfields++;
+    }
 <% } %>
  <% if( publisherdata instanceof CustomPublisherContainer){ %>
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
