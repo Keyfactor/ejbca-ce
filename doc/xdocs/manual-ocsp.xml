@@ -66,10 +66,21 @@ Log4J is used for reporting an can be configured in
 <source>clientToolBox-dist/properties/log4j.xml.</source>
   <p>
 The tool operates using Certificate Profile IDs that are the internal representations of different Certificate
-Profiles in EJBCA. When you run the tool it will output all the existing IDs in each OCSP.
+Profiles in EJBCA. When you run the tool it will output all the existing IDs in each OCSP. These IDs is also
+shown in the Admin GUI for each CertificateProfile.
+  </p>
+  <p>
 Any detected discrepancy will generate an Log4J ERROR and all errors will be summarized in a report at the end.
 If OCSP responders contain certificateProfileIds that are not include in the arguments, these will be shown as
 Log4J WARNings.
+  </p>
+  <p>
+Since going through every single CertificateData row in a database is heavy work, it's highly recommended to
+use indexes such as
+  </p>
+<source>create index certificatedata_idx7 on CertificateData(certificateProfileId);</source>
+  <p>
+for your both the CA database and each OCSP responder.
   </p>
   </section>
 </body>
