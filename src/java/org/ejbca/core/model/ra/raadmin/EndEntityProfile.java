@@ -1098,9 +1098,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  }
     	  }
       }
-	  if ( getUse(STARTTIME, 0) && startTimeDate == null ) {
-    	  throw new UserDoesntFullfillEndEntityProfile("Invalid start time format.");
-	  }
 	  Date endTimeDate = null;
       if( getUse(ENDTIME, 0) && endTime != null && !endTime.equals("") ) {
     	  if ( endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
@@ -1120,14 +1117,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  }
     	  }
       }
-	  if ( getUse(ENDTIME, 0) && endTimeDate == null ) {
-    	  throw new UserDoesntFullfillEndEntityProfile("Invalid end time format.");
-	  }
-	  if ( getUse(STARTTIME, 0) && getUse(ENDTIME, 0) && !startTimeDate.before(endTimeDate) ) {
-		  throw new UserDoesntFullfillEndEntityProfile("Dates must be in right order. "+startTime+" "+endTime+" "+
-				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(startTimeDate) + " "+
-				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(endTimeDate));
-	  }
+      if ( (startTime != null) && (endTime != null) ) {
+    	  if ( getUse(STARTTIME, 0) && getUse(ENDTIME, 0) && !startTimeDate.before(endTimeDate) ) {
+    		  throw new UserDoesntFullfillEndEntityProfile("Dates must be in right order. "+startTime+" "+endTime+" "+
+    				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(startTimeDate) + " "+
+    				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(endTimeDate));
+    	  }    	  
+      }
 	  
       String allowedRequests = null;
       if ( ei != null ) {
