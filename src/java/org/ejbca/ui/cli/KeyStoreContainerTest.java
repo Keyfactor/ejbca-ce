@@ -212,7 +212,7 @@ class KeyStoreContainerTest {
     }
     class Sign implements Test {
         private final String sigAlgName;
-        private final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
+        private final byte signInput[] = "Lillan gick on the roaden ut.".getBytes();
         private byte signBA[];
         private Signature signature;
         private boolean result;
