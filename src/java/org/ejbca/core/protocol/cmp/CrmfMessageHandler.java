@@ -298,16 +298,16 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 										log.debug("Using end entity profile with name: "+keyId);
 										eeProfileId = rasession.getEndEntityProfileId(admin, keyId);
 										if (eeProfileId == 0) {
-											log.error("No end entity profile found matching keyId: "+keyId);
-											throw new NotFoundException("End entity profile with name '"+keyId+"' not found.");
+											log.info("No end entity profile found matching keyId: "+keyId);
+											throw new NotFoundException("End entity profile with name '"+keyId+"' not found");
 										}
 									}
 									if (certProfileId == -1) {
 										log.debug("Using certificate profile with name: "+keyId);
 										certProfileId = storesession.getCertificateProfileId(admin, keyId);
 										if (certProfileId == 0) {
-											log.error("No certificate profile found matching keyId: "+keyId);
-											throw new NotFoundException("Certificate profile with name '"+keyId+"' not found.");
+											log.info("No certificate profile found matching keyId: "+keyId);
+											throw new NotFoundException("Certificate profile with name '"+keyId+"' not found");
 										}
 									}
 									if (caId == -1) {
@@ -324,6 +324,10 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									} else if (caId == -2) {
 										// Use keyId as CA name
 										CAInfo info = casession.getCAInfo(admin, keyId);
+										if (info == null) {
+											log.info("No CA found matching keyId: "+keyId);
+											throw new NotFoundException("CA with name '"+keyId+"' not found");
+										}
 										log.debug("Using CA: "+info.getName());
 										caId = info.getCAId();																	
 									}
@@ -357,6 +361,10 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 										usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 									}
 									addedUser = true;
+								} catch (NotFoundException e) {
+									String errMsg = intres.getLocalizedMessage("cmp.errorgeneral", e.getMessage());
+									log.info(errMsg, e);
+									failText = e.getMessage();
 								} catch (UserDoesntFullfillEndEntityProfile e) {
 									String errMsg = intres.getLocalizedMessage("cmp.erroradduser", username);
 									log.error(errMsg, e);
