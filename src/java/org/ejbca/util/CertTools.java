@@ -1243,12 +1243,17 @@ public class CertTools {
             	ret = new CardVerifiableCertificate(parsedObject);
 			} catch (ParseException e) {
 	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
+	        	throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
 			} catch (ConstructionException e) {
 	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
+	        	throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
 			} catch (IllegalArgumentException e) {
 	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
+	        	throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
 			}
-
+        }
+        if (ret == null) {
+        	throw new CertificateException("No certificate found");
         }
         //log.trace("<getCertfromByteArray");
         return ret;
