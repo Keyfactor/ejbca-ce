@@ -175,7 +175,7 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 
 # Renew time before certificate expires. Specifies how long time before a certificate expires that a new key should be generated. <0 means that no keys are automatically generated.
 # Default: -1 
-#ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds=60*60*24
+#ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds=86400
 
 # Keystore of soft key and certificate to be used as the SSL WS client when connecting to EJBCA.
 # Do not define this property if you want to use the HSM to store the client WS key.
