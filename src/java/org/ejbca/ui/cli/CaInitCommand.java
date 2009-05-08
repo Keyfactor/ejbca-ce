@@ -125,8 +125,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getOutputStream().println("DN: "+dn);
             getOutputStream().println("CA token type: "+catokentype);
             getOutputStream().println("CA token password: "+catokenpassword);
-            getOutputStream().println("Keyspec: "+keyspec);
             getOutputStream().println("Keytype: "+keytype);
+            getOutputStream().println("Keyspec: "+keyspec);
             getOutputStream().println("Validity (days): "+validity);
             getOutputStream().println("Policy ID: "+policyId);
             getOutputStream().println("Signature alg: "+signAlg);
