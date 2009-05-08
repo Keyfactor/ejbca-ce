@@ -2428,7 +2428,7 @@ To create a new report:
 <section name="Services Framework">
 <p>
 EJBCA has a framework for timer services, i.e. procedures 
-that should be run on a timely basis. Currently there exists four types of 
+that should be run on a timely basis. Currently there exists five types of 
 services:
 <ul>
 <li>a 'CRL Updater' that automatically updates the CRL.</li>
@@ -2437,6 +2437,7 @@ sends an email notification to the end user and/or the administrator.</li>
 <li>a 'User Password Expire Service' that checks if a user have not enrolled for a new certificate within a 
 certain amount of time after been registered, and expires the users possibility to enroll.</li>
 <li>a 'Renew CA Service' that checks if CA certificates are about to expire and renews them.</li>
+<li>a 'Publisher queue process service' that retries failed publishing.</li>
 </ul>
 It is also possible to easily write plug-ins for customized services.
 </p><p>
