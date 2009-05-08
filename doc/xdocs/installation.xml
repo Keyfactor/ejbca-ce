@@ -580,6 +580,27 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 </ol>
 </p>    
 </subsubsection>
+
+<subsubsection name="Glassfish Ubuntu package">
+<p>
+The above instructions are tested on the official release from Glassfish's homepage. 
+We had this report from a user of the glassfish package on ubuntu.
+</p>
+<p> 
+I had to modify the following to make it work with the Ubuntu 9.04
+glassfish package.
+<pre>
+1. Modify /usr/bin/asadmin
+   #GF_DOMAIN_DIR=$HOME/glassfishv2
+   GF_DOMAIN_DIR=/var/lib/glassfishv2/domains
+2. Set APPSRV_HOME to /usr/share/glassfishv2
+</pre>
+The Ubuntu package has the domains and binaries separated.  When
+following the install instructions, when you do anything with the
+domain you have to point to /var/lib/glassfishv2/[directory] instead
+of $APPSRV_HOME/[directory].
+</p>
+</subsubsection>
 </subsection>
 
 <subsection name="OC4J (EJBCA >=3.6)">
