@@ -51,4 +51,7 @@
   <ejbRefBindings xmi:id="EJBLocalRefBinding_15" jndiName="ServiceTimerSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_15"/>
   </ejbRefBindings>
+  <ejbRefBindings xmi:id="EJBLocalRefBinding_16" jndiName="PublisherQueueSession">
+    <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_16"/>
+  </ejbRefBindings>
 </webappbnd:WebAppBinding>
