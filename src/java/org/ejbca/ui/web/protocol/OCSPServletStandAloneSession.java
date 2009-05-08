@@ -515,7 +515,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         } catch (InterruptedException e) {
                             throw new Error(e);
                         }
-                        updateKey();
+                        try {
+                            updateKey();
+                        } catch( Throwable t ) {
+                            m_log.error("Unknown problem when rekeying. Trying again.", t);
+                        }
                     }
                 }
             }
