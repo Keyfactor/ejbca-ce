@@ -334,10 +334,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * @param password Password to be used. Set to null if configured should be used
      * @return The password.
      */
-    public PasswordProtection getP11Pwd(String password) throws Exception {
+    public PasswordProtection getP11Pwd(String password) {
         if ( password!=null ) {
             if ( this.mP11Password!=null ) {
-                throw new Exception("Trying to activate even tought password has been configured.");
+                 m_log.error("Trying to activate even tought password has been configured.");
+                 return null;
             }
             return new PasswordProtection(password.toCharArray());
         }
@@ -965,21 +966,29 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             }
                         }
                     } else {
-                        m_log.debug("No files in directory: " + dir.getCanonicalPath());            	
-                        if ( newSignEntity.size()<1 ) {
-                            throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());            	
-                        }
+                        m_log.debug("No files in soft key directory: " + dir.getCanonicalPath());
                     }
                 } else {
                     m_log.debug((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
-                    if ( newSignEntity.size()<1 ) {
-                        throw new ServletException((dir != null ? dir.getCanonicalPath() : "null") + " is not a directory.");
-                    }
                 }
-                // No P11 keys, there are files, but none are valid keys or certs for cards
                 if ( newSignEntity.size()<1 ) {
-                    String dirStr = (dir != null ? dir.getCanonicalPath() : "null");
-                    throw new ServletException("No valid keys in directory " + dirStr+", or in PKCS#11 keystore.");        	
+                    String sError = "No valid keys.";
+                    {
+                        final String dirStr = dir!=null ? dir.getCanonicalPath() : null;
+                        if ( dirStr!=null ) {
+                            sError += " Key directory "+dirStr+".";
+                        } else {
+                            sError += " No key directory.";
+                        }
+                    }{
+                        final String p11name = OCSPServletStandAloneSession.this.slot!=null && OCSPServletStandAloneSession.this.slot.getProvider()!=null ? OCSPServletStandAloneSession.this.slot.getProvider().getName() : null;
+                        if ( p11name!=null ) {
+                            sError += " P11 provider "+p11name+".";
+                        } else {
+                            sError += " No P11 defied.";
+                        }
+                    }
+                    m_log.error(sError);
                 }
                 {
                     final Iterator<Entry<Integer, SigningEntity>> i=newSignEntity.entrySet().iterator();
@@ -994,8 +1003,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     this.updating = false;
                     this.notifyAll();
                 }
+                m_log.trace("<loadPrivateKeys");
             }
-            m_log.trace("<loadPrivateKeys");
         }
         /**
          * Gets all {@link SigningEntity}s mapped to EJBCA CA IDs.
@@ -1020,20 +1029,48 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @throws Exception
          */
         private boolean loadFromP11HSM(Admin adm, Map<Integer, SigningEntity> newSignEntity,
-                                       String password) throws Exception {
-            m_log.trace(">loadFromP11HSM");
+                                       String password) {
+            final PasswordProtection pwp = getP11Pwd(password);
+            if ( !checkPassword( pwp, OcspConfiguration.P11_PASSWORD) ) {
+                return false;
+            }
             if ( OCSPServletStandAloneSession.this.slot==null ) {
-                m_log.trace("<loadFromP11HSM: no shared library");
+                m_log.debug("no shared library");
                 return false;           
             }
             OCSPServletStandAloneSession.this.slot.reset();
-            final P11ProviderHandler providerHandler = new P11ProviderHandler();
-            final PasswordProtection pwp = getP11Pwd(password);
-            loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null, OCSPServletStandAloneSession.this.slot.toString(),
-                             providerHandler, newSignEntity, null);
-            pwp.destroy();
-            m_log.trace("<loadFromP11HSM");
+            try {
+                final P11ProviderHandler providerHandler = new P11ProviderHandler();
+                loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null,
+                                 OCSPServletStandAloneSession.this.slot.toString(),
+                                 providerHandler, newSignEntity, null);
+                pwp.destroy();
+            } catch( Exception e) {
+                m_log.error("load from P11 problem", e);
+                return false;
+            }
             return true;
+        }
+        /**
+         * Waits 10 if no password object.
+         * @param passObject The password object.
+         * @param passPropertyKey Property key to define 
+         * @return Is password not null.
+         */
+        private boolean checkPassword( Object passObject, String passPropertyKey ) {
+            if ( passObject!=null )  {
+                return true;
+            }
+            m_log.warn("You have not specified "+passPropertyKey+" at build time. So you need to do a manual activation.");
+            final Object oWait= new Object();
+            synchronized(oWait) {
+                try {
+                    oWait.wait(10000); // wait 10s to calm down client.
+                } catch (InterruptedException e) {
+                    throw new Error("This should never ever happend.");
+                }
+            }
+            return false;
         }
         /**
          * Adds the OCSP signing key from the java SW keystore to the newSignEntity (parameter).
@@ -1044,27 +1081,29 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         private boolean loadFromSWKeyStore(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity,
                                            String password) {
-            m_log.trace(">loadFromSWKeyStore");
-            boolean ret = false;
             try {
-                KeyStore keyStore;
                 final String storePassword = OCSPServletStandAloneSession.this.mStorePassword!=null ? OCSPServletStandAloneSession.this.mStorePassword : password;
-                final char storePassChars[] = storePassword!=null ? storePassword.toCharArray() : null;
+                if ( !checkPassword( storePassword, OcspConfiguration.STORE_PASSWORD) ) {
+                    return false;
+                }
+                m_log.trace(">loadFromSWKeyStore");
+                KeyStore keyStore;
                 try {
                     keyStore = KeyStore.getInstance("JKS");
-                    keyStore.load(new FileInputStream(fileName), storePassChars);
+                    keyStore.load(new FileInputStream(fileName), storePassword.toCharArray());
                 } catch( IOException e ) {
                     keyStore = KeyStore.getInstance("PKCS12", "BC");
-                    keyStore.load(new FileInputStream(fileName), storePassChars);
+                    keyStore.load(new FileInputStream(fileName), storePassword.toCharArray());
                 }
                 final String keyPassword = OCSPServletStandAloneSession.this.mKeyPassword!=null ? OCSPServletStandAloneSession.this.mKeyPassword : password;
                 loadFromKeyStore(adm, keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity, fileName);
-                ret = true;
+                m_log.trace("<loadFromSWKeyStore OK");
+                return true;
             } catch( Exception e ) {
                 m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
             }
-            m_log.trace("<loadFromSWKeyStore");
-            return ret;
+            m_log.trace("<loadFromSWKeyStore failed");
+            return false;
         }
         /**
          * Tests a key.
