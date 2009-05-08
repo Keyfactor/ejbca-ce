@@ -360,10 +360,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      */
     private class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
         /**
-         * Key password. Needed to get a SW key from the keystore.
-         */
-        final private char password[];
-        /**
          * Alias of the in the {@link KeyStore} for this key.
          */
         final private String alias;
@@ -407,13 +403,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         PrivateKeyContainerKeyStore( String a, char pw[], KeyStore _keyStore, X509Certificate cert, String _providerName, String _fileName) throws Exception {
             this.alias = a;
-            this.password = pw!=null ? OCSPServletStandAloneSession.this.mKeyPassword.toCharArray() : null;
             this.certificate = cert;
             this.keyStore = _keyStore;
             this.providerName = _providerName;
             this.fileName = _fileName;
             set(pw);
-            set(_keyStore);
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#init(java.util.List, int)
@@ -442,7 +436,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         public void set(KeyStore _keyStore) throws Exception {
             this.keyStore = _keyStore;
-            set(this.password);
+            if ( OCSPServletStandAloneSession.this.mKeyPassword==null ) {
+                throw new Exception("Key password must be configured when reloading SW keystore.");
+            }
+            set(OCSPServletStandAloneSession.this.mKeyPassword.toCharArray());
         }
         /* (non-Javadoc)
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#clear()
@@ -722,6 +719,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 final List<X509Certificate> lCertChain = new ArrayList<X509Certificate>(this.caChain);
                 lCertChain.add(0, tmpCert);
                 final X509Certificate certChain[] = lCertChain.toArray(new X509Certificate[0]);
+                if ( OCSPServletStandAloneSession.this.mKeyPassword==null ) {
+                    m_log.error("Key password must be configured when updating SW keystore.");
+                    return null;
+                }
                 try {
                     PrivateKeyContainerKeyStore.this.keyStore.setKeyEntry(PrivateKeyContainerKeyStore.this.alias, keyPair.getPrivate(),
                                                                           OCSPServletStandAloneSession.this.mKeyPassword.toCharArray(), certChain);
@@ -862,6 +863,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         private CardKeys cardKeys;
         /**
+         * Last try of key reload.
+         */
+        private long lastTryOfKeyReload;
+        /**
          * The implementation of the mutex.
          */
         private class Mutex {
@@ -912,15 +917,17 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         void loadPrivateKeys(Admin adm, String password ) throws Exception {
             try {
                 this.mutex.getMutex();
+                final long currentTime = new Date().getTime();
                 // We will only load private keys if the cache time has run out
-                if ( (this.signEntityMap!=null && this.signEntityMap.size()>0 && OCSPServletStandAloneSession.this.servlet.mKeysValidTo>new Date().getTime()) || !OCSPServletStandAloneSession.this.isOK ) {
+                if ( this.lastTryOfKeyReload+10000>currentTime || (this.signEntityMap!=null && this.signEntityMap.size()>0 && OCSPServletStandAloneSession.this.servlet.mKeysValidTo>currentTime) || !OCSPServletStandAloneSession.this.isOK ) {
                     return;
                 }
                 m_log.trace(">loadPrivateKeys");
+                this.lastTryOfKeyReload = currentTime;
                 // Update cache time
                 // If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
-                OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ? new Date().getTime()+OCSPServletStandAloneSession.this.servlet.m_valid_time : Long.MAX_VALUE;
-                m_log.debug("time: "+new Date().getTime()+" next update: "+OCSPServletStandAloneSession.this.servlet.mKeysValidTo);
+                OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ? currentTime+OCSPServletStandAloneSession.this.servlet.m_valid_time : Long.MAX_VALUE;
+                m_log.debug("time: "+currentTime+" next update: "+OCSPServletStandAloneSession.this.servlet.mKeysValidTo);
             } finally {
                 this.mutex.releaseMutex();
             }

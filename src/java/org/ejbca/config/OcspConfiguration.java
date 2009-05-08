@@ -43,13 +43,12 @@ public class OcspConfiguration {
 	 * The interval on which new OCSP signing certificates are loaded in seconds
 	 */
 	public static int getSigningCertsValidTime() {
-		int value = 300;
 		try {
-			value = Integer.parseInt(ConfigurationHolder.getString("ocsp.signingCertsValidTime", ""+value)) * 1000;
+			return Integer.parseInt(ConfigurationHolder.getString("ocsp.signingCertsValidTime", ""+300)) * 1000;
 		} catch( NumberFormatException e ) {
-			log.warn("\"ocsp.signingCertsValidTime\" is not a decimal number. Using default value: " + value);
+			log.warn("\"ocsp.signingCertsValidTime\" is not a decimal number. Using default 5 minutes");
 		}
-		return value;
+		return 300000;
 	}
 
 	/**
@@ -301,24 +300,16 @@ public class OcspConfiguration {
 
 	/**
      * The password for the all the soft keys of the OCSP responder.
-	 * @return {@link #getStorePassword()} if property isn't set. If neither is set "".
+	 * @return {@link #getStorePassword()} if property isn't set.
 	 */
 	public static String getKeyPassword() {
-        {
-            final String value = ConfigurationHolder.getString("ocsp.keys.keyPassword", null);
-            if ( value!=null ) {
-                return value;
-            }
-        }
-        {
-            final String value = getStorePassword();
-            if ( value!=null ) {
-                return value;
-            }
-        }
-        return "";  // use zero length String as default. value allways needed when generating new SW key.
+	    final String value = ConfigurationHolder.getString("ocsp.keys.keyPassword", null);
+	    if ( value!=null ) {
+	        return value;
+	    }
+	    return getStorePassword();
 	}
-	
+    
     public final static String STORE_PASSWORD="ocsp.keys.storePassword";
 	/**
 	 * The password to all soft keystores.
