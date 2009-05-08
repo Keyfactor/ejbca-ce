@@ -526,6 +526,14 @@
          <cmp-field>tag</cmp-field>
          <dbms-column>tag</dbms-column>
       </field-map>
+      <field-map>
+         <cmp-field>certificateProfileId</cmp-field>
+         <dbms-column>certificateProfileId</dbms-column>
+      </field-map>
+      <field-map>
+         <cmp-field>updateTime</cmp-field>
+         <dbms-column>updateTime</dbms-column>
+      </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>
@@ -968,8 +976,8 @@
          <dbms-column>timeCreated</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>timePublished</cmp-field>
-         <dbms-column>timePublished</dbms-column>
+         <cmp-field>lastUpdate</cmp-field>
+         <dbms-column>lastUpdate</dbms-column>
       </field-map>
       <field-map>
          <cmp-field>publishStatus</cmp-field>

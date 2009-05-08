@@ -1736,8 +1736,8 @@
                <opm:field name="TIMECREATED" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>timePublisher</opm:attribute-name>
-               <opm:field name="TIMEPUBLISHED" xsi:type="opm:column"/>
+               <opm:attribute-name>lastUpdate</opm:attribute-name>
+               <opm:field name="LASTUPDATE" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
                <opm:attribute-name>publishStatus</opm:attribute-name>
@@ -2194,12 +2194,20 @@
                <opm:field name="USERNAME" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>fingerprint</opm:attribute-name>
+               <opm:field name="FINGERPRINT" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
                <opm:attribute-name>tag</opm:attribute-name>
                <opm:field name="TAG" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>fingerprint</opm:attribute-name>
-               <opm:field name="FINGERPRINT" xsi:type="opm:column"/>
+               <opm:attribute-name>certificateProfileId</opm:attribute-name>
+               <opm:field name="CERTIFICATEPROFILEID" xsi:type="opm:column"/>
+            </opm:attribute-mapping>
+            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
+               <opm:attribute-name>updateTime</opm:attribute-name>
+               <opm:field name="UPDATETIME" xsi:type="opm:column"/>
             </opm:attribute-mapping>
          </opm:attribute-mappings>
          <toplink:descriptor-type>independent</toplink:descriptor-type>
