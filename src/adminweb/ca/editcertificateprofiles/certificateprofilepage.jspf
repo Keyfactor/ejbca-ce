@@ -443,6 +443,14 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CERTIFICATEPROFILEID") %>
+      </td>
+      <td width="50%"> 
+        <%= cabean.getCertificateProfileId(certprofile)  %>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("VALIDITY") %> (<%= ejbcawebbean.getText("DAYS") %>)
         <%= ejbcawebbean.getHelpReference("/manual.html#Validity") %> <br>&nbsp;
       </td>
