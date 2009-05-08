@@ -208,7 +208,7 @@ import org.ejbca.util.CertTools;
  * @web.ejb-local-ref
  *  name="ejb/PublisherQueueSessionLocal"
  *  type="Session"
- *  link="PublisherQueueSessionLocal"
+ *  link="PublisherQueueSession"
  *  home="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal"
  *  
