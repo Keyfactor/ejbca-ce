@@ -205,6 +205,13 @@ import org.ejbca.util.CertTools;
  *  home="org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome"
  *  local="org.ejbca.core.ejb.services.IServiceTimerSessionLocal"
  *  
+ * @web.ejb-local-ref
+ *  name="ejb/PublisherQueueSessionLocal"
+ *  type="Session"
+ *  link="PublisherQueueSessionLocal"
+ *  home="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal"
+ *  
  * @web.resource-ref
  *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *  type="javax.sql.DataSource"
