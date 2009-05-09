@@ -24,9 +24,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-
-
 import java.util.Map;
+
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
@@ -73,6 +72,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -1312,13 +1312,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         	throw new WaitingForApprovalException(msg);
         }
         // Perform revokation
-        CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId());
-        Collection publishers;
-        if (prof == null) {
-            publishers = new ArrayList();
-        } else {
-            publishers = prof.getPublisherList();
+        
+        Collection certs = this.certificatesession.findCertificatesByUsername(admin, username);
+        // Revoke all certs
+        Iterator j = certs.iterator();
+        while (j.hasNext()) {
+        	Certificate cert = (Certificate)j.next();
+        	// Revoke one certificate at a time
+        	revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, reason);
         }
+        // Finally set revoke status on the user as well
         try {
 			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
 		} catch (ApprovalException e) {
@@ -1326,7 +1329,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		}
-        certificatesession.setRevokeStatus(admin, username, publishers, reason);
         String msg = intres.getLocalizedMessage("ra.revokedentity", username);            	
         logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
         log.trace("<revokeUser()");
@@ -1339,7 +1341,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 	/**
      * Method that revokes a certificate.
      *
-     * @param admin the adminsitrator performing the action
+     * @param admin the administrator performing the action
      * @param certserno the serno of certificate to revoke.
      * @param username  the username to revoke.
      * @param reason    the reason of revokation, one of the RevokedCertInfo.XX constants.
@@ -1402,16 +1404,27 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
         	throw new WaitingForApprovalException(msg);
         }
-        // Perform revokation
-        CertReqHistory certReqHistory = this.certificatesession.getCertReqHistory(admin, certserno, issuerdn);
-        Collection publishers =new ArrayList();
-        
-        if(certReqHistory != null){
-        	CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, certReqHistory.getUserDataVO().getCertificateProfileId());
-        	if (prof != null) {
-        		publishers = prof.getPublisherList();
-        	}
+        // Perform revokation, first we try to find the certificate profile the certificate was issued under
+        // Get it first from the certificate itself. This should be the correct one
+        CertificateInfo info = this.certificatesession.getCertificateInfo(admin, revinfo.getCertificateFingerprint());
+        int certificateProfileId = 0;
+        if (info != null) {
+        	certificateProfileId = info.getCertificateProfileId();
         }
+        // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
+        if (certificateProfileId == 0) {
+            CertReqHistory certReqHistory = this.certificatesession.getCertReqHistory(admin, certserno, issuerdn);
+            if (certReqHistory != null) {
+            	certificateProfileId = certReqHistory.getUserDataVO().getCertificateProfileId();
+            }
+        }
+        // Finally find the publishers for the certificate profileId that we found
+        Collection publishers = new ArrayList();        
+        CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, certificateProfileId);
+        if (prof != null) {
+        	publishers = prof.getPublisherList();
+        }
+        
         // Revoke certificate in database and all publishers
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
         // Reset the revocation code identifier used in XKMS

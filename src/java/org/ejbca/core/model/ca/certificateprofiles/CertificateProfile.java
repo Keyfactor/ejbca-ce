@@ -863,10 +863,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Returns a Collection of publisher id's (Integer) indicating which publishers a certificate
      * created with this profile should be published to.
+     * Never returns null.
      */
     
     public Collection getPublisherList(){
-      return (Collection) data.get(USEDPUBLISHERS);  
+    	Object o = data.get(USEDPUBLISHERS);
+    	if (o == null) {
+    		o = new ArrayList();
+    	}
+    	return (Collection)o;   
     }
     
     /**
