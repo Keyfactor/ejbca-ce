@@ -1289,7 +1289,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }
                 // Store CA certificate in the database if it does not exist
                 if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
-                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type);
+                	// If we don't have it in the database, set certificateProfileId = 0
+                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type, 0, null);
                 }
                 CertificateInfo info = certificateStore.getCertificateInfo(admin, fingerprint);
                 // Store cert in ca cert publishers.
@@ -1526,7 +1527,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     Certificate cacert = ca.getCACertificate();
                     cafingerprint = CertTools.getFingerprintAsString(cacert);
                     try {
-                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());                        
+                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), certProfileId, null);                        
                         stored = true;
                     } catch (CreateException e) {
                     	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 

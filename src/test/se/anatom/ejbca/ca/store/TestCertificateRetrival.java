@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
@@ -149,7 +150,7 @@ public class TestCertificateRetrival extends TestCase {
                         , "o=AnaTom,c=SE"
                         , rootCaFp
                         , CertificateDataBean.CERT_ACTIVE
-                        , CertificateDataBean.CERTTYPE_ROOTCA);
+                        , CertificateDataBean.CERTTYPE_ROOTCA, SecConst.CERTPROFILE_FIXED_ROOTCA, null);
             }
             cert = CertTools.getCertfromByteArray(testcacert);
             m_certs.add(cert);
@@ -162,7 +163,7 @@ public class TestCertificateRetrival extends TestCase {
                         , "o=AnaTom,c=SE"
                         , subCaFp
                         , CertificateDataBean.CERT_ACTIVE
-                        , CertificateDataBean.CERTTYPE_SUBCA);
+                        , CertificateDataBean.CERTTYPE_SUBCA, SecConst.CERTPROFILE_FIXED_SUBCA, null);
             }
             cert = CertTools.getCertfromByteArray(testcert);
             m_certs.add(cert);
@@ -175,7 +176,7 @@ public class TestCertificateRetrival extends TestCase {
                         , "o=AnaTom,c=SE"
                         , endEntityFp
                         , CertificateDataBean.CERT_ACTIVE
-                        , CertificateDataBean.CERTTYPE_ENDENTITY);
+                        , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
             }
         } catch (Exception e) {
             m_log.error("Error: ", e);

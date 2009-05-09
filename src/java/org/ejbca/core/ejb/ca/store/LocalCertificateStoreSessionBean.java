@@ -306,15 +306,17 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param username username of end entity owning the certificate.
      * @param status   Status of the certificate (from CertificateData).
      * @param type     Type of certificate (CERTTYPE_ENDENTITY etc from CertificateDataBean).
+     * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param tag a custom string tagging this certificate for some purpose
      * @return true if storage was successful.
      * @throws CreateException if the certificate can not be stored in the database
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
-                                    int status, int type) throws CreateException {
+                                    int status, int type, int certificateProfileId, String tag) throws CreateException {
     	if (log.isTraceEnabled()) {
-            log.trace(">storeCertificate(" + cafp + ", " + status + ", " + type + ")");
+            log.trace(">storeCertificate(" + username + ", " + cafp + ", " + status + ", " + type + ")");
     	}
         // Strip dangerous chars
         username = StringTools.strip(username);
@@ -328,6 +330,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         data1.setCaFingerprint(cafp);
         data1.setStatus(status);
         data1.setType(type);
+        data1.setCertificateProfileId(certificateProfileId);
+        data1.setTag(tag);
         data1.setUpdateTime(new Date().getTime());
         String msg = intres.getLocalizedMessage("store.storecert");            	
         getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);

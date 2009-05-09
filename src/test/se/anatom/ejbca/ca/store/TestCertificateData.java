@@ -112,7 +112,7 @@ public class TestCertificateData extends TestCase {
             if (ce != null) {
                 assertTrue("Certificate with fp="+fp+" already exists in db, very strange since I just generated it.", false);
             }
-        	boolean ret = store.storeCertificate(admin, cert, "foo", "1234", CertificateDataBean.CERT_INACTIVE, CertificateDataBean.CERT_TYPE_ENCRYPTION);
+        	boolean ret = store.storeCertificate(admin, cert, "foo", "1234", CertificateDataBean.CERT_INACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
             //log.info("Stored new cert with fp="+fp);
             assertTrue("Failed to store", ret);
             log.debug("stored it!");

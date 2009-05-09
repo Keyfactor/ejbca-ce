@@ -30,6 +30,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.protect.TableProtectSessionHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
@@ -202,7 +203,7 @@ public class TestProtect extends TestCase {
                     , "o=AnaTom,c=SE"
                     , endEntityFp
                     , CertificateDataBean.CERT_ACTIVE
-                    , CertificateDataBean.CERTTYPE_ENDENTITY);
+                    , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
         }
         CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("1");
@@ -243,7 +244,7 @@ public class TestProtect extends TestCase {
                     , "o=AnaTom,c=SE"
                     , endEntityFp
                     , CertificateDataBean.CERT_ACTIVE
-                    , CertificateDataBean.CERTTYPE_ENDENTITY);
+                    , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
         }
         CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("2");

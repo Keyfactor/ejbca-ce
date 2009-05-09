@@ -277,7 +277,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			getCertificateStoreSession().storeCertificate(administrator,
 					certificate, username,
 					fingerprint,
-					status, type);
+					status, type, certificateprofileid, null);
 			
 			getOutputStream().println("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
 		}

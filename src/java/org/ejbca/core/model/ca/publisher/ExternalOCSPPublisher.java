@@ -138,16 +138,22 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
         final int type;
         final long revocationDate;
         final int reason;
+        final String tag;
+        final int certificateProfileId;
+        final long updateTime;
         StoreCertPreparer(Certificate ic,
-                          String un, String cf, int s, long d, int r, int t) {
+                          String un, String cfp, int s, long d, int r, int t, String tag, int profid, long utime) {
             super();
-            incert = ic;
-            username = un;
-            cafp = cf;
-            status = s;
-            type = t;
-            revocationDate = d;
-            reason = r;
+            this.incert = ic;
+            this.username = un;
+            this.cafp = cfp;
+            this.status = s;
+            this.revocationDate = d;
+            this.reason = r;
+            this.type = t;
+            this.tag = tag;
+            this.certificateProfileId = profid;
+            this.updateTime = utime;
         }
         public void prepare(PreparedStatement ps) throws Exception {
         	// We can select to publish the whole certificate, or not to. 
@@ -170,7 +176,10 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
             ps.setLong(9, ((X509Certificate)incert).getNotAfter().getTime());
             ps.setLong(10, revocationDate);
             ps.setInt(11, reason);
-            ps.setString(12,CertTools.getFingerprintAsString(incert));
+            ps.setString(12, tag);
+            ps.setInt(13, certificateProfileId);
+            ps.setLong(14, updateTime);
+            ps.setString(15,CertTools.getFingerprintAsString(incert));
         }
         public String getInfoString() {
         	return "Store:, Username: "+username+", Issuer:"+CertTools.getIssuerDN(incert)+", Serno: "+CertTools.getSerialNumberAsString(incert)+", Subject: "+CertTools.getSubjectDN(incert);
@@ -190,9 +199,9 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     		String fingerprint = CertTools.getFingerprintAsString(incert);
     		log.debug("Publishing certificate with fingerprint "+fingerprint+", status "+status+", type "+type+" to external OCSP");
     	}
-    	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
+    	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type, tag, certificateProfileId, lastUpdate); 
     	try {
-    		JDBCUtil.execute( "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+    		JDBCUtil.execute( "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     				prep, getDataSource());
     		fail = false;
     	} catch (Exception e) {
@@ -201,7 +210,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
 				String msg = intres.getLocalizedMessage("publisher.entryexists", e.getMessage());
     			log.info(msg);
     			try {
-        			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=? WHERE fingerprint=?",
+        			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=? WHERE fingerprint=?",
             				prep, getDataSource() );
             		fail = false;    				
     			} catch (Exception ue) {
