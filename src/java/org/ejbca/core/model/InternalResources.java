@@ -358,7 +358,16 @@ public class InternalResources implements Serializable {
     		if (obj != null) {
     			param = obj.toString();
     		}
-    		localizedString = localizedString.replaceAll("\\{" + i + "\\}", param);
+    		try {
+        		localizedString = localizedString.replaceAll("\\{" + i + "\\}", param);    			
+    		} catch (IllegalArgumentException e) {
+    			// If "param" contains some specific things, regexp may fail under some circumstances
+        		try {
+        			localizedString = localizedString.replaceAll("\\{" + i + "\\}", e.getMessage());    			
+        		} catch (IllegalArgumentException e1) {
+        			localizedString = localizedString.replaceAll("\\{" + i + "\\}", "IllegalArgumentException");    			
+        		}
+    		}
     	}
     	// Remove all remaining {} if any
 		localizedString = localizedString.replaceAll("\\{\\d\\}", "");

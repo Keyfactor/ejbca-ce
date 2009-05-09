@@ -41,4 +41,13 @@ public class TestInternalResources extends TestCase {
 		res = intres.getLocalizedMessage("raadmin.testparams");		
 		assertEquals("Test      message ", res);
 	}
+	
+	public void testMessageStringWithExtraParameter() {
+		InternalResources intres = InternalResourcesTestClass.getInstance();
+		String res = intres.getLocalizedMessage("raadmin.testmsgsv");
+		assertEquals("Test SV", res);		
+		res = intres.getLocalizedMessage("raadmin.testmsgsv", "foo $bar \\haaaar");
+		assertEquals("Test SV", res);		
+		
+	}
 }
