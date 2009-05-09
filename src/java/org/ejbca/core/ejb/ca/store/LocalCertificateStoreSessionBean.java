@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -332,11 +333,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         data1.setType(type);
         data1.setCertificateProfileId(certificateProfileId);
         data1.setTag(tag);
-        data1.setUpdateTime(new Date().getTime());
+        long updateTime = new Date().getTime();
+        data1.setUpdateTime(updateTime);
         String msg = intres.getLocalizedMessage("store.storecert");            	
         getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         if (protect) {
-        	CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), data1.getTag(), data1.getCertificateProfileId(), data1.getUpdateTime());
+        	CertificateInfo entry = new CertificateInfo(pk.fingerprint, cafp, data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), status, type, data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), username, tag, certificateProfileId, updateTime);
         	TableProtectSessionLocal protect = protecthome.create();
         	protect.protect(admin, entry);            	
         }
@@ -864,16 +866,45 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	trace(">getCertificateInfo()");
         CertificateInfo ret = null;
 
-        try {
-            CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-            ret = new CertificateInfo(res.getFingerprint(), res.getCaFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
-                    res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason(), res.getTag(), res.getCertificateProfileId(), res.getUpdateTime());
-        } catch (FinderException fe) {
-            // Return null;
-        } catch (Exception e) {
+        Connection con = null;
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+    	try {
+            // Now go on with the real select
+	    	con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+	    	StringBuilder sql = new StringBuilder();
+	    	sql.append("select issuerDN,subjectDN,cAFingerprint,status,type,serialNumber,expireDate,revocationDate,revocationReason,username,tag,certificateProfileId,updateTime from CertificateData where fingerprint=?");
+	    	if (log.isDebugEnabled()) {
+	    		log.debug("Executing SQL: "+sql.toString());    			
+			}
+	    	ps = con.prepareStatement(sql.toString());
+	    	ps.setString(1, fingerprint);
+			
+			rs = ps.executeQuery();
+			// This query can only return one row (fingerprint is the primary key)
+			if (rs.next()) {
+				String cafp = rs.getString(3);
+				String serno = rs.getString(6);
+				String issuerDN = rs.getString(1);
+				String subjectDN = rs.getString(2);
+				int status = rs.getInt(4);
+				int type = rs.getInt(5);
+				long expireDate = rs.getLong(7);
+				long revocationDate = rs.getLong(8);
+				int revocationReason = rs.getInt(9);
+				String username = rs.getString(10);
+				String tag = rs.getString(11);
+				int cProfId = rs.getInt(12);
+				long updateTime = rs.getLong(13);
+	            ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, 
+	            		type, expireDate, revocationDate, revocationReason, username, tag, cProfId, updateTime);				
+			}
+        } catch (SQLException e) {
         	String msg = intres.getLocalizedMessage("store.errorcertinfo", fingerprint);            	
             log.error(msg);
             throw new EJBException(e);
+        } finally {
+        	JDBCUtil.close(con, ps, rs);
         }
         trace("<getCertificateInfo()");
         return ret;
@@ -1008,26 +1039,26 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	String username = rev.getUsername();
     	String cafp = rev.getCaFingerprint();
     	int type = rev.getType();
+    	Date now = new Date();
     	String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
     	if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
     			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
     		rev.setStatus(CertificateDataBean.CERT_REVOKED);
-    		Date revocationDate = new Date();
-    		rev.setRevocationDate(revocationDate);
-    		rev.setUpdateTime(revocationDate.getTime());
+    		rev.setRevocationDate(now);
+    		rev.setUpdateTime(now.getTime());
     		rev.setRevocationReason(reason);            	  
     		String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
     		getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
     		if (publishers != null) {
-    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, cafp, type, reason, revocationDate.getTime(), rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
+    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
     		}            	  
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
     		// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
     		rev.setStatus(CertificateDataBean.CERT_ACTIVE);
     		rev.setRevocationDate(null);
-    		rev.setUpdateTime(new Date().getTime());
+    		rev.setUpdateTime(now.getTime());
     		rev.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
     		// Republish the certificate if possible
     		// If it is not possible, only log error but continue the operation of not revoking the certificate
@@ -1065,7 +1096,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	}
     	// Update database protection
     	if (protect) {
-    		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason(), rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
+    		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason(), username, rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
     		TableProtectSessionLocal protect;
     		try {
     			protect = protecthome.create();
@@ -1166,41 +1197,35 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         Certificate certificate = null;
         // Strip dangerous chars
         username = StringTools.strip(username);
-        try {
-            Collection certs = findCertificatesByUsername(admin, username);
-            // Revoke all certs
-            if (!certs.isEmpty()) {
-                Iterator j = certs.iterator();
-                while (j.hasNext()) {
-                    CertificateDataPK revpk = new CertificateDataPK();
-                    certificate = (Certificate) j.next();
-                    revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
-                    CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
-                    if (protect) {
-                		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason(), rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
-                    	TableProtectSessionLocal protect;
-                    	try {
-                    		protect = protecthome.create();
-                    		// The verify method will log failed verifies itself
-                    		TableVerifyResult res = protect.verify(entry);
-                    		if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
-                    			//error("Verify failed, but we go on anyway.");
-                    		}
-                    	} catch (CreateException e) {
-                        	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
-                    		error(msg, e);
-                    	}
-                    }
-                    if (rev.getStatus() != CertificateDataBean.CERT_REVOKED) {
-                        returnval = false;
-                    }
-                }
-            }
-
-        } catch (FinderException e) {
-            throw new EJBException(e);
+        Collection certs = findCertificatesByUsername(admin, username);
+        // Revoke all certs
+        if (!certs.isEmpty()) {
+        	Iterator j = certs.iterator();
+        	while (j.hasNext()) {
+        		certificate = (Certificate) j.next();
+        		String fingerprint = CertTools.getFingerprintAsString(certificate);
+        		CertificateInfo info = getCertificateInfo(admin, fingerprint);
+        		if (info != null) {
+            		if (protect) {
+            			TableProtectSessionLocal protect;
+            			try {
+            				protect = protecthome.create();
+            				// The verify method will log failed verifies itself
+            				TableVerifyResult res = protect.verify(info);
+            				if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
+            					//error("Verify failed, but we go on anyway.");
+            				}
+            			} catch (CreateException e) {
+            				String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
+            				error(msg, e);
+            			}
+            		}
+            		if (info.getStatus() != CertificateDataBean.CERT_REVOKED) {
+            			returnval = false;
+            		}        			
+        		}
+        	}
         }
-
         return returnval;
     }
 

@@ -31,6 +31,8 @@ import org.ejbca.core.model.protect.Protectable;
  */
 public class CertificateInfo implements Serializable, Protectable {
 
+	private static final long serialVersionUID = -1973602951994928833L;
+	
 	private String fingerprint;
     private String cafingerprint;
     private String serno;
@@ -41,13 +43,14 @@ public class CertificateInfo implements Serializable, Protectable {
     private Date expiredate;
     private Date revocationdate;
     private int revocationreason;
-    private String tag;
+    private String username;
+	private String tag;
 	private int certificateProfileId;
     private Date updateTime;
     
     public CertificateInfo(String fingerprint, String cafingerprint, String serno, 
             String issuerdn, String subjectdn, int status, int type, 
-            long expiredate, long revocationdate, int revocationreason, String tag, int certificateProfileId, long updateTime){
+            long expiredate, long revocationdate, int revocationreason, String username, String tag, int certificateProfileId, long updateTime){
         this.fingerprint=fingerprint;
         this.cafingerprint=cafingerprint;
         this.serno=serno;
@@ -58,6 +61,7 @@ public class CertificateInfo implements Serializable, Protectable {
         this.expiredate=new Date(expiredate);
         this.revocationdate=new Date(revocationdate);
         this.revocationreason=revocationreason;
+        this.username = username;
         this.tag = tag;
         this.certificateProfileId = certificateProfileId;
         this.updateTime = new Date(updateTime);
@@ -98,6 +102,14 @@ public class CertificateInfo implements Serializable, Protectable {
 
 	public void setUpdateTime(Date updateTime) {
 		this.updateTime = updateTime;
+	}
+
+    public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
     // 

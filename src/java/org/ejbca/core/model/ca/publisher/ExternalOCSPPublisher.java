@@ -235,7 +235,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     		String issuer = CertTools.getIssuerDN(cert);
     		String subject = CertTools.getSubjectDN(cert);
     		long expire = cert.getNotAfter().getTime();
-    		CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate);
+    		CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason, username, tag, certificateProfileId, lastUpdate);
     		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
             try {
 				TableProtectSessionRemote remote = home.create();

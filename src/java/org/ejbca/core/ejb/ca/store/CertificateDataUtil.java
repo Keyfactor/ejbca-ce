@@ -33,7 +33,6 @@ import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -260,7 +259,7 @@ public class CertificateDataUtil {
 
 
     static void verifyProtection(CertificateDataLocal data, TableProtectSessionLocalHome protectHome, Adapter adapter) {
-		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
+		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
 		TableProtectSessionLocal protect;
 		try {
 			protect = protectHome.create();

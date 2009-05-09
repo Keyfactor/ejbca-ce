@@ -112,7 +112,7 @@ public class TestCertificateData extends TestCase {
             if (ce != null) {
                 assertTrue("Certificate with fp="+fp+" already exists in db, very strange since I just generated it.", false);
             }
-        	boolean ret = store.storeCertificate(admin, cert, "foo", "1234", CertificateDataBean.CERT_INACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
+        	boolean ret = store.storeCertificate(admin, cert, "foo", "1234", CertificateDataBean.CERT_INACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, "footag");
             //log.info("Stored new cert with fp="+fp);
             assertTrue("Failed to store", ret);
             log.debug("stored it!");
@@ -150,6 +150,11 @@ public class TestCertificateData extends TestCase {
             // We just stored it above, not revoked
             assertEquals("revocation reason does not match.",RevokedCertInfo.NOT_REVOKED,info.getRevocationReason());
             log.info("revocationdate (before rev)=" + info.getRevocationDate());
+            assertEquals(SecConst.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
+            assertEquals("footag", info.getTag());
+            Date now = new Date();
+            assertNotNull(info.getUpdateTime());
+            assertTrue(now.after(info.getUpdateTime()));
             store.revokeCertificate(admin,ce,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
             CertificateInfo info1 = store.getCertificateInfo(admin, fp);
             assertEquals("revocation reason does not match.",RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE,info1.getRevocationReason());
