@@ -210,21 +210,31 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <exclude name="org/ejbca/ui/cli/Ocsp.java" />
             <exclude name="org/ejbca/ui/cli/EjbcaWsRaCli.java" />
             <exclude name="org/ejbca/ui/cli/ClientToolBox.java" />
+            <exclude name="org/ejbca/ui/cli/OcspMonitoringTool.java" />
+            <exclude name="org/ejbca/ui/cli/DatabaseCopyTool.java" />
+            <exclude name="org/ejbca/ui/cli/HSMKeyTool.java" />
+            <exclude name="org/ejbca/ui/cli/PKCS11HSMKeyTool.java" />
+            <exclude name="org/ejbca/ui/cli/NCipherHSMKeyTool.java" />
+            <exclude name="org/ejbca/ui/cli/CMPTest.java" />
+            <exclude name="org/ejbca/ui/cli/SCEPTest.java" />
+            <exclude name="org/ejbca/ui/cli/HealthCheckTest.java" />
+            <exclude name="org/ejbca/ui/cli/OCSPActivate.java" />
+            <exclude name="org/ejbca/core/ejb/ca/store/CertificateData.java" />
 
-        	<exclude name="org/ejbca/core/protocol/ws/**" />
-        	<exclude name="org/ejbca/core/protocol/xkms/**/**" />
+            <exclude name="org/ejbca/core/protocol/ws/**" />
+            <exclude name="org/ejbca/core/protocol/xkms/**/**" />
             <src path="${src.java}" />
             <src path="${src.gen}" />
         </javac>
         <copy todir="${build}">
-        	<fileset dir="${src}">
-        	    <include name="intresources/*.properties"/>
-        	</fileset>	
-        	<fileset dir="${src}/java">
-        	    <include name="dncomponents.properties"/>
-        		<include name="profilemappings.properties"/>
-        		<include name="certextensions.properties"/>
-        	</fileset>	
+            <fileset dir="${src}">
+                <include name="intresources/*.properties"/>
+            </fileset>	
+            <fileset dir="${src}/java">
+                <include name="dncomponents.properties"/>
+                <include name="profilemappings.properties"/>
+                <include name="certextensions.properties"/>
+            </fileset>	
         </copy>
     </target>
 
