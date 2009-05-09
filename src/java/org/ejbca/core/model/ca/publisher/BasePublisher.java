@@ -15,9 +15,7 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.util.Date;
 
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;

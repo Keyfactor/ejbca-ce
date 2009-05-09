@@ -14,7 +14,6 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.security.cert.Certificate;
-import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
