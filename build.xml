@@ -953,17 +953,6 @@
         <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@web.docbaseuri@" value="${web.docbaseuri}"/>               
         <javac destdir="${clientToolBox.build}" debug="on">
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
-            <include name="org/ejbca/ui/cli/HealthCheckTest.java" />
-            <include name="org/ejbca/ui/cli/Ocsp.java" />
-            <include name="org/ejbca/ui/cli/OcspMonitoringTool.java" />
-            <include name="org/ejbca/ui/cli/DatabaseCopyTool.java" />
-            <include name="org/ejbca/ui/cli/HSMKeyTool.java" />
-            <include name="org/ejbca/ui/cli/PKCS11HSMKeyTool.java" />
-            <include name="org/ejbca/ui/cli/NCipherHSMKeyTool.java" />
-            <include name="org/ejbca/ui/cli/CMPTest.java" />
-            <include name="org/ejbca/ui/cli/SCEPTest.java" />
-            <include name="org/ejbca/ui/cli/EjbcaWsRaCli.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CertificateData.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
