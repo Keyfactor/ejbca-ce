@@ -45,10 +45,12 @@ and then simply update the software on the other nodes.
 
 7. Go into the admin-GUI and verify you settings.
 
-In EJBCA 3.9 it will be possible to give certificates a tag to make it easier to distinguish
-between different certificates categories in SQL queries. This requires a small database change.
-To see which database structural changes are made you can find the SQL commands for your database
-in src/upgrade/38_39/38_39-upgrade-<<database name>>.sql.
+In EJBCA 3.9 there are new possibilities for filtering certificates on certificateProfileId and tags. 
+This requires a small database change. To see which database structural changes are made you can find 
+the SQL commands for your database in src/upgrade/38_39/38_39-upgrade-<<database name>>.sql.
+The database upgrade is normally done automatically for you when you run 'ant upgrade'. 
+Some application servers will not let you deploy unless the database is in sync though, so you may have to run 
+the SQL commands manually.
 
 EJBCA 3.9 also has a new table in the database. If you are using JBoss this is created automatically for you.
 If you are using another application server, created the table in your database using the create statement for
@@ -60,6 +62,9 @@ issues when upgrading all the way from a much older version.
 
 Note! If you are using the external RA you need to upgrade to ExtRA 3.9 and follow upgrade instructions 
 in the ExtRA package.
+
+Note! If you are using an external OCSP responder using EJBCA's publishing from EJBCA to the responder, you need to update
+the responders database table CertificateData using the SQL commands above.
 
 From EJBCA 3.7.x to EJBCA 3.8.x
 -------------------------------
