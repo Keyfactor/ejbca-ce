@@ -39,16 +39,20 @@ public class OcspConfiguration {
 		return ConfigurationHolder.getString("ocsp.signaturealgorithm", "SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA");
 	}
 
-	/**
+	public static final String SIGNING_CERTD_VALID_TIME= "ocsp.signingCertsValidTime";
+    /**
 	 * The interval on which new OCSP signing certificates are loaded in seconds
 	 */
 	public static int getSigningCertsValidTime() {
+        int timeInMinutes;
+        final int defaultTimeInMinutes = 300;
 		try {
-			return Integer.parseInt(ConfigurationHolder.getString("ocsp.signingCertsValidTime", ""+300)) * 1000;
+            timeInMinutes = Integer.parseInt(ConfigurationHolder.getString(SIGNING_CERTD_VALID_TIME, ""+defaultTimeInMinutes));
 		} catch( NumberFormatException e ) {
+            timeInMinutes = defaultTimeInMinutes;
 			log.warn("\"ocsp.signingCertsValidTime\" is not a decimal number. Using default 5 minutes");
 		}
-		return 300000;
+		return timeInMinutes*1000;
 	}
 
 	/**
