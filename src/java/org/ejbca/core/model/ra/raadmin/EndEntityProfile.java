@@ -1097,6 +1097,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  } catch (ParseException e) {
     		  }
     	  }
+    	  if (startTimeDate == null) {
+    	      // If we could not parse the date string, something was awfulyl wrong
+        	  throw new UserDoesntFullfillEndEntityProfile("Invalid start time: "+startTime);    		  
+    	  }
       }
 	  Date endTimeDate = null;
       if( getUse(ENDTIME, 0) && endTime != null && !endTime.equals("") ) {
@@ -1115,6 +1119,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     			  endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(endTime);
     		  } catch (ParseException e) {
     		  }
+    	  }
+    	  if (endTimeDate == null) {
+    	      // If we could not parse the date string, something was awfulyl wrong
+        	  throw new UserDoesntFullfillEndEntityProfile("Invalid end time: "+endTime);    		  
     	  }
       }
       if ( (startTimeDate != null) && (endTimeDate != null) ) {
