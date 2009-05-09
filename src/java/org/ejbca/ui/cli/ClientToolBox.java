@@ -56,7 +56,8 @@ public abstract class ClientToolBox {
         		new DatabaseCopyTool(), 
         		new EjbcaWsRaCli(), 
         		new CMPTest(),
-        		new SCEPTest()
+        		new SCEPTest(),
+                new OCSPActivate()
         		};
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) ) {
