@@ -803,7 +803,7 @@
     <!-- Target updating svn revision string in propertiesAndPaths.xml           -->
     <!-- ======================================================================= -->
 	<target name="update-svnrev" description="Updates propertiesAndPaths.xmli file with current trunk SVN revision">
-		<echo>Updating propertiesAndPaths.xmli with SVN revision of COMMITTED.</echo>
+		<echo>Trying to update propertiesAndPaths.xmli with SVN revision of COMMITTED.</echo>
         <property name="revision" value="COMMITTED"/>	
 		
         <!-- find out svn.revision of HEAD, need svn.exe installed on local machine will end up in property ${Revision} -->
@@ -818,13 +818,15 @@
 		      </filterchain>
 		</loadproperties>
 		<delete file="svnlog.out"/>
-
-		<replaceregexp file="propertiesAndPaths.xmli" encoding="UTF-8" match='(\x3Cproperty name="svn.revision" value=")[^\x3C]*(" />)'
-			replace='\1r${Revision}\2' />
-	
-		<echo>Updated "svn.revision" to: r${Revision}</echo>
+		<antcall target="update-svnrev-updatefile" /> <!-- do update of file only if property is set -->
     </target>
 
+	<target name="update-svnrev-updatefile" if="Revision">
+		<replaceregexp file="propertiesAndPaths.xmli" encoding="UTF-8" match='(\x3Cproperty name="svn.revision" value=")[^\x3C]*(" />)'
+			replace='\1r${Revision}\2' />
+		<echo>Updated "svn.revision" to: r${Revision}</echo>
+    </target>
+	
      
 	<!--
         Target for signing a JAR (JAR, EAR, WAR or ZIP)
