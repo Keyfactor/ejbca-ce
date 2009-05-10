@@ -256,7 +256,7 @@ function checkallfields(){
         </div>
       </td>
       <td width="50%" valign="top"> 
-          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_ONLYUSEQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_ONLYUSEQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(publisherdata.getOnlyUseQueue()) {
                  out.write(" CHECKED ");
            } %>>
@@ -269,7 +269,7 @@ function checkallfields(){
         </div>
       </td>
       <td width="50%" valign="top"> 
-          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_KEEPPUBLISHEDINQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_KEEPPUBLISHEDINQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(publisherdata.getKeepPublishedInQueue()) {
                  out.write(" CHECKED ");
            } %>>

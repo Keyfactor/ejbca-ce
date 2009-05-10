@@ -117,8 +117,8 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE = "checkboxldaprevokeremovecertificate";
     public static final String CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE = "checkboxldaprevokeuseroncertrevoke";
     public static final String CHECKBOX_LDAP_SET_USERPASSWORD  = "checkboxldapsetuserpassword";
-    public static final String CHECKBOX_EXTOCSP_ONLYUSEQUEUE   = "textfieldextocsponlyusequeue";
-    public static final String CHECKBOX_EXTOCSP_KEEPPUBLISHEDINQUEUE   = "textfieldextocspkeeppublishedinqueue";
+    public static final String CHECKBOX_ONLYUSEQUEUE           = "textfieldextocsponlyusequeue";
+    public static final String CHECKBOX_KEEPPUBLISHEDINQUEUE   = "textfieldextocspkeeppublishedinqueue";
     public static final String CHECKBOX_EXTOCSP_STORECERT      = "textfieldextocspstorecert";
     
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
@@ -261,7 +261,10 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 value = value.trim();
                                 publisherdata.setDescription(value);
                             }
-
+                        	value = request.getParameter(CHECKBOX_ONLYUSEQUEUE);
+                        	publisherdata.setOnlyUseQueue(value != null && value.equals(CHECKBOX_VALUE));
+                        	value = request.getParameter(CHECKBOX_KEEPPUBLISHEDINQUEUE);
+                        	publisherdata.setKeepPublishedInQueue(value != null && value.equals(CHECKBOX_VALUE));
 
                             if(publisherdata instanceof CustomPublisherContainer){
                                 value = request.getParameter(TEXTFIELD_CUSTOMCLASSPATH);
@@ -274,8 +277,6 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                     value = value.trim();
                                     ((CustomPublisherContainer) publisherdata).setPropertyData(value);
                                 }
-                                value = request.getParameter(CHECKBOX_EXTOCSP_ONLYUSEQUEUE);
-                            	publisherdata.setOnlyUseQueue(value != null && value.equals(CHECKBOX_VALUE));
                             }
 
                             if(publisherdata instanceof LdapPublisher){
@@ -472,13 +473,6 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                             		value = value.trim();
                             		extocsppub.setDataSource(value);
                             	}
-                            	
-                            	value = request.getParameter(CHECKBOX_EXTOCSP_ONLYUSEQUEUE);
-                            	extocsppub.setOnlyUseQueue(value != null && value.equals(CHECKBOX_VALUE));
-
-                            	value = request.getParameter(CHECKBOX_EXTOCSP_KEEPPUBLISHEDINQUEUE);
-                            	extocsppub.setKeepPublishedInQueue(value != null && value.equals(CHECKBOX_VALUE));
-
                             	value = request.getParameter(CHECKBOX_EXTOCSP_STORECERT);
                             	extocsppub.setStoreCert(value != null && value.equals(CHECKBOX_VALUE));
                             }
