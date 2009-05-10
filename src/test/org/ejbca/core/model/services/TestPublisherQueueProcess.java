@@ -93,7 +93,7 @@ public class TestPublisherQueueProcess extends TestCase {
         String username = genRandomUserName();
         String pwd = "foo123";
         
-    	TestTools.getPublisherQueueSession().addQueueData(12345, PublisherQueueData.PUBLISH_TYPE_CERT, "TestPublishQueueProcessService12345", null);
+    	TestTools.getPublisherQueueSession().addQueueData(12345, PublisherQueueData.PUBLISH_TYPE_CERT, "TestPublishQueueProcessService12345", null, PublisherQueueData.STATUS_PENDING);
     	Collection<PublisherQueueData> c = TestTools.getPublisherQueueSession().getPendingEntriesForPublisher(12345);
     	assertEquals(1, c.size());
     	Iterator<PublisherQueueData> i = c.iterator();
@@ -140,6 +140,7 @@ public class TestPublisherQueueProcess extends TestCase {
     	// Add a Dummy publisher with Id 12345
     	try {
     		CustomPublisherContainer publisher = new CustomPublisherContainer();
+    		publisher.setKeepPublishedInQueue(true);
     		publisher.setClassPath("org.ejbca.core.model.ca.publisher.DummyCustomPublisher");
     		publisher.setDescription("Used in Junit Test, Remove this one");
     		TestTools.getPublisherSession().addPublisher(admin, "TestPublishQueueProcessService", publisher);
@@ -155,7 +156,7 @@ public class TestPublisherQueueProcess extends TestCase {
     		// Perhaps the cert already exists
     	}
     	
-    	TestTools.getPublisherQueueSession().addQueueData(publisherId, PublisherQueueData.PUBLISH_TYPE_CERT, CertTools.getFingerprintAsString(testcert), null);
+    	TestTools.getPublisherQueueSession().addQueueData(publisherId, PublisherQueueData.PUBLISH_TYPE_CERT, CertTools.getFingerprintAsString(testcert), null, PublisherQueueData.STATUS_PENDING);
     	Collection<PublisherQueueData> c = TestTools.getPublisherQueueSession().getPendingEntriesForPublisher(publisherId);
     	assertEquals(1, c.size());
     	Iterator<PublisherQueueData> i = c.iterator();

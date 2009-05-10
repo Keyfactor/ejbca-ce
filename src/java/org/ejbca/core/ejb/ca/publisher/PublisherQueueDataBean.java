@@ -22,7 +22,6 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
-import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
@@ -123,7 +122,7 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
      */
     public abstract void setLastUpdate(long lastUpdate);
 
-    /** PublishStatus is one of PublisherQueueData.STATUS_PENDING or SUCCESS.
+    /** PublishStatus is one of PublisherQueueData.STATUS_PENDING, FAILED or SUCCESS.
      * 
      * @ejb.persistence column-name="publishStatus"
      * @ejb.interface-method view-type="local"
@@ -270,13 +269,13 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
      * @return null
      * @ejb.create-method view-type="local"
      */
-    public String ejbCreate(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData) throws CreateException {
+    public String ejbCreate(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) throws CreateException {
     	String pk = GUIDGenerator.generateGUID(this); 
 		setPk(pk);
 		Date now = new Date();
         setTimeCreated(now.getTime());
         setLastUpdate(0);
-        setPublishStatus(PublisherQueueData.STATUS_PENDING);
+        setPublishStatus(publishStatus);
         setTryCounter(0);
         setPublishType(publishType);
         setFingerprint(fingerprint);
@@ -286,7 +285,7 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
         return null;
     }
 
-    public void ejbPostCreate(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData) {
+    public void ejbPostCreate(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) {
         // Do nothing. Required.
     }
 }

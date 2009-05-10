@@ -262,6 +262,19 @@ function checkallfields(){
            } %>>
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("KEEPPUBLISHEDINQUEUE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_EXTOCSP_KEEPPUBLISHEDINQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(publisherdata.getKeepPublishedInQueue()) {
+                 out.write(" CHECKED ");
+           } %>>
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
          &nbsp;

@@ -107,11 +107,11 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData) throws CreateException {
+    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) throws CreateException {
     	if (log.isTraceEnabled()) {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
     	}
-    	queuehome.create(publisherId, publishType, fingerprint, queueData);
+    	queuehome.create(publisherId, publishType, fingerprint, queueData, publishStatus);
         trace("<addQueueData()");
     } // addEntry
 

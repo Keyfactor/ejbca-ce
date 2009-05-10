@@ -40,8 +40,9 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
 	public static final String TYPE                           = "type";
 	
     protected static final String DESCRIPTION                    = "description";
-    protected static final String ONLYUSEQUEUE					 = "onlyUseQueue";
-    
+    protected static final String ONLYUSEQUEUE                   = "onlyUseQueue";
+    protected static final String KEEPPUBLISHEDINQUEUE           = "keepPublishedInQueue";
+
     // Default values
     public static final boolean DEFAULT_ONLYUSEQUEUE 			 = false;
     
@@ -78,8 +79,17 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      */
     public void setOnlyUseQueue(boolean onlyUseQueue) { data.put(ONLYUSEQUEUE, Boolean.valueOf(onlyUseQueue));}
 
-	
+    /**
+     * @return true if successfully published items should remain in the queue (with a different status) 
+     */
+    public boolean getKeepPublishedInQueue() { return Boolean.TRUE.equals(data.get(KEEPPUBLISHEDINQUEUE));}
     
+    /**
+     * Sets whether a successfully published items should remain in the queue (with a different status)
+     * @param keepPublishedInQueue
+     */
+    public void setKeepPublishedInQueue(boolean keepPublishedInQueue) { data.put(KEEPPUBLISHEDINQUEUE, Boolean.valueOf(keepPublishedInQueue));}
+
     // Abstact methods.
     
     /**

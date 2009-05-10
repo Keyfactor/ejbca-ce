@@ -199,8 +199,13 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 				failcount++;
 			}
 			if (published) {
-				// Update with information that publishing was successful
-				getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, pqd.getTryCounter());
+				if (publisher.getKeepPublishedInQueue()) {
+					// Update with information that publishing was successful
+					getPublishQueueSession().updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, pqd.getTryCounter());
+				} else {
+					// We are done with this one.. nuke it!
+					getPublishQueueSession().removeQueueData(pqd.getPk());
+				}
 				successcount++; // jipeee update success counter
 			} else {
 				// Update with new tryCounter, but same status as before
