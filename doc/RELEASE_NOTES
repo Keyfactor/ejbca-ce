@@ -1,8 +1,32 @@
 EJBCA 3.9.0
 -----------
+This is a major release adding many new features and improvements, and fixing numerous bugs. 
+88 issues have been resolved for this release. Check the changelog, there is a good chance that your favorite issue has been resolved.
+
+Some noteworthy changes:
+- Fixes a potential endless loop in CMP RA interface, not possible on the default configuration.
+- Support for CAs using DSA keys. EJBCA now supports all major algorithms; RSA, DSA and ECDSA.
+- External RA improvements. CA service running as an EJBCA services gives full cluster functionality and support for multiple external RAs. 
+  As a bonus it is now much easier to install and configure.
+- Robust re-publishing mechanism for publishers that fail, running as an EJBCA service.
+- OCSP responder improvements with performance improvements and support for on-line renewal of OCSP responder keys and certificates. 
+  The external OCSP responder can now saturate high performance HSMs.
+- OCSP monitoring tool for monitoring synchronization between EJBCA and external OCSP responders.
+- GUI for configuring the external OCSP publisher.
+- New commands and stress tests in the client toolbox.
+- A new front page with status overview panels in the admin GUI.
+- New DN attribute, Name.
+- Lots of small fixes and improvements to the admin GUI.
+- Lots of small bugfixes.
+
+Read the changelog for details.
 
 Note that the configuration of External RA changed dramatically (to the better). If using the external RA, please read the manual how to 
 install and configure the RA CA service in EJBCA 3.9.
+
+Note that this version brings database changes. Read the UPGRADE document for upgrade instructions.
+
+This release should, as always, work on JBoss, Glassfish, Weblogic and OC4J, together with most available databases.
 
 EJBCA 3.8.2
 -----------
