@@ -31,6 +31,12 @@
 # default: 15
 #java.ver=15
 
+# To prevent accidental runs of tests or deploying the wrong thing in a production
+# environment, we could prevent this by setting this variable to either "ca" or "ocsp"
+#ejbca.productionmode=ca
+#ejbca.productionmode=ocsp
+
+
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:
 # - ca.keystorepass

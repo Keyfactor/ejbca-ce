@@ -2,7 +2,7 @@
 <project name="ejbcatest" basedir=".">
 
     <!-- compile JUnit testcases -->
-    <target name="test:compile" depends="compile">
+    <target name="test:compile" depends="failinproduction,compile">
         <mkdir dir="${test.dir}" />
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="jpa.classpath" />
@@ -13,6 +13,10 @@
         </javac>
         <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
         <copy file="${src.java}/jndi.properties" todir="${test.dir}" failonerror="false"/>
+    </target>
+    
+    <target name="failinproduction">
+		<fail if="ejbca.productionmode" message="You cannot run tests in a production environment."/>
     </target>
 
     <!-- compile JUnit testcases -->
