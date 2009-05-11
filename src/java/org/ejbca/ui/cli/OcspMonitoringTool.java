@@ -50,7 +50,8 @@ public class OcspMonitoringTool extends ClientToolBox {
 		+ " certificateProfileId1: the certificateProfileId to use for monitoring\n"
 		+ " -                      required separator\n"
 		+ " CA db name:            persistence-unit name of CA database in the persistence.xml file\n"
-		+ " OCSP1 db name:         persistence-unit name of the first OCSP database in the persistence.xml file\n";
+		+ " OCSP1 db name:         persistence-unit name of the first OCSP database in the persistence.xml file\n"
+	    + "\nCheck ctb.log for messages.";
 
     /**
      * @param args command line arguments
@@ -106,6 +107,7 @@ public class OcspMonitoringTool extends ClientToolBox {
     		try {
     			certificateProfileIds.add(Integer.parseInt(args[currentArg]));
     		} catch (NumberFormatException e) {
+    			log.info("Certificate profile id is not a number: "+e.getLocalizedMessage());
         		log.info(usage);
         		return -1;
     		}
