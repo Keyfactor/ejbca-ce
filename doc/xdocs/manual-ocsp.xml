@@ -70,9 +70,15 @@ Profiles in EJBCA. When you run the tool it will output all the existing IDs in 
 shown in the Admin GUI for each CertificateProfile.
   </p>
   <p>
-Any detected discrepancy will generate an Log4J ERROR and all errors will be summarized in a report at the end.
-If OCSP responders contain certificateProfileIds that are not include in the arguments, these will be shown as
-Log4J WARNings.
+Inconsistencies that will be detected are:
+<ol>
+<li>Missing info about certificates in the OCSP database. (ERROR)</li>
+<li>Additional info about certificates in the OCSP database. (ERROR)</li>
+<li>Info about certificates in the OCSP database that has been tampered with. (ERROR)</li>
+<li>If there are any extra certificates profiles in use on the OCSP besides those that we are trying to check. (WARN)</li>
+</ol>
+Every detected inconsistency will also be reported in a summarizing final ERROR-message. If there are two many errors,
+this final message will be truncated. 
   </p>
   <p>
 Since going through every single CertificateData row in a database is heavy work, it's highly recommended to
