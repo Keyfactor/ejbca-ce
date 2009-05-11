@@ -22,7 +22,7 @@ EJBCA should be configured as for any other installation but you must also set a
 The responder database is the master database of all the responders, and it is there that EJBCA will 
 publish certificates when they are issued or revoked. 
 </p><p>
-After this configuration EJBCA is built and deployed as usuall with the command 'ant deploy', as described in the EJBCA installation guide.
+After this configuration EJBCA is built and deployed as usual with the command 'ant deploy', as described in the EJBCA installation guide.
 </p><p>
 The deploy command sets up a datasource <b>java:/OcspDS</b> in JBoss, if you use another application server 
 you must set up this datasource manually. It should be a datasource that is not involved in transactions
@@ -120,11 +120,11 @@ Use the token type "p12" or "jks" for soft keys and "user generated" for pkcs#11
 Note: The OCSP responders certificate(s) AND the CA certificate(s) need to be published from the CA to the 
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
 </note>
+<subsubsection name="Soft keystores">
 <p>
 When a soft key has been created it should be stored in the directory defined by the ocsp.keys.dir property of conf/ejbca.properties.
 The password for each key must be the same and should be equal to the ocsp.keys.keyPassword property of conf/ejbca.properties.
 </p>
-<subsubsection name="Soft keystores">
 <p>
 Soft OCSP keystores are most easily created by adding a user to EJBCA and selecting the PKCS#12 keystores type. After this the OCSP keystore can be created
 by running the <i>bin/ejbca.sh batch</i> command on the EJBCA server, or by fetching the PKCS#12 keystore from the public enrollment pages of EJBCA. 
@@ -181,12 +181,39 @@ Re-start the application server for the external OCSP responder.
 When the application server is started it should just work.
 </p>
 </subsubsection>
-  </subsection>
-
+</subsection>
+<subsection name="Key updating.">
+<p>
+The responder might be configured (in ocsp.properties) to scan for installed keys at regular intervals. The responder will use the keys detected at the latest scan.
+</p>
+<p>
+Please not that keys in the PKCS#11 slot will not be updated if automatic re-keying is enabled.
+</p>
+</subsection>
+<subsection name="Automatic re-keying">
+<p>
+Re-keying is enabled by specifying a web-service URL and a "update time before the OCSP signer certificate expires time".
+</p>
+<p>
+You got to generate a certificate for a user with permissions to create a user generated certificate for all OCSP signers.
+The entity for this user could be stored in a SW keystore or in the HSM. Please read the ocsp.properties.sample for further requirements and location of this entity.
+</p>
+<p>
+To test the feature it is good to re-key frequently. This is achieved by setting "update time before the OCSP signer certificate expires time" close to validity length of the OCSP certificate.
+Example for 730 days (730*24*60-14)*60=63071160. This will force a re-keying every 4th minute (an EJBCA certificate is valid 10 minutes before it was issued).
+</p>
+</subsection>
+<subsection name="No password in memory">
+<p>
+With this feature enabled no password are kept in memory. If it is enabled you must not define any passwords in ocsp.properties.
+</p>
+<p>
+Defining this feature makes it impossible to do "key updating".
+</p>
+</subsection>
 </section>
-  
-  <section name="Error handling">
-  <p>
+<section name="Error handling">
+<p>
 If there is an error publishing to the OCSP database, the OCSP responder will be out of sync with the CA.
 It is very important to re-synchronize the databases in that case.
 </p>
@@ -620,7 +647,7 @@ and dropping some unwanted requests:
 
         ProxyRequests Off
 
-        &lt;Location />
+        &lt;Location>
                 # Everybody is welcome here..
                 Allow from all
                 Order allow,deny
