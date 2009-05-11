@@ -151,7 +151,7 @@ public class TestPublisherQueueProcess extends TestCase {
     	// We must add new entries to the queue, since we could not know the publisherId before
     	Certificate cert = CertTools.getCertfromByteArray(testcert);
     	try {
-    		TestTools.getCertificateStoreSession().storeCertificate(admin, cert, "TestPublishQueueProcessService", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, 12345, "tag");
+    		TestTools.getCertificateStoreSession().storeCertificate(admin, cert, "TestPublishQueueProcessService", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, 12345, "tag", new Date().getTime());
     	} catch (Exception e) {
     		// Perhaps the cert already exists
     	}

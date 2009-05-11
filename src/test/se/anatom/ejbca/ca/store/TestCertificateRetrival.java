@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
@@ -150,7 +151,7 @@ public class TestCertificateRetrival extends TestCase {
                         , "o=AnaTom,c=SE"
                         , rootCaFp
                         , CertificateDataBean.CERT_ACTIVE
-                        , CertificateDataBean.CERTTYPE_ROOTCA, SecConst.CERTPROFILE_FIXED_ROOTCA, null);
+                        , CertificateDataBean.CERTTYPE_ROOTCA, SecConst.CERTPROFILE_FIXED_ROOTCA, null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcacert);
             m_certs.add(cert);
@@ -163,7 +164,7 @@ public class TestCertificateRetrival extends TestCase {
                         , "o=AnaTom,c=SE"
                         , subCaFp
                         , CertificateDataBean.CERT_ACTIVE
-                        , CertificateDataBean.CERTTYPE_SUBCA, SecConst.CERTPROFILE_FIXED_SUBCA, null);
+                        , CertificateDataBean.CERTTYPE_SUBCA, SecConst.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcert);
             m_certs.add(cert);
@@ -176,7 +177,7 @@ public class TestCertificateRetrival extends TestCase {
                         , "o=AnaTom,c=SE"
                         , endEntityFp
                         , CertificateDataBean.CERT_ACTIVE
-                        , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
+                        , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
             }
         } catch (Exception e) {
             m_log.error("Error: ", e);

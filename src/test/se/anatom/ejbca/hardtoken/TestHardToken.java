@@ -15,6 +15,7 @@ package se.anatom.ejbca.hardtoken;
 
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 
 import junit.framework.TestCase;
 
@@ -141,7 +142,7 @@ public class TestHardToken extends TestCase {
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.  
         if(TestTools.getCertificateStoreSession().findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null){
-        	TestTools.getCertificateStoreSession().storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),CertificateDataBean.CERT_ACTIVE,CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
+        	TestTools.getCertificateStoreSession().storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),CertificateDataBean.CERT_ACTIVE,CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         }
         String tokensn = TestTools.getHardTokenSession().findHardTokenByCertificateSNIssuerDN(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));        
 

@@ -203,7 +203,7 @@ public class TestProtect extends TestCase {
                     , "o=AnaTom,c=SE"
                     , endEntityFp
                     , CertificateDataBean.CERT_ACTIVE
-                    , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
+                    , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         }
         CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("1");
@@ -244,7 +244,7 @@ public class TestProtect extends TestCase {
                     , "o=AnaTom,c=SE"
                     , endEntityFp
                     , CertificateDataBean.CERT_ACTIVE
-                    , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null);
+                    , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         }
         CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("2");
