@@ -19,7 +19,8 @@ import java.net.URL;
 
 /**
  * Used to activate the external OCSP responder.
- * @author Lars Silvén PrimeKey
+ * @author Lars Silven PrimeKey Solution AB
+ * @version $Id$
  * 
  */
 public class OCSPActivate extends ClientToolBox {
