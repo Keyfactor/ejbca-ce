@@ -315,7 +315,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
-                                    int status, int type, int certificateProfileId, String tag) throws CreateException {
+                                    int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException {
     	if (log.isTraceEnabled()) {
             log.trace(">storeCertificate(" + username + ", " + cafp + ", " + status + ", " + type + ")");
     	}
@@ -333,7 +333,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         data1.setType(type);
         data1.setCertificateProfileId(certificateProfileId);
         data1.setTag(tag);
-        long updateTime = new Date().getTime();
         data1.setUpdateTime(updateTime);
         String msg = intres.getLocalizedMessage("store.storecert");            	
         getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);

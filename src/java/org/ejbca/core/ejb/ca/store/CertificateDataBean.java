@@ -570,7 +570,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setExpireDate(CertTools.getNotAfter(incert));
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
-            setUpdateTime(new Date().getTime());
+            setUpdateTime(0);
             setCertificateProfileId(0);
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);

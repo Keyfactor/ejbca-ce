@@ -1288,9 +1288,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 	name = "SYSTEMCA";
                 }
                 // Store CA certificate in the database if it does not exist
+                long updateTime = new Date().getTime();
                 if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
                 	// If we don't have it in the database, set certificateProfileId = 0
-                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type, 0, null);
+                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type, 0, null, updateTime);
                 }
                 CertificateInfo info = certificateStore.getCertificateInfo(admin, fingerprint);
                 // Store cert in ca cert publishers.
@@ -1520,6 +1521,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 Certificate cert = null;
                 String cafingerprint = null;
                 String serialNo = "unknown";
+                long updateTime = new Date().getTime();
                 while (!stored && retrycounter < 5) {
                     cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                     serialNo = CertTools.getSerialNumberAsString(cert);
@@ -1527,7 +1529,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     Certificate cacert = ca.getCACertificate();
                     cafingerprint = CertTools.getFingerprintAsString(cacert);
                     try {
-                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), certProfileId, null);                        
+                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), certProfileId, null, updateTime);                        
                         stored = true;
                     } catch (CreateException e) {
                     	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
@@ -1555,8 +1557,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 IPublisherSessionLocal pub = publishHome.create();
                 Collection publishers = certProfile.getPublisherList();
                 if (publishers != null) {
-                	CertificateInfo info = certificateStore.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
-                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), data.getExtendedinformation());
+                	// Reading the info here does not work! Probabaly are UPDATE statements not flushed to the database when this JDBC exceutes..
+                	//CertificateInfo info = certificateStore.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+                	String tag = null; // info.getTag();
+                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
                 }
                 
                 // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 

@@ -16,6 +16,7 @@ package org.ejbca.ui.cli;
 import java.io.File;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
@@ -277,7 +278,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			getCertificateStoreSession().storeCertificate(administrator,
 					certificate, username,
 					fingerprint,
-					status, type, certificateprofileid, null);
+					status, type, certificateprofileid, null, new Date().getTime());
 			
 			getOutputStream().println("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
 		}
