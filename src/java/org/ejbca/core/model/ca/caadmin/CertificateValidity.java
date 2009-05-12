@@ -105,8 +105,8 @@ public class CertificateValidity {
         	lastDate = certProfileLastDate;
         }
         // Limit validity: Do not allow last date to be before first date
-        if (!lastDate.after(firstDate)) {
-			log.error(intres.getLocalizedMessage("signsession.errorinvalidcausality",firstDate,lastDate));
+        if (lastDate.before(firstDate)) {
+			log.info(intres.getLocalizedMessage("signsession.errorinvalidcausality",firstDate,lastDate));
         	Date tmp = lastDate;
         	lastDate = firstDate;
         	firstDate = tmp;
