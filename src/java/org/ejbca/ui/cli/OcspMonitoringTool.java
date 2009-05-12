@@ -27,7 +27,7 @@ import org.ejbca.core.ejb.ca.store.CertificateData;
 /**
  * Used to synchronize OCSP databases from the CA database. 
  *
- * @version $Id: $
+ * @version $Id$
  */
 public class OcspMonitoringTool extends ClientToolBox {
 	
