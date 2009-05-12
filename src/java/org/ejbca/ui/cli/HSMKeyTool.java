@@ -118,7 +118,7 @@ public class HSMKeyTool extends ClientToolBox {
             } else */
             if ( args.length > 1 && args[1].toLowerCase().trim().contains(GENERATE_SWITCH) ) {
                 if ( args.length < 6 ) {
-                    System.err.println(commandString + "<all decimal digits RSA key with specified length, otherwise name of ECC curve.> <key entry name> " + '['+'<'+getKeyStoreDescription()+'>'+']');
+                    System.err.println(commandString + "<all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn> <key entry name> " + '['+'<'+getKeyStoreDescription()+'>'+']');
                     generateComment();
                 } else {
                     if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
