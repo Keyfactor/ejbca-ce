@@ -560,7 +560,7 @@ public class LdapPublisher extends BasePublisher {
 		// Check if the entry is already present, we will update it with the new certificate.
 		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn, email);
 
-		ArrayList modSet = new ArrayList();
+		ArrayList modSet = null;
 
 		if (!CertTools.isCA(cert)) {
 			log.debug("Removing end user certificate from first available server of " + getHostnames());
@@ -585,7 +585,7 @@ public class LdapPublisher extends BasePublisher {
 			}
 		} else  {
 			log.debug("Not removing CA certificate from first available server of " + getHostnames() + ", because of object class restrictions.");
-			// Currently removal of CA certificate isn't support because of object class restictions
+			// Currently removal of CA certificate isn't support because of object class restrictions
 			/*
             if (oldEntry != null) {
                 modSet = getModificationSet(oldEntry, dn, false, false);
@@ -620,7 +620,19 @@ public class LdapPublisher extends BasePublisher {
 					}
 					String msg = intres.getLocalizedMessage("publisher.ldapremove", dn);
 					log.info(msg);  
-				}               
+				} else {
+					if (log.isDebugEnabled()) {
+						if (oldEntry == null) {
+							log.debug("Not modifying LDAP entry because there is no existing entry.");						
+						}
+						if (modSet == null) {
+							log.debug("Not modifying LDAP entry because we don't have anything to modify.");						
+						}
+						if (!getModifyExistingUsers()) {
+							log.debug("Not modifying LDAP entry because we're not configured to do so.");						
+						}
+					}
+				}
 			} catch (LDAPException e) {
 				connectionFailed = true;
 				if (servers.hasNext()) {
