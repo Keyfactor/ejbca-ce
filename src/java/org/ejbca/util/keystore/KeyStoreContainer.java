@@ -137,4 +137,12 @@ public interface KeyStoreContainer {
      * @throws Exception
      */
     public byte[] generateEC( final String name, final String keyEntryName) throws Exception;
+
+    /**
+     * @param name
+     * @param keyEntryName
+     * @return
+     * @throws Exception
+     */
+    public byte[] generateDSA( final int keysize, final String keyEntryName) throws Exception;
 }
