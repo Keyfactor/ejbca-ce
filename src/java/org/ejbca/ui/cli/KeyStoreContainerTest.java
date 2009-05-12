@@ -21,6 +21,7 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.interfaces.ECKey;
 import java.security.interfaces.RSAKey;
+import java.security.interfaces.DSAKey;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -223,6 +224,10 @@ class KeyStoreContainerTest {
             }
             if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof RSAKey ) {
                 this.sigAlgName = "SHA1withRSA";
+                return;
+            }
+            if ( KeyStoreContainerTest.this.keyPair.getPublic() instanceof DSAKey ) {
+                this.sigAlgName = "SHA1withDSA";
                 return;
             }
             this.sigAlgName = null;
