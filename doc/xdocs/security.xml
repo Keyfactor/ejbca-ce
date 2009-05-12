@@ -177,15 +177,21 @@ http://dev.mysql.com/doc/refman/5.1/en/secure-using-ssl.html</a>
 </section>
 
 <section name="Other precautions">
+<subsection name="Switching to production mode">
 <p>
-Database transaction logs in MySQL:
-<br/>
+Switching to production mode by setting ejbca.productionmode in conf/ejbca.properties
+will prevent ant from starting JUnit tests and deploying the CA build on an OCSP responder
+and vice versa.   
+</p>
+</subsection>
+<subsection name="Database transaction logs in MySQL">
+<p>
 <a href="http://dev.mysql.com/doc/refman/5.0/en/binary-log.html">
 http://dev.mysql.com/doc/refman/5.0/en/binary-log.html</a>
 </p>
+</subsection>
+<subsection name="System accounting in Linux">
 <p>
-System accounting in Linux:
-<br/>
 See your distribution for details about their package, below are general links.
 <br/>
 <a href="http://www.nic.com/~dave/SecurityAdminGuide/SecurityAdminGuide-5.html">
@@ -193,6 +199,7 @@ http://www.nic.com/~dave/SecurityAdminGuide/SecurityAdminGuide-5.html</a>
 <a href="http://www.hsc.fr/ressources/presentations/linux2000/linux2000-18.html.en">
 </a>
 </p>
+</subsection>
 </section>
 
 </body>
