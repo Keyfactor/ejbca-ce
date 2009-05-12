@@ -47,10 +47,10 @@ public class PrinterManager {
 	private static transient SVGImageManipulator sVGImagemanipulator = null;
 	
 	/**
-	 * Method that returns the names of all the available printers.
+	 * Method that returns the names of all the available printers or an empty list if
+	 * no printers were found or an error occurred.
 	 * @return
 	 */
-	
 	public static String[] listPrinters(){
 		String[] printerNames = new String[0];
 		try {
@@ -62,7 +62,11 @@ public class PrinterManager {
 				printerNames[i] = printService[i].getName();
 			}			
 		} catch (Throwable e) {
-			log.error("Error looking up printers: ", e);
+			String msg = "There might be a problem with one of the printers' configuration: ";
+			log.warn(msg + e.getMessage());
+			if (log.isDebugEnabled()) {
+				log.debug(msg, e);
+			}
 		}		
 		return printerNames;
 	}
