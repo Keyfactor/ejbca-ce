@@ -50,7 +50,11 @@ This requires a small database change. To see which database structural changes 
 the SQL commands for your database in src/upgrade/38_39/38_39-upgrade-<<database name>>.sql.
 The database upgrade is normally done automatically for you when you run 'ant upgrade'. 
 Some application servers will not let you deploy unless the database is in sync though, so you may have to run 
-the SQL commands manually.
+the SQL commands manually. The assigned certificateProfileId for each new CertificateData is default 0.
+If you want to assign the last used certificateProfileId used for the same user you can manually execute
+	UPDATE CertificateData SET certificateProfileId=(SELECT certificateProfileId FROM UserData
+		WHERE CertificateData.username=UserData.username);
+but this will take a *very* long time for a large population.
 
 EJBCA 3.9 also has a new table in the database. If you are using JBoss this is created automatically for you.
 If you are using another application server, created the table in your database using the create statement for

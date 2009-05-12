@@ -2,5 +2,4 @@ update UserData set certificateProfileId=9 where username='tomcat' and certifica
 ALTER TABLE CertificateData ADD tag VARCHAR(255) DEFAULT NULL;
 ALTER TABLE CertificateData ADD certificateProfileId NUMBER(10) DEFAULT 0;
 ALTER TABLE CertificateData ADD updateTime NUMBER(19) DEFAULT 0 NOT NULL;
-UPDATE CertificateData SET certificateProfileId=(SELECT certificateProfileId FROM UserData WHERE CertificateData.username=UserData.username);
-UPDATE CertificateData SET certificateProfileId=0 where certificateProfileId is null;
+UPDATE CertificateData SET certificateProfileId=0;
