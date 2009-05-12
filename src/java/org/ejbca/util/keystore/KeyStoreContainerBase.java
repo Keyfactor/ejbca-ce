@@ -185,10 +185,30 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         return result;
     }
     /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#generate(int, java.lang.String)
+     */
+    public byte[] generateDSA( final int keySize,
+                               final String keyEntryName) throws Exception {
+     	if (log.isTraceEnabled()) {
+    		log.trace(">generate: keySize "+keySize+", keyEntryName "+keyEntryName);
+    	}
+        // Generate the RSA Keypair
+        final KeyPairGenerator kpg = KeyPairGenerator.getInstance("DSA", this.providerName);
+        kpg.initialize(keySize);
+        final byte result[] = generate(kpg, keyEntryName, "SHA1withDSA");
+        if (log.isTraceEnabled()) {
+        	log.trace("<generate: keySize "+keySize+", keyEntryName "+keyEntryName);
+        }
+        return result;
+    }
+    /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generate(java.lang.String, java.lang.String)
      */
     public byte[] generate( final String algName,
                             final String keyEntryName) throws Exception {
+    	if (algName.toUpperCase ().startsWith ("DSA")) {
+    		return generateDSA (Integer.parseInt(algName.substring(3).trim()), keyEntryName);
+    	}
         try {
             return generate(Integer.parseInt(algName.trim()), keyEntryName);
         } catch (NumberFormatException e) {
