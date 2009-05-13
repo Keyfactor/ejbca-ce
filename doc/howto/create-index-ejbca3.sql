@@ -31,7 +31,7 @@ create index userdata_idx1 on UserData (cAId,endEntityProfileId);
 create index userdata_idx2 on UserData (cAId,timeCreated);
 create index userdata_idx3 on UserData (cAId,timeModified);
 create index userdata_idx4 on UserData (cAId);
-create index userdata_idx5 on UserData (username);
+-- This is already the primary key.. we don't need to index it.. create index userdata_idx5 on UserData (username);
 create index userdata_idx6 on UserData (username, cAId);
 create index userdata_idx7 on UserData (status, cAId);
 create index userdata_idx8 on UserData (subjectDN, cAId);
