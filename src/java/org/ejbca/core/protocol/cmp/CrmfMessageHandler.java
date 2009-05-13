@@ -437,7 +437,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							}
 						} catch (NoSuchAlgorithmException e) {
 							String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
-							log.error(errMsg, e);
+							log.info(errMsg, e);
 							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 						} catch (NoSuchProviderException e) {
 							String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
@@ -445,7 +445,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 						} catch (InvalidKeyException e) {
 							String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
-							log.error(errMsg, e);
+							log.info(errMsg, e);
 							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 						}
 					} else {
