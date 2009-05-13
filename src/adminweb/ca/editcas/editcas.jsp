@@ -444,25 +444,8 @@
 
          if(catoken != null && catype != 0 && subjectdn != null && caname != null && signedby != 0  ){
 
-        	 // CRL periods and publishers is common for all types of CAs
-             int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
-             int crlIssueInterval = 0;
-             String crlissueint = request.getParameter(TEXTFIELD_CRLISSUEINTERVAL);
-             if (crlissueint != null && !crlissueint.trim().equals(""))
-                 crlIssueInterval = Integer.parseInt(crlissueint);
-             int crlOverlapTime = 10;
-             String crloverlapint = request.getParameter(TEXTFIELD_CRLOVERLAPTIME);
-             if (crloverlapint != null && !crloverlapint.trim().equals(""))
-           	  crlOverlapTime = Integer.parseInt(crloverlapint);
-             int deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));              
-             String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
-             ArrayList crlpublishers = new ArrayList(); 
-             if(values != null){
-               for(int i=0; i < values.length; i++){
-                  crlpublishers.add(new Integer(values[i]));
-               }
-             }
-             values = request.getParameterValues(SELECT_APPROVALSETTINGS);
+        	 // Approvals is generic for all types of CAs
+             String[] values = request.getParameterValues(SELECT_APPROVALSETTINGS);
              ArrayList approvalsettings = new ArrayList(); 
              if(values != null){
                for(int i=0; i < values.length; i++){
@@ -523,6 +506,25 @@
                  } 
                  else
                    authoritykeyidentifiercritical = false;
+              }
+
+         	 // CRL periods and publishers is specific for X509 CAs
+              int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
+              int crlIssueInterval = 0;
+              String crlissueint = request.getParameter(TEXTFIELD_CRLISSUEINTERVAL);
+              if (crlissueint != null && !crlissueint.trim().equals(""))
+                  crlIssueInterval = Integer.parseInt(crlissueint);
+              int crlOverlapTime = 10;
+              String crloverlapint = request.getParameter(TEXTFIELD_CRLOVERLAPTIME);
+              if (crloverlapint != null && !crloverlapint.trim().equals(""))
+            	  crlOverlapTime = Integer.parseInt(crloverlapint);
+              int deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));              
+              values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
+              ArrayList crlpublishers = new ArrayList(); 
+              if(values != null){
+                for(int i=0; i < values.length; i++){
+                   crlpublishers.add(new Integer(values[i]));
+                }
               }
 
               boolean usecrlnumber = false;
@@ -712,6 +714,13 @@
            } // if(catype == CAInfo.CATYPE_X509)
         	   
            if(catype == CAInfo.CATYPE_CVC) {
+               // Only default values for these that are not used
+               int crlperiod = 2400;
+               int crlIssueInterval = 0;
+               int crlOverlapTime = 0;
+               int deltacrlperiod = 0;
+               ArrayList crlpublishers = new ArrayList(); 
+
                if(crlperiod != 0 && !illegaldnoraltname){
           		 // A CVC CA does not have any of the external services OCSP, XKMS, CMS
           		 ArrayList extendedcaservices = new ArrayList();
@@ -720,7 +729,7 @@
                      caid = CertTools.stringToBCDNString(subjectdn).hashCode();
                      signedby = CAInfo.SIGNEDBYEXTERNALCA;
                  }
-
+                 
                  // Create the CAInfo to be used for either generating the whole CA or making a request
                  CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
                          certprofileid, validity, 
