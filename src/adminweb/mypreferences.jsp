@@ -19,6 +19,10 @@
   static final String LIST_SECONDARYLANGUAGE                 = "listsecondarylanguage";
   static final String LIST_THEME                             = "listtheme";
   static final String LIST_ENTIESPERPAGE                     = "listentriesperpage";
+  static final String CHECKBOX_CASTATUSFIRSTPAGE			 = "castatusfirstpage";
+  static final String CHECKBOX_PUBQSTATUSFIRSTPAGE 			 = "pubqstatusfirstpage";
+  
+  static final String CHECKBOX_VALUE						 = "true";
 
 %>
 <% 
@@ -57,6 +61,13 @@
           String entriesperpage = request.getParameter(LIST_ENTIESPERPAGE); 
           dup.setEntriesPerPage(Integer.parseInt(entriesperpage.trim()));
         }
+        
+        String value = request.getParameter(CHECKBOX_CASTATUSFIRSTPAGE); 
+        dup.setFrontpageCaStatus(value != null && CHECKBOX_VALUE.equals(value.trim()));
+        
+        value = request.getParameter(CHECKBOX_PUBQSTATUSFIRSTPAGE); 
+        dup.setFrontpagePublisherQueueStatus(value != null && CHECKBOX_VALUE.equals(value.trim()));
+        
         if(!ejbcawebbean.existsAdminPreference()){
           ejbcawebbean.addAdminPreference(dup);
         }
@@ -161,6 +172,24 @@
                   value='<%= Integer.parseInt(possibleentriesperpage[i]) %>'><%= possibleentriesperpage[i] %></option>
           <% } %>
         </select>
+      </td>
+    </tr>
+    <tr  id="Row0"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("CASTATUSONFRONTPAGE") %></h3>
+        <h5><%= ejbcawebbean.getText("IFCASTATUSSHOULDBEDISP") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input name="<%= CHECKBOX_CASTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpageCaStatus() ? "checked=\"checked\"" : ""%>/>
+      </td>
+    </tr>
+    <tr  id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("PUBLISHERQUEUESTATUSON") %></h3>
+        <h5><%= ejbcawebbean.getText("IFPUBLISHERQUEUESSHOULD") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input name="<%= CHECKBOX_PUBQSTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpagePublisherQueueStatus() ? "checked=\"checked\"" : ""%>/>
       </td>
     </tr>
     <tr  id="Row0"> 

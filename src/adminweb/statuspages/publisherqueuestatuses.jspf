@@ -15,26 +15,32 @@
         <div class="h4" id="publishqueuestatus" >
         <h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/manual.html#Publish%20queue%20status") %></h4>
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
-			<tr>
-				<th><%=ejbcawebbean.getText("PUBLISHER")%></th>
-				<th><%=ejbcawebbean.getText("QUEUELENGTH")%></th>
-			</tr>
-		<%  if(!iter.hasNext()) { %>
-				<tr class="a">
-					<td colspan="2" style="font-style: italic;"><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
+			<%	if(ejbcawebbean.getAdminPreference().getFrontpagePublisherQueueStatus()) { %>
+				<tr>
+					<th><%=ejbcawebbean.getText("PUBLISHER")%></th>
+					<th><%=ejbcawebbean.getText("QUEUELENGTH")%></th>
 				</tr>
-			<% } else {
-		
-				while(iter.hasNext()) {
-					String name = (String) iter.next();
-					int queueLength = publisherhelper.getPublisherQueueLength(name);
-				%>
-					<tr class="a">	
-						<td><%=name %></td>
-						<td><%=queueLength %></td>
+			<%  if(!iter.hasNext()) { %>
+					<tr class="a">
+						<td colspan="2" style="font-style: italic;"><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
 					</tr>
-		<% 		}
-			} %>
+				<% } else {
+			
+					while(iter.hasNext()) {
+						String name = (String) iter.next();
+						int queueLength = publisherhelper.getPublisherQueueLength(name);
+					%>
+						<tr class="a">	
+							<td><%=name %></td>
+							<td><%=queueLength %></td>
+						</tr>
+			<% 		}
+				} 
+			} else { %>
+				<tr class="a">	
+					<td colspan="3"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
+				</tr>
+			<% } %>
 		</table>
 		</div>
     </td>

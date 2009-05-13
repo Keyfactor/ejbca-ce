@@ -27,7 +27,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  */
 public class AdminPreference extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     
-    public static final float LATEST_VERSION = 0;    
+    public static final float LATEST_VERSION = 1;
     
     
     // Public constants
@@ -47,6 +47,8 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
       data.put(LASTPROFILE, new Integer(0));
       data.put(LASTFILTERMODE, new Integer(FILTERMODE_BASIC));
       data.put(LASTLOGFILTERMODE, new Integer(FILTERMODE_BASIC));
+      data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
+      data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
     }
 
     public int getPreferedLanguage() {return ((Integer) data.get(PREFEREDLANGUAGE)).intValue();}
@@ -104,6 +106,12 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
     public int getLastLogFilterMode() {return  ((Integer) data.get(LASTLOGFILTERMODE)).intValue();}
     public void setLastLogFilterMode(int lastlogfiltermode) {data.put(LASTLOGFILTERMODE, new Integer(lastlogfiltermode));}    
     
+    public boolean getFrontpageCaStatus(){return Boolean.TRUE.equals(data.get(FRONTPAGECASTATUS));}
+    public void setFrontpageCaStatus(boolean frontpagecastatus){ data.put(FRONTPAGECASTATUS, new Boolean(frontpagecastatus));}
+    
+    public boolean getFrontpagePublisherQueueStatus(){return Boolean.TRUE.equals(data.get(FRONTPAGEPUBQSTATUS));}
+    public void setFrontpagePublisherQueueStatus(boolean frontpagepubqstatus){ data.put(FRONTPAGEPUBQSTATUS, new Boolean(frontpagepubqstatus));}
+    
     public Object clone() throws CloneNotSupportedException {
       AdminPreference clone = new AdminPreference();
       HashMap clonedata = (HashMap) clone.saveData();
@@ -129,6 +137,13 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade  
     		
+    		if(data.get(FRONTPAGECASTATUS) == null) {
+    			data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
+    		}
+    		if(data.get(FRONTPAGEPUBQSTATUS) == null) {
+    			data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
+    		}
+    		
     		data.put(VERSION, new Float(LATEST_VERSION));  
     	}  
     }    
@@ -143,5 +158,10 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
     private static final String LASTPROFILE       = "lastprofile";
     private static final String LASTFILTERMODE    = "lastfiltermode";
     private static final String LASTLOGFILTERMODE = "lastlogfiltermode";    
+    private static final String FRONTPAGECASTATUS   			= "frontpagecastatus";
+    private static final String FRONTPAGEPUBQSTATUS   			= "frontpagepubqstatus";
+    
+    public static final boolean DEFAULT_FRONTPAGECASTATUS	= true;
+    public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS	= true;
     
 }

@@ -10,41 +10,47 @@
 <%@page import="org.ejbca.core.model.ca.catoken.ICAToken"%><div class="h4" id="crlstatus" >
         <h4><%=ejbcawebbean.getText("CASTATUS")%> <%= ejbcawebbean.getHelpReference("/manual.html#CA%20Status") %></h4>
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
+			<%	if(ejbcawebbean.getAdminPreference().getFrontpageCaStatus()) { %>
 			<tr>
 				<th><%=ejbcawebbean.getText("CA")%></th>
 				<th><%=ejbcawebbean.getText("CASTATUS")%></th>
 				<th><%=ejbcawebbean.getText("CRLSTATUS")%></th>
 			</tr>
-			<%	while(caiter.hasNext()) {
-					Integer id = (Integer) caiter.next();
-					CAInfoView cainfo = cabean.getCAInfo(id);
-					if (cainfo != null) {
-						String name = cainfo.getCAInfo().getName();
-						CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), false);
-						CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), true);
-						int castatus = cainfo.getCAInfo().getStatus();
-						int catokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
-						String caimg = ejbcawebbean.getImagefileInfix("true.png");
-						if (castatus != SecConst.CA_EXTERNAL) {
-							if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != ICAToken.STATUS_ACTIVE) ) {
-								caimg = ejbcawebbean.getImagefileInfix("false.png");
-							}						
-						}
-						String crlimg = ejbcawebbean.getImagefileInfix("true.png");
-						Date now = new Date();
-						if ( (crlinfo != null) && (now.after(crlinfo.getExpireDate())) ) {
-							crlimg = ejbcawebbean.getImagefileInfix("false.png");
-						}
-						if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
-							crlimg = ejbcawebbean.getImagefileInfix("false.png");
-						}
-					%>
-						<tr class="a">	
-							<td><%=name %></td>
-							<td><img src="<%=caimg %>" height="14" style="border-width:0" width="14"></td>
-							<td><img src="<%=crlimg %>" height="14" style="border-width:0" width="14"></td>
-						</tr>
-		   <% 		}  
-		        }%>
+				<%	while(caiter.hasNext()) {
+						Integer id = (Integer) caiter.next();
+						CAInfoView cainfo = cabean.getCAInfo(id);
+						if (cainfo != null) {
+							String name = cainfo.getCAInfo().getName();
+							CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), false);
+							CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), true);
+							int castatus = cainfo.getCAInfo().getStatus();
+							int catokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
+							String caimg = ejbcawebbean.getImagefileInfix("true.png");
+							if (castatus != SecConst.CA_EXTERNAL) {
+								if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != ICAToken.STATUS_ACTIVE) ) {
+									caimg = ejbcawebbean.getImagefileInfix("false.png");
+								}						
+							}
+							String crlimg = ejbcawebbean.getImagefileInfix("true.png");
+							Date now = new Date();
+							if ( (crlinfo != null) && (now.after(crlinfo.getExpireDate())) ) {
+								crlimg = ejbcawebbean.getImagefileInfix("false.png");
+							}
+							if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
+								crlimg = ejbcawebbean.getImagefileInfix("false.png");
+							}
+							%>
+							<tr class="a">	
+								<td><%=name %></td>
+								<td><img src="<%=caimg %>" height="14" style="border-width:0" width="14"></td>
+								<td><img src="<%=crlimg %>" height="14" style="border-width:0" width="14"></td>
+							</tr>
+			   <% 		}  
+			        }
+			   } else { %>
+			   		<tr class="a">	
+						<td colspan="3"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
+					</tr>
+			   <% } %>
 		</table>
 		</div>
