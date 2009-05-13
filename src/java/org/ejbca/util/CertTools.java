@@ -755,7 +755,7 @@ public class CertTools {
 					if (NumberUtils.isNumber(sequence)) {
 						ret = NumberUtils.createBigInteger(sequence);											
 					} else {
-						log.error("getSerialNumber: Sequence is not a numeric string, trying to get sequence part.");
+						log.debug("getSerialNumber: Sequence is not a numeric string, trying to get numerical sequence part.");
 						StringBuffer buf = new StringBuffer();
 						for (int i = 0; i < sequence.length(); i++) {
 							char c = sequence.charAt(i);
@@ -766,13 +766,13 @@ public class CertTools {
 						if (buf.length() > 0) {
 							ret = NumberUtils.createBigInteger(buf.toString());
 						} else {
-							log.error("getSerialNumber: Sequence does not contain a numeric string, returning 0.");
+							log.debug("getSerialNumber: Sequence does not contain a numeric string, returning 0.");
 							ret = BigInteger.valueOf(0);
 						}
 					}
 				} catch (NumberFormatException e) {
 					// If we can't make the sequence into a serial number big integer, set it to 0
-		            log.error("getSerialNumber: NumberFormatException for sequence: "+sequence, e);
+		            log.debug("getSerialNumber: NumberFormatException for sequence: "+sequence);
 					ret = BigInteger.valueOf(0);				
 				}
 			} catch (NoSuchFieldException e) {
