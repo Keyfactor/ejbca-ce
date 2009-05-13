@@ -2448,6 +2448,9 @@ public class CertTools {
     		return ret;
     	}
     	int val = reasonFlags.intValue();
+    	if (log.isDebugEnabled()) {
+        	log.debug("Int value of bitString revocation reason: "+val);    		
+    	}
     	if ( (val & ReasonFlags.aACompromise) != 0) {
     		ret = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
     	}
