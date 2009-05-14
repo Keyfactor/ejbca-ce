@@ -249,7 +249,7 @@
   Where your CVCA is called CVCAPK in EJBCA and uses algorithm SHA256WithRSA with 2048 bit keys.<br/>
   Where an End entity profile, DV, is created with CN and C as required DN fields, and DV as available certificate profiles.<br/>
   Where a Certificate profile, DV, is created of type SubCA.<br/>
-  Where the received request is stored in a file 'dedv.cvrqst'.
+  Where the received request is stored in a file 'dedv.cvreq'.
   </p>
   <p>The first command adds the end entity in EJBCA and only has to be made the first time. foo123 is the one-time password set to authenticate the request.
   </p> 
@@ -275,7 +275,7 @@
   Where your DV is called DV-BrainPool in EJBCA and uses algorithm SHA224WithECDSA with brainpoolp224r1 curve.
   Where an End entity profile, IS, is created with CN and C as required DN fields, and IS as available certificate profiles.<br/>
   Where a Certificate profile, IS, is created of type EndEntity.<br/>
-  Where the generated request is stored in a file 'isbrainpool.cvrqst', the generated private key in 'isbrainpool.pkcs8'.<br/>
+  Where the generated request is stored in a file 'isbrainpool.cvreq', the generated private key in 'isbrainpool.pkcs8'.<br/>
   The issued IS certificate is stored in file 'isbrainpool.cvcert'.
   </p> 
   <p>
@@ -370,7 +370,7 @@ bin/pkcs11HSM.sh generate /etc/utimaco/libcs2_pkcs11.so secp160r1 signKey 1
   Processing certificate requests in the Admin-GUI of EJBCA can use wither binary or PEM format certificate requests.
   If you receive a binary request and want to convert it to PEM it is easy:
   <ol>
-  <li>Base64 encode the request, for example with openssl base64 -in MY.cvrqst -a -out MY.cvrqst.pem.</li>
+  <li>Base64 encode the request, for example with openssl base64 -in MY.cvreq -a -out MY.cvreq.pem.</li>
   <li>Add -----BEGIN CERTIFICATE REQUEST----- in the beginning of the file. </li>
   <li>Add -----END CERTIFICATE REQUEST----- in the end of the file. </li>
   </ol>

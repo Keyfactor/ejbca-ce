@@ -162,18 +162,18 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					}
 					cvcreq = new String(Base64.encode(der));
 					// Print the generated request to file
-					FileOutputStream fos = new FileOutputStream(basefilename+".cvrqst");
+					FileOutputStream fos = new FileOutputStream(basefilename+".cvreq");
 					fos.write(der);
 					fos.close();					
-					getPrintStream().println("Wrote binary request to: "+basefilename+".cvrqst");
+					getPrintStream().println("Wrote binary request to: "+basefilename+".cvreq");
 					fos = new FileOutputStream(basefilename+".pkcs8");
 					fos.write(keyPair.getPrivate().getEncoded());
 					fos.close();					
 					getPrintStream().println("Wrote private key in "+keyPair.getPrivate().getFormat()+" format to to: "+basefilename+".pkcs8");
 				} else {
 					// Read request from file
-					getPrintStream().println("Reading request from filename: "+basefilename+".cvrqst");
-					byte[] der = FileTools.readFiletoBuffer(basefilename+".cvrqst");
+					getPrintStream().println("Reading request from filename: "+basefilename+".cvreq");
+					byte[] der = FileTools.readFiletoBuffer(basefilename+".cvreq");
 					cvcreq = new String(Base64.encode(der));
 				}
 				
@@ -219,8 +219,8 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println("Keyspec is used when generating a request and is 1024, 2048 etc for RSA keys and the name of a named curve for ECDSA, see User Guide for supported curves.");
 		getPrintStream().println("DN is used when generating a request and is of form \"C=SE, CN=ISTEST2\", where SE is the country and ISTEST2 the mnemonic.");
 		getPrintStream().println("Sequence is used when generating a request and is a sequence number for the public key, recomended form 00001 etc. If 'null' a random 5 number sequence will be generated.");
-		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <basefilename>.cvrqst, and the private key to <basefilename>.pkcs8.");
-		getPrintStream().println("If genreq is false a request is read from <reqfilename>.cvrqst and sent to the CA, the sequence from the command line is ignored.");
+		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <basefilename>.cvreq, and the private key to <basefilename>.pkcs8.");
+		getPrintStream().println("If genreq is false a request is read from <reqfilename>.cvreq and sent to the CA, the sequence from the command line is ignored.");
 		getPrintStream().println("The issued certificate is written to <basefilename>.cvcert\n");
 		getPrintStream().println("auth-sign-key is optional and if given the CVC request is signed by this key to create an authenticated CVC request.");
 		getPrintStream().println("auth-sign-cert is optional and if given the caRef of the authenticated CVC request is taken from this CVC certificate.");
