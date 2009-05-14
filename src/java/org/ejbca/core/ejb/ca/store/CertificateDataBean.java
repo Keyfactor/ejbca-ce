@@ -114,8 +114,14 @@ import org.ejbca.util.CertTools;
  * signature="Collection findByUsernameAndStatus(java.lang.String username, int status)"
  * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.username=?1 AND a.status=?2 ORDER BY a.expireDate DESC, a.serialNumber DESC"
  * 
- * @jonas.jdbc-mapping
- *   jndi-name="${datasource.jndi-name}"
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
+ * @jboss.method-attributes
+ *   pattern = "find*"
+ *   read-only = "true"
+ *
  */
 public abstract class CertificateDataBean extends BaseEntityBean {
 
