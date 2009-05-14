@@ -30,9 +30,6 @@ $Id$
       <!--example of how to specify class that determines if exception means connection should be destroyed-->
       <!--exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.DummyExceptionSorter</exception-sorter-class-name-->
 
-      <!-- this will be run before a managed connection is removed from the pool for use by a client-->
-      <!--<check-valid-connection-sql>select * from something</check-valid-connection-sql> -->
-
       <!-- The minimum connections in a pool/sub-pool. Pools are lazily constructed on first use -->
       <min-pool-size>5</min-pool-size>
 
