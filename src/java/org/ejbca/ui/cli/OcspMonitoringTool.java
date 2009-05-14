@@ -178,7 +178,6 @@ public class OcspMonitoringTool extends ClientToolBox {
 							for (;caRowIndex<certificateDataList.size();caRowIndex++) {
 				    			recheckList.add(new RecheckEntry(certificateDataList.get(caRowIndex).getFingerprint(), certificateDataList.get(caRowIndex).getUpdateTime(), i));
 							}
-							currentFingerprint = certificateDataList.get(certificateDataList.size()-1).getFingerprint();
 							continue;
 						}
 						// Compare one row from CA database with one row from the current OCSP responder
