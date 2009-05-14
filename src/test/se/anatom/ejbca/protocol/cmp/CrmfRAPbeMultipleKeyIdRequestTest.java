@@ -263,7 +263,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		checkCmpPKIConfirmMessage(userDN1, cacert1, resp);
 		
 		// Now revoke the bastard!
-		PKIMessage rev = genRevReq(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, nonce, transid);
+		PKIMessage rev = genRevReq(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, nonce, transid, true);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
@@ -277,10 +277,10 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, true);
 		checkCmpRevokeConfirmMessage(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, resp, true);
 		int reason = checkRevokeStatus(issuerDN1, cert.getSerialNumber());
-		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);
 		
 		// Create a revocation request for a non existing cert, chould fail!
-		rev = genRevReq(issuerDN1, userDN1, new BigInteger("1"), cacert1, nonce, transid);
+		rev = genRevReq(issuerDN1, userDN1, new BigInteger("1"), cacert1, nonce, transid, true);
         revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
@@ -462,7 +462,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
 		
 		// Now revoke the bastard!
-		PKIMessage rev = genRevReq(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, nonce, transid);
+		PKIMessage rev = genRevReq(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, nonce, transid, true);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
@@ -476,7 +476,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
 		checkCmpRevokeConfirmMessage(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, resp, true);
 		int reason = checkRevokeStatus(issuerDN2, cert.getSerialNumber());
-		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);		
+		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);		
 	}
 
 	public void test06CrmfTcpOkUserKeyId3() throws Exception {

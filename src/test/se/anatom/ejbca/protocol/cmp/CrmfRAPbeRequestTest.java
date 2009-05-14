@@ -177,8 +177,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
 		checkCmpPKIConfirmMessage(userDN, cacert, resp);
 		
-		// Now revoke the bastard!
-		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid);
+		// Now revoke the bastard using the CMPv1 reason code!
+		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, false);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
@@ -194,8 +194,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
 		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 		
-		// Create a revocation request for a non existing cert, chould fail!
-		rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid);
+		// Create a revocation request for a non existing cert, should fail!
+		rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid, true);
         revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
@@ -231,7 +231,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
-		checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+		X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+		assertNotNull(cert);
 		
 		// Send a confirm message to the CA
 		String hash = "foo123";
@@ -248,6 +249,24 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
 		checkCmpPKIConfirmMessage(userDN, cacert, resp);
+		
+		// Now revoke the bastard using the CMPv2 CRL entry extension!
+		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true);
+        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+		assertNotNull(revReq);
+		bao = new ByteArrayOutputStream();
+		out = new DEROutputStream(bao);
+		out.writeObject(revReq);
+		ba = bao.toByteArray();
+		// Send request and receive response
+		resp = sendCmpTcp(ba, 5);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
+		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
+		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
+		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);
+
 	}
 
 	public void test03CrmfHttpTooManyIterations() throws Exception {
@@ -302,7 +321,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			byte[] transid = CmpMessageHelper.createSenderNonce();
 			ByteArrayOutputStream bao = new ByteArrayOutputStream();
 			DEROutputStream out = new DEROutputStream(bao);
-			PKIMessage rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid);
+			PKIMessage rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true);
 	        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 			assertNotNull(revReq);
 			bao = new ByteArrayOutputStream();
@@ -321,7 +340,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			transid = CmpMessageHelper.createSenderNonce();
 			bao = new ByteArrayOutputStream();
 			out = new DEROutputStream(bao);
-			rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid);
+			rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true);
 	        revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 			assertNotNull(revReq);
 			bao = new ByteArrayOutputStream();
@@ -339,14 +358,14 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			// Approve revocation and verify success
 			Admin approvingAdmin = new Admin((X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(
 					admin, APPROVINGADMINNAME).iterator().next());
-			TestRevocationApproval.approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE,
+			TestRevocationApproval.approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION,
 					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession());
 			// try to revoke the now revoked cert via CMP and verify error
 			nonce = CmpMessageHelper.createSenderNonce();
 			transid = CmpMessageHelper.createSenderNonce();
 			bao = new ByteArrayOutputStream();
 			out = new DEROutputStream(bao);
-			rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid);
+			rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true);
 	        revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
 			assertNotNull(revReq);
 			bao = new ByteArrayOutputStream();

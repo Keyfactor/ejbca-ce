@@ -179,7 +179,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		checkCmpPKIConfirmMessage(userDN, cacert, resp);
 		
 		// Now revoke the bastard!
-		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid);
+		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true);
 		assertNotNull(rev);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);

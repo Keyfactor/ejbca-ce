@@ -36,6 +36,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.crypto.Mac;
@@ -57,6 +58,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.ReasonFlags;
@@ -244,7 +246,7 @@ public class CmpTestCase extends TestCase {
 		return myPKIMessage;
 	}
 
-	protected PKIMessage genRevReq(String issuerDN, String userDN, BigInteger serNo, X509Certificate cacert, byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+	protected PKIMessage genRevReq(String issuerDN, String userDN, BigInteger serNo, X509Certificate cacert, byte[] nonce, byte[] transid, boolean crlEntryExtension) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
 		CertTemplate myCertTemplate = new CertTemplate();
 		myCertTemplate.setIssuer(new X509Name(issuerDN));
 		myCertTemplate.setSubject(new X509Name(userDN));
@@ -253,6 +255,13 @@ public class CmpTestCase extends TestCase {
 		RevDetails myRevDetails = new RevDetails(myCertTemplate);
 		ReasonFlags reasonbits = new ReasonFlags(ReasonFlags.keyCompromise);
 		myRevDetails.setRevocationReason(reasonbits);
+		if (crlEntryExtension) {
+			CRLReason crlReason = new CRLReason(CRLReason.cessationOfOperation);
+			X509Extension ext = new X509Extension(false, new DEROctetString(crlReason.getEncoded()));
+			Hashtable ht = new Hashtable();
+			ht.put(X509Extensions.ReasonCode, ext);
+			myRevDetails.setCrlEntryDetails(new X509Extensions(ht));
+		}
 		
 		RevReqContent myRevReqContent = new RevReqContent(myRevDetails);
 				

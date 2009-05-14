@@ -24,9 +24,14 @@ import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -39,6 +44,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -130,8 +136,38 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 					CertTemplate ct = rd.getCertDetails();
 					DERInteger serno = ct.getSerialNumber();
 					X509Name issuer = ct.getIssuer();
+					// Get the revocation reason. 
+					// For CMPv1 this can be a simple DERBitString or it can be a requested CRL Entry Extension
+					// If there exists CRL Entry Extensions we will use that, because it's the only thing allowed in CMPv2
+					int reason = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
 					DERBitString reasonbits = rd.getRevocationReason();
-					int reason = CertTools.bitStringToRevokedCertInfo(reasonbits);
+					if (reasonbits != null) {
+						reason = CertTools.bitStringToRevokedCertInfo(reasonbits);						
+						log.debug("CMPv1 revocation reason: "+reason);
+					} else {
+						log.debug("CMPv1 revocation reason is null");
+					}
+					X509Extensions crlExt = rd.getCrlEntryDetails();
+					if (crlExt != null) {
+						X509Extension ext = crlExt.getExtension(X509Extensions.ReasonCode);
+						if (ext != null) {
+							try {
+								ASN1InputStream ai = new ASN1InputStream(ext.getValue().getOctets());
+								DERObject obj = ai.readObject();
+								DEREnumerated crlreason = DEREnumerated.getInstance(obj);
+								// RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE are the same integer values as the CRL reason extension code
+								reason = crlreason.getValue().intValue();
+								log.debug("CRLReason extension: "+reason);
+							} catch (IOException e) {
+								log.info("Exception parsin CRL reason extension: ", e);
+							}
+						} else {
+							log.debug("No CRL reason code extension present.");
+						}
+					} else {
+						log.debug("No CRL entry extensions present");
+					}
+					
 					if ( (serno != null) && (issuer != null) ) {
 						String iMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 						log.info(iMsg);
