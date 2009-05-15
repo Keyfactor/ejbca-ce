@@ -410,6 +410,11 @@ truststore is in use</li>
 </section>
 
 <section name="Admin GUI overview page">
+<p>
+The first page of the admin GUI can display status information for the publish 
+queue and the CA. Which of those that should be displayed can be configured in 
+My Preferences.
+</p>
 <subsection name="Publish queue status">
 <p>
 The publish queue status shows the current number of publish events that is stored in the publisher queue.
