@@ -116,7 +116,8 @@ public class OcspMonitoringTool extends ClientToolBox {
 		currentArg++;
     	log.info("Looking for certificates with certificateProifileIds " + certificateProfileIds + "");
     	EntityManager caEntityManager = Persistence.createEntityManagerFactory(args[currentArg]).createEntityManager();
-    	log.info("Using " + args[currentArg] + " as reference to the CA database.");
+    	final String caEntityManagerName = args[currentArg];
+    	log.info("Using " + caEntityManagerName + " as reference to the CA database.");
     	currentArg++;
     	List<EntityManager> ocspEntityManagers = new ArrayList<EntityManager>();
     	List<String> ocspEntityManagerNames = new ArrayList<String>();
@@ -145,6 +146,12 @@ public class OcspMonitoringTool extends ClientToolBox {
 	    		log.debug("Started working on next certificateProlfileId " + certificateProfileId + ".");
 	    	}
 			final long initialEntries = CertificateData.getCount(caEntityManager, certificateProfileId);
+			// Display some nice info about the approximate number of certificates in the different databases
+			log.info("CA " + caEntityManagerName + " currently has " + initialEntries + " rows for id " + certificateProfileId);
+			for (int i=0; i<ocspEntityManagers.size(); i++) {
+				final long initialOcspEntries = CertificateData.getCount(ocspEntityManagers.get(i), certificateProfileId);
+				log.info("OCSP " + ocspEntityManagerNames.get(i) + " currently has " + initialOcspEntries + " rows for id " + certificateProfileId);
+			}
 			long count = 0;
 	    	String currentFingerprint = "0";	// '0' < '0000000000000000000000000000000000000000' so start with this
 	    	List<CertificateData> certificateDataList;
@@ -186,7 +193,7 @@ public class OcspMonitoringTool extends ClientToolBox {
 						if (!certificateData.equals(ocspCertificateData, inclusionMode)) {
 							int test = certificateData.getFingerprint().compareTo(ocspCertificateData.getFingerprint());
 					    	if (log.isDebugEnabled()) {
-								log.debug("Comparing certificateData.fingerprint=" + certificateData.getFingerprint() +" with ocspCertificateData.fingerprint=" + ocspCertificateData.getFingerprint() + "  test:" + test);
+								log.debug("cd.fp=" + certificateData.getFingerprint() +" ocd.fp=" + ocspCertificateData.getFingerprint());
 					    	}
 							if (test > 0) {
 								// Extra row in OCSP database
