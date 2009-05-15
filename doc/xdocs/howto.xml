@@ -617,6 +617,15 @@ SSLCertificateFile /etc/apache2/ssl/apache.pem
 SSLOptions +StdEnvVars +ExportCertData
 -----
 </source>
+
+<source>
+# vim /etc/apache2/mods-available/jk.load
+-----
+LoadModule jk_module /usr/lib/apache2/modules/mod_jk.so
+JkWorkersFile /etc/libapache2-mod-jk/workers.properties
+-----
+</source>
+
   <p>
    Now enable ssl.load and ssl.conf in /etc/apache2/mods-enabled.
   </p>
