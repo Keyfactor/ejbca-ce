@@ -92,7 +92,7 @@
 	<!-- Dont allow deploy of the wrong thing i production                   -->
     <!-- =================================================================== -->
     <target name="failinproduction-ca">
-		<fail message="You cannot deploy EJBCA as a OCSP reponder in a CA production environment.">
+		<fail message="You cannot deploy EJBCA as a CA reponder in a OCSP production environment.">
 			<condition>
 				<equals arg1="${ejbca.productionmode}" arg2="ocsp" casesensitive="false"/>
 			</condition>
@@ -100,7 +100,7 @@
     </target>
 
     <target name="failinproduction-ocsp">
-		<fail message="You cannot deploy EJBCA as a CA in a OCSP reponder production environment.">
+		<fail message="You cannot deploy EJBCA as a OCSP Responder in a CA production environment.">
 			<condition>
 				<equals arg1="${ejbca.productionmode}" arg2="ca" casesensitive="false"/>
 			</condition>
