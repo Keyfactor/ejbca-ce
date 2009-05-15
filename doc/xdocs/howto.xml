@@ -91,13 +91,27 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   
   </section>
   
-  <section name="Migrating an OpenSSL based CA">
+  <section name="Migrating from other CAs to EJBCA">
+  
+  <subsection name="Migrating an OpenSSL based CA">
   <p>This article is written for an older version of EJBCA. Now there is a command to import a PKCS#12 file, also in the Admin-GUI under "Edit Certificate Authorities->Import CA keystore".
   <br/><br/>The cli command to import a PKCS#12 file is now called <i>bin/ejbca.sh ca importca ...</i>.
   <br/>The cli command to import user certificates is now called <i>bin/ejbca.sh ca importcert ...</i>. 
   </p><p>
   Read the <a href="http://www.csita.unige.it/software/free/ejbca/">howto</a> at Csita.
   </p>
+  </subsection>
+  
+  <subsection name="Migrating RSA Keon CA with nCipher">
+  <p>This document describes how to migrate an RSA Keon CA using nCipher HSM to EJBCA. 
+  The migration guide goes through migrating the CA signing keys, importing the CAs to EJBCA and importing 
+  issued certificates to EJBCA. The result is a setup in EJBCA that can continue operation transparently.
+  <br/>
+  Download <a href="http://download.primekey.se/documents/KCA-EJBCA-nCipher-migration-eng.pdf">KCA EJBCA migration guide</a> (pdf).
+  </p>
+  
+  </subsection>
+  
   </section>
   
   <section name="EJBCA and Cisco IOS">
@@ -419,6 +433,7 @@ Router#debug crypto pki validation
   #apt-get install apache2
   #cd /etc/apache2/mods-enabled/
   #ln -s ../mods-available/proxy.load proxy.load
+  #ln -s ../mods-available/proxy_http.load proxy_http.load
   #ln -s ../mods-available/proxy_ajp.load proxy_ajp.load
   #ln -s ../mods-available/proxy_balancer.load proxy_balancer.load
   #ln -s ../mods-available/rewrite.load rewrite.load
