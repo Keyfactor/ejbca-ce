@@ -12,10 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
-import java.io.Console;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import org.ejbca.ui.cli.util.ConsolePasswordReader;
 
 /**
  * Used to activate the external OCSP responder.
@@ -29,24 +30,28 @@ public class OCSPActivate extends ClientToolBox {
      */
     @Override
     void execute(String[] args) {
-        final Console console = System.console();
-        if ( console==null ) {
-            System.out.println("Java console not available.");
-            return;
-        }
-        final char[] passwd = console.readPassword("[%s]", "Password:");
-        try {
-            final URL url = new URL("http://localhost:8080/ejbca/publicweb/status/ocsp?activate="+new String(passwd));
-            final HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            final int responseCode = con.getResponseCode();
-            final String responseMessage = con.getResponseMessage();
-            if (responseCode != 200) {
-                System.out.println("Unexpected result code " +responseCode+" for URL: '" + url.toString() + "'. Message was: '" + responseMessage+'\'');
-                return;
-            }
-            System.out.println("Password for keys sent to the OCSP responder. If the password was right the respnder will be activated. Check this.");
-        } catch (IOException e){
-            System.out.println("Network problems: '"+e.getMessage()+'\'');
+    	char[] passwd = null;;
+    	try {
+    		ConsolePasswordReader console = new ConsolePasswordReader();
+    		System.out.print("Password: ");
+    		passwd = console.readPassword();
+    	} catch (IOException e){
+    		System.out.println("Problems reading password: '"+e.getMessage()+'\'');
+    	}
+        if (passwd != null) {
+            try {
+                final URL url = new URL("http://localhost:8080/ejbca/publicweb/status/ocsp?activate="+new String(passwd));
+                final HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                final int responseCode = con.getResponseCode();
+                final String responseMessage = con.getResponseMessage();
+                if (responseCode != 200) {
+                    System.out.println("Unexpected result code " +responseCode+" for URL: '" + url.toString() + "'. Message was: '" + responseMessage+'\'');
+                    return;
+                }
+                System.out.println("Password for keys sent to the OCSP responder. If the password was right the respnder will be activated. Check this.");
+            } catch (IOException e){
+                System.out.println("Network problems: '"+e.getMessage()+'\'');
+            }        	
         }
     }
     /* (non-Javadoc)
