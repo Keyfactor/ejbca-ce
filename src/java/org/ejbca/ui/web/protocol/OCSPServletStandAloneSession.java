@@ -1019,7 +1019,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     if ( p11name!=null ) {
                         sError += " P11 provider "+p11name+".";
                     } else {
-                        sError += " No P11 defied.";
+                        sError += " No P11 defined.";
                     }
                 }
                 m_log.error(sError);
