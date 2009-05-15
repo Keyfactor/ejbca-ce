@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
 
 /**
@@ -25,11 +26,25 @@ import org.ejbca.ui.cli.util.ConsolePasswordReader;
  * 
  */
 public class OCSPActivate extends ClientToolBox {
-    /* (non-Javadoc)
+
+	private static final Logger log = Logger.getLogger(OCSPActivate.class);
+	
+	final String usage = "\n"
+		+ getName() + " <hostname:port>\n"
+		+ " Useed for HSM activation on an OCSP server install.\n"
+		+ " hostname:port        the address of where the OCSP serrver is running. Only use 127.0.0.1 in a production environment.\n"
+	    + "\nCheck ctb.log for messages.";
+
+	/* (non-Javadoc)
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
     void execute(String[] args) {
+    	if (args.length<2) {
+    		log.info(usage);
+    		return;
+    	}
+    	String bindInfo = args[1];
     	char[] passwd = null;;
     	try {
     		ConsolePasswordReader console = new ConsolePasswordReader();
@@ -40,7 +55,7 @@ public class OCSPActivate extends ClientToolBox {
     	}
         if (passwd != null) {
             try {
-                final URL url = new URL("http://localhost:8080/ejbca/publicweb/status/ocsp?activate="+new String(passwd));
+                final URL url = new URL("http://"+bindInfo+"/ejbca/publicweb/status/ocsp?activate="+new String(passwd));
                 final HttpURLConnection con = (HttpURLConnection)url.openConnection();
                 final int responseCode = con.getResponseCode();
                 final String responseMessage = con.getResponseMessage();
