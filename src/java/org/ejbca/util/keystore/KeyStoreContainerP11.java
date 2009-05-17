@@ -31,9 +31,6 @@ import org.apache.log4j.Logger;
 public class KeyStoreContainerP11 extends KeyStoreContainerBase {
     private static final Logger log = Logger.getLogger(KeyStoreContainerP11.class);
 
-    /** The name of Suns textcallbackhandler (for pkcs11) implementation */
-    private static final String SUNTEXTCBHANDLERCLASS = "com.sun.security.auth.callback.TextCallbackHandler";
-
     private KeyStoreContainerP11( KeyStore _keyStore,
                                   String _providerName ) throws Exception, IOException{
         super( _keyStore, _providerName, _providerName );
@@ -71,15 +68,16 @@ public class KeyStoreContainerP11 extends KeyStoreContainerBase {
                 // We will construct the PKCS11 text callback handler (sun.security...) using reflection, because 
                 // the sun class does not exist on other JDKs than sun, and we want to be able to compile everything on i.e. IBM JDK.
                 //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
-                final Class<?> implClass = Class.forName(SUNTEXTCBHANDLERCLASS);
-                cbh = (CallbackHandler)implClass.newInstance();
+                //final Class<?> implClass = Class.forName(SUNTEXTCBHANDLERCLASS);
+                //cbh = (CallbackHandler)implClass.newInstance();
+            	
+            	// Nope: we have a better approach from EJBCA 3.9, we made our own callback handler
+            	cbh = new PasswordCallBackHandler();
             } catch (Exception e) {
-                IOException ioe = new IOException("Error constructing pkcs11 text callback handler: "+e.getMessage());
+                IOException ioe = new IOException("Error constructing pkcs11 password callback handler: "+e.getMessage());
                 ioe.initCause(e);
                 throw ioe;
             } 
-            // The above code replaces the single line:
-            //final CallbackHandler cbh = new TextCallbackHandler();        	
             pp = new CallbackHandlerProtection(cbh);        	
         }
         Provider provider = Security.getProvider(providerName);
