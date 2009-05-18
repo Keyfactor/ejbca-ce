@@ -721,6 +721,10 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                   useextensions.add(new Integer(values[i]));	
                 }                     
                 certificateprofiledata.setUsedCertificateExtensions(useextensions);
+             } else {
+            	 // Make sure we remove everything if there is something there
+                 ArrayList useextensions = new ArrayList();
+                 certificateprofiledata.setUsedCertificateExtensions(useextensions);
              }
              
              certificateprofiledata.setUseQCStatement(false);
