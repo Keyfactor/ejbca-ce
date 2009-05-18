@@ -472,10 +472,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     	userdata.setEmail(email);
         int type = userdata.getType();
         String newpassword = userdata.getPassword();
-        if (log.isTraceEnabled()) {
-            log.trace(">addUser(" + userdata.getUsername() + ", password, " + dn + ", "+ userdata.getDN() + ", " + userdata.getSubjectAltName()+", "+userdata.getEmail() + ")");
-        }
         int profileId = userdata.getEndEntityProfileId();
+        if (log.isTraceEnabled()) {
+            log.trace(">addUser(" + userdata.getUsername() + ", password, " + dn + ", "+ userdata.getDN() + ", " + userdata.getSubjectAltName()+", "+userdata.getEmail() + ", profileId: "+profileId+")");
+        }
         String profileName = raadminsession.getEndEntityProfileName(admin, profileId);
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
 
