@@ -164,8 +164,8 @@ public class ProtectedLogToken {
 		        	log.error("CA not found.");
 		        } else {
 			        CATokenContainer caToken = ca.getCAToken(); 
+			        String signatureAlgorithm = ca.getCAInfo().getCATokenInfo().getSignatureAlgorithm();
 			        PrivateKey privateKey = caToken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-			        String signatureAlgorithm = caToken.getCATokenInfo().getSignatureAlgorithm();
 			        signature = KeyTools.signData(privateKey, signatureAlgorithm, data);
 				}
 			} else if (protectionPrivateKey != null) {
@@ -199,8 +199,8 @@ public class ProtectedLogToken {
 		        	log.error("CA not found.");
 		        }
 		        CATokenContainer caToken = ca.getCAToken(); 
+		        String signatureAlgorithm = ca.getCAInfo().getCATokenInfo().getSignatureAlgorithm();
 		        PublicKey publicKey = caToken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-		        String signatureAlgorithm = caToken.getCATokenInfo().getSignatureAlgorithm();
 		        verified = KeyTools.verifyData(publicKey, signatureAlgorithm, data, signature);
 			} else if (protectionPublicKey != null) {
 				Signature signer = Signature.getInstance(protectionAlgorithm, "BC");

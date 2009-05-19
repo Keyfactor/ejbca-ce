@@ -202,7 +202,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	private ISignSessionLocal signSession = null;
 	private IServiceSessionLocal serviceSession = null;
 
-	private ProtectedLogToken protectedLogTokenCache = null;
+	/** Cache of log tokens, so we don't have to load a CA token or keystore every time.
+	 * We can have this as static, because the protected log configuration is global for every CA node.
+	 */
+	private static ProtectedLogToken protectedLogTokenCache = null;
 	private Certificate certificateCache = null;
 
 	public void ejbCreate() {
@@ -316,8 +319,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogToken getToken(int tokenIdentifier) {
-		log.trace(">getToken");
+		if (log.isTraceEnabled()) {
+			log.trace(">getToken");
+		}
 		if (protectedLogTokenCache != null && protectedLogTokenCache.getIdentifier() == tokenIdentifier) {
+			if (log.isTraceEnabled()) {
+				log.trace("<getToken (from cache)");
+			}
 			return protectedLogTokenCache;
 		}
 		ProtectedLogToken protectedLogToken = null;
@@ -988,7 +996,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean verifyCertificate(Certificate certificate, long timeOfUse) {
-		log.trace("<verifyCertificate");
+		if (log.isTraceEnabled()) {
+			log.trace("<verifyCertificate");
+		}
 		boolean verified = false;
 		try {
 			// Verify that this is a certificate signed by a known CA
@@ -1186,13 +1196,18 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public int verifyProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow, boolean checkVerifiedSteps) {
-		log.trace(">verifyProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace(">verifyProtectedLogEventRow");
+		}
 		int maxVerificationsSteps = ProtectedLogDevice.getMaxVerificationsSteps();
 		ManualUpdateCache cache = ManualUpdateCache.getNewInstance("LogVerification");
 		ProtectedLogEventRow currentProtectedLogEventRow = protectedLogEventRow;
 		int verifiedSteps = -1;
 		while (true) {
 			if (checkVerifiedSteps && verifiedSteps == maxVerificationsSteps) {
+				if (log.isTraceEnabled()) {
+					log.trace("<verifyProtectedLogEventRow: 0");
+				}
 				return 0;
 			}
 			verifiedSteps++;
@@ -1203,6 +1218,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 							currentProtectedLogEventRow.getEventIdentifier().getNodeGUID());
 				}
 				cache.updateCache();
+				if (log.isTraceEnabled()) {
+					log.trace("<verifyProtectedLogEventRow: 1");
+				}
 				return 1;
 			}
 			if (currentProtectedLogEventRow.getProtection() != null) {
@@ -1211,13 +1229,22 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				try {
 					if (protectedLogToken.verify(currentProtectedLogEventRow.getAsByteArray(false), currentProtectedLogEventRow.getProtection())) {
 						cache.updateCache();
+						if (log.isTraceEnabled()) {
+							log.trace("<verifyProtectedLogEventRow: 1");
+						}
 						return 1;
 					} else {
+						if (log.isTraceEnabled()) {
+							log.trace("<verifyProtectedLogEventRow: -1");
+						}
 						return -1;
 					}
 				} catch (Exception e) {
 					if (log.isDebugEnabled()) {
 						log.debug("Could not verify.", e);
+					}
+					if (log.isTraceEnabled()) {
+						log.trace("<verifyProtectedLogEventRow: -1");
 					}
 					return -1;
 				}
@@ -1227,6 +1254,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						currentProtectedLogEventRow.getEventIdentifier().getNodeGUID(), currentProtectedLogEventRow.getEventIdentifier().getCounter()+1);
 				ProtectedLogEventRow nextProtectedLogEventRow = getProtectedLogEventRow(nextProtectedLogEventIdentifier);
 				if (nextProtectedLogEventRow == null) {
+					if (log.isTraceEnabled()) {
+						log.trace("<verifyProtectedLogEventRow: -1");
+					}
 					return -1;
 				}
 				// Make sure that one links in all hashes properly
@@ -1253,10 +1283,15 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					// Recuse through the chain until a protected row is found.
 					currentProtectedLogEventRow = nextProtectedLogEventRow;
 				} else {
+					if (log.isTraceEnabled()) {
+						log.trace("<verifyProtectedLogEventRow: -1");
+					}
 					return -1;
 				}
 			}
-			log.trace("<verifyProtectedLogEventRow");
+			if (log.isTraceEnabled()) {
+				log.trace("<verifyProtectedLogEventRow");
+			}
 		}
 	}
 
