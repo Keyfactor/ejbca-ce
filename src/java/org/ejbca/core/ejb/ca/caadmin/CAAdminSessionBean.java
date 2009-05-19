@@ -802,6 +802,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             int status = cainfo.getStatus();
             Date expireTime = cainfo.getExpireTime();
             if(status == SecConst.CA_ACTIVE && expireTime.before(new Date())){
+                cainfo.setStatus(SecConst.CA_EXPIRED); // update the value object
                 cadata.setStatus(SecConst.CA_EXPIRED);
                 cadata.setUpdateTime(new Date().getTime());
             }
