@@ -98,6 +98,14 @@ import org.ejbca.core.model.authorization.AdminGroup;
  *   business="org.ejbca.core.ejb.authorization.AccessRulesDataLocal"
  *   link="AccessRulesData"
  *
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
+ * @jboss.method-attributes
+ *   pattern = "find*"
+ *   read-only = "true"
+ *
  */
 public abstract class AdminGroupDataBean extends BaseEntityBean {
 

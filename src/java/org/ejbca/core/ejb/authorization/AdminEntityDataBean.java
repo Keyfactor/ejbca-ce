@@ -61,6 +61,14 @@ import org.ejbca.core.model.authorization.AdminEntity;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.authorization.AdminEntityDataLocal"
  *
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
+ * @jboss.method-attributes
+ *   pattern = "find*"
+ *   read-only = "true"
+ *
  */
 public abstract class AdminEntityDataBean extends BaseEntityBean {
 
@@ -80,19 +88,19 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
 	 * @ejb.persistence column-name="matchWith"
      * @ejb.interface-method view-type="local"
      */
-    public abstract int          getMatchWith();
+    public abstract int getMatchWith();
 
     /**
 	 * @ejb.persistence column-name="matchType"
      * @ejb.interface-method view-type="local"
      */
-    public abstract int          getMatchType();
+    public abstract int getMatchType();
 
     /**
 	 * @ejb.persistence column-name="matchValue"
      * @ejb.interface-method view-type="local"
      */
-    public abstract String       getMatchValue();
+    public abstract String getMatchValue();
 
     /**
      * @ejb.persistence column-name="cAId"
