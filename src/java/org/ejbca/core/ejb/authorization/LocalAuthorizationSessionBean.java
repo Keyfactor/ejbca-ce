@@ -1104,22 +1104,25 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         }
     } // existsCAInAccessRules
 
+    /** Cache this local bean, because it will cause many many database lookups otherwise */
+    private AuthorizationTreeUpdateDataLocal atu = null;
     /**
      * Returns a reference to the AuthorizationTreeUpdateDataBean
      */
     private AuthorizationTreeUpdateDataLocal getAuthorizationTreeUpdateData() {
-        AuthorizationTreeUpdateDataLocal atu = null;
-        try {
-            atu = authorizationtreeupdatehome.findByPrimaryKey(AuthorizationTreeUpdateDataBean.AUTHORIZATIONTREEUPDATEDATA);
-        } catch (FinderException e) {
+    	if (atu == null) {
             try {
-                atu = authorizationtreeupdatehome.create();
-            } catch (CreateException ce) {
-        		String msg = intres.getLocalizedMessage("authorization.errorcreateauthtree");            	
-                error(msg, ce);
-                throw new EJBException(ce);
+                atu = authorizationtreeupdatehome.findByPrimaryKey(AuthorizationTreeUpdateDataBean.AUTHORIZATIONTREEUPDATEDATA);
+            } catch (FinderException e) {
+                try {
+                    atu = authorizationtreeupdatehome.create();
+                } catch (CreateException ce) {
+            		String msg = intres.getLocalizedMessage("authorization.errorcreateauthtree");            	
+                    error(msg, ce);
+                    throw new EJBException(ce);
+                }
             }
-        }
+    	}
         return atu;
     }
 
