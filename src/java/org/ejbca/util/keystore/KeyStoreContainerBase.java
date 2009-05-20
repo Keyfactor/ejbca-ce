@@ -371,24 +371,23 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
         final Enumeration<String> eAlias = this.keyStore.aliases();
         boolean notFound = true;
-        while ( eAlias.hasMoreElements() ) {
-            String alias = eAlias.nextElement();
-            PublicKey hsmPublicKey = this.keyStore.getCertificate(alias).getPublicKey();
-            PublicKey importPublicKey = chain[0].getPublicKey();
+        while ( eAlias.hasMoreElements() && notFound ) {
+            final String alias = eAlias.nextElement();
+            final PublicKey hsmPublicKey = this.keyStore.getCertificate(alias).getPublicKey();
+            final PublicKey importPublicKey = chain[0].getPublicKey();
             if (log.isDebugEnabled()) {
                 log.debug("alias: " + alias + " SHA1 of public hsm key: " + CertTools.getFingerprintAsString(hsmPublicKey.getEncoded())
-                		+ " SHA1 of first public key in chain: " + CertTools.getFingerprintAsString(importPublicKey.getEncoded())
-                		+  (chain.length==1?"":("SHA1 of last public key in chain: " + CertTools.getFingerprintAsString(chain[chain.length-1].getPublicKey().getEncoded()))));
+                          + " SHA1 of first public key in chain: " + CertTools.getFingerprintAsString(importPublicKey.getEncoded())
+                          +  (chain.length==1?"":("SHA1 of last public key in chain: " + CertTools.getFingerprintAsString(chain[chain.length-1].getPublicKey().getEncoded()))));
             }
             if ( hsmPublicKey.equals(importPublicKey) ) {
-            	log.info("Found a matching public key for alias \"" + alias + "\".");
+                log.info("Found a matching public key for alias \"" + alias + "\".");
                 this.keyStore.setKeyEntry(alias, this.keyStore.getKey(alias, null), null, chain);
                 notFound = false;
-                break;
             }
         }
         if ( notFound ) {
-            String msg = intres.getLocalizedMessage("catoken.errorkeynottoken");
+            final String msg = intres.getLocalizedMessage("catoken.errorkeynottoken");
             throw new Exception(msg);
         }
     }
