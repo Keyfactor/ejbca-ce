@@ -50,6 +50,7 @@ create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
 -- create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection);
 create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(1));
 create index protectedlogdata_idx3 on ProtectedLogData (username, caId, module);
+create index protectedlogdata_idx4 on ProtectedLogData (eventTime, caId, module);
 create index protectedlogexportdata_idx1 on ProtectedLogExportData (exportStartTime);
 
 -- Indexes on CAData
