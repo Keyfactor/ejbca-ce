@@ -537,6 +537,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 if ( !this.doUpdateKey ) {
                     return;
                 }
+                setNextKeyUpdate(new Date().getTime());
                 m_log.debug("rekeying started for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\'");
                 final EjbcaWS ejbcaWS = getEjbcaWS();
                 if ( ejbcaWS==null ) {
@@ -936,10 +937,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 ) ) {
                     return;
                 }
-                // Update cache time
-                // If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
-                OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ? currentTime+OCSPServletStandAloneSession.this.servlet.m_valid_time : Long.MAX_VALUE;
-                m_log.debug("time: "+currentTime+" next update: "+OCSPServletStandAloneSession.this.servlet.mKeysValidTo);
+                setNextKeyUpdate(currentTime);
             } finally {
                 this.mutex.releaseMutex();
             }
@@ -1377,6 +1375,16 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             this.cardPassword = password;
         }
         this.signEntitycontainer.loadPrivateKeys(adm, null);
+    }
+    /**
+     * Set time for next key update.
+     * @param currentTime the time from which the to measure next update.
+     */
+    private void setNextKeyUpdate(final long currentTime) {
+        // Update cache time
+        // If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
+        OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ? currentTime+OCSPServletStandAloneSession.this.servlet.m_valid_time : Long.MAX_VALUE;
+        m_log.debug("time: "+currentTime+" next update: "+OCSPServletStandAloneSession.this.servlet.mKeysValidTo);
     }
     /**
      * Holds information about a provider.
