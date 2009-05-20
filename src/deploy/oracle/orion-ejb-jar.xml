@@ -142,6 +142,7 @@
 		<session-deployment name="ServiceTimerSession" location="ServiceTimerSession" local-location="ejbca-ejb_ServiceTimerSessionLocal" persistence-filename="ServiceTimerSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/ServiceSessionLocal" />
 			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
+			<ejb-ref-mapping name="ejb/CRLDataLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
