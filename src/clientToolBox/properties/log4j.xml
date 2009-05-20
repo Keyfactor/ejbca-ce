@@ -31,7 +31,7 @@
 	</category>
 
 	<!-- Use DEBUG for all EJBCA classes -->
-	<category name="org.ejbca" additivity="true">
+	<category name="org.ejbca" additivity="false">
 		<priority value="DEBUG"/>
 		<appender-ref ref="full"/>
 	</category>
@@ -43,6 +43,8 @@
 	</category>
 
 	<root> 
+		<!-- Set basic limit for console -->
+		<priority value="INFO" /> 
 		<appender-ref ref="console"/>
 	</root> 
 
