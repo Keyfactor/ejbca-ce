@@ -347,6 +347,9 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     public void generateCertReq(String alias, String sDN) throws Exception {
         final RSAPublicKey publicKey = (RSAPublicKey)this.keyStore.getCertificate(alias).getPublicKey();
         final PrivateKey privateKey = (PrivateKey)this.keyStore.getKey(alias, null);
+        if (log.isDebugEnabled()) {
+            log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
+        }
         final PKCS10CertificationRequest certReq =
             new PKCS10CertificationRequest( "SHA1withRSA",
                                             sDN!=null ? new X509Name(sDN) : new X509Name("CN="+alias),
@@ -367,17 +370,27 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     public void installCertificate(final String fileName) throws Exception {
         final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
         final Enumeration<String> eAlias = this.keyStore.aliases();
-        String alias = null;
+        boolean notFound = true;
         while ( eAlias.hasMoreElements() ) {
-            alias = eAlias.nextElement();
-            if ( this.keyStore.getCertificate(alias).getPublicKey().equals(chain[0].getPublicKey()) )
+            String alias = eAlias.nextElement();
+            PublicKey hsmPublicKey = this.keyStore.getCertificate(alias).getPublicKey();
+            PublicKey importPublicKey = chain[0].getPublicKey();
+            if (log.isDebugEnabled()) {
+                log.debug("alias: " + alias + " SHA1 of public hsm key: " + CertTools.getFingerprintAsString(hsmPublicKey.getEncoded())
+                		+ " SHA1 of first public key in chain: " + CertTools.getFingerprintAsString(importPublicKey.getEncoded())
+                		+  (chain.length==1?"":("SHA1 of last public key in chain: " + CertTools.getFingerprintAsString(chain[chain.length-1].getPublicKey().getEncoded()))));
+            }
+            if ( hsmPublicKey.equals(importPublicKey) ) {
+            	log.info("Found a matching public key for alias \"" + alias + "\".");
+                this.keyStore.setKeyEntry(alias, this.keyStore.getKey(alias, null), null, chain);
+                notFound = false;
                 break;
+            }
         }
-        if ( alias==null ) {
-            String msg = intres.getLocalizedMessage("catoken.errorkeynottoken", alias);
+        if ( notFound ) {
+            String msg = intres.getLocalizedMessage("catoken.errorkeynottoken");
             throw new Exception(msg);
         }
-        this.keyStore.setKeyEntry(alias, this.keyStore.getKey(alias, null), null, chain);
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#installTrustedRoot(java.lang.String)
