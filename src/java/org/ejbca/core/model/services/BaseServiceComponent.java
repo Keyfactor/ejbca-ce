@@ -19,6 +19,7 @@ import javax.ejb.EJBException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
@@ -36,10 +37,9 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 
 public abstract class BaseServiceComponent {
 	
-
-	
     private ILogSessionLocal logsession = null;
 	private CertificateDataLocalHome certHome = null;
+	private CRLDataLocalHome crlHome = null;
 	private ICAAdminSessionLocal caadminsession = null;
 	private IUserAdminSessionLocal useradminsession = null;
 
@@ -54,7 +54,7 @@ public abstract class BaseServiceComponent {
     /**
      * Gets connection to log session bean
      *
-     * @return Connection
+     * @return ILogSessionLocal
      */
     protected ILogSessionLocal getLogSession() {
         if (logsession  == null) {
@@ -71,7 +71,7 @@ public abstract class BaseServiceComponent {
     /**
      * Gets connection to certificate data home 
      *
-     * @return Connection
+     * @return CertificateDataLocalHome
      */
     protected CertificateDataLocalHome getCertificateDataHome() {
         if (certHome  == null) {
@@ -79,11 +79,23 @@ public abstract class BaseServiceComponent {
         }
         return certHome ;
     } //getCertificateDataHome
-    
+
+    /**
+     * Gets connection to CRL data home 
+     *
+     * @return CRLDataLocalHome
+     */
+    protected CRLDataLocalHome getCRLDataHome() {
+        if (crlHome  == null) {
+            	crlHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
+        }
+        return crlHome ;
+    } //getCRLDataHome
+
     /**
      * Gets connection to CA Admin session
      *
-     * @return Connection
+     * @return ICAAdminSessionLocal
      */
     protected ICAAdminSessionLocal getCAAdminSession() {
         if (caadminsession  == null) {
@@ -100,7 +112,7 @@ public abstract class BaseServiceComponent {
     /**
      * Gets connection to CA Admin session
      *
-     * @return Connection
+     * @return IUserAdminSessionLocal
      */
     protected IUserAdminSessionLocal getUserAdminSession() {
         if (useradminsession  == null) {

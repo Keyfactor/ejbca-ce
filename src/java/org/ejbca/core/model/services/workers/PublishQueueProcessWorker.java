@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -25,6 +24,8 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CRLDataLocal;
+import org.ejbca.core.ejb.ca.store.CRLDataPK;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocal;
 import org.ejbca.core.ejb.ca.store.CertificateDataPK;
 import org.ejbca.core.model.InternalResources;
@@ -164,8 +165,10 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 		Iterator iter = c.iterator();
 		while (iter.hasNext()) {
 			PublisherQueueData pqd = (PublisherQueueData)iter.next();
+			String fingerprint = pqd.getFingerprint();
+			int publishType = pqd.getPublishType();
 			if (log.isDebugEnabled()) {
-				log.debug("Publishing from queue to publisher: "+publisherId+", fingerprint: "+pqd.getFingerprint()+", pk: "+pqd.getPk());
+				log.debug("Publishing from queue to publisher: "+publisherId+", fingerprint: "+fingerprint+", pk: "+pqd.getPk()+", type: "+publishType);
 			}
 			PublisherQueueVolatileData voldata = pqd.getVolatileData();
 			String username = null;
@@ -176,28 +179,42 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 				password = voldata.getPassword();
 				ei = voldata.getExtendedInformation();
 			}
-			CertificateDataLocal certlocal;
 			boolean published = false;
-			Certificate cert = null;
+			
 			try {
-				if (publisher != null) {
-					// Read the actual certificate and try to publish it again
-					certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(pqd.getFingerprint()));
-					cert = certlocal.getCertificate();
-					published = publisher.storeCertificate(getAdmin(), cert, username, password, certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), certlocal.getTag(), certlocal.getCertificateProfileId(), certlocal.getUpdateTime(), ei);
+				if (publishType == PublisherQueueData.PUBLISH_TYPE_CERT) {
+					if (log.isDebugEnabled()) {
+						log.debug("Publishing Certificate");
+					}
+					if (publisher != null) {
+						// Read the actual certificate and try to publish it again
+						CertificateDataLocal certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(fingerprint));
+						published = publisher.storeCertificate(getAdmin(), certlocal.getCertificate(), username, password, certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), certlocal.getTag(), certlocal.getCertificateProfileId(), certlocal.getUpdateTime(), ei);
+					} else {
+						String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
+						log.info(msg);
+					}
+				} else if (publishType == PublisherQueueData.PUBLISH_TYPE_CRL) {
+					if (log.isDebugEnabled()) {
+						log.debug("Publishing CRL");
+					}
+					CRLDataLocal crllocal = getCRLDataHome().findByPrimaryKey(new CRLDataPK(fingerprint));
+					published = publisher.storeCRL(getAdmin(), crllocal.getCRLBytes(), crllocal.getCaFingerprint(), crllocal.getCrlNumber());
 				} else {
-					String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
-					log.info(msg);
+					String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);            	
+					log.error(msg);					
 				}
 			} catch (FinderException e) {
-				String msg = intres.getLocalizedMessage("publisher.errornocert", pqd.getFingerprint());            	
+				String msg = intres.getLocalizedMessage("publisher.errornocert", fingerprint);            	
 				getLogSession().log(getAdmin(), getAdmin().getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), username, null, LogConstants.EVENT_INFO_STORECERTIFICATE, msg, e);
 			} catch (PublisherException e) {
 				// Publisher session have already logged this error nicely to getLogSession().log
 				log.debug(e.getMessage());
 				// We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
 				failcount++;
-			}
+			}				
+
+			
 			if (published) {
 				if (publisher.getKeepPublishedInQueue()) {
 					// Update with information that publishing was successful
