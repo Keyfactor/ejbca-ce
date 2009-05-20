@@ -516,7 +516,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             return;
                         }
                         final long timeToRenew = PrivateKeyContainerKeyStore.this.certificate.getNotAfter().getTime()-new Date().getTime()-1000*(long)OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds;
-                        m_log.debug("time to renew signing key for CA "+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+" : "+timeToRenew );
+                        m_log.debug("time to renew signing key for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\' : "+timeToRenew );
                         try {
                             wait(Math.max(timeToRenew, 15000)); // set to 15 seconds if long time to renew before expire 
                         } catch (InterruptedException e) {
@@ -534,10 +534,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
              * Updating of the key.
              */
             private void updateKey() {
-                m_log.debug("rekeying started");
                 if ( !this.doUpdateKey ) {
                     return;
                 }
+                m_log.debug("rekeying started for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\'");
                 final EjbcaWS ejbcaWS = getEjbcaWS();
                 if ( ejbcaWS==null ) {
                     return;
