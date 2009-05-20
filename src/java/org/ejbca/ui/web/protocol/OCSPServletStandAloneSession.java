@@ -518,7 +518,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         final long timeToRenew = PrivateKeyContainerKeyStore.this.certificate.getNotAfter().getTime()-new Date().getTime()-1000*(long)OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds;
                         m_log.debug("time to renew signing key for CA "+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+" : "+timeToRenew );
                         try {
-                            wait(timeToRenew>0 ? timeToRenew : 15000); // set to 15 seconds if long time to renew before expire 
+                            wait(Math.max(timeToRenew, 15000)); // set to 15 seconds if long time to renew before expire 
                         } catch (InterruptedException e) {
                             throw new Error(e);
                         }
@@ -534,6 +534,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
              * Updating of the key.
              */
             private void updateKey() {
+                m_log.debug("rekeying started");
                 if ( !this.doUpdateKey ) {
                     return;
                 }
@@ -559,11 +560,13 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             return;
                         }
                         m_log.debug("public key: "+keyPair.getPublic() );
-                        if ( !editUser(ejbcaWS, userData) )
+                        if ( !editUser(ejbcaWS, userData) ) {
                             return;
+                        }
                         final X509Certificate certChain[] = storeKey(ejbcaWS, userData, keyPair);
-                        if ( certChain==null )
+                        if ( certChain==null ) {
                             return;
+                        }
                         PrivateKeyContainerKeyStore.this.privateKey = keyPair.getPrivate();
                         PrivateKeyContainerKeyStore.this.certificate = certChain[0];
                     } finally {
