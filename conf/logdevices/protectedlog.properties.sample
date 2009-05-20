@@ -45,9 +45,9 @@
 #protectionIntensity=0
 
 # For how many steps of a chain should the algorithm try to find a sealing
-#  singature before concluding "undetermined" when displaying events.
+#  signature before concluding "undetermined" when displaying events.
 #  -1 disable verification, 0 undetermined if the requested event isn't signed.
-   Default is "0" which makes sence if protectionIntensity is "0"
+#   Default is "0" which makes sense if protectionIntensity is "0"
 #maxverificationssteps=0
 
 # Link-in intensity: how often to search for new log-rows from other nodes in
