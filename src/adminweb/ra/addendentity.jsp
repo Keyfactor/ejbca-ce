@@ -1734,9 +1734,9 @@ function edituser(row){
     <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.OU,0) %></td>
     <td width="20%"><%= addedusers[i].getSubjectDNField(DNFieldExtractor.O,0) %></td>
     <td width="25%">
-        <A style="cursor:hand;" onclick='viewuser(<%= i %>)'>
+        <A style="cursor:pointer;" onclick='viewuser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("VIEWENDENTITY") %></u> </A>
-        <A style="cursor:hand;" onclick='edituser(<%= i %>)'>
+        <A style="cursor:pointer;" onclick='edituser(<%= i %>)'>
         <u><%= ejbcawebbean.getText("EDITENDENTITY") %></u> </A>
     </td>
   </tr>

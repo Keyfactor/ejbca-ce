@@ -873,7 +873,7 @@ function checkallfields(){
          <% if(editca && ocspcert != null){ %> &nbsp;&nbsp;         
          <input type="submit" name="<%= BUTTON_REVOKERENEWOCSPCERTIFICATE %>" <% if(ocspcainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWOCSPCERT") %>" >
          <br>         
-         <a style="cursor:hand;" onClick="viewocspcert()"><u><%= ejbcawebbean.getText("VIEWOCSPCERTIFICATE")%></u></a>
+         <a style="cursor:pointer;" onClick="viewocspcert()"><u><%= ejbcawebbean.getText("VIEWOCSPCERTIFICATE")%></u></a>
          <% } %>
       </td>
     </tr>    
@@ -891,7 +891,7 @@ function checkallfields(){
          <% if(editca && xkmscert != null){ %> &nbsp;&nbsp;         
          <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(xkmscainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" >
          <br>         
-         <a style="cursor:hand;" onClick="viewxkmscert()"><u><%= ejbcawebbean.getText("VIEWXKMSCERTIFICATE")%></u></a>
+         <a style="cursor:pointer;" onClick="viewxkmscert()"><u><%= ejbcawebbean.getText("VIEWXKMSCERTIFICATE")%></u></a>
          <% } %>
       </td>
     </tr>    
@@ -909,7 +909,7 @@ function checkallfields(){
          <% if(editca && cmscert != null){ %> &nbsp;&nbsp;         
          <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(cmscainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" >
          <br>         
-         <a style="cursor:hand;" onClick="viewcmscert()"><u><%= ejbcawebbean.getText("VIEWCMSCERTIFICATE")%></u></a>
+         <a style="cursor:pointer;" onClick="viewcmscert()"><u><%= ejbcawebbean.getText("VIEWCMSCERTIFICATE")%></u></a>
          <% } %>
       </td>
     </tr>    
@@ -1064,7 +1064,7 @@ function checkallfields(){
         &nbsp;
       </td>
       <td width="50%"> 
-        <a style="cursor:hand;" onClick="viewcacert()"><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
+        <a style="cursor:pointer;" onClick="viewcacert()"><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
       </td>
     </tr>
     <% } %>

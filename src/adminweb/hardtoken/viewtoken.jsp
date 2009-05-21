@@ -335,7 +335,7 @@ function viewcopies(link){
                  while(iter.hasNext()){ 
                     String copytokensn = (String) iter.next();%>
                    <br>
-                   <A  style="cursor:hand;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username%>')">
+                   <A  style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username%>')">
                       <u><%= copytokensn %></u> 
                    </A><%
                  }
@@ -343,7 +343,7 @@ function viewcopies(link){
             }else{
               out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br>");  
               String copyofsn = token.getCopyOf();%>
-                 <A style="cursor:hand;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username%>')">
+                 <A style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username%>')">
                    <u><%= copyofsn %></u> 
                  </A><%
             } %>
@@ -370,7 +370,7 @@ function viewcopies(link){
       <td>
         <% try{ 
              if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_CA_VIEW_CERT)){ %>
-        <A style="cursor:hand;" onclick='viewcert()'>
+        <A style="cursor:pointer;" onclick='viewcert()'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
         <%   }
          }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException ade){}

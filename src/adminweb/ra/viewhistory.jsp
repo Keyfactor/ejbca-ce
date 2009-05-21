@@ -442,7 +442,7 @@ function viewcert(row){
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals(""))
                 out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
              else{%>
-        <A  style="cursor:hand;" onclick='viewadmincert(<%= i %>)'>
+        <A  style="cursor:pointer;" onclick='viewadmincert(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.ADMINDATA) %></u> </A>
        <% } else         
             out.write(logentries[i].getValue(LogEntryView.ADMINDATA));
@@ -454,7 +454,7 @@ function viewcert(row){
     <td width="7%"><% if(logentries[i].getValue(LogEntryView.USERNAME) == null)
                          out.write(ejbcawebbean.getText("NOENDENTITYINVOLVED"));
                        else{%> 
-        <A  style="cursor:hand;" onclick='viewuser(<%= i %>)'>
+        <A  style="cursor:pointer;" onclick='viewuser(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.USERNAME) %></u> </A>
                     <% } %>
     </td>
@@ -464,7 +464,7 @@ function viewcert(row){
                          if(logentries[i].getValue(LogEntryView.CERTIFICATE).equals(""))
                            out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
                          else{%> 
-        <A  style="cursor:hand;" onclick='viewcert(<%= i %>)'>
+        <A  style="cursor:pointer;" onclick='viewcert(<%= i %>)'>
         <u><%= logentries[i].getValue(LogEntryView.CERTIFICATE) %></u> </A>
                     <% } %>
     </td>

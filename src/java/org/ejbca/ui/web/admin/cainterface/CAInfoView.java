@@ -121,7 +121,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 		
 		if(active){
 	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE") + 
-                             "<br>" + "&nbsp;<a style='cursor:hand;' onClick='viewocspcert()'><u>" +
+                             "<br>" + "&nbsp;<a style='cursor:pointer;' onClick='viewocspcert()'><u>" +
 			                 ejbcawebbean.getText("VIEWOCSPCERTIFICATE") + 
 			                 "</u></a>";	
 		}else{
