@@ -43,6 +43,7 @@
     
     </tr>
     </table>
+</div>
 
 <% // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
