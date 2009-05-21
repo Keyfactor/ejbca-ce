@@ -1,5 +1,5 @@
 <%@ include file="header.jsp" %>
-<h1 class="title">Enroll For Server Certificate</h1>
+<h1 class="title">Enroll For Certificate from a CSR</h1>
 <p>Please give your username and password, select a PEM- or DER-formated certification request file (CSR) for upload, 
 or paste a PEM-formated request into the field below and click OK to fetch your certificate. 
 </p>
