@@ -27,6 +27,7 @@ import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -69,7 +70,12 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 			Iterator iter = getCAIdsToCheck().iterator();
 			while(iter.hasNext()){
 				String caid = (String) iter.next();
-				String cadn = getCAAdminSession().getCAInfo(getAdmin(), Integer.parseInt(caid)).getSubjectDN();
+				CAInfo caInfo = getCAAdminSession().getCAInfo(getAdmin(), Integer.parseInt(caid));
+				if (caInfo==null) {
+					log.error("CertificateExpirationNotifier cannot check certificate issued by CA Id " + caid + ". No such CA in database.");
+					continue;
+				}
+				String cadn = caInfo.getSubjectDN();
 				if(cASelectString.equals("")){
 					cASelectString = "issuerDN='" + cadn +"' ";
 				}else{
