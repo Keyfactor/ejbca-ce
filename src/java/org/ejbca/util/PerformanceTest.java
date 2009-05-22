@@ -67,7 +67,7 @@ public class PerformanceTest {
             synchronized(this) {
                 thread.start();
                 if ( !this.bIsFinished ) {
-                    this.wait(120000);
+                    this.wait(300000);
                 }
                 if ( !this.bIsFinished ) {
                     thread.interrupt();
@@ -115,7 +115,9 @@ public class PerformanceTest {
          */
         public void run() {
             PerformanceTest.this.log.info("Thread nr "+ this.nr +" started.");
+            String lastCommand = "";
             while(true) {
+            	long startTime = System.currentTimeMillis();
                 try {
                     boolean isSuccess = true;
                     for (int i=0; isSuccess && i<this.commands.length; i++) {
@@ -128,6 +130,7 @@ public class PerformanceTest {
                                 this.statistic.addTime("Relative time waiting between jobs",waitTime);
                             }
                         }
+                        lastCommand = this.commands[i].getClass().getName();
                         final JobRunner jobRunner = new JobRunner(this.commands[i]);
                         isSuccess = jobRunner.execute();
                         this.statistic.addTime(this.commands[i].getJobTimeDescription(), jobRunner.getTimeConsumed());
@@ -141,7 +144,9 @@ public class PerformanceTest {
                     this.statistic.taskFailed();
                     PerformanceTest.this.log.error("Exeption in thread "+this.nr+".", t);
                 }
+                PerformanceTest.this.log.info("One iteration run took "+(System.currentTimeMillis()-startTime) + " ms. Last command was " + lastCommand);
             }
+        	
         }
     }
 

@@ -47,7 +47,8 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
     final PerformanceTest performanceTest;
     enum TestType {
         BASIC,
-        REVOKE
+        REVOKE,
+        REVOKEALOT
     }
     private class MyCommandFactory implements CommandFactory {
         final String caName;
@@ -80,6 +81,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                                      new RevokeCertCommand(ejbcaWS, jobData),
                                      new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, false),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
+            case REVOKEALOT:
+                return new Command[]{
+                					 new MultipleCertsRequestsForAUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, kpg),
+                                     new FindUserCommand(ejbcaWS, jobData),
+                                     new ListCertsCommand(ejbcaWS, jobData),
+                                     new RevokeCertCommand(ejbcaWS, jobData)//,
+                					 };
             default:
                 return null;
             }
@@ -124,6 +132,44 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         }
         public String getJobTimeDescription() {
             return "Relative time spent signing certificates";
+        }
+    }
+    private class MultipleCertsRequestsForAUserCommand implements Command {
+    	EjbcaWS _ejbcaWS;
+    	String caName;
+    	String endEntityProfileName;
+    	String certificateProfileName;
+    	JobData _jobData;
+    	KeyPairGenerator kpg;
+    	MultipleCertsRequestsForAUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName, JobData _jobData, KeyPairGenerator kpg) throws Exception {
+        	this.caName = caName;
+        	this.endEntityProfileName = endEntityProfileName;
+        	this.certificateProfileName = certificateProfileName;
+        	this._jobData = _jobData;
+        	this.kpg = kpg;
+        	this._ejbcaWS = _ejbcaWS;
+    	}
+        public boolean doIt() throws Exception {
+        	boolean createUser = true;
+        	for (int i=0; i<100; i++) {
+        		EditUserCommand editUserCommand = new EditUserCommand(_ejbcaWS, caName, endEntityProfileName, certificateProfileName, _jobData, createUser);
+    			if (!editUserCommand.doIt()) {
+    				StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this._jobData.userName);
+    				return false;
+
+    			}
+        		createUser = false;
+        		Pkcs10RequestCommand pkcs10RequestCommand = new Pkcs10RequestCommand(_ejbcaWS, kpg.generateKeyPair(), _jobData);
+        		if (!pkcs10RequestCommand.doIt()) {
+        			StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this._jobData.userName);
+        			return false;
+
+        		}
+        	}
+        	return true;
+        }
+        public String getJobTimeDescription() {
+            return "Relative time spent creating a lot of certificates";
         }
     }
     private class FindUserCommand implements Command {
@@ -217,6 +263,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
             this.user.setEndEntityProfileName(endEntityProfileName);
             this.user.setCertificateProfileName(certificateProfileName);
+            this.user.setStatus(org.ejbca.core.protocol.ws.objects.UserDataVOWS.STATUS_NEW);
         }
         public boolean doIt() throws Exception {
             if ( this.doCreateNewUser ) {
