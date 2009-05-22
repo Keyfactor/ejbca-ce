@@ -14,6 +14,8 @@
 package se.anatom.ejbca.ca.sign;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -26,14 +28,22 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Vector;
 
 import javax.ejb.DuplicateKeyException;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
@@ -392,11 +402,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -916,10 +922,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -1004,10 +1007,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -1091,10 +1091,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -1191,10 +1188,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -1465,10 +1459,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -1548,10 +1539,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -1666,11 +1654,7 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
-        if (verify == false) {
-            log.debug("Aborting!");
-
-            return;
-        }
+        assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
@@ -1695,6 +1679,99 @@ public class TestSignSession extends TestCase {
         assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
 
     } // test28TestDNOverride
+
+    public void test29TestExtensionOverride() throws Exception {
+        // Create a good certificate profile (good enough), using QC statement
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTEXTENSIONOVERRIDE");
+        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        // Default profile does not allow Extension override
+        certprof.setValidity(298);
+        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", certprof);
+        int cprofile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"TESTEXTENSIONOVERRIDE");
+
+        // Create a good end entity profile (good enough), allowing multiple UPN names
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE", profile);
+        int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTEXTENSIONOVERRIDE");
+    	UserDataVO user = new UserDataVO("foo", "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+    	user.setPassword("foo123");
+    	user.setStatus(UserDataConstants.STATUS_NEW);
+    	// Change a user that we know...
+    	TestTools.getUserAdminSession().changeUser(admin, user, false);
+
+    	// Create a P10 with extensions, in this case altNames with a lot of DNS names
+        ASN1EncodableVector extensionattr = new ASN1EncodableVector();
+        extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        // AltNames
+        GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com");
+        ByteArrayOutputStream extOut = new ByteArrayOutputStream();
+        DEROutputStream derOut = new DEROutputStream(extOut);
+        try {
+        	derOut.writeObject(san);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("error encoding value: " + e);
+        }
+        // Extension request attribute is a set of X509Extensions
+        // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
+        // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
+        ASN1EncodableVector extvalue = new ASN1EncodableVector();
+        Vector oidvec = new Vector();
+        oidvec.add(X509Extensions.SubjectAlternativeName);
+        Vector valuevec = new Vector();
+        valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));
+        X509Extensions exts = new X509Extensions(oidvec,valuevec);
+        extensionattr.add(new DERSet(exts));
+        // Complete the Attribute section of the request, the set (Attributes) contains one sequence (Attribute)
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(new DERSequence(extensionattr));
+        DERSet attributes = new DERSet(v);
+        // Create PKCS#10 certificate request    	
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+                new X509Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes, rsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+        byte[] p10bytes = bOut.toByteArray();
+        FileOutputStream fos = new FileOutputStream("/tmp/foo.der");
+        fos.write(p10bytes);
+        fos.close();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);    	
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        // See if the request message works...
+        X509Extensions p10exts = p10.getRequestExtensions();
+        assertNotNull(p10exts);
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+        // check altNames, should be none
+        Collection c = cert.getSubjectAlternativeNames();
+        assertNull(c);
+
+        // Change so that we allow override of validity time
+        CertificateProfile prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
+        prof.setAllowExtensionOverride(true);
+        TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", prof);
+
+    	TestTools.getUserAdminSession().changeUser(admin, user, false);
+        resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+        // check altNames, should be one altName
+        c = cert.getSubjectAlternativeNames();
+        assertNotNull(c);
+        assertEquals(21,c.size());
+        String altNames = CertTools.getSubjectAlternativeName(cert);
+        assertEquals("dNSName=foo20.bar.com, dNSName=foo11.bar.com, dNSName=foo4.bar.com, dNSName=foo19.bar.com, dNSName=foo8.bar.com, dNSName=foo1.bar.com, dNSName=foo10.bar.com, dNSName=foo21.bar.com, dNSName=foo15.bar.com, dNSName=foo17.bar.com, dNSName=foo14.bar.com, dNSName=foo12.bar.com, dNSName=foo16.bar.com, dNSName=foo2.bar.com, dNSName=foo18.bar.com, dNSName=foo5.bar.com, dNSName=foo13.bar.com, dNSName=foo7.bar.com, dNSName=foo3.bar.com, dNSName=foo6.bar.com, dNSName=foo9.bar.com", altNames);
+    } // test29TestExtensionOverride
 
     
     /**
