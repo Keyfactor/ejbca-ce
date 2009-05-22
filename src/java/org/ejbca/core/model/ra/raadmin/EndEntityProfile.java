@@ -328,8 +328,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setRequired(ISSUANCEREVOCATIONREASON,0,false);
       
          setValue(AUTOGENPASSWORDLENGTH, 0, "8");
-         setValue(DEFAULTCERTPROFILE,0,"1");
-         setValue(AVAILCERTPROFILES,0,"1;2;3");
+         setValue(DEFAULTCERTPROFILE,0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);
+         setValue(AVAILCERTPROFILES,0, SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + SecConst.CERTPROFILE_FIXED_SUBCA + ";" + SecConst.CERTPROFILE_FIXED_ROOTCA);
          setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
          setValue(AVAILKEYSTORE,0, SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM);
          setValue(ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.NOT_REVOKED);
