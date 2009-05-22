@@ -151,7 +151,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
     	}
         public boolean doIt() throws Exception {
         	boolean createUser = true;
-        	for (int i=0; i<100; i++) {
+        	for (int i=0; i<50; i++) {
         		EditUserCommand editUserCommand = new EditUserCommand(_ejbcaWS, caName, endEntityProfileName, certificateProfileName, _jobData, createUser);
     			if (!editUserCommand.doIt()) {
     				StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this._jobData.userName);
