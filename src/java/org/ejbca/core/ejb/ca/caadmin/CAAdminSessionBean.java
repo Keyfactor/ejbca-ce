@@ -2365,6 +2365,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
         if (cainfo == null) {
     		log.error("No CA info exists for CA id: "+caid);
     	}
+        if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
+    		log.info("CA with id "+caid+" is external and cannot be activated.");
+    		return;
+        }
         int numOfApprovalsRequired = ApprovalExecutorUtil.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo);
         ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(),authorizationcode,admin,numOfApprovalsRequired,caid,ApprovalDataVO.ANY_ENDENTITYPROFILE);
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {       		    		
@@ -2459,7 +2463,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			throw new EjbcaException(msg);
     		}
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-            if(cadata.getStatus() == SecConst.CA_ACTIVE){
+            if(cadata.getStatus() == SecConst.CA_EXTERNAL){
+        		log.info("CA with id "+caid+" is external and cannot be deactivated.");
+        		return;
+            } else if(cadata.getStatus() == SecConst.CA_ACTIVE){
             	try {
             		cadata.getCA().getCAToken().deactivate();
             		cadata.setStatus(SecConst.CA_OFFLINE);
