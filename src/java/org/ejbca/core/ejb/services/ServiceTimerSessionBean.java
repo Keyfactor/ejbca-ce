@@ -341,7 +341,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		}
 		
 		long intervalMillis = nextInterval*1000+randMillis; 
-		getSessionContext().getTimerService().createTimer((intervalMillis), timerInfo);
+		getSessionContext().getTimerService().createTimer(intervalMillis, timerInfo);
 		// Calculate the nextRunTimeStamp, since we set a new timer
 		Date runDateCheck = serviceData.getNextRunTimestamp(); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
 		Date nextRunDate = new Date(currentDate.getTime() + intervalMillis);
