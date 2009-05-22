@@ -13,6 +13,7 @@
 package org.ejbca.core.model.services.workers;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
@@ -56,7 +57,9 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
     private IPublisherQueueSessionLocal pqsession = null;
     private IPublisherSessionLocal psession = null;
 
-	private static boolean running = false;
+    /** Semaphore making sure not two identical services run at the same time. 
+     * This must be decided by serviceName, since we can configure one of these services for every publisher. */
+	private static HashMap runmap = new HashMap();
 
 	/**
 	 * Checks if there are any publishings in the publisher queue that should be published.
@@ -66,9 +69,18 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 	public void work() throws ServiceExecutionFailedException {
 		log.trace(">work");
 		// A semaphore used to not run parallel processing jobs
+		boolean running = false;
+		synchronized (runmap) {
+			Object o = runmap.get(this.serviceName);
+			if (o != null) {
+				running = ((Boolean)o).booleanValue();				
+			}
+		}
 		if (!running) {
 			try {
-				running = true;
+				synchronized (runmap) {
+					runmap.put(this.serviceName, Boolean.valueOf(true));
+				}
 				Object o = properties.get(PROP_PUBLISHER_IDS);
 				if (o != null) {
 					String idstr = (String)o;
@@ -84,7 +96,9 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 					log.debug("No publisher ids configured for worker.");
 				}
 			} finally {
-				running = false;
+				synchronized (runmap) {
+					runmap.put(this.serviceName, Boolean.valueOf(false));
+				}
 			}			
 		} else {
     		String msg = intres.getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName());            	
