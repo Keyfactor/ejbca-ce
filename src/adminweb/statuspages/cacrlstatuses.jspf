@@ -40,13 +40,15 @@
 							if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
 								crlimg = ejbcawebbean.getImagefileInfix("false.png");
 							}
+							if (castatus != SecConst.CA_EXTERNAL) {
 							%>
 							<tr class="a">	
 								<td><%=name %></td>
 								<td><img src="<%=caimg %>" height="14" style="border-width:0" width="14"></td>
 								<td><img src="<%=crlimg %>" height="14" style="border-width:0" width="14"></td>
 							</tr>
-			   <% 		}  
+						<%	}
+			    		}  
 			        }
 			   } else { %>
 			   		<tr class="a">	
