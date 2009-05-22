@@ -15,8 +15,8 @@ package org.ejbca.ui.cli;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 
-import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
 
 /**
@@ -27,46 +27,48 @@ import org.ejbca.ui.cli.util.ConsolePasswordReader;
  */
 public class OCSPActivate extends ClientToolBox {
 
-	private static final Logger log = Logger.getLogger(OCSPActivate.class);
-	
-	final String usage = "\n"
-		+ getName() + " <hostname:port>\n"
-		+ " Useed for HSM activation on an OCSP server install.\n"
-		+ " hostname:port        the address of where the OCSP serrver is running. Only use 127.0.0.1 in a production environment.\n"
-	    + "\nCheck ctb.log for messages.";
 
 	/* (non-Javadoc)
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
     void execute(String[] args) {
-    	if (args.length<2) {
-    		log.info(usage);
-    		return;
-    	}
-    	String bindInfo = args[1];
-    	char[] passwd = null;;
-    	try {
-    		ConsolePasswordReader console = new ConsolePasswordReader();
-    		System.out.print("Password: ");
-    		passwd = console.readPassword();
-    	} catch (IOException e){
-    		System.out.println("Problems reading password: '"+e.getMessage()+'\'');
-    	}
-        if (passwd != null) {
-            try {
-                final URL url = new URL("http://"+bindInfo+"/ejbca/publicweb/status/ocsp?activate="+new String(passwd));
-                final HttpURLConnection con = (HttpURLConnection)url.openConnection();
-                final int responseCode = con.getResponseCode();
-                final String responseMessage = con.getResponseMessage();
-                if (responseCode != 200) {
-                    System.out.println("Unexpected result code " +responseCode+" for URL: '" + url.toString() + "'. Message was: '" + responseMessage+'\'');
-                    return;
+        if (args.length<2) {
+            System.out.println(args[0]+" <hostname:port>");
+            System.out.println(" Useed for HSM activation on an OCSP server install.");
+            System.out.println(" hostname:port  the address of where the OCSP serrver is running. Only use 127.0.0.1 in a production environment.");
+            return;
+        }
+        final String bindInfo = args[1];
+        final char[] passwd;
+        try {
+            ConsolePasswordReader console = new ConsolePasswordReader();
+            System.out.print("Password: ");
+            passwd = console.readPassword();
+        } catch (IOException e){
+            System.out.println("Problems reading password: '"+e.getMessage()+'\'');
+            return;
+        }
+        try {
+            final URL url = new URL("http://"+bindInfo+"/ejbca/publicweb/status/ocsp");
+            final HttpURLConnection con; {
+                final URLConnection con0 = url.openConnection();
+                if ( con0==null || !(con0 instanceof HttpURLConnection) ) {
+                    System.out.println("Unable to open http connection to "+url );
                 }
-                System.out.println("Password for keys sent to the OCSP responder. If the password was right the respnder will be activated. Check this.");
-            } catch (IOException e){
-                System.out.println("Network problems: '"+e.getMessage()+'\'');
-            }        	
+                con = (HttpURLConnection)con0;
+            }
+            con.setRequestMethod("POST");
+            con.setRequestProperty("activate", new String(passwd));
+            final int responseCode = con.getResponseCode();
+            if (responseCode != 200) {
+                final String responseMessage = con.getResponseMessage();
+                System.out.println("Unexpected result code " +responseCode+" for URL: '" + url + "'. Message was: '" + responseMessage+'\'');
+                return;
+            }
+            System.out.println("Password for keys sent to the OCSP responder. If the password was right the respnder will be activated. Check this.");
+        } catch (IOException e){
+            System.out.println("Network problems: '"+e.getMessage()+'\'');
         }
     }
     /* (non-Javadoc)

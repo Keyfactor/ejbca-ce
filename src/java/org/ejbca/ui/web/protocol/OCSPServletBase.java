@@ -373,16 +373,44 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
-		m_log.trace(">doPost()");
-		String contentType = request.getHeader("Content-Type");
-		if (!contentType.equalsIgnoreCase("application/ocsp-request")) {
-			m_log.debug("Content type is not application/ocsp-request");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Content type is not application/ocsp-request");
-		} else {
-			// Do it...
-			serviceOCSP(request, response);
-		}
-		m_log.trace("<doPost()");
+        m_log.trace(">doPost()");
+        try {
+            final String contentType = request.getHeader("Content-Type");
+            if ( contentType!=null && contentType.equalsIgnoreCase("application/ocsp-request")) {
+                serviceOCSP(request, response);
+                return;
+            }
+            if ( contentType!=null ) {
+                final String sError = "Content-type is not application/ocsp-request. It is \'"+contentType+"\'.";
+                m_log.debug(sError);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+                return;
+            }
+            final String password=request.getHeader("activate");
+            if ( password==null ) {
+                final String sError = "No \'Content-Type\' or \'activate\' property in request.";
+                m_log.debug(sError);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+                return;
+            }
+            final String remoteAddr = request.getRemoteAddr();
+            if ( !remoteAddr.equals("127.0.0.1") ) {
+                final String sError = "You have connected from \'"+remoteAddr+"\'. You may only connect from 127.0.0.1";
+                m_log.debug(sError);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+                return;
+            }
+            // Also reload signing keys
+            this.mKeysValidTo = 0;
+            try {
+                loadPrivateKeys(this.m_adm, password);
+            } catch (Exception e) {
+                m_log.error("Problem loading keys.", e);
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
+            }
+        } finally {
+            m_log.trace("<doPost()");
+        }
 	} //doPost
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -390,21 +418,20 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		m_log.trace(">doGet()");
 		// We have a command to force reloading of keys that can only be run from localhost
 		final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
-        final String password = request.getParameter("activate");
-		if ( doReload || password!=null ) {
+		if ( doReload ) {
 			final String remote = request.getRemoteAddr();
 			if (StringUtils.equals(remote, "127.0.0.1")) {
 				String iMsg = intres.getLocalizedMessage("ocsp.reloadkeys", remote);
 				m_log.info(iMsg);
 				// Reload CA certificates
-				m_caCertCache.forceReload();
+				this.m_caCertCache.forceReload();
 				try {
 					// Also reload signing keys
-					mKeysValidTo = 0;
-					loadPrivateKeys(m_adm, password);
+					this.mKeysValidTo = 0;
+					loadPrivateKeys(this.m_adm, null);
 				} catch (Exception e) {
-					m_log.error(e);
-					throw new ServletException(e);
+                    m_log.error("Problem loading keys.", e);
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
 				}
 			} else {
 				m_log.info("Got reloadKeys command from unauthorized ip: "+remote);
