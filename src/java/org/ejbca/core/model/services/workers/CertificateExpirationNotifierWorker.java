@@ -36,13 +36,10 @@ import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.NotificationParamGen;
 
 /**
- * Email Notifier Worker
- * 
- * Makes queries about which emails that is about to expire in a given number of days
+ * Makes queries about which certificates that is about to expire in a given number of days
  * and creates an notification sent to either the end user or the administrator.
  * 
  * @author Philip Vendil, Tomas Gustavsson
- * 
  *
  * @version: $Id$
  */
@@ -72,7 +69,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 				String caid = (String) iter.next();
 				CAInfo caInfo = getCAAdminSession().getCAInfo(getAdmin(), Integer.parseInt(caid));
 				if (caInfo==null) {
-					log.error("CertificateExpirationNotifier cannot check certificate issued by CA Id " + caid + ". No such CA in database.");
+					String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, null);
+					log.info(msg);
 					continue;
 				}
 				String cadn = caInfo.getSubjectDN();

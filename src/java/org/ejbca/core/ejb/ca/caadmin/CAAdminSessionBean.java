@@ -2363,10 +2363,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
         // Check if approvals is required.
         CAInfo cainfo = getCAInfo(admin, caid);
         if (cainfo == null) {
-    		log.error("No CA info exists for CA id: "+caid);
+    		String msg = intres.getLocalizedMessage("caadmin.errorgetcainfo", new Integer(caid));            	
+    		log.error(msg);
+    		return;
     	}
         if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
-    		log.info("CA with id "+caid+" is external and cannot be activated.");
+    		String msg = intres.getLocalizedMessage("caadmin.catokenexternal", new Integer(caid));            	
+    		log.info(msg);
     		return;
         }
         int numOfApprovalsRequired = ApprovalExecutorUtil.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo);
@@ -2464,7 +2467,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		}
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             if(cadata.getStatus() == SecConst.CA_EXTERNAL){
-        		log.info("CA with id "+caid+" is external and cannot be deactivated.");
+        		String msg = intres.getLocalizedMessage("caadmin.catokenexternal", new Integer(caid));            	
+        		log.info(msg);
         		return;
             } else if(cadata.getStatus() == SecConst.CA_ACTIVE){
             	try {
