@@ -397,7 +397,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
             if ( !remoteAddr.equals("127.0.0.1") ) {
                 final String sError = "You have connected from \'"+remoteAddr+"\'. You may only connect from 127.0.0.1";
                 m_log.debug(sError);
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sError);
                 return;
             }
             // Also reload signing keys
