@@ -2576,6 +2576,11 @@ This service will try to re-publish entries from this queue. The specific settin
 <li><i>Publishers to check</i> - which publishers should this service check and re-publish for. You can run one service for each publisher or one service for all publishers.</li>
 </ul>
 </p>
+<note>
+<p>
+If you run one service for each publisher you should onle configure one publisher in every service. Do not let two services handle the same publisher.
+</p>
+</note>
 <p>To read on how the algorithm to prevent excessive database load etc is done, the easiest way is to read in the java file for class PublishQueueProcessWorker.
 </p>
 <p>The same algorithm as for the CRL update worker is used to make sure the service only runs in one instance on one node.</p>
