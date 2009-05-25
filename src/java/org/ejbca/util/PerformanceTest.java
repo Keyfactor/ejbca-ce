@@ -19,6 +19,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -108,6 +109,16 @@ public class PerformanceTest {
             this.maxWaitTime = _waitTime;
             this.statistic = _statistic;
             this.commands = commandFactory.getCommands();
+            if ( this.nr > 0 ) {
+                return;
+            }
+            final StringWriter sw = new StringWriter();
+            final PrintWriter pw = new PrintWriter(sw);
+            pw.println("Performance test started. The following \"Command\" classes are used for each test:");
+            for (int i=0; i<this.commands.length; i++) {
+                pw.println(this.commands[i].getClass().getCanonicalName());
+            }
+            PerformanceTest.this.log.info(sw.toString());
         }
 
         /* (non-Javadoc)
@@ -115,12 +126,11 @@ public class PerformanceTest {
          */
         public void run() {
             PerformanceTest.this.log.info("Thread nr "+ this.nr +" started.");
-            String lastCommand = "";
             while(true) {
-            	long startTime = System.currentTimeMillis();
                 try {
-                    boolean isSuccess = true;
-                    for (int i=0; isSuccess && i<this.commands.length; i++) {
+                    final long startTime = new Date().getTime();
+                    Command failingCommand = null;
+                    for (int i=0; failingCommand==null && i<this.commands.length; i++) {
                         if ( this.maxWaitTime > 0 ) {
                             final int waitTime = (int)(this.maxWaitTime*PerformanceTest.this.random.nextFloat());
                             if ( waitTime > 0) {
@@ -130,21 +140,27 @@ public class PerformanceTest {
                                 this.statistic.addTime("Relative time waiting between jobs",waitTime);
                             }
                         }
-                        lastCommand = this.commands[i].getClass().getName();
-                        final JobRunner jobRunner = new JobRunner(this.commands[i]);
-                        isSuccess = jobRunner.execute();
-                        this.statistic.addTime(this.commands[i].getJobTimeDescription(), jobRunner.getTimeConsumed());
+                        final Command command = this.commands[i];
+                        final JobRunner jobRunner = new JobRunner(command);
+                        if ( !jobRunner.execute() ) {
+                            failingCommand = command;
+                        }
+                        this.statistic.addTime(command.getJobTimeDescription(), jobRunner.getTimeConsumed());
                     }
-                    if ( isSuccess ) {
+                    String sResult = "Test in thread "+this.nr+" completed ";
+                    if ( failingCommand==null ) {
                         this.statistic.taskFinished();
+                        sResult += "successfully";
                     } else {
                         this.statistic.taskFailed();
+                        sResult += "but failed when the command '"+failingCommand.getClass().getCanonicalName()+"' was executed";
                     }
+                    sResult += ". The time it took was "+(new Date().getTime()-startTime) + " ms.";
+                    PerformanceTest.this.log.info(sResult);
                 } catch( Throwable t ) {
                     this.statistic.taskFailed();
                     PerformanceTest.this.log.error("Exeption in thread "+this.nr+".", t);
                 }
-                PerformanceTest.this.log.info("One iteration run took "+(System.currentTimeMillis()-startTime) + " ms. Last command was " + lastCommand);
             }
         	
         }
