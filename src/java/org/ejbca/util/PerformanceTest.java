@@ -156,7 +156,11 @@ public class PerformanceTest {
                         sResult += "but failed when the command '"+failingCommand.getClass().getCanonicalName()+"' was executed";
                     }
                     sResult += ". The time it took was "+(new Date().getTime()-startTime) + " ms.";
-                    PerformanceTest.this.log.info(sResult);
+                    if ( failingCommand==null ) {
+                        PerformanceTest.this.log.info(sResult);
+                    } else {
+                        PerformanceTest.this.log.error(sResult);
+                    }
                 } catch( Throwable t ) {
                     this.statistic.taskFailed();
                     PerformanceTest.this.log.error("Exeption in thread "+this.nr+".", t);
