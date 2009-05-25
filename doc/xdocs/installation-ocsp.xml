@@ -201,6 +201,28 @@ The entity for this user could be stored in a SW keystore or in the HSM. Please 
 <p>
 To test the feature it is good to re-key frequently. This is achieved by setting "update time before the OCSP signer certificate expires time" close to validity length of the OCSP certificate.
 Example for 730 days (730*24*60-14)*60=63071160. This will force a re-keying every 4th minute (an EJBCA certificate is valid 10 minutes before it was issued).
+</p><p>
+When running on some application servers jar files of the application server has to be deleted.
+</p><p>
+In jboss-4.2.3.GA these files has to be deleted when running java6:
+</p>
+<source>
+$APPSRV_HOME/server/default/lib/jboss-jaxrpc.jar
+$APPSRV_HOME/server/default/lib/jboss-jaxws-ext.jar
+$APPSRV_HOME/server/default/lib/jboss-jaxws.jar
+</source>
+<p>
+For java5 one more files has to be deleted:
+</p>
+<source>
+$APPSRV_HOME/server/default/lib/jboss-jaxrpc.jar
+$APPSRV_HOME/server/default/lib/jboss-jaxws-ext.jar
+$APPSRV_HOME/server/default/lib/jboss-jaxws.jar
+$APPSRV_HOME/server/default/lib/jboss-saaj.jar
+</source>
+<p>
+For java5 you also got to add client WS jars since java5 got no WS support. These files should be added in $APPSRV_HOME/lib/endorsed if you are running jboss-4.2.3.GA.
+If you compile <a href="manual.html#EJBCA%20client%20toolbox">EJBCA ClientToolBox</a> you got all needed files in the created 'clientToolBox-dist/endorsed' directory. Just copy or soft link them to the target.
 </p>
 </subsection>
 <subsection name="No password in memory">
