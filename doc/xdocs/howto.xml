@@ -107,7 +107,7 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   The migration guide goes through migrating the CA signing keys, importing the CAs to EJBCA and importing 
   issued certificates to EJBCA. The result is a setup in EJBCA that can continue operation transparently.
   <br/>
-  Download <a href="http://download.primekey.se/documents/KCA-EJBCA-nCipher-migration-eng.pdf">KCA EJBCA migration guide</a> (pdf).
+  Download <a href="http://download.primekey.se/documents/Migrating_to_EJBCA.pdf">EJBCA migration guide</a> (pdf).
   </p>
   
   </subsection>
