@@ -1098,7 +1098,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  }
     	  }
     	  if (startTimeDate == null) {
-    	      // If we could not parse the date string, something was awfulyl wrong
+    	      // If we could not parse the date string, something was awfully wrong
         	  throw new UserDoesntFullfillEndEntityProfile("Invalid start time: "+startTime);    		  
     	  }
       }
