@@ -48,6 +48,8 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 	private static final int ARG_ENDENTITYPROFILE   = 11;
 	private static final int ARG_CERTIFICATEPROFILE = 12;
 	private static final int ARG_ISSUERALIAS        = 13;
+	private static final int ARG_STARTTIME          = 14;
+	private static final int ARG_ENDTIME            = 15;
 	
     /**
      * Creates a new instance of RaAddUserCommand
@@ -68,7 +70,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     	
         try {   
            
-            if(args.length < 13 || args.length > 14){
+            if(args.length < 13 || args.length > 16){
             	usage();
             	System.exit(-1);
             }
@@ -104,8 +106,20 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             	userdata.setKeyRecoverable(true);
             }
 
-            if(args.length == 14){
-              userdata.setHardTokenIssuerName(args[ARG_ISSUERALIAS]);
+            if(args.length > 13){
+            	if(!args[ARG_ISSUERALIAS].equalsIgnoreCase("NULL")){                        
+            		userdata.setHardTokenIssuerName(args[ARG_ISSUERALIAS]);
+            	}
+            }
+            if(args.length > 14){
+            	if(!args[ARG_STARTTIME].equalsIgnoreCase("NULL")){                        
+            		userdata.setStartTime(args[ARG_STARTTIME]);
+            	}
+            }
+            if(args.length > 15){
+            	if(!args[ARG_ENDTIME].equalsIgnoreCase("NULL")){                        
+            		userdata.setEndTime(args[ARG_ENDTIME]);
+            	}
             }
    
             getPrintStream().println("Trying to add user:");
@@ -125,7 +139,16 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             }else{
             	getPrintStream().println("Hard Token Issuer Alias: " + userdata.getHardTokenIssuerName());
             }
-            
+            if(userdata.getStartTime() == null){
+                getPrintStream().println("Start time: NONE");
+            }else{
+                getPrintStream().println("Start time: "+userdata.getStartTime());
+            }
+            if(userdata.getEndTime() == null){
+                getPrintStream().println("End time: NONE");
+            }else{
+                getPrintStream().println("End time: "+userdata.getEndTime());
+            }
             
            try{
             	getEjbcaRAWS().editUser(userdata);
@@ -166,7 +189,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 
 	protected void usage() {
 		getPrintStream().println("Command used to add or edit userdata, if user exist will the data be overwritten.");
-		getPrintStream().println("Usage : edituser <username> <password|null> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (Optional)> \n\n");
+		getPrintStream().println("Usage : edituser <username> <password|null> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias or NULL (optional)> <starttime or NULL (optional)> <endtime (starttime)>\n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
         getPrintStream().println(
             "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
@@ -176,6 +199,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
         getPrintStream().print("Existing tokens      : " + "USERGENERATED" + ", " +
         		"P12" + ", "+ "JKS" + ", "  + "PEM" + "\n");
         getPrintStream().print("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL\n");
+        getPrintStream().print("Start time and end time is of form \"May 26, 2009 9:52 AM\" or \"days:hours:minutes\"\n");
 	}
 
 

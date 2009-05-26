@@ -53,8 +53,9 @@ public class UserDataVOWS implements Serializable{
     private boolean keyRecoverable = false;
     private java.lang.String endEntityProfileName = null;
     private java.lang.String certificateProfileName = null;
-    private java.lang.String hardTokenIssuerName = null;	
-
+    private java.lang.String hardTokenIssuerName = null;
+    private java.lang.String startTime = null;
+    private java.lang.String endTime = null;
 
     /**
      * Emtpy constructor used by internally by web services
@@ -325,11 +326,33 @@ public class UserDataVOWS implements Serializable{
 	public void setUsername(java.lang.String username) {
 		this.username = username;
 	}
-	
 
-	
-	
+    /**
+     * @return the startTime
+     */
+    public java.lang.String getStartTime() {
+        return this.startTime;
+    }
 
-		
+    /**
+     * @param startTime the startTime to set
+     */
+    public void setStartTime(java.lang.String startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * @return the endTime
+     */
+    public java.lang.String getEndTime() {
+        return this.endTime;
+    }
+
+    /**
+     * @param endTime the endTime to set
+     */
+    public void setEndTime(java.lang.String endTime) {
+        this.endTime = endTime;
+    }
 
 }

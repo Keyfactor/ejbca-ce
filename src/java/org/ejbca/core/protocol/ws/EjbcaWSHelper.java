@@ -47,6 +47,7 @@ import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.ws.common.HardTokenConstants;
@@ -231,7 +232,19 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE,
                 "Error Token Type  " + userdata.getTokenType() + " doesn't exists.");
 		}
-		
+
+		ExtendedInformation ei = new ExtendedInformation();
+		boolean useEI = false;
+
+		if(userdata.getStartTime() != null) {
+		    ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, userdata.getStartTime());
+		    useEI = true;
+		}
+        if(userdata.getEndTime() != null) {
+            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, userdata.getEndTime());
+            useEI = true;
+        }
+
 		UserDataVO userdatavo = new UserDataVO(userdata.getUsername(),
 				userdata.getSubjectDN(),
 				caid,
@@ -245,7 +258,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				null,
 				tokenid,
 				hardtokenissuerid,
-				null);
+				useEI ? ei : null);
 		
 		userdatavo.setPassword(userdata.getPassword());
 		
@@ -255,13 +268,19 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	
 	
 	protected UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException, RemoteException {
+	    UserDataVOWS dataWS = new UserDataVOWS();
 		String username = userdata.getUsername();
 		String caname = getCAAdminSession().getCAInfo(admin,userdata.getCAId()).getName();
+		ExtendedInformation ei = userdata.getExtendedinformation();
+
+		dataWS.setUsername(username);
+
 		if(caname == null){
 			String message = "Error CA id " + userdata.getCAId() + " doesn't exists. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, message);
 		}
+		dataWS.setCaName(caname);
 		
 		String endentityprofilename = getRAAdminSession().getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
 		if(endentityprofilename == null){
@@ -269,6 +288,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			log.error(message);
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, message);
 		}
+        dataWS.setEndEntityProfileName(endentityprofilename);
 
 		String certificateprofilename = getCertStoreSession().getCertificateProfileName(admin,userdata.getCertificateProfileId());
 		if(certificateprofilename == null){
@@ -276,6 +296,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
 		}
+	    dataWS.setCertificateProfileName(certificateprofilename);
 		
 		String hardtokenissuername = null;
 		if(userdata.getHardTokenIssuerId() != 0){
@@ -285,6 +306,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			   log.error(message);
 			   throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS, message);
 		   }
+		   dataWS.setHardTokenIssuerName(hardtokenissuername);
 		}
 		
 		String tokenname = getTokenName(admin,userdata.getTokenType());
@@ -292,8 +314,22 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			String message = "Error Token Type id " + userdata.getTokenType() + " doesn't exists. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, message);
-		}										
-		return new UserDataVOWS(userdata.getUsername(),null,false,userdata.getDN(),caname,userdata.getSubjectAltName(),userdata.getEmail(),userdata.getStatus(),tokenname,endentityprofilename,certificateprofilename,hardtokenissuername);
+		}
+		dataWS.setTokenType(tokenname);
+
+		dataWS.setPassword(null);
+		dataWS.setClearPwd(false);
+		dataWS.setSubjectDN(userdata.getDN());
+		dataWS.setSubjectAltName(userdata.getSubjectAltName());
+		dataWS.setEmail(userdata.getEmail());
+		dataWS.setStatus(userdata.getStatus());
+
+		if(ei != null) {
+		    dataWS.setStartTime(ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+            dataWS.setEndTime(ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+		}
+
+		return dataWS;
 	}
 	
 	/**
