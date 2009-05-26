@@ -694,7 +694,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 				userDataLocal = home.findByPrimaryKey(pk);
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("ra.erroreditentity", userdata.getUsername());
-				logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+				logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
 				error("ChangeUser:", e);
 				throw new EJBException(e);
 			}
@@ -744,13 +744,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(userdata.getEndEntityProfileId()), dn, udfp.getMessage());            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw udfp;
             }
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, userdata.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(userdata.getEndEntityProfileId()));            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -758,7 +758,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         // Check if administrator is authorized to edit user to CA.
         if (!authorizedToCA(admin, userdata.getCAId())) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(userdata.getCAId()));            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
         // Check if approvals is required.
@@ -944,13 +944,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
                     String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
@@ -986,7 +986,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         	}
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw e;
         }
         if (log.isTraceEnabled()) {
@@ -1017,7 +1017,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
 
@@ -1025,7 +1025,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
                     String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
@@ -1059,7 +1059,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw e;
         }
         if (log.isTraceEnabled()) {
@@ -1123,21 +1123,21 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 profile.doesPasswordFulfillEndEntityProfile(password, true);
             } catch (UserDoesntFullfillEndEntityProfile ufe) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(data.getEndEntityProfileId()), dn, ufe.getMessage());            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw ufe;
             }
 
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
 
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -1186,14 +1186,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
 
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -2317,20 +2317,20 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
                     String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
              status = data1.getStatus();
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw e;
         }
     	if (log.isTraceEnabled()) {
