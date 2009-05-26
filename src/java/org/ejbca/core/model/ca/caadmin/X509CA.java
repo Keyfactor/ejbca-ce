@@ -728,6 +728,10 @@ public class X509CA extends CA implements Serializable {
   	            IssuingDistributionPoint idp =
   	                new IssuingDistributionPoint(((DistributionPoint) distpoints.get(0)).getDistributionPoint(),
   	                                             false, false, null, false, false);
+
+  	            // According to the RFC, IDP must be a critical extension.
+  	            // Nonetheless, at the moment, Mozilla is not able to correctly
+  	            // handle the IDP extension and discards the CRL if it is critical.
   	            crlgen.addExtension(X509Extensions.IssuingDistributionPoint.getId(),
   	                                getCrlDistributionPointOnCrlCritical(), idp);
   	        }
@@ -737,8 +741,13 @@ public class X509CA extends CA implements Serializable {
                 List freshestDistPoints = generateDistributionPoints(crlFreshestDP);
                 if (freshestDistPoints.size() > 0) {
                     CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])freshestDistPoints.toArray(new DistributionPoint[0]));
+
+                    // According to the RFC, the Freshest CRL extension on a
+                    // CRL must not be marked as critical. Therefore it is
+                    // hardcoded as not critical and is independent of
+                    // getCrlDistributionPointOnCrlCritical().
                     crlgen.addExtension(X509Extensions.FreshestCRL.getId(),
-                            getCrlDistributionPointOnCrlCritical(), ext);
+                                        false, ext);
                 }
 
             }
