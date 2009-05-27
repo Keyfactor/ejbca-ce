@@ -34,10 +34,11 @@
 	</target>
 	
 	<mkdir dir="cloverdata"/>
+	
 	<target name="with.clover">
 		<clover-setup initString="cloverdata/coverage.db">
 			<files>
-				<exclude name="/**/*jsp.java"/>
+				<exclude name="/**/*.jsp"/>
 			</files>
 		</clover-setup>
 	 </target>
