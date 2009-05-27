@@ -27,5 +27,5 @@ Version is 1.2.14.
 
 cert-cvc.jar is a library for handling Card Verifiable Certificates, developed
 by Keijo Kurkinen, and contributed to EJBCA. License is LGPL.
-Version is 1.2.6.
+Version is 1.2.8.
 cert-cvc.jar is built from the sub project cert-cvc of EJBCA.
