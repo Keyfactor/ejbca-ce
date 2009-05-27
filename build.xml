@@ -63,6 +63,8 @@
 	  -->
     <target name="bootstrap" depends="testforgnujava" description="Bootstrap EJBCA application">
         <ant target="deploy">
+        	<reference refid="clover.files"/>
+        	<reference refid="clover.useclass.files"/>
         	<property name="j2ee.web-noconfigure" value="true"/>
         </ant>
     </target>
