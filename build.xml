@@ -33,8 +33,13 @@
 	<fail message="The target you are attempting to run requires Clover, which doesn't appear to be installed"/>
 	</target>
 	
+	<mkdir dir="cloverdata"/>
 	<target name="with.clover">
-	    <clover-setup/>
+		<clover-setup initString="cloverdata/coverage.db">
+			<files>
+				<exclude name="/**/*jsp.java"/>
+			</files>
+		</clover-setup>
 	 </target>
 
 	<target name="clover.xml">
