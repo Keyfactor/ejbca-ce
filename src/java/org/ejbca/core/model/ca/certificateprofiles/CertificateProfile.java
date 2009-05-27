@@ -1282,7 +1282,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     setCaIssuers(new ArrayList());
                 }
                 if ( (data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null) ) {
-                	setUseAuthorityInformationAccess(true); // v25
+                	boolean ocsp = false;
+                	if ((data.get(USEOCSPSERVICELOCATOR) != null)) {
+                		ocsp = ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue();
+                	}
+                	boolean caissuers = false;
+                	if ((data.get(USECAISSUERS) != null)) {
+                    	caissuers = ((Boolean) data.get(USECAISSUERS)).booleanValue();
+                	}
+                	if (ocsp || caissuers) {
+                		setUseAuthorityInformationAccess(true); // v25
+                	}
                 } else {
                 	setUseAuthorityInformationAccess(false);
                 }
