@@ -93,7 +93,7 @@
         </junitreport>
     </target>
 
-    <target name="test:runclover" depends="test:compile,j2ee:assert-run" description="run JUnit testcases">
+    <target name="test:runclover" depends="test:compile,j2ee:assert-run">
         <classpath>
             <pathelement path="${clover.jar}"/>
         </classpath>
