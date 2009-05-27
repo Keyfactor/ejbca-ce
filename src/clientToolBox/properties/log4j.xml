@@ -25,13 +25,13 @@
 	</appender>
 
 	<!-- Make sure we get all to info when running tests. -->
-	<category name="org.ejbca.ui.cli.TestOcspMonitoringTool" additivity="false">
+	<category name="org.ejbca.ui.cli.TestOcspMonitoringTool" additivity="true">
 		<priority value="TRACE"/>
 		<appender-ref ref="full"/>
 	</category>
 
 	<!-- Use DEBUG for all EJBCA classes -->
-	<category name="org.ejbca" additivity="false">
+	<category name="org.ejbca" additivity="true">
 		<priority value="DEBUG"/>
 		<appender-ref ref="full"/>
 	</category>
