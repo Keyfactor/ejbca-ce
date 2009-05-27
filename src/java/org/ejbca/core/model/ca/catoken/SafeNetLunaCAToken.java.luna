@@ -102,22 +102,6 @@ public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
         return super.deactivate();
             
     }
-    public int getCATokenStatus() {
-        if ( !isActivated )
-            return ICAToken.STATUS_OFFLINE;
-        final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
-        if ( tokenManager.isLoggedIn() )
-            return ICAToken.STATUS_ACTIVE;
-        else {
-            isActivated = false;
-            try {
-                super.deactivate();
-            } catch(Exception e) {
-                log.error(e);
-            }
-            return ICAToken.STATUS_OFFLINE;
-        }
-    }
 
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
         setProviders(PROVIDER_CLASS, PROVIDER_CLASS_JCE);
