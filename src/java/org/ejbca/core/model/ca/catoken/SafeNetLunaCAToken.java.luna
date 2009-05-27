@@ -72,7 +72,11 @@ public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
             setKeys(keyStore, null);
         } catch( Throwable t ) {
             log.error("Authentication failed: ", t);
-            deactivate();
+            try {
+                deactivate();
+            } catch(Exception e) {
+                log.error("Error on deactivation", e);
+            }
             if ( t instanceof Error ) {
                 throw (Error)t;
             } else {
@@ -85,7 +89,7 @@ public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#deactivate()
      */
-    public boolean deactivate(){
+    public boolean deactivate() throws Exception{
         if ( isActivated ) {
             nrActivatedLunaTokens--;
             isActivated = false;
@@ -96,6 +100,7 @@ public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
             }
         }
         return super.deactivate();
+            
     }
     public int getCATokenStatus() {
         if ( !isActivated )
@@ -105,7 +110,11 @@ public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
             return ICAToken.STATUS_ACTIVE;
         else {
             isActivated = false;
-            super.deactivate();
+            try {
+                super.deactivate();
+            } catch(Exception e) {
+                log.error(e);
+            }
             return ICAToken.STATUS_OFFLINE;
         }
     }
