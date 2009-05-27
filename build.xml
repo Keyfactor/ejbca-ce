@@ -236,8 +236,6 @@
     <!-- Build admin web part                                                -->
     <!-- =================================================================== -->
     <target name="adminweb.war" depends="compile">
-    	<reference refid="clover.files"/>
-    	<reference refid="clover.useclass.files"/>
 	    <mkdir dir="${adminweb.build}/WEB-INF/lib"/>
     	<mkdir dir="${adminweb.build}/reports"/>
         <copy todir="${adminweb.build}">
