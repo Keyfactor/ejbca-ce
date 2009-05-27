@@ -17,7 +17,7 @@ JLine license is BSD.
 
 bc-x jars are BouncyCastle (http://www.bouncycastle.org), License is BC (BSD like).
 These jars are the cryptographic foundation in EJBCA.
-Current version used is 1.40.
+Current version used is 1.43.
 
 Ldap.jar is from OpenLDAP and used for publishing in LDAP directories.
 
