@@ -37,7 +37,7 @@ import org.ejbca.util.keystore.KeyTools;
 
 
 /**
- * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
+ * Inits the CA by creating the CA, the first CRL, and publishing the CRL and CA certificate.
  *
  * @version $Id$
  */
@@ -62,16 +62,17 @@ public class CaInitCommand extends BaseCaAdminCommand {
         // Create new CA.
         if (args.length < 7) {
            String msg = "Used to create a Root CA.";
-           msg += "\nUsage: CA init <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [<catokenproperties>]";
-           msg += "\ncatokentype defines if the CA should be created with soft keys or on a HSM. Use soft for software keys and org.ejbca.core.model.ca.catoken.NFastCAToken for nCipher.";
+           msg += "\nUsage: CA init <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [<catokenproperties> or null] [<signed by caid>]";
+           msg += "\ncatokentype defines if the CA should be created with soft keys or on a HSM. Use soft for software keys and org.ejbca.core.model.ca.catoken.PKCS11CAToken for PKCS#11 HSMs.";
            msg += "\ncatokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs";
            msg += "\nkeytype is RSA, DSA or ECDSA.";
            msg += "\nkeyspec for RSA keys is size of RSA keys (1024, 2048, 4096).";
            msg += "\nkeyspec for DSA keys is size of DSA keys (1024).";
            msg += "\nkeyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.";
-           msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and crlurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".";
+           msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and cpsurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".";
            msg += "\nsignalgorithm is SHA1WithRSA, SHA1WithDSA or SHA1WithECDSA.";
-           msg += "\ncatokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui";
+           msg += "\ncatokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in admin gui.";
+           msg += "\nsigned by caid is the CA id of a CA that will sign this CA. If this is omitted the new CA will be self signed (i.e. a root CA).";
            throw new IllegalAdminCommandException(msg);
         }
             
@@ -85,14 +86,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
             String keytype = args[6];
             int validity = Integer.parseInt(args[7]);
             String policyId = args[8];
-            String signAlg = args[9];
-            String catokenproperties = null;
-            if (args.length > 10 && !"soft".equals(catokentype)) {
-            	if (!(new File(args[10] )).exists()) {
-            		throw new IllegalAdminCommandException("File " + args[10] + " does not exist");
-            	}
-                catokenproperties = new String(FileTools.readFiletoBuffer(args[10]));
-            }
             ArrayList policies = new ArrayList(1);
             if ( (policyId != null) && (policyId.toLowerCase().trim().equals("null")) ) {
             	policyId = null;
@@ -107,6 +100,23 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	}
             	policies.add(new CertificatePolicy(id, CertificatePolicy.id_qt_cps, cpsurl));
             }
+            String signAlg = args[9];
+            String catokenproperties = null;
+            if (args.length > 10 && !"soft".equals(catokentype)) {
+            	String filename = args[10];
+            	if ( (filename != null) && (!filename.equalsIgnoreCase("null")) ) {
+                	if (!(new File(filename)).exists()) {
+                		throw new IllegalAdminCommandException("File " + filename + " does not exist");
+                	}
+                    catokenproperties = new String(FileTools.readFiletoBuffer(filename));            		
+            	}
+            }
+            int signedByCAId = CAInfo.SELFSIGNED; 
+            if (args.length > 11) {
+            	String caid = args[11];
+            	signedByCAId= Integer.valueOf(caid);
+            }
+
                         
             if (KeyTools.isUsingExportableCryptography()) {
             	getOutputStream().println("WARNING!");
@@ -188,7 +198,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              validity, 
                                              null, // Expiretime                                             
                                              CAInfo.CATYPE_X509,
-                                             CAInfo.SELFSIGNED,
+                                             signedByCAId,
                                              (Collection) null,
                                              catokeninfo,
                                              "Initial CA",
