@@ -167,9 +167,9 @@ import org.ejbca.util.JDBCUtil;
 public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
     /**
-     * Constant indicating minimum time between updates. In milliseconds
+     * Constant indicating minimum time between updates. In milliseconds, 30 seconds.
      */
-    public static final long MIN_TIME_BETWEEN_UPDATES = 60000 * 1;
+    private static final long MIN_TIME_BETWEEN_UPDATES = 30000;
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -1133,18 +1133,29 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @return true if update is needed.
      */
-
     private boolean updateNeccessary() {
-        return getAuthorizationTreeUpdateData().updateNeccessary(this.authorizationtreeupdate) && lastupdatetime < ((new java.util.Date()).getTime() - MIN_TIME_BETWEEN_UPDATES);
+    	boolean ret = false;
+    	// Only do the actual SQL query if we might update the configuration due to cache time anyhow
+    	if (this.lastupdatetime < (System.currentTimeMillis() - MIN_TIME_BETWEEN_UPDATES)) {
+    		if (log.isDebugEnabled()) {
+    			log.debug("Checking if update neccessary");
+    		}
+            ret = getAuthorizationTreeUpdateData().updateNeccessary(this.authorizationtreeupdate);
+            this.lastupdatetime = System.currentTimeMillis(); // we don't want to run the above query often
+    	}
+    	return ret;
     } // updateNeccessary
 
     /**
      * method updating authorization tree.
      */
     private void updateAuthorizationTree() {
+		if (log.isDebugEnabled()) {
+			log.debug("updateAuthorizationTree");
+    	}
         getAuthorizer().buildAccessTree(getAdminGroups());
         this.authorizationtreeupdate = getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
-        this.lastupdatetime = (new java.util.Date()).getTime();
+        this.lastupdatetime = System.currentTimeMillis();
     }
 
     /**

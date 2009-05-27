@@ -48,6 +48,7 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.OldLogDevice;
 import org.ejbca.core.model.log.OldLogDeviceFactory;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.ObjectCache;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -163,6 +164,12 @@ public class LocalLogSessionBean extends BaseSessionBean {
 	/** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
+    /** Cache for log configuration data with default cache time of 5 seconds.
+     * 5 seconds is enough to not limit performance in high performance environments, but low enough so that 
+     * changes to configuration is visibale almost imemdiately.
+     */
+    private static final ObjectCache logConfCache = new ObjectCache();
+
     /** The local interface of  authorization session bean */
 	private IAuthorizationSessionLocal authorizationsession;
     /** The home interface of  LogConfigurationData entity bean */
@@ -539,24 +546,31 @@ public class LocalLogSessionBean extends BaseSessionBean {
      */
     public LogConfiguration loadLogConfiguration(int caid) {
         // Check if log configuration exists, else create one.
-        LogConfiguration logconfiguration = null;
-        LogConfigurationDataLocal logconfigdata = null;
-        try {
-            logconfigdata = logconfigurationhome.findByPrimaryKey(new Integer(caid));
-            logconfiguration = logconfigdata.loadLogConfiguration();
-        } catch (FinderException e) {
-            log.debug("Can't find log configuration during load (caid="+caid+"), trying to create new: ", e);
-            try {
-                logconfiguration = new LogConfiguration();
-                logconfigdata = logconfigurationhome.create(new Integer(caid), logconfiguration);
-            } catch (CreateException f) {
-                String msg = intres.getLocalizedMessage("log.errorcreateconf", new Integer(caid));            	
-                log.error(msg, f);
-                throw new EJBException(f);
-            }
-        }
-
-        return logconfiguration;
+        LogConfiguration ret = null; 
+    	Object o = logConfCache.get(Integer.valueOf(caid));
+    	if (o == null) {
+    		LogConfigurationDataLocal logconfigdata = null;
+    		try {
+    			logconfigdata = logconfigurationhome.findByPrimaryKey(new Integer(caid));
+    			ret = logconfigdata.loadLogConfiguration();
+    		} catch (FinderException e) {
+    			log.debug("Can't find log configuration during load (caid="+caid+"), trying to create new: ", e);
+    			try {
+    				ret = new LogConfiguration();
+    				logconfigdata = logconfigurationhome.create(new Integer(caid), ret);
+    			} catch (CreateException f) {
+    				String msg = intres.getLocalizedMessage("log.errorcreateconf", new Integer(caid));            	
+    				log.error(msg, f);
+    				throw new EJBException(f);
+    			}
+    		}
+    		if (ret != null) {
+    			logConfCache.put(Integer.valueOf(caid), ret);
+    		}
+    	} else {
+    		ret = (LogConfiguration)o;
+    	}
+        return ret;
     } // loadLogConfiguration
 
     /**

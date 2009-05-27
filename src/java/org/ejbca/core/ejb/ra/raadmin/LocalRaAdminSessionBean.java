@@ -127,8 +127,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     /** The home interface of  GlobalConfiguration entity bean */
     private GlobalConfigurationDataLocalHome globalconfigurationhome = null;
 
-    /** Var containing the global configuration. */
+    /** Cache variable containing the global configuration. */
     private GlobalConfiguration globalconfiguration = null;
+    /** Constant indicating minimum time between updates of the global configuration cache. In milliseconds, 30 seconds. */
+    private static final long MIN_TIME_BETWEEN_GLOBCONF_UPDATES = 30000;
+    /** help variable used to control that update isn't performed to often. */
+    private long lastupdatetime = -1;
 
     /** The local interface of  log session bean */
     private ILogSessionLocal logsession = null;
@@ -768,24 +772,33 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
-    public GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
-        trace(">loadGlobalConfiguration()");
-        if (globalconfiguration != null) {
-          return globalconfiguration ;
-        }
-
-        GlobalConfiguration ret=null;
-        try{
-          GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey("0");
-          if(gcdata!=null){
-            ret = gcdata.getGlobalConfiguration();
-          }
-        }catch (javax.ejb.FinderException fe) {
-             // Create new configuration
-             ret = new GlobalConfiguration();
-        }
-        trace("<loadGlobalConfiguration()");
-        return ret;
+    public synchronized GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
+    	trace(">loadGlobalConfiguration()");
+    	GlobalConfiguration ret = null;
+    	// Only do the actual SQL query if we might update the configuration due to cache time anyhow
+    	if (globalconfiguration != null) {
+    		if (lastupdatetime > (System.currentTimeMillis() - MIN_TIME_BETWEEN_GLOBCONF_UPDATES)) {
+    			ret = globalconfiguration;
+    		}
+    	}
+    	if (ret == null) {
+    		try{
+    			if (log.isDebugEnabled()) {
+    				log.debug("Reading GlobalConfiguration");
+    			}
+    			GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey("0");
+    			if(gcdata!=null){
+    				ret = gcdata.getGlobalConfiguration();
+    			}
+    		}catch (javax.ejb.FinderException fe) {
+    			// Create new configuration
+    			ret = new GlobalConfiguration();
+    		}
+    		globalconfiguration = ret;
+    		lastupdatetime = System.currentTimeMillis();
+    	}
+    	trace("<loadGlobalConfiguration()");
+    	return ret;
     } //loadGlobalConfiguration
 
     /**
