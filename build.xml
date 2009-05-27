@@ -18,6 +18,34 @@
 	<import file="./docs.xmli" />
 	<import file="./externalra.xmli" />
 	
+
+    <!-- =================================================================== -->
+    <!-- Clover stuff                                                        -->
+    <!-- =================================================================== -->
+	<taskdef resource="cloverlib.xml" classpath="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
+		
+	<target name="-check.clover">
+	<available property="clover.installed"
+	classname="com.cenqua.clover.CloverInstr" />
+	</target>
+
+	<target name="guard.noclover" depends="-check.clover" unless="clover.installed">
+	<fail message="The target you are attempting to run requires Clover, which doesn't appear to be installed"/>
+	</target>
+	
+	<target name="with.clover">
+	    <clover-setup/>
+	 </target>
+
+	<target name="clover.xml">
+	    <clover-report>
+	       <current outfile="coverage.xml">
+	          <format type="xml"/>
+	       </current>
+	    </clover-report>
+	 </target>
+
+	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
