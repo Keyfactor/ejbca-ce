@@ -39,6 +39,9 @@
 		<clover-setup initString="cloverdata/coverage.db">
 			<files>
 				<exclude name="/**/*.jsp"/>
+				<exclude name="**/*.jsp"/>
+				<exclude name="tmp/*.jsp"/>
+				<exclude name="/**/tmp/*"/>
 			</files>
 		</clover-setup>
 	 </target>
