@@ -95,7 +95,7 @@
 
     <target name="test:runclover" depends="test:compile,j2ee:assert-run">
         <classpath>
-            <pathelement path="${clover.jar}"/>
+            <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
         </classpath>
         <formatter type="xml"/>
     
