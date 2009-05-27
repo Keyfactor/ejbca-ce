@@ -66,3 +66,4 @@ create index adminentity_idx1 on AdminEntityData (AdminGroupData_adminEntities);
 -- Indexes on PublisherQueueData
 create index publisherqueue_idx1 on PublisherQueueData (publisherId, publishStatus);
 create index publisherqueue_idx2 on PublisherQueueData (fingerprint);
+create index publisherqueue_idx3 on PublisherQueueData (publisherId, publishStatus, timeCreated);
