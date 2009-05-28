@@ -358,6 +358,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         try {
             returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
         } catch (AuthorizationDeniedException e) {
+        	log.info(e.getMessage()); // be sure to log the full real resource we are denied
         }
         return returnval;
     }
@@ -372,6 +373,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                             authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
             }
         } catch (AuthorizationDeniedException e) {
+        	log.info(e.getMessage()); // be sure to log the full real resource we are denied
         }
         return returnval;
     }

@@ -78,7 +78,7 @@ public class Authorizer extends Object implements java.io.Serializable {
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
         
         if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+            throw  new AuthorizationDeniedException("Administrator is null, and therefore not authorized to resource : " + resource);
         }
         
         AdminInformation admininformation = admin.getAdminInformation();
@@ -119,7 +119,7 @@ public class Authorizer extends Object implements java.io.Serializable {
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
         if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+            throw  new AuthorizationDeniedException("Administrator is null, and therefore not authorized to resource : " + resource);
         }
         
         // Check in accesstree.
@@ -139,7 +139,7 @@ public class Authorizer extends Object implements java.io.Serializable {
      */
     public boolean isGroupAuthorized(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
         if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+            throw  new AuthorizationDeniedException("Administrator is null, and therefore group not authorized to resource : " + resource);
         }
         
         AdminInformation admininformation = admin.getAdminInformation();
@@ -179,7 +179,7 @@ public class Authorizer extends Object implements java.io.Serializable {
      */
     public boolean isGroupAuthorizedNoLog(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
         if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+            throw  new AuthorizationDeniedException("Administrator is null, and therefore group not authorized to resource : " + resource);
         }
         
         // Check in accesstree.
