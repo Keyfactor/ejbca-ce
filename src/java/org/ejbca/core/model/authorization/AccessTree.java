@@ -16,21 +16,26 @@ package org.ejbca.core.model.authorization;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
+
 /**
  * A class that builds and maintains an accesstree. It should be used to check if a
- * client certificate has access rights to a resource or not. isAthorized metod is the one to use.
+ * client certificate has access rights to a resource or not. isAthorized method is the one to use.
  *
  * @author  Philip Vendil
  * @version $Id$
  */
 public class AccessTree implements Serializable {
-    /** Creates a new instance of AccessTree */
-    public AccessTree() {}
+
+    // Private fields
+    private AccessTreeNode rootnode = null;
+	
+	/** Creates a new instance of AccessTree */
+    //public AccessTree() {}
 
     // Public methods
     /** Builds an accesstree out of the given admingroup data. */
     public void buildTree(Collection admingroups) {
-        rootnode = new AccessTreeNode("/");
+    	AccessTreeNode newRootnode = new AccessTreeNode("/");
                   
         Iterator iter = admingroups.iterator();
         // Add all admingroups accessrules.
@@ -39,12 +44,13 @@ public class AccessTree implements Serializable {
           Iterator iter2 = admingroup.getAccessRules().iterator();
           while(iter2.hasNext()){
             AccessRule accessrule = (AccessRule) iter2.next();  
-            rootnode.addAccessRule(accessrule.getAccessRule(),accessrule,admingroup); // Without heading '/' 
+            newRootnode.addAccessRule(accessrule.getAccessRule(),accessrule,admingroup); // Without heading '/' 
           }
         }
+        rootnode = newRootnode;	// Replace the old access rules with the new ones
     }
 
-    /** A method to check if someone is athorized to view the given resource */
+    /** A method to check if someone is authorized to view the given resource */
     public boolean isAuthorized(AdminInformation admininformation, String resource){
           String checkresource = resource;
         // Must begin with '/'.
@@ -52,14 +58,8 @@ public class AccessTree implements Serializable {
           checkresource = "/" + checkresource;
         }
 
-        // Check if user is athorized in the tree.
-        boolean retval = rootnode.isAuthorized(admininformation, checkresource);
-        return retval;
+        // Check if user is authorized in the tree.
+        return rootnode.isAuthorized(admininformation, checkresource);
     }
-
-
-
-    // Private fields
-    private AccessTreeNode rootnode = null;
 
 }
