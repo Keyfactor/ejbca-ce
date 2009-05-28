@@ -31,7 +31,12 @@ import org.ejbca.util.CertTools;
  */
 public class AuthorizationProxy implements Serializable {
 
-    // Public Constants.
+    // Private fields.
+    private HashMap                     authstore;
+    private HashMap                     groupstore;
+    private AccessTree                  accesstree;
+    private AdminGroupDataLocalHome     admingrouphome;
+
     
     /** Creates a new instance of AuthorizationProxy. */
     public AuthorizationProxy(AdminGroupDataLocalHome admingrouphome, 
@@ -104,12 +109,5 @@ public class AuthorizationProxy implements Serializable {
       this.authstore.clear();
       this.groupstore.clear();   
     }
-
-
-    // Private fields.
-    private HashMap                     authstore;
-    private HashMap                     groupstore;
-    private AccessTree                  accesstree;
-    private AdminGroupDataLocalHome     admingrouphome;
 
 }

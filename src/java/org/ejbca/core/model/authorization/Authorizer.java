@@ -40,7 +40,17 @@ import org.ejbca.util.CertTools;
 public class Authorizer extends Object implements java.io.Serializable {
     
     private static final Logger log = Logger.getLogger(Authorizer.class);    
+
+    // Private fields.
+    private AccessTree            accesstree;
+    private int                   module;
     
+    private ICertificateStoreSessionLocal  certificatesession;
+    private ILogSessionLocal               logsession;
+    private IRaAdminSessionLocal           raadminsession;
+    private ICAAdminSessionLocal           caadminsession;
+    private AuthorizationProxy             authorizationproxy;
+
     /** Creates new EjbcaAthorization */
     public Authorizer(Collection admingroups, AdminGroupDataLocalHome  admingrouphome,
             ILogSessionLocal logsession, ICertificateStoreSessionLocal certificatestoresession, 
@@ -270,16 +280,5 @@ public class Authorizer extends Object implements java.io.Serializable {
         authorizationproxy.clear();
     }
     
-    // Private metods
     
-    
-    // Private fields.
-    private AccessTree            accesstree;
-    private int                   module;
-    
-    private ICertificateStoreSessionLocal  certificatesession;
-    private ILogSessionLocal               logsession;
-    private IRaAdminSessionLocal           raadminsession;
-    private ICAAdminSessionLocal           caadminsession;
-    private AuthorizationProxy             authorizationproxy;
 }
