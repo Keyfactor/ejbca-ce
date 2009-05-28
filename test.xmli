@@ -94,17 +94,14 @@
     </target>
 
     <target name="test:runclover" depends="test:compile,j2ee:assert-run">
-        <classpath>
-            <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
-        </classpath>
         <formatter type="xml"/>
-    
         <delete dir="${test.dir}/reports" />
         <mkdir dir="${test.dir}/reports/html" />
         <junit printsummary="yes" haltonfailure="no">
             <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
+                <pathelement path refid="test.compile.classpath" />
+                <pathelement path location="${test.dir}" />
+                <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
             </classpath>
             <formatter type="xml" />
             <batchtest fork="yes" todir="${test.dir}/reports">
