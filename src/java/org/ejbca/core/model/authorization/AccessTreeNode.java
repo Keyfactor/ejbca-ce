@@ -29,8 +29,12 @@ import org.apache.log4j.Logger;
  */
 public class AccessTreeNode implements Serializable{
 
-    private static Logger log = Logger.getLogger(AccessTreeNode.class);
+    private static final Logger log = Logger.getLogger(AccessTreeNode.class);
 
+    // Private fields.
+    private String  name;
+    private ArrayList  useraccesspairs;
+    private HashMap leafs;
 
     // Private Constants
     // OBSERVE that the order is important!!
@@ -45,17 +49,17 @@ public class AccessTreeNode implements Serializable{
         /*if (log.isTraceEnabled()) {
         	log.trace(">AccessTreeNode:" +resource);
         }*/
-        name=resource;
+        name = resource;
         useraccesspairs = new ArrayList();
         leafs = new HashMap();
     }
 
-    /** Checks the tree if the users X509Certificate is athorized to view the requested resource */
+    /** Checks the tree if the users X509Certificate is authorized to view the requested resource */
     public boolean isAuthorized(AdminInformation admininformation, String resource) {
     	if (log.isTraceEnabled()) {
             log.trace(">isAuthorized: " +resource);    		
     	}
-        boolean retval =isAuthorizedRecursive(admininformation,resource,STATE_DECLINE); // Default is to decline access.
+        boolean retval = isAuthorizedRecursive(admininformation,resource,STATE_DECLINE); // Default is to decline access.
     	if (log.isTraceEnabled()) {
     		log.trace("<isAuthorized: returns " + retval);
     	}
@@ -67,29 +71,26 @@ public class AccessTreeNode implements Serializable{
     	 if (log.isTraceEnabled()) {
     		 log.trace(">addAccessRule: " + subresource );
     	 }
-       int index;
-       AccessTreeNode next;
-       String nextname;
-       String nextsubresource;
 
        if(subresource.equals(this.name)){ // Root is a special case.
            Object[] accessadmingroupair = {accessrule,admingroup};
            useraccesspairs.add(accessadmingroupair);
        }
        else{
-           nextsubresource = subresource.substring(this.name.length());
+           String nextsubresource = subresource.substring(this.name.length());
            if((nextsubresource.toCharArray()[0])=='/') {
              nextsubresource = nextsubresource.substring(1);
            }
 
-           index = nextsubresource.indexOf('/');
+           int index = nextsubresource.indexOf('/');
+           String nextname;
            if(index != -1){
              nextname =  nextsubresource.substring(0,index);
            }
            else{
              nextname = nextsubresource;
            }
-           next= (AccessTreeNode) leafs.get(nextname);
+           AccessTreeNode next= (AccessTreeNode) leafs.get(nextname);
            if(next == null){  // Doesn't exist, create.
               next=new AccessTreeNode(nextname);
               leafs.put(nextname, next);
@@ -107,14 +108,9 @@ public class AccessTreeNode implements Serializable{
     	if (log.isTraceEnabled()) {
     		log.trace(">isAuthorizedRecursive: " + " resource: " + resource + " name: "+ this.name + "," +state);
     	}
-       int index;
-       int internalstate = STATE_DECLINE;
        boolean returnval = false;
-       AccessTreeNode next;
-       String nextname = null;
-       String nextsubresource;
 
-       internalstate = matchInformation(admininformation);    
+       int internalstate = matchInformation(admininformation);    
        if(resource.equals(this.name)) {        
          // If this resource have state accept recursive state is given
          if( state == STATE_ACCEPT_RECURSIVE || internalstate == STATE_ACCEPT || internalstate == STATE_ACCEPT_RECURSIVE ){
@@ -125,13 +121,14 @@ public class AccessTreeNode implements Serializable{
          }
        } else {
          //log.debug(" resource : " + resource);
-         nextsubresource = resource.substring(this.name.length());
+         String nextsubresource = resource.substring(this.name.length());
          if((nextsubresource.toCharArray()[0])=='/') {
         	 nextsubresource = nextsubresource.substring(1);
          }
          //log.debug(" nextresource : " + nextsubresource);
          
-         index = nextsubresource.indexOf('/');
+         int index = nextsubresource.indexOf('/');
+         String nextname;
          if(index != -1){
              nextname =  nextsubresource.substring(0,index);
          }
@@ -140,7 +137,7 @@ public class AccessTreeNode implements Serializable{
          }
          //log.debug(" nextname : " + nextname);
          
-         next = (AccessTreeNode) leafs.get(nextname);
+         AccessTreeNode next = (AccessTreeNode) leafs.get(nextname);
          if(next == null ){  // resource path doesn't exist
 
             // If  internal state isn't decline recusive is accept recursive.
@@ -217,10 +214,5 @@ public class AccessTreeNode implements Serializable{
           }
           return state;
        }
-
-    // Private fields.
-    private String  name;
-    private ArrayList  useraccesspairs;
-    private HashMap leafs;
 
 }

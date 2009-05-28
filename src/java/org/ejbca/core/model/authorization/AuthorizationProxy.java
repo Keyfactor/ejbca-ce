@@ -41,7 +41,6 @@ public class AuthorizationProxy implements Serializable {
     /** Creates a new instance of AuthorizationProxy. */
     public AuthorizationProxy(AdminGroupDataLocalHome admingrouphome, 
                               AccessTree accesstree) {
-              // Get the RaAdminSession instance.
        authstore = new HashMap();
        groupstore = new HashMap();
        this.accesstree = accesstree;
