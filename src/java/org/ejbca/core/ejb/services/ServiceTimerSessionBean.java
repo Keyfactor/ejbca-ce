@@ -278,6 +278,36 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 			} catch (Exception e) {
 			    // We need to catch wide here in order to continue even if there is some error
 				log.error(e);
+				
+				// Check if we have scheduled this time to run again, or if this exception would stop the service from running for ever.
+				// If we can't find any current timer we will try to create a new one.
+				boolean isScheduledToRun = false;
+				Collection timers = getSessionContext().getTimerService().getTimers();
+				for (Iterator iterator = timers.iterator(); iterator.hasNext();) {
+					Timer t = (Timer) iterator.next();
+					Integer tInfo = (Integer) timer.getInfo();
+					if (tInfo.intValue() == timerInfo.intValue()) {
+						Date nextTimeOut = timer.getNextTimeout();
+						Date now = new Date();
+						if (log.isDebugEnabled()) {
+							log.debug("Next timeout for existing timer is '"+nextTimeOut+"' now is '"+now);
+						}
+						if (nextTimeOut.after(now)) {
+							// Yes we found a timer that is scheduled for this service
+							isScheduledToRun = true;							
+						}
+					}
+				}
+				if (!isScheduledToRun) {
+					long nextInterval = 60; // Default try to run again in 60 seconds in case of error
+					if (worker != null) {
+						nextInterval = worker.getNextInterval();
+					}
+					long intervalMillis = getNextIntervalMillis(nextInterval);
+					getSessionContext().getTimerService().createTimer(intervalMillis, timerInfo);
+					String msg = intres.getLocalizedMessage("services.servicefailedrescheduled", intervalMillis);
+					log.info(msg);
+				}
 			}
 			if(run){
 				if(serviceData != null){
@@ -314,8 +344,35 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		// Add a random delay within 30 seconds to the interval, just to make sure nodes in a cluster is
 		// not scheduled to run on the exact same second. If the next scheduled run is less than 40 seconds away, 
 		// in which case we only randomize on 5 seconds.
+		long intervalMillis = getNextIntervalMillis(nextInterval);
+		getSessionContext().getTimerService().createTimer(intervalMillis, timerInfo);
+		// Calculate the nextRunTimeStamp, since we set a new timer
+		Date runDateCheck = serviceData.getNextRunTimestamp(); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
 		Date currentDate = new Date();
-		Date nextApproxTime = new Date(currentDate.getTime()+nextInterval*1000);
+		Date nextRunDate = new Date(currentDate.getTime() + intervalMillis);
+		if (log.isDebugEnabled()) {
+			log.debug("nextRunDate is: "+nextRunDate);
+			log.debug("runDateCheck is: "+runDateCheck);
+			log.debug("currentDate is: "+currentDate);
+		}
+		// Check if the current date is after when the service should run.
+		// If a service on another cluster node has updated this timestamp already, then it will return false and
+		// this service will not run.
+		// This is a semaphor (not the best one admitted) so that services in a cluster only runs on one node and don't compete with each other.
+		// If a worker on one node for instance runs for a very long time, there is a chance that another worker on another node will break this semaphore and
+		// run as well.
+		if(currentDate.after(runDateCheck)){
+			// We only update the nextRunTimeStamp if the service will be running otherwise it will, in theory, be a race to exclude each other between the nodes.
+			serviceData.setNextRunTimestamp(nextRunDate);
+			getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
+			ret=true;
+		}		
+		return ret;
+	}
+
+	private long getNextIntervalMillis(long nextIntervalSecs) {
+		Date currentDate = new Date();
+		Date nextApproxTime = new Date(currentDate.getTime()+nextIntervalSecs*1000);
 		Date fourtysec = new Date(currentDate.getTime()+40100); // add 100 milliseconds
 		Date threesec = new Date(currentDate.getTime()+3100); // add 100 milliseconds
 		/*
@@ -340,31 +397,10 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 			log.debug("Adding random delay: "+randMillis);			
 		}
 		
-		long intervalMillis = nextInterval*1000+randMillis; 
-		getSessionContext().getTimerService().createTimer(intervalMillis, timerInfo);
-		// Calculate the nextRunTimeStamp, since we set a new timer
-		Date runDateCheck = serviceData.getNextRunTimestamp(); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
-		Date nextRunDate = new Date(currentDate.getTime() + intervalMillis);
-		if (log.isDebugEnabled()) {
-			log.debug("nextRunDate is: "+nextRunDate);
-			log.debug("runDateCheck is: "+runDateCheck);
-			log.debug("currentDate is: "+currentDate);
-		}
-		// Check if the current date is after when the service should run.
-		// If a service on another cluster node has updated this timestamp already, then it will return false and
-		// this service will not run.
-		// This is a semaphor (not the best one admitted) so that services in a cluster only runs on one node and don't compete with each other.
-		// If a worker on one node for instance runs for a very long time, there is a chance that another worker on another node will break this semaphore and
-		// run as well.
-		if(currentDate.after(runDateCheck)){
-			// We only update the nextRunTimeStamp if the service will be running otherwise it will, in theory, be a race to exclude each other between the nodes.
-			serviceData.setNextRunTimestamp(nextRunDate);
-			getServiceSession().changeService(intAdmin, serviceName, serviceData, true); 
-			ret=true;
-		}		
-		return ret;
+		long intervalMillis = nextIntervalSecs*1000+randMillis;
+		return intervalMillis;
 	}
-
+	
     /**
      * Loads and activates all the services from database that are active
      *
