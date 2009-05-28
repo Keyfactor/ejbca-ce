@@ -1499,14 +1499,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
 
         if (!authorizedToCA(admin, data.getCaId())) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(data.getCaId()));
+            String msg = intres.getLocalizedMessage("ra.errorauthcaexist", new Integer(data.getCaId()), username);
             throw new AuthorizationDeniedException(msg);
         }
 
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to view user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.VIEW_RIGHTS)){
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", new Integer(data.getEndEntityProfileId()), username);
                 throw new AuthorizationDeniedException(msg);            	
             }
         }

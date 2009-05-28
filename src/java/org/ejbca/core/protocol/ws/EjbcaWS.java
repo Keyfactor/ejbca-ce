@@ -197,7 +197,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    	log.error("EJBCA WebService error, editUser : ", e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		} catch (AuthorizationDeniedException e) {
-			log.info("AuthorizationDeniedException: "+e.getMessage());
+			log.info("AuthorizationDeniedException when editing user "+userdata.getUsername()+": "+e.getMessage());
 			throw e;
 		} catch (EJBException e) {
 	    	log.error("EJBCA WebService error, editUser : ", e);

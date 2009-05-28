@@ -268,7 +268,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         public boolean doIt() throws Exception {
             if ( this.doCreateNewUser ) {
                 this.jobData.passWord = "foo123";
-                this.jobData.userName = "WSTESTUSER"+StressTestCommand.this.performanceTest.getRandom().nextInt();
+                this.jobData.userName = "WSTESTUSER"+StressTestCommand.this.performanceTest.getRandom().nextLong();
             }
             this.user.setSubjectDN(this.jobData.getDN());
             this.user.setUsername(this.jobData.userName);
