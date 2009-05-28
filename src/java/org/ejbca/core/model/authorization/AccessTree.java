@@ -19,7 +19,7 @@ import java.util.Iterator;
 
 /**
  * A class that builds and maintains an accesstree. It should be used to check if a
- * client certificate has access rights to a resource or not. isAthorized method is the one to use.
+ * client certificate has access rights to a resource or not. isAuthorized method is the one to use.
  *
  * @author  Philip Vendil
  * @version $Id$
