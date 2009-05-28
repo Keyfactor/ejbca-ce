@@ -34,15 +34,12 @@
 	</target>
 	
 	<target name="with.clover">
-		<clover-setup>
-			<files>
-				<exclude name="/**/*.jsp"/>
-				<exclude name="**/*.jsp"/>
-				<exclude name="tmp/*.jsp"/>
-				<exclude name="/**/tmp/*"/>
-			</files>
-		</clover-setup>
-	 </target>
+	        <clover-setup>
+	            <files>
+	                <exclude name="**/org/apache/**/*.java"/>
+	            </files>
+	        </clover-setup>
+	     </target>
 
 	<target name="clover.xml">
 	    <clover-report>
