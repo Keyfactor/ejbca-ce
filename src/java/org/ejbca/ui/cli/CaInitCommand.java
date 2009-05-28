@@ -141,6 +141,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getOutputStream().println("Policy ID: "+policyId);
             getOutputStream().println("Signature alg: "+signAlg);
             getOutputStream().println("CA token properties: "+catokenproperties);
+            getOutputStream().println("Signed by: "+(signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
+            if (signedByCAId != CAInfo.SELFSIGNED) {
+            	CAInfo signedBy = getCAAdminSession().getCAInfo(administrator, signedByCAId);
+            	if (signedBy == null) {
+                	throw new IllegalArgumentException("CA with id "+signedByCAId+" does not exist.");            		
+            	}
+            }
                             
             initAuthorizationModule(dn.hashCode());
             // Define CAToken type (soft token or hsm).
