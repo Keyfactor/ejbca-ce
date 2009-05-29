@@ -65,7 +65,7 @@
 #verifyownIntensity=1
 
 # How far back to search for events. To avoid using serializable isolation
-#  level for the database, a tolerance of X seconds is accepted between a
+#  level for the database, a tolerance of X milliseconds is accepted between a
 #  logevent is supposed to be written to the database and it's considered
 #  missing (if it isn't readable). Try increasing this value if you get
 #  problems with false warnings about missing log-rows during high load.
