@@ -587,6 +587,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
             try {
                 log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
                 (logconfigurationhome.findByPrimaryKey(new Integer(caid))).saveLogConfiguration(logconfiguration);
+                // Update cache
+    			logConfCache.put(Integer.valueOf(caid), logconfiguration);
             } catch (FinderException e) {
                 String msg = intres.getLocalizedMessage("log.createconf", new Integer(caid));            	
                 log.info(msg);
