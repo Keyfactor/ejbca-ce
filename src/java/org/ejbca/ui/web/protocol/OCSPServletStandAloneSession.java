@@ -539,6 +539,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 }
                 setNextKeyUpdate(new Date().getTime());
                 m_log.debug("rekeying started for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\'");
+                // Check that we at least potentially have a RA key available for P11 sessions
+                if ("pkcs11".equalsIgnoreCase(System.getProperty("javax.net.ssl.keyStoreType")) && mP11Password == null) {
+                	if (!doNotStorePasswordsInMemory) {
+						m_log.info("PKCS#11 slot password is not yet available. Cannot access RA admin key until token is activated.");
+                		return;
+                	}
+                }
+                // TODO: If the password for the RA token was wrong, the SSL provider will crash and burn.. solve this.
                 final EjbcaWS ejbcaWS = getEjbcaWS();
                 if ( ejbcaWS==null ) {
                     return;
