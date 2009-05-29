@@ -398,8 +398,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     				   if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
         			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
         			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
-        			    	   log.error(msg);
-        			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
+        			    	   log.info(msg);
+        			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
         			       } else {
         			           try {
         			        	   if (log.isDebugEnabled()) {
@@ -441,7 +441,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                                        }                                   
                                        log.debug("Calculated nextUpdate to "+nextUpdate);
                                    } else {
-                			    	   String msg = intres.getLocalizedMessage("createcrl.crlinfonull");            	    			    	   
+                			    	   String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());            	    			    	   
                                 	   log.info(msg);
                                    }
         			               if ((currenttime.getTime() + overlap) >= nextUpdate) {
@@ -459,7 +459,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         			           }
         			       }
     			       } else {
-                       	log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
+    			    	   log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
     			       }
     			   }                       
                 } catch(Exception e) {
