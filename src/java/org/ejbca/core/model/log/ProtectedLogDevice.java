@@ -316,7 +316,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 					if (protectedLogEventRow == null ) {
 				    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", protectedLogEventIdentifier.getNodeGUID(),
 				    			protectedLogEventIdentifier.getCounter()));
-				    	log.debug("Logrow was missing verifying nodes about to be linked in.");
+				    	if (log.isDebugEnabled()) {
+				    		log.debug("Logrow was missing verifying nodes about to be linked in.");
+				    	}
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 						protectedLogEventIdentifiersToRemove.add(protectedLogEventIdentifier);
 						continue;
@@ -360,7 +362,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 							long current = (Long) i.next();
 							lowest = Math.min(current, lowest);
 						}
-						log.debug("The earliest present log-event in HashTime-cache is " + lowest + " (counter is " + counter + ").");
+						if (log.isDebugEnabled()) {
+							log.debug("The earliest present log-event in HashTime-cache is " + lowest + " (counter is " + counter + ").");							
+						}
 						HashTime hashTime = (HashTime) lastProtectedLogRowHashTime.get(lowest);
 						if (lowest != 0 || hashTime.getTime() < (now - searchWindow) ) {
 					    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lowest));
@@ -383,7 +387,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 							if (now - protectedLogEventRow.getEventTime() > searchWindow && lastProtectedLogEventIdentifier.getCounter() != (counter-1) ) {
 								// Too old and the last one that should have been written = some are missing
 						    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
-						    	log.debug("The last found event was more than " + (now - protectedLogEventRow.getEventTime()) + " milliseconds old.");
+						    	if (log.isDebugEnabled()) {
+						    		log.debug("The last found event was more than " + (now - protectedLogEventRow.getEventTime()) + " milliseconds old.");
+						    	}
 						    	protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
 							}
 							// Remove all saved events before (now-searchWindow) unless it's the last one
