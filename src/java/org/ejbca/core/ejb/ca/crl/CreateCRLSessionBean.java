@@ -388,80 +388,84 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			log.debug("createCRLs for caid: "+caid);
     			try {
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
-    			   if (cainfo instanceof X509CAInfo) {
-    				   Collection certs = cainfo.getCertificateChain();
-    				   Certificate cacert = null;
-    				   if (!certs.isEmpty()) {
-    					   cacert = (Certificate)certs.iterator().next();   
-    				   } 
-    				   // Don't create CRLs if the CA has expired
-    				   if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
-        			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
-        			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
-        			    	   log.info(msg);
-        			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
-        			       } else {
-        			           try {
-        			        	   if (log.isDebugEnabled()) {
-        			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' needs CRL generation.");
-        			        	   }
-        			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(),false);
-        			               if (log.isDebugEnabled()) {
-            			               if (crlinfo == null) {
-            			            	   log.debug("Crlinfo was null");
-            			               } else {
-            			            	   log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
-            			               }    			            	   
-        			               }
-                                   int crlissueinterval = cainfo.getCRLIssueInterval();
-                                   if (log.isDebugEnabled()) {
-                                       log.debug("crlissueinterval="+crlissueinterval);
-                                       log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                            	   
-                                   }
-                                   long overlap = (cainfo.getCRLOverlapTime() * 60 * 1000) + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
-                                   long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
-                                   if (crlinfo != null) {
-                                       // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
-                                       // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
-                                       // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
-                                       nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
-                                       if (crlissueinterval > 0) {
-                                    	   long crlissueintervalmillisec = ((long)crlissueinterval) * 60 * 60 * 1000;
-                                    	   if (log.isDebugEnabled()) {                                		   
-                                        	   log.debug("crlissueinterval milliseconds: "+crlissueintervalmillisec);
-                                    	   }
-                                           long u = crlinfo.getCreateDate().getTime() + (crlissueintervalmillisec);
-                                           // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
-                                           // we need to issue one when the CRL expires
-                                           if ((u + overlap) < nextUpdate) {
-                                               nextUpdate = u;
-                                               // When we issue CRLs before the real expiration date we don't use overlap
-                                               overlap = 0;
-                                           }
-                                       }                                   
-                                       log.debug("Calculated nextUpdate to "+nextUpdate);
-                                   } else {
-                			    	   String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());            	    			    	   
-                                	   log.info(msg);
-                                   }
-        			               if ((currenttime.getTime() + overlap) >= nextUpdate) {
-        			            	   if (log.isDebugEnabled()) {
-            			            	   log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);    			            		   
-        			            	   }
-        			                   this.runNewTransaction(admin, cainfo.getSubjectDN());
-        			                   createdcrls++;
-        			               }
-        			               
-        			           } catch (CATokenOfflineException e) {
+    			   if (cainfo.getStatus() != SecConst.CA_EXTERNAL) {
+        			   if (cainfo instanceof X509CAInfo) {
+        				   Collection certs = cainfo.getCertificateChain();
+        				   Certificate cacert = null;
+        				   if (!certs.isEmpty()) {
+        					   cacert = (Certificate)certs.iterator().next();   
+        				   } 
+        				   // Don't create CRLs if the CA has expired
+        				   if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
+            			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
             			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
-            			    	   log.error(msg);
-            			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
-        			           }
+            			    	   log.info(msg);
+            			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
+            			       } else {
+            			           try {
+            			        	   if (log.isDebugEnabled()) {
+            			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' needs CRL generation.");
+            			        	   }
+            			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(),false);
+            			               if (log.isDebugEnabled()) {
+                			               if (crlinfo == null) {
+                			            	   log.debug("Crlinfo was null");
+                			               } else {
+                			            	   log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
+                			               }    			            	   
+            			               }
+                                       int crlissueinterval = cainfo.getCRLIssueInterval();
+                                       if (log.isDebugEnabled()) {
+                                           log.debug("crlissueinterval="+crlissueinterval);
+                                           log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                            	   
+                                       }
+                                       long overlap = (cainfo.getCRLOverlapTime() * 60 * 1000) + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
+                                       long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
+                                       if (crlinfo != null) {
+                                           // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
+                                           // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
+                                           // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
+                                           nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
+                                           if (crlissueinterval > 0) {
+                                        	   long crlissueintervalmillisec = ((long)crlissueinterval) * 60 * 60 * 1000;
+                                        	   if (log.isDebugEnabled()) {                                		   
+                                            	   log.debug("crlissueinterval milliseconds: "+crlissueintervalmillisec);
+                                        	   }
+                                               long u = crlinfo.getCreateDate().getTime() + (crlissueintervalmillisec);
+                                               // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
+                                               // we need to issue one when the CRL expires
+                                               if ((u + overlap) < nextUpdate) {
+                                                   nextUpdate = u;
+                                                   // When we issue CRLs before the real expiration date we don't use overlap
+                                                   overlap = 0;
+                                               }
+                                           }                                   
+                                           log.debug("Calculated nextUpdate to "+nextUpdate);
+                                       } else {
+                    			    	   String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());            	    			    	   
+                                    	   log.info(msg);
+                                       }
+            			               if ((currenttime.getTime() + overlap) >= nextUpdate) {
+            			            	   if (log.isDebugEnabled()) {
+                			            	   log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);    			            		   
+            			            	   }
+            			                   this.runNewTransaction(admin, cainfo.getSubjectDN());
+            			                   createdcrls++;
+            			               }
+            			               
+            			           } catch (CATokenOfflineException e) {
+                			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
+                			    	   log.error(msg);
+                			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
+            			           }
+            			       }
+        			       } else {
+        			    	   log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
         			       }
-    			       } else {
-    			    	   log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
-    			       }
-    			   }                       
+        			   }                           				   
+    			   } else {
+    				   log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
+    			   }
                 } catch(Exception e) {
                 	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
                 	error(msg, e);
@@ -510,41 +514,45 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			log.debug("createDeltaCRLs for caid: "+caid);
     			try{
     				CAInfo cainfo = caadmin.getCAInfo(admin, caid);
-    				if (cainfo instanceof X509CAInfo) {
-    					Collection certs = cainfo.getCertificateChain();
-    					Certificate cacert = null;
-    					if (!certs.isEmpty()) {
-    						cacert = (Certificate)certs.iterator().next();   
-    					} 
-    					// Don't create CRLs if the CA has expired
-    					if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
-        					if(cainfo.getDeltaCRLPeriod() > 0) {
-        						if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
-        							String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
-        							log.error(msg);
-        							logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
-        						} else {
-        							if (log.isDebugEnabled()) {
-        								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
-        							}
-        							CRLInfo deltacrlinfo = store.getLastCRLInfo(admin, cainfo.getSubjectDN(), true);
-        							if (log.isDebugEnabled()) {
-        								if (deltacrlinfo == null) {
-        									log.debug("DeltaCrlinfo was null");
-        								} else {
-        									log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+deltacrlinfo.getLastCRLNumber()+", expireDate="+deltacrlinfo.getExpireDate());
-        								}    			            	   
-        							}
-        							if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
-        								this.runDeltaCRLnewTransaction(admin, cainfo.getSubjectDN());
-        								createddeltacrls++;
-        							}
-        						}
-        					}
-                        } else {
-                        	log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
-                        }
-    				}
+    				if (cainfo.getStatus() != SecConst.CA_EXTERNAL) {
+        				if (cainfo instanceof X509CAInfo) {
+        					Collection certs = cainfo.getCertificateChain();
+        					Certificate cacert = null;
+        					if (!certs.isEmpty()) {
+        						cacert = (Certificate)certs.iterator().next();   
+        					} 
+        					// Don't create CRLs if the CA has expired
+        					if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
+            					if(cainfo.getDeltaCRLPeriod() > 0) {
+            						if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
+            							String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
+            							log.error(msg);
+            							logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
+            						} else {
+            							if (log.isDebugEnabled()) {
+            								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
+            							}
+            							CRLInfo deltacrlinfo = store.getLastCRLInfo(admin, cainfo.getSubjectDN(), true);
+            							if (log.isDebugEnabled()) {
+            								if (deltacrlinfo == null) {
+            									log.debug("DeltaCrlinfo was null");
+            								} else {
+            									log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+deltacrlinfo.getLastCRLNumber()+", expireDate="+deltacrlinfo.getExpireDate());
+            								}    			            	   
+            							}
+            							if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
+            								this.runDeltaCRLnewTransaction(admin, cainfo.getSubjectDN());
+            								createddeltacrls++;
+            							}
+            						}
+            					}
+                            } else {
+                            	log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
+                            }
+        				}    					
+     			   } else {
+    				   log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
+    			   }
     			}catch(Exception e) {
                 	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
                 	error(msg, e);
