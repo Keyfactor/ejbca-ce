@@ -36,9 +36,26 @@ public class PerformanceTest {
     private final int STATISTIC_UPDATE_PERIOD_IN_SECONDS = 10;
     private final Log log;
     private final Random random;
+    private boolean isSomeThreadUsingRandom;
     public PerformanceTest() {
         this.log =new Log();
         this.random = new Random();
+        this.isSomeThreadUsingRandom = false;
+    }
+    public synchronized long nextLong() {
+        while ( this.isSomeThreadUsingRandom ) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // should never ever happend
+                throw new Error(e);
+            }
+        }
+        this.isSomeThreadUsingRandom = true;
+        final long result = this.random.nextLong();
+        this.isSomeThreadUsingRandom = false;
+        this.notifyAll();
+        return result;
     }
     public Log getLog() {
         return this.log;
