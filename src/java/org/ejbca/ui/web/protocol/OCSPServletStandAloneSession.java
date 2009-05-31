@@ -277,14 +277,23 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         PrintWriter pw = new PrintWriter(sw);
         try {
             loadPrivateKeys(this.servlet.m_adm, null);
-            final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
-            while ( i.hasNext() ) {
-                SigningEntity signingEntity = i.next();
-                if ( !signingEntity.isOK() ) {
-                    pw.println();
-                    String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
-                    pw.print(errMsg);
-                    m_log.error(errMsg);
+            if (this.signEntitycontainer == null || this.signEntitycontainer.getSigningEntityMap() == null ||
+            		this.signEntitycontainer.getSigningEntityMap().values() == null) {
+                pw.println();
+                String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
+                pw.print(errMsg);
+                m_log.error(errMsg);
+            	
+            } else {
+                final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
+                while ( i.hasNext() ) {
+                    SigningEntity signingEntity = i.next();
+                    if ( !signingEntity.isOK() ) {
+                        pw.println();
+                        String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
+                        pw.print(errMsg);
+                        m_log.error(errMsg);
+                    }
                 }
             }
         } catch (Exception e) {
