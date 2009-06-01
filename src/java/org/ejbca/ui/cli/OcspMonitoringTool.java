@@ -35,6 +35,7 @@ public class OcspMonitoringTool extends ClientToolBox {
 	
 	private final String ERROR_NOTEXISTINGOCSP = "Row does not exist in OCSP database.";
 	private final String ERROR_NOTEXISTINGCA = "Row exists in OCSP, but not in CA database.";
+	private final String ERROR_NOTEXISTINGCALIMIT = "Row exists in OCSP, but not in CA database and is too far off in the future.";
 	private final String ERROR_NOTUPDATED = "Row is not updated in OCSP database.";
 	private final String ERROR_UPDATEDOCSP = "OCSP database has a newer entry than CA database.";
 	private final String ERROR_TAMPERED = "Row was tampered with in OCSP database.";
@@ -42,11 +43,13 @@ public class OcspMonitoringTool extends ClientToolBox {
 	private final int ERRORREPORT_LISTLIMIT = 32;
 
 	final String usage = "\n"
-		+ getName() + " <inclusion-mode> <batchSize> <certificateProfileId1> [<certificateProfileId2>] ... - <CA db name> <OCSP1 db name> [<OCSP2 db name>] ...\n"
-		+ " This commands relies on a JPA properties/META-INF/persistence.xml being present and configured for your environment.\n"
+		+ getName() + " <inclusion-mode> <batchSize> <timeToConfirmError> <certificateProfileId1> [<certificateProfileId2>] ... - <CA db name> <OCSP1 db name> [<OCSP2 db name>] ...\n"
+		+ " Compares different OCSP databases with the CA's database and reports discrepancies.\n"
+		+ " This commands relies on a JPA properties/META-INF/persistence.xml being present and configured for your environment and that the systems time is correct.\n"
 		+ " JDBC drivers used in persistence.xml also has to present in lib/.\n\n"
 		+ " inclusion-mode:        all=include actual certificate, nocert=dont include certificate in comparisons\n"
 		+ " batchSize              Number of certificates to read at the time. Larger batch means faster runs, but uses up more memory.\n"
+		+ " timeToConfirmError:    The number of seconds to wait before we concider a discrepancy in the OCSP as an error.\n"
 		+ " certificateProfileId1: the certificateProfileId to use for monitoring\n"
 		+ " -                      required separator\n"
 		+ " CA db name:            persistence-unit name of CA database in the persistence.xml file\n"
@@ -93,7 +96,7 @@ public class OcspMonitoringTool extends ClientToolBox {
     	log.info("Monitoring tool started.");
     	long startTime = new Date().getTime();
     	// Parse arguments and setup entityManagers
-    	if (args.length<6) {
+    	if (args.length<7) {
     		log.info(usage);
     		return -1;
     	}
@@ -101,6 +104,8 @@ public class OcspMonitoringTool extends ClientToolBox {
     	log.info("Including all fields" + (inclusionMode ? ", except the certificate" : "") + " in comparision.");
     	int currentArg = 2;
     	int batchSize = Integer.parseInt(args[currentArg]);
+    	currentArg++;
+    	long timeToConfirmError = Integer.parseInt(args[currentArg]) * 1000;
     	currentArg++;
     	List<Integer> certificateProfileIds = new ArrayList<Integer>();
     	while (currentArg < args.length && !args[currentArg].equals("-")) {
@@ -200,7 +205,12 @@ public class OcspMonitoringTool extends ClientToolBox {
 						    	if (log.isDebugEnabled()) {
 									log.debug("An extra cert with fingerprint "+ocspCertificateData.getFingerprint()+" might exist in the OCSP database " + ocspEntityManagerName);
 						    	}
-								recheckList.add(new RecheckEntry(ocspCertificateData.getFingerprint(), ocspCertificateData.getUpdateTime(), i));
+				    			if (ocspCertificateData.getUpdateTime() > new Date().getTime()+timeToConfirmError) {
+									handleError(errorList, ocspEntityManagerNames.get(i), ocspCertificateData.getFingerprint(), ocspCertificateData.getIssuerDN(), ocspCertificateData.getSerialNumber()
+											,ERROR_NOTEXISTINGCALIMIT);
+				    			} else {
+									recheckList.add(new RecheckEntry(ocspCertificateData.getFingerprint(), ocspCertificateData.getUpdateTime(), i));
+				    			}
 								ocspRowIndex++;
 								continue;
 							} else if (test < 0) {
@@ -231,7 +241,12 @@ public class OcspMonitoringTool extends ClientToolBox {
 							    	if (log.isDebugEnabled()) {
 										log.debug("A cert with fingerprint "+ocspCertificateData.getFingerprint()+" in the OCSP database " + ocspEntityManagerName + " might not have been updated in the CA database.");
 							    	}
-									recheckList.add(new RecheckEntry(ocspCertificateData.getFingerprint(), ocspCertificateData.getUpdateTime(), i));
+					    			if (ocspCertificateData.getUpdateTime() > new Date().getTime()+timeToConfirmError) {
+										handleError(errorList, ocspEntityManagerNames.get(i), ocspCertificateData.getFingerprint(), ocspCertificateData.getIssuerDN(), ocspCertificateData.getSerialNumber()
+												,ERROR_NOTEXISTINGCALIMIT);
+					    			} else {
+										recheckList.add(new RecheckEntry(ocspCertificateData.getFingerprint(), ocspCertificateData.getUpdateTime(), i));
+					    			}
 								}
 							}
 						}
@@ -240,7 +255,7 @@ public class OcspMonitoringTool extends ClientToolBox {
 					}
 				}
 				currentFingerprint = certificateDataList.get(certificateDataList.size()-1).getFingerprint();
-				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, errorList);
+				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, errorList, timeToConfirmError);
 	    	}
 	    	// Make sure we don't have any unhandled CertificateData at any of the OCSP responders left
 			for (int i=0; i<ocspEntityManagers.size(); i++) {
@@ -251,14 +266,19 @@ public class OcspMonitoringTool extends ClientToolBox {
 		    			&& ocspCertificateDataList.size()>0) {
 		    		for (CertificateData ocspCertificateData : ocspCertificateDataList) {
 						// An update for this OCSP might have gone through since we read the CA database, re-check later
-		    			recheckList.add(new RecheckEntry(ocspCertificateData.getFingerprint(), ocspCertificateData.getUpdateTime(), i));
+		    			if (ocspCertificateData.getUpdateTime() > new Date().getTime()+timeToConfirmError) {
+							handleError(errorList, ocspEntityManagerNames.get(i), ocspCertificateData.getFingerprint(), ocspCertificateData.getIssuerDN(), ocspCertificateData.getSerialNumber()
+									,ERROR_NOTEXISTINGCALIMIT);
+		    			} else {
+			    			recheckList.add(new RecheckEntry(ocspCertificateData.getFingerprint(), ocspCertificateData.getUpdateTime(), i));
+		    			}
 		    		}
 					ocspCurrentFingerprint = ocspCertificateDataList.get(ocspCertificateDataList.size()-1).getFingerprint();
 		    	}
 			}
 			// Process the re-check list until it's empty
 			while (!recheckList.isEmpty()) {
-				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, errorList);
+				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, errorList, timeToConfirmError);
 				if (!recheckList.isEmpty()) {
 					// Save the environment if there is nothing important to do.. =)
 					try {
@@ -299,12 +319,11 @@ public class OcspMonitoringTool extends ClientToolBox {
      * @param errorList
      * @return
      */
-	private List<RecheckEntry> processRecheckList(List<RecheckEntry> recheckList, EntityManager caEntityManager, List<EntityManager> ocspEntityManagers, List<String> ocspEntityManagerNames, boolean inclusionMode, List<String> errorList) {
+	private List<RecheckEntry> processRecheckList(List<RecheckEntry> recheckList, EntityManager caEntityManager, List<EntityManager> ocspEntityManagers, List<String> ocspEntityManagerNames, boolean inclusionMode, List<String> errorList, long timeToConfirmError) {
 		List<RecheckEntry> toKeep = new ArrayList<RecheckEntry>();
 		for (RecheckEntry re : recheckList) {
 			long now = new Date().getTime();
-			final long threshold = 60*1000;
-			if ( (now-re.updateTime) >= threshold ) {
+			if ( (now-re.updateTime) >= timeToConfirmError ) {
 				CertificateData certificateData = CertificateData.findByFingerprint(caEntityManager, re.fingerprint);
 				if (certificateData==null) {
 					CertificateData ocspCertificateData = CertificateData.findByFingerprint(ocspEntityManagers.get(re.ocspEntityManagerIndex), re.fingerprint);

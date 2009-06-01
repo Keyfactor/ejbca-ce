@@ -37,7 +37,7 @@ public class TestOcspMonitoringTool extends TestCase {
 
 	protected void setUp() throws Exception { }
 
-	String[] args = {"ocspmon", "all", "1000", "1", "9", "-", "ca", "ocsp1"};
+	String[] args = {"ocspmon", "all", "1000", "60", "1", "9", "-", "ca", "ocsp1"};
 
 	/**
 	 * 	Run a test to see that the databases made available for testing is equal
