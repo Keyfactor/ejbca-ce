@@ -94,10 +94,12 @@ public class RAInterfaceBean implements java.io.Serializable {
       log.trace(">initialize()");
 
       if(!initialized){
-        if(request.getAttribute( "javax.servlet.request.X509Certificate" ) != null)
+        if(request.getAttribute( "javax.servlet.request.X509Certificate" ) != null) {
           administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
-        else
+        }
+        else { 
           administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+        }
         // Get the UserAdminSession instance.
         this.informationmemory = ejbcawebbean.getInformationMemory();
         
@@ -326,12 +328,14 @@ public class RAInterfaceBean implements java.io.Serializable {
 
        UserDataVO user = adminsession.findUser(administrator, username);
        
-       if(this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations())
-         if(!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AvailableAccessRules.EDIT_RIGHTS, false))
+       if(this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+         if(!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AvailableAccessRules.EDIT_RIGHTS, false)) {
            throw new AuthorizationDeniedException("Not authorized to edit user.");
-
-       if(user != null)
+         }
+       }
+       if(user != null) {
         userview = new UserView(user, informationmemory.getCAIdToNameMap());
+       }
        return userview;
     }
 
@@ -351,19 +355,18 @@ public class RAInterfaceBean implements java.io.Serializable {
       Collection usernames = hardtokensession.findHardTokenByTokenSerialNumber(administrator, tokensn);
      
       Iterator iter = usernames.iterator();
-      while(iter.hasNext()){       	 
+      while(iter.hasNext()){
          try{  
            user = adminsession.findUser(administrator, (String) iter.next());
          }catch(AuthorizationDeniedException e){}
         
-         if(user!=null)
+         if(user!=null) {
            userlist.add(user);
+         }
       }
      
       users.setUsers(userlist, informationmemory.getCAIdToNameMap());
-
       returnval= users.getUsers(index,size);
-
       return returnval;
     }
 
@@ -417,8 +420,9 @@ public class RAInterfaceBean implements java.io.Serializable {
            UserDataVO user = null;
            try{
              user = adminsession.findUser(administrator, (String) i.next());
-             if(user != null)
+             if(user != null) {
                userlist.add(user);
+             }
            }catch(AuthorizationDeniedException e){}
         }
         users.setUsers(userlist, informationmemory.getCAIdToNameMap());
@@ -431,7 +435,6 @@ public class RAInterfaceBean implements java.io.Serializable {
     public UserView[] filterByQuery(Query query, int index, int size) throws Exception {
       Collection userlist = adminsession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(),0);
       users.setUsers(userlist, informationmemory.getCAIdToNameMap());
-
       return users.getUsers(index,size);
     }
 
@@ -517,16 +520,15 @@ public class RAInterfaceBean implements java.io.Serializable {
        EndEntityProfile profile = new EndEntityProfile();
        Iterator iter = this.informationmemory.getAuthorizedCAIds().iterator();
        String availablecas = "";
-       if(iter.hasNext())
+       if(iter.hasNext()) {
          availablecas = ((Integer) iter.next()).toString();  
-       
+       }
        while(iter.hasNext()){
          availablecas = availablecas + EndEntityProfile.SPLITCHAR + ((Integer) iter.next()).toString();     
        }
        
        profile.setValue(EndEntityProfile.AVAILCAS, 0,availablecas);
        profile.setRequired(EndEntityProfile.AVAILCAS, 0,true); 
-        
        profiles.addEndEntityProfile(name, profile);
     }
 
@@ -641,23 +643,19 @@ public class RAInterfaceBean implements java.io.Serializable {
 
     public boolean isAllTokenCertificatesRevoked(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
       Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
-
       boolean allrevoked = true;
-
       if(!certs.isEmpty()){
         Iterator j = certs.iterator();
         while(j.hasNext()){
           Certificate cert = (Certificate)j.next();        
           RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));          
-          if(revinfo == null || revinfo.getReason()== RevokedCertInfo.NOT_REVOKED)
+          if(revinfo == null || revinfo.getReason()== RevokedCertInfo.NOT_REVOKED) {
             allrevoked = false;
+          }
         }
       }
-
       return allrevoked;
     }
-    
-
 
     public void loadCACertificates(CertificateView[] cacerts) {
         certificates = cacerts;
@@ -676,9 +674,9 @@ public class RAInterfaceBean implements java.io.Serializable {
 				  this.endEntityAuthorization(administrator,endentityprofileid,AvailableAccessRules.VIEW_RIGHTS,true);
 			  }
 			  RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-			  if(revinfo != null)
+			  if(revinfo != null) {
 				  revokedinfo = new RevokedInfoView(revinfo);
-			  
+			  }
 			  certificates = new CertificateView[1];
 			  certificates[0] = new CertificateView(cert, revokedinfo, username);
 			  
@@ -696,7 +694,6 @@ public class RAInterfaceBean implements java.io.Serializable {
       if(certificates != null){
         returnval=certificates.length;
       }
-      
       return returnval;
     }
 
@@ -705,7 +702,6 @@ public class RAInterfaceBean implements java.io.Serializable {
       if(certificates != null){
         returnval = certificates[index];
       }
-      
       return returnval;
     }
 
@@ -722,7 +718,6 @@ public class RAInterfaceBean implements java.io.Serializable {
       if(!endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_RIGHTS, false)){
     	  throw new AuthorizationDeniedException();
       }
-      
       if(!GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
     	  return false;
       }
@@ -737,16 +732,16 @@ public class RAInterfaceBean implements java.io.Serializable {
     public boolean authorizedToRevokeCert(String username) throws FinderException, RemoteException, AuthorizationDeniedException{
       boolean returnval=false;
       UserDataVO data = adminsession.findUser(administrator, username);
-      if(data == null)
+      if(data == null) {
         return false;
-              
+      }
       int profileid = data.getEndEntityProfileId();
 
-      if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations())
+      if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
        returnval= endEntityAuthorization(administrator, profileid, AvailableAccessRules.REVOKE_RIGHTS, false);
-      else
+      } else {
        returnval=true;
-
+      }
       return returnval;
     }
 
@@ -765,10 +760,10 @@ public class RAInterfaceBean implements java.io.Serializable {
       	if(data != null){       	
           int profileid = data.getEndEntityProfileId();
 		  returnval = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);		  
-      	}else
-          returnval = false;         
+      	}else {
+          returnval = false;
+      	}
       }
-
       return returnval && keyrecoverysession.existsKeys(administrator, cert) && !keyrecoverysession.isUserMarked(administrator,username);
     }
 
@@ -787,8 +782,9 @@ public class RAInterfaceBean implements java.io.Serializable {
     public String[] getCertificateProfileNames(){
         String[] dummy = {""};
         Collection certprofilenames = this.informationmemory.getAuthorizedEndEntityCertificateProfileNames().keySet();
-        if(certprofilenames == null)
+        if(certprofilenames == null) {
             return new String[0];
+        }
         return (String[]) certprofilenames.toArray(dummy);
     }
 
@@ -800,8 +796,9 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
 
     public boolean getEndEntityParameter(String parameter){
-       if(parameter == null)
+       if(parameter == null) {
          return false;
+       }
 
        return parameter.equals(EndEntityProfile.TRUE);
     }
@@ -817,13 +814,14 @@ public class RAInterfaceBean implements java.io.Serializable {
         return true;
       }
       try{
-        if(log)
+        if(log) {
            returnval = authorizationsession.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights) &&
            authorizationsession.isAuthorized(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
-        else
+        } else {
            returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights)&&
            authorizationsession.isAuthorized(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
-      }catch(AuthorizationDeniedException e){}
+        }
+      } catch(AuthorizationDeniedException e){}
 
       return returnval;
     }    

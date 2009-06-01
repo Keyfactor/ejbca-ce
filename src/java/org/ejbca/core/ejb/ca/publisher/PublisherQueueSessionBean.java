@@ -80,9 +80,6 @@ import org.ejbca.util.JDBCUtil;
  */
 public class PublisherQueueSessionBean extends BaseSessionBean {
 
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
-    
     /**
      * The local home interface of publisher entity bean.
      */
