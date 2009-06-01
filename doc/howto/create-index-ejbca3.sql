@@ -46,7 +46,7 @@ create index protect_idx1 on TableProtectData (dbKey,dbType);
 -- Indexes on ProtectedLogData;
 -- ProtectedLogData does only exist in EJBCA 3.6 and later
 create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
--- Oracle does not like the b64Protection(1) notification, use simply b64Protection instead
+-- Oracle and DB2 does not like the b64Protection(1) notification, use simply b64Protection instead
 -- create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection);
 create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(1));
 create index protectedlogdata_idx3 on ProtectedLogData (username, caId, module);
