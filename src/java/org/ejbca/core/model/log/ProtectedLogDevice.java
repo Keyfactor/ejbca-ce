@@ -461,7 +461,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 				// If we have protectionIntensity set to > 0 we don't sign every log row
 				protectedCounter = counter;
 				if (log.isTraceEnabled()) {
-					log.debug("Updated protected counter: "+protectedCounter);
+					log.trace("Updated protected counter: "+protectedCounter);
 				}
 			}
 			counter++;				
