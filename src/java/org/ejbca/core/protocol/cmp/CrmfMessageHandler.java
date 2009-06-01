@@ -27,6 +27,7 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
@@ -276,9 +277,10 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							if (ret) {
 								// If authentication was correct, we will now create a username and password and register the new user in EJBCA
 								UsernameGenerator gen = UsernameGenerator.getInstance(usernameGeneratorParams);
-								String dn = crmfreq.getSubjectDN();
-								log.debug("Creating username from base dn: "+dn);
-								String username = gen.generateUsername(dn);
+								// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString becasue we don't want double escaping of some characters
+								X509Name dnname = crmfreq.getRequestX509Name();
+								log.debug("Creating username from base dn: "+dnname.toString());
+								String username = gen.generateUsername(dnname.toString());
 								String pwd;
 								if (StringUtils.equals(userPasswordParams, "random")) {
 									log.debug("Setting 12 char random user password.");
@@ -344,13 +346,13 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 											if (log.isDebugEnabled()) {
 												log.debug("Creating new user with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
 											}
-											usersession.addUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
+											usersession.addUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
 										} catch (DuplicateKeyException e) {
 											// This was veery strange, we didn't find it before, but now it exists?
 											String errMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
 											log.error(errMsg);
 											// If the user already exists, we will change him instead and go for that
-											usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
+											usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 										}
 									} else {
 										// If the user already exists, we will change him instead and go for that
@@ -358,7 +360,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 										if (log.isDebugEnabled()) {
 											log.debug("Changing user to eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
 										}
-										usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
+										usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 									}
 									addedUser = true;
 								} catch (NotFoundException e) {
