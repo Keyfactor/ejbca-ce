@@ -515,7 +515,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventRow getProtectedLogEventRow(ProtectedLogEventIdentifier identifier) {
-		log.trace(">getProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace(">getProtectedLogEventRow: "+identifier.getNodeGUID()+", "+identifier.getCounter());
+		}
 		ProtectedLogEventRow protectedLogEventRow = null;
 		try {
 			if (identifier != null) {
@@ -523,8 +525,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				protectedLogEventRow = new ProtectedLogEventRow(protectedLogDataLocal);
 			}
 		} catch (FinderException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Can not find logEventRow: "+identifier.getNodeGUID()+", "+identifier.getCounter());
+			}
 		}
-		log.trace("<getProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace("<getProtectedLogEventRow");
+		}
 		return protectedLogEventRow;
 	}
 
@@ -671,7 +678,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(boolean isProtected) {
-		log.trace(">findNewestProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace(">findNewestProtectedLogEventRow: "+isProtected);
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -692,7 +701,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.trace("<findNewestProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace("<findNewestProtectedLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 

@@ -94,6 +94,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private Properties properties;
 	private int nodeGUID;
 	private long counter;
+	private long protectedCounter;
 	private HashMap lastProtectedLogRowHashTime;	// <Long, HashTime> 
 	long lastProtectedLogRowCount;
 	private long lastTime;
@@ -136,6 +137,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
 		nodeGUID = seeder.nextInt();
 		counter = 0;
+		protectedCounter = 0;
 		protectionIntensity = Long.parseLong(properties.getProperty(CONFIG_PROTECTION_INTENSITY, "0")) * 1000; 
 		allowConfigurableEvents = properties.getProperty(CONFIG_ALLOW_EVENTSCONFIG, "false").equalsIgnoreCase("true"); 
 		protectionHashAlgorithm = properties.getProperty(CONFIG_HASHALGO, "SHA-256");
@@ -348,7 +350,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			// Add previous ProtectedLogEventRow this node has produced, if any
 			// Start by verifying that the last event in the database is correct, but only do this if sufficient time has passed since this was last verified
 			if (counter != 0) {
-				// Even though we might not be able to read the last event yet from the database, we use this for continious linking (it will be verified in the future)
+				// Even though we might not be able to read the last event yet from the database, we use this for continuous linking (it will be verified in the future)
 				linkedInEventIdentifiersCollection.add(new ProtectedLogEventIdentifier(nodeGUID, counter-1));
 				long now = System.currentTimeMillis();
 				if (intensityOfSearchForOwnLogEvent != -1000 && lastTimeOfSearchForOwnLogEvent + intensityOfSearchForOwnLogEvent < now) {
@@ -384,13 +386,29 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 					    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowchanged", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
 							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 						} else {
-							if (now - protectedLogEventRow.getEventTime() > searchWindow && lastProtectedLogEventIdentifier.getCounter() != (counter-1) ) {
-								// Too old and the last one that should have been written = some are missing
-						    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
-						    	if (log.isDebugEnabled()) {
-						    		log.debug("The last found event was more than " + (now - protectedLogEventRow.getEventTime()) + " milliseconds old.");
-						    	}
-						    	protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+							if ( ((now - protectedLogEventRow.getEventTime()) > searchWindow) ) {
+								// we come here if we only found log records older than the search window in the DB. This will occur of the node have been idling for a while.
+								if (protectionIntensity == 0) {
+									// We can only compare with the counter-1 if we sign every row. If we don't sign every row (because protectionIntensity is 10 seconds or something)
+									// lastProtectedLogEventIdentifier.getCounter() can be counter-2 or something even earlier
+									if (lastProtectedLogEventIdentifier.getCounter() != (counter-1))  {
+										// Too old and the last one that should have been written = some are missing
+								    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
+								    	if (log.isDebugEnabled()) {
+								    		log.debug("The last found event was more than " + (now - protectedLogEventRow.getEventTime()) + " milliseconds old. Looking for counter-1 "+(counter-1)+". lastProtectedLogEventIdentifier.getCounter() is "+lastProtectedLogEventIdentifier.getCounter());
+								    	}
+								    	protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+									}
+								} else {
+									if (lastProtectedLogEventIdentifier.getCounter() != protectedCounter)  {
+										// the last protected log row is not the one we have internally cached as the last protected = some are missing
+								    	log.error(intres.getLocalizedMessage("protectedlog.error.logrowmissing", nodeGUID, lastProtectedLogEventIdentifier.getCounter()));
+								    	if (log.isDebugEnabled()) {
+								    		log.debug("The last found event was more than " + (now - protectedLogEventRow.getEventTime()) + " milliseconds old. Looking for protectedCounter "+(protectedCounter)+". lastProtectedLogEventIdentifier.getCounter() is "+lastProtectedLogEventIdentifier.getCounter());
+								    	}
+								    	protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
+									}									
+								}
 							}
 							// Remove all saved events before (now-searchWindow) unless it's the last one
 							while ( lastProtectedLogRowHashTime.size() > 1 && ((HashTime)lastProtectedLogRowHashTime.get(lastProtectedLogRowCount)).getTime() < (now - searchWindow) ) {
@@ -438,13 +456,21 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 			}
 			getProtectedLogSession().addProtectedLogEventRow(protectedLogEventRow);
 			lastProtectedLogRowHashTime.put(counter, new HashTime(protectedLogEventRow.calculateHash(), protectedLogEventRow.getEventTime()));
-			counter++;
+			//log.debug("counter:"+counter+", protectedLogEventRow.getProtection(): "+protectedLogEventRow.getProtection());
+			if (protectedLogEventRow.getProtection() != null) {
+				// If we have protectionIntensity set to > 0 we don't sign every log row
+				protectedCounter = counter;
+				if (log.isTraceEnabled()) {
+					log.debug("Updated protected counter: "+protectedCounter);
+				}
+			}
+			counter++;				
 		} catch (Exception e) {
         	log.error(intres.getLocalizedMessage("protectedlog.error.internallogerror"), e);
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INTERNAL_ERROR);
 			throw new EJBException(e);
 		}
-	}
+	} // logInternal
 
 	/**
 	 * At this point we can no longer rely on beans to exist. We do our best to log as much as possible, unprotected.
@@ -487,7 +513,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
        			+CertTools.getIssuerDN(certificate))+" "+event+" "+comment+" "+exception));
 		lastProtectedLogRowHashTime.put(counter, new HashTime(protectedLogEventRow.calculateHash(), protectedLogEventRow.getEventTime()));
 		counter++;
-	}
+	} // logInternalOnShutDown
 
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
