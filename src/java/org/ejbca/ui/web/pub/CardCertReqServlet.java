@@ -153,18 +153,21 @@ public class CardCertReqServlet extends HttpServlet {
             final String username; {
                 Object o = request.getAttribute("javax.servlet.request.X509Certificate");
                 final X509Certificate[] certs;
-                if ( o!=null && o instanceof X509Certificate[] )
+                if ( o!=null && o instanceof X509Certificate[] ) {
                     certs = (X509Certificate[])o;
-                else
+                }
+                else {
                     throw new AuthLoginException("No authenicating certificate");
+                }
                 RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, certs[0].getIssuerDN().getName(),
                                                                       certs[0].getSerialNumber());
                 if ( rci==null || rci.getReason()!=RevokedCertInfo.NOT_REVOKED )
                     throw new UserCertificateRevokedException(certs[0]);
                 username = certificatestoresession.findUsernameByCertSerno(administrator,
                         certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
-                if ( username==null || username.length()==0 )
+                if ( username==null || username.length()==0 ) {
                     throw new ObjectNotFoundException("Not possible to retrieve user name");
+                }
             }
             IUserAdminSessionRemote adminsession = useradminhome.create();
             ISignSessionRemote signsession = signsessionhome.create();
@@ -179,15 +182,16 @@ public class CardCertReqServlet extends HttpServlet {
                     if ( o instanceof X509Certificate ) {
                         X509Certificate cert = (X509Certificate)o;
                         RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, cert.getIssuerDN().getName(), cert.getSerialNumber());
-                        if ( rci!=null && rci.getReason()==RevokedCertInfo.NOT_REVOKED )
+                        if ( rci!=null && rci.getReason()==RevokedCertInfo.NOT_REVOKED ) {
                             set.add(cert);
+                        }
                     }
                 }
                 notRevokedCerts = (X509Certificate[])set.toArray(new X509Certificate[0]);
             }
-            if (data == null)
+            if (data == null) {
                 throw new ObjectNotFoundException();
-            
+            }
             final String authReq = request.getParameter("authpkcs10");
             final String signReq = request.getParameter("signpkcs10");
             
@@ -241,10 +245,12 @@ public class CardCertReqServlet extends HttpServlet {
                     sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
                                      getInitParameter("responseTemplate"), notRevokedCerts);
                     } catch( Throwable t ) {
-                        if (t instanceof Exception)
+                        if (t instanceof Exception) {
                             throw (Exception)t;
-                        else
+                        }
+                        else {
                             throw new Error(t);
+                        }
                     } finally {
                         data.setStatus(UserDataConstants.STATUS_GENERATED);
                         adminsession.changeUser(administrator, data, true); // set back to original values
@@ -330,20 +336,24 @@ public class CardCertReqServlet extends HttpServlet {
         }
         protected int getFromName(String name) throws RemoteException {
             CAInfo caInfo = caadminsession.getCAInfo(administrator, name);
-            if ( caInfo!=null )
+            if ( caInfo!=null ) {
                 return caInfo.getCAId();
-            else
+            }
+            else {
                 return 0;
+            }
         }
         protected int getFromOldData() {
             return data.getCAId();
         }
         protected int getFromHardToken(int keyType) {
             final int id = hardTokenProfile.getCAId(keyType);
-            if ( id!=EIDProfile.CAID_USEUSERDEFINED )
+            if ( id!=EIDProfile.CAID_USEUSERDEFINED ) {
                 return id;
-            else
+            }
+            else {
                 return data.getCAId();
+            }
         }
     }
     private class CertProfileID extends BaseID {
@@ -374,20 +384,24 @@ public class CardCertReqServlet extends HttpServlet {
         BaseID(UserDataVO d, Admin a, HardTokenProfile htp) {
             data = d;
             administrator = a;
-            if ( htp!=null && htp instanceof EIDProfile )
+            if ( htp!=null && htp instanceof EIDProfile ) {
                 hardTokenProfile = (EIDProfile)htp;
-            else
+            }
+            else {
                 hardTokenProfile = null;
+            }
         }
         public int getProfileID(String parameterName, int keyType) throws RemoteException {
-            if ( hardTokenProfile!=null )
+            if ( hardTokenProfile!=null ) {
                 return getFromHardToken(keyType);
+            }
             String name = CardCertReqServlet.this.getInitParameter(parameterName);
             if ( name!=null && name.length()>0 ) {
                 final int id = getFromName(name);
                 log.debug("parameter name "+parameterName+" has ID "+id);
-                if (id!=0)
+                if (id!=0) {
                     return id;
+                }
             }
             return getFromOldData();
         }
@@ -439,18 +453,23 @@ public class CardCertReqServlet extends HttpServlet {
             PrintWriter pw = new PrintWriter(sw);
             while (true) {
                 String line = br.readLine();
-                if (line == null)
+                if (line == null) {
                     break;
+                }
                 line = line.replaceAll("TAG_authb64cert",new String(authb64cert));
                 line = line.replaceAll("TAG_signb64cert",new String(signb64cert));
-                if ( notRevokedCerts.length > 0 )
+                if ( notRevokedCerts.length > 0 ) {
                     line = line.replaceAll("TAG_certToRemove1",new String(Base64.encode(notRevokedCerts[0].getEncoded(),false)));
-                if ( notRevokedCerts.length > 1 )
+                }
+                if ( notRevokedCerts.length > 1 ) {
                     line = line.replaceAll("TAG_certToRemove2",new String(Base64.encode(notRevokedCerts[1].getEncoded(),false)));
-                if ( notRevokedCerts.length > 2 )
+                }
+                if ( notRevokedCerts.length > 2 ) {
                     line = line.replaceAll("TAG_certToRemove3",new String(Base64.encode(notRevokedCerts[2].getEncoded(),false)));
-                if ( notRevokedCerts.length > 3 )
+                }
+                if ( notRevokedCerts.length > 3 ) {
                     line = line.replaceAll("TAG_certToRemove4",new String(Base64.encode(notRevokedCerts[3].getEncoded(),false)));
+                }
                 pw.println(line);
             }
             pw.close();
