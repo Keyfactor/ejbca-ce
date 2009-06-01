@@ -1,7 +1,7 @@
 #
 # $Id$
 #
-# See doc/howto/howto-logsigning.txt for more information about these properties.
+# See section about Log signing in EJBCA Administrator section at wiki.ejbca.org for more information about these properties.
 
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA

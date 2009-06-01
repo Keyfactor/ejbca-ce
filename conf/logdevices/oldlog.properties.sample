@@ -1,4 +1,4 @@
 # This is where the old log class OldLogDevice is configured
 
-# Enable or disable protection of logs, see HOWTO-logsigning.txt
+# Enable or disable protection of logs, see section about Log signing in EJBCA Administrator section at wiki.ejbca.org.
 #logSigning=false

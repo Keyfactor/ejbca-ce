@@ -603,7 +603,7 @@ If these conditions are not met, no Fnr is returned.
 
   <section name="Using database integrity protection">
   <p>
-Enable the basic support for database protection as described in HOWTO-logsigning.txt 
+Enable the basic support for database protection as described in the section about Log signing in EJBCA Administrator section at wiki.ejbca.org. 
 (you don't have to enable log signing though) and then select 'Database Integrity Protection' in the 
 External OCSP Publisher.
 </p>
