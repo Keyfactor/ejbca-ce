@@ -82,7 +82,11 @@ public class LogMatch extends BasicMatch {
         String returnval = "";
 
         if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-            returnval = MATCH_WITH_SQLNAMES[matchwith] + " = '" + matchvalue + "'";
+        	String quote = "'";
+        	if (matchwith == MATCH_WITH_CA) {
+        		quote = "";
+        	}
+            returnval = MATCH_WITH_SQLNAMES[matchwith] + " = " + quote + matchvalue + quote;
         }
 
         if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
