@@ -100,14 +100,27 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         String getDN() {
             return "CN="+this.userName;
         }
+        @Override
+        public String toString() {
+            return "Username '"+this.userName+"' with password '"+this.passWord+"'."; 
+        }
     }
-    private class Pkcs10RequestCommand implements Command {
+    private class BaseCommand {
+        final protected JobData jobData;
+        BaseCommand(JobData _jobData) {
+            this.jobData = _jobData;
+        }
+        @Override
+        public String toString() {
+            return "Class \'" +this.getClass().getCanonicalName()+"' with this job data: "+ this.jobData.toString();
+        }
+    }
+    private class Pkcs10RequestCommand extends BaseCommand implements Command {
         final private EjbcaWS ejbcaWS;
-        final private JobData jobData;
         final private PKCS10CertificationRequest pkcs10;
         Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
+            super(_jobData);
             this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
-            this.jobData = _jobData;
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
@@ -134,49 +147,45 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             return "Relative time spent signing certificates";
         }
     }
-    private class MultipleCertsRequestsForAUserCommand implements Command {
-    	EjbcaWS _ejbcaWS;
-    	String caName;
-    	String endEntityProfileName;
-    	String certificateProfileName;
-    	JobData _jobData;
-    	KeyPairGenerator kpg;
-    	MultipleCertsRequestsForAUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName, JobData _jobData, KeyPairGenerator kpg) throws Exception {
-        	this.caName = caName;
-        	this.endEntityProfileName = endEntityProfileName;
-        	this.certificateProfileName = certificateProfileName;
-        	this._jobData = _jobData;
-        	this.kpg = kpg;
-        	this._ejbcaWS = _ejbcaWS;
-    	}
+    private class MultipleCertsRequestsForAUserCommand extends BaseCommand implements Command {
+        final EjbcaWS ejbcaWS;
+        final String caName;
+        final String endEntityProfileName;
+        final String certificateProfileName;
+        final KeyPairGenerator kpg;
+        MultipleCertsRequestsForAUserCommand(EjbcaWS _ejbcaWS, String _caName, String _endEntityProfileName, String _certificateProfileName, JobData _jobData, KeyPairGenerator _kpg) throws Exception {
+            super(_jobData);
+            this.caName = _caName;
+            this.endEntityProfileName = _endEntityProfileName;
+            this.certificateProfileName = _certificateProfileName;
+            this.kpg = _kpg;
+            this.ejbcaWS = _ejbcaWS;
+        }
         public boolean doIt() throws Exception {
-        	boolean createUser = true;
-        	for (int i=0; i<50; i++) {
-        		EditUserCommand editUserCommand = new EditUserCommand(_ejbcaWS, caName, endEntityProfileName, certificateProfileName, _jobData, createUser);
-    			if (!editUserCommand.doIt()) {
-    				StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this._jobData.userName);
-    				return false;
-
-    			}
-        		createUser = false;
-        		Pkcs10RequestCommand pkcs10RequestCommand = new Pkcs10RequestCommand(_ejbcaWS, kpg.generateKeyPair(), _jobData);
-        		if (!pkcs10RequestCommand.doIt()) {
-        			StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this._jobData.userName);
-        			return false;
-
-        		}
-        	}
-        	return true;
+            boolean createUser = true;
+            for (int i=0; i<50; i++) {
+                EditUserCommand editUserCommand = new EditUserCommand(this.ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, this.jobData, createUser);
+                if (!editUserCommand.doIt()) {
+                    StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this.jobData.userName);
+                    return false;
+                }
+                createUser = false;
+                Pkcs10RequestCommand pkcs10RequestCommand = new Pkcs10RequestCommand(this.ejbcaWS, this.kpg.generateKeyPair(), this.jobData);
+                if (!pkcs10RequestCommand.doIt()) {
+                    StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this.jobData.userName);
+                    return false;
+                }
+            }
+            return true;
         }
         public String getJobTimeDescription() {
             return "Relative time spent creating a lot of certificates";
         }
     }
-    private class FindUserCommand implements Command {
+    private class FindUserCommand extends BaseCommand implements Command {
         final private EjbcaWS ejbcaWS;
-        final private JobData jobData;
         FindUserCommand(EjbcaWS _ejbcaWS, JobData _jobData) throws Exception {
-            this.jobData = _jobData;
+            super(_jobData);
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
@@ -203,11 +212,10 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             return "Relative time spent looking for user";
         }
     }
-    private class ListCertsCommand implements Command {
+    private class ListCertsCommand extends BaseCommand implements Command {
         final private EjbcaWS ejbcaWS;
-        final private JobData jobData;
         ListCertsCommand(EjbcaWS _ejbcaWS, JobData _jobData) throws Exception {
-            this.jobData = _jobData;
+            super(_jobData);
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
@@ -227,11 +235,10 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             return "Relative time spent finding certs for user.";
         }
     }
-    private class RevokeCertCommand implements Command {
+    private class RevokeCertCommand extends BaseCommand implements Command {
         final private EjbcaWS ejbcaWS;
-        final private JobData jobData;
         RevokeCertCommand(EjbcaWS _ejbcaWS, JobData _jobData) throws Exception {
-            this.jobData = _jobData;
+            super(_jobData);
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
@@ -245,14 +252,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             return "Relative time spent revoking certificates.";
         }
     }
-    private class EditUserCommand implements Command {
+    private class EditUserCommand extends BaseCommand implements Command {
         final private EjbcaWS ejbcaWS;
         final private UserDataVOWS user;
-        final private JobData jobData;
         final private boolean doCreateNewUser;
         EditUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName, JobData _jobData, boolean _doCreateNewUser) {
+            super(_jobData);
             this.doCreateNewUser = _doCreateNewUser;
-            this.jobData = _jobData;
             this.ejbcaWS = _ejbcaWS;
             this.user = new UserDataVOWS();
             this.user.setClearPwd(true);
@@ -263,7 +269,6 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
             this.user.setEndEntityProfileName(endEntityProfileName);
             this.user.setCertificateProfileName(certificateProfileName);
-            this.user.setStatus(org.ejbca.core.protocol.ws.objects.UserDataVOWS.STATUS_NEW);
         }
         public boolean doIt() throws Exception {
             if ( this.doCreateNewUser ) {

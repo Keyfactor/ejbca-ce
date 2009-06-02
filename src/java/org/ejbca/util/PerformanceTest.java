@@ -101,7 +101,7 @@ public class PerformanceTest {
                 this.time = (int)(new Date().getTime()-startTime);
                 this.bIsFinished = true;
             } catch (Throwable t) {
-                PerformanceTest.this.log.error("Command failure", t);
+                PerformanceTest.this.log.error("Command failure. "+this.command, t);
             } finally {
                 synchronized(this) {
                     this.notifyAll();

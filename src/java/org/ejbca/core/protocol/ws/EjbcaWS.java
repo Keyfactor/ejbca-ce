@@ -175,8 +175,8 @@ public class EjbcaWS implements IEjbcaWS {
 	 */	
 	public void editUser(UserDataVOWS userdata)
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
-		   	    
-		try{
+
+        try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		  Admin admin = ejbhelper.getAdmin(wsContext);
 		  UserDataVO userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
@@ -184,10 +184,10 @@ public class EjbcaWS implements IEjbcaWS {
 		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +userdatavo.getCAId());
 		  
 		  if(ejbhelper.getUserAdminSession().findUser(admin, userdatavo.getUsername()) != null){
-			  log.debug("User " + userdata.getUsername() + " exists, update the userdata." );
+			  log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
 			  ejbhelper.getUserAdminSession().changeUser(admin,userdatavo,userdata.getClearPwd(), true);
 		  }else{
-			  log.debug("New User " + userdata.getUsername() + ", adding userdata." );
+			  log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
 			  ejbhelper.getUserAdminSession().addUserFromWS(admin,userdatavo,userdata.getClearPwd());
 		  }
 		}catch(UserDoesntFullfillEndEntityProfile e){
@@ -221,6 +221,7 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException {		
     	ArrayList<UserDataVOWS> retval = null;
+        log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		  Admin admin = ejbhelper.getAdmin(wsContext);
@@ -257,6 +258,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public List<Certificate> findCerts(String username, boolean onlyValid) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
 		List<Certificate> retval = null;
+        log.debug("Find certs for user '"+username+"'.");
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(wsContext);
@@ -688,7 +690,7 @@ public class EjbcaWS implements IEjbcaWS {
 			String pkcs10, String hardTokenSN, String responseType)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException {
-		
+		log.debug("PKCS10 from user '"+username+"'.");
 		return new CertificateResponse(responseType, processCertReq(username, password,
 			                           pkcs10, REQTYPE_PKCS10, hardTokenSN, responseType));
 	}
@@ -977,6 +979,7 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	public void revokeCert(String issuerDN, String certificateSN, int reason) throws CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+        log.debug("Revoke cert with serial number '"+certificateSN+"' from issuer '"+issuerDN+"' with reason '"+reason+"'.");
 		try{
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(wsContext);
