@@ -39,7 +39,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Random;
 import java.util.Vector;
 
 import javax.crypto.Mac;
@@ -107,7 +106,6 @@ class CMPTest extends ClientToolBox {
         final private static String resourceCmp = "publicweb/cmp";
         final private KeyPair keyPair;
         final private X509Certificate cacert;
-        final private Random random = new Random();
         final private CertificateFactory certificateFactory;
         final private Provider bcProvider = new BouncyCastleProvider();
         final private String keyId;
@@ -819,9 +817,9 @@ class CMPTest extends ClientToolBox {
                 return ret;
             }
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+StressTest.this.random.nextInt()+",O=CMP Test,C=SE";
-                StressTest.this.random.nextBytes(this.nonce);
-                StressTest.this.random.nextBytes(this.transid);
+                this.userDN = "CN=CMP Test User Nr "+StressTest.this.performanceTest.getRandom().nextInt()+",O=CMP Test,C=SE";
+                StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
+                StressTest.this.performanceTest.getRandom().nextBytes(this.transid);
             }
             int getReqId() {
                 return this.reqId;
