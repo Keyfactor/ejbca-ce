@@ -273,31 +273,30 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * @return The answer to be returned by the health-check servlet.
      */
     String healthCheck() {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
         try {
             loadPrivateKeys(this.servlet.m_adm, null);
             if (this.signEntitycontainer == null || this.signEntitycontainer.getSigningEntityMap() == null ||
-            		this.signEntitycontainer.getSigningEntityMap().values() == null) {
+                    this.signEntitycontainer.getSigningEntityMap().values() == null) {
                 pw.println();
-                String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
+                final String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
                 pw.print(errMsg);
                 m_log.error(errMsg);
-            	
             } else {
                 final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
                 while ( i.hasNext() ) {
-                    SigningEntity signingEntity = i.next();
+                    final SigningEntity signingEntity = i.next();
                     if ( !signingEntity.isOK() ) {
                         pw.println();
-                        String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
+                        final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
                         pw.print(errMsg);
                         m_log.error(errMsg);
                     }
                 }
             }
         } catch (Exception e) {
-            String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
+            final String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
             m_log.error(errMsg, e);
             pw.print(errMsg + ": "+e.getMessage());
         }
@@ -549,11 +548,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 setNextKeyUpdate(new Date().getTime());
                 m_log.debug("rekeying started for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\'");
                 // Check that we at least potentially have a RA key available for P11 sessions
-                if ("pkcs11".equalsIgnoreCase(System.getProperty("javax.net.ssl.keyStoreType")) && mP11Password == null) {
-                	if (!doNotStorePasswordsInMemory) {
-						m_log.info("PKCS#11 slot password is not yet available. Cannot access RA admin key until token is activated.");
-                		return;
-                	}
+                if ("pkcs11".equalsIgnoreCase(System.getProperty("javax.net.ssl.keyStoreType")) && OCSPServletStandAloneSession.this.mP11Password == null &&
+                        !OCSPServletStandAloneSession.this.doNotStorePasswordsInMemory) {
+                    m_log.info("PKCS#11 slot password is not yet available. Cannot access RA admin key until token is activated.");
+                    return;
                 }
                 // TODO: If the password for the RA token was wrong, the SSL provider will crash and burn.. solve this.
                 final EjbcaWS ejbcaWS = getEjbcaWS();
