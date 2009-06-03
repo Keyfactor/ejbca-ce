@@ -241,22 +241,24 @@ public class CertReqServlet extends HttpServlet {
                 	int id = storesession.getCertificateProfileId(administrator, certprofile);
                 	// Change the value if there exists a certprofile with the requested name, and it is not the same as 
                 	// the one already registered to be used by default
-                	if ( (id > 0) && (id != certificateProfileId) ) {
-                		// Check if it is in allowed profiles in the entity profile
-                		Collection c = endEntityProfile.getAvailableCertificateProfileIds();
-                		if (c.contains(String.valueOf(id))) {
-                        	data.setCertificateProfileId(id);
-                        	// This admin can be the public web user, which may not be allowed to change status,
-                        	// this is a bit ugly, but what can a man do...
-                        	Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
-                        	adminsession.changeUser(tempadmin, data, clearpwd);            		            			
-                		} else {
-                			String defaultCertificateProfileName = storesession.getCertificateProfileName(administrator, certificateProfileId);
-                    		log.error(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));
+                	if ( (id > 0) ) {
+                		if (id != certificateProfileId) {
+                    		// Check if it is in allowed profiles in the entity profile
+                    		Collection c = endEntityProfile.getAvailableCertificateProfileIds();
+                    		if (c.contains(String.valueOf(id))) {
+                            	data.setCertificateProfileId(id);
+                            	// This admin can be the public web user, which may not be allowed to change status,
+                            	// this is a bit ugly, but what can a man do...
+                            	Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
+                            	adminsession.changeUser(tempadmin, data, clearpwd);            		            			
+                    		} else {
+                    			String defaultCertificateProfileName = storesession.getCertificateProfileName(administrator, certificateProfileId);
+                        		log.info(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));
+                    		}
                 		}
                 	} else {
             			String defaultCertificateProfileName = storesession.getCertificateProfileName(administrator, certificateProfileId);
-                		log.error(intres.getLocalizedMessage("certreq.nosuchcertprofile", certprofile, defaultCertificateProfileName));
+                		log.info(intres.getLocalizedMessage("certreq.nosuchcertprofile", certprofile, defaultCertificateProfileName));
                 	}
                 }
 
