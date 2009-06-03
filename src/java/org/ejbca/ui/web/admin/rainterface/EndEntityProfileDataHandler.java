@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.util.HashSet;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.LocalRaAdminSessionBean;
@@ -31,6 +32,8 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  * @version $Id$
  */
 public class EndEntityProfileDataHandler implements java.io.Serializable {
+
+    private static final Logger log = Logger.getLogger(EndEntityProfileDataHandler.class);    
 
     public static final String EMPTY_PROFILE        = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;    
     /** Creates a new instance of EndEntityProfileDataHandler */
@@ -89,14 +92,14 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
       /** Method to get a reference to a end entity profile.*/ 
     public EndEntityProfile getEndEntityProfile(int id) throws AuthorizationDeniedException{  
       if(!authorizedToProfileId(id, false))
-        throw new AuthorizationDeniedException("Not authorized to end entity profile");             
+        throw new AuthorizationDeniedException("Not authorized to end entity profile: "+id);             
       
       return raadminsession.getEndEntityProfile(administrator, id); 
     }      
           
     public EndEntityProfile getEndEntityProfile(String profilename) throws AuthorizationDeniedException{
      if(!authorizedToProfileName(profilename, false))
-        throw new AuthorizationDeniedException("Not authorized to end entity profile");            
+        throw new AuthorizationDeniedException("Not authorized to end entity profile: "+profilename);            
          
       return raadminsession.getEndEntityProfile(administrator, profilename);
     }
@@ -169,6 +172,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
               if(!authorizedcaids.contains(caid)){
             	  // superadmin is allowed to select ALLCAS
             	  if ( !(issuperadministrator && (caid.intValue() == SecConst.ALLCAS)) ) {
+            		  log.debug("Not authorized to profile because profile contains 'Any CA'");
                       allexists = false;            		              		  
             	  } 
               }
