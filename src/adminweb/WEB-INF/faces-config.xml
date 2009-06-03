@@ -65,7 +65,7 @@
   </validator>
   
   <navigation-rule>
-    <from-view-id>approval/approveactionlist.jsp</from-view-id>
+    <from-view-id>/approval/approveactionlist.jsp</from-view-id>
     <navigation-case>
       <from-outcome>viewApproveAction</from-outcome>
       <to-view-id>/approval/approveaction.jsp</to-view-id>
@@ -80,10 +80,10 @@
   </navigation-rule>
   
   <navigation-rule>
-    <from-view-id>ca/caactivation.jsp</from-view-id>
+    <from-view-id>/ca/caactivation.jsp</from-view-id>
     <navigation-case>
       <from-outcome>apply</from-outcome>
-      <to-view-id>ca/caactivation.jsp</to-view-id>
+      <to-view-id>/ca/caactivation.jsp</to-view-id>
     </navigation-case>
   </navigation-rule>
   	
