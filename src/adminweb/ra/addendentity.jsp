@@ -638,13 +638,22 @@
       HashMap availablecas = null;
       Collection authcas = null;
 
-      if(issuperadministrator)
-        if(profileid == SecConst.EMPTY_ENDENTITYPROFILE)
+      if(issuperadministrator) {
+        if(profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
           authcas = ejbcawebbean.getAuthorizedCAIds();
-        else
+        } else {
           authcas = profile.getAvailableCAs();
-      else
+          // If we have selected 'Any CA' we will display all authorized CAs (wich should be all for a superadmin)
+          if (authcas.contains(String.valueOf(SecConst.ALLCAS))) {
+              authcas = ejbcawebbean.getAuthorizedCAIds();
+          }
+          if ((lastselectedca == null) || lastselectedca.equals("")) {
+        	  lastselectedca = String.valueOf(profile.getDefaultCA());
+          }
+        }
+      } else {
         availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
+      }
   
 %>
 <head>
@@ -763,7 +772,6 @@ function isKeyRecoveryPossible(){
 
 function fillCAField(){
    var caselect   =  document.adduser.<%=SELECT_CA%>; 
-
    var numofcas = caselect.length;
    for( i=numofcas-1; i >= 0; i-- ){
        caselect.options[i]=null;

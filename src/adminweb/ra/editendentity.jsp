@@ -509,13 +509,19 @@
     HashMap availablecas = null;
     Collection authcas = null;
 
-    if(issuperadministrator)
-      if(profileid == SecConst.EMPTY_ENDENTITYPROFILE)
+    if(issuperadministrator) {
+      if(profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
         authcas = ejbcawebbean.getAuthorizedCAIds();
-      else
+      } else {
         authcas = profile.getAvailableCAs();
-    else
+        // If we have selected 'Any CA' we will display all authorized CAs (wich should be all for a superadmin)
+        if (authcas.contains(String.valueOf(SecConst.ALLCAS))) {
+            authcas = ejbcawebbean.getAuthorizedCAIds();
+        }
+      }
+    } else {
       availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
+    }
 
     int row = 0;
     int tabindex = 1;
