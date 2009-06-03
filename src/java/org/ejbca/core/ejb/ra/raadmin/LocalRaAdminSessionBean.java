@@ -772,7 +772,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
-    public synchronized GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
+    public GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
     	trace(">loadGlobalConfiguration()");
     	GlobalConfiguration ret = null;
     	// Only do the actual SQL query if we might update the configuration due to cache time anyhow
