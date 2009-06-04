@@ -1,3 +1,12 @@
+3.8.3, 2009-06-04
+---
+Improvement
+    * [ECA-1221] - Ugly error message in LDAP publisher if no certificate to remove exists
+
+Bug
+    * [ECA-1191] - Unable to deploy on PostgreSQL + Glassfish combination
+    * [ECA-1217] - Possible extensive CPU usage for crafted messages to CMP RA service (not default config)
+
 3.8.2, 2009-03-27
 ---
 New Feature
