@@ -166,6 +166,11 @@ public class EjbcaWS implements IEjbcaWS {
 	/** The maximum number of rows returned in array responses. */
 	private static final int MAXNUMBEROFROWS = 100;
 	
+	private static final int REQTYPE_PKCS10 = 1;
+	private static final int REQTYPE_CRMF = 2;
+	private static final int REQTYPE_SPKAC = 3;
+	private static final int REQTYPE_CVC = 4;
+	
 	private static final Logger log = Logger.getLogger(EjbcaWS.class);	
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -694,11 +699,6 @@ public class EjbcaWS implements IEjbcaWS {
 		return new CertificateResponse(responseType, processCertReq(username, password,
 			                           pkcs10, REQTYPE_PKCS10, hardTokenSN, responseType));
 	}
-
-	private static final int REQTYPE_PKCS10 = 1;
-	private static final int REQTYPE_CRMF = 2;
-	private static final int REQTYPE_SPKAC = 3;
-	private static final int REQTYPE_CVC = 4;
 	
 	private byte[] processCertReq(String username, String password, String req, int reqType,
 			String hardTokenSN, String responseType) throws CADoesntExistsException,
