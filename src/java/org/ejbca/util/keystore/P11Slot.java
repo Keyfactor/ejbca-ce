@@ -108,7 +108,6 @@ public class P11Slot {
      * @param _atributesFile Atributes file. Optional. Set to null if not used
      * @param token Token that should use this object
      * @return The instance.
-     * @throws IOException
      */
     static public P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
                                       String _atributesFile, P11SlotUser token) {
@@ -129,6 +128,12 @@ public class P11Slot {
         slot.caTokens.add(token);
         return slot;
     }
+    /**
+     * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead parameters.
+     * @param configFileName name of config file
+     * @param token Token that should use this object.
+     * @return
+     */
     static public P11Slot getInstance(String configFileName, P11SlotUser token) {
         final String slotLabel = new File(configFileName).getName();
         P11Slot slot = slotMap.get(slotLabel);
@@ -162,9 +167,12 @@ public class P11Slot {
         if ( this.provider instanceof AuthProvider ) {
             try {
                 ((AuthProvider)this.provider).logout();
+                log.debug("P11 session terminated for \""+this+"\".");
             } catch (LoginException e) {
                 log.warn("Not possible to logout from P11 Session. HW problems?", e);
             }
+        } else {
+            log.debug("P11 provider \""+this+"\" removed. Put not possible to logout from provider.");
         }
         this.provider.clear();
         this.provider = null;
@@ -182,8 +190,9 @@ public class P11Slot {
                 log.fatal("This should never happend", e1);
             }
         }
-        if ( this.provider!=null )
+        if ( this.provider!=null ) {
             return this.provider;
+        }
         try {
             this.isSettingProvider = true;
             if ( this.slotNr!=null && this.sharedLibrary!=null ) {
