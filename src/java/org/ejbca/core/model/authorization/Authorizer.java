@@ -226,8 +226,8 @@ public class Authorizer extends Object implements java.io.Serializable {
     /**
      * Method used to return an ArrayList of Integers indicating which CAids a administrator
      * is authorized to access.
+     * @return Collection of Integer
      */
-    
     public Collection getAuthorizedCAIds(Admin admin){         
         ArrayList returnval = new ArrayList();  
         Iterator iter = caadminsession.getAvailableCAs(admin).iterator();      

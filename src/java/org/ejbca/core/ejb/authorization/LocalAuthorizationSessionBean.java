@@ -957,6 +957,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /**
      * Method used to return an Collection of Integers indicating which CAids a administrator
      * is authorized to access.
+     * @return Collection of Integer
      *
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
