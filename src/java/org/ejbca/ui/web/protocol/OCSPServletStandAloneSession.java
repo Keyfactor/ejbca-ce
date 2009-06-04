@@ -182,7 +182,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     }
                     pw.println("\".");
                 }
-                if ( OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ) {
+                if ( this.servlet.m_valid_time>0 ) {
                     pw.println("You must set "+OcspConfiguration.SIGNING_CERTD_VALID_TIME+" to 0 if "+OcspConfiguration.DO_NOT_STORE_PASSWORDS_IN_MEMORY+" is configured.");
                 }
                 pw.flush(); pw.close();
@@ -432,7 +432,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             if ( !doKeyRenewal() ) {
                 return;
             }
-            if ( this.fileName!=null && OCSPServletStandAloneSession.this.mStorePassword==null ) {
+            if ( this.fileName!=null && mStorePassword==null ) {
                 m_log.error("Not possible to renew keys whith no stored keystore password for certificate with DN: "+caChain.get(0).getSubjectDN());
                 return;
             }
@@ -451,7 +451,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         public void set(KeyStore _keyStore) throws Exception {
             this.keyStore = _keyStore;
-            if ( this.fileName!=null && OCSPServletStandAloneSession.this.mKeyPassword==null ) {
+            if ( this.fileName!=null && mKeyPassword==null ) {
                 throw new Exception("Key password must be configured when reloading SW keystore.");
             }
             set(OCSPServletStandAloneSession.this.mKeyPassword.toCharArray());
