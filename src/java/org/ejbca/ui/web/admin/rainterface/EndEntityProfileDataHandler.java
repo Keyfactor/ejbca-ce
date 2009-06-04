@@ -13,7 +13,10 @@
  
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -165,18 +168,30 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
           if(availablecasstring == null || availablecasstring.equals("")){
             allexists = true;  
           }else{
-            String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-            allexists = true;
-            for(int j=0; j < availablecas.length; j++){
-            	Integer caid = new Integer(availablecas[j]);
-              if(!authorizedcaids.contains(caid)){
-            	  // superadmin is allowed to select ALLCAS
-            	  if ( !(issuperadministrator && (caid.intValue() == SecConst.ALLCAS)) ) {
-            		  log.debug("Not authorized to profile because profile contains 'Any CA'");
-                      allexists = false;            		              		  
-            	  } 
-              }
-            }
+        	  // Go through all available CAs in the profile and check that the administrator is authorized to all CAs specified in the profile
+        	  // If ALLCAS is selected in the end entity profile, we must check that the administrator is authorized to all CAs in the system.
+        	  String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+        	  if (Arrays.binarySearch(availablecas, String.valueOf(SecConst.ALLCAS)) >=0) {
+        		  // If availablecas contains SecConst ALLCAS, change availablecas to be a list of all CAs
+            	  Collection allcaids = authorizationsession.getAuthorizedCAIds(new Admin(Admin.TYPE_INTERNALUSER));
+            	  if (log.isDebugEnabled()) {
+            		  log.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "+allcaids.size()+" CAs in the system");
+            	  }
+            	  availablecas = new String[allcaids.size()];
+            	  int index = 0;
+            	  for (Iterator iterator = allcaids.iterator(); iterator.hasNext();) {
+            		  Integer id = (Integer) iterator.next();
+            		  availablecas[index++] = id.toString();
+            	  }
+        	  }
+        	  allexists = true;
+        	  for(int j=0; j < availablecas.length; j++){
+        		  Integer caid = new Integer(availablecas[j]);
+        		  if(!authorizedcaids.contains(caid)){
+        			  log.debug("Not authorized to profile because admin is not authorized to CA "+caid);
+        			  allexists = false;            		              		  
+        		  }
+        	  }
           }  
           returnval = allexists;          
         }
