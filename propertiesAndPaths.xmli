@@ -3,7 +3,7 @@
 
 	<property name="app.name" value="ejbca" />
     <property name="app.name.cap" value="EJBCA" />
-    <property name="app.version.number" value="3.9beta" />
+    <property name="app.version.number" value="3.9.0" />
     <property name="svn.revision" value="working copy" />
 	<property name="app.version" value="${app.name.cap} ${app.version.number} (${svn.revision})" />
 	

@@ -1,3 +1,139 @@
+3.9.0, 2009-06-05
+---
+New Feature
+    * [ECA-648] - Add a configurable revocation status to end entity profiles
+    * [ECA-877] - Patch level showing
+    * [ECA-987] - Add cli command for processing certificate requests in ejbca.sh
+    * [ECA-1054] - User Certificate Validity Start/End Time as a editUser Web Service parameter
+    * [ECA-1076] - CMP stress test
+    * [ECA-1093] - Support for static custom enroll forms
+    * [ECA-1100] - CAs using DSA algorithm
+    * [ECA-1172] - Validity override in certificate profiles should be able to override startdate to set earlier start than "now"
+    * [ECA-1188] - Permit to install on JBOSS with Tomcat Native Connector
+    * [ECA-1202] - Implement extension override for PKCS#10 requests
+    * [ECA-1203] - Allow DN override from requests
+    * [ECA-1207] - Option in OCSP publisher to only use queue and not publish directly
+    * [ECA-1213] - Display length of publisher queue in external OCSP GUI
+    * [ECA-1218] - Stand-alone monitoring tool for comparing CA and OCSP databases
+    * [ECA-1219] - Add CA status overview portal on first page of admin GUI
+    * [ECA-1220] - Show certificate profile id in admin GUI
+    * [ECA-1222] - Show CA id in Admin GUI
+    * [ECA-1242] - Configurable to show CA status on front page
+    * [ECA-1263] - Add new WS stress-test to test behaviour when there are many certificates per user
+
+Improvement
+    * [ECA-550] - Bad error message when receiving PEM files from external CA
+    * [ECA-603] - Add a property to specify the module to use when using nCipher HSM
+    * [ECA-857] - Improve error message "Error occured when receiving file, are you sure it is valid and in PEM encoding."
+    * [ECA-878] - Start up welcome page(s) admin and normal one
+    * [ECA-965] - Hide CRL-related fields when creating a CVC CA
+    * [ECA-988] - Document database privileges
+    * [ECA-1003] - EJBCA CLI requires APPSRV_HOME
+    * [ECA-1008] - A CA could be activated with any password (PIN) after it has been deactivated
+    * [ECA-1011] - Output time of successful ant commands often used in development
+    * [ECA-1041] - Errormessage "User xxxx has status '40', NEW, FAILED or INPROCESS required" could be improved
+    * [ECA-1067] - JavaScript "Enabled" test
+    * [ECA-1074] - Add Name DN attribute to supported attributes
+    * [ECA-1094] - CN for httpsserver.dn property can be inherited from httpsserver.hostname
+    * [ECA-1101] - ExtRA: Make RA CA service as an EJBCA service and make clusterable and support multiple RAs
+    * [ECA-1129] - use same functionality in the OCSP respnder as in the CA to handle P11 HSMs
+    * [ECA-1131] - Filter what is published to CertificateData on standalone OCSP
+    * [ECA-1139] - Use Commons Configuration for OCSP config
+    * [ECA-1163] - Save/cancel certificate profiles should bring you back to profiles list
+    * [ECA-1165] - required and modifyable checkboxes for username in entity profiles not needed
+    * [ECA-1166] - Rename mozilla/netscape to firefox
+    * [ECA-1167] - activatecas cli command should be able to prompt for activation code
+    * [ECA-1168] - Don't display the password user types in import CA command.
+    * [ECA-1170] - Display signature algorithm with providers text in view certiifcate
+    * [ECA-1175] - Improve default DB2 CMP mapping
+    * [ECA-1176] - Add cvcwscli.cmd for windows
+    * [ECA-1178] - Add issuerDN to edit CA page
+    * [ECA-1179] - Possible to specify multiple parameters in cmp.ra.namegenerationparameters
+    * [ECA-1180] - Be able to specify Any CA in end entity profiles
+    * [ECA-1196] - Change ERROR to INFO message for mail notifications
+    * [ECA-1198] - Implement robust re-publishing if publishing fails
+    * [ECA-1199] - Don't log error for missconfigured service that is not active
+    * [ECA-1200] - GUI for the External OCSP Publisher
+    * [ECA-1208] - Log4jLogDevice logs INFO exceptions as ERROR
+    * [ECA-1209] - Upgrade certificateProfileId to new server profile during 'ant upgrade' to avoid problems on SSL certificate renewal.
+    * [ECA-1215] - Don't set start and end time for end entity if not entered
+    * [ECA-1221] - Ugly error message in LDAP publisher if no certificate to remove exists
+    * [ECA-1231] - Optimize performace of getCertificateInfo
+    * [ECA-1233] - Prevent accidental runs of JUnit tests and deploy/ocsp-deploy in production environment
+    * [ECA-1235] - No point in swapping identical times
+    * [ECA-1240] - Remove error log for cases where CVC sequence is not numerical, we handle it gracefully.
+    * [ECA-1249] - ClientToolBox PKCS11 operations echoes the password back to the user
+    * [ECA-1255] - AdminGroupData etc should be marked as read-only for get methods
+    * [ECA-1256] - Optimize authorization to lower number of SQL queries for AuthorizationTreeUpdateData
+    * [ECA-1259] - Rename List button to Search
+    * [ECA-1260] - Rename "Create Server Certificate" to "Create Certificate from CSR"
+    * [ECA-1261] - improve behaviour of External CAs
+    * [ECA-1265] - Error messages that we handle when editing users should be info
+    * [ECA-1267] - Inherit getCATokenStatus() from BaseCAToken on SafeNetLunaCAToken
+    * [ECA-1269] - Improve performance by caching common database queries
+    * [ECA-1271] - ca init cli commands should be able to create sub CAs
+    * [ECA-1290] - Don't log error creating CRLs when a CA is offline
+    * [ECA-1291] - CRL service should not try to create CRLs for external CAs
+
+Task
+    * [ECA-1116] - Avoid usage of class strings
+    * [ECA-1173] - Drop upgrade support for EJBCA 3.1.x
+    * [ECA-1195] - Upgrade to BC 1.43
+    * [ECA-1205] - Create new tag-field for CertificateData to be able to distinguish between different certificate types in database queries
+    * [ECA-1214] - Ask for algorithm before key size in installation script
+    * [ECA-1247] - Add KCA-EJBCA migration guide to docs
+    * [ECA-1297] - Warnings about incorrect JSF navigation rules during startup
+
+Bug
+    * [ECA-632] - Path length constraints not selectable in cert profile
+    * [ECA-922] - DBCHANGE: Particular Log query with ProtectedLog fails on Derby
+    * [ECA-1077] - Not possible to get algorithm name from OID for CMP with latest BC
+    * [ECA-1085] - Email notifications may not treat foreign characters correct
+    * [ECA-1109] - Rare threading issues in OCSP certificate cache
+    * [ECA-1110] - XKMS only works with JDK 1.5
+    * [ECA-1122] - Cancel button on Edit Certificate Profiles page doesn't work.
+    * [ECA-1135] - Do not issue CRLs for expired CAs
+    * [ECA-1137] - Serialnumbers starting with 0 do not behave properly
+    * [ECA-1138] - nCipherHSM script with preload is broken
+    * [ECA-1142] - First delta CRL is not issued when a CA is created
+    * [ECA-1147] - NullpointerException in ProtectedLog
+    * [ECA-1156] - OCSP ClientToolBox test failing when CA key is signing the OCSP response.
+    * [ECA-1157] - NullPointerException when invoking createcrl CLI with bad CA name
+    * [ECA-1160] - When a fast HSM is used then OCSP responder is not as fast as it should be.
+    * [ECA-1162] - external OCSP responder freezing after HSM failure.
+    * [ECA-1164] - Hex serial number for admin certificates in admin groups should not be limited to only 16 char hex strings
+    * [ECA-1169] - Error verifying JCE using pkcs12req WS cli
+    * [ECA-1171] - Possible to change OCSP signing keys in a running external OCSP responder.
+    * [ECA-1174] - Can not batch generate users using SHA256WithRSAAndMGF1
+    * [ECA-1186] - Batch generation set user status to generated even if request counter exists
+    * [ECA-1187] - no such provider BC when EJBCA starts when protected log is enabled
+    * [ECA-1191] - Unable to deploy on PostgreSQL + Glassfish combination
+    * [ECA-1193] - cli.xml ejbca:noprompt missing ca.signaturealgorithm property
+    * [ECA-1194] - "ejbca.sh ca info" fails for ECDSA CA
+    * [ECA-1201] - Incorrect display of HTML escaped characters on Access Rules comboboxes
+    * [ECA-1216] - Add userPassword in LDAP should only happen if addNonExisting or modifyExisting is checked
+    * [ECA-1217] - Possible extensive CPU usage for crafted messages to CMP RA service (not default config)
+    * [ECA-1223] - NullpointerException in CMP when unknown keyId is sent
+    * [ECA-1224] - CertTools.getCertfromByteArray never throws CertificateException as the JavaDoc says but can return null
+    * [ECA-1225] - Freshest CRL extension (aka Delta CRL Distribution Point) on a CRL must not be critical
+    * [ECA-1227] - AccessRules link for admin privileges does not work on weblogic or oracle
+    * [ECA-1229] - Internalresources may fail in rare contidtions
+    * [ECA-1234] - Error message is shown when editing end entity profiles when no printers are defined
+    * [ECA-1245] - CRL reason entry extensions in CMP revocation requests are not read
+    * [ECA-1246] - Deadlock when load testing CMP with same user
+    * [ECA-1248] - Cannot unselect last Custom Certificate Extension in Certificate Profile
+    * [ECA-1254] - ProtectedLog reloading CA token unnessecarily
+    * [ECA-1257] - Importing wrong certificate using PKCS11 will make the key unavailable on nCipher netHSM
+    * [ECA-1258] - cursor:hand style on links should be cursor:pointer
+    * [ECA-1266] - Upgrade may cause "use authority information access" to be enabled though it was not before in certificate profile
+    * [ECA-1268] - Missing Exception handling for super.deactivate() calls on SafeNetLunaCAToken
+    * [ECA-1272] - Authorization issue during stress test
+    * [ECA-1273] - Services will stop running if database goes down
+    * [ECA-1293] - ProtectedLog on idling system warns about missing log rows if protectionIntensity > 0
+    * [ECA-1294] - Issuing certificate with + sign does not work in cmp requests
+    * [ECA-1295] - Error making advanced log search for CA on DB2
+    * [ECA-1296] - Fetching cert or keystore from Public Web generates an error when cert-profile is the default in UserData
+
 3.8.3, 2009-06-04
 ---
 Improvement
