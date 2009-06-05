@@ -276,11 +276,6 @@ database. The DB2 section have to be changed like this :
          <true-mapping>1</true-mapping>
          <false-mapping>0</false-mapping>
       ...
-        <mapping>
-            <java-type>java.lang.Object</java-type>
-            <jdbc-type>VARBINARY</jdbc-type>
-            <sql-type>BLOB(200000)</sql-type>
-         </mapping>
       </type-mapping>
 
 
