@@ -59,7 +59,11 @@ public class PrinterManager {
 			PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);
 			printerNames = new String[printService.length];
 			for(int i=0;i<printService.length;i++){
-				printerNames[i] = printService[i].getName();
+				String name = printService[i].getName();
+				if (name == null) {
+					name = "Undefined";
+				}
+				printerNames[i] = name;
 			}			
 		} catch (Throwable e) {
 			String msg = "There might be a problem with one of the printers' configuration: ";
