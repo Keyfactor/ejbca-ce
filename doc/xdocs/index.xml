@@ -55,6 +55,9 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>... and many many more ...</li>
 </ul>
 </p>
+<p>
+You can also use EJBCA to set up a CA independent, high performance, highly available OCSP responder service.
+</p>
 <p>Together with sister projects (see <i><a href="complimentary.html">Complimentary software</a></i>) of EJBCA you can also:
 <ul>
 <li>Get central trusted Time Stamps for you electronically signed documents.</li>
