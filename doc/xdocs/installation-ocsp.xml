@@ -182,7 +182,14 @@ When the application server is started it should just work.
 </p>
 </subsubsection>
 </subsection>
-<subsection name="Key updating.">
+<subsection name="Dynamic reconfiguration">
+<p>
+By configuring the property 'allow.external-dynamic.configuration' in conf/ejbca.properties you can have the OCSP responder re-read some 
+configuration values from files in the file system. The values ocsp.untilNextUpdate and ocsp.maxAge from ocsp.properties will be re-read if you put 
+an ocsp.properties file in the directory /etc/ejbca/conf or in APPSRV_HOME/bin/conf (of you start your appserver from APPSRV_HOME/bin).
+</p>
+</subsection>
+<subsection name="Key updating">
 <p>
 The responder might be configured (in ocsp.properties) to scan for installed keys at regular intervals. The responder will use the keys detected at the latest scan.
 </p>

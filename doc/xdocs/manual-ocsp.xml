@@ -57,6 +57,42 @@ If the Fnr returned is null, there are several possible errors:
 </subsection>
   </section>
 
+<section name="OCSP extensions">
+<p>
+The standard allows the usage of extensions in OCSP requests and responses. 
+</p>
+<subsection name="Nonce">
+<p>
+Nonce is the only standard extensions defined. The purpose of the nonce is that a client can verify that a response really is in response
+to the specific requests, and not a replayed response. Is is recommended that if the OCSP requests contains the nonce extension, the OCSP response also contains the nonce.
+<br/>
+EJBCA included the nonce from the client requests in the server response if the requests contains a nonce.
+</p>
+</subsection>
+<subsection name="Custom extensions">
+<p>
+You can implement custom OCSP extensions in EJBCA by implementing a simple Java class and including it in the application servers class-path. 
+The easiest way to do that is to put your java file in an ejbca-custom directory, so it will be included in the ejbca.ear file. See EJBCA User Guide and look in conf/custom.properties for more information about using an ejbca-custom directory.
+To use your custom OCSP extension you have to define a few properties in conf/ocsp.properties:
+<ul>
+<li>ocsp.extensionoid - the OID defining your extension.</li>
+<li>ocsp.extensionclass - the fully qualified class name implementing your extension, i.e. org.ejbca.core.protocol.ocsp.OCSPUnidExtension.</li>
+</ul>
+</p>
+</subsection>
+</section>
+
+<section name="Using HTTP GET and RFC5019">
+<p>
+For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses. 
+By default these properties are set not to allow caching, which is the default behavior. To enable caching in http proxies you can tune a few properties in conf/ocsp.properties.
+<ul>
+<li>ocsp.untilNextUpdate - number of seconds a response will be valid. This sets the nextUpdate field in the OCSP response.</li>
+<li>ocsp.maxAge - how long a response will be cached, in seconds. Should be less than untilNextUpdate. This adds RFC5019 cache headers.</li>
+</ul> 
+</p>
+</section>
+
   <section name="OCSP stress testing">
   <p>
     Using the <a href="manual.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> you can easily stress test your CAs and OCSP responders.

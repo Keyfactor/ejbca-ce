@@ -36,6 +36,13 @@
 #ejbca.productionmode=ca
 #ejbca.productionmode=ocsp
 
+# Set to true to allow dynamic re-configuration using properties files in the file 
+# system. Using this you can place a file /etc/ejbca/conf/ocsp.properties in the file system and
+# override default values compiled into ejbca.ear.
+# Currently this only works for some values on ocsp.properties.
+#
+# Default: false
+#allow.external-dynamic.configuration=false
 
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:

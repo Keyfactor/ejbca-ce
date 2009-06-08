@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.configuration.ConversionException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
@@ -266,28 +267,28 @@ public class OcspConfiguration {
 		return value;
 	}
 
-	/**
-	 * The default number of seconds a request is valid or 0 to disable.
+	/** 
+	 * The default number of seconds a response is valid, or 0 to disable. See RFC5019.
 	 */
 	public static long getUntilNextUpdate() {
 		long value = 0;
 		try {
-			value = Integer.parseInt(ConfigurationHolder.getString("ocsp.untilNextUpdate", ""+value)) * 1000;
-		} catch( NumberFormatException e ) {
-			log.warn("\"ocsp.signtrustvalidtime\" is not a decimal number. Using default value: " + value);
+			value = (ConfigurationHolder.instance().getLong("ocsp.untilNextUpdate", value) * 1000);
+		} catch( ConversionException e ) {
+			log.warn("\"ocsp.untilNextUpdate\" is not a decimal number. Using default value: " + value);
 		}
 		return value;
 	}
 
 	/**
-	 * The default number of seconds a HTTP-response should be cached.
+	 * The default number of seconds a HTTP-response should be cached. See RFC5019.
 	 */
 	public static long getMaxAge() {
 		long value = 30;
 		try {
-			value = Integer.parseInt(ConfigurationHolder.getString("ocsp.maxAge", ""+value)) * 1000;
-		} catch( NumberFormatException e ) {
-			log.warn("\"ocsp.signtrustvalidtime\" is not a decimal number. Using default value: " + value);
+			value = (ConfigurationHolder.instance().getLong("ocsp.maxAge", value) * 1000);
+		} catch( ConversionException e ) {
+			log.warn("\"ocsp.maxAge\" is not a decimal number. Using default value: " + value);
 		}
 		return value;
 	}

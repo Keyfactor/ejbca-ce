@@ -161,10 +161,6 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private static final String PROBEABLE_ERRORHANDLER_CLASS = "org.ejbca.appserver.jboss.ProbeableErrorHandler";
 	private static final String SAFER_LOG4JAPPENDER_CLASS = "org.ejbca.appserver.jboss.SaferDailyRollingFileAppender";
 	
-	/** The interval in milliseconds which a OCSP result is valid. */
-	private final long untilNextUpdate = OcspConfiguration.getUntilNextUpdate();
-	private final long maxAge = OcspConfiguration.getMaxAge();
-	
 	protected synchronized void loadTrustDir() throws Exception {
 		// Check if we have a cached collection that is not too old
 		if(m_reqRestrictMethod == OcspConfiguration.RESTRICTONISSUER) {
@@ -331,8 +327,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 		// Cache-friendly parameters
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("untilNextUpdate: " + untilNextUpdate);
-			m_log.debug("maxAge: " + maxAge);
+			m_log.debug("untilNextUpdate: " + OcspConfiguration.getUntilNextUpdate());
+			m_log.debug("maxAge: " + OcspConfiguration.getMaxAge());
 			m_log.debug("ocspSigningCertsValidTime is: " + m_valid_time);
 		}
 		// Finally we load the CA certificates and private keys of this OCSP responder
@@ -589,6 +585,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		transactionLogger.paramPut(ITransactionLogger.CLIENT_IP, remoteAddress);
 
 		try {
+			// Read configuration values affecting the response, these can be dynamically updated from properties files in file system
+			// Read only once here for each request since may take a millisecond to read the value
+			final long maxAge = OcspConfiguration.getMaxAge(); 
+			final long nextUpdate = OcspConfiguration.getUntilNextUpdate();
+
 			OCSPResp ocspresp = null;
 			OCSPRespGenerator res = new OCSPRespGenerator();
 			X509Certificate cacert = null; // CA-certificate used to sign response
@@ -744,7 +745,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", new String(Hex.encode(certId.getIssuerNameHash())));
 						m_log.info(errMsg);
 						// If we can not find the CA, answer UnknowStatus
-						responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), untilNextUpdate));
+						responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), nextUpdate));
 						transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN); 
 						transactionLogger.writeln();
 						continue;
@@ -801,14 +802,14 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						}
                         infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
                         m_log.info(infoMsg);
-                        responseList.add(new OCSPResponseItem(certId, certStatus, untilNextUpdate));
+                        responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
                         transactionLogger.writeln();
 					} else {
 						certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(cacertStatus.revocationDate),
 								new CRLReason(cacertStatus.revocationReason)));
 						infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 						m_log.info(infoMsg);
-						responseList.add(new OCSPResponseItem(certId, certStatus, untilNextUpdate));
+						responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
 						transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED);
 						transactionLogger.writeln();
 					}

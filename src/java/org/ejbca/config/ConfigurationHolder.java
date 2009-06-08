@@ -80,12 +80,10 @@ public class ConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("conf"+File.separator+CONFIG_FILES[i]);
-						if (f.exists()) {
-							PropertiesConfiguration pc = new PropertiesConfiguration(f);
-							pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-							config.addConfiguration(pc);
-							log.info("Added file to configuration source: "+f.getAbsolutePath());
-						}
+						PropertiesConfiguration pc = new PropertiesConfiguration(f);
+						pc.setReloadingStrategy(new FileChangedReloadingStrategy());
+						config.addConfiguration(pc);
+						log.info("Added file to configuration source: "+f.getAbsolutePath());
 					} catch (ConfigurationException e) {
 						log.error("Failed to load configuration from file " + f.getAbsolutePath());
 					}
@@ -95,17 +93,16 @@ public class ConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("/etc/ejbca/conf/" + CONFIG_FILES[i]);
-						if (f.exists()) {
-							PropertiesConfiguration pc = new PropertiesConfiguration(f);
-							pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-							config.addConfiguration(pc);
-							log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
-						}
+						PropertiesConfiguration pc = new PropertiesConfiguration(f);
+						pc.setReloadingStrategy(new FileChangedReloadingStrategy());
+						config.addConfiguration(pc);
+						log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
 					} catch (ConfigurationException e) {
 						log.error("Failed to load configuration from file " + f.getAbsolutePath());
 					}
 				}
-			}
+			} // if (allowexternal)
+			
 			// Default values build into jar file, this is last prio used if no of the other sources override this
 			for (int i=0; i<CONFIG_FILES.length; i++) {
 				try {

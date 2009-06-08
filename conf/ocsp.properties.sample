@@ -1,4 +1,4 @@
-# ------------ OCSP configuration ---------------------
+# ------------ OCSP responder configuration ---------------------
 
 # Specifies the subject of a certificate which is used to identifiy the 
 # responder which will generate responses when no real CA can be found from the request. 
@@ -70,6 +70,17 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 #
 # Default: false
 #ocsp.nonexistingisgood=false 
+
+# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
+# untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
+# Default: 0
+#ocsp.untilNextUpdate = 0
+
+# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
+# maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
+# Ignored if untilNextUpdate is disabled. 0 = disable.
+# Default: 30
+#ocsp.maxAge = 30
 
 # Specifies OCSP extension oids that will result in a call to an extension class, 
 # separate multiple entries with ;"
@@ -307,12 +318,3 @@ A pattern for use with ocsp.audit-order to replace constants with values during 
 # This option needs other configuration changes as well, see HOWTO-OCSP-RESPONDER for more information
 # Default: false
 #ocsp.log-safer = true
-
-# untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
-# Default: 0
-#ocsp.untilNextUpdate = 0
-
-# maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
-# Ignored if untilNextUpdate is disabled. 0 = disable.
-# Default: 30
-#ocsp.maxAge = 30
