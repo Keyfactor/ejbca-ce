@@ -151,7 +151,9 @@ public class EjbcaWebBean implements java.io.Serializable {
     public GlobalConfiguration initialize(HttpServletRequest request, String resource) throws Exception{
     	
     	certificates = (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
-    	if(certificates == null || certificates.length == 0) throw new AuthenticationFailedException("Client certificate required.");
+    	if(certificates == null || certificates.length == 0) {
+    		throw new AuthenticationFailedException("Client certificate required.");
+    	}
 
     	
     	String userdn = "";
@@ -336,8 +338,7 @@ public class EjbcaWebBean implements java.io.Serializable {
       boolean returnval=false;
       if(certificates != null){         
         returnval= authorizedatahandler.isAuthorized(administrator,resource);
-      }
-      else{
+      } else{
         throw new  AuthorizationDeniedException("Client certificate required.");
       }
       return returnval;
@@ -348,8 +349,7 @@ public class EjbcaWebBean implements java.io.Serializable {
       boolean returnval=false;
       if(certificates != null){
         returnval= authorizedatahandler.isAuthorizedNoLog(administrator,resource);
-      }
-      else{
+      } else{
         throw new  AuthorizationDeniedException("Client certificate required.");
       }
       return returnval;
@@ -361,12 +361,11 @@ public class EjbcaWebBean implements java.io.Serializable {
     public boolean isAuthorizedNoLog(int resource) throws AuthorizationDeniedException {
       boolean returnval=false;
       if(certificates != null){
-        if(raauthorized[resource] == null)
-          raauthorized[resource] = Boolean.valueOf(authorizedatahandler.isAuthorizedNoLog(new Admin(certificates[0]),AUTHORIZED_RA_RESOURCES[resource]));
-
+        if(raauthorized[resource] == null) {
+        	raauthorized[resource] = Boolean.valueOf(authorizedatahandler.isAuthorizedNoLog(new Admin(certificates[0]),AUTHORIZED_RA_RESOURCES[resource]));
+        }
         returnval = raauthorized[resource].booleanValue();
-      }
-      else{
+      } else{
         throw new  AuthorizationDeniedException("Client certificate required.");
       }
       return returnval;
@@ -378,8 +377,9 @@ public class EjbcaWebBean implements java.io.Serializable {
     /* Returns the current admins preference */
     public AdminPreference getAdminPreference() throws Exception{
       AdminPreference returnval = adminspreferences.getAdminPreference(certificatefingerprint);
-      if(returnval==null)
+      if(returnval==null) {
         returnval = currentadminpreference;
+      }
       return returnval;
     }
 
@@ -424,11 +424,11 @@ public class EjbcaWebBean implements java.io.Serializable {
                           + globalconfiguration .getHelpPath()+"/"
                           + helpfile + "." + secondary + "." + postfix;
 
-      if(this.getClass().getResourceAsStream(preferedfilename) != null)
+      if(this.getClass().getResourceAsStream(preferedfilename) != null) {
         returnedurl = preferedurl;
-      else
+      } else {
         returnedurl = secondaryurl;
-
+      }
       return returnedurl;
     }
 
@@ -497,25 +497,26 @@ public class EjbcaWebBean implements java.io.Serializable {
       String imageurl     = getBaseUrl()  + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "."  + postfix;
-      if(this.getClass().getResourceAsStream(preferedthemefilename) != null)
-        returnedurl = preferedthemeurl;
-      else{
-        if(this.getClass().getResourceAsStream(secondarythemefilename) != null)
-          returnedurl = secondarythemeurl;
-        else{
-          if(this.getClass().getResourceAsStream(themefilename) != null)
-            returnedurl = imagethemeurl;
-          else{
-            if(this.getClass().getResourceAsStream(preferedfilename) != null)
-              returnedurl = preferedurl;
-            else{
-              if(this.getClass().getResourceAsStream(secondaryfilename) != null)
-                 returnedurl = secondaryurl;
-              else
-                returnedurl = imageurl;
-            }
-          }
-        }
+      if(this.getClass().getResourceAsStream(preferedthemefilename) != null) {
+    	  returnedurl = preferedthemeurl;
+      } else {
+    	  if(this.getClass().getResourceAsStream(secondarythemefilename) != null) {
+    		  returnedurl = secondarythemeurl;
+    	  } else {
+    		  if(this.getClass().getResourceAsStream(themefilename) != null) {
+    			  returnedurl = imagethemeurl;
+    		  } else {
+    			  if(this.getClass().getResourceAsStream(preferedfilename) != null) {
+    				  returnedurl = preferedurl;
+    			  } else {
+    				  if(this.getClass().getResourceAsStream(secondaryfilename) != null) {
+    					  returnedurl = secondaryurl;
+    				  } else {
+    					  returnedurl = imageurl;
+    				  }
+    			  }
+    		  }
+    	  }
       }
       return returnedurl;
     }
