@@ -36,70 +36,6 @@
             <classpath>
                 <path refid="test.compile.classpath" />
                 <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestCAs*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="org/ejbca/core/model/Test*" />
-                    <include name="org/ejbca/core/model/approval/approvalrequests/Test*" />
-                    <include name="org/ejbca/util/**/Test*" />
-                    <include name="org/ejbca/core/model/ca/**/Test*" />
-                    <include name="org/ejbca/core/model/util/**/Test*" />
-                    <include name="se/anatom/ejbca/util/**/Test*" />
-                    <include name="**/protocol/**/Test*" />
-                    <include name="**/ra/Test*" />
-                    <include name="**/userdatasource/Test*" />
-                    <include name="**/raadmin/Test*" />
-                    <include name="**/caadmin/TestRenewCA*" />
-                    <include name="**/auth/Test*" />
-                    <include name="**/store/Test*" />
-                    <include name="**/sign/Test*" />
-                    <include name="**/crl/Test*" />
-                    <include name="**/publisher/Test*" />
-                    <include name="**/batch/Test*" />
-                    <include name="**/log/Test*" />
-                    <include name="**/keyrecovery/Test*" />
-                    <include name="**/approval/Test*" />
-                    <include name="**/hardtoken/Test*" />
-                    <include name="org/ejbca/core/ejb/ca/caadmin/Test*" />
-                    <include name="**/authorization/TestAuthorization*" />
-                    <include name="**/services/Test*" />
-                    <exclude name="org/ejbca/core/protocol/xkms/Test*" />
-                    <exclude name="org/ejbca/core/protocol/ws/Test*" />
-                    <exclude name="**/ra/TestAddLotsofUsers*" />
-                    <exclude name="**/ra/TestAddLotsofCertsPerUser*" />
-                    <exclude name="**/sign/TestSignLotsOfCerts*" />
-                    <exclude name="**/TestTools*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestRemoveCA*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/reports">
-            <fileset dir="${test.dir}/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/reports/html" />
-        </junitreport>
-    </target>
-
-    <target name="test:runclover" depends="test:compile,j2ee:assert-run">
-        <delete dir="${test.dir}/reports" />
-        <mkdir dir="${test.dir}/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
                 <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
             </classpath>
             <formatter type="xml" />
@@ -157,7 +93,6 @@
             <report format="frames" todir="${test.dir}/reports/html" />
         </junitreport>
     </target>
-
 
     <target name="test:runexcluded" depends="test:compile,j2ee:assert-run" description="run JUnit testcases that require manual configuration">
         <property name="test.reportsdir" value="${test.dir}/reports-excluded" />
@@ -281,6 +216,7 @@
             <classpath>
                 <path refid="test.compile.classpath" />
                 <path location="${test.dir}" />
+                <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
             </classpath>
             <formatter type="xml" />
         	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
