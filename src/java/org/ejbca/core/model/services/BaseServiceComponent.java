@@ -21,6 +21,8 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
@@ -39,6 +41,7 @@ public abstract class BaseServiceComponent {
 	
     private ILogSessionLocal logsession = null;
 	private CertificateDataLocalHome certHome = null;
+	private ICertificateStoreSessionLocal certStore = null;
 	private CRLDataLocalHome crlHome = null;
 	private ICAAdminSessionLocal caadminsession = null;
 	private IUserAdminSessionLocal useradminsession = null;
@@ -79,6 +82,23 @@ public abstract class BaseServiceComponent {
         }
         return certHome ;
     } //getCertificateDataHome
+
+    /**
+     * Gets connection to certificate store session bean
+     *
+     * @return CertificateDataLocalHome
+     */
+    protected ICertificateStoreSessionLocal getCertificateSession() {
+    	if (certStore == null) {
+    		try {
+    			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+    			certStore = home.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}        	
+    	}
+    	return certStore;
+    } 
 
     /**
      * Gets connection to CRL data home 

@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -143,7 +144,8 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 	 * the record that is returned one by one. The records are ordered by date, descending so the oldest record is returned first. 
 	 * Publishing is tried every time for every record returned, with no limit.
      * Repeat this process as long as we actually manage to publish something this is because when publishing starts to work we want to publish everything in one go, if possible.
-     * However we don't want to publish more than 5000 certificates each time, because we want to commit to the database some time as well.
+     * However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
+     * Now, the OCSP publisher uses a non-transactional data source so it commits every time so...
 	 * 
 	 * @param publisherId
 	 * @throws PublisherException 
@@ -159,7 +161,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 			successcount = doPublish(publisherId, c);
 			totalcount += successcount;
 			log.debug("Totalcount="+totalcount);
-		} while ( (successcount > 0) && (totalcount < 5000) );
+		} while ( (successcount > 0) && (totalcount < 20000) );
 	}
 
 	/**
@@ -202,8 +204,9 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 					}
 					if (publisher != null) {
 						// Read the actual certificate and try to publish it again
+						CertificateInfo info = getCertificateSession().getCertificateInfo(getAdmin(), fingerprint);
 						CertificateDataLocal certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(fingerprint));
-						published = publisher.storeCertificate(getAdmin(), certlocal.getCertificate(), username, password, certlocal.getCaFingerprint(), certlocal.getStatus(), certlocal.getType(), certlocal.getRevocationDate(), certlocal.getRevocationReason(), certlocal.getTag(), certlocal.getCertificateProfileId(), certlocal.getUpdateTime(), ei);
+						published = publisher.storeCertificate(getAdmin(), certlocal.getCertificate(), username, password, info.getCAFingerprint(), info.getStatus(), info.getType(), info.getRevocationDate().getTime(), info.getRevocationReason(), info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), ei);
 					} else {
 						String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
 						log.info(msg);

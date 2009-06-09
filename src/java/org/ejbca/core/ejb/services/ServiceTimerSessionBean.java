@@ -123,6 +123,13 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
  *   link="UserAdminSession"
  *
+ * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
+ *   view-type="local"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
  *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
