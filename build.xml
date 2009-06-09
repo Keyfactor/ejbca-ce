@@ -48,6 +48,11 @@
 	       </current>
 	    </clover-report>
 	 </target>
+	
+	<target name="clover.html">
+		<clover-html-report outdir="clover_html"
+		                        title="EJBCA"/>
+	 </target>
 
 	
     <!-- =================================================================== -->
