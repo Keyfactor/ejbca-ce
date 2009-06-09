@@ -92,7 +92,7 @@ import org.ejbca.util.RequestMessageUtils;
  * password is needed. The path could be absolute or relative.<br>
  * </p>
  *
- * @author Original code by Lars Silv�n
+ * @author Original code by Lars Silven
  * @version $Id$
  */
 public class CardCertReqServlet extends HttpServlet {
@@ -161,10 +161,10 @@ public class CardCertReqServlet extends HttpServlet {
                 }
                 RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, certs[0].getIssuerDN().getName(),
                                                                       certs[0].getSerialNumber());
-                if ( rci==null || rci.getReason()!=RevokedCertInfo.NOT_REVOKED )
+                if ( rci==null || rci.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
                     throw new UserCertificateRevokedException(certs[0]);
-                username = certificatestoresession.findUsernameByCertSerno(administrator,
-                        certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
+                }
+                username = certificatestoresession.findUsernameByCertSerno(administrator, certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
                 if ( username==null || username.length()==0 ) {
                     throw new ObjectNotFoundException("Not possible to retrieve user name");
                 }
@@ -200,8 +200,7 @@ public class CardCertReqServlet extends HttpServlet {
                 final int signCertProfile;
                 final HardTokenProfile hardTokenProfile = tokenSessionHome.create().getHardTokenProfile(administrator, data.getTokenType());
                 {
-                    CertProfileID certProfileID = new CertProfileID(certificatestoresession, data, administrator,
-                                                                    hardTokenProfile);
+                    CertProfileID certProfileID = new CertProfileID(certificatestoresession, data, administrator, hardTokenProfile);
                     authCertProfile = certProfileID.getProfileID("authCertProfile", SwedishEIDProfile.CERTUSAGE_AUTHENC);
                     signCertProfile = certProfileID.getProfileID("signCertProfile", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
@@ -216,35 +215,35 @@ public class CardCertReqServlet extends HttpServlet {
                 final byte[] authReqBytes = authReq.getBytes();
                 final byte[] signReqBytes = signReq.getBytes();
                 if ( authReqBytes!=null && signReqBytes!=null) {
-                    try {
-                    adminsession.changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
-                                            data.getEmail(), true, data.getEndEntityProfileId(), authCertProfile, data.getType(),
-                                            SecConst.TOKEN_SOFT_BROWSERGEN, 0, data.getStatus(), authCA);
-                    final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());
+                	try {
+                		adminsession.changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
+                				data.getEmail(), true, data.getEndEntityProfileId(), authCertProfile, data.getType(),
+                				SecConst.TOKEN_SOFT_BROWSERGEN, 0, data.getStatus(), authCA);
+                		final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());
 
-                    adminsession.changeUser(administrator, username, data.getPassword(), data.getDN(), data.getSubjectAltName(),
-                                            data.getEmail(), true, data.getEndEntityProfileId(), signCertProfile, data.getType(),
-                                            SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, signCA);
-                    final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
+                		adminsession.changeUser(administrator, username, data.getPassword(), data.getDN(), data.getSubjectAltName(),
+                				data.getEmail(), true, data.getEndEntityProfileId(), signCertProfile, data.getType(),
+                				SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, signCA);
+                		final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
 
 
-                    for (int i=0; i<notRevokedCerts.length; i++) {
-                    	try {
-                        	adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
-                                    notRevokedCerts[i].getIssuerDN().toString(), username,
-                                    RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
-                    	} catch (WaitingForApprovalException e) {
-                    		log.info("A request for approval to revoke " + username + "'s old certificate "+
-                    				notRevokedCerts[i].getSerialNumber().toString(16)+" was added.");
-                    	} catch (ApprovalException e) {
-                    		log.info("A request for approval to revoke " + username + "'s old certificate "+
-                    				notRevokedCerts[i].getSerialNumber().toString(16)+" already exists.");
-                    	}
-                    }
-                        
-                    sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
-                                     getInitParameter("responseTemplate"), notRevokedCerts);
-                    } catch( Throwable t ) {
+                		for (int i=0; i<notRevokedCerts.length; i++) {
+                			try {
+                				adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
+                						notRevokedCerts[i].getIssuerDN().toString(), username,
+                						RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
+                			} catch (WaitingForApprovalException e) {
+                				log.info("A request for approval to revoke " + username + "'s old certificate "+
+                						notRevokedCerts[i].getSerialNumber().toString(16)+" was added.");
+                			} catch (ApprovalException e) {
+                				log.info("A request for approval to revoke " + username + "'s old certificate "+
+                						notRevokedCerts[i].getSerialNumber().toString(16)+" already exists.");
+                			}
+                		}
+
+                		sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
+                				getInitParameter("responseTemplate"), notRevokedCerts);
+                	} catch( Throwable t ) {
                         if (t instanceof Exception) {
                             throw (Exception)t;
                         }
@@ -338,8 +337,7 @@ public class CardCertReqServlet extends HttpServlet {
             CAInfo caInfo = caadminsession.getCAInfo(administrator, name);
             if ( caInfo!=null ) {
                 return caInfo.getCAId();
-            }
-            else {
+            } else {
                 return 0;
             }
         }
@@ -350,8 +348,7 @@ public class CardCertReqServlet extends HttpServlet {
             final int id = hardTokenProfile.getCAId(keyType);
             if ( id!=EIDProfile.CAID_USEUSERDEFINED ) {
                 return id;
-            }
-            else {
+            } else {
                 return data.getCAId();
             }
         }
@@ -386,8 +383,7 @@ public class CardCertReqServlet extends HttpServlet {
             administrator = a;
             if ( htp!=null && htp instanceof EIDProfile ) {
                 hardTokenProfile = (EIDProfile)htp;
-            }
-            else {
+            } else {
                 hardTokenProfile = null;
             }
         }
@@ -512,8 +508,7 @@ public class CardCertReqServlet extends HttpServlet {
         req.setPassword(password);
         IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-          result = cert.getEncoded();
-
+        result = cert.getEncoded();
         return Base64.encode(result, false);
     } //pkcs10CertReq
 }
