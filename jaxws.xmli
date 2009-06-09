@@ -286,6 +286,7 @@
             <classpath>
                 <path refid="jaxws.test.classpath" />
                 <path location="${test.dir}" />
+                <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
             </classpath>
             <formatter type="xml" />
         	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
