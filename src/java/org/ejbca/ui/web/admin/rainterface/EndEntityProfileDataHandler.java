@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
@@ -171,7 +172,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
         	  // Go through all available CAs in the profile and check that the administrator is authorized to all CAs specified in the profile
         	  // If ALLCAS is selected in the end entity profile, we must check that the administrator is authorized to all CAs in the system.
         	  String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-        	  if (Arrays.binarySearch(availablecas, String.valueOf(SecConst.ALLCAS)) >=0) {
+        	  if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
         		  // If availablecas contains SecConst ALLCAS, change availablecas to be a list of all CAs
             	  Collection allcaids = authorizationsession.getAuthorizedCAIds(new Admin(Admin.TYPE_INTERNALUSER));
             	  if (log.isDebugEnabled()) {
