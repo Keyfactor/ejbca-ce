@@ -63,7 +63,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
                 X509Certificate xcert = (X509Certificate) iter.next();
                 Date retDate = xcert.getNotAfter();
                 String subjectDN = CertTools.getSubjectDN(xcert);
-                String serNo = xcert.getSerialNumber().toString();
+                String serNo = CertTools.getSerialNumberAsString(xcert);
                 getOutputStream().println("Certificate with subjectDN '" + subjectDN +
                     "' and serialNumber '" + serNo + "' expires at " + retDate + ".");
             }
