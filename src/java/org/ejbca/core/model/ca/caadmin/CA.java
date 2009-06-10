@@ -286,22 +286,25 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        CATokenManager.instance().addCAToken(getCAId(), catoken);
     }
     
+    /** Returns a collection of CA certificates, or null if no request certificate chain exists
+     */
     public Collection getRequestCertificateChain(){
-      if(requestcertchain == null){
-        Collection storechain = (Collection) data.get(REQUESTCERTCHAIN);
-        Iterator iter = storechain.iterator();
-        this.requestcertchain = new ArrayList();
-        while(iter.hasNext()){
-          String b64Cert = (String) iter.next();
-          try{
-            this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
-          }catch(Exception e){
-             throw new EJBException(e);   
-          }
-        }        
-      }
-        
-      return requestcertchain; 
+    	if(requestcertchain == null){
+    		Collection storechain = (Collection) data.get(REQUESTCERTCHAIN);
+    		if (storechain != null) {
+    			Iterator iter = storechain.iterator();
+    			this.requestcertchain = new ArrayList();
+    			while(iter.hasNext()){
+    				String b64Cert = (String) iter.next();
+    				try {
+    					this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
+    				} catch(Exception e) {
+    					throw new EJBException(e);   
+    				}
+    			}        	
+    		}
+    	}
+    	return requestcertchain; 
     }
     
     public void setRequestCertificateChain(Collection requestcertificatechain){
