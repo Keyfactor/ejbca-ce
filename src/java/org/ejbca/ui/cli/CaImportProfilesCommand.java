@@ -180,7 +180,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         availableCAs = "";
                                         for ( String currentCA : cas ) {
                                         	Integer currentCAInt = Integer.parseInt(currentCA);
-                                        	if (getCAAdminSession().getCAInfo(administrator, currentCAInt) == null) {
+                                        	// The constant ALLCAS will not be searched for among available CAs
+                                        	if ( (currentCAInt.intValue() != SecConst.ALLCAS) && (getCAAdminSession().getCAInfo(administrator, currentCAInt) == null) ) {
                                                 getOutputStream().println("Warning: CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
                                                 if (defaultCA.equals(currentCA)) {
                                                 	defaultCA = "";
