@@ -48,17 +48,14 @@ public class JDBCUtil {
     public static void execute(String sqlCommandTemplate, Preparer preparer, String dataSource) throws Exception {
         if ( sqlCommandTemplate!=null ) {
             Connection connection = null;
-            ResultSet result = null;
             PreparedStatement ps = null;
             try {
                 connection = ServiceLocator.getInstance().getDataSource(dataSource).getConnection();
                 ps = connection.prepareStatement(sqlCommandTemplate);
                 preparer.prepare(ps);
-                if ( ps.execute() ) {
-                    result = ps.getResultSet();
-                }
+                ps.execute();
             } finally {
-                JDBCUtil.close(connection, ps, result);
+                JDBCUtil.close(connection, ps, null);
             }
         }
     }

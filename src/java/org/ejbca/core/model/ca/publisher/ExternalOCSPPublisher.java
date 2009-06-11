@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.protect.TableProtectSessionHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.model.InternalResources;
@@ -59,6 +60,8 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     public static final String DEFAULT_DATASOURCE 			= "java:/OcspDS";
     public static final boolean DEFAULT_PROTECT 			= false;
 
+    private final static String insertSQL = "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private final static String updateSQL = "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=? WHERE fingerprint=?";
     /**
      * 
      */
@@ -116,7 +119,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     }
 
 	/* (non-Javadoc)
-     * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#init(java.util.Properties)
+     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
      */
     public void init(Properties properties) {
         setDataSource(properties.getProperty(DATASOURCE));
@@ -186,7 +189,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     }
 
     /* (non-Javadoc)
-     * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, java.lang.String, int, int, se.anatom.ejbca.ra.ExtendedInformation)
+     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate
      */
     public boolean storeCertificate(Admin admin, Certificate incert,
                                     String username, String password,
@@ -200,8 +203,12 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     	}
     	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type, tag, certificateProfileId, lastUpdate); 
     	try {
-    		JDBCUtil.execute( "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-    				prep, getDataSource());
+    		if (status == CertificateDataBean.CERT_REVOKED) {
+        		// If this is a revocation we assume that the certificate already exists in the database. In that case we will try an update first and if that fails an insers.
+        		JDBCUtil.execute(updateSQL, prep, getDataSource());
+    		} else {
+        		JDBCUtil.execute(insertSQL, prep, getDataSource());    			
+    		}
     		fail = false;
     	} catch (Exception e) {
     		// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
@@ -211,8 +218,12 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     				log.debug(msg);
     			}
     			try {
-        			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=? WHERE fingerprint=?",
-            				prep, getDataSource() );
+    	    		if (status == CertificateDataBean.CERT_REVOKED) {
+    	        		// If this is a revocation we tried an update below, if thart failed we have to do an insert here
+    	        		JDBCUtil.execute(insertSQL, prep, getDataSource());    			
+    	    		} else {
+    	        		JDBCUtil.execute(updateSQL, prep, getDataSource());
+    	    		}
             		fail = false;    				
     			} catch (Exception ue) {
     				String lmsg = intres.getLocalizedMessage("publisher.errorextocsppubl", prep.getInfoString());
