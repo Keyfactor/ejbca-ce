@@ -30,6 +30,7 @@ import javax.ejb.RemoveException;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -377,18 +378,26 @@ public class RAInterfaceBean implements java.io.Serializable {
                                                                                                    NumberFormatException,
                                                                                                    CreateException{
       serialnumber = StringTools.stripWhitespace(serialnumber);
-      Collection certs =certificatesession.findCertificatesBySerno(administrator, new BigInteger(serialnumber,16));
+      BigInteger serno = new BigInteger(serialnumber,16);
+      Collection certs =certificatesession.findCertificatesBySerno(administrator, serno);
       ArrayList userlist = new ArrayList();
       UserView[] returnval = null;
       if(certs != null){
         Iterator iter = certs.iterator();
+        UserDataVO user = null;
         while(iter.hasNext()){
-           UserDataVO user = null;
            try{
              Certificate next = (Certificate) iter.next();  
              user = adminsession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));
              if(user != null){
-               userlist.add(user);
+            	 userlist.add(user);
+             }
+             String username = certificatesession.findUsernameByCertSerno(administrator, serno, CertTools.getIssuerDN(next));
+             if ( (user == null) || (!StringUtils.equals(username, user.getUsername())) ) {
+            	 user = adminsession.findUser(administrator, username);
+                 if(user != null){
+                	 userlist.add(user);
+                 }            	 
              }
            }catch(AuthorizationDeniedException e){}
         }
