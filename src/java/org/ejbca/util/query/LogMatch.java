@@ -83,8 +83,16 @@ public class LogMatch extends BasicMatch {
 
         if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
         	String quote = "'";
-        	if (matchwith == MATCH_WITH_CA) {
+        	switch(matchwith){
+        	case MATCH_WITH_EVENT:
+        	case MATCH_WITH_MODULE:
+        	case MATCH_WITH_CA:
+        	case MATCH_WITH_SPECIALADMIN:
         		quote = "";
+        		break;
+        	default:
+        		quote = "'";
+        	break;
         	}
             returnval = MATCH_WITH_SQLNAMES[matchwith] + " = " + quote + matchvalue + quote;
         }
