@@ -133,9 +133,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      */
     final private String webURL;
     /**
-     * {@link #isOK} tells if the servlet is ready to be used. It is false during the time when the HSM has failed until its keys is reloaded.
+     * {@link #isNotReloadingP11Keys} tells if the servlet is ready to be used. It is false during the time when the HSM has failed until its keys is reloaded.
      */
-    private boolean isOK=true;
+    private boolean isNotReloadingP11Keys=true;
     /**
      * Password should not be stored in memory if this is true.
      */
@@ -269,6 +269,37 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
     }
     /**
+     * Tests a key.
+     * @param privateKey The private part of the key.
+     * @param publicKey The public part of the key.
+     * @param alias The alias of the for the key. Just used for debug output.
+     * @param providerName The provider name.
+     * @return True if the key is OK.
+     * @throws Exception
+     */
+    private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
+        final String sigAlgName = "SHA1withRSA";
+        final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
+        final byte signBA[];
+        final boolean result;{
+            Signature signature = Signature.getInstance(sigAlgName, providerName);
+            signature.initSign( privateKey );
+            signature.update( signInput );
+            signBA = signature.sign();
+        }
+        {
+            Signature signature = Signature.getInstance(sigAlgName);
+            signature.initVerify(publicKey);
+            signature.update(signInput);
+            result = signature.verify(signBA);
+            m_log.debug("Signature test of key "+alias+
+                        ": signature length " + signBA.length +
+                        "; first byte " + Integer.toHexString(0xff&signBA[0]) +
+                        "; verifying " + result);
+        }
+        return result;
+    }
+    /**
      * Fixes the answer for the call to {@link OCSPServletStandAlone#healthCheck()}
      * @return The answer to be returned by the health-check servlet.
      */
@@ -276,22 +307,32 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         try {
-            loadPrivateKeys(this.servlet.m_adm, null);
             if (this.signEntitycontainer == null || this.signEntitycontainer.getSigningEntityMap() == null ||
                     this.signEntitycontainer.getSigningEntityMap().values() == null) {
-                pw.println();
                 final String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
+                pw.println();
                 pw.print(errMsg);
                 m_log.error(errMsg);
             } else {
                 final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
                 while ( i.hasNext() ) {
                     final SigningEntity signingEntity = i.next();
+                    final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
                     if ( !signingEntity.isOK() ) {
                         pw.println();
-                        final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
                         pw.print(errMsg);
                         m_log.error(errMsg);
+                    } else {
+                        final PrivateKey privKey = signingEntity.keyContainer.getKey();
+                        final X509Certificate entityCert = signingEntity.keyContainer.getCertificate();
+                        final String providerName = signingEntity.providerHandler.getProviderName();
+                        final boolean isOK = signTest(privKey, entityCert.getPublicKey(),
+                                                      entityCert.getSubjectDN().toString(), providerName);
+                        if ( !isOK ) {
+                            pw.println();
+                            pw.print(errMsg);
+                            m_log.error(errMsg);
+                        }
                     }
                 }
             }
@@ -432,7 +473,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             if ( !doKeyRenewal() ) {
                 return;
             }
-            if ( this.fileName!=null && mStorePassword==null ) {
+            if ( this.fileName!=null && OCSPServletStandAloneSession.this.mStorePassword==null ) {
                 m_log.error("Not possible to renew keys whith no stored keystore password for certificate with DN: "+caChain.get(0).getSubjectDN());
                 return;
             }
@@ -451,7 +492,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         public void set(KeyStore _keyStore) throws Exception {
             this.keyStore = _keyStore;
-            if ( this.fileName!=null && mKeyPassword==null ) {
+            if ( this.fileName!=null && OCSPServletStandAloneSession.this.mKeyPassword==null ) {
                 throw new Exception("Key password must be configured when reloading SW keystore.");
             }
             set(OCSPServletStandAloneSession.this.mKeyPassword.toCharArray());
@@ -947,7 +988,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 final long currentTime = new Date().getTime();
                 // We will only load private keys if the cache time has run out
                 if ( password==null && (
-                        this.updating || this.lastTryOfKeyReload+10000>currentTime || !OCSPServletStandAloneSession.this.isOK ||
+                        this.updating || this.lastTryOfKeyReload+10000>currentTime || !OCSPServletStandAloneSession.this.isNotReloadingP11Keys ||
                         (this.signEntityMap!=null && this.signEntityMap.size()>0 && OCSPServletStandAloneSession.this.servlet.mKeysValidTo>currentTime)
                 ) ) {
                     return;
@@ -1139,37 +1180,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
             m_log.trace("<loadFromSWKeyStore failed");
             return false;
-        }
-        /**
-         * Tests a key.
-         * @param privateKey The private part of the key.
-         * @param publicKey The public part of the key.
-         * @param alias The alias of the for the key. Just used for debug output.
-         * @param providerName The provider name.
-         * @return True if the key is OK.
-         * @throws Exception
-         */
-        private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
-            final String sigAlgName = "SHA1withRSA";
-            final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
-            final byte signBA[];
-            final boolean result;{
-                Signature signature = Signature.getInstance(sigAlgName, providerName);
-                signature.initSign( privateKey );
-                signature.update( signInput );
-                signBA = signature.sign();
-            }
-            {
-                Signature signature = Signature.getInstance(sigAlgName);
-                signature.initVerify(publicKey);
-                signature.update(signInput);
-                result = signature.verify(signBA);
-                m_log.debug("Signature test of key "+alias+
-                            ": signature length " + signBA.length +
-                            "; first byte " + Integer.toHexString(0xff&signBA[0]) +
-                            "; verifying " + result);
-            }
-            return result;
         }
         /**
          * Is OCSP extended key usage set for a certificate?
@@ -1506,7 +1516,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.ProviderHandler#getProviderName()
          */
         public String getProviderName() {
-            return OCSPServletStandAloneSession.this.isOK ? this.name : null;
+            return OCSPServletStandAloneSession.this.isNotReloadingP11Keys ? this.name : null;
         }
         /**
          * An object of this class reloads the provider in a separate thread.
@@ -1539,7 +1549,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             m_log.info("Reloaded: "+errorMessage);
                         }
                     }
-                    OCSPServletStandAloneSession.this.isOK = true;
+                    OCSPServletStandAloneSession.this.isNotReloadingP11Keys = true;
                     return;
                 } catch ( Throwable t ) {
                     m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
@@ -1554,10 +1564,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 m_log.info("Not possible to recover a lost HSM with no passowrd.");
                 return;
             }
-            if ( !OCSPServletStandAloneSession.this.isOK ) {
+            if ( !OCSPServletStandAloneSession.this.isNotReloadingP11Keys ) {
                 return;
             }
-            OCSPServletStandAloneSession.this.isOK = false;
+            OCSPServletStandAloneSession.this.isNotReloadingP11Keys = false;
             new Thread(new Reloader()).start();
         }
         /* (non-Javadoc)
@@ -1805,6 +1815,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#isActive()
      */
     public boolean isActive() {
-        return doKeyRenewal(); // do not reload when key renewal.
+        return this.doNotStorePasswordsInMemory; // if not active it is possible to logout from the slot. if logged out you need password to login again.
     }
 }
