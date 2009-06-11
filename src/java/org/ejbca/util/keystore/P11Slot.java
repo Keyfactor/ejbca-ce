@@ -53,21 +53,23 @@ public class P11Slot {
     final private Set<P11SlotUser> caTokens;
     final private String sunP11ConfigFileName;
     private String atributesFile;
-    private Provider provider;
+    final private Provider provider;
     private boolean isSettingProvider = false;
-    private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex ) {
+    private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex ) throws CATokenOfflineException {
         this.slotNr = _slotNr;
         this.sharedLibrary = _sharedLibrary;
         this.isIndex = _isIndex;
         this.caTokens = new HashSet<P11SlotUser>();
         this.sunP11ConfigFileName = null;
+        this.provider = createProvider();
     }
-    private P11Slot( String configFileName ) {
+    private P11Slot( String configFileName ) throws CATokenOfflineException {
         this.sunP11ConfigFileName = configFileName;
         this.slotNr = null;
         this.sharedLibrary = null;
         this.isIndex = false;
         this.caTokens = new HashSet<P11SlotUser>();
+        this.provider = createProvider();
     }
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
@@ -108,9 +110,10 @@ public class P11Slot {
      * @param _atributesFile Atributes file. Optional. Set to null if not used
      * @param token Token that should use this object
      * @return The instance.
+     * @throws CATokenOfflineException 
      */
     static public P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
-                                      String _atributesFile, P11SlotUser token) {
+                                      String _atributesFile, P11SlotUser token) throws CATokenOfflineException {
         final String libName = new File(sharedLibrary).getName();
         final String slotLabel = slotNr + libName + isIndex;
         P11Slot slot = slotMap.get(slotLabel);
@@ -133,8 +136,9 @@ public class P11Slot {
      * @param configFileName name of config file
      * @param token Token that should use this object.
      * @return
+     * @throws CATokenOfflineException 
      */
-    static public P11Slot getInstance(String configFileName, P11SlotUser token) {
+    static public P11Slot getInstance(String configFileName, P11SlotUser token) throws CATokenOfflineException {
         final String slotLabel = new File(configFileName).getName();
         P11Slot slot = slotMap.get(slotLabel);
         if (slot==null) {
@@ -156,16 +160,12 @@ public class P11Slot {
      * @throws LoginException 
      */
     public void removeProviderIfNoTokensActive() {
-        if (this.provider==null) {
-            return;
-        }
         final Iterator<P11SlotUser> iTokens = this.caTokens.iterator();
         while( iTokens.hasNext() ) {
             if ( iTokens.next().isActive() ) {
                 return;
             }
         }
-        Security.removeProvider(this.provider.getName());
         if ( this.provider instanceof AuthProvider ) {
             try {
                 ((AuthProvider)this.provider).logout();
@@ -174,17 +174,22 @@ public class P11Slot {
                 log.warn("Not possible to logout from P11 Session. HW problems?", e);
             }
         } else {
-            log.debug("P11 provider \""+this+"\" removed. Put not possible to logout from provider.");
+            log.warn("Not possible to logout from P11 provider '"+this+"'. It is not implementing '"+AuthProvider.class.getCanonicalName()+"'.");
         }
-        this.provider.clear();
-        this.provider = null;
-        System.runFinalization();
     }
     /**
      * @return  the provider of the slot.
      * @throws CATokenOfflineException
      */
-    public synchronized Provider getProvider() throws CATokenOfflineException {
+    public Provider getProvider() {
+        return this.provider;
+    }
+    /**
+     * @return  the provider of the slot.
+     * @throws CATokenOfflineException
+     */
+    private synchronized Provider createProvider() throws CATokenOfflineException {
+        final Provider tmpProvider;
         while ( this.isSettingProvider ) {
             try {
                 this.wait();
@@ -192,16 +197,13 @@ public class P11Slot {
                 log.fatal("This should never happend", e1);
             }
         }
-        if ( this.provider!=null ) {
-            return this.provider;
-        }
         try {
             this.isSettingProvider = true;
             if ( this.slotNr!=null && this.sharedLibrary!=null ) {
-                this.provider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
+                tmpProvider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
                                                         this.isIndex, this.atributesFile);
             } else if ( this.sunP11ConfigFileName!=null ) {
-                this.provider = KeyTools.getSunP11Provider(new FileInputStream(this.sunP11ConfigFileName));
+                tmpProvider = KeyTools.getSunP11Provider(new FileInputStream(this.sunP11ConfigFileName));
             } else {
                 throw new Error("Should never happend.");
             }
@@ -213,12 +215,12 @@ public class P11Slot {
             this.isSettingProvider = false;
             this.notifyAll();
         }
-        if ( this.provider==null )
+        if ( tmpProvider==null )
             throw new CATokenOfflineException("Provider is null");
-        if ( Security.getProvider(this.provider.getName())==null ) {
-            Security.addProvider( this.provider );
+        if ( Security.getProvider(tmpProvider.getName())==null ) {
+            Security.addProvider( tmpProvider );
         }
-        log.debug("Provider successfully added: "+this.provider);
-        return this.provider;
+        log.debug("Provider successfully added: "+tmpProvider);
+        return tmpProvider;
     }
 }
