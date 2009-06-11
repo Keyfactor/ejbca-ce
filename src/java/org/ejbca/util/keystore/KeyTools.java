@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -281,9 +280,9 @@ public class KeyTools {
     public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Collection cacerts)
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
-        if (cacerts == null)
+        if (cacerts == null) {
             chain = null;
-        else {
+        } else {
             chain = new Certificate[cacerts.size()];
             chain = (Certificate[])cacerts.toArray(chain);
         }
@@ -479,12 +478,10 @@ public class KeyTools {
             return certchain;
         } else if (certchain.length > 0) {
             if (CertTools.isSelfSigned((X509Certificate) certchain[certchain.length - 1])) {
-                log.debug("Issuer='" +
-                    CertTools.getIssuerDN((X509Certificate) certchain[certchain.length - 1]) +
-                    "'.");
-                log.debug("Subject='" +
-                    CertTools.getSubjectDN((X509Certificate) certchain[certchain.length - 1]) +
-                    "'.");
+            	if (log.isDebugEnabled()) {
+                    log.debug("Issuer='" + CertTools.getIssuerDN((X509Certificate) certchain[certchain.length - 1]) + "'.");
+                    log.debug("Subject='" + CertTools.getSubjectDN((X509Certificate) certchain[certchain.length - 1]) + "'.");            		
+            	}
                 if (log.isTraceEnabled()) {
                 	log.trace("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + certchain.length);
                 }
@@ -509,8 +506,9 @@ public class KeyTools {
             if (chain1 == null) {
                 stop = true;
             } else {
-                log.debug("Loaded certificate chain with length " + chain1.length +
-                    " with alias '" + ialias + "'.");
+            	if (log.isDebugEnabled()) {
+                    log.debug("Loaded certificate chain with length " + chain1.length + " with alias '" + ialias + "'.");            		
+            	}
 
                 if (chain1.length == 0) {
                     log.error("No RootCA certificate found!");
@@ -532,8 +530,10 @@ public class KeyTools {
 
         for (int i = 0; i < ret.length; i++) {
             ret[i] = (X509Certificate) array.get(i);
-            log.debug("Issuer='" + CertTools.getIssuerDN((X509Certificate) ret[i]) + "'.");
-            log.debug("Subject='" + CertTools.getSubjectDN((X509Certificate) ret[i]) + "'.");
+            if (log.isDebugEnabled()) {
+                log.debug("Issuer='" + CertTools.getIssuerDN((X509Certificate) ret[i]) + "'.");
+                log.debug("Subject='" + CertTools.getSubjectDN((X509Certificate) ret[i]) + "'.");            	
+            }
         }
         if (log.isTraceEnabled()) {
         	log.trace("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + ret.length);
@@ -551,9 +551,7 @@ public class KeyTools {
     public static SubjectKeyIdentifier createSubjectKeyId(PublicKey pubKey) {
         try {
             ByteArrayInputStream bIn = new ByteArrayInputStream(pubKey.getEncoded());
-            SubjectPublicKeyInfo info = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(
-                        bIn).readObject());
-
+            SubjectPublicKeyInfo info = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(bIn).readObject());
             return new SubjectKeyIdentifier(info);
         } catch (Exception e) {
             throw new RuntimeException("error creating key");
@@ -591,9 +589,9 @@ public class KeyTools {
     	if ( !libFile.isFile() || !libFile.canRead() ) {
     		throw new IOException("The file "+fileName+" can't be read.");
     	}
-        if ( slot==null )
+        if ( slot==null ) {
             return getP11Provider(new FileInputStream(fileName), null);
-
+        }
         // Properties for the SUN PKCS#11 provider
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter pw = new PrintWriter(baos);
@@ -602,10 +600,11 @@ public class KeyTools {
 
         final int slotNr;
         try {
-            if (slot.length()>0)
+            if (slot.length()>0) {
                 slotNr = Integer.parseInt(slot);
-            else
+            } else {
                 slotNr = -1;
+            }
         } catch( NumberFormatException e ) {
             throw new IOException("Slot nr "+slot+" not an integer.");
         }

@@ -194,9 +194,9 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
             returnvalue = getUsername().compareTo(((UserView) obj).getUsername());
 
       }
-      if(this.sortby.getSortOrder() == SortBy.DECENDING)
+      if(this.sortby.getSortOrder() == SortBy.DECENDING) {
         returnvalue = 0-returnvalue;
-
+      }
       return returnvalue;
     }
 

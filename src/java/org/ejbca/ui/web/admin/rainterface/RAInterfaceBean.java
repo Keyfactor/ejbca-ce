@@ -270,8 +270,9 @@ public class RAInterfaceBean implements java.io.Serializable {
         log.trace(">changeUserData()");
 
         addedusermemory.changeUser(userdata);
-        if(userdata.getPassword() != null && userdata.getPassword().trim().equals(""))
+        if(userdata.getPassword() != null && userdata.getPassword().trim().equals("")) {
           userdata.setPassword(null);
+        }
     	UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
     			userdata.getEmail(), userdata.getStatus(), userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
     			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);

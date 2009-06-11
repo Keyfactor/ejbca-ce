@@ -251,10 +251,11 @@ public class DNFieldExtractor implements java.io.Serializable {
         }
         int num = getNumberOfFields(field);
         for(int i=0;i<num;i++){
-        	if(retval.length() == 0)
+        	if(retval.length() == 0) {
         	  retval += fieldname + getField(field,i);
-        	else
-        	  retval += "," + fieldname + getField(field,i);	
+        	} else {
+        	  retval += "," + fieldname + getField(field,i);
+        	}
         }    
         return retval;      	
     }

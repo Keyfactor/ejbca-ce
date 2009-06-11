@@ -114,7 +114,7 @@ public class Authorizer extends Object implements java.io.Serializable {
      *
      * @param AdminInformation information about the user to be authorized.
      * @param resource the resource to look up.
-     * @return true if authorizes
+     * @return true if authorized
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {

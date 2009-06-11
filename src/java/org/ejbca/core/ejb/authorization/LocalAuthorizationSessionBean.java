@@ -468,6 +468,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @param admin    the administrator about to be authorized, see org.ejbca.core.model.log.Admin class.
      * @param resource the resource to check authorization for.
+     * @return true if authorized
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -483,6 +484,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @param admin    the administrator about to be authorized, see org.ejbca.core.model.log.Admin class.
      * @param resource the resource to check authorization for.
+     * @return true if authorized
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -496,6 +498,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /**
      * Method to check if a group is authorized to a resource.
      *
+     * @return true if authorized
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -509,6 +512,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /**
      * Method to check if a group is authorized to a resource without any logging.
      *
+     * @return true if authorized
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -522,6 +526,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /**
      * Method to check if an administrator exists in the specified admingroup.
      *
+     * @return true if administrator exists in group
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */

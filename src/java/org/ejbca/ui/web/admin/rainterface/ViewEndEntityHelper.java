@@ -155,8 +155,9 @@ public class ViewEndEntityHelper implements java.io.Serializable{
 			  userdata = userdatas[currentuserindex];
     	      
     		  nouserparameter = false;
-    		  if(userdata!=null)
+    		  if(userdata!=null) {
     			  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());
+    		  }
     	  }else{ 
     		  if(action  == null && request.getParameter(USER_PARAMETER) != null){    		  
     			  username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");    			
@@ -165,8 +166,9 @@ public class ViewEndEntityHelper implements java.io.Serializable{
     			  if ( (userdatas != null) && (userdatas.length > 0) ) {
         			  userdata = userdatas[0];
         			  currentuserindex = 0;
-        			  if(userdata!=null)
-        				  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());    				  
+        			  if(userdata!=null) {
+        				  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());
+        			  }
     			  }
     		  }else{
 				  
@@ -187,8 +189,9 @@ public class ViewEndEntityHelper implements java.io.Serializable{
     				  userdata = userdatas[currentuserindex];
     				  
         			  nouserparameter = false;
-        			  if(userdata!=null)
+        			  if(userdata!=null) {
         				  profile = rabean.getEndEntityProfile(userdata.getEndEntityProfileId());
+        			  }
     			  }
     		  }
     	  }

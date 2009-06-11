@@ -213,8 +213,9 @@ public class CertificateView implements java.io.Serializable {
     	boolean returnval = false;
     	if (certificate instanceof X509Certificate) {
     		X509Certificate x509cert = (X509Certificate)certificate;
-    		if(x509cert.getKeyUsage() != null)
+    		if(x509cert.getKeyUsage() != null) {
     			returnval= x509cert.getKeyUsage()[usage];
+    		}
     	} else {
     		returnval = false;
     	}
@@ -229,9 +230,9 @@ public class CertificateView implements java.io.Serializable {
               extendedkeyusage = x509cert.getExtendedKeyUsage();  
             } catch (java.security.cert.CertificateParsingException e) {}  
       }
-      if(extendedkeyusage == null)    
+      if(extendedkeyusage == null) {
         extendedkeyusage = new java.util.ArrayList();
-      
+      }
       String[] returnval = new String[extendedkeyusage.size()];  
       for(int i=0; i < extendedkeyusage.size(); i++){
         returnval[i] = (String) extendedkeyusageoidtotextmap.get(extendedkeyusage.get(i));    
@@ -297,15 +298,17 @@ public class CertificateView implements java.io.Serializable {
 
     public String[] getRevokationReasons(){
       String[] returnval = null;
-      if(revokedinfo != null)
+      if(revokedinfo != null) {
         returnval = revokedinfo.getRevokationReasons();
+      }
       return returnval;
     }
 
     public Date getRevokationDate(){
       Date returnval = null;
-      if(revokedinfo != null)
+      if(revokedinfo != null) {
         returnval = revokedinfo.getRevocationDate();
+      }
       return returnval;
     }
 

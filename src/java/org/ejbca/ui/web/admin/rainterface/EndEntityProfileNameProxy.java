@@ -54,8 +54,9 @@ public class EndEntityProfileNameProxy implements java.io.Serializable {
       if(returnval==null){
         // Retreive profilename
         returnval = raadminsession.getEndEntityProfileName(administrator, profileid);
-        if(returnval != null)
+        if(returnval != null) {
           profilenamestore.put(new Integer(profileid),returnval);
+        }
       }    
        
       return returnval;

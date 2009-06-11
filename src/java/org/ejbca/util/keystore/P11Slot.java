@@ -156,12 +156,14 @@ public class P11Slot {
      * @throws LoginException 
      */
     public void removeProviderIfNoTokensActive() {
-        if (this.provider==null)
+        if (this.provider==null) {
             return;
+        }
         final Iterator<P11SlotUser> iTokens = this.caTokens.iterator();
         while( iTokens.hasNext() ) {
-            if ( iTokens.next().isActive() )
+            if ( iTokens.next().isActive() ) {
                 return;
+            }
         }
         Security.removeProvider(this.provider.getName());
         if ( this.provider instanceof AuthProvider ) {

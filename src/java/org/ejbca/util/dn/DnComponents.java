@@ -356,8 +356,9 @@ public class DnComponents {
                 inf = new InputStreamReader(is);
                 //inf = new FileReader("c:\\foo.properties");
                 in = new BufferedReader(inf);
-                if (!in.ready())
+                if (!in.ready()) {
                     throw new IOException();
+                }
                 String[] splits = null;
                 int lines = 0;
                 ArrayList dnids = new ArrayList();
@@ -428,8 +429,12 @@ public class DnComponents {
             log.error("Can not load profile mappings: ", e);
         } finally {
             try {
-                if (inf != null) inf.close();
-                if (in != null) in.close();                
+                if (inf != null) {
+                	inf.close();
+                }
+                if (in != null) {
+                	in.close();                
+                }
             } catch (IOException e) {}
         }
 
@@ -453,8 +458,9 @@ public class DnComponents {
                 inf = new InputStreamReader(is);
                 //inf = new FileReader("c:\\foo.properties");
                 in = new BufferedReader(inf);
-                if (!in.ready())
+                if (!in.ready()) {
                     throw new IOException();
+                }
                 String[] splits = null;
                 while ((line = in.readLine()) != null) {
                 	if (!line.startsWith("#")) { // # is a comment line
@@ -482,8 +488,12 @@ public class DnComponents {
             log.debug("Using default values for DN components");
         } finally {
             try {
-                if (inf != null) inf.close();
-                if (in != null) in.close();                
+                if (inf != null) {
+                	inf.close();
+                }
+                if (in != null) {
+                	in.close();                
+                }
             } catch (IOException e) {}
         }
 

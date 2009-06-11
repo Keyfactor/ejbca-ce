@@ -220,9 +220,9 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 
                             if(userdatasourcedata == null){
                                 int tokentype = new Integer(request.getParameter(HIDDEN_USERDATASOURCETYPE)).intValue();
-                                if(tokentype == CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER)
+                                if(tokentype == CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER) {
                                     userdatasourcedata = new CustomUserDataSourceContainer();
-
+                                }
                             }
                             // Save changes.
 
@@ -329,9 +329,9 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     public int getUserDataSourceType(){
         int retval = CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER;
 
-        if(userdatasourcedata instanceof CustomUserDataSourceContainer)
+        if(userdatasourcedata instanceof CustomUserDataSourceContainer) {
             retval = CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER;
-
+        }
 
         return retval;
     }

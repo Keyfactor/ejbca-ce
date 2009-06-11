@@ -64,21 +64,24 @@ public class UsersView implements java.io.Serializable {
       int endindex;  
       UserView[] returnval;
    
-      if(index > users.size()) index = users.size()-1;
-      if(index < 0) index =0;
+      if(index > users.size()) {
+    	  index = users.size()-1;
+      }
+      if(index < 0) {
+    	  index =0;
+      }
       
       // The below is used in order to return all the values in one page
       // JasperReports has its own multiple page setings (right now it will print all pages inside a single web page, one after the other)
       // i think this functions were first used in very specific places, where the user asks directly for a single page at once depending on the numbe of
       // results in one page.  If this number is -1 then all results will be on one single page
-      if (size == -1) 
-      {
+      if (size == -1)  {
     	  endindex = users.size();
-      } 
-      else 
-      {
+      } else {
     	  endindex = index + size;
-    	  if(endindex > users.size()) endindex = users.size();
+    	  if(endindex > users.size()) {
+    		  endindex = users.size();
+    	  }
       }
       
       returnval = new UserView[endindex-index];  
