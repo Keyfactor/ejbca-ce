@@ -104,7 +104,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param username Username of end entity owning the certificate.
      * @param password Password given to the user, may be null if no password exists for the user.
-     * @param status Status of the certificate (from CertificateData).
+     * @param status Status of the certificate (from CertificateDataBean.CERT_ACTIVE, CERT_REVOKED etc).
      * @param type Type of certificate (from CertificateDataBean.CERTTYPE_ENDENTITY etc).
      * @param revocationDate Date for revocation (of revoked), like System.currentTimeMillis(), or -1 if not revoked.
      * @param revocationReason reason for revocation from RevokedCertInfo, RevokedCertInfo.NOT_REVOKED if not revoked.
