@@ -431,7 +431,7 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="left"> 
-          <h3>&nbsp;</h3>
+          &nbsp;
         </div>
       </td>
       <td width="50%" valign="top"> 
@@ -1086,7 +1086,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %><br><%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
+        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %><%= ejbcawebbean.getHelpReference("/manual.html#Extended%20Key%20Usage") %>
+        <br><%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>"  onclick="checkuseextendedkeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
@@ -1101,25 +1102,27 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/manual.html#Extended%20Key%20Usage") %>
       </td>
       <td width="50%"> 
-        <% int ekusize = extendedkeyusagetexts.length;
-           for (int i = 0; i<extendedkeyusagetexts.length; i++)
-             if (extendedkeyusagetexts[i]==null)
-               ekusize--;
+        <% List allekuoids = CertificateProfile.getAllExtendedKeyUsageOIDStrings();
+           Map allekutexts = CertificateProfile.getAllExtendedKeyUsageTexts();
         %>
-        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="<%=ekusize%>" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
-           <%  ArrayList eku = certificateprofiledata.getExtendedKeyUsage();
-                for(int i=0; i<extendedkeyusagetexts.length;i++){ %>
-               <% if (extendedkeyusagetexts[i]!=null) { %>
-           <option  value="<%= i %>" 
-                 <% for(int j=0; j < eku.size(); j++) 
-                      if(((Integer) eku.get(j)).intValue() == i ) out.write(" selected "); %>> 
-                <%= ejbcawebbean.getText(extendedkeyusagetexts[i]) %>
-           </option>
-             <%   } %> 
-           <%   } %> 
+        <select name="<%=SELECT_EXTENDEDKEYUSAGE%>" size="<%=14%>" multiple <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %>>
+           <%   ArrayList eku = certificateprofiledata.getExtendedKeyUsageOids();
+                Iterator oiditer = allekuoids.iterator();
+                while (oiditer.hasNext()) {
+                	String oid = (String)oiditer.next();
+                	String text = (String)allekutexts.get(oid);
+                	if (text != null) { %>
+                        <option  value="<%= oid %>" 
+                        <% if (eku.contains(oid)) {
+                	           out.write(" selected ");
+                           } %>>
+                        <%= ejbcawebbean.getText(text) %>
+                        </option>	
+                  <%}
+                } %>
         </select>
       </td>
     </tr>

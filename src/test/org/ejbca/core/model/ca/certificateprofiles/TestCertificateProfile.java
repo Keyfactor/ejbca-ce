@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package se.anatom.ejbca.ca.store;
+package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * @version $Id$
  */
 public class TestCertificateProfile extends TestCase {
-    private static Logger log = Logger.getLogger(TestCertificateProfile.class);
+    private static final Logger log = Logger.getLogger(TestCertificateProfile.class);
 
     private static ICertificateStoreSessionRemote cacheAdmin;
     private static ICertificateStoreSessionHome cacheHome;
@@ -316,5 +316,35 @@ public class TestCertificateProfile extends TestCase {
     	assertTrue(l.contains(CertTools.OID_MSTEMPLATE));
     	
     } // test09CertificateExtensions
+
+    public void test10UpgradeExtendedKeyUsage() throws Exception {
+        CertificateProfile ep = new EndUserCertificateProfile();
+        assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
+        ep.setVersion((float)31.0);
+        ArrayList eku = new ArrayList();
+        eku.add(Integer.valueOf(1));
+        eku.add(Integer.valueOf(2));
+        eku.add(Integer.valueOf(3));
+        ep.setExtendedKeyUsage(eku);
+        ArrayList ar = ep.getExtendedKeyUsageArray();
+        Object o = ar.get(0);
+        assertTrue((o instanceof Integer));
+        assertEquals(3, ar.size());
+
+        ar = ep.getExtendedKeyUsageOids();
+        o = ar.get(0);
+        assertTrue((o instanceof String));
+        assertEquals(3, ar.size());
+
+        ep.upgrade();
+        ar = ep.getExtendedKeyUsageArray();
+        o = ar.get(0);
+        assertTrue((o instanceof String));
+        assertEquals(3, ar.size());
+        assertEquals("1.3.6.1.5.5.7.3.1", ar.get(0));
+        assertEquals("1.3.6.1.5.5.7.3.2", ar.get(1));
+        assertEquals("1.3.6.1.5.5.7.3.3", ar.get(2));
+        
+    } // test10UpgradeExtendedKeyUsage
 
 }

@@ -20,13 +20,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.collections.map.ListOrderedMap;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
@@ -47,7 +50,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 31.0;
+    public static final float LATEST_VERSION = (float) 32.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -71,34 +74,57 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int ENCIPHERONLY     = 7;
     public static final int DECIPHERONLY     = 8;
 
-    /** Extended key usage constants */
-    public static final int ANYEXTENDEDKEYUSAGE = 0;
-    public static final int SERVERAUTH          = 1;
-    public static final int CLIENTAUTH          = 2;
-    public static final int CODESIGNING         = 3;
-    public static final int EMAILPROTECTION     = 4;
-    // The following three IPSec key usages are deprecated and replaced by IPSECIKE
-    public static final int IPSECENDSYSTEM      = 5;
-    public static final int IPSECTUNNEL         = 6;
-    public static final int IPSECUSER           = 7;
-    public static final int TIMESTAMPING        = 8;
-    public static final int SMARTCARDLOGON      = 9;
-	public static final int OCSPSIGNING         = 10;
-	public static final int EFS_OBJECTID        = 11;
-	public static final int EFSR_OBJECTID       = 12;
-    public static final int IPSECIKE            = 13;
-    public static final int SCVPSERVER          = 14;
-    public static final int SCVPCLIENT          = 15;
-	
-	
-    /** Array of all OIDs for Extended Key Usage 
+    /** Array of all OIDs for Extended Key Usage, is filled by below and must therefore appear before the below line in this file. */
+    private static List extendedKeyUsageOids = null;
+    /** Map for texts that maps oids in extendedKeyUsageOids to text strings that can be displayed.
+     * If an extended key usage should not be displayed in the GUI, put null as value in the properties file. 
+     * This is done for deprecated ipsec key usages below. "IPSECENDSYSTEM", "IPSECTUNNEL", "IPSECUSER".
+     * 
+     * The standard oids for extended key usages mostly comes from KeyPurposeId.id_kp_clientAuth etc, or CertTools.EFS_OBJECTID, EFSR_OBJECTID, MS_DOCUMENT_SIGNING_OBJECTID, Intel_amt
      */
-    public static final String[] EXTENDEDKEYUSAGEOIDSTRINGS = {KeyPurposeId.anyExtendedKeyUsage.getId(), KeyPurposeId.id_kp_serverAuth.getId(),
-    	KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_emailProtection.getId(),
-    	KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_ipsecTunnel.getId(), KeyPurposeId.id_kp_ipsecUser.getId(), 
-    	KeyPurposeId.id_kp_timeStamping.getId(), KeyPurposeId.id_kp_smartcardlogon.getId(), KeyPurposeId.id_kp_OCSPSigning.getId(),
-    	CertTools.EFS_OBJECTID, CertTools.EFSR_OBJECTID, CertTools.id_kp_ipsecIKE,
-    	CertTools.id_kp_scvpServer, CertTools.id_kp_scvpClient, CertTools.MS_DOCUMENT_SIGNING_OBJECTID, CertTools.Intel_amt};
+    private static Map extendedKeyUsageOidsAndNames = fillExtendedKeyUsageOidsAndTexts();
+    
+    /** Reads the conf/extendedkeyusage.properties file and fills the map and list above */
+    private static Map fillExtendedKeyUsageOidsAndTexts() {
+    	ListOrderedMap map = new ListOrderedMap();
+    	Configuration conf = ConfigurationHolder.instance();
+    	final String ekuname = "extendedkeyusage.name.";
+    	final String ekuoid = "extendedkeyusage.oid.";
+    	for (int i = 0; i < 255; i++) {
+    		String oid = conf.getString(ekuoid+i);
+    		if (oid != null) {
+    			String name = conf.getString(ekuname+i);
+    			if (name != null) {
+    				// A null value in the properties file means that we should not use this value, so set it to null for real
+    				if (name.equalsIgnoreCase("null")) {
+    					name = null;
+    				}
+    				map.put(oid, name);
+    			} else {
+    				log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
+    			}
+    		} else {
+    			// No eku with that number = no more ekus so break,
+    			log.debug("Read "+i+" extended key usages.");
+    			break;
+    		}
+    	}
+    	extendedKeyUsageOids = map.asList();
+    	if (extendedKeyUsageOids == null) {
+    		log.error("Extended key usage OIDs is null, there is a serious error with extendedkeyusage.properties");
+    		extendedKeyUsageOids = new ArrayList();
+    	}
+    	return Collections.synchronizedMap(map);
+    }
+
+    /** Returns a List<String> of all extended key usage oids, as strings */
+    public static List getAllExtendedKeyUsageOIDStrings() {
+    	return extendedKeyUsageOids;
+    }
+    /** Returns a Map<String, String> that maps oid string to displayable/translatable text strings */
+    public static Map getAllExtendedKeyUsageTexts() {
+    	return extendedKeyUsageOidsAndNames;
+    }
 
 	/** Microsoft Template Constants */
 	public static final String MSTEMPL_DOMAINCONTROLLER  = "DomainController";
@@ -647,16 +673,45 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return ((Boolean) data.get(EXTENDEDKEYUSAGECRITICAL)).booleanValue();
     }
     /**
-     * Extended Key Usage is an arraylist of constant Integers.
+     * Extended Key Usage is an arraylist of oid Strings.
      */
     public void setExtendedKeyUsage(ArrayList extendedkeyusage) {
         data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
     }
+    /** Only used for JUnit testing */
+    protected ArrayList getExtendedKeyUsageArray() {
+    	return (ArrayList) data.get(EXTENDEDKEYUSAGE);    	
+    }
     /**
-     * Extended Key Usage is an arraylist of constant Integers.
+     * Extended Key Usage is an arraylist of Strings with eku oids.
      */
-    public ArrayList getExtendedKeyUsage() {
-        return (ArrayList) data.get(EXTENDEDKEYUSAGE);
+    public ArrayList getExtendedKeyUsageOids(){
+    	return getExtendedKeyUsageAsOIDStrings(false);
+    }
+    private ArrayList getExtendedKeyUsageAsOIDStrings(boolean fromupgrade){
+    	ArrayList returnval = new ArrayList();
+    	ArrayList eku = (ArrayList) data.get(EXTENDEDKEYUSAGE);
+    	if ((eku != null) && (eku.size() > 0)) {
+        	Object o = eku.get(0);
+    		// This is a test for backwards compatibility for the older type of extended key usage
+    		if (o instanceof String) {
+    			// This is the new extended key usage in the profile, simply return the array with oids
+    			returnval = eku;
+    		} else {
+            	Iterator i = eku.iterator();
+            	List oids = getAllExtendedKeyUsageOIDStrings();
+            	while(i.hasNext()) {
+            		// We fell through to this conversion from Integer to String, which we should not have to 
+            		// if upgrade() had done it's job. This is an error!
+            		if (!fromupgrade) {
+            			log.error("We're forced to convert between old extended key usage format and new. This is an error that we handle so it should work for now. It should be reported as we can not guarantee that it will work in the future. "+getVersion());
+            		}
+            		int index = ((Integer)i.next()).intValue();
+            		returnval.add(oids.get(index));
+            	}    		    			
+    		}
+    	}
+    	return returnval;
     }
 
     public boolean getUseLdapDnOrder(){
@@ -822,19 +877,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return retval;	
       }
       
-    /**
-     * Returns an ArrayList of OID.strings defined in constant EXTENDEDKEYUSAGEOIDSTRINGS.
-     */
-    public ArrayList getExtendedKeyUsageAsOIDStrings(){
-      ArrayList returnval = new ArrayList();
-      ArrayList eku = (ArrayList) data.get(EXTENDEDKEYUSAGE);
-      Iterator i = eku.iterator();
-      while(i.hasNext()) {
-        returnval.add(EXTENDEDKEYUSAGEOIDSTRINGS[((Integer) i.next()).intValue()]);
-      }
-
-      return returnval;
-    }
     
     /**
      * Returns a Collections of caids (Integer), indicating which CAs the profile should
@@ -1131,13 +1173,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
+    /**
+     * Function setting the current version of the class data.
+     * Used for JUnit testing
+     */
+    protected void setVersion(float version) {
+        data.put(VERSION, Float.valueOf(version));
+    }
 
     /** 
      * Implementation of UpgradableDataHashMap function upgrade. 
      */
     public void upgrade(){
-        log.trace(">upgrade");
-    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    	if (log.isTraceEnabled()) {
+            log.trace(">upgrade: "+getLatestVersion()+", "+getVersion());    		
+    	}
+    	if(Float.compare(getLatestVersion(), getVersion()) != 0) {
             // New version of the class, upgrade
 			String msg = intres.getLocalizedMessage("certprofile.upgrade", new Float(getVersion()));
             log.info(msg);
@@ -1272,60 +1323,65 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     	addCertificatePolicy(newpolicy);                    	
                     }
             	}
-            	
-                if(data.get(USECRLDISTRIBUTIONPOINTONCRL) == null) {
-                    setUseCRLDistributionPointOnCRL(false); // v24
-                }
-                if(data.get(USECAISSUERS) == null) {
-                    //setUseCaIssuers(false); // v24
-                    data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
-                    setCaIssuers(new ArrayList());
-                }
-                if ( (data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null) ) {
-                	boolean ocsp = false;
-                	if ((data.get(USEOCSPSERVICELOCATOR) != null)) {
-                		ocsp = ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue();
-                	}
-                	boolean caissuers = false;
-                	if ((data.get(USECAISSUERS) != null)) {
-                    	caissuers = ((Boolean) data.get(USECAISSUERS)).booleanValue();
-                	}
-                	if (ocsp || caissuers) {
-                		setUseAuthorityInformationAccess(true); // v25
-                	}
-                } else {
-                	setUseAuthorityInformationAccess(false);
-                }
-
-                if (data.get(ALLOWEXTENSIONOVERRIDE) == null) {
-                	setAllowExtensionOverride(false); // v26
-                } 
-
-                if (data.get(USEQCETSIRETENTIONPERIOD) == null) {
-                	setUseQCEtsiRetentionPeriod(false); // v27
-                	setQCEtsiRetentionPeriod(0);
-                }
-                
-                if (data.get(CVCACCESSRIGHTS) == null) {
-                	setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE); // v28
-                }
-                
-                if (data.get(USELDAPDNORDER) == null) {
-                	setUseLdapDnOrder(true); // v29, default value is true
-                } 
-
-                if(data.get(USECARDNUMBER) == null) { //v30, default value is false
-                    setUseCardNumber(false);            
-                } 
-                
-                if (data.get(ALLOWDNOVERRIDE) == null) {
-                	setAllowDNOverride(false); // v31
-                } 
-
             }
+
+            if(data.get(USECRLDISTRIBUTIONPOINTONCRL) == null) {
+            	setUseCRLDistributionPointOnCRL(false); // v24
+            }
+            if(data.get(USECAISSUERS) == null) {
+            	//setUseCaIssuers(false); // v24
+            	data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
+            	setCaIssuers(new ArrayList());
+            }
+            if ( (data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null) ) {
+            	boolean ocsp = false;
+            	if ((data.get(USEOCSPSERVICELOCATOR) != null)) {
+            		ocsp = ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue();
+            	}
+            	boolean caissuers = false;
+            	if ((data.get(USECAISSUERS) != null)) {
+            		caissuers = ((Boolean) data.get(USECAISSUERS)).booleanValue();
+            	}
+            	if (ocsp || caissuers) {
+            		setUseAuthorityInformationAccess(true); // v25
+            	}
+            } else {
+            	setUseAuthorityInformationAccess(false);
+            }
+
+            if (data.get(ALLOWEXTENSIONOVERRIDE) == null) {
+            	setAllowExtensionOverride(false); // v26
+            } 
+
+            if (data.get(USEQCETSIRETENTIONPERIOD) == null) {
+            	setUseQCEtsiRetentionPeriod(false); // v27
+            	setQCEtsiRetentionPeriod(0);
+            }
+
+            if (data.get(CVCACCESSRIGHTS) == null) {
+            	setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE); // v28
+            }
+
+            if (data.get(USELDAPDNORDER) == null) {
+            	setUseLdapDnOrder(true); // v29, default value is true
+            } 
+
+            if(data.get(USECARDNUMBER) == null) { //v30, default value is false
+            	setUseCardNumber(false);            
+            } 
+
+            if (data.get(ALLOWDNOVERRIDE) == null) {
+            	setAllowDNOverride(false); // v31
+            } 
+
+            if(Float.compare((float)32.0, getVersion()) > 0) { // v32
+            	// Extended key usage storage changed from ArrayList of Integers to an ArrayList of Strings.
+            	setExtendedKeyUsage(getExtendedKeyUsageAsOIDStrings(true));
+            }
+
             data.put(VERSION, new Float(LATEST_VERSION));
-        }
-        log.trace("<upgrade");
+    	}
+    	log.trace("<upgrade");
     }
     
 }

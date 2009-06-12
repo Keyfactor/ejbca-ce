@@ -15,6 +15,8 @@ package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.util.ArrayList;
 
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+
 /**
  * HardTokenEncCertificateProfile is a class defining the fixed characteristics of a hard token authentication certificate.
  *
@@ -42,15 +44,15 @@ public class HardTokenEncCertificateProfile extends CertificateProfile{
 
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();      
+      eku.add(KeyPurposeId.id_kp_emailProtection.getId());
       setExtendedKeyUsage(eku);      
-      eku.add(new Integer(EMAILPROTECTION));           
       setExtendedKeyUsageCritical(false);
       
     }
 
     // Public Methods.
     public void upgrade(){
-    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    	if(Float.compare(getLatestVersion(), getVersion()) != 0) {
     		// New version of the class, upgrade
     		
     		super.upgrade();         

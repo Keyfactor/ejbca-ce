@@ -544,6 +544,17 @@ The relationship between the settings is that they are both evaluated in an OR e
 This means that if both are true the DN will have Ldap DN order, but if any one of them is false the DN will have X.500 order.
 </p>
 </subsection>
+<subsection name="Extended Key Usage">
+<p>
+The meaning of Extended key usage is defined in RFC5280. Normally the values specified in the fixed certificate profiles
+are good for the usage the fixed profile is for. 
+</p>
+<p>
+You can define your own extended key usages very simple. Edit the file EJBCA_HOME/conf/extendedkeyusage.properties and add your custom 
+extended key usages in the end. Be sure to follow the numbering. 
+After editing the file, simply build and re-deploy EJBCA (ant clean; ant bootstrap).
+</p>
+</subsection>
 <subsection name="Cardnumber">
 <p>
 Select this if you want to use the SEIS Cardnumber Extension. The card number is a unique identifier stored in the certificate and should also be printed on top of the card on which the certificate is stored.

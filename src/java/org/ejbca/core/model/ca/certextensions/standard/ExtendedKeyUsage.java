@@ -64,7 +64,7 @@ public class ExtendedKeyUsage extends StandardCertificateExtension {
 	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		org.bouncycastle.asn1.x509.ExtendedKeyUsage ret = null;
         // Get extended key usage from certificate profile
-        Collection c = certProfile.getExtendedKeyUsageAsOIDStrings();
+        Collection c = certProfile.getExtendedKeyUsageOids();
         Vector usage = new Vector();
         Iterator iter = c.iterator();
         while (iter.hasNext()) {

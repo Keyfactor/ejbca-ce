@@ -15,6 +15,8 @@ package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.util.ArrayList;
 
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+
 /**
  * OCSPSignerCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
@@ -44,7 +46,7 @@ public class OCSPSignerCertificateProfile extends CertificateProfile{
 
       setUseExtendedKeyUsage(true);
       ArrayList eku = new ArrayList();      
-	  eku.add(new Integer(OCSPSIGNING));
+      eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
       setExtendedKeyUsage(eku);
       setExtendedKeyUsageCritical(false);
 
@@ -54,7 +56,7 @@ public class OCSPSignerCertificateProfile extends CertificateProfile{
 
     // Public Methods.
     public void upgrade(){
-    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    	if(Float.compare(getLatestVersion(), getVersion()) != 0) {
     		// New version of the class, upgrade
     		
     		super.upgrade();         

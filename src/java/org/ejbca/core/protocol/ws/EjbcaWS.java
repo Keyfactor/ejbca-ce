@@ -56,6 +56,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
@@ -1496,7 +1497,7 @@ public class EjbcaWS implements IEjbcaWS {
 								while(revokeCerts.hasNext()){
 									X509Certificate next = (X509Certificate) revokeCerts.next();							 
 									try{
-										if(WSConfig.isSetMSLogonOnHold() || next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[CertificateProfile.SMARTCARDLOGON])){									  
+										if(WSConfig.isSetMSLogonOnHold() || next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_smartcardlogon.getId())){
 											ejbhelper.getUserAdminSession().revokeCert(admin,next.getSerialNumber(), CertTools.getIssuerDN(next), userDataWS.getUsername(),  RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
 										}
 									}catch(CertificateParsingException e){

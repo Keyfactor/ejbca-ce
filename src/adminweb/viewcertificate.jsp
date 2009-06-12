@@ -1,7 +1,7 @@
 <!-- Version: $Id$ -->
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.ui.web.admin.rainterface.RevokedInfoView,
                  org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.CertTools" %>
 <html>
@@ -432,54 +432,54 @@ function confirmrepublish(){
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("KEYUSAGE") %></td>
 		 <td><% boolean first= true;
 	                boolean none = true;
-	                if(certificatedata.getKeyUsage(CertificateView.DIGITALSIGNATURE)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.DIGITALSIGNATURE)){
 	                  out.write(ejbcawebbean.getText("DIGITALSIGNATURE"));
 	                  first=false;
 	                  none =false;
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.NONREPUDIATION)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.NONREPUDIATION)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("NONREPUDIATION"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.KEYENCIPHERMENT)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.KEYENCIPHERMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KEYENCIPHERMENT"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.DATAENCIPHERMENT)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.DATAENCIPHERMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("DATAENCIPHERMENT"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.KEYAGREEMENT)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.KEYAGREEMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KEYAGREEMENT"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.KEYCERTSIGN)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.KEYCERTSIGN)){
 	                  if(!first) out.write(", "); 
 	                  first=false;               
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KEYCERTSIGN"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.CRLSIGN)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.CRLSIGN)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("CRLSIGN"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.ENCIPHERONLY)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.ENCIPHERONLY)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("ENCIPHERONLY"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateView.DECIPHERONLY)){
+	                if(certificatedata.getKeyUsage(CertificateProfile.DECIPHERONLY)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;

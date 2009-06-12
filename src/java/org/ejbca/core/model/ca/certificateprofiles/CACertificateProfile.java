@@ -53,7 +53,7 @@ public class CACertificateProfile extends CertificateProfile{
 
     // Public Methods.
     public void upgrade(){
-    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    	if(Float.compare(getLatestVersion(), getVersion()) != 0) {
     		// New version of the class, upgrade
     		super.upgrade(); 			        
     	}    	

@@ -18,6 +18,7 @@ import java.util.HashMap;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -82,15 +83,15 @@ public class MSCertTools {
 		{CertificateProfile.DIGITALSIGNATURE, CertificateProfile.KEYENCIPHERMENT}
 	};
 
-	private static final int[][] EXTENDEDKEYUSAGES = {
+	private static final String[][] EXTENDEDKEYUSAGES = {
 		// "User" Extended Key Usage: Encrypting File System, Secure Email, Client Authentication
-		{CertificateProfile.EFS_OBJECTID, CertificateProfile.EMAILPROTECTION, CertificateProfile.CLIENTAUTH},
+		{CertTools.EFS_OBJECTID, KeyPurposeId.id_kp_emailProtection.getId(), KeyPurposeId.id_kp_clientAuth.getId()},
 		// "Machine" Extended Key Usage: Client Authentication, Server Authentication
-		{CertificateProfile.CLIENTAUTH, CertificateProfile.SERVERAUTH},
+		{KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_serverAuth.getId()},
 		// "DomainController" Extended Key Usage: 
-		{CertificateProfile.CLIENTAUTH, CertificateProfile.SERVERAUTH},
+		{KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_serverAuth.getId()},
 		// "SmartcardLogon" Extended Key Usage: 
-		{CertificateProfile.CLIENTAUTH, CertificateProfile.SMARTCARDLOGON}
+		{KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_smartcardlogon.getId()}
 	};
 	
 	public static final String GET_SUBJECTDN_FROM_AD = "GET_SUBJECTDN_FROM_AD";
@@ -176,7 +177,7 @@ public class MSCertTools {
 		}
 		// Add User-specifics to profiles if nessesary
 		int[] keyUsages = KEYUSAGES[templateIndex];
-		int[] extendedKeyUsages = EXTENDEDKEYUSAGES[templateIndex];
+		String[] extendedKeyUsages = EXTENDEDKEYUSAGES[templateIndex];
 		if (newCertificateProfile) {
 			certProfile.setUseKeyUsage(true);
 			certProfile.setKeyUsageCritical(true);
@@ -188,7 +189,7 @@ public class MSCertTools {
 			certProfile.setExtendedKeyUsageCritical(true);
 			ArrayList eku = new ArrayList();
 			for (int i=0; i<extendedKeyUsages.length; i++) {
-				eku.add(new Integer(extendedKeyUsages[i]));
+				eku.add(extendedKeyUsages[i]);
 			}
 			certProfile.setExtendedKeyUsage(eku);
 			if (USE_CA_CDP[templateIndex]) {

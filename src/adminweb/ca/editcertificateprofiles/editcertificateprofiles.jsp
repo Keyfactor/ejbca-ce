@@ -138,8 +138,7 @@
   }catch(AuthorizationDeniedException ade){}   
 
   String[] keyusagetexts = CertificateView.KEYUSAGETEXTS;
-  String[] extendedkeyusagetexts = CertificateView.EXTENDEDKEYUSAGETEXTS;
-int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
+  int[] defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
 %>
  
 <head>
@@ -499,7 +498,7 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                ArrayList eku = new ArrayList(); 
                 if(values != null){
                    for(int i=0; i < values.length; i++){
-                      eku.add(new Integer(values[i]));
+                      eku.add(values[i]);
                    }
                 }
                 certificateprofiledata.setExtendedKeyUsage(eku);    

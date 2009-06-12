@@ -164,11 +164,11 @@ public class CertTools {
     public static final String GUID = "guid";
     /** ObjectID for upn altName for windows domain controller guid */
     public static final String GUID_OBJECTID = "1.3.6.1.4.1.311.25.1";
-    /** ObjectID for Microsoft Encrypted File System Certificates */
+    /** ObjectID for Microsoft Encrypted File System Certificates extended key usage */
     public static final String EFS_OBJECTID = "1.3.6.1.4.1.311.10.3.4";
-    /** ObjectID for Microsoft Encrypted File System Recovery Certificates */
+    /** ObjectID for Microsoft Encrypted File System Recovery Certificates extended key usage */
     public static final String EFSR_OBJECTID = "1.3.6.1.4.1.311.10.3.4.1";
-    /** ObjectID for Microsoft Signer of documents */
+    /** ObjectID for Microsoft Signer of documents extended key usage */
     public static final String MS_DOCUMENT_SIGNING_OBJECTID = "1.3.6.1.4.1.311.10.3.12";
     /** Object id id-pkix */
     public static final String id_pkix = "1.3.6.1.5.5.7";
@@ -201,11 +201,6 @@ public class CertTools {
     public static final String id_pda_countryOfResidence = id_pda + ".5"; 
     /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
-    /** New extended key usage OID for ipsec (rfc4945), replaces old deprecated id_kp_ipsecEndSystem, id_kp_ipsecTunnel and id_kp_ipsecUser */ 
-    public static final String id_kp_ipsecIKE = id_kp + ".17";
-    /** extended key usage OIDs for SCVP (rfc5055) */ 
-    public static final String id_kp_scvpServer = id_kp + ".15";
-    public static final String id_kp_scvpClient = id_kp + ".16";
     /** extended key usage OID Intel AMT (out of band) network management */
     public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
           

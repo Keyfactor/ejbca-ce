@@ -26,7 +26,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
@@ -44,7 +44,7 @@ import org.ejbca.util.keystore.KeyTools;
 
 
 /**
- * A class transforming X509 certificate data inte more readable form used
+ * A class transforming X509 certificate data into more readable form used
  * by JSP pages.
  *
  * @author  Philip Vendil
@@ -52,30 +52,18 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class CertificateView implements java.io.Serializable {
 
-   public static final int DIGITALSIGNATURE = CertificateProfile.DIGITALSIGNATURE;
-   public static final int NONREPUDIATION   = CertificateProfile.NONREPUDIATION;
-   public static final int KEYENCIPHERMENT  = CertificateProfile.KEYENCIPHERMENT;
-   public static final int DATAENCIPHERMENT = CertificateProfile.DATAENCIPHERMENT;
-   public static final int KEYAGREEMENT     = CertificateProfile.KEYAGREEMENT;
-   public static final int KEYCERTSIGN      = CertificateProfile.KEYCERTSIGN;
-   public static final int CRLSIGN          = CertificateProfile.CRLSIGN;
-   public static final int ENCIPHERONLY     = CertificateProfile.ENCIPHERONLY;
-   public static final int DECIPHERONLY     = CertificateProfile.DECIPHERONLY;
-   
+    // Private fields
+    private Certificate  certificate;
+    private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
+    private RevokedInfoView  revokedinfo;
+    private String           username;
+    private String           subjectaltnamestring;
+    private String           subjectdirattrstring;
+
    public static final String[] KEYUSAGETEXTS = {"DIGITALSIGNATURE","NONREPUDIATION", "KEYENCIPHERMENT", "DATAENCIPHERMENT", "KEYAGREEMENT", "KEYCERTSIGN", "CRLSIGN", "ENCIPHERONLY", "DECIPHERONLY" };
    
-   /** Array for texts that must match the indexes in CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS.
-    * if an extended key usage should not be displayed in the GUI, put null as value. 
-    * This is done for deprecated ipsec key usages below. "IPSECENDSYSTEM", "IPSECTUNNEL", "IPSECUSER"  
-    */
-   public static final String[] EXTENDEDKEYUSAGETEXTS = {"ANYEXTENDEDKEYUSAGE","SERVERAUTH", "CLIENTAUTH", 
-                                    "CODESIGNING", "EMAILPROTECTION", null, 
-                                    null, null, "TIMESTAMPING", "SMARTCARDLOGON",
-                                    "OCSPSIGNER", "EFS_CRYPTO", "EFS_RECOVERY", "IPSECIKE",
-                                    "SCVPSERVER", "SCVPCLIENT", "MS_DOCUMENT_SIGNING", "INTEL_AMT"};
 
-
-    /** Creates a new instance of CertificateView */
+	/** Creates a new instance of CertificateView */
     public CertificateView(Certificate certificate, RevokedInfoView revokedinfo, String username) {
       this.certificate=certificate;
       this.revokedinfo= revokedinfo;
@@ -83,14 +71,6 @@ public class CertificateView implements java.io.Serializable {
 
       subjectdnfieldextractor = new DNFieldExtractor(CertTools.getSubjectDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
       issuerdnfieldextractor  = new DNFieldExtractor(CertTools.getIssuerDN(certificate), DNFieldExtractor.TYPE_SUBJECTDN);
-
-      // Build HashMap of Extended KeyUsage OIDs (String) to Text representation (String)
-      if(extendedkeyusageoidtotextmap == null){
-        extendedkeyusageoidtotextmap = new HashMap();
-        for(int i=0; i < EXTENDEDKEYUSAGETEXTS.length; i++){
-           extendedkeyusageoidtotextmap.put(CertificateProfile.EXTENDEDKEYUSAGEOIDSTRINGS[i], EXTENDEDKEYUSAGETEXTS[i]);   
-        }
-      }
       
     }
 
@@ -233,9 +213,10 @@ public class CertificateView implements java.io.Serializable {
       if(extendedkeyusage == null) {
         extendedkeyusage = new java.util.ArrayList();
       }
-      String[] returnval = new String[extendedkeyusage.size()];  
+      String[] returnval = new String[extendedkeyusage.size()]; 
+      Map map = CertificateProfile.getAllExtendedKeyUsageTexts();
       for(int i=0; i < extendedkeyusage.size(); i++){
-        returnval[i] = (String) extendedkeyusageoidtotextmap.get(extendedkeyusage.get(i));    
+        returnval[i] = (String)map.get(extendedkeyusage.get(i));    
       }
         
       return returnval; 
@@ -354,12 +335,4 @@ public class CertificateView implements java.io.Serializable {
 		}
 		return ret;
     }
-    // Private fields
-    private Certificate  certificate;
-    private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
-    private RevokedInfoView  revokedinfo;
-    private String           username;
-    private String           subjectaltnamestring;
-    private String           subjectdirattrstring;
-    private static HashMap   extendedkeyusageoidtotextmap;
 }
