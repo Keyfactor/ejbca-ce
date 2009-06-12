@@ -124,7 +124,7 @@ public class InternalResources implements Serializable {
 	 * Method returning the localized message for the given resource key.
 	 * 
 	 * It first looks up in the primary language then in the secondary
-	 * If not found in any of the resource file "No text available" is returned.
+	 * If not found in any of the resource file "key" is returned.
 	 * 
 	 */
     public String getLocalizedMessage(String key){
@@ -336,7 +336,7 @@ public class InternalResources implements Serializable {
 	 * Method returning the message from the resource file for the given resource key.
 	 * 
 	 * It first looks up in the primary language then in the secondary
-	 * If not found in any of the resource file "No text available" is returned.
+	 * If not found in any of the resource file "key" is returned.
 	 * 
 	 */
     private String getMessageString(String key){
@@ -345,7 +345,7 @@ public class InternalResources implements Serializable {
     		retval = secondaryResource.getProperty(key);
     	}
     	if(retval == null){
-    		retval = "No text available (" + key + ")";
+    		retval = key;
     	}
     	return retval.trim();
     }

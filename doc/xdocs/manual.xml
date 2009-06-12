@@ -4578,7 +4578,7 @@ To get support for custom OIDs in the Admin-GUI you must edit the file src/java/
 OID in the end. Just follow the example in the file, and you will get the possibility to add you oid in the End Entity Profile, 
 and following that also when adding new users.
 If you edit profilemappings.properties, you should also add an entry in src/adminweb/languages/languagefile.XX.properties (where XX is you language).
-Otherwise your new field will be displayed as "No text available" in the admin-GUI. The new field you must add in the language file is
+Otherwise your new field will be displayed as the key that you entered (which is probably ok also) in the admin-GUI. The new field you must add in the language file is
 the last field in profilemappings.properties, i.e. the LanguageConstant.
 </p><p>
 EJBCA will by default put unknown OIDs in the end so the DN will probably be displayed as: CN=MyCommonName,C=SE,1.1.1.1=MyCustomOid 

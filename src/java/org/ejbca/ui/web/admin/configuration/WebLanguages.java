@@ -96,7 +96,7 @@ public class WebLanguages implements java.io.Serializable {
         }        
       }catch(java.lang.NullPointerException e){}
       if(returnvalue == null)
-        returnvalue= "No text available (" + template + ")";
+        returnvalue= template;
       return returnvalue;
     }
 

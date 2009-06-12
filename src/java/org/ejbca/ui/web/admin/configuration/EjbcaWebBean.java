@@ -531,7 +531,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     /**
      * @param template the entry in the language file to get
      * @param unescape true if html entities should be unescaped (&auml; converted to the real char)
-     * @return text string, possibly unescaped, or "No text available" if the template does not match any entry in the language files
+     * @return text string, possibly unescaped, or "template" if the template does not match any entry in the language files
      */
     public String getText(String template, boolean unescape){
         String str = getText(template);
