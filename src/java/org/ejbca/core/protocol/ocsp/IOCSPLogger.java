@@ -13,10 +13,17 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import org.ejbca.util.IPatternLogger;
 
-public interface IAuditLogger extends IOCSPLogger {
-
-	public static final String OCSPREQUEST = "OCSPREQUEST";	//The byte[] ocsp-request that came with the http-request
-	public static final String OCSPRESPONSE = "OCSPRESPONSE"; //The byte[] ocsp-response that was included in the http-response
-
+/**
+ * @version $Id:
+ *
+ */
+public interface IOCSPLogger extends IPatternLogger {
+    // OCSP Specific constants used by both AuditLogger and TransactionLogger
+    static final String ISSUER_NAME_HASH = "ISSUER_NAME_HASH"; //Hash of the issuer DN
+    static final String ISSUER_KEY = "ISSUER_KEY"; //The public key of the issuer of a requested certificate
+    static final String SERIAL_NOHEX = "SERIAL_NOHEX"; // Serial number of the requested certificate.
+    public static final String CLIENT_IP = "CLIENT_IP"; //IP of the client making the request
+    public static final String STATUS = "STATUS"; //The status of the OCSP-Request. SUCCESSFUL = 0;MALFORMED_REQUEST = 1;INTERNAL_ERROR = 2;
 }

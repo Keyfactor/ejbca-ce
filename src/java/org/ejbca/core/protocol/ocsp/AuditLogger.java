@@ -38,7 +38,6 @@ public class AuditLogger extends PatternLogger implements IAuditLogger {
 	public AuditLogger () {
 		super(PATTERN.matcher(orderString), orderString, accountLog, mLogDateFormat, mTimeZone);
 		cleanParams();
-		super.paramPut(LOG_ID, GUIDGenerator.generateGUID(this));
         //super.paramPut(LOG_TIME, new Date().toString());
 	}
 	
@@ -47,11 +46,9 @@ public class AuditLogger extends PatternLogger implements IAuditLogger {
 	 */
 	protected void cleanParams() {
 		super.cleanParams();
-		super.paramPut(LOG_ID, "0");
 		super.paramPut(CLIENT_IP,"0");
 		super.paramPut(OCSPREQUEST, "0");
 		super.paramPut(OCSPRESPONSE, "0");
-		super.paramPut(REPLY_TIME,"0");
 		super.paramPut(STATUS, "-1");
 	}
 	

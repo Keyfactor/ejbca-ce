@@ -13,9 +13,8 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import org.ejbca.util.IPatternLogger;
 
-public interface ITransactionLogger extends IPatternLogger {
+public interface ITransactionLogger extends IOCSPLogger {
 
 	public static final String REQ_NAME = "REQ_NAME"; //The Common Name (CN) of the client making the request
 	public static final String SIGN_ISSUER_NAME_DN = "SIGN_ISSUER_NAME_DN"; //DN of the issuer of the certificate used to sign the request.
@@ -25,10 +24,4 @@ public interface ITransactionLogger extends IPatternLogger {
 	public static final String ISSUER_NAME_DN = "ISSUER_NAME_DN"; // The subject DN of the issuer of a requested certificate
 	public static final String DIGEST_ALGOR = "DIGEST_ALGOR"; //Algorithm used by requested certificate to hash issuer key and issuer name
 	public static final String CERT_STATUS = "CERT_STATUS"; //The requested certificate revocation status.
-	
-	/**
-	 * Writes all the rows created by writeln() to the Logger
-	 */
-	public void flush(String replytime);
-	
 }

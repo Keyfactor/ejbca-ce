@@ -18,7 +18,7 @@ package org.ejbca.core.protocol.ocsp;
  */
 public class DummyAuditLogger implements IAuditLogger {
 
-	public void flush() { }
+	public void flush(String s) { }
 	public void paramPut(String key, byte[] value) { }
 	public void paramPut(String key, String value) { }
 	public void paramPut(String key, Integer value) { }

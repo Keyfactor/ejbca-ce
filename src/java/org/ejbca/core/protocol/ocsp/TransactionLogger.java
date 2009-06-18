@@ -59,7 +59,6 @@ public class TransactionLogger extends PatternLogger implements ITransactionLogg
 
 	protected void cleanParams() {
 		super.cleanParams();
-		super.paramPut(LOG_ID, "0");
 		super.paramPut(STATUS,"0");
 		super.paramPut(CLIENT_IP,"0");
 		super.paramPut(REQ_NAME,"0");
@@ -73,16 +72,6 @@ public class TransactionLogger extends PatternLogger implements ITransactionLogg
 		super.paramPut(DIGEST_ALGOR,"0");
 		super.paramPut(SERIAL_NOHEX,"0");
 		super.paramPut(CERT_STATUS,"0");
-		super.paramPut(REPLY_TIME,"REPLY_TIME");
-	}
-	
-	/**
-	 * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush(String)
-	 */
-	public void flush(String replytime) {
-		String logstring = super.logmessage.toString();
-		logstring = logstring.replaceAll("REPLY_TIME", replytime);
-		super.logger.debug(logstring);
 	}
 	
 	/**

@@ -101,7 +101,8 @@ public abstract class PatternLogger implements IPatternLogger {
 			dateformat.setTimeZone(TimeZone.getTimeZone(timeZone));
 		}
 		paramPut(LOG_TIME, dateformat.format(new Date()));
-
+        this.paramPut(REPLY_TIME,"REPLY_TIME");
+        this.paramPut(LOG_ID, "0");
 	}
 
 	/**
@@ -141,11 +142,12 @@ public abstract class PatternLogger implements IPatternLogger {
 		logmessage.append(interpolate()+"\n");
 	}
 	
-	/**
-	 * @see IPatternLogger#flush()
-	 */
-	public void flush() {
-		String logstring = logmessage.toString();
-		logger.debug(logstring);
-	}
+    /**
+     * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush(String)
+     */
+    public void flush(String replytime) {
+        String logstring =this.logmessage.toString();
+        logstring = logstring.replaceAll("REPLY_TIME", replytime);
+        this.logger.debug(logstring);
+    }
 }
