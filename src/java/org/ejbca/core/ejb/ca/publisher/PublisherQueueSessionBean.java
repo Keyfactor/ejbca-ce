@@ -210,11 +210,11 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    		sql.append(PublisherQueueData.STATUS_PENDING);
 	    		if(lowerBounds[i] > 0) {
 		    		sql.append(" and timeCreated < ");
-		    		sql.append("'" + (now - 1000 * lowerBounds[i]) + "'");
+		    		sql.append(now - 1000 * lowerBounds[i]);
 	    		}
 	    		if(upperBounds[i] > 0) {
 		    		sql.append(" and timeCreated > ");
-		    		sql.append("'" + (now - 1000 * upperBounds[i]) + "'");
+		    		sql.append(now - 1000 * upperBounds[i]);
 	    		}
 	    		if(i < lowerBounds.length-1) {
 	    			sql.append(" union all ");
