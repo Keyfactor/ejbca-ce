@@ -84,7 +84,7 @@ public class RequestHelper {
      * Creates a new RequestHelper object.
      *
      * @param administrator Admin doing the request
-     * @param debug object to send debug to
+     * @param debug object to send debug to or null to disable
      */
     public RequestHelper(Admin administrator, ServletDebug debug) {
         this.administrator = administrator;
@@ -134,8 +134,10 @@ public class RequestHelper {
         // Don't include certificate chain in the PKCS7 to Firefox
         byte[] pkcs7 = signsession.createPKCS7(administrator, cert, false);
         log.debug("Created certificate (PKCS7) for " + username);
-        debug.print("<h4>Generated certificate:</h4>");
-        debug.printInsertLineBreaks(cert.toString().getBytes());
+        if (debug != null) {
+            debug.print("<h4>Generated certificate:</h4>");
+            debug.printInsertLineBreaks(cert.toString().getBytes());
+        }
 
         return pkcs7;
     } //nsCertRequest
@@ -174,8 +176,10 @@ public class RequestHelper {
           result = signsession.createPKCS7(administrator, cert, true);
         }
         log.debug("Created certificate (PKCS7) for " + username);
-        debug.print("<h4>Generated certificate:</h4>");
-        debug.printInsertLineBreaks(cert.toString().getBytes());
+        if (debug != null) {
+            debug.print("<h4>Generated certificate:</h4>");
+            debug.printInsertLineBreaks(cert.toString().getBytes());
+        }
         return Base64.encode(result, doSplitLines);
     } //pkcs10CertReq
 
@@ -197,8 +201,10 @@ public class RequestHelper {
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             byte[] result = cert.getEncoded();
             log.debug("Created CV certificate for " + username);
-            debug.print("<h4>Generated certificate:</h4>");
-            debug.printInsertLineBreaks(cert.toString().getBytes());
+            if (debug != null) {
+                debug.print("<h4>Generated certificate:</h4>");
+                debug.printInsertLineBreaks(cert.toString().getBytes());            	
+            }
             return Base64.encode(result);
         } //cvcCertRequest
 
