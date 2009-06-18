@@ -19,7 +19,7 @@
     	The web applications uses ejb session beans to perform the business operations. The session beans in turn uses a persistence layer (data entities) to persist data in the database.    
     </p>
     <p> 
-        You can add your own components by for example deploying another web application (external.war) in the application server, making us of the session bean API of EJBCA.
+        You can add your own components by for example deploying another web application (external.war) in the application server, making use of the session bean API of EJBCA.
     </p>
     <p>
     <img src="images/DeploymentDiagram.png" alt="EJBCA deployment diagram" />
