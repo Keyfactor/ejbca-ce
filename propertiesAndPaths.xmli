@@ -261,6 +261,8 @@
     <path id="test.compile.classpath">
         <path refid="test.base.classpath" />
         <path refid="j2ee.classpath" />
+        <!-- We need the ./conf directory to be accessible to be able to read dynamic properties -->
+        <path location="${ejbca.home}" />
     </path>
 
     <!-- those are the default values used within JBoss for easy startup -->
