@@ -14,14 +14,44 @@
 package org.ejbca.core.protocol.ocsp;
 
 
+/**
+ * Transaction logger constants.
+ * @author lars
+ * @version $Id:
+ *
+ */
 public interface ITransactionLogger extends IOCSPLogger {
 
-	public static final String REQ_NAME = "REQ_NAME"; //The Common Name (CN) of the client making the request
-	public static final String SIGN_ISSUER_NAME_DN = "SIGN_ISSUER_NAME_DN"; //DN of the issuer of the certificate used to sign the request.
-	public static final String SIGN_SUBJECT_NAME = "SIGN_SUBJECT_NAME"; //Subject Name of the certificate used to sign the request.
-	public static final String SIGN_SERIAL_NO = "SIGN_SERIAL_NO"; //Certificate serial number of the certificate used to sign the request.
-	public static final String NUM_CERT_ID = "NUM_CERT_ID"; // The number of certificates to check revocation status for
-	public static final String ISSUER_NAME_DN = "ISSUER_NAME_DN"; // The subject DN of the issuer of a requested certificate
-	public static final String DIGEST_ALGOR = "DIGEST_ALGOR"; //Algorithm used by requested certificate to hash issuer key and issuer name
-	public static final String CERT_STATUS = "CERT_STATUS"; //The requested certificate revocation status.
+	/**
+	 * The Common Name (CN) of the client making the request
+	 */
+	static final String REQ_NAME = "REQ_NAME";
+	/**
+	 * DN of the issuer of the certificate used to sign the request.
+	 */
+	static final String SIGN_ISSUER_NAME_DN = "SIGN_ISSUER_NAME_DN";
+	/**
+	 * Subject Name of the certificate used to sign the request.
+	 */
+	static final String SIGN_SUBJECT_NAME = "SIGN_SUBJECT_NAME";
+	/**
+	 * Certificate serial number of the certificate used to sign the request.
+	 */
+	static final String SIGN_SERIAL_NO = "SIGN_SERIAL_NO";
+	/**
+	 * The number of certificates to check revocation status for
+	 */
+	static final String NUM_CERT_ID = "NUM_CERT_ID";
+	/**
+	 * The subject DN of the issuer of a requested certificate
+	 */
+	static final String ISSUER_NAME_DN = "ISSUER_NAME_DN";
+	/**
+	 * Algorithm used by requested certificate to hash issuer key and issuer name
+	 */
+	static final String DIGEST_ALGOR = "DIGEST_ALGOR";
+	/**
+	 * The requested certificate revocation status.
+	 */
+	static final String CERT_STATUS = "CERT_STATUS";
 }

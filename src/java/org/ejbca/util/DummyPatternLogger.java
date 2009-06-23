@@ -11,22 +11,18 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol.ocsp;
+package org.ejbca.util;
 
 
 /**
- * Audit logger constants.
- * @author lars
- * @version $Id:
- *
+ * This class ignores all input.
  */
-public interface IAuditLogger extends IOCSPLogger {
-	/**
-	 * The byte[] ocsp-request that came with the http-request
-	 */
-    static final String OCSPREQUEST = "OCSPREQUEST";
-	/**
-	 * The byte[] ocsp-response that was included in the http-response
-	 */
-	static final String OCSPRESPONSE = "OCSPRESPONSE";
+public class DummyPatternLogger implements IPatternLogger {
+
+	public void flush() { /* nothing done */ }
+	public void paramPut(String key, byte[] value) { /* nothing done */ }
+	public void paramPut(String key, String value) { /* nothing done */ }
+	public void paramPut(String key, Integer value) { /* nothing done */ }
+	public void writeln() { /* nothing done */ }
+
 }

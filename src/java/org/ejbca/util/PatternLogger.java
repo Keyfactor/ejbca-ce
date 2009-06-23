@@ -13,10 +13,13 @@
 
 package org.ejbca.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 
@@ -34,75 +37,67 @@ import org.bouncycastle.util.encoders.Hex;
  * @author thamwickenberg
  * @version $Id$
  */
-public abstract class PatternLogger implements IPatternLogger {
+public class PatternLogger implements IPatternLogger {
 
-	protected HashMap valuepairs= new HashMap();
-	protected StringBuffer logmessage = new StringBuffer();
-	private Matcher m;
-	private String orderString;
-	protected Logger logger;
-	private String logDateFormat;
-	private String timeZone;
+	final private Map valuepairs = new HashMap();
+    final private StringWriter sw = new StringWriter();
+    final private PrintWriter pw = new PrintWriter(this.sw);
+	final private Matcher m;
+	final private String orderString;
+	final private Logger logger;
+	final private String logDateFormat;
+	final private String timeZone;
+    final private Date startTime;
 	
 	/**
-	 * 
-	 * @param m A matcher that is used together with orderstring to determine how output is formatted
-	 * @param orderString A string that matches the pattern in m and specifies the order in which values are logged by the logger
-	 * @param logger A log4j Logger that is used for output
-	 * @param logDateFormat A string that specifies how the log-time is formatted
+     * @param m A matcher that is used together with orderstring to determine how output is formatted
+     * @param orderString A string that matches the pattern in m and specifies the order in which values are logged by the logger
+     * @param logger A log4j Logger that is used for output
+     * @param logDateFormat A string that specifies how the log-time is formatted
+	 * @param timeZone
 	 */
-	public PatternLogger(Matcher m, String orderString, Logger logger, String logDateFormat) {
-		this.m = m;
-		this.orderString=orderString;
-		this.logger = logger;
-		this.logDateFormat = logDateFormat;
-		this.timeZone = null;
-	}
-	
 	public PatternLogger(Matcher m, String orderString, Logger logger, String logDateFormat, String timeZone) {
 		this.m = m;
 		this.orderString=orderString;
 		this.logger = logger;
 		this.logDateFormat = logDateFormat;
 		this.timeZone =timeZone;
+        this.startTime = new Date();
+        final DateFormat dateformat = new SimpleDateFormat(this.logDateFormat); 
+        if (this.timeZone != null) {
+            dateformat.setTimeZone(TimeZone.getTimeZone(this.timeZone));
+        }
+        paramPut(LOG_TIME, dateformat.format(new Date()));
+        this.paramPut(REPLY_TIME,REPLY_TIME);
+        this.paramPut(LOG_ID, "0");
 	}
 	
 	/**
 	 * 
 	 * @return output to be logged
 	 */
-	protected  String interpolate() {
-		final StringBuffer sb = new StringBuffer(orderString.length());
-		m.reset();
-		while (m.find()) {
+	private  String interpolate() {
+		final StringBuffer sb = new StringBuffer(this.orderString.length());
+		this.m.reset();
+		while (this.m.find()) {
 			// when the pattern is ${identifier}, group 0 is 'identifier'
-			String key = m.group(1);
-			String value = (String)valuepairs.get(key);
+			final String key = this.m.group(1);
+			final String value = (String)this.valuepairs.get(key);
 
 			// if the pattern does exists, replace it by its value
 			// otherwise keep the pattern ( it is group(0) )
 			if (value != null) {
-				m.appendReplacement(sb, value);
+				this.m.appendReplacement(sb, value);
 			} else {
 				// I'm doing this to avoid the backreference problem as there will be a $
 				// if I replace directly with the group 0 (which is also a pattern)
-				m.appendReplacement(sb, "");
-				String unknown = m.group(0);
+				this.m.appendReplacement(sb, "");
+				final String unknown = this.m.group(0);
 				sb.append(unknown);
 			}
 		}
-		m.appendTail(sb);
+		this.m.appendTail(sb);
 		return sb.toString();
-	}
-
-	protected void cleanParams() {
-		DateFormat dateformat = new SimpleDateFormat(logDateFormat); 
-		if (timeZone != null) {
-			dateformat.setTimeZone(TimeZone.getTimeZone(timeZone));
-		}
-		paramPut(LOG_TIME, dateformat.format(new Date()));
-        this.paramPut(REPLY_TIME,"REPLY_TIME");
-        this.paramPut(LOG_ID, "0");
 	}
 
 	/**
@@ -118,9 +113,9 @@ public abstract class PatternLogger implements IPatternLogger {
 	public void paramPut(String key, String value){
 		//logger.debug("paramput: "+ key+ ";" +value +";" +valuepairs.toString());
 		if(value == null){
-			valuepairs.put(key, "");
+			this.valuepairs.put(key, "");
 		}else{
-			valuepairs.put(key, value);
+			this.valuepairs.put(key, value);
 		}	  
 	}
 
@@ -129,9 +124,9 @@ public abstract class PatternLogger implements IPatternLogger {
 	 */
 	public void paramPut(String key, Integer value){
 		if(value == null){
-			valuepairs.put(key, "");
+			this.valuepairs.put(key, "");
 		}else{
-			valuepairs.put(key, value.toString());
+			this.valuepairs.put(key, value.toString());
 		}
 	}
 
@@ -139,15 +134,14 @@ public abstract class PatternLogger implements IPatternLogger {
 	 * @see IPatternLogger#writeln()
 	 */
 	public void writeln() {
-		logmessage.append(interpolate()+"\n");
+		this.pw.println(interpolate());
 	}
 	
     /**
      * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush(String)
      */
-    public void flush(String replytime) {
-        String logstring =this.logmessage.toString();
-        logstring = logstring.replaceAll("REPLY_TIME", replytime);
-        this.logger.debug(logstring);
+    public void flush() {
+        this.pw.flush();
+        this.logger.debug(this.sw.toString().replaceAll("REPLY_TIME", String.valueOf( new Date().getTime()-this.startTime.getTime() )));
     }
 }

@@ -74,10 +74,9 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.AuditLogger;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
-import org.ejbca.core.protocol.ocsp.DummyAuditLogger;
-import org.ejbca.core.protocol.ocsp.DummyTransactionLogger;
 import org.ejbca.core.protocol.ocsp.IAuditLogger;
 import org.ejbca.core.protocol.ocsp.IOCSPExtension;
+import org.ejbca.core.protocol.ocsp.IOCSPLogger;
 import org.ejbca.core.protocol.ocsp.ISaferAppenderListener;
 import org.ejbca.core.protocol.ocsp.ITransactionLogger;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
@@ -85,7 +84,9 @@ import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.DummyPatternLogger;
 import org.ejbca.util.GUIDGenerator;
+import org.ejbca.util.IPatternLogger;
 
 /**
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
@@ -158,6 +159,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	/** Method gotten through reflection, we put it in a variable so we don't have to use
 	 * reflection every time we use the audit or transaction log */
 	private Method m_errorHandlerMethod = null;
+    private TransactionLogger transactionLogger;
+    private AuditLogger auditLogger;
 	private static final String PROBEABLE_ERRORHANDLER_CLASS = "org.ejbca.appserver.jboss.ProbeableErrorHandler";
 	private static final String SAFER_LOG4JAPPENDER_CLASS = "org.ejbca.appserver.jboss.SaferDailyRollingFileAppender";
 	
@@ -270,19 +273,19 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		String logDateFormat = OcspConfiguration.getLogDateFormat();
 		m_log.debug("Date format setting: '" + logDateFormat + "'");
 		if (mDoAuditLog==true) { // If we are not going to do any logging we wont bother setting it up
-			String auditLogPattern = OcspConfiguration.getAuditLogPattern();
+			final String auditLogPattern = OcspConfiguration.getAuditLogPattern();
 			m_log.debug("Pattern used for auditLogPattern: '" + auditLogPattern + "'");
-			String auditLogOrder = OcspConfiguration.getAuditLogOrder();
+			final String auditLogOrder = OcspConfiguration.getAuditLogOrder();
 			m_log.debug("Pattern used for auditLogOrder: '" + auditLogOrder + "'");
-			AuditLogger.configure(auditLogPattern, auditLogOrder,logDateFormat, timezone);
+			this.auditLogger = new AuditLogger(auditLogPattern, auditLogOrder,logDateFormat, timezone);
 		}
 		m_log.debug("Are we doing auditLogging?: '" + mDoTransactionLog + "'");
 		if (mDoTransactionLog==true) { // If we are not going to do any logging we wont bother setting it up
-			String transactionLogPattern = OcspConfiguration.getTransactionLogPattern();
+			final String transactionLogPattern = OcspConfiguration.getTransactionLogPattern();
 			m_log.debug("Pattern used for transactionLogPattern: '" + transactionLogPattern + "'");
-			String transactionLogOrder = OcspConfiguration.getTransactionLogOrder();
+			final String transactionLogOrder = OcspConfiguration.getTransactionLogOrder();
 			m_log.debug("Pattern used for transactionLogOrder: '" + transactionLogOrder + "'");
-			TransactionLogger.configure(transactionLogPattern, transactionLogOrder, logDateFormat, timezone);
+            this.transactionLogger = new TransactionLogger(transactionLogPattern, transactionLogOrder, logDateFormat, timezone);
 		}
 		// Are we supposed to abort the response if logging is failing?
 		m_log.debug("Are we doing safer logging?: '" + mDoSaferLogging + "'");
@@ -562,27 +565,27 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			m_log.trace(">service()");
 		}
         mTransactionID += 1;
-		final ITransactionLogger transactionLogger;
-		final IAuditLogger auditLogger;
+		final IPatternLogger transactionLogger;
+		final IPatternLogger auditLogger;
 		final Date startTime = new Date();
-		if (mDoTransactionLog) {
-			transactionLogger = new TransactionLogger();
+		if (this.mDoTransactionLog) {
+			transactionLogger = this.transactionLogger.getPatternLogger();
 		} else {
-			transactionLogger = new DummyTransactionLogger();	// Ignores everything
+			transactionLogger = new DummyPatternLogger();	// Ignores everything
 		}
-		if (mDoAuditLog) {
-			auditLogger = new AuditLogger();
+		if (this.mDoAuditLog) {
+			auditLogger = this.auditLogger.getPatternLogger();
 		} else {
-			auditLogger = new DummyAuditLogger();	// Ignores everything
+			auditLogger = new DummyPatternLogger();	// Ignores everything
 		}
 		final String remoteAddress = request.getRemoteAddr();
 		auditLogger.paramPut(IAuditLogger.OCSPREQUEST, ""); // No request bytes yet
-		auditLogger.paramPut(IAuditLogger.LOG_ID, mTransactionID);
-		auditLogger.paramPut(IAuditLogger.SESSION_ID, m_SessionID);
-		auditLogger.paramPut(IAuditLogger.CLIENT_IP, remoteAddress);
-		transactionLogger.paramPut(ITransactionLogger.LOG_ID, mTransactionID);
-		transactionLogger.paramPut(ITransactionLogger.SESSION_ID, m_SessionID);
-		transactionLogger.paramPut(ITransactionLogger.CLIENT_IP, remoteAddress);
+		auditLogger.paramPut(IPatternLogger.LOG_ID, new Integer(this.mTransactionID));
+		auditLogger.paramPut(IPatternLogger.SESSION_ID, this.m_SessionID);
+		auditLogger.paramPut(IOCSPLogger.CLIENT_IP, remoteAddress);
+		transactionLogger.paramPut(IPatternLogger.LOG_ID, new Integer(this.mTransactionID));
+		transactionLogger.paramPut(IPatternLogger.SESSION_ID, this.m_SessionID);
+		transactionLogger.paramPut(IOCSPLogger.CLIENT_IP, remoteAddress);
 
 		try {
 			// Read configuration values affecting the response, these can be dynamically updated from properties files in file system
@@ -595,7 +598,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			X509Certificate cacert = null; // CA-certificate used to sign response
 			try {
 				byte[] reqBytes = checkAndGetRequestBytes(request, response);
-				auditLogger.paramPut(AuditLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
+				auditLogger.paramPut(IAuditLogger.OCSPREQUEST, new String (Hex.encode(reqBytes)));
 				OCSPReq req = null;
 				try {
 					req = new OCSPReq(reqBytes);					
@@ -632,7 +635,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(ITransactionLogger.SIGN_ISSUER_NAME_DN, signercertIssuerName);
 					transactionLogger.paramPut(ITransactionLogger.SIGN_SERIAL_NO, signercert.getSerialNumber().toByteArray());
 					transactionLogger.paramPut(ITransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
-					transactionLogger.paramPut(ITransactionLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
+					transactionLogger.paramPut(IPatternLogger.REPLY_TIME, ITransactionLogger.REPLY_TIME);
 					if (m_reqMustBeSigned) {
 						// If it verifies OK, check if it is revoked
 						final CertificateStatus status = getStatus(m_adm, CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
@@ -903,9 +906,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			byte[] respBytes = ocspresp.getEncoded();
 			auditLogger.paramPut(IAuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
             auditLogger.writeln();
-            final String replyTime = String.valueOf( new Date().getTime() - startTime.getTime() );
-			auditLogger.flush(replyTime);
-			transactionLogger.flush(replyTime);
+			auditLogger.flush();
+			transactionLogger.flush();
 			if (mDoSaferLogging){
 				// See if the Errorhandler has found any problems
 				if (hasErrorHandlerFailedSince(startTime)) {
@@ -932,8 +934,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			throw new ServletException(e);
 		} catch (Exception e ) {
 			m_log.error("", e);
-			transactionLogger.flush(String.valueOf( new Date().getTime() - startTime.getTime() ));
-			auditLogger.flush(String.valueOf( new Date().getTime() - startTime.getTime() ));
+			transactionLogger.flush();
+			auditLogger.flush();
 		}
 		if (m_log.isTraceEnabled()) {
 			m_log.trace("<service()");

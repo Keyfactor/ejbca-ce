@@ -56,5 +56,5 @@ public interface IPatternLogger {
     /**
      * Writes all the rows created by writeln() to the Logger
      */
-    public void flush(String replytime);
+    public void flush();
 }

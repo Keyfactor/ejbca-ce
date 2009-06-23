@@ -148,7 +148,12 @@ public class ErrorCode implements Serializable {
             return false;
         }
     }
-
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        return "Internal EJBCA error code: "+this.internalErrorCode;
+    }
     /** @see java.lang.Object#hashCode() */
     public int hashCode() {
         if (internalErrorCode != null) {

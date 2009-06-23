@@ -127,9 +127,8 @@
     <target name="ejbcaws.war" depends="ejbcawsconditioncheck,ws.build,jaxwslibs" if="ejbcaws.conditionenabled">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
-            <include name="org/ejbca/core/protocol/ws/*.class"/>
-            <include name="org/ejbca/core/protocol/ws/common/*.class"/>
-            <include name="org/ejbca/core/protocol/ws/objects/*.class"/>            	
+            <include name="org/ejbca/core/protocol/ws/**/*.class"/>
+            <exclude name="org/ejbca/core/protocol/ws/client/**"/>
           </fileset>
         </copy>	
     	

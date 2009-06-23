@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.ocsp;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.GUIDGenerator;
+import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.PatternLogger;
 
 /**
@@ -25,31 +25,26 @@ import org.ejbca.util.PatternLogger;
  * @author tham
  * @version $Id$
  */
-public class AuditLogger extends PatternLogger implements IAuditLogger { 
-	private static Pattern PATTERN;
-	private static String orderString;
-    private static final Logger accountLog = Logger.getLogger(AuditLogger.class.getName());
-	private static String mLogDateFormat ;
-	private static String mTimeZone;
+public class AuditLogger { 
+	private final Pattern PATTERN;
+	private final String orderString;
+    private final Logger accountLog = Logger.getLogger(AuditLogger.class.getName());
+	private final String mLogDateFormat ;
+	private final String mTimeZone;
 	
 	//TRY_LATER = 3;SIG_REQUIRED = 5;UNAUTHORIZED = 6;
 	 /** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
 
-	public AuditLogger () {
-		super(PATTERN.matcher(orderString), orderString, accountLog, mLogDateFormat, mTimeZone);
-		cleanParams();
-        //super.paramPut(LOG_TIME, new Date().toString());
-	}
-	
-	/**
+    /**
 	 * Use this method to avoid having parts of the order-string logged when some values have not been stored before a writeln()
 	 */
-	protected void cleanParams() {
-		super.cleanParams();
-		super.paramPut(CLIENT_IP,"0");
-		super.paramPut(OCSPREQUEST, "0");
-		super.paramPut(OCSPRESPONSE, "0");
-		super.paramPut(STATUS, "-1");
+    public IPatternLogger getPatternLogger() {
+        IPatternLogger pl = new PatternLogger(this.PATTERN.matcher(this.orderString), this.orderString, this.accountLog, this.mLogDateFormat, this.mTimeZone);
+		pl.paramPut(IOCSPLogger.CLIENT_IP,"0");
+		pl.paramPut(IAuditLogger.OCSPREQUEST, "0");
+		pl.paramPut(IAuditLogger.OCSPRESPONSE, "0");
+		pl.paramPut(IOCSPLogger.STATUS, "-1");
+        return pl;
 	}
 	
 	/**
@@ -59,11 +54,11 @@ public class AuditLogger extends PatternLogger implements IAuditLogger {
 	 * @param accountLogOrder
 	 * @param logDateFormat
 	 */
-	public static void configure(String accountLogPattern, String accountLogOrder, String logDateFormat, String timeZone) {
-		PATTERN = Pattern.compile(accountLogPattern);
-		orderString = accountLogOrder;
-		mLogDateFormat = logDateFormat;
-		mTimeZone = timeZone;
+	public AuditLogger(String accountLogPattern, String accountLogOrder, String logDateFormat, String timeZone) {
+		this.PATTERN = Pattern.compile(accountLogPattern);
+		this.orderString = accountLogOrder;
+		this.mLogDateFormat = logDateFormat;
+		this.mTimeZone = timeZone;
 	}
 	
 }
