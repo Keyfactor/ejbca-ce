@@ -14,7 +14,9 @@ package org.ejbca.core.protocol.ws.logger;
 
 public enum TransactionTags {
     METHOD,
-    ERROR_MESSAGE;
+    ERROR_MESSAGE,
+    ADMIN_DN,
+    ADMIN_ISSUER_DN;
     public String getTag() {
         return "${"+toString()+"}";
     }

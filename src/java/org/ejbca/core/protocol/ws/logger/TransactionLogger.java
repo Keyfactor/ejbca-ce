@@ -45,8 +45,8 @@ public class TransactionLogger {
         if ( !this.doLog ) {
             return new DummyPatternLogger();
         }
-        IPatternLogger pl = new PatternLogger(this.PATTERN.matcher(this.orderString), this.orderString, log, this.logDateFormat, this.timeZone);
-        pl.paramPut(TransactionTags.ERROR_MESSAGE.toString(), "");
+        IPatternLogger pl = new PatternLogger(this.PATTERN.matcher(this.orderString), this.orderString, this.log, this.logDateFormat, this.timeZone);
+        pl.paramPut(TransactionTags.ERROR_MESSAGE.toString(), "NO_ERROR");
         pl.paramPut(TransactionTags.METHOD.toString(), new Throwable().getStackTrace()[2].getMethodName());
         pl.paramPut(IPatternLogger.LOG_ID, Integer.toString(this.transaktionID++));
         pl.paramPut(IPatternLogger.SESSION_ID, this.sessionID);
@@ -58,9 +58,10 @@ public class TransactionLogger {
      */
     private TransactionLogger() {
         this.PATTERN = Pattern.compile(ConfigurationHolder.getString("ejbcaws.trx-log-pattern", "\\$\\{(.+?)\\}"));
-        this.orderString = ConfigurationHolder.getString("ejbcaws.trx-log-order", "${SESSION_ID};${LOG_ID};\"${LOG_TIME}\";${REPLY_TIME};"+
-                                                         TransactionTags.METHOD.getTag()+";"+TransactionTags.ERROR_MESSAGE.getTag());
-        this.logDateFormat = ConfigurationHolder.getString("ejbcaws.log-date", "yyyy-MM-dd:HH:mm:ss:z");
+        this.orderString = ConfigurationHolder.getString("ejbcaws.trx-log-order", "${LOG_TIME};${SESSION_ID};${LOG_ID};${REPLY_TIME};"+
+                                                         TransactionTags.METHOD.getTag()+";"+TransactionTags.ERROR_MESSAGE.getTag())+";"+
+                                                         TransactionTags.ADMIN_DN.getTag()+";"+TransactionTags.ADMIN_ISSUER_DN.getTag();
+        this.logDateFormat = ConfigurationHolder.getString("ejbcaws.log-date", "yyyy/MM/dd HH:mm:ss.SSS");
         this.timeZone = ConfigurationHolder.getString("ejbcaws.log-timezone", "GMT");
         final String value = ConfigurationHolder.getString("ejbcaws.trx-log", null);
         this.doLog = value!=null && value.toLowerCase().indexOf("false")<0 && value.toLowerCase().indexOf("no")<0;
