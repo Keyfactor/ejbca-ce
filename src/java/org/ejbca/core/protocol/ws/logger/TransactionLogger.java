@@ -17,13 +17,14 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.util.DummyPatternLogger;
+import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.PatternLogger;
 
 public class TransactionLogger {
 
-    public static final Logger log = Logger.getLogger(TransactionLogger.class.getName());
-    private static TransactionLogger instance = new TransactionLogger();
+    
+    private static final TransactionLogger instance = new TransactionLogger();
 
     /** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
     // private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}"); // TODO this should be configurable from file
@@ -36,6 +37,9 @@ public class TransactionLogger {
     final private String logDateFormat; 
     final private String timeZone;
     final private boolean doLog;
+    final private String sessionID = GUIDGenerator.generateGUID(this);
+    final private Logger log = Logger.getLogger(TransactionLogger.class.getName());
+    private int transaktionID = 0;
 
     private IPatternLogger getNewPatternLogger() {
         if ( !this.doLog ) {
@@ -43,7 +47,9 @@ public class TransactionLogger {
         }
         IPatternLogger pl = new PatternLogger(this.PATTERN.matcher(this.orderString), this.orderString, log, this.logDateFormat, this.timeZone);
         pl.paramPut(TransactionTags.ERROR_MESSAGE.toString(), "");
-        pl.paramPut(TransactionTags.METHOD.toString(), "");
+        pl.paramPut(TransactionTags.METHOD.toString(), new Throwable().getStackTrace()[2].getMethodName());
+        pl.paramPut(IPatternLogger.LOG_ID, Integer.toString(this.transaktionID++));
+        pl.paramPut(IPatternLogger.SESSION_ID, this.sessionID);
         return pl;
     }
 
@@ -52,7 +58,7 @@ public class TransactionLogger {
      */
     private TransactionLogger() {
         this.PATTERN = Pattern.compile(ConfigurationHolder.getString("ejbcaws.trx-log-pattern", "\\$\\{(.+?)\\}"));
-        this.orderString = ConfigurationHolder.getString("ejbcaws.trx-log-order", "${SESSION_ID};${LOG_ID};${REQ_NAME};\"${LOG_TIME}\";"+
+        this.orderString = ConfigurationHolder.getString("ejbcaws.trx-log-order", "${SESSION_ID};${LOG_ID};\"${LOG_TIME}\";${REPLY_TIME};"+
                                                          TransactionTags.METHOD.getTag()+";"+TransactionTags.ERROR_MESSAGE.getTag());
         this.logDateFormat = ConfigurationHolder.getString("ejbcaws.log-date", "yyyy-MM-dd:HH:mm:ss:z");
         this.timeZone = ConfigurationHolder.getString("ejbcaws.log-timezone", "GMT");
