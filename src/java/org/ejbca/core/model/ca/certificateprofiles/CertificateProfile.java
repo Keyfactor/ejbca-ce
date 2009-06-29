@@ -50,7 +50,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 32.0;
+    public static final float LATEST_VERSION = (float) 33.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -177,6 +177,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String USESUBJECTALTNAMESUBSET        = "usesubjectaltnamesubset";
 	protected static final String SUBJECTALTNAMESUBSET           = "subjectaltnamesubset";
     protected static final String USEDCERTIFICATEEXTENSIONS      = "usedcertificateextensions";
+    protected static final String APPROVALSETTINGS				 = "approvalsettings";
+    protected static final String NUMOFREQAPPROVALS				 = "numofreqapprovals";
     //
     // CRL extensions
     protected static final String USECRLNUMBER                   = "usecrlnumber";
@@ -387,6 +389,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       
       setUsedCertificateExtensions(new ArrayList());
       
+      setNumOfReqApprovals(1);
+      setApprovalSettings(Collections.EMPTY_LIST);
     }
 
 
@@ -1154,6 +1158,51 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	}
     	return ret;
     }
+    
+    /**
+	 * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
+	 * action that requires approvals, default none 
+	 * 
+	 * Never null
+	 */
+	public Collection getApprovalSettings() {
+		return (Collection) data.get(APPROVALSETTINGS);
+	}
+	
+	/**
+	 * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
+	 * action that requires approvals
+	 */
+	public void setApprovalSettings(Collection approvalSettings) {
+		log.debug("setApprovalSettings("+approvalSettings+")");
+		data.put(APPROVALSETTINGS, approvalSettings);
+	}
+	
+	/**
+	 * Returns the number of different administrators that needs to approve
+	 * an action, default 1.
+	 */
+	public int getNumOfReqApprovals() {
+		log.debug("getNumOfReqApprovals(): "+((Integer) data.get(NUMOFREQAPPROVALS)).intValue());
+		return ((Integer) data.get(NUMOFREQAPPROVALS)).intValue();
+	}
+	
+	/**
+	 * The number of different administrators that needs to approve
+	 */
+	public void setNumOfReqApprovals(int numOfReqApprovals) {
+		log.debug("setNumOfReqApprovals("+numOfReqApprovals+")");
+		data.put(NUMOFREQAPPROVALS, new Integer(numOfReqApprovals));
+	}
+	
+	/**
+	 * Returns true if the action requires approvals.
+	 * @param action, on of the CAInfo.REQ_APPROVAL_ constants
+	 */
+	public boolean isApprovalRequired(int action){
+		Collection approvalSettings = (Collection) data.get(APPROVALSETTINGS);
+		return approvalSettings.contains(new Integer(action));
+	}
 
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
@@ -1377,6 +1426,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(Float.compare((float)32.0, getVersion()) > 0) { // v32
             	// Extended key usage storage changed from ArrayList of Integers to an ArrayList of Strings.
             	setExtendedKeyUsage(getExtendedKeyUsageAsOIDStrings(true));
+            }
+            
+            if (data.get(NUMOFREQAPPROVALS) == null) { // v 33
+            	setNumOfReqApprovals(1);
+            }
+            if (data.get(APPROVALSETTINGS) == null) { // v 33
+            	setApprovalSettings(Collections.EMPTY_LIST);
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));

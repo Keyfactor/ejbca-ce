@@ -271,6 +271,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     private ICAAdminSessionLocal caadminsession;
     
     /**
+     * The local interface of the certificatestore session bean
+     */
+    private ICertificateStoreSessionLocal certificatestoresession;
+    
+    /**
      * The local interface of the approval session bean
      */
     private IApprovalSessionLocal approvalsession;
@@ -515,7 +520,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
 
         // Check if approvals is required.
-        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
+        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId(), userdata.getCertificateProfileId());
         AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {       		    		
         	getApprovalSession().addApprovalRequest(admin, ar);
@@ -583,16 +588,32 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * requires approvals and how many
      * @param action one of CAInfo.REQ_APPROVAL_ constants
      * @param caid of the ca to check
+     * @param certprofileid of the certificate profile to check
      * @return 0 of no approvals is required or no such CA exists, othervise the number of approvals
      */
-    private int getNumOfApprovalRequired(Admin admin,int action, int caid) {
+    private int getNumOfApprovalRequired(Admin admin,int action, int caid, int certprofileid) {
     	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
     	if (cainfo == null) {
     		log.error("No CA info exists for CA id: "+caid);
     		return 0;
     	}
-    	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo);    	
+    	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo, getCertificateStoreSession().getCertificateProfile(admin, certprofileid));
 	}
+    
+    /** Gets connection to certificate store session bean
+     * @return Connection
+     */
+    private ICertificateStoreSessionLocal getCertificateStoreSession() {
+        if(certificatestoresession == null){
+            try{
+                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+                certificatestoresession = home.create();
+            }catch(Exception e){
+                throw new EJBException(e);
+            }
+        }
+        return certificatestoresession;
+    } //getCertificateStoreSession
 
 	/**
      * Changes data for a user in the database speciefied by username.
@@ -764,7 +785,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             throw new AuthorizationDeniedException(msg);
         }
         // Check if approvals is required.
-        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
+        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId(), userdata.getCertificateProfileId());
         if (numOfApprovalsRequired > 0){
         	UserDataVO orguserdata;
 			try {
@@ -1033,7 +1054,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             }
             
             // Check if approvals is required.
-            int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
+            int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
             ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)){       		    		
             	getApprovalSession().addApprovalRequest(admin, ar);
@@ -1245,7 +1266,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     	try {
 	        if ( getUserStatus(admin, username) != UserDataConstants.STATUS_REVOKED ) {
 		        // Check if approvals is required.
-		        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
+		        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId(), data.getCertificateProfileId());
 		        RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin,
 		        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
 		        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
@@ -1305,7 +1326,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             throw new AlreadyRevokedException(msg);
         }
         // Check if approvals is required.
-        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
+        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId(), data.getCertificateProfileId());
         RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin,
         		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
@@ -1398,7 +1419,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             }            
         }
         // Check if approvals is required.
-        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
+        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId(), data.getCertificateProfileId());
         RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin,
         		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {

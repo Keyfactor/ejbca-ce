@@ -2372,7 +2372,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		log.info(msg);
     		return;
         }
-        int numOfApprovalsRequired = ApprovalExecutorUtil.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo);
+        int numOfApprovalsRequired = ApprovalExecutorUtil.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo, getCertificateStoreSession().getCertificateProfile(admin,cainfo.getCertificateProfileId()));
         ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(),authorizationcode,admin,numOfApprovalsRequired,caid,ApprovalDataVO.ANY_ENDENTITYPROFILE);
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {       		    		
         	getApprovalSession().addApprovalRequest(admin, ar);

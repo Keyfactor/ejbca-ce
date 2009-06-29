@@ -3,7 +3,8 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
                org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents, 
-               org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory, org.ejbca.core.model.ca.certextensions.AvailableCertificateExtension, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy"%>
+               org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory, org.ejbca.core.model.ca.certextensions.AvailableCertificateExtension, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy,
+               org.ejbca.core.model.ca.caadmin.CAInfo"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -112,6 +113,8 @@
   static final String SELECT_SUBJECTDNSUBSET                      = "selectsubjectdnsubset";
   static final String SELECT_SUBJECTALTNAMESUBSET                 = "selectsubjectaltnamesubset";
   static final String SELECT_USEDCERTIFICATEEXTENSIONS            = "selectusedcertificateextensions";
+  static final String SELECT_APPROVALSETTINGS                     = "selectapprovalsettings";
+  static final String SELECT_NUMOFREQUIREDAPPROVALS               = "selectnumofrequiredapprovals";
 
   // Declare Language file.
 
@@ -786,6 +789,23 @@
                      certificateprofiledata.setQCStatementRAName(request.getParameter(TEXTFIELD_QCSTATEMENTRANAME));
                   }
              }
+             
+             values = request.getParameterValues(SELECT_APPROVALSETTINGS);
+             System.err.println("Got values:" + Arrays.toString(values));
+             ArrayList approvalsettings = new ArrayList(); 
+             if(values != null){
+               for(int i=0; i < values.length; i++){
+            	   approvalsettings.add(new Integer(values[i]));
+               }
+             }
+			System.err.println("To set:" + approvalsettings); // TODO remove
+			certificateprofiledata.setApprovalSettings(approvalsettings);
+			value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
+			int numofreqapprovals = 1;
+			if(value != null){
+			 numofreqapprovals = Integer.parseInt(value);
+			}
+			certificateprofiledata.setNumOfReqApprovals(numofreqapprovals);
              
            /*
             * Save changes.

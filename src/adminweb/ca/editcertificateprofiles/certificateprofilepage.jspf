@@ -1396,6 +1396,43 @@ function checkallfields(){
         </select>
       </td>
     </tr>
+    <tr id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("APPROVALSETTINGS") %> 
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_APPROVALSETTINGS%>" size="5" multiple>
+           <%                   
+                for(int i=0;i< CAInfo.AVAILABLE_APPROVALSETTINGS.length;i++){
+                   %>
+           <option  value="<%= CAInfo.AVAILABLE_APPROVALSETTINGS[i] %>" 
+              <%    if(certificateprofiledata.isApprovalRequired(CAInfo.AVAILABLE_APPROVALSETTINGS[i]))
+                      out.write(" selected ");
+                  %>>
+              <%= ejbcawebbean.getText(CAInfo.AVAILABLE_APPROVALSETTINGS_TEXTS[i]) %>         
+           </option>  
+              <% } %>
+        </select>        
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("NUMOFREQUIREDAPPROVALS") %>
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_NUMOFREQUIREDAPPROVALS%>" >
+           <%  for(int i=1;i<= 4;i++){
+                   %>
+           <option  value="<%= i %>" 
+              <%    if(certificateprofiledata.getNumOfReqApprovals() == i)
+                      out.write(" selected ");
+                  %>>
+              <%= i %>         
+           </option>  
+              <% } %>
+        </select>        
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 

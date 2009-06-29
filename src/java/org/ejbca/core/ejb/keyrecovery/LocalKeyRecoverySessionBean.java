@@ -49,6 +49,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -240,9 +241,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @param caid of the ca to check
      * @return 0 of no approvals is required othervise the number of approvals
      */
-    private int getNumOfApprovalRequired(Admin admin,int action, int caid) {
+    private int getNumOfApprovalRequired(Admin admin,int action, int caid, int certprofileid) {
     	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
-    	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo);    	
+    	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo, certificatestoresession.getCertificateProfile(admin,certprofileid));    	
 	}
     
     private IUserAdminSessionLocal getUserAdminSession(){
@@ -269,9 +270,10 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      */
     private void checkIfApprovalRequired(Admin admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) throws ApprovalException, WaitingForApprovalException{    	
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
-    	
+		final CertificateInfo certinfo = certificatestoresession.getCertificateInfo(admin, CertTools.getFingerprintAsString(certificate));
+        
         // Check if approvals is required.
-        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_KEYRECOVER, caid );
+        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certinfo.getCertificateProfileId());
         if (numOfApprovalsRequired > 0){    
 
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,endEntityProfileId);
