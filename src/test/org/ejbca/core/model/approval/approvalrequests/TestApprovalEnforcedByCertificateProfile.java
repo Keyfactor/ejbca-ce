@@ -57,6 +57,7 @@ import org.ejbca.util.keystore.KeyTools;
  * and not only by the CA or instead of by the CA.
  * 
  * @author Markus Kilås
+ * @version $Id$
  */
 public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 	

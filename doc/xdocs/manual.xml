@@ -2295,10 +2295,14 @@ gives his approval or reject the action.
 </p><p>
 <i>Configuring Approvals</i>
 </p><p>
-Approvals are configured for each CA, in the 'edit CA' page.
+
+Approvals are configured for each CA, in the 'Edit Certificate Authorities' page and for each certificate profile in 
+the 'Edit Certificate Profiles' page. 
 Just select the actions that needs approval and the number of approvers required and save. The actions 'Add End Entity', 
 'Change End Entity' and 'Change User Status' are all covered by the setting 'Add/Edit End Entity'. 'Revoke End Entity',
-'Revoke Certificate', 'Revoke Token' and 'Reactivate Certificate' are covered by setting 'Revocation'.
+'Revoke Certificate', 'Revoke Token' and 'Reactivate Certificate' are covered by setting 'Revocation'. 
+Approvals will be required if the CA or the certificate profile enforces it and in case the number of approvers differs 
+between the CA and the certificate profile the largest number of approvers will be used.
 </p><p>
 <i>Authorizing Approving Administrators</i>
 </p><p>

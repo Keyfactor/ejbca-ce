@@ -1174,7 +1174,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	 * action that requires approvals
 	 */
 	public void setApprovalSettings(Collection approvalSettings) {
-		log.debug("setApprovalSettings("+approvalSettings+")");
 		data.put(APPROVALSETTINGS, approvalSettings);
 	}
 	
@@ -1183,7 +1182,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	 * an action, default 1.
 	 */
 	public int getNumOfReqApprovals() {
-		log.debug("getNumOfReqApprovals(): "+((Integer) data.get(NUMOFREQAPPROVALS)).intValue());
 		return ((Integer) data.get(NUMOFREQAPPROVALS)).intValue();
 	}
 	
@@ -1191,7 +1189,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	 * The number of different administrators that needs to approve
 	 */
 	public void setNumOfReqApprovals(int numOfReqApprovals) {
-		log.debug("setNumOfReqApprovals("+numOfReqApprovals+")");
 		data.put(NUMOFREQAPPROVALS, new Integer(numOfReqApprovals));
 	}
 	
