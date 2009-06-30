@@ -94,7 +94,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Dai Tokunaga, &#x65;&#x74;&#x65;&#114;&#110;&#x61;&#108;&#x76;&#x69;&#x72;&#116;&#117;&#x65;&#x40;&#103;&#x6D;&#x61;&#105;&#x6C;&#46;&#x63;&#x6F;&#109;, XKMS working on Java 6 and Glassfish.</li> 
 <li>Martin Simka, &#x6D;&#x2E;&#x73;&#105;&#109;&#x6B;&#97;&#x40;&#x70;&#x77;&#112;&#119;&#x2E;&#x70;&#108;, cvcwscli.cmd.</li> 
 <li>Waldek Kozba, &#x77;&#x61;&#x6C;&#100;&#101;&#x6D;&#97;&#x72;&#x2E;&#x6B;&#111;&#122;&#x62;&#x61;&#64;&#x6D;&#x61;&#120;&#x2E;&#99;&#x6F;&#x6D;&#46;&#x70;&#108;, Patch for not quoting int type columns for advanced log search.</li>
-<li>Kevin Dean, &#x6B;&#x65;&#118;&#x69;&#x6E;&#46;&#x64;&#101;&#x61;&#x6E;&#64;&#x64;&#97;&#116;&#x61;&#x64;&#101;&#118;&#x65;&#x6C;&#x6F;&#x70;&#x6D;&#101;&#x6E;&#x74;&#46;&#x63;&#111;&#x6D;, sql script for MS-SQL on Glassfish.</li> 
+<li>Kevin Dean, &#x6B;&#x65;&#118;&#x69;&#x6E;&#46;&#x64;&#101;&#x61;&#x6E;&#64;&#x64;&#97;&#116;&#x61;&#x64;&#101;&#118;&#x65;&#x6C;&#x6F;&#x70;&#x6D;&#101;&#x6E;&#x74;&#46;&#x63;&#111;&#x6D;, sql script for MS-SQL on Glassfish, help with issue mixing EJBs and SQL.</li> 
 </ul>
     </section>
   </body>
