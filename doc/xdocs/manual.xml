@@ -1847,7 +1847,9 @@ But different tags are used:
 <li>ADMIN_ISSUER_DN : Issuer DN of the client certificate in the call</li>
 </ul>
 <p>
-The configuration is done in ./conf/jaxws.properties
+The configuration is done in ./conf/jaxws.properties.
+</p><p>
+In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should be used as category name for the appender.
 </p>
 </subsection>
 </section>
