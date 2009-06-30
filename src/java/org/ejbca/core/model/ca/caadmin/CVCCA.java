@@ -59,6 +59,7 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
+import org.ejbca.util.SimpleTime;
 
 
 
@@ -79,7 +80,7 @@ public class CVCCA extends CA implements Serializable {
 	private static final InternalResources intres = InternalResources.getInstance();
 
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
-	public static final float LATEST_VERSION = 2;
+	public static final float LATEST_VERSION = 3;
 
     // protected fields for properties specific to this type of CA.
 
@@ -458,6 +459,19 @@ public class CVCCA extends CA implements Serializable {
 			// Put upgrade code here...
             
             // v1->v2 is only an upgrade in order to upgrade CA token
+            // v2->v3 is a upgrade of X509CA that has to be adjusted here two, due to the common heritage
+            if (data.get(CRLPERIOD) instanceof Integer) {
+            	setCRLPeriod(0L);
+            }
+            if (data.get(CRLISSUEINTERVAL) instanceof Integer) {
+            	setCRLIssueInterval(0L);
+            }
+            if (data.get(CRLOVERLAPTIME) instanceof Integer) {
+            	setCRLOverlapTime(0L);
+            }
+            if (data.get(DELTACRLPERIOD) instanceof Integer) {
+            	setDeltaCRLPeriod(0L);
+            }
 
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}  

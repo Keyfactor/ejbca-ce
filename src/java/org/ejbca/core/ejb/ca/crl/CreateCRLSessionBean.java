@@ -211,8 +211,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 
             	// Go through them and create a CRL, at the same time archive expired certificates
             	Date now = new Date();
-            	// crlperiod is hours = crlperiod*60*60*1000 milliseconds
-            	now.setTime(now.getTime() - (crlperiod * 60 * 60 * 1000));
+            	now.setTime(now.getTime() - crlperiod);
             	Iterator iter = revcerts.iterator();
             	while (iter.hasNext()) {
             		RevokedCertInfo data = (RevokedCertInfo)iter.next();
@@ -414,12 +413,12 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                 			            	   log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
                 			               }    			            	   
             			               }
-                                       int crlissueinterval = cainfo.getCRLIssueInterval();
+                                       long crlissueinterval = cainfo.getCRLIssueInterval();
                                        if (log.isDebugEnabled()) {
                                            log.debug("crlissueinterval="+crlissueinterval);
                                            log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                            	   
                                        }
-                                       long overlap = (cainfo.getCRLOverlapTime() * 60 * 1000) + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
+                                       long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
                                        long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
                                        if (crlinfo != null) {
                                            // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
@@ -427,11 +426,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                                            // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
                                            nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
                                            if (crlissueinterval > 0) {
-                                        	   long crlissueintervalmillisec = ((long)crlissueinterval) * 60 * 60 * 1000;
-                                        	   if (log.isDebugEnabled()) {                                		   
-                                            	   log.debug("crlissueinterval milliseconds: "+crlissueintervalmillisec);
-                                        	   }
-                                               long u = crlinfo.getCreateDate().getTime() + (crlissueintervalmillisec);
+                                               long u = crlinfo.getCreateDate().getTime() + crlissueinterval;
                                                // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
                                                // we need to issue one when the CRL expires
                                                if ((u + overlap) < nextUpdate) {

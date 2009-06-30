@@ -116,7 +116,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	protected static final String INCLUDEINHEALTHCHECK			 = "includeinhealthcheck";
     
     // Public Methods
-    /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
+    /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public CA(CAInfo cainfo){
        data = new HashMap();
        
@@ -217,23 +217,23 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	public Date getRevokationDate(){return (Date) data.get(REVOKATIONDATE);}
 	public void setRevokationDate(Date date){ data.put(REVOKATIONDATE,date);}
                 
-    public int  getCRLPeriod(){return ((Integer)data.get(CRLPERIOD)).intValue();}
-    public void setCRLPeriod(int crlperiod) {data.put(CRLPERIOD, new Integer(crlperiod));}
+    public long getCRLPeriod(){return ((Long)data.get(CRLPERIOD)).longValue();}
+    public void setCRLPeriod(long crlperiod) {data.put(CRLPERIOD, new Long(crlperiod));}
     
-    public int  getDeltaCRLPeriod() {
+    public long getDeltaCRLPeriod() {
     	if(data.containsKey(DELTACRLPERIOD)) {
-    		return ((Integer)data.get(DELTACRLPERIOD)).intValue();
+    		return ((Long)data.get(DELTACRLPERIOD)).longValue();
     	} else {
     		return 0;
     	}
     }
-    public void setDeltaCRLPeriod(int deltacrlperiod) {data.put(DELTACRLPERIOD, new Integer(deltacrlperiod));}
+    public void setDeltaCRLPeriod(long deltacrlperiod) {data.put(DELTACRLPERIOD, new Long(deltacrlperiod));}
     	
-    public int  getCRLIssueInterval(){return ((Integer)data.get(CRLISSUEINTERVAL)).intValue();}
-    public void setCRLIssueInterval(int crlIssueInterval) {data.put(CRLISSUEINTERVAL, new Integer(crlIssueInterval));}
+    public long getCRLIssueInterval(){return ((Long)data.get(CRLISSUEINTERVAL)).longValue();}
+    public void setCRLIssueInterval(long crlIssueInterval) {data.put(CRLISSUEINTERVAL, new Long(crlIssueInterval));}
     
-    public int  getCRLOverlapTime(){return ((Integer)data.get(CRLOVERLAPTIME)).intValue();}
-    public void setCRLOverlapTime(int crlOverlapTime) {data.put(CRLOVERLAPTIME, new Integer(crlOverlapTime));}
+    public long getCRLOverlapTime(){return ((Long)data.get(CRLOVERLAPTIME)).longValue();}
+    public void setCRLOverlapTime(long crlOverlapTime) {data.put(CRLOVERLAPTIME, new Long(crlOverlapTime));}
 
     public Collection  getCRLPublishers(){return ((Collection)data.get(CRLPUBLISHERS));}
     public void setCRLPublishers(Collection crlpublishers) {data.put(CRLPUBLISHERS, crlpublishers);}    
@@ -457,10 +457,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public void updateCA(CAInfo cainfo) throws Exception{            
     	data.put(VALIDITY, new Integer(cainfo.getValidity()));                 
     	data.put(DESCRIPTION, cainfo.getDescription());      
-    	data.put(CRLPERIOD, new Integer(cainfo.getCRLPeriod()));
-    	data.put(DELTACRLPERIOD, new Integer(cainfo.getDeltaCRLPeriod()));
-    	data.put(CRLISSUEINTERVAL, new Integer(cainfo.getCRLIssueInterval()));
-    	data.put(CRLOVERLAPTIME, new Integer(cainfo.getCRLOverlapTime()));
+    	data.put(CRLPERIOD, new Long(cainfo.getCRLPeriod()));
+    	data.put(DELTACRLPERIOD, new Long(cainfo.getDeltaCRLPeriod()));
+    	data.put(CRLISSUEINTERVAL, new Long(cainfo.getCRLIssueInterval()));
+    	data.put(CRLOVERLAPTIME, new Long(cainfo.getCRLOverlapTime()));
     	data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
     	data.put(APPROVALSETTINGS,cainfo.getApprovalSettings());
         data.put(NUMBEROFREQAPPROVALS,new Integer(cainfo.getNumOfReqApprovals()));
@@ -786,7 +786,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * Method to upgrade new (or existing externacaservices)
      * This method needs to be called outside the regular upgrade
-     * since the CA isn't instansiated in the regular upgrade.
+     * since the CA isn't instantiated in the regular upgrade.
      *
      */
 	public abstract boolean upgradeExtendedCAServices() ;

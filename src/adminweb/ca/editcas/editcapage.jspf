@@ -375,13 +375,17 @@ function checkallfields(){
       <% } 
       } %>
       <% if(!processrequest){ %>
-    if(!checkfieldfordecimalnumbers("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINCRLPERIOD") %>"))
+    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_CRLPERIOD %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRLPERIOD")%>");
       illegalfields++;
     }
-     if(!checkfieldfordecimalnumbers("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINDELTACRLPERIOD") %>"))
+    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_CRLISSUEINTERVAL%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+        illegalfields++;
+    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_CRLOVERLAPTIME%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+        illegalfields++;
+    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_DELTACRLPERIOD %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("DELTACRLPERIOD")%>");
@@ -937,64 +941,64 @@ function checkallfields(){
        </select>
      </td>
    </tr>
-   <tr  id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLPERIOD") %>
+       <%= ejbcawebbean.getText("CRLPERIOD") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %>
      </td>
      <td width="50%">
-          <% if(isexternal){
-               out.write("" + cainfo.getCRLPeriod());
-             }else{ %>
+          <% if (isexternal) {
+               out.write(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
-           <% if(editca) { out.write(" value='" + cainfo.getCRLPeriod()+ "'");
-                         } else { out.write(" value='24'"); }%>>
-          <% } %> 
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='1"+SimpleTime.TYPE_DAYS+"'"); } %>>
+          <% } %>
      </td>
    </tr>
    
-   <tr  id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %>
+       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %>
      </td>
      <td width="50%">
-          <% if(isexternal){
-               out.write("" + cainfo.getCRLIssueInterval());
-             }else{ %>
+          <% if (isexternal) {
+               out.write(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
-           <% if(editca) { out.write(" value='" + cainfo.getCRLIssueInterval()+ "'");
-                         } else { out.write(" value='0'"); }%>>
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
      </td>
    </tr>
 
-   <tr  id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLOVERLAPTIME") %>
+       <%= ejbcawebbean.getText("CRLOVERLAPTIME") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %>
      </td>
      <td width="50%">
-          <% if(isexternal){
-               out.write("" + cainfo.getCRLOverlapTime());
-             }else{ %>
+          <% if (isexternal) {
+               out.write(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
-           <% if(editca) { out.write(" value='" + cainfo.getCRLOverlapTime()+ "'");
-                         } else { out.write(" value='10'"); }%>>
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else {out.write(" value='10"+SimpleTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
      </td>
    </tr>
 
-   <tr  id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("DELTACRLPERIOD") %>
+       <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %>
        <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %><br/>
        <%= ejbcawebbean.getText("NODELTACRLTIP") %>
      </td>
      <td width="50%">
-          <% if(isexternal){
-               out.write("" + cainfo.getDeltaCRLPeriod());
-             }else{ %>
+          <% if (isexternal) {
+               out.write("" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
         <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
-           <% if(editca) { out.write(" value='" + cainfo.getDeltaCRLPeriod()+ "'");
-                         } else { out.write(" value='0'"); }%>>
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'");} %>>
           <% } %> 
      </td>
    </tr>

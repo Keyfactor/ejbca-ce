@@ -30,6 +30,7 @@ import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
+import org.ejbca.util.SimpleTime;
 
 
 /**
@@ -206,10 +207,10 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         
 		cainfodata[CRLSPACER]          = "&nbsp;"; // blank line
 
-        cainfodata[CRLPERIOD] = Integer.toString(cainfo.getCRLPeriod());
-        cainfodata[CRLISSUEINTERVAL] = Integer.toString(cainfo.getCRLIssueInterval());
-        cainfodata[CRLOVERLAPTIME] = Integer.toString(cainfo.getCRLOverlapTime());
-        cainfodata[DELTACRLPERIOD] = Integer.toString(cainfo.getDeltaCRLPeriod());
+        cainfodata[CRLPERIOD] = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+        cainfodata[CRLISSUEINTERVAL] = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
+        cainfodata[CRLOVERLAPTIME] = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
+        cainfodata[DELTACRLPERIOD] = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
 	}
 
    public String[] getCAInfoData(){ return cainfodata;}

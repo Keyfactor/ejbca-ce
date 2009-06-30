@@ -303,7 +303,7 @@ public class TestCreateCRLSession extends TestCase {
 		log.trace(">test05CRLPeriodOverflow()");
 		// Fetch CAInfo and save CRLPeriod
 		CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
-		int tempCRLPeriod = cainfo.getCRLPeriod();
+		long tempCRLPeriod = cainfo.getCRLPeriod();
 		try {
 			// Create a user that Should be revoked
 			boolean userExists = false;
@@ -366,7 +366,7 @@ public class TestCreateCRLSession extends TestCase {
 			// Revoke the user
 			TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 			// Change CRLPeriod
-			cainfo.setCRLPeriod(Integer.MAX_VALUE);
+			cainfo.setCRLPeriod(Long.MAX_VALUE);
 			TestTools.getCAAdminSession().editCA(admin, cainfo);
 			// Create new CRL's
 			TestTools.getCreateCRLSession().run(admin, cadn);

@@ -35,7 +35,8 @@ public class CVCCAInfo extends CAInfo {
 	 */
 	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
 			int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
-			CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
+			CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate,
+			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection crlpublishers,boolean finishuser,Collection extendedcaserviceinfos, 
 			Collection approvalSettings, int numOfReqApprovals,
 			boolean includeInHealthCheck) {
@@ -70,7 +71,7 @@ public class CVCCAInfo extends CAInfo {
 	 * Constructor that should be used when updating CA data.
 	 */
 	public CVCCAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
-			int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
+			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection crlpublishers,
 			boolean finishuser, Collection extendedcaserviceinfos, 
 			Collection approvalSettings, int numOfReqApprovals,

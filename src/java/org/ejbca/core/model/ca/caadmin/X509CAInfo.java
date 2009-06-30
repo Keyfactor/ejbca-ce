@@ -55,8 +55,8 @@ public class X509CAInfo extends CAInfo{
      */
     public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
-                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List policies, int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
-                    Collection crlpublishers,
+                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List policies,
+                    long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
@@ -121,7 +121,7 @@ public class X509CAInfo extends CAInfo{
      * Constructor that should be used when updating CA data.
      */
     public X509CAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
-                      int crlperiod, int crlIssueInterval, int crlOverlapTime, int deltacrlperiod, 
+                      long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
                       Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl,

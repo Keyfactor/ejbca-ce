@@ -1,9 +1,21 @@
 <!--
-/* Javascript library used by Ejbca jsp pages
-     Written by Philip Vendil 
-     27 mars 2002 */
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 
-
+/*
+ * JavaScript library used by EJBCA JSP pages
+ * Originally created by Philip Vendil 2002-03-27
+ */
 
 function checkAll(checkboxlist,size) {
   for (var i = 0; i < size; i++) {
@@ -195,6 +207,18 @@ function checkfieldfordecimalnumbers(thetextfield , alerttext){
   else{
     return true;
   }
+}
+
+/** Verify that the field is of format '*d *h *m' */
+function checkFieldForSimpleTimeMinutes(thetextfield , alerttext) {
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /^\s*(\d+\s*[dD])?\s*(\d+\s*[hH])?\s*(\d+\s*[mM])?\s*$/;
+  if (re.exec(text)) {
+	  return true;
+  }
+  alert(alerttext);
+  return false;
 }
 
 function checkfieldforhexadecimalnumbers(thetextfield , alerttext){

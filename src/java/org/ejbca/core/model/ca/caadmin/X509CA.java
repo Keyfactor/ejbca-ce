@@ -104,6 +104,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.SimpleTime;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.dn.DnComponents;
 
@@ -124,7 +125,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 18;
+    public static final float LATEST_VERSION = 19;
 
     /** key ID used for identifier of key used for key recovery encryption */
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
@@ -660,7 +661,7 @@ public class X509CA extends CA implements Serializable {
      * @throws CRLException
      * @throws NoSuchAlgorithmException
      */
-    private CRL generateCRL(Collection certs, int crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber) 
+    private CRL generateCRL(Collection certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg= getCAInfo().getCATokenInfo().getSignatureAlgorithm();
 
@@ -670,8 +671,7 @@ public class X509CA extends CA implements Serializable {
         Date thisUpdate = new Date();
         Date nextUpdate = new Date();
 
-        // crlperiod is hours = crlperiod*60*60*1000 milliseconds
-        nextUpdate.setTime(nextUpdate.getTime() + (crlPeriod * (long)(60 * 60 * 1000)));
+        nextUpdate.setTime(nextUpdate.getTime() + crlPeriod);
         X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
         crlgen.setThisUpdate(thisUpdate);
         crlgen.setNextUpdate(nextUpdate);
@@ -852,7 +852,23 @@ public class X509CA extends CA implements Serializable {
                 setIncludeInHealthCheck(true); // v16
             }
             // v17->v18 is only an upgrade in order to upgrade CA token
-
+            // v18->v19
+            Object o = data.get(CRLPERIOD);
+            if (o instanceof Integer) {
+            	setCRLPeriod(((Integer) o).longValue()*SimpleTime.MILLISECONDS_PER_HOUR);	// h to ms
+            }
+            o = data.get(CRLISSUEINTERVAL);
+            if (o instanceof Integer) {
+            	setCRLIssueInterval(((Integer) o).longValue()*SimpleTime.MILLISECONDS_PER_HOUR);	// h to ms
+            }
+            o = data.get(CRLOVERLAPTIME);
+            if (o instanceof Integer) {
+            	setCRLOverlapTime(((Integer) o).longValue()*SimpleTime.MILLISECONDS_PER_MINUTE);	// min to ms
+            }
+            o = data.get(DELTACRLPERIOD);
+            if (o instanceof Integer) {
+            	setDeltaCRLPeriod(((Integer) o).longValue()*SimpleTime.MILLISECONDS_PER_HOUR);	// h to ms
+            }
             data.put(VERSION, new Float(LATEST_VERSION));
         }  
     }

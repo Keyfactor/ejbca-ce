@@ -5,7 +5,8 @@
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException" %>
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
+               org.ejbca.util.SimpleTime" %>
 
 
 
@@ -509,16 +510,10 @@
               }
 
          	 // CRL periods and publishers is specific for X509 CAs
-              int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
-              int crlIssueInterval = 0;
-              String crlissueint = request.getParameter(TEXTFIELD_CRLISSUEINTERVAL);
-              if (crlissueint != null && !crlissueint.trim().equals(""))
-                  crlIssueInterval = Integer.parseInt(crlissueint);
-              int crlOverlapTime = 10;
-              String crloverlapint = request.getParameter(TEXTFIELD_CRLOVERLAPTIME);
-              if (crloverlapint != null && !crloverlapint.trim().equals(""))
-            	  crlOverlapTime = Integer.parseInt(crloverlapint);
-              int deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));              
+              long crlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "1"+SimpleTime.TYPE_DAYS).getLong();
+              long crlIssueInterval = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
+              long crlOverlapTime = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "10"+SimpleTime.TYPE_MINUTES).getLong();
+              long deltacrlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
               values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
               ArrayList crlpublishers = new ArrayList(); 
               if(values != null){
@@ -841,18 +836,10 @@
         	 
         	 // First common info for both X509 CAs and CVC CAs
         	CAInfo cainfo = null;
-            int crlperiod = 0;
-            int crlIssueInterval = 0;
-            int crlOverlapTime = 0;
-            int deltacrlperiod = 0;
-            if(request.getParameter(TEXTFIELD_CRLPERIOD) != null){
-              crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
-              crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
-              crlOverlapTime = Integer.parseInt(request.getParameter(TEXTFIELD_CRLOVERLAPTIME));
-            }
-            if(request.getParameter(TEXTFIELD_DELTACRLPERIOD) != null){
-                deltacrlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_DELTACRLPERIOD));
-            }
+            long crlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            long crlIssueInterval = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            long crlOverlapTime = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            long deltacrlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
             boolean finishuser = false;
             String value = request.getParameter(CHECKBOX_FINISHUSER);
             if(value != null)

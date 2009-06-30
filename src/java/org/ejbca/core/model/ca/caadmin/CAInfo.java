@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.util.SimpleTime;
 
 /**
  * Holds nonsensitive information about a CA.
@@ -89,13 +90,13 @@ public class CAInfo implements Serializable {
     protected Date revokationdate;
     protected int certificateprofileid;
     /** Default value 24 hours */
-    protected int crlperiod = 24;
+    protected long crlperiod = 1 * SimpleTime.MILLISECONDS_PER_DAY;
     /** Default value 0 */
-    protected int crlIssueInterval = 0;
+    protected long crlIssueInterval = 0;
     /** Default value 10 minutes */
-    protected int crlOverlapTime = 10;
+    protected long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_MINUTE;
     /** Default value 0 = disabled */
-    protected int deltacrlperiod = 0; 
+    protected long deltacrlperiod = 0; 
     protected Collection crlpublishers;  
 	protected boolean finishuser;  
 	protected Collection extendedcaserviceinfos;
@@ -137,17 +138,17 @@ public class CAInfo implements Serializable {
     public void setCertificateProfileId(int _certificateprofileid) { this.certificateprofileid = _certificateprofileid; }
     public int getCertificateProfileId(){ return this.certificateprofileid; }
     
-    public int getCRLPeriod(){ return crlperiod;}
-    public void setCRLPeriod(int crlperiod){ this.crlperiod=crlperiod;}
+    public long getCRLPeriod(){ return crlperiod;}
+    public void setCRLPeriod(long crlperiod){ this.crlperiod=crlperiod;}
     
-    public int getDeltaCRLPeriod(){ return deltacrlperiod;}
-    public void setDeltaCRLPeriod(int deltacrlperiod){ this.deltacrlperiod=deltacrlperiod;}
+    public long getDeltaCRLPeriod(){ return deltacrlperiod;}
+    public void setDeltaCRLPeriod(long deltacrlperiod){ this.deltacrlperiod=deltacrlperiod;}
     
-    public int getCRLIssueInterval(){ return crlIssueInterval;}
-    public void setCRLIssueInterval(int crlissueinterval){ this.crlIssueInterval = crlissueinterval;}
+    public long getCRLIssueInterval(){ return crlIssueInterval;}
+    public void setCRLIssueInterval(long crlissueinterval){ this.crlIssueInterval = crlissueinterval;}
   
-    public int getCRLOverlapTime(){ return crlOverlapTime;}
-    public void setCRLOverlapTime(int crloverlaptime){ this.crlOverlapTime = crloverlaptime;}
+    public long getCRLOverlapTime(){ return crlOverlapTime;}
+    public void setCRLOverlapTime(long crloverlaptime){ this.crlOverlapTime = crloverlaptime;}
 
     public Collection getCRLPublishers(){ return crlpublishers;}
     public void setCRLPublishers(Collection crlpublishers){this.crlpublishers=crlpublishers;}    
