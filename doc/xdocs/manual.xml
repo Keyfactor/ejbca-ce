@@ -1830,6 +1830,26 @@ try {
     <p>All error codes are described in <code>org.ejbca.core.ErrorCode</code>.</p>
     <p> You can also take a look at <code>src/test/org/ejbca/core/protocol/ws/CommonEjbcaWSTest.java</code> to see how the error code can be used.</p>
 </subsection>
+<subsection name="WS transaction logging">
+<p>
+The logging is done the same way as the logging for the OCSP responder is done.
+See <a href="installation-ocsp.html#Audit and Account Logging">OCSP Audit and Account Logging</a>.
+But different tags are used:
+</p>
+<ul>
+<li>LOG_TIME : The time the call took place</li>
+<li>SESSION_ID : A random 32 Byte long String generated when the OCSP-responder is started.</li>
+<li>LOG_ID : An integer identifying that starts from 1 and is increased for every received request.</li>
+<li>REPLY_TIME : The time it took to return from the WS method.</li>
+<li>METHOD : Name of the called WS method.</li>
+<li>ERROR_MESSAGE : An error message with information of the error. If the call returned successfully then 'NO_ERROR'.</li>
+<li>ADMIN_DN : Subject DN for the client certificate in the call.</li>
+<li>ADMIN_ISSUER_DN : Issuer DN of the client certificate in the call</li>
+</ul>
+<p>
+The configuration is done in ./conf/jaxws.properties
+</p>
+</subsection>
 </section>
 <section name="XKMS Service">
 <subsection name="Introduction">
