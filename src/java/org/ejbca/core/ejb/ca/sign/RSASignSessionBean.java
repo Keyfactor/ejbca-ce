@@ -1289,15 +1289,21 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }
                 // Store CA certificate in the database if it does not exist
                 long updateTime = new Date().getTime();
-                if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
-                	// If we don't have it in the database, set certificateProfileId = 0
-                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type, 0, null, updateTime);
+                int profileId = 0;
+                String tag = null;
+                CertificateInfo ci = certificateStore.getCertificateInfo(admin, fingerprint);
+                if (ci == null) {
+                	// If we don't have it in the database, store it setting certificateProfileId = 0 and tag = null
+                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type, profileId, tag, updateTime);
+                } else {
+                	updateTime = ci.getUpdateTime().getTime();
+                	profileId = ci.getCertificateProfileId();
+                	tag = ci.getTag();
                 }
-                CertificateInfo info = certificateStore.getCertificateInfo(admin, fingerprint);
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null) {
-                    pub.storeCertificate(admin, usedpublishers, cert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), null);                	
+                    pub.storeCertificate(admin, usedpublishers, cert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);                	
                 }
             }
         } catch (javax.ejb.CreateException ce) {
@@ -1317,7 +1323,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     } // authUser
 
-    /** Finishes user, i.e. set staatus to generated, if it should do so.
+    /** Finishes user, i.e. set status to generated, if it should do so.
      * The authentication session is responsible for determining if this should be done or not */ 
     private void finishUser(Admin admin, String username, String password) {
         // Finnish user and set new status
@@ -1522,6 +1528,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 String cafingerprint = null;
                 String serialNo = "unknown";
                 long updateTime = new Date().getTime();
+                String tag = null;
                 while (!stored && retrycounter < 5) {
                     cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                     serialNo = CertTools.getSerialNumberAsString(cert);
@@ -1529,7 +1536,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     Certificate cacert = ca.getCACertificate();
                     cafingerprint = CertTools.getFingerprintAsString(cacert);
                     try {
-                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), certProfileId, null, updateTime);                        
+                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
                         stored = true;
                     } catch (CreateException e) {
                     	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
@@ -1557,9 +1564,6 @@ public class RSASignSessionBean extends BaseSessionBean {
                 IPublisherSessionLocal pub = publishHome.create();
                 Collection publishers = certProfile.getPublisherList();
                 if (publishers != null) {
-                	// Reading the info here does not work! Probabaly are UPDATE statements not flushed to the database when this JDBC exceutes..
-                	//CertificateInfo info = certificateStore.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
-                	String tag = null; // info.getTag();
                     pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
                 }
                 

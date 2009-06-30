@@ -858,7 +858,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return ret;
     } // findCertificatesByUsernameAndStatus
 
-    /**
+    /** Gets certificate info, which is basically all fields except the certificate itself. 
+     * Note: this methid should not be used within a transaction where the reading of this info might depend on something stored earlier in the transaction. 
+     * This is because this method uses direct SQL.
+     * 
+     * @return CertificateInfo or null if certificate does not exist.
      * @ejb.interface-method
      */
     public CertificateInfo getCertificateInfo(Admin admin, String fingerprint) {
@@ -1055,10 +1059,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
     		// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
-    		rev.setStatus(CertificateDataBean.CERT_ACTIVE);
+    		int status = CertificateDataBean.CERT_ACTIVE;
+    		rev.setStatus(status);
+    		long revocationDate = -1L; // A null Date to setRevocationDate will result in -1 stored in long column
     		rev.setRevocationDate(null);
     		rev.setUpdateTime(now.getTime());
-    		rev.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
+    		int revocationReason = RevokedCertInfo.NOT_REVOKED;
+    		rev.setRevocationReason(revocationReason);
     		// Republish the certificate if possible
     		// If it is not possible, only log error but continue the operation of not revoking the certificate
     		try {
@@ -1068,18 +1075,17 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     			}
     			UserDataVO userdata = certreqhist.getUserDataVO();
     			if ( userdata == null ){
-    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there ane no UserData in History.");
+    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no UserData in History.");
     			}
     			CertificateProfile certprofile = getCertificateProfile(admin, userdata.getCertificateProfileId());
     			if(certprofile == null){
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, can't find certificate profile.");  
     			}
-    			CertificateInfo certinfo = getCertificateInfo(admin, CertTools.getFingerprintAsString(certificate));
     			if(certprofile.getPublisherList().size() <= 0){
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no publishers defined.");
     			}
     			boolean published = publishersession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
-    					certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getUserDataVO().getExtendedinformation());
+    					cafp, status, type, revocationDate, revocationReason, rev.getTag(), rev.getCertificateProfileId(), now.getTime(), certreqhist.getUserDataVO().getExtendedinformation());
     			if ( !published ) {
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
     			}                	  
