@@ -141,7 +141,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE,0);
                                     	//getOutputStream().println("Debug: Org - AVAILCERTPROFILES " + eprofile.getValue(EndEntityProfile.AVAILCERTPROFILES,0) + " DEFAULTCERTPROFILE "+defaultCertProfile);
                                         for (String currentCertProfile : (Collection<String>) eprofile.getAvailableCertificateProfileIds()) {
-                                        	Integer replacementCertProfileId = certificateProfileIdMapping.get(Integer.parseInt(currentCertProfile));
+                                        	Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
+                                        	Integer replacementCertProfileId = certificateProfileIdMapping.get(currentCertProfileId);
                                         	if ( replacementCertProfileId != null ) {
                                         		if (!replacementCertProfileId.toString().equals(currentCertProfile)) {
                                                     getOutputStream().println("Warning: Replacing cert profile with id "+currentCertProfile+" with " + replacementCertProfileId + ".");
@@ -151,8 +152,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         			defaultCertProfile = ""+replacementCertProfileId;
                                         		}
                                         	} else {
-                                        		if (getCertificateStoreSession().getCertificateProfile(administrator, currentCertProfile) != null ||
-                                        				SecConst.isFixedCertificateProfile(Integer.parseInt(currentCertProfile))) {
+                                        		if (getCertificateStoreSession().getCertificateProfile(administrator, currentCertProfileId) != null ||
+                                        				SecConst.isFixedCertificateProfile(currentCertProfileId)) {
                                             		availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";" ) + currentCertProfile;
                                        			} else {
                                                     getOutputStream().println("Warning: End Entity Profile '"+profilename+"' references certificate profile " + currentCertProfile + " that does not exist.");
