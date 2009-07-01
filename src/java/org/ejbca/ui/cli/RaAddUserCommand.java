@@ -74,7 +74,12 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               authorizedhardtokenprofiles = getHardTokenSession().getAuthorizedHardTokenProfileIds(administrator);
               hardtokenprofileidtonamemap = getHardTokenSession().getHardTokenProfileIdToNameMap(administrator);
             }  
-            
+
+            String types = "Type (mask): INVALID=0; END-USER=1; SENDNOTIFICATION=256; PRINTUSERDATA=512"; 
+            if (usekeyrecovery) {
+                types = "Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256; PRINTUSERDATA=512";
+            } 
+
             if ( (args.length < 9) || (args.length > 12) ) {
                 Collection certprofileids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ENDENTITY);
                 HashMap certificateprofileidtonamemap = getCertificateStoreSession().getCertificateProfileIdToNameMap(administrator);
@@ -100,13 +105,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getOutputStream().println("DN: CN=Tomas Gustavsson, O=PrimeKey Solutions, C=SE");
                 getOutputStream().println("LDAP escaped DN: CN=Tomas Gustavsson\\, O=PrimeKey Solutions\\, C=SE");
 
-                if (usekeyrecovery) {
-                    getOutputStream().println(
-                        "Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256; PRINTUSERDATA=512");
-                } else {
-                    getOutputStream().println(
-                        "Type (mask): INVALID=0; END-USER=1; SENDNOTIFICATION=256; PRINTUSERDATA=512");
-                }
+                getOutputStream().println(types);
 
                 getOutputStream().print("Existing tokens      : " + USERGENERATED + ", " +
                                           P12 + ", "+ JKS + ", "  + PEM);
@@ -180,7 +179,12 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String subjectaltname = args[4];
             String caname  = args[5];
             String email = args[6];
-            int type  = Integer.parseInt(args[7]);
+            int type  = 1;
+            try {
+            	type = Integer.parseInt(args[7]);
+            } catch (NumberFormatException e) {
+                throw new NumberFormatException("Invalid type, '"+args[7]+"'.\n"+types);
+            }
             String tokenname = args[8];
             int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
