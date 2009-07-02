@@ -841,6 +841,9 @@
 		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    </zipfileset>
+		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="600" dirmode="700">
+		    	<include name="conf/extendedkeyusage.properties" />		    	
+		    </zipfileset>
 		</zip>
         <antcall target="signjar">
             <param name="signjar.file" value="../ejbca_${ejbca.zipversion}.zip"/>
