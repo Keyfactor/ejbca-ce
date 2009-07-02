@@ -68,11 +68,11 @@ public class RenewCAWorker extends BaseWorker {
 
 		// Renew these CAs using the CAAdminSessionBean		
 		// Check the "Generate new keys" checkbox so we can pass the correct parameter to CAAdminSessionBean
-		Collection caids = getCAIdsToCheck();
+		Collection caids = getCAIdsToCheck(false);
 		log.debug("Checking renewal for "+caids.size()+" CAs");
 		Iterator iter = caids.iterator();
 		while (iter.hasNext()) {
-			Integer caid = Integer.valueOf((String)iter.next());
+			Integer caid = (Integer)iter.next();
 			CAInfo info = getCAAdminSession().getCAInfo(getAdmin(), caid.intValue());
 			String caname = null;
 			if (info != null) {

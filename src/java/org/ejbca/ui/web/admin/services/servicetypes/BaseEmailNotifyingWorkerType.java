@@ -40,7 +40,6 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	public static final boolean DEFAULT_USEADMINNOTIFICATIONS = false;
 	
 	
-	private List selectedCANamesToCheck = new ArrayList();
 	private String timeUnit  = DEFAULT_TIMEUNIT;
 	private String timeValue = DEFAULT_TIMEVALUE;
 	private boolean useEndUserNotifications = DEFAULT_USEENDUSERNOTIFICATIONS;
@@ -63,22 +62,8 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
 	public Properties getProperties(ArrayList errorMessages) throws IOException {
-		Properties retval = new Properties();
-		
-		Iterator iter = selectedCANamesToCheck.iterator();		
-		String caIdString = "";
-		while(iter.hasNext()){
-			String cAid = (String) iter.next();
-			if(!cAid.trim().equals("")){
-			  if(caIdString.equals("")){
-				caIdString = cAid;
-			  }else{
-				caIdString += ";"+cAid;
-			  }
-			}
-		}
-		retval.setProperty(BaseWorker.PROP_CAIDSTOCHECK, caIdString);
-		
+		Properties retval = super.getProperties(errorMessages);
+				
 		retval.setProperty(BaseWorker.PROP_TIMEUNIT, timeUnit);
 		
 		try{
@@ -119,14 +104,7 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#setProperties(java.util.Properties)
 	 */
 	public void setProperties(Properties properties) throws IOException {
-		selectedCANamesToCheck = new ArrayList();
-		
-		
-		String[] caIdsToCheck = properties.getProperty(BaseWorker.PROP_CAIDSTOCHECK,"").split(";");
-		for(int i=0;i<caIdsToCheck.length;i++){
-			selectedCANamesToCheck.add(caIdsToCheck[i]);
-		}
-
+		super.setProperties(properties);
 		 
 		timeUnit = properties.getProperty(BaseWorker.PROP_TIMEUNIT,DEFAULT_TIMEUNIT);
 		timeValue = properties.getProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING,DEFAULT_TIMEVALUE);
@@ -180,12 +158,6 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	}
 	public void setEndUserSubject(String endUserSubject) {
 		this.endUserSubject = endUserSubject;
-	}
-	public List getSelectedCANamesToCheck() {
-		return selectedCANamesToCheck;
-	}
-	public void setSelectedCANamesToCheck(List selectedCANamesToCheck) {
-		this.selectedCANamesToCheck = selectedCANamesToCheck;
 	}
 	public String getTimeValue() {
 		return timeValue;

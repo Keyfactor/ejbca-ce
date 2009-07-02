@@ -18,6 +18,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.services.intervals.DummyInterval;
 
@@ -172,11 +173,19 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		return timeBeforeExpire * 1000;
 	}
 
-	/** returns a collection of String with CAIds */
-	protected Collection getCAIdsToCheck() throws ServiceExecutionFailedException {
+	/** returns a collection of String with CAIds as gotten from the property  BaseWorker.PROP_CAIDSTOCHECK.
+	 * @param includeAllCAsIfNonce set to true if the 'catch all' SecConst.ALLCAS should be included in the list IF there does not exist a list. This CAId is not recognized by all recipients...
+     * This is due to that the feature of selecting CAs was enabled in EJBCA 3.9.1, and we want the service to keep working even after an upgrade from an earlier version.
+	 * 
+	 * @return Collection<String> of integer CA ids in String form, use Integer.valueOf to convert to int.
+	 */
+	protected Collection getCAIdsToCheck(boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
 		if(cAIdsToCheck == null){
 			cAIdsToCheck = new ArrayList();
 			String cas = properties.getProperty(PROP_CAIDSTOCHECK);
+		    if (log.isDebugEnabled()) {
+		    	log.debug("CAIds to check: "+cas);
+		    }
 			if (cas != null) {
 				String[] caids = cas.split(";");
 				for(int i=0;i<caids.length;i++ ){
@@ -186,8 +195,10 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 						String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, PROP_CAIDSTOCHECK);
 						throw new ServiceExecutionFailedException(msg, e);						
 					}
-					cAIdsToCheck.add(caids[i]);
+					cAIdsToCheck.add(Integer.valueOf(caids[i]));
 				}				
+			} else if (includeAllCAsIfNull) {
+				cAIdsToCheck.add(Integer.valueOf(SecConst.ALLCAS));
 			}
 		}
 		return cAIdsToCheck;

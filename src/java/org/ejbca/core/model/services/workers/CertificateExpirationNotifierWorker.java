@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -63,11 +64,12 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 		
 		// Build Query
 		String cASelectString = "";
-		if(getCAIdsToCheck().size() >0){
-			Iterator iter = getCAIdsToCheck().iterator();
+		Collection ids = getCAIdsToCheck(false);
+		if(ids.size() >0){
+			Iterator iter = ids.iterator();
 			while(iter.hasNext()){
-				String caid = (String) iter.next();
-				CAInfo caInfo = getCAAdminSession().getCAInfo(getAdmin(), Integer.parseInt(caid));
+				Integer caid = (Integer) iter.next();
+				CAInfo caInfo = getCAAdminSession().getCAInfo(getAdmin(), caid);
 				if (caInfo==null) {
 					String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, null);
 					log.info(msg);

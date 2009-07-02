@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -342,7 +343,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method 
      */
     public int createCRLs(Admin admin)  {
-        return createCRLs(admin, DEFAULTCRLOVERLAPTIME);
+        return createCRLs(admin, null, DEFAULTCRLOVERLAPTIME);
     }
     /**
      * Method that checks if there are any delta CRLs needed to be updated and then creates their
@@ -355,7 +356,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method 
      */
     public int createDeltaCRLs(Admin admin)  {
-    	return this.createDeltaCRLs(admin, DEFAULTCRLOVERLAPTIME);
+    	return this.createDeltaCRLs(admin, null, DEFAULTCRLOVERLAPTIME);
     }
     
     /**
@@ -367,6 +368,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * This method can be called by a scheduler or a service.
      *
      * @param admin administrator performing the task
+     * @param caids list of CA ids (Integer) that will be checked, or null in which case ALL CAs will be checked
      * @param addtocrloverlaptime given in milliseconds and added to the CRL overlap time, if set to how often this method is run (poll time), it can be used to issue a new CRL if the current one expires within
      * the CRL overlap time (configured in CA) and the poll time. The used CRL overlap time will be (crloverlaptime + addtocrloverlaptime) 
      *
@@ -374,20 +376,30 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
      * @ejb.interface-method 
      */
-    public int createCRLs(Admin admin, long addtocrloverlaptime)  {
+    public int createCRLs(Admin admin, Collection caids, long addtocrloverlaptime)  {
     	int createdcrls = 0;
     	try {
     		Date currenttime = new Date();
     		ICAAdminSessionLocal caadmin = caadminHome.create();
     		ICertificateStoreSessionLocal store = storeHome.create();
 
-    		Iterator iter = caadmin.getAvailableCAs(admin).iterator();
+    		Iterator iter = null;
+    		if (caids != null) {
+    			iter = caids.iterator();
+    		} 
+    		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
+        		iter = caadmin.getAvailableCAs(admin).iterator();
+    		}
     		while(iter.hasNext()){
     			int caid = ((Integer) iter.next()).intValue();
     			log.debug("createCRLs for caid: "+caid);
     			try {
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
-    			   if (cainfo.getStatus() != SecConst.CA_EXTERNAL) {
+    			   if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
+    				   log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
+    			   } else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
+    				   log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+    			   } else {
         			   if (cainfo instanceof X509CAInfo) {
         				   Collection certs = cainfo.getCertificateChain();
         				   Certificate cacert = null;
@@ -454,12 +466,12 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                 			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
             			           }
             			       }
-        			       } else {
+        			       } else if (cacert != null) {
         			    	   log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
+        			       } else {
+        			    	   log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
         			       }
         			   }                           				   
-    			   } else {
-    				   log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
     			   }
                 } catch(Exception e) {
                 	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
@@ -490,26 +502,37 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * This method can be called by a scheduler or a service.
      *
      * @param admin administrator performing the task
+     * @param caids list of CA ids (Integer) that will be checked, or null in which case ALL CAs will be checked
      * @param crloverlaptime A new delta CRL is created if the current one expires within the crloverlaptime given in milliseconds
      *
      * @return the number of delta crls created.
      * @throws EJBException 
      * @ejb.interface-method 
      */
-    public int createDeltaCRLs(Admin admin, long crloverlaptime)  {
+    public int createDeltaCRLs(Admin admin, Collection caids, long crloverlaptime)  {
     	int createddeltacrls = 0;
     	try {
     		Date currenttime = new Date();
     		ICAAdminSessionLocal caadmin = caadminHome.create();
     		ICertificateStoreSessionLocal store = storeHome.create();
 
-    		Iterator iter = caadmin.getAvailableCAs(admin).iterator();
+    		Iterator iter = null;
+    		if (caids != null) {
+    			iter = caids.iterator();
+    		}
+    		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
+        		iter = caadmin.getAvailableCAs(admin).iterator();
+    		}
     		while (iter.hasNext()) {
     			int caid = ((Integer) iter.next()).intValue();
     			log.debug("createDeltaCRLs for caid: "+caid);
     			try{
     				CAInfo cainfo = caadmin.getCAInfo(admin, caid);
-    				if (cainfo.getStatus() != SecConst.CA_EXTERNAL) {
+    				if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
+    					log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
+    				} else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
+    					log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+    				} else {
         				if (cainfo instanceof X509CAInfo) {
         					Collection certs = cainfo.getCertificateChain();
         					Certificate cacert = null;
@@ -541,12 +564,12 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             							}
             						}
             					}
-                            } else {
-                            	log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
-                            }
+        					} else if (cacert != null) {
+        						log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
+        					} else {
+        						log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
+        					}
         				}    					
-     			   } else {
-    				   log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
     			   }
     			}catch(Exception e) {
                 	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   

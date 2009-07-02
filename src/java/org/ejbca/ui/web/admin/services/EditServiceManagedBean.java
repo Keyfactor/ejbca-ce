@@ -25,7 +25,10 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.CRLUpdateWorker;
+import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
@@ -33,6 +36,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.BaseEmailNotifyingWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.BaseWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.CRLUpdateWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
@@ -163,28 +168,60 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return (MailActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(MailActionType.NAME);
 	}	
 	
+	public BaseWorkerType getBaseWorkerType() {
+		String name = null;
+		try {
+			ServiceConfiguration conf = serviceConfigurationView.getServiceConfiguration(new ArrayList());		
+			String cp = conf.getWorkerClassPath();
+			name = getTypeNameFromClassPath(cp);			
+		} catch (IOException e) {
+			log.error(e);
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Get baseWorkerType by name: "+name);
+		}
+		BaseWorkerType ret = (BaseWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+		return ret; 		
+	}
+	
 	/**
 	 * Help method used to edit data in the notifying worker type.
 	 */
 	public BaseEmailNotifyingWorkerType getNotifyingType(){
-		String name = CertificateExpirationNotifierWorkerType.NAME;
-		try {
-			ServiceConfiguration conf = serviceConfigurationView.getServiceConfiguration(new ArrayList());		
-			String cp = conf.getWorkerClassPath();
-			log.debug("ClassPath: "+cp);
-			if ( (cp != null) && cp.equals(UserPasswordExpireWorker.class.getName()) ) {
-				name = UserPasswordExpireWorkerType.NAME;
-			}			
-			if ( (cp != null) && cp.equals(RenewCAWorker.class.getName()) ) {
-				name = RenewCAWorkerType.NAME;
-			}			
-			if ( (cp != null) && cp.equals(PublishQueueProcessWorker.class.getName()) ) {
-				name = PublishQueueWorkerType.NAME;
-			}			
-		} catch (IOException e) {
-			log.error(e);
+		log.trace(">getNotifyingType");
+		BaseEmailNotifyingWorkerType ret = null;
+		BaseWorkerType type = getBaseWorkerType();	
+		if (type instanceof BaseEmailNotifyingWorkerType) {
+			ret = (BaseEmailNotifyingWorkerType)type;
+		} else {
+			// Use default type in order to avoid model update errors when switching to a worker with a different type
+			// i.e. switching for example from CertificateExpirationWorker to CRLUpdateWorker
+			// We can't return null either so...
+			ret =(BaseEmailNotifyingWorkerType)serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CertificateExpirationNotifierWorkerType.NAME);
 		}
-		return (BaseEmailNotifyingWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+		log.trace("<getNotifyingType");
+		return ret;
+	}
+
+	private String getTypeNameFromClassPath(String cp) {
+		log.debug("ClassPath: "+cp);
+		String ret = null;
+		if ( (cp != null) && cp.equals(CertificateExpirationNotifierWorker.class.getName()) ) {
+			ret = CertificateExpirationNotifierWorkerType.NAME;
+		}			
+		if ( (cp != null) && cp.equals(UserPasswordExpireWorker.class.getName()) ) {
+			ret = UserPasswordExpireWorkerType.NAME;
+		}			
+		if ( (cp != null) && cp.equals(RenewCAWorker.class.getName()) ) {
+			ret = RenewCAWorkerType.NAME;
+		}			
+		if ( (cp != null) && cp.equals(PublishQueueProcessWorker.class.getName()) ) {
+			ret = PublishQueueWorkerType.NAME;
+		}			
+		if ( (cp != null) && cp.equals(CRLUpdateWorker.class.getName()) ) {
+			ret = CRLUpdateWorkerType.NAME;
+		}
+		return ret;
 	}
 
 	/**
@@ -209,18 +246,16 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	}
 
 	public void changeWorker(ValueChangeEvent e){
-		
+		log.trace(">changeWorker");		
 		String newName = (String) e.getNewValue();
 		WorkerType newWorkerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
 		serviceConfigurationView.setWorkerType(newWorkerType);
 		serviceConfigurationView.setSelectedWorker(newName);
-		
-		
+		log.trace("<changeWorker");		
 	}
 	
 	public void changeInterval(ValueChangeEvent e){
-		String newName = (String) e.getNewValue();
-		
+		String newName = (String) e.getNewValue();		
 		WorkerType workerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(serviceConfigurationView.getSelectedWorker());
 		if(workerType.getCompatibleIntervalTypeNames().contains(newName)){
 			IntervalType newIntervalType = (IntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
@@ -230,9 +265,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	}
 	
 	public void changeAction(ValueChangeEvent e){
-		
-		String newName = (String) e.getNewValue();
-		
+		String newName = (String) e.getNewValue();		
 		WorkerType workerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(serviceConfigurationView.getSelectedWorker());
 		if(workerType.getCompatibleActionTypeNames().contains(newName)){
 		  ActionType newActionType = (ActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
@@ -241,7 +274,27 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		}
 	}
 	
-	public List getAvailableCAs(){
+	/** Returns the list of available CAs, only including the actually present CAs.
+	 * 
+	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
+	 */
+	public List getAvailableCAs() {
+		return getAvailableCAs(false);
+	}
+	/** Returns the list of available CAs, also including the special option 'Any CA'.
+	 * 
+	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
+	 */
+	public List getAvailableCAsWithAnyOption() {
+		return getAvailableCAs(true);
+	}
+
+	/** Returns the list of available CAs
+	 * 
+	 * @param includeAllCAs if the returned list should include the constanr ALLCAs or only the actually avaialble CAs.
+	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
+	 */
+	private List getAvailableCAs(boolean includeAllCAs) {
 		List availableCANames = new ArrayList();
 		Collection cAIds = EjbcaJSFHelper.getBean().getCAAdminSession().getAvailableCAs(getAdmin());
 		Iterator iter = cAIds.iterator();
@@ -249,9 +302,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
 			int next = ((Integer) iter.next()).intValue();
 			availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), EjbcaJSFHelper.getBean().getCAAdminSession().getCAInfo(getAdmin(), next).getName()));
 		}
+		if (includeAllCAs) {
+			String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
+			availableCANames.add(new SelectItem(Integer.valueOf(SecConst.ALLCAS).toString(), caname));
+		}
 		return availableCANames;		
 	}
-	
+
 	public List getAvailablePublishers(){
 		List availablePublisherNames = new ArrayList();
 		Collection publisherIds = EjbcaJSFHelper.getBean().getPublisherSession().getAuthorizedPublisherIds(getAdmin());

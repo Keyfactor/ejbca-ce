@@ -3,6 +3,8 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.ejbca.core.model.services.BaseWorker;
@@ -12,7 +14,7 @@ public abstract class BaseWorkerType extends WorkerType {
 	public static final String DEFAULT_TIMEUNIT = BaseWorker.UNIT_DAYS;
 	public static final String DEFAULT_TIMEVALUE = "7";
 	
-	private transient Properties properties = new Properties();
+	private List selectedCANamesToCheck = new ArrayList();
 	private Collection compatibleActionTypeNames = new ArrayList();
 	private Collection compatibleIntervalTypeNames = new ArrayList();
 	private String classpath = null;
@@ -37,6 +39,13 @@ public abstract class BaseWorkerType extends WorkerType {
 	protected void deleteAllCompatibleIntervalTypes() {
 		compatibleIntervalTypeNames = new ArrayList();
 	}
+	public List getSelectedCANamesToCheck() {
+		return selectedCANamesToCheck;
+	}
+	public void setSelectedCANamesToCheck(List selectedCANamesToCheck) {
+		this.selectedCANamesToCheck = selectedCANamesToCheck;
+	}
+
 	//
 	// Methods implementing WorkerType
 	// 
@@ -73,14 +82,36 @@ public abstract class BaseWorkerType extends WorkerType {
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
 	public Properties getProperties(ArrayList errorMessages) throws IOException {		
-		return properties;
+		Properties retval = new Properties();
+
+		Iterator iter = getSelectedCANamesToCheck().iterator();		
+		String caIdString = null;
+		while(iter.hasNext()){
+			String cAid = (String) iter.next();
+			if(!cAid.trim().equals("")){
+			  if(caIdString == null) {
+				caIdString = cAid;
+			  }else{
+				caIdString += ";"+cAid;
+			  }
+			}
+		}
+		if (caIdString != null) {			
+			retval.setProperty(BaseWorker.PROP_CAIDSTOCHECK, caIdString);
+		}
+		return retval;
 	}
 
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#setProperties(java.util.Properties)
 	 */
 	public void setProperties(Properties properties) throws IOException {
-		this.properties = properties;
+		ArrayList selectedCANamesToCheck = new ArrayList();
+		String[] caIdsToCheck = properties.getProperty(BaseWorker.PROP_CAIDSTOCHECK,"").split(";");
+		for(int i=0;i<caIdsToCheck.length;i++){
+			selectedCANamesToCheck.add(caIdsToCheck[i]);
+		}
+		setSelectedCANamesToCheck(selectedCANamesToCheck);			
 	}
 
 }

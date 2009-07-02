@@ -8,10 +8,13 @@
 		<h:outputText value="#{web.text.CRLUPDATEWORKERSETTINGS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:outputText value="#{web.text.NOWORKERSETTINGSTOCONF}"/>
+		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
 	</h:panelGroup>
-
-
-
-
-
+	<h:panelGroup>
+		<h:outputText value="#{web.text.CASTOCHECK}"/>
+	</h:panelGroup>
+	<h:panelGroup>							
+		<h:selectManyListbox id="crlUpdateCASelect" value="#{editService.baseWorkerType.selectedCANamesToCheck}" size="10">
+			<f:selectItems value="#{editService.availableCAsWithAnyOption}"/>
+		</h:selectManyListbox>		
+	</h:panelGroup>	

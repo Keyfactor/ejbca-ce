@@ -50,8 +50,9 @@
 		                 onchange="document.getElementById('edit:updateButton').click();">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableWorkers}"/>
 		</h:selectOneMenu>
+		<f:verbatim>&nbsp;&nbsp;&nbsp;</f:verbatim>
+		<h:commandButton id="updateButton" action="#{editService.update}" value="Update"  />			
 	</h:panelGroup>
-
   
      <jsp:include page="<%=workerPage %>"/>
   
@@ -68,13 +69,10 @@
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedInterval}" valueChangeListener="#{editService.changeInterval}" 
 		                 onchange="document.getElementById('edit:updateButton').click();">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableIntervals}"/>
-			
 		</h:selectOneMenu>			
 	</h:panelGroup>
 	
-  
-     <jsp:include page="<%=intervalPage %>"/>
-  
+     <jsp:include page="<%=intervalPage %>"/>  
  
  	<h:panelGroup>
 		<f:verbatim><f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim></f:verbatim>
@@ -137,7 +135,6 @@ function enableAll(){
 		<h:commandButton id="saveButton" action="#{editService.save}" value="#{web.text.SAVE}" onclick="enableAll()"/>		
 		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
 		<h:commandButton id="cancelButton" action="#{editService.cancel}" value="#{web.text.CANCEL}"/>		
-		<h:commandButton id="updateButton" action="#{editService.update}" value="Update" style="visibility:hidden;" />		
 	</h:panelGroup>
 </h:panelGrid>
 </h:form>

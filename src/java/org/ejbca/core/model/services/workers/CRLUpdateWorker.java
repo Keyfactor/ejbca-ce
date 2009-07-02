@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
+import java.util.Collection;
+
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
@@ -53,8 +56,9 @@ public class CRLUpdateWorker extends BaseWorker {
 			    long polltime = getNextInterval();
 			    ICreateCRLSessionLocal session = getCreateCRLSession();
 			    if (session != null) {
-			    	session.createCRLs(getAdmin(), polltime*1000);
-			    	session.createDeltaCRLs(getAdmin(), polltime*1000);
+				    Collection caids = getCAIdsToCheck(true); 
+			    	session.createCRLs(getAdmin(), caids, polltime*1000);
+			    	session.createDeltaCRLs(getAdmin(), caids, polltime*1000);
 			    }			
 			} finally {
 				running = false;

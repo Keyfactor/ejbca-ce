@@ -53,7 +53,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 	private PreparedStatement buildPreparedQueryStatement(Connection con) throws ServiceExecutionFailedException, SQLException {
 		// Build Query
 		String cASelectString = null;
-		Collection caIds = getCAIdsToCheck();
+		Collection caIds = getCAIdsToCheck(false);
 		log.debug("Checking for "+caIds.size()+" CAs");
 		Iterator iter = caIds.iterator();
 		while (iter.hasNext()) {
@@ -78,7 +78,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 		iter = caIds.iterator();	
 		int i = 3;
 		while (iter.hasNext()) {
-			ps.setInt(i++, Integer.valueOf((String)iter.next()));
+			ps.setInt(i++, (Integer)iter.next());
 		}
 		return ps;
 	}
