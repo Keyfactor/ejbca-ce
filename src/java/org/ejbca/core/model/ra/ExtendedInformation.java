@@ -79,10 +79,16 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */
     public static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
     
-    
+    /** The counter is a counter for how many failed login attempts that can be performed before the userstatus is changed to GENERATED */
     public static final String REMAININGLOGINATTEMPTS 			= "remainingloginattempts";
+    
+    /** The maximum number of login attempts before the user is locked by setting its status to GENERATED */
     public static final String MAXFAILEDLOGINATTEMPTS 			= "maxfailedloginattempts";
+    
+    /** Default value for how many failed login attempts are allow = -1 (unlimited) */
 	public static final int DEFAULT_MAXLOGINATTEMPTS 			= -1;
+	
+	/** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
 	public static final int DEFAULT_REMAININGLOGINATTEMPTS 		= -1;
     
     // Public constants
@@ -140,18 +146,32 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
 
     }
     
+    /**
+     * @return The number of remaining allowed failed login attempts or -1 for unlimited
+     */
     public int getRemainingLoginAttempts() {
     	return ((Integer) data.get(REMAININGLOGINATTEMPTS)).intValue();
     }
     
+    /**
+     * Set the number of remaining login attempts. -1 means unlimited.
+     * @param remainingLoginAttempts The number to set
+     */
     public void setRemainingLoginAttempts(int remainingLoginAttempts) {
     	data.put(REMAININGLOGINATTEMPTS, new Integer(remainingLoginAttempts));
     }
     
+    /**
+     * @return The maximum number of allowed failed login attempts or -1 for unlimited
+     */
     public int getMaxLoginAttempts() {
     	return ((Integer) data.get(MAXFAILEDLOGINATTEMPTS)).intValue();
     }
     
+    /**
+     * Set the number of maximum allowed failed login attempts. -1 means unlimited.
+     * @param remainingLoginAttempts The number to set
+     */
     public void setMaxLoginAttempts(int maxLoginAttempts) {
     	data.put(MAXFAILEDLOGINATTEMPTS, new Integer(maxLoginAttempts));
     }

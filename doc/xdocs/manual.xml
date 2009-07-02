@@ -632,6 +632,13 @@ for example one optional OU and one required OU, it might be needed to check thi
 Only use it in such a special case, if nothing else work. This option may be removed in the future.
 </p>
 </subsection>
+<subsection name="Maximum number of failed login attempts">
+<p>
+By choosing a maximum number of failed login attempts the status of a user will change to GENERATED in case a wrong password is entered more than 
+the  specified number of times. The checkbox "Use" must be checked for the end entities to use this feature. If the checkbox "Modifiable" is checked 
+the specified number can be changed for a particular end entity at the creation time of the end entity or later by editing it.
+</p>
+</subsection>
 </section>
 
 <section name="Export and import profiles">

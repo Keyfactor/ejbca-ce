@@ -1075,7 +1075,7 @@ function checkUseInBatch(){
       <tr id="Row<%=(row++)%2%>">
 		<td align="right"><%= ejbcawebbean.getText("REMAININGLOGINATTEMPTS") %></td>
        	<td>   
-             <input type="text" name="_remainingloginattempts" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getExtendedInformation().getRemainingLoginAttempts() != -1) out.write(""+userdata.getExtendedInformation().getRemainingLoginAttempts()); %>' readonly> <input type="checkbox" name="<%= CHECKBOX_RESETLOGINATTEMPTS %>" value="<%= CHECKBOX_VALUE %>"> <%= ejbcawebbean.getText("ResetLoginAttempts") %>
+             <input type="text" name="_remainingloginattempts" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getExtendedInformation().getRemainingLoginAttempts() != -1) out.write(""+userdata.getExtendedInformation().getRemainingLoginAttempts()); %>' readonly> <input type="checkbox" name="<%= CHECKBOX_RESETLOGINATTEMPTS %>" value="<%= CHECKBOX_VALUE %>"> <%= ejbcawebbean.getText("RESETLOGINATTEMPTS") %>
       	</td>
 		<td>&nbsp;</td>
       </tr>

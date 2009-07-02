@@ -476,7 +476,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="25%"  align="right"> 
-		<%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %> <br>&nbsp;
+		<%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %> 
+		<%= ejbcawebbean.getHelpReference("/manual.html#Maximum%20number%20of%20failed%20login%20attempts") %><br>&nbsp;
       </td>
       <td width="70%"> 
         <%	

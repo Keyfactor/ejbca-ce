@@ -945,12 +945,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 	};
     
 	/**
-	 * 
-	 * @param admin
-	 * @param username
-	 * @return
-	 * @throws AuthorizationDeniedException
-	 * @throws FinderException
+	 * Resets the remaining failed login attempts counter to the user's max login attempts value.  
+	 * @param admin the administrator performing the action
+     * @param username the unique username of the user
+	 * @throws AuthorizationDeniedException if administrator isn't authorized to edit user
+	 * @throws FinderException if the entity does not exist
 	 * @ejb.interface-method
 	 */
 	public void resetRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
@@ -995,12 +994,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 	}
 	
 	/**
-	 * 
-	 * @param admin
-	 * @param username
-	 * @return
-	 * @throws AuthorizationDeniedException
-	 * @throws FinderException
+	 * Decrements the remaining failed login attempts counter. If the counter 
+	 * already was zero the status for the user is set to {@link UserDataConstants#STATUS_GENERATED} 
+	 * if it wasn't that already. This method does nothing if the counter value is set to UNLIMITED (-1). 
+	 * @param admin the administrator performing the action
+     * @param username the unique username of the user
+	 * @throws AuthorizationDeniedException if administrator isn't authorized to edit user
+	 * @throws FinderException if the entity does not exist
 	 * @ejb.interface-method
 	 */
 	public void decRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
