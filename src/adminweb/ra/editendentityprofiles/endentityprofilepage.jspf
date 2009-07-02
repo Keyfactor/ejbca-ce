@@ -284,6 +284,30 @@ function checkusetextfield(usefield, value, required, change){
   }
 }
 
+function checkusetextfieldwithradio(usefield, value, change, radiogroup){
+	  var usebox = eval("document.editprofile." + usefield);
+	  var valuefield = eval("document.editprofile." + value);
+	  var changebox = eval("document.editprofile." + change);
+	  var radioboxes = eval("document.editprofile." + radiogroup);
+
+	  if(usebox.checked){
+		  if(radioboxes[0].checked) {
+	    	valuefield.disabled = false;
+		  }
+	    changebox.disabled = false;
+	    radioboxes[0].disabled = false;
+	    radioboxes[1].disabled = false;
+	  }
+	  else{
+	    valuefield.value = "";
+	    valuefield.disabled = true;
+	    changebox.checked = false;
+	    changebox.disabled = true;
+	    radioboxes[0].disabled = true;
+	    radioboxes[1].disabled = true;
+	  }
+}
+
 function checkemailfield(reqfield){
   var box = eval("document.editprofile." + reqfield);
 
@@ -311,6 +335,14 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 		checkBoxTarget.checked = false;
 	}
 }
+
+ function maxFailedLoginsUnlimited() {
+	document.editprofile.<%= TEXTFIELD_MAXFAILEDLOGINS %>.disabled = true;
+ }
+
+ function maxFailedLoginsSpecified() {
+	document.editprofile.<%= TEXTFIELD_MAXFAILEDLOGINS %>.disabled = false;
+ }
 -->
 
 </SCRIPT>
@@ -437,6 +469,46 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            %>> 
 
       </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%"  align="right"> 
+		<%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <%	
+        	used = profiledata.getUse(EndEntityProfile.MAXFAILEDLOGINS, 0);
+        	String maxLoginAttempts = profiledata.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0);
+        	boolean unlimited = "-1".equals(maxLoginAttempts);
+        %>   
+             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(!unlimited) { out.write("checked"); } %> <% if(!used) { out.write("disabled"); } %>>
+             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" value='<% if(!unlimited) { out.write(""+maxLoginAttempts); } %>' <% if(!used || unlimited) { out.write("disabled"); } %>>
+             
+             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(unlimited) { out.write("checked"); } %> <% if(!used) { out.write("disabled"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %><br />
+		<%= ejbcawebbean.getText("USE") %>
+		<input type="checkbox" name="<%=CHECKBOX_USE_MAXFAILEDLOGINS %>" value="<%=CHECKBOX_VALUE %>"
+			onClick="checkusetextfieldwithradio('<%=CHECKBOX_USE_MAXFAILEDLOGINS %>', '<%=TEXTFIELD_MAXFAILEDLOGINS %>',
+			'<%=CHECKBOX_MODIFYABLE_MAXFAILEDLOGINS %>', '<%= RADIO_MAXFAILEDLOGINS %>')"
+			<%	if (used) {
+					out.write(" checked ");
+				} %>
+			/>
+		&nbsp;&nbsp;
+        <%= ejbcawebbean.getText("MODIFYABLE") %>
+        <input type="checkbox" name="<%= CHECKBOX_MODIFYABLE_MAXFAILEDLOGINS  %>" value="<%=CHECKBOX_VALUE %>"
+		<%	if ( profiledata.isModifyable(EndEntityProfile.MAXFAILEDLOGINS, 0) ) {
+				out.write(" checked ");
+			} %>
+		<%	if ( !used ) {
+				out.write(" disabled ");
+			} %>
+        />
+      </td> 
+    </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>

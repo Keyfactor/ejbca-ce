@@ -60,7 +60,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 11;
+    public static final float LATEST_VERSION = 12;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -71,7 +71,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -8356152324295231462L;
+    private static final long serialVersionUID = -8356152324295231463L;
     
     // Public constants
     /** Constant values for end entity profile. */
@@ -109,6 +109,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * a certificate that is "on hold" directly when the user gets the certificate.
      */
     public static final String ISSUANCEREVOCATIONREASON = "ISSUANCEREVOCATIONREASON";
+    
+    public static final String MAXFAILEDLOGINS	 = "MAXFAILEDLOGINS";
 
     // Default values
     // These must be in a strict order that can never change 
@@ -183,6 +185,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	dataConstants.put(STARTTIME, new Integer(98));
     	dataConstants.put(ENDTIME, new Integer(99));
     	dataConstants.put(CARDNUMBER, new Integer(39));
+    	dataConstants.put(MAXFAILEDLOGINS, new Integer(93));
     }
     // Type of data constants.
     private static final int VALUE      = 0;
@@ -276,6 +279,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setRequired(ENDTIME,0,false);
         setRequired(ALLOWEDREQUESTS,0,false);
         setRequired(CARDNUMBER,0,false);
+        setRequired(MAXFAILEDLOGINS,0,false);
         setValue(DEFAULTCERTPROFILE,0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);
         setValue(AVAILCERTPROFILES,0, SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + SecConst.CERTPROFILE_FIXED_OCSPSIGNER + ";" + SecConst.CERTPROFILE_FIXED_SERVER);
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
@@ -289,6 +293,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setUse(ALLOWEDREQUESTS,0,false);
         setUse(CARDNUMBER,0,false);
         setUse(ISSUANCEREVOCATIONREASON,0,false);
+        setUse(MAXFAILEDLOGINS,0,false);
         
       }else{
          // initialize profile data
@@ -310,7 +315,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(ENDTIME);         
          addField(ALLOWEDREQUESTS);
          addField(CARDNUMBER);
-         addField(ISSUANCEREVOCATIONREASON);         
+         addField(ISSUANCEREVOCATIONREASON);
+         addField(MAXFAILEDLOGINS);
          
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
@@ -326,6 +332,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setRequired(ALLOWEDREQUESTS,0,false);
          setRequired(CARDNUMBER,0,false);
          setRequired(ISSUANCEREVOCATIONREASON,0,false);
+         setRequired(MAXFAILEDLOGINS, 0, false);
       
          setValue(AUTOGENPASSWORDLENGTH, 0, "8");
          setValue(DEFAULTCERTPROFILE,0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);
@@ -341,6 +348,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setUse(ALLOWEDREQUESTS,0,false);
          setUse(CARDNUMBER,0,false);
          setUse(ISSUANCEREVOCATIONREASON,0,false);
+         setUse(MAXFAILEDLOGINS,0,false);
 
       }
     }
@@ -623,7 +631,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public int getDefaultCA(){
     	int ret = -1;
     	String str = getValue(DEFAULTCA,0);
-    	if (str != null) {
+    	if (str != null && !StringUtils.isEmpty(str)) {
     		ret = Integer.valueOf(str);
     	}
         return ret;
@@ -1155,6 +1163,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  }
       }
       
+      if(!isModifyable(MAXFAILEDLOGINS,0)) {
+    	  if(!getValue(MAXFAILEDLOGINS,0).equals(Integer.toString(ei.getMaxLoginAttempts()))) {
+    		  throw new UserDoesntFullfillEndEntityProfile("Max failed logins is not modifyable.");
+    	  }
+      }
+      
   	log.trace("<doesUserFullfillEndEntityProfileWithoutPassword()");
 
     } // doesUserFullfillEndEntityProfileWithoutPassword
@@ -1451,6 +1465,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setRequired(CARDNUMBER, 0, false);
                 setUse(CARDNUMBER, 0, false);
                 setModifyable(CARDNUMBER, 0, true);            	
+            }
+            
+            // Support for maximum number of failed login attempts in profile version 12
+            if (getVersion() < 12) {
+            	setRequired(MAXFAILEDLOGINS, 0, false);
+            	setUse(MAXFAILEDLOGINS, 0, false);
+            	setModifyable(MAXFAILEDLOGINS, 0, true);
+            	setValue(MAXFAILEDLOGINS, 0, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS));
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));

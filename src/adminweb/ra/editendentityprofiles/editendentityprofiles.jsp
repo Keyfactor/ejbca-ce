@@ -55,6 +55,7 @@
   static final String SELECT_NOTIFICATIONEVENTS      = "selectnotificationevents";
   static final String TEXTFIELD_STARTTIME            = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME              = "textfieldendtime";
+  static final String TEXTFIELD_MAXFAILEDLOGINS	     = "textfieldmaxfailedlogins";
  
   static final String TEXTAREA_NOTIFICATIONMESSAGE  = "textareanotificationmessage";
 
@@ -84,6 +85,7 @@
   static final String CHECKBOX_REQUIRED_SENDNOTIFICATION  = "checkboxrequiredsendnotification";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
   static final String CHECKBOX_REQUIRED_PRINTING          = "checkboxrequiredprinting";
+  static final String CHECKBOX_REQUIRED_MAXFAILEDLOGINS	  = "checkboxrequiredmaxfailedlogins";
 
 
   static final String CHECKBOX_MODIFYABLE_PASSWORD          = "checkboxmodifyablepassword";
@@ -92,6 +94,7 @@
   static final String CHECKBOX_MODIFYABLE_SUBJECTDIRATTR    = "checkboxmodifyablesubjectdirattr";
   static final String CHECKBOX_MODIFYABLE_EMAIL             = "checkboxmodifyableemail";
   static final String CHECKBOX_MODIFYABLE_ISSUANCEREVOCATIONREASON = "checkboxmodifyableissuancerevocationreason";
+  static final String CHECKBOX_MODIFYABLE_MAXFAILEDLOGINS	= "checkboxmodifyablemaxfailedlogins";
 
   static final String CHECKBOX_USE_CARDNUMBER        = "checkboxusecardnumber";
   static final String CHECKBOX_USE_PASSWORD          = "checkboxusepassword";
@@ -105,6 +108,11 @@
   static final String CHECKBOX_USE_PRINTING          = "checkboxuseprinting";
   static final String CHECKBOX_USE_ALLOWEDRQUESTS    = "checkboxuseallowedrequests";
   static final String CHECKBOX_USE_ISSUANCEREVOCATIONREASON = "checkboxuseissuancerevocationreason";
+  static final String CHECKBOX_USE_MAXFAILEDLOGINS	 = "checkboxusemaxfailedlogins";
+  
+  static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
+  static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
+  static final String RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED = "specified";
   
   static final String SELECT_AUTOPASSWORDTYPE               = "selectautopasswordtype";
   static final String SELECT_AUTOPASSWORDLENGTH             = "selectautopasswordlength";
@@ -354,7 +362,22 @@
              
              profiledata.setValue(EndEntityProfile.AUTOGENPASSWORDTYPE, 0, request.getParameter(SELECT_AUTOPASSWORDTYPE));
              profiledata.setValue(EndEntityProfile.AUTOGENPASSWORDLENGTH, 0, request.getParameter(SELECT_AUTOPASSWORDLENGTH));
-
+             
+             int nValue = -1;
+             try {
+            	 nValue = Integer.parseInt(request.getParameter(TEXTFIELD_MAXFAILEDLOGINS));
+             } catch(NumberFormatException ignored) {}
+             value = request.getParameter(RADIO_MAXFAILEDLOGINS);
+             if(RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED.equals(value) || nValue < -1) {
+            	value = "-1";
+             } else {
+             	value = Integer.toString(nValue);
+             }
+             profiledata.setValue(EndEntityProfile.MAXFAILEDLOGINS, 0, value);
+             profiledata.setRequired(EndEntityProfile.MAXFAILEDLOGINS, 0, ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_MAXFAILEDLOGINS)));
+             profiledata.setUse(EndEntityProfile.MAXFAILEDLOGINS, 0, ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_MAXFAILEDLOGINS)));
+             profiledata.setModifyable(EndEntityProfile.MAXFAILEDLOGINS, 0, ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_MAXFAILEDLOGINS)));
+             
              profiledata.setReverseFieldChecks(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REVERSEFIELDCHECKS)));
 
              numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();

@@ -31,6 +31,7 @@
   static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
   static final String TEXTFIELD_CARDNUMBER           = "textfieldcardnumber";
+  static final String TEXTFIELD_MAXFAILEDLOGINS	  = "textfieldmaxfailedlogins";
 
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
@@ -69,7 +70,14 @@
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
   static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrequiredstarttime";
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
+  
+  static final String CHECKBOX_RESETLOGINATTEMPTS	  	  = "checkboxresetloginattempts";
+  static final String CHECKBOX_UNLIMITEDLOGINATTEMPTS	  = "checkboxunlimitedloginattempts";
 
+  static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
+  static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
+  static final String RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED = "specified";
+  
   static final String CHECKBOX_VALUE             = "true";
 
   static final String USER_PARAMETER           = "username";
@@ -129,6 +137,12 @@
 
              newuser.setEndEntityProfileId(profileid);
              newuser.setUsername(username);
+             
+             ExtendedInformation ei = newuser.getExtendedInformation();
+			 if(ei == null) {
+				ei = new ExtendedInformation();
+			 }
+        	 ei.setRemainingLoginAttempts(userdata.getExtendedInformation().getRemainingLoginAttempts());
 
 
              String value = request.getParameter(TEXTFIELD_PASSWORD);
@@ -163,6 +177,25 @@
                }
                else{
                    newuser.setClearTextPassword(false);
+               }
+             }
+             
+             value = request.getParameter(RADIO_MAXFAILEDLOGINS);
+             if(RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED.equals(value)) {
+            	value = "-1";
+             } else {
+             	value = request.getParameter(TEXTFIELD_MAXFAILEDLOGINS);
+             }
+             if(value != null) {
+            	 ei.setMaxLoginAttempts(Integer.parseInt(value));
+            	 newuser.setExtendedInformation(ei);
+             }
+             
+             value = request.getParameter(CHECKBOX_RESETLOGINATTEMPTS);
+             if(value !=null){
+               if(value.equals(CHECKBOX_VALUE)){
+            	   ei.setRemainingLoginAttempts(ei.getMaxLoginAttempts());
+            	   newuser.setExtendedInformation(ei);
                }
              }
 
@@ -332,7 +365,6 @@
 
                value = request.getParameter(SELECT_ALLOWEDREQUESTS);
                if(value !=null){
-              	 ExtendedInformation ei = newuser.getExtendedInformation();
                	 ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
                	 newuser.setExtendedInformation(ei);
                }
@@ -387,10 +419,6 @@
 				value = profile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
 			}               
    			if ( value != null ) {
-   				ExtendedInformation ei = newuser.getExtendedInformation();
-   				if ( ei == null ) {
-   					ei = new ExtendedInformation();
-   				}
    				ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, value);
    				newuser.setExtendedInformation(ei);
    			} 
@@ -404,10 +432,6 @@
 						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
 							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
 	        		}
-					ExtendedInformation ei = newuser.getExtendedInformation();
-					if ( ei == null ) {
-						ei = new ExtendedInformation();
-					}
 					ei.setCustomData(EndEntityProfile.STARTTIME, storeValue);
 					newuser.setExtendedInformation(ei);					
 				}
@@ -421,10 +445,6 @@
 						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
 							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
 	        		}
-					ExtendedInformation ei = newuser.getExtendedInformation();
-					if ( ei == null ) {
-						ei = new ExtendedInformation();
-					}
 					ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
 					newuser.setExtendedInformation(ei);					
 				}
@@ -762,6 +782,17 @@ function checkallfields(){
      <%    }
          }                   
        }
+       
+       if(profile.getUse(EndEntityProfile.MAXFAILEDLOGINS,0)) { %>
+  			if(document.edituser.<%=RADIO_MAXFAILEDLOGINS %>[0].checked == true) {
+	  			var maxFailedLogins = document.edituser.<%=TEXTFIELD_MAXFAILEDLOGINS %>.value; 
+	      		if(maxFailedLogins != parseInt(maxFailedLogins) || maxFailedLogins < -1) {
+	      			alert("<%= ejbcawebbean.getText("REQUIREDMAXFAILEDLOGINS", true) %>");
+	      			illegalfields++;
+	      		}
+	  		}
+	<% }
+       
        if(profile.getUse(EndEntityProfile.EMAIL,0)){ %>
     if(!checkfieldforlegalemailcharswithoutat("document.edituser.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
       illegalfields++;
@@ -892,7 +923,15 @@ function checkUseInBatch(){
 }
 <% } 
   }
- %>   
+ %>
+
+ function maxFailedLoginsUnlimited() {
+	document.edituser.<%= TEXTFIELD_MAXFAILEDLOGINS %>.disabled = true;
+ }
+
+ function maxFailedLoginsSpecified() {
+	document.edituser.<%= TEXTFIELD_MAXFAILEDLOGINS %>.disabled = false;
+ }   
 
    -->
   </script>
@@ -1018,8 +1057,31 @@ function checkUseInBatch(){
         </td>
 	<td></td> 
       </tr>
-      <% } 
-         if(profile.getUse(EndEntityProfile.EMAIL,0)){ 
+      <% } %>
+      
+      <tr id="Row<%=(row++)%2%>">
+		<td align="right"><%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %></td>
+       	<td>
+       		<%
+       			int maxLoginAttempts = userdata.getExtendedInformation().getMaxLoginAttempts();
+       		%>   
+             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
+             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
+             
+             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %>
+      	</td>
+		<td>&nbsp;</td>
+      </tr>
+      <tr id="Row<%=(row++)%2%>">
+		<td align="right"><%= ejbcawebbean.getText("REMAININGLOGINATTEMPTS") %></td>
+       	<td>   
+             <input type="text" name="_remainingloginattempts" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getExtendedInformation().getRemainingLoginAttempts() != -1) out.write(""+userdata.getExtendedInformation().getRemainingLoginAttempts()); %>' readonly> <input type="checkbox" name="<%= CHECKBOX_RESETLOGINATTEMPTS %>" value="<%= CHECKBOX_VALUE %>"> <%= ejbcawebbean.getText("ResetLoginAttempts") %>
+      	</td>
+		<td>&nbsp;</td>
+      </tr>
+      
+      <% 
+      	  if(profile.getUse(EndEntityProfile.EMAIL,0)){ 
            String emailname = "";
            String emaildomain = "";
            if(userdata.getEmail() != null && !userdata.getEmail().equals("")){

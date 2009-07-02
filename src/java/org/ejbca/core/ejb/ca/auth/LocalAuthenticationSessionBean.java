@@ -36,6 +36,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
@@ -168,23 +169,32 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             // Find the user with username username
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data = userHome.findByPrimaryKey(pk);
-            int status = data.getStatus();
+            
+            // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
+           	getUserSession().decRemainingLoginAttempts(admin, data.getUsername());
+			
+           	int status = data.getStatus();
             if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
-                debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
+                debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());                
+                
+                UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
+                		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
+                		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
+                ret.setPassword(data.getClearPassword());   
+                ret.setCardNumber(data.getCardNumber());
+                
                 if (data.comparePassword(password) == false)
                 {
                 	String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
                 	getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
                 	throw new AuthLoginException(msg);
                 }
-
-            	String msg = intres.getLocalizedMessage("authentication.authok", username);            	
+                
+                // Resets the remaining login attempts as this was a successful login
+                getUserSession().resetRemainingLoginAttempts(admin, data.getUsername());
+            	
+                String msg = intres.getLocalizedMessage("authentication.authok", username);            	
                 getLogSession().log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
-                UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
-                		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
-                		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
-                ret.setPassword(data.getClearPassword());   
-                ret.setCardNumber(data.getCardNumber());
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}

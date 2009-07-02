@@ -944,6 +944,119 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 		new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
 	};
     
+	/**
+	 * 
+	 * @param admin
+	 * @param username
+	 * @return
+	 * @throws AuthorizationDeniedException
+	 * @throws FinderException
+	 * @ejb.interface-method
+	 */
+	public void resetRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+		if (log.isTraceEnabled()) {
+            log.trace(">resetRamainingLoginAttempts(" + username + ")");
+        }
+		int resetValue = -1;
+        int caid = LogConstants.INTERNALCAID;
+        try {
+            UserDataPK pk = new UserDataPK(username);
+            UserDataLocal data1 = home.findByPrimaryKey(pk);
+            caid = data1.getCaId();
+            if (!authorizedToCA(admin, caid)) {
+                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                throw new AuthorizationDeniedException(msg);
+            }
+            
+            ExtendedInformation ei = data1.getExtendedInformation();
+        	if (ei == null) {
+        		ei = new ExtendedInformation();
+        		data1.setExtendedInformation(ei);
+        	}
+        		
+    		resetValue = ei.getMaxLoginAttempts();
+    		
+    		if(resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
+    			ei.setRemainingLoginAttempts(resetValue);
+				data1.setExtendedInformation(ei);
+				data1.setTimeModified((new java.util.Date()).getTime());
+				String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);            	
+				logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+    		}
+        } catch (FinderException e) {
+            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw e;
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<resetRamainingLoginAttempts(" + username + "): "+resetValue);
+        }
+	}
+	
+	/**
+	 * 
+	 * @param admin
+	 * @param username
+	 * @return
+	 * @throws AuthorizationDeniedException
+	 * @throws FinderException
+	 * @ejb.interface-method
+	 */
+	public void decRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+		if (log.isTraceEnabled()) {
+            log.trace(">decRemainingLoginAttempts(" + username + ")");
+        }
+		int counter;
+        int caid = LogConstants.INTERNALCAID;
+        try {
+            UserDataPK pk = new UserDataPK(username);
+            UserDataLocal data1 = home.findByPrimaryKey(pk);
+            caid = data1.getCaId();
+            if (!authorizedToCA(admin, caid)) {
+                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
+                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                throw new AuthorizationDeniedException(msg);
+            }
+            
+        	ExtendedInformation ei = data1.getExtendedInformation();
+        	if (ei == null) {
+        		ei = new ExtendedInformation();
+        		data1.setExtendedInformation(ei);
+        	}
+        	
+    		counter = ei.getRemainingLoginAttempts();
+    		
+    		// If we get to 0 we must set status to generated
+    		if(counter == 0) {
+    			// if it isn't already
+    			if(data1.getStatus() != UserDataConstants.STATUS_GENERATED) {
+        			data1.setStatus(UserDataConstants.STATUS_GENERATED);
+        			data1.setTimeModified((new java.util.Date()).getTime());
+        			String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
+					logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+					resetRemainingLoginAttempts(admin, username);
+    			}
+    		} else if(counter != -1) {
+				log.debug("Found a remaining login counter with value "+counter);
+				ei.setRemainingLoginAttempts(--counter);
+				data1.setExtendedInformation(ei);
+				String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);            	
+				logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+			} else {
+				log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
+				counter = Integer.MAX_VALUE;
+			}
+        } catch (FinderException e) {
+            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw e;
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<decRequestCounter(" + username + "): "+counter);
+        }
+	} //decRemainingLoginAttempts
+	
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0. Returns the new value. If the value is already 0, -1 is returned, but the 
      * -1 is not stored in the database.
@@ -1068,6 +1181,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     		if ( (status == UserDataConstants.STATUS_NEW) && (data1.getStatus() != UserDataConstants.STATUS_NEW) ) {
                 // If status is set to new, when it is not already new, we should re-set the allowed request counter to the default values
     			resetRequestCounter(admin, data1, false);
+    			// Reset remaining login counter
+    			resetRemainingLoginAttempts(admin, username);
     		} else {
     			log.debug("Status not changing from something else to new, not resetting requestCounter.");
     		}

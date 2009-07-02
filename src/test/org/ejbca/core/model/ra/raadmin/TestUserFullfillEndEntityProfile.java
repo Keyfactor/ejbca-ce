@@ -959,6 +959,38 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         } catch (UserDoesntFullfillEndEntityProfile e) {
         	assertTrue("Error: Allowedrequests not checked correctly, should be allowed.", false);
         } 
+        
+        // New profile
+        profile = new EndEntityProfile();
+        
+        
+        // Set so maxFailedLogins=non-modifyable required 
+        profile.addField(EndEntityProfile.MAXFAILEDLOGINS);
+        profile.setRequired(EndEntityProfile.MAXFAILEDLOGINS,0,true);
+        profile.setModifyable(EndEntityProfile.MAXFAILEDLOGINS,0,false);
+        profile.setValue(EndEntityProfile.MAXFAILEDLOGINS,0,"7");
+
+        profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
+        
+        try {
+        	ei = new ExtendedInformation();
+        	ei.setMaxLoginAttempts(1234);
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith","","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
+        			false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
+        	fail("Error: maxFailedLogins was not checked correctly, should not be allowed.");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	// OK
+        }
+        
+        try {
+        	ei = new ExtendedInformation();
+        	ei.setMaxLoginAttempts(7);
+        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith","","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
+        			false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+        	log.error(e.getMessage(), e);
+        	fail("Error: maxFailedLogins was not checked correctly, should be allowed.");
+        }
 
         log.trace("<test01fulfillEndEntityProfiles()");
     } // test01fulfillEndEntityProfiles

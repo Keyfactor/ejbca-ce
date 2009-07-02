@@ -43,9 +43,9 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = 3981761824188420319L;
+    private static final long serialVersionUID = 3981761824188420320L;
     
-    public static final float LATEST_VERSION = 1;    
+    public static final float LATEST_VERSION = 2;
 
     /** Different types of implementations of extended information, can be used to have different implementing classes of extended information */
     public static final int TYPE_BASIC = 0;
@@ -80,6 +80,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
     
     
+    public static final String REMAININGLOGINATTEMPTS 			= "remainingloginattempts";
+    public static final String MAXFAILEDLOGINATTEMPTS 			= "maxfailedloginattempts";
+	public static final int DEFAULT_MAXLOGINATTEMPTS 			= -1;
+	public static final int DEFAULT_REMAININGLOGINATTEMPTS 		= -1;
+    
     // Public constants
 
     // Wait for fields to use with this class. 
@@ -89,6 +94,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public ExtendedInformation() {
     	setType(TYPE_BASIC);
     	data.put(SUBJECTDIRATTRIBUTES, "");
+    	setMaxLoginAttempts(DEFAULT_MAXLOGINATTEMPTS);
+    	setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
     }
 
     public String getSubjectDirectoryAttributes(){ 
@@ -131,6 +138,22 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     	    	
     	data.put(XKMSREVOCATIONCODEIDENTIFIER,value);
 
+    }
+    
+    public int getRemainingLoginAttempts() {
+    	return ((Integer) data.get(REMAININGLOGINATTEMPTS)).intValue();
+    }
+    
+    public void setRemainingLoginAttempts(int remainingLoginAttempts) {
+    	data.put(REMAININGLOGINATTEMPTS, new Integer(remainingLoginAttempts));
+    }
+    
+    public int getMaxLoginAttempts() {
+    	return ((Integer) data.get(MAXFAILEDLOGINATTEMPTS)).intValue();
+    }
+    
+    public void setMaxLoginAttempts(int maxLoginAttempts) {
+    	data.put(MAXFAILEDLOGINATTEMPTS, new Integer(maxLoginAttempts));
     }
     
     /**
@@ -190,7 +213,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     		
             if(data.get(SUBJECTDIRATTRIBUTES) == null){
                 data.put(SUBJECTDIRATTRIBUTES, "");   
-            }            
+            }
+            if(data.get(MAXFAILEDLOGINATTEMPTS) == null) {
+            	setMaxLoginAttempts(DEFAULT_MAXLOGINATTEMPTS);
+            }
+            if(data.get(REMAININGLOGINATTEMPTS) == null) {
+            	setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
+            }
 
     		data.put(VERSION, new Float(LATEST_VERSION));
     	}
