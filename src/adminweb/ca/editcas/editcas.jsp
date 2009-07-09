@@ -645,6 +645,15 @@
                     caexists = true; 
                  }catch(CATokenAuthenticationFailedException catfe){
                     catokenauthfailed = true;
+                    errormessage = catfe.getMessage();
+                    Throwable t = catfe.getCause();
+                    while (t != null) {
+						String msg = t.getMessage();
+						if (msg != null) {
+	                    	errormessage = errormessage + "<br/>" + msg;							
+						}
+                    	t = t.getCause();
+                    }
                  }
                  includefile="choosecapage.jspf"; 
                }

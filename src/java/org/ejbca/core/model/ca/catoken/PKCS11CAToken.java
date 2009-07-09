@@ -79,7 +79,9 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
             throw e;
         } catch (Throwable t) {
             log.error("Failed to initialize PKCS11 provider slot '"+this.sSlotLabel+"'.", t);
-            throw new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider slot '"+this.sSlotLabel+"'.");
+            CATokenAuthenticationFailedException authfe = new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider slot '"+this.sSlotLabel+"'.");
+            authfe.initCause(t);
+            throw authfe;
         }
 		String msg = intres.getLocalizedMessage("catoken.activated", "PKCS11");
         log.info(msg);

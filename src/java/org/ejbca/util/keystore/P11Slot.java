@@ -110,10 +110,13 @@ public class P11Slot {
      * @param _atributesFile Atributes file. Optional. Set to null if not used
      * @param token Token that should use this object
      * @return The instance.
-     * @throws CATokenOfflineException 
+     * @throws CATokenOfflineException if CA token can not be activated, IllegalArgumentException if sharedLibrary is null.
      */
     static public P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
                                       String _atributesFile, P11SlotUser token) throws CATokenOfflineException {
+    	if (sharedLibrary == null) {
+    		throw new IllegalArgumentException("sharedLibrary = null");
+    	}
         final String libName = new File(sharedLibrary).getName();
         final String slotLabel = slotNr + libName + isIndex;
         P11Slot slot = slotMap.get(slotLabel);
