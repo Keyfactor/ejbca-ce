@@ -28,8 +28,6 @@ import org.ejbca.ui.web.pub.cluster.IHealthResponse;
 import org.ejbca.util.CertTools;
 
 
-
-
 /**
  * Servlet used to check the health of an EJBCA instance and can be used
  * to build a cluster using a loadbalancer.
@@ -144,14 +142,11 @@ public class HealthCheckServlet extends HttpServlet {
     		try {
     			response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"ERROR : Healthcheck request recieved from an non authorized IP: "+remoteIP);
     		} catch (IOException e) {
-    			log.error("ERROR : Problems generating unauthorized http response.");
+    			log.error("Problems generating unauthorized http response.", e);
     		}
     		String iMsg = intres.getLocalizedMessage("healthcheck.errorauth", remoteIP);
     		log.error(iMsg);
     	}
     }
 
-}
-
-
-// HealthCheckServlet
+} // HealthCheckServlet
