@@ -209,6 +209,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <exclude name="org/ejbca/ui/cli/*Test.java" />
             <exclude name="org/ejbca/ui/cli/Ocsp.java" />
             <exclude name="org/ejbca/ui/cli/EjbcaWsRaCli.java" />
+            <exclude name="org/ejbca/ui/cli/CvcWsRaCli.java" />
             <exclude name="org/ejbca/ui/cli/ClientToolBox.java" />
             <exclude name="org/ejbca/ui/cli/OcspMonitoringTool.java" />
             <exclude name="org/ejbca/ui/cli/DatabaseCopyTool.java" />

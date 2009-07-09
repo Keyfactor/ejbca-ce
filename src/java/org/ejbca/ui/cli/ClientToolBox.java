@@ -55,6 +55,7 @@ public abstract class ClientToolBox {
         		new OcspMonitoringTool(), 
         		new DatabaseCopyTool(), 
         		new EjbcaWsRaCli(), 
+        		new CvcWsRaCli(), 
         		new CMPTest(),
         		new SCEPTest(),
                 new OCSPActivate()
