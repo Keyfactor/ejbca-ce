@@ -120,6 +120,31 @@
         </junitreport>
     </target>
 
+    <target name="test:runone" depends="test:compile,j2ee:assert-run" description="run a single JUnit-test specified -Dtest.runone=classname">
+    	<fail message="'test.runone' not set. Example -Dtest.runone=TestDnComponents " unless="test.runone" />
+        <property name="test.reportsdir" value="${test.dir}/reports-runone" />
+        <delete dir="${test.reportsdir}" />
+        <mkdir dir="${test.reportsdir}/html" />
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath>
+                <path refid="test.compile.classpath" />
+                <path location="${test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${test.reportsdir}">
+                <fileset dir="${test.dir}">
+                	<include name="**/${test.runone}.class" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <junitreport todir="${test.reportsdir}">
+            <fileset dir="${test.reportsdir}">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.reportsdir}/html" />
+        </junitreport>
+    </target>
+
     <target name="test:runlots" depends="test:compile,j2ee:assert-run" description="run JUnit testcases that creates lots of users and certificates">
         <property name="test.reportsdir" value="${test.dir}/reports-lots" />
         <delete dir="${test.reportsdir}" />
