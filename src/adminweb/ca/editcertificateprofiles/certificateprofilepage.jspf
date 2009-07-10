@@ -666,9 +666,9 @@ function checkallfields(){
                       out.write(" disabled "); 
                     else 
                       if(!certificateprofiledata.getCRLDistributionPointURI().equals(""))
-                       out.write(" value=\"" + certificateprofiledata.getCRLDistributionPointURI() + "\""); 
+                       out.write(" value=\"" + certificateprofiledata.getCRLDistributionPointURI().replace("\"", "&#34;") + "\""); 
                       else
-                       out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI()+ "\"");%>>
+                       out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI().replace("\"", "&#34;") + "\"");%>>
            <br>
            <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="60" maxlength="255" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint()) {
