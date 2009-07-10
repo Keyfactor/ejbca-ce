@@ -100,6 +100,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
+import org.ejbca.core.model.ca.certextensions.standard.CrlDistributionPoints;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -769,11 +770,11 @@ public class X509CA extends CA implements Serializable {
     	if (distPoints == null) {
     		distPoints = "";
     	}
-        // Multiple CDPs are spearated with the ';' sign  
-        StringTokenizer tokenizer = new StringTokenizer(distPoints, ";", false);
-        ArrayList result = new ArrayList();
-        while (tokenizer.hasMoreTokens()) {
-            String uri = tokenizer.nextToken();
+        // Multiple CDPs are spearated with the ';' sign
+    	Iterator/*String*/ it = CrlDistributionPoints.splitURIs(distPoints).iterator();
+    	ArrayList result = new ArrayList();
+        while (it.hasNext()) {
+            String uri = (String) it.next();
             GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
             if(log.isDebugEnabled()) {
                 log.debug("Added CRL distpoint: " + uri);

@@ -15,6 +15,9 @@ package org.ejbca.core.model.ca.certextensions.standard;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
@@ -82,10 +85,10 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		// Multiple CDPs are separated with the ';' sign        	         	 
 		ArrayList dpns = new ArrayList();
 		if (StringUtils.isNotEmpty(crldistpoint)) {
-			StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
-			while (tokenizer.hasMoreTokens()) {
+			Iterator/*String*/ it = CrlDistributionPoints.splitURIs(crldistpoint).iterator();
+			while (it.hasNext()) {
 				// 6 is URI
-				String uri = tokenizer.nextToken();
+				String uri = (String) it.next();
 				GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
 				log.debug("Added CRL distpoint: "+uri);
 				ASN1EncodableVector vec = new ASN1EncodableVector();
@@ -138,5 +141,36 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 			log.error("DrlDistributionPoints missconfigured, no distribution points available.");
 		}
 		return ret;
-	}	
+	}
+	
+	public static Collection/*String*/ splitURIs(String dispPoints) {
+
+        LinkedList/*String*/ result = new LinkedList/*String*/();
+
+        for(int i = 0; i < dispPoints.length(); i++) {
+            int nextQ = dispPoints.indexOf('"', i);
+            if(nextQ == i) {
+                nextQ = dispPoints.indexOf('"', i+1);
+                if(nextQ == -1) {
+                    nextQ = dispPoints.length()-1; // unbalanced
+                }
+                // eat(to quote)
+                result.add(dispPoints.substring(i+1, nextQ).trim());
+                i = nextQ;
+            } else {
+                int nextSep = dispPoints.indexOf(';', i);
+                if(nextSep == i) {
+                    continue; // skip
+                }
+                if(nextSep != -1) { // eat(to sep)
+                    result.add(dispPoints.substring(i, nextSep).trim());
+                    i = nextSep;
+                } else if (i < dispPoints.length()) { // eat(the rest)
+                    result.add(dispPoints.substring(i).trim());
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 }

@@ -13,6 +13,8 @@
 
 package org.ejbca.core.model.ca.certextensions;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -20,6 +22,7 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.bouncycastle.asn1.DERPrintableString;
+import org.ejbca.core.model.ca.certextensions.standard.CrlDistributionPoints;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 
 /**
@@ -121,6 +124,20 @@ public class TestCertificateExtensionManager extends TestCase {
         }
 
 		
+	}
+	
+	public void test03TestSplitURIs() throws Exception {
+		assertEquals(Arrays.asList("aa;a", "bb;;;b", "cc"), CrlDistributionPoints.splitURIs("\"aa;a\";\"bb;;;b\";\"cc\""));
+		assertEquals(Arrays.asList("aa", "bb;;;b", "cc"), CrlDistributionPoints.splitURIs("aa;\"bb;;;b\";\"cc\""));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("aa;bb;cc"));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("aa;bb;cc;"));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("aa;bb;;;;cc;"));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs(";;;;;aa;bb;;;;cc;"));
+		assertEquals(Arrays.asList("aa", "b", "c", "d", "e"), CrlDistributionPoints.splitURIs(";;\"aa\";;;b;c;;;;d;\"e\";;;"));
+		assertEquals(Arrays.asList("http://example.com"), CrlDistributionPoints.splitURIs("http://example.com"));
+		assertEquals(Arrays.asList("http://example.com"), CrlDistributionPoints.splitURIs("\"http://example.com\""));
+		assertEquals(Arrays.asList("http://example.com"), CrlDistributionPoints.splitURIs("\"http://example.com\";"));
+		assertEquals(Collections.EMPTY_LIST, CrlDistributionPoints.splitURIs(""));
 	}
 
 
