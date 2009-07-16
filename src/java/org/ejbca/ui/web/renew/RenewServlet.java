@@ -41,7 +41,12 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
 
-
+/**
+ * Servlet used for requesting browser certificate renewals.
+ * 
+ * @author Markus Kilås
+ * @version $Id:$
+ */
 public class RenewServlet extends HttpServlet {
     
 	private static final Logger log = Logger.getLogger(RenewServlet.class);
@@ -49,6 +54,7 @@ public class RenewServlet extends HttpServlet {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
+    /** Submit button on the web page */
 	public static final String BUTTONRENEW = "buttonrenew";
 
 	private ICertificateStoreSessionRemote certificateStoreSession;
@@ -98,11 +104,15 @@ public class RenewServlet extends HttpServlet {
 	    		throw new ServletException(new ObjectNotFoundException("Not possible to retrieve user name"));
 	    	}
 	    	request.setAttribute("username", username);
-	    	log.debug("User authenticated as " + username + ".");
+	    	if(log.isDebugEnabled()) {
+	    		log.debug("User authenticated as " + username + ".");
+	    	}
 	    	
 	    	// Request certificate renewal
 	    	if(request.getParameter(BUTTONRENEW) != null) {
-	    		log.debug("Got request for " + username + ".");
+	    		if(log.isDebugEnabled()) {
+	    			log.debug("Got renewal request for " + username + ".");
+	    		}
 	    		String statusMessage;
 	    		try {
 		    		UserDataVO userdata = useradminhome.findUser(admin, username);

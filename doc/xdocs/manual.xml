@@ -370,6 +370,20 @@ hostname. In this case, the iPAddress subjectAltName must be present
 in the certificate and must exactly match the IP in the URI.
 </source>
 </subsection>
+<subsection name="Request Browser Certificate Renewal">
+<p>
+	If renewal is enabled there is an extra link under "Enroll" on 
+	the public web page called "Request Browser Certificate Renewal". The
+	page requires authentication with a client certificate and makes it 
+	possible for the user to request the certificate to be renewed. 
+</p>
+<p>
+	The renewal functionality is provided in a separate web module called 
+	renew.war which is not deployed and linked to by default. It can be 
+	enabled in conf/web.properties by setting web.renewalenabled=true and 
+	then (re-)deploy EJBCA. 
+</p>
+</subsection>
 <subsection name="Administrators">
 <p>
 An EJBCA Administrator is identified by information in the client SSL

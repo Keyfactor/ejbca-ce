@@ -11,7 +11,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>RenewServlet</servlet-name>
-        <url-pattern>/index.jsp</url-pattern> <!--  /index.jsp -->
+        <url-pattern>/index.jsp</url-pattern>
     </servlet-mapping>
 
 	<security-constraint>
