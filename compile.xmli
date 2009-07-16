@@ -95,6 +95,7 @@ web.availablelanguages   = ${web.availablelanguages}
 web.contentencoding      = ${web.contentencoding}
 web.jsfimpl              = ${web.jsfimpl}
 web.docbaseuri           = ${web.docbaseuri}
+web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
 intresources.preferredlanguage   = ${intresources.preferredlanguage}     	
 intresources.secondarylanguage   = ${intresources.secondarylanguage}
@@ -514,6 +515,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 				<replacestring from="@ecdsa.implicitlyca.n@" to="${ecdsa.implicitlyca.n}"/>
 				<replacestring from="@log.maxqueryrowcount@" to="${log.maxqueryrowcount}"/>
 				<replacestring from="@web.docbaseuri@" to="${web.docbaseuri}"/>
+				<replacestring from="@renew.war.enabled@" to="${renew.war.enabled}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>

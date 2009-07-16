@@ -147,6 +147,10 @@
     <property name="publicweb.build" value="${tmp}/publicweb.war" />    
     <property name="publicwebwar" value="${dist.dir}/publicweb.war" />
 
+	<property name="renew.src" value="${src}/publicweb/renew" />
+    <property name="renew.build" value="${tmp}/renew.war" />    
+    <property name="renewwar" value="${dist.dir}/renew.war" />
+
     <property name="deploy.src" value="${src}/deploy" />
     <property name="ejbdd.src" value="${deploy.src}/ejb" />
     <property name="webdd.src" value="${deploy.src}/web" />
@@ -318,6 +322,7 @@
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE,PT,PT_BR" />
     <property name="web.contentencoding" value="UTF-8" />
     <property name="web.docbaseuri" value="internal" />
+    <property name="web.renewalenabled" value="false" />
     <property name="intresources.preferredlanguage" value="EN" />
     <property name="intresources.secondarylanguage" value="SE" />
     <property name="hardtoken.diplaysensitiveinfo" value="true" />
@@ -330,6 +335,9 @@
     </condition>
     <condition property="doc.war.enabled">
     	<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
+    </condition>
+    <condition property="renew.war.enabled">
+    	<equals arg1="true" arg2="${web.renewalenabled}" casesensitive="false" trim="true" />
     </condition>
 
 	<!-- Log4j configuration for glassfish -->

@@ -175,6 +175,37 @@
             <fileset dir="${doc.src}" />
         </war>
     </target>
+	
+    <!-- =================================================================== -->
+    <!-- Build public web part                                               -->
+    <!-- =================================================================== -->
+    <target name="renew.war" depends="compile, ejbca-ejb.jar" if="renew.war.enabled">
+    	
+    	<replace file="${eardd.src}/META-INF/application.xml"
+    			token="!--@renew.war@-->" value="module>&lt;web>&lt;web-uri>renew.war&lt;/web-uri>&lt;context-root>/${app.name}/renew&lt;/context-root>&lt;/web>&lt;/module>"/>
+    	
+    	<mkdir dir="${renew.build}/WEB-INF/lib"/>
+	    <copy todir="${renew.build}">
+	        <fileset dir="${renew.src}"/>
+	    </copy>
+        <copy todir="${renew.build}/WEB-INF/lib">
+            <fileset dir="${lib}/myfaces" >
+				<include name="jstl*.jar"/>
+				<include name="standard*.jar"/>
+            </fileset>
+        </copy>
+
+        <!-- Test compile the public pages to see it compiles ok -->
+    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled -->
+    	<jsp-compile uriroot="${renew.build}" /> <!-- todo: disable -->
+    	
+
+        <war destfile="${renewwar}" webxml="${renew.build}/WEB-INF/web.xml">
+            <fileset dir="${renew.build}">
+            	<exclude name="WEB-INF/web.xml"/>
+			</fileset>
+        </war>
+    </target>   
 
     <!-- =================================================================== -->
     <!-- Build CMP part                                                                                                                             -->
@@ -278,7 +309,7 @@
     <target name="publicweb.war" depends="compile, ejbca-ejb.jar">
 	    <mkdir dir="${publicweb.build}/WEB-INF/lib"/>
 	    <copy todir="${publicweb.build}">
-	        <fileset dir="${publicweb.src}" />
+	        <fileset dir="${publicweb.src}"/>
 	    </copy>
         <copy todir="${publicweb.build}/WEB-INF/lib">
             <fileset dir="${lib}/myfaces" >
@@ -288,12 +319,14 @@
         </copy>
 
         <!-- Test compile the public pages to see it compiles ok -->
-    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled
+    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled -->
     	<jsp-compile uriroot="${publicweb.build}" />
-    	-->	
+    	
 
         <war destfile="${publicwebwar}" webxml="${publicweb.build}/WEB-INF/web.xml">
-            <fileset dir="${publicweb.build}" excludes="WEB-INF/web.xml" />
+            <fileset dir="${publicweb.build}">
+            	<exclude name="WEB-INF/web.xml"/>
+			</fileset>
         </war>
     </target>   
 
@@ -523,7 +556,7 @@
 	<target name="ejbca.ear" depends="ca.ear, externalra.jar">
 	</target>
 	
-	<target name="ca.ear" depends="jsflibs, publicweb.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
+	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />

@@ -57,5 +57,6 @@ applications for enrollment, distribution and administration.
        <!--@ejbcaws.war@-->
        <!--@xkms.war@-->
        <!--@doc.war@-->
+       <!--@renew.war@-->
 </application>
 

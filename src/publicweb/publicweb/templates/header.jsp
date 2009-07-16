@@ -33,6 +33,11 @@
               <li>
                 <a href="../enrol/keystore.jsp">Create Keystore</a>
               </li>
+              <% if("true".equalsIgnoreCase("@renew.war.enabled@")) { %>
+              <li>
+                <a href="../renew/index.jsp">Request Browser Certificate Renewal</a>
+              </li>
+              <% } %>
             </ul>
           </li>  
           <li><div class="menuheader">Retrieve</div>

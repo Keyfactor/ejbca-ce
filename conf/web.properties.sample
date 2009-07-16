@@ -106,3 +106,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # issued by external CAs.
 # Default: true
 #web.reqcertindb=true
+
+# Deploy the request browser certificate renewal web application and show a 
+# link to it from the EJBCA public web.
+# Default = false
+#web.renewalenabled=false

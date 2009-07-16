@@ -36,6 +36,11 @@
               <li>
                 <a href="cvcert.jsp">Create CV certificate</a>
               </li>
+              <% if("true".equalsIgnoreCase("@renew.war.enabled@")) { %>
+              <li>
+                <a href="../renew/index.jsp">Request Browser Certificate Renewal</a>
+              </li>
+              <% } %>
             </ul>
           </li>  
           <li><div class="menuheader">Retrieve</div>
