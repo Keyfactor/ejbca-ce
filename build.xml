@@ -177,7 +177,7 @@
     </target>
 	
     <!-- =================================================================== -->
-    <!-- Build public web part                                               -->
+    <!-- Build renewal web part                                              -->
     <!-- =================================================================== -->
     <target name="renew.war" depends="compile, ejbca-ejb.jar" if="renew.war.enabled">
     	
@@ -196,8 +196,9 @@
         </copy>
 
         <!-- Test compile the public pages to see it compiles ok -->
-    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled -->
-    	<jsp-compile uriroot="${renew.build}" /> <!-- todo: disable -->
+    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled
+    	<jsp-compile uriroot="${renew.build}" /> 
+    	-->
     	
 
         <war destfile="${renewwar}" webxml="${renew.build}/WEB-INF/web.xml">
@@ -319,8 +320,9 @@
         </copy>
 
         <!-- Test compile the public pages to see it compiles ok -->
-    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled -->
+    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled
     	<jsp-compile uriroot="${publicweb.build}" />
+    	-->
     	
 
         <war destfile="${publicwebwar}" webxml="${publicweb.build}/WEB-INF/web.xml">
