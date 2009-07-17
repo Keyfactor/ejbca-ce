@@ -864,6 +864,16 @@ For example:
 The same applies to CRLIssuer, for example: 
 <br/>CN=Foo,C=SE;CN=Bar,C=US
 </p>
+<p>
+Please note that if an URI contains a ';' it has to be double-quoted.
+For example if you have two URLs:
+<ul>
+<li>http://cdpurl-1/mycrl.der</li>
+<li>http://cdpurl-2/getcrl;binary</li>
+</ul>
+You could then put them together as:
+<br/>http://cdpurl-1/mycrl.der;"http://cdpurl-2/getcrl;binary"
+</p>
 </subsection>
 
 <subsection name="CRL Issuer">
