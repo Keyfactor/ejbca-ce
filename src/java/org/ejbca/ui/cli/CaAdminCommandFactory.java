@@ -56,6 +56,10 @@ public class CaAdminCommandFactory {
             return new CaImportProfilesCommand(args);
         } else if (args[0].equals("exportca")) {
             return new CaExportCACommand(args);
+        } else if (args[0].equals("removekeystore")) {
+            return new CaRemoveKeyStoreCommand(args);
+        } else if (args[0].equals("restorekeystore")) {
+            return new CaRestoreKeyStoreCommand(args);
         } else if (args[0].equals("importca")) {
             return new CaImportCACommand(args);
         } else if (args[0].equals("importcacert")) {

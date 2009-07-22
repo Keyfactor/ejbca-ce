@@ -13,16 +13,19 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -1894,7 +1897,157 @@ public class CAAdminSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
     } // importCAFromKeyStore
+    
+    /**
+     * TODO
+     *
+     * @param admin Administrator
+     * @param caname the CA-name (human readable) the newly created CA will get
+     * 
+     * @ejb.interface-method
+     */
+    public void removeCAKeyStore(Admin admin, String caname) throws EJBException {
+        try {
+            // check authorization
+			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+			}
 
+			CADataLocal caData = cadatahome.findByName(caname); 
+			CA thisCa = caData.getCA();
+			
+	    	CATokenContainer thisCAToken = thisCa.getCAToken();
+	    	int tokentype = thisCAToken.getCATokenType();
+	    	if ( tokentype != CATokenInfo.CATOKENTYPE_P12 && thisCAToken.getCATokenInfo() instanceof SoftCATokenInfo) {
+	    		throw new Exception("Cannot export anything but a soft token.");
+	    	}
+	    	
+	    	// Create a new CAToken with the same properties but OFFLINE and without keystore
+	    	SoftCATokenInfo thisCATokenInfo = (SoftCATokenInfo) thisCAToken.getCATokenInfo();
+	    	thisCATokenInfo.setCATokenStatus(ICAToken.STATUS_OFFLINE);
+	    	CATokenContainer emptyToken = new CATokenContainerImpl(thisCATokenInfo);
+	    	thisCa.setCAToken(emptyToken);
+	    	
+	    	// Save to database
+	    	caData.setCA(thisCa);
+	    	
+	    	// Log
+	    	String msg = intres.getLocalizedMessage("caadmin.removedcakeystore", new Integer(thisCa.getCAId()));            	
+            getLogSession().log(admin, thisCa.getCAId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+			
+        } catch(Exception e) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorremovecakeystore", caname, "PKCS12", e.getMessage());
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
+            throw new EJBException(e);
+        }
+    } // removeCAKeyStore
+    
+    /**
+     * TODO
+     *
+     * @param admin Administrator
+     * @param caname the CA-name (human readable)
+     * @param p12file
+     * @param keystorepass
+     * @param privkeypass
+     * @param privateSignatureKeyAlias
+     * @param privateEncryptionKeyAlias
+     * 
+     * @ejb.interface-method
+     */
+    public void restoreCAKeyStore(Admin admin, String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws EJBException {
+        try{
+            // check authorization
+			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+			}
+
+			CADataLocal caData = cadatahome.findByName(caname); 
+			CA thisCa = caData.getCA();
+			
+	    	CATokenContainer thisCAToken = thisCa.getCAToken();
+	    	int tokentype = thisCAToken.getCATokenType();
+	    	if (tokentype != CATokenInfo.CATOKENTYPE_P12 && thisCAToken.getCATokenInfo() instanceof SoftCATokenInfo) {
+	    		throw new Exception("Cannot restore anything but a soft token.");
+	    	}
+	    	
+	    	// Only restore to an offline CA
+	    	if (thisCAToken.getCATokenInfo().getCATokenStatus() != ICAToken.STATUS_OFFLINE) {
+	    		throw new Exception("The CA already has an active CA token.");
+	    	}
+	    	
+	    	// load keystore
+            KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
+            keystore.load(new ByteArrayInputStream(p12file), keystorepass.toCharArray());
+            // Extract signarture keys
+            if (privateSignatureKeyAlias == null || !keystore.isKeyEntry(privateSignatureKeyAlias) ) {
+            	throw new Exception("Alias \"" + privateSignatureKeyAlias + "\" not found.");
+            }
+            Certificate[] signatureCertChain = KeyTools.getCertChain(keystore, privateSignatureKeyAlias);
+            if (signatureCertChain.length < 1) {
+            	String msg = "Cannot load certificate chain with alias " + privateSignatureKeyAlias;
+                log.error(msg);
+                throw new Exception(msg);
+            }
+            Certificate caSignatureCertificate = (Certificate) signatureCertChain[0];
+            PublicKey p12PublicSignatureKey = caSignatureCertificate.getPublicKey();
+            PrivateKey p12PrivateSignatureKey = null;
+            p12PrivateSignatureKey = (PrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray());
+
+            // Extract encryption keys
+            PrivateKey p12PrivateEncryptionKey = null;
+            PublicKey p12PublicEncryptionKey = null;
+            Certificate caEncryptionCertificate = null;
+            if (privateEncryptionKeyAlias != null) {
+                if (!keystore.isKeyEntry(privateEncryptionKeyAlias)) {
+                	throw new Exception("Alias \"" + privateEncryptionKeyAlias + "\" not found.");
+                }
+	            Certificate[] encryptionCertChain = KeyTools.getCertChain(keystore, privateEncryptionKeyAlias);
+	            if (encryptionCertChain.length < 1) {
+	            	String msg = "Cannot load certificate chain with alias " + privateEncryptionKeyAlias;
+	                log.error(msg);
+	                throw new Exception(msg);
+	            }
+	            caEncryptionCertificate = (Certificate) encryptionCertChain[0];
+	            p12PrivateEncryptionKey = (PrivateKey) keystore.getKey( privateEncryptionKeyAlias, privkeypass.toCharArray());
+	            p12PublicEncryptionKey = caEncryptionCertificate.getPublicKey();
+            } else {
+            	throw new Exception("Missing encryption key");
+            }
+            
+            // Sign something to see that we are restoring the right private signature key
+            String testSigAlg = (String)AlgorithmTools.getSignatureAlgorithms(thisCa.getCACertificate().getPublicKey()).iterator().next();
+            if (testSigAlg == null) {
+            	testSigAlg = "SHA1WithRSA";
+            }
+            // Sign with imported private key
+            byte[] input = "Test data...".getBytes();
+            Signature signature = Signature.getInstance(testSigAlg, "BC");
+            signature.initSign(p12PrivateSignatureKey);
+            signature.update(input);
+            byte[] signed = signature.sign();
+            // Verify with public key from CA certificate
+            signature = Signature.getInstance(testSigAlg, "BC");
+            signature.initVerify(thisCa.getCACertificate().getPublicKey());
+            signature.update(input);
+            if (!signature.verify(signed)) {
+            	throw new Exception("Could not use private key for verification. Wrong p12-file for this CA?");
+            }
+            
+	    	// Import the keys and save to database
+	    	thisCAToken.importKeys(keystorepass, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey, p12PublicEncryptionKey, signatureCertChain);
+	    	caData.setCA(thisCa);
+	    	
+	    	// Log
+	    	String msg = intres.getLocalizedMessage("caadmin.restoredcakeystore", new Integer(thisCa.getCAId()));            	
+            getLogSession().log(admin, thisCa.getCAId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+        } catch(Exception e) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorrestorecakeystore", caname, "PKCS12", e.getMessage());
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            throw new EJBException(e);
+        }
+    } // restoreCAKeyStore
+    
     /**
      * Method that is used to create a new CA from keys and certificates.
      * 
