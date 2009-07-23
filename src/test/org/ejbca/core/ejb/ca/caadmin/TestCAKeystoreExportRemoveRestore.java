@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.naming.Context;
@@ -32,7 +32,11 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
 
 /**
- * TODO
+ * Tests for the Soft catoken removal functionality.
+ * 
+ * A CA keystore can be exported using CAAdminSessionBean.exportCAKeyStore().
+ * A CA keystore can be removed using CAAdminSessionBean.removeCAKeyStore().
+ * A CA keystore can be restored using CAAdminSessionBean.restoreCAKeyStore().
  * 
  * @author Markus Kilås
  * @version $Id$
@@ -152,6 +156,10 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 	    log.trace("<test04ExportRemoveRestoreSHA1WithDSAForSigning()");
 	}
 	
+	/**
+	 * Tests that it is not possible to accidentally restore the wrong keystore.
+	 * @throws Exception
+	 */
 	public void test05RestoreWrong() throws Exception {
 		log.trace(">test05RestoreWrong()");
 
@@ -298,6 +306,11 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 		log.trace("<test05RestoreWrong()");
 	}
 	
+	/**
+	 * Tests that it is not possible to restore a CA that has not been removed
+	 *  (or at least not one with an active CA token).
+	 * @throws Exception
+	 */
 	public void test06RestoreNotRemoved() throws Exception {
 		log.trace(">test06RestoreNotRemoved()");
 
@@ -360,6 +373,11 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 		log.trace("<test06RestoreNotRemoved()");
 	}
 
+	/**
+	 * Does export, remove and restore and performs tests.
+	 * @param catokeninfo Information with algorithm and key selections
+	 * @throws Exception
+	 */
 	private void exportRemoveRestore(CATokenInfo catokeninfo) throws Exception {
 		byte[] keystorebytes = null;
         String caname = "TestExportRemoveRestoreCA1";
@@ -425,6 +443,8 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 		
 		try {
 			String emptyFingerprint = caadminsession.getKeyFingerPrint(admin, caname);
+			log.error("Got fingerprint: " + emptyFingerprint);
+			fail("Should not have got a fingerprint");
 		} catch(Exception e) {
 			if(e.getCause() instanceof CATokenOfflineException) {
 				// OK
@@ -433,8 +453,6 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 				fail("getKeyFingerPrint: " + e.getMessage());
 			}
 		}
-		
-		// TODO: We would like to somehow see that the keystore isn't in the DB anymore
 		
 		// Restore keystore
 		try {
@@ -462,7 +480,6 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 		}
 	}
 
-
     /**
      * Creates a CAinfo for testing.
      *  
@@ -482,12 +499,12 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
                 catokeninfo,
                 "Used for testing CA keystore export, remove and restore",
                 -1, null, // revokationreason, revokationdate
-                new ArrayList(), // PolicyId
+                Collections.EMPTY_LIST, // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssuePeriod
                 10, // CRLOverlapTime
                 0, //DeltaCRLOverlapTime                
-                new ArrayList(),
+                Collections.EMPTY_LIST,
                 true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -497,9 +514,9 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
                 "", // Default OCSP Service Locator  
                 null, // defaultfreshestcrl
                 true, // Finish User
-                new ArrayList(), //extendedcaservices
+                Collections.EMPTY_LIST, //extendedcaservices
                 false, // use default utf8 settings
-                new ArrayList(), // Approvals Settings
+                Collections.EMPTY_LIST, // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
                 true, // Use LDAP DN order by default
@@ -509,6 +526,4 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
         );
 		return cainfo;
 	}
-
-
 }

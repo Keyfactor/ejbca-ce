@@ -782,6 +782,33 @@ before you do an export.
 </p>
 </subsubsection>
 </subsection>
+<subsection name="Remove and restore CA soft keystore">
+<p>Soft token CAs can have their keystore removed from the database. When the keystore is removed the 
+CA can not issue certificates and its CA token status is set to 'offline'.
+</p>
+<p>
+Warning: Before removing the keystore make sure you have exported it if you would like to be able to 
+restore it later. See the section 'Export and import CAs'
+</p>
+<p>
+To remove the catoken keys for "TestCA", enter the following from the $EJBCA_HOME directory: 
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca removekeystore TestCA
+Using JBoss JNDI provider...
+[user@host ejbca]$ 
+</source>
+<p>
+To restore the catoken keys again for "TestCA" with the keystore exported as "TestCA-exported.p12", enter
+the following from the $EJBCA_HOME directory:
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca restorekeystore TestCA /path/TestCA-exported.p12 SignatureKeyAlias EncryptionKeyAlias
+Using JBoss JNDI provider...
+Enter keystore password: foo123
+[user@host ejbca]$ 
+</source>
+</subsection>
 
 </section>
 
