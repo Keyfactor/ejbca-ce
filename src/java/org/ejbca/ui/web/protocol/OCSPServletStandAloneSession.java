@@ -307,14 +307,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         try {
-            if (this.signEntitycontainer == null || this.signEntitycontainer.getSigningEntityMap() == null ||
-                    this.signEntitycontainer.getSigningEntityMap().values() == null) {
+            final Collection<SigningEntity> entityColleaction = this.signEntitycontainer!=null && this.signEntitycontainer.getSigningEntityMap()!=null ? this.signEntitycontainer.getSigningEntityMap().values() : null;
+            if ( entityColleaction==null || entityColleaction.size()<1 ) {
                 final String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
                 pw.println();
                 pw.print(errMsg);
                 m_log.error(errMsg);
             } else {
-                final Iterator<SigningEntity> i = this.signEntitycontainer.getSigningEntityMap().values().iterator();
+                final Iterator<SigningEntity> i = entityColleaction.iterator();
                 while ( i.hasNext() ) {
                     final SigningEntity signingEntity = i.next();
                     final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
