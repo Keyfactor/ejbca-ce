@@ -1700,6 +1700,8 @@ public class EjbcaWS implements IEjbcaWS {
 					}
 			}
 
+		} catch(Exception e){
+            throw getInternalException(e, logger);
 		} finally{
 				usersess.setUserStatus(admin, userDataWS.getUsername(), UserDataConstants.STATUS_GENERATED);
 		}
@@ -1766,8 +1768,6 @@ public class EjbcaWS implements IEjbcaWS {
         } catch (FinderException e) {
             throw getInternalException(e, logger);
         } catch (ClassCastException e) {
-            throw getInternalException(e, logger);
-        }catch(Exception e){
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
