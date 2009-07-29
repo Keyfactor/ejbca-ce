@@ -117,6 +117,8 @@ import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
+import org.ejbca.util.SimpleTime;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -1478,10 +1480,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	int numofreqapprovals = 1;
     	boolean finishuser = false;
     	ArrayList crlpublishers = new ArrayList(); 
-    	int crlperiod = 0;
-    	int crlIssueInterval = 0;
-    	int crlOverlapTime = 10;
-    	int deltacrlperiod = 0;
+    	long crlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
+    	long crlIssueInterval = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
+    	long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
+    	long deltacrlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
     	int certprofileid = CertTools.isSelfSigned(caCertificate) ? SecConst.CERTPROFILE_FIXED_ROOTCA : SecConst.CERTPROFILE_FIXED_SUBCA;
     	String subjectdn = CertTools.getSubjectDN(caCertificate);
     	int validity = 0;
@@ -2244,10 +2246,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                                   description,
 			                                   -1, null, // revokationreason, revokationdate
 			                                   null, // PolicyId
-			                                   24, // CRLPeriod
-			                                   0, // CRLIssuePeriod
-			                                   10, // CRLOverlapTime
-			                                   0, //DeltaCRLPeriod
+			                                   24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+			                                   0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssuePeriod
+			                                   10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+			                                   0 * SimpleTime.MILLISECONDS_PER_HOUR, //DeltaCRLPeriod
 			                                   new ArrayList(), // CRL publishers
 			                                   true, // Authority Key Identifier
 			                                   false, // Authority Key Identifier Critical

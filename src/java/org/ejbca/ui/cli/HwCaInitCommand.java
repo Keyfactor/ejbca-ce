@@ -27,6 +27,7 @@ import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.KeyStrings;
 import org.ejbca.core.model.ca.catoken.NFastCAToken;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyStoreContainer;
 import org.ejbca.util.keystore.KeyStoreContainerFactory;
@@ -110,10 +111,10 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
                                              "Initial CA",
                                              -1, null,
                                              null, // PolicyId
-                                             24, // CRLPeriod
-                                             0, // CRLIssueInterval
-                                             10, // CRLOverlapTime
-                                             0, // DeltaCRLPeriod
+                                             24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                                             0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                                             10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                                             0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                                              new ArrayList(),
                                              true, // Authority Key Identifier
                                              false, // Authority Key Identifier Critical

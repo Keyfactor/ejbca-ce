@@ -32,6 +32,7 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
+import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -211,10 +212,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              "Initial CA",
                                              -1, null,
                                              policies, // PolicyId
-                                             24, // CRLPeriod
-                                             0, // CRLIssueInterval
-                                             10, // CRLOverlapTime
-                                             0, // DeltaCRLPeriod
+                                             24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                                             0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                                             10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                                             0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                                              new ArrayList(),
                                              true, // Authority Key Identifier
                                              false, // Authority Key Identifier Critical
