@@ -73,7 +73,8 @@
         <input message="Please enter the server dn (default: CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}"/>
         <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>
-        <input message="Please enter the CA certificate password (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
+        <input message="Please enter the password of the keystore with the TLS key for https (default: serverpwd) ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
+        <input message="Please enter the password of the truststore with the CA certificate for https (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
     </target>
 
     <target name="ejbca:init" depends="ejbca:noprompt,ejbca:prompt">

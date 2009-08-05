@@ -314,8 +314,12 @@
     <property name="httpserver.pubhttp" value="8080" />
     <property name="httpserver.pubhttps" value="8442" />
     <property name="httpserver.privhttps" value="8443" />
-    <property name="httpsserver.password" value="serverpwd" />
-    <property name="java.trustpassword" value="changeit" />
+    <condition property="httpsserver.password" value="serverpwd" >
+        <isfalse value="${web.promptForPassword}"/>
+    </condition>
+    <condition property="java.trustpassword" value="changeit" >
+        <isfalse value="${web.promptForPassword}"/>
+    </condition>
     <property name="httpsserver.bindaddress.pubhttp" value="0.0.0.0" />
     <property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
     <property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
