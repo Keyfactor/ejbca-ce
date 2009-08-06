@@ -187,22 +187,12 @@ public abstract class BaseCAToken implements ICAToken {
     }
     
     protected static String getAutoActivatePin(Properties properties) {
-    	String ret = null;
-    	String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
-    	if (pin != null) {
-    		try {
-    			ret = StringTools.pbeDecryptStringWithSha256Aes192(pin);
-    			log.debug("Using encrypted autoactivation pin");
-    		} catch (Exception e) {
-    			log.debug("Using cleartext autoactivation pin");
-    		}
-    	} else {
-			log.debug("Not using autoactivation pin");    		
-    	}
-		if (ret == null) {
-			ret = pin;
-		}
-    	return ret;
+        final String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
+        if (pin != null) {
+            return StringTools.passwordDecryption(pin, "autoactivation pin");
+        }
+        log.debug("Not using autoactivation pin");
+        return null;
     }
     /** Sets auto activation pin in passed in properties. Also returns the string format of the 
      * autoactivation properties:

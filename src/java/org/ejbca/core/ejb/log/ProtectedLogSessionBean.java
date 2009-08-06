@@ -85,6 +85,7 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.ManualUpdateCache;
+import org.ejbca.util.StringTools;
 
 /**
  * The center of the Protected Log functionality. Most services used in this workflow are found here.
@@ -1590,12 +1591,12 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		log.trace(">getProtectedLogToken");
 		ProtectedLogToken protectedLogToken = null;
 		try {
-			Properties properties = ProtectedLogDevice.getPropertiesFromInstance();
+			final Properties properties = ProtectedLogDevice.getPropertiesFromInstance();
 			// Get ProtectedLogToken from configuration data
-			String protectionTokenReferenceType = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
-			String protectionTokenReference = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREF, "AdminCA1");
-			String protectionTokenKeyStoreAlias = properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREALIAS, "defaultKey");
-			String protectionTokenKeyStorePassword = properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREPASSWORD, "foo123");
+			final String protectionTokenReferenceType = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
+			final String protectionTokenReference = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREF, "AdminCA1");
+			final String protectionTokenKeyStoreAlias = properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREALIAS, "defaultKey");
+			final String protectionTokenKeyStorePassword = StringTools.passwordDecryption(properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREPASSWORD, "foo123"),ProtectedLogDevice.CONFIG_KEYSTOREPASSWORD);
 			Certificate protectedLogTokenCertificate = null;
 			if ( ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME.equalsIgnoreCase(protectionTokenReferenceType) ) {
 				// Use a CA as token

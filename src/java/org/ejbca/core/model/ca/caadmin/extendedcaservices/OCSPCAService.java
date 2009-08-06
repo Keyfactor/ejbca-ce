@@ -33,6 +33,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -90,10 +91,13 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       loadData(data);  
       if(data.get(OCSPKEYSTORE) != null){    
          // lookup keystore passwords      
-         String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
-         if (keystorepass == null) {
-        	 throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
-         }
+          final String keystorepass; {
+              final String tmp = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
+              if (tmp == null) {
+                  throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
+              }
+              keystorepass = StringTools.passwordDecryption(tmp, "ca.ocspkeystorepass");
+          }
                
         try {
         	m_log.debug("Loading OCSP keystore");
@@ -128,11 +132,14 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	*/   
    public void init(CA ca) throws Exception {
    	 m_log.debug("OCSPCAService : init ");
-	 // lookup keystore passwords      
-     String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
-	 if (keystorepass == null) {
-	   throw new IllegalArgumentException("Missing OCSPKeyPass property.");
-	 }
+   	 // lookup keystore passwords      
+   	 final String keystorepass; {
+   	     final String tmp = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
+   	     if (tmp == null) {
+   	         throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
+   	     }
+   	     keystorepass = StringTools.passwordDecryption(tmp, "ca.ocspkeystorepass");
+   	 }
 	  // Currently only RSA keys are supported
 	 OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
                   

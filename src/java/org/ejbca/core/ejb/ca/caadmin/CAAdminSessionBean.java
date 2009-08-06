@@ -1715,14 +1715,15 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @param tokenInfo Tells if SW.
      * @return The password to use.
      */
-    private String getDefaultKeyStorePassIfSWAndEmpty(String keystorepass, CATokenInfo tokenInfo) {
+    private String getDefaultKeyStorePassIfSWAndEmpty(final String keystorepass, CATokenInfo tokenInfo) {
         if (tokenInfo instanceof SoftCATokenInfo && StringUtils.isEmpty(keystorepass)) {
             log.debug("Using system default keystore password");
-            keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");                
-            if (keystorepass == null) {
+            final String newKeystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");                
+            if (newKeystorepass == null) {
                 log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");
                 throw new IllegalArgumentException("Missing keyStorePass property.");
             }
+            return StringTools.passwordDecryption(newKeystorepass, "ca.keystorepass");
         }
         return keystorepass;
     }

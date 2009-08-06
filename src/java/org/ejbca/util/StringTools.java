@@ -356,33 +356,34 @@ public class StringTools {
 
         return new String(b,0,l);
     }
-    private static final String q = "OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf";
+    private static byte[] getSalt() throws UnsupportedEncodingException {
+        final String saltStr = "1958473059684739584hfurmaqiekcmq";
+        return saltStr.getBytes("UTF-8");
+    }
+    private static final char[] p = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf").toCharArray();
+    private static final int iCount = 100;
     public static String pbeEncryptStringWithSha256Aes192(String in) throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
     	if (KeyTools.isUsingExportableCryptography()) {
     		log.warn("Obfuscation not possible due to weak crypto policy.");
     		return in;
     	}
-        Digest digest = new SHA256Digest();
-        final char[] p = deobfuscate(q).toCharArray();
-        String saltStr = "1958473059684739584hfurmaqiekcmq";
-        byte[] salt = saltStr.getBytes("UTF-8");
-        int    iCount = 100;
+        final Digest digest = new SHA256Digest();
         
-        PKCS12ParametersGenerator   pGen = new PKCS12ParametersGenerator(digest);
+        final PKCS12ParametersGenerator   pGen = new PKCS12ParametersGenerator(digest);
         pGen.init(
                 PBEParametersGenerator.PKCS12PasswordToBytes(p),
-                salt,
+                getSalt(),
                 iCount);
         
-        ParametersWithIV params = (ParametersWithIV)pGen.generateDerivedParameters(192, 128);
-        SecretKeySpec   encKey = new SecretKeySpec(((KeyParameter)params.getParameters()).getKey(), "AES");
-        Cipher          c;
+        final ParametersWithIV params = (ParametersWithIV)pGen.generateDerivedParameters(192, 128);
+        final SecretKeySpec   encKey = new SecretKeySpec(((KeyParameter)params.getParameters()).getKey(), "AES");
+        final Cipher          c;
         c = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
         c.init(Cipher.ENCRYPT_MODE, encKey, new IvParameterSpec(params.getIV()));
         
-        byte[]          enc = c.doFinal(in.getBytes("UTF-8"));
+        final byte[]          enc = c.doFinal(in.getBytes("UTF-8"));
         
-        byte[] hex = Hex.encode(enc);
+        final byte[] hex = Hex.encode(enc);
         return new String(hex);
     }
     
@@ -391,19 +392,27 @@ public class StringTools {
     		log.warn("De-obfuscation not possible due to weak crypto policy.");
     		return in;
     	}
-        final char[] p = deobfuscate(q).toCharArray();
-        String saltStr = "1958473059684739584hfurmaqiekcmq";
-        byte[] salt = saltStr.getBytes("UTF-8");
-        int    iCount = 100;
 
-        Cipher c = Cipher.getInstance("PBEWithSHA256And192BitAES-CBC-BC", "BC");
-        PBEKeySpec          keySpec = new PBEKeySpec(p, salt, iCount);
-        SecretKeyFactory    fact = SecretKeyFactory.getInstance("PBEWithSHA256And192BitAES-CBC-BC", "BC");
+    	final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
+        final Cipher c = Cipher.getInstance(algorithm, "BC");
+        final PBEKeySpec          keySpec = new PBEKeySpec(p, getSalt(), iCount);
+        final SecretKeyFactory    fact = SecretKeyFactory.getInstance(algorithm, "BC");
         
         c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
         
-        byte[] dec = c.doFinal(Hex.decode(in.getBytes("UTF-8")));
+        final byte[] dec = c.doFinal(Hex.decode(in.getBytes("UTF-8")));
         return new String(dec);
+    }
+    
+    public static String passwordDecryption(final String in, String sDebug) {
+        try {
+            final String tmp = pbeDecryptStringWithSha256Aes192(in);
+            log.debug("Using encrypted "+sDebug);
+            return tmp;
+        } catch( Throwable t ) {
+            log.debug("Using cleartext "+sDebug);
+            return in;
+        }
     }
 
     public static String incrementKeySequence(String oldSequence) {

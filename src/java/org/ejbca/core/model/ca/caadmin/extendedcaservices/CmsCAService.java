@@ -51,6 +51,7 @@ import org.ejbca.core.model.ca.certificateprofiles.XKMSCertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -116,10 +117,13 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		loadData(data);  
 		if(data.get(KEYSTORE) != null){    
 			// lookup keystore passwords      
-			String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/CMSKeyStorePass");      
-			if (keystorepass == null) {
-				throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
-			}
+		    final String keystorepass; {
+		        final String tmp = ServiceLocator.getInstance().getString("java:comp/env/CMSKeyStorePass");      
+		        if (tmp == null) {
+		            throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
+		        }
+		        keystorepass = StringTools.passwordDecryption(tmp, "ca.cmskeystorepass");
+		    }
 
 			try {
 				m_log.debug("Loading CMS keystore");
@@ -155,10 +159,13 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	public void init(CA ca) throws Exception {
 		m_log.debug("CmsCAService : init");
 		// lookup keystore passwords      
-		String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/CMSKeyStorePass");      
-		if (keystorepass == null) {
-			throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
-		}
+        final String keystorepass; {
+            final String tmp = ServiceLocator.getInstance().getString("java:comp/env/CMSKeyStorePass");      
+            if (tmp == null) {
+                throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
+            }
+            keystorepass = StringTools.passwordDecryption(tmp, "ca.cmskeystorepass");
+        }
 		// Currently only RSA keys are supported
 		CmsCAServiceInfo info = (CmsCAServiceInfo) getExtendedCAServiceInfo();       
 

@@ -78,16 +78,15 @@ public class CaInitCommand extends BaseCaAdminCommand {
         }
             
         try {             	
-            String caname = args[1];
-            String dn = CertTools.stringToBCDNString(args[2]);
-            dn = StringTools.strip(dn);
-            String catokentype = args[3];
-            String catokenpassword = args[4];
-            String keyspec = args[5];
-            String keytype = args[6];
-            int validity = Integer.parseInt(args[7]);
+            final String caname = args[1];
+            final String dn = StringTools.strip(CertTools.stringToBCDNString(args[2]));
+            final String catokentype = args[3];
+            final String catokenpassword = StringTools.passwordDecryption(args[4], "ca.tokenpassword");
+            final String keyspec = args[5];
+            final String keytype = args[6];
+            final int validity = Integer.parseInt(args[7]);
             String policyId = args[8];
-            ArrayList policies = new ArrayList(1);
+            final ArrayList policies = new ArrayList(1);
             if ( (policyId != null) && (policyId.toLowerCase().trim().equals("null")) ) {
             	policyId = null;
             } else {

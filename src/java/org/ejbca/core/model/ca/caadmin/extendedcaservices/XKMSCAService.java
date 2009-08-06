@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.certificateprofiles.XKMSCertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 import org.w3c.dom.Document;
 
@@ -91,11 +92,14 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
       CertTools.installBCProvider();
       loadData(data);  
       if(data.get(XKMSKEYSTORE) != null){    
-         // lookup keystore passwords      
-         String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");      
-         if (keystorepass == null) {
-        	 throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
-         }
+         // lookup keystore passwords
+          final String keystorepass; {
+              final String tmp = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");
+              if (tmp == null) {
+                  throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
+              }
+              keystorepass = StringTools.passwordDecryption(tmp, "ca.xkmskeystorepass");
+          }
                
         try {
         	m_log.debug("Loading XKMS keystore");
@@ -131,10 +135,13 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
    public void init(CA ca) throws Exception {
    	 m_log.trace(">init");
 	 // lookup keystore passwords      
-     String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");      
-	 if (keystorepass == null) {
-	   throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
-	 }
+     final String keystorepass; {
+         final String tmp = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");
+         if (tmp == null) {
+             throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
+         }
+         keystorepass = StringTools.passwordDecryption(tmp, "ca.xkmskeystorepass");
+     }
 	  // Currently only RSA keys are supported
 	 XKMSCAServiceInfo info = (XKMSCAServiceInfo) getExtendedCAServiceInfo();       
                   
