@@ -39,12 +39,17 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	private static final Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
 	private static IHealtChecker healthChecker;
 
+	private boolean doSignTest = false;
+
 	static public void setHealtChecker(IHealtChecker hc) {
 		healthChecker = hc;
 	}
 	
 	public void init(ServletConfig config) {
 		super.init(config);
+		final String sDoSign = config.getInitParameter("OCSPSignTest");
+		this.doSignTest = sDoSign!=null && sDoSign.toLowerCase().indexOf("true")>=0;
+        log.debug("OCSPSignTest: "+this.doSignTest);
 	}
 	
 	public String checkHealth(HttpServletRequest request) {
@@ -73,9 +78,12 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	
 	private String checkOCSPSignTokens(){
 		if ( healthChecker!=null ) {
-			return healthChecker.healthCheck();
+		    if ( this.doSignTest ) {
+		        return healthChecker.healthCheck();
+		    }
 		} else {
 			return "No OCSP token health checker set";
 		}
+        return "";
 	}
 }

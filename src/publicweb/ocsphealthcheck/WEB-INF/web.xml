@@ -80,6 +80,14 @@
                 one generated´by the HealthChecker.
             </description>
         </init-param> -->
+        <init-param>
+            <param-name>OCSPSignTest</param-name>
+            <param-value>@ocsphealthcheck.signtest@</param-value>
+            <description>
+                Parameter to configure if all available signing keys should be tested.
+                The test will fail if any of the available signing keys is not working or if there are no available signing keys.
+            </description>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>

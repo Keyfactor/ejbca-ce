@@ -333,6 +333,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                                 pw.println();
                                 pw.print(errMsg);
                                 m_log.error(errMsg);
+                            } else {
+                                m_log.debug("Test of \""+errMsg+" \"OK!");
                             }
                         } finally {
                             signingEntity.keyContainer.releaseKey();

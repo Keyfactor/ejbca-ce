@@ -275,8 +275,13 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
 # The healthcheck.maintenancefile should contain a single line like this:
 # DOWN_FOR_MAINTENANCE=true
-# Where the node will be down for maintenenace of the property is true, and not down for maintenance if the property is false.
+# Where the node will be down for maintenance of the property is true, and not down for maintenance if the property is false.
 #ocsphealthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
+
+# Parameter to configure if all available signing keys should be tested.
+# The test will fail if any of the available signing keys is not working or if there are no available signing keys.
+# Default: true
+#ocsphealthcheck.signtest=false
 
 #------------------- OCSP Logging settings -------------
 # Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
