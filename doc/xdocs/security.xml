@@ -139,6 +139,72 @@ with some other (not one-time) password instead of usual one-time password,
 a strong authentication mechanism will be build on a weaker one.
 </p></section>
 
+<section name="Passwords defined when configuring EJBCA.">
+<p>
+The configuration files (in $EJBCA_HOME/conf) contains some passwords.
+It is not considered to be a security risk to declare all these passwords
+in clear text. Anyone that could log on to the server with EJBCA could apart from
+reading these files also do anything he wants with the CLI of EJBCA. If an unauthorized
+person could use the CLI this is severe security risk. But reading the passwords is not
+much of a problem since the passwords in any case can not be used to anything outside
+the server.
+</p><p>
+It is very important to restrict the access to the server only to a very few trust-able
+persons.
+</p><p>
+If you anyway want to do something about these passwords the subsections of these section
+is describing what could be done:
+</p>
+<subsection name="Passwords used by EJBCA taken from property files">
+<p>
+Some of the passwords are used directly by EJBCA code.
+All these passwords may be configured encrypted in the same way as
+<a href="manual.html#Auto-activation of CA tokens">PINs used for auto activation could be encrypted</a>.
+</p>
+<p>
+List of these passwords in ejbca.properites :
+<br/>ca.tokenpassword
+<br/>ca.keystorepass
+<br/>ca.ocspkeystorepass
+<br/>ca.xkmskeystorepass
+<br/>ca.cmskeystorepass
+</p><p>
+List of these passwords in protectedlog.properties :
+<br/>protectionTokenKeyStorePassword
+</p>
+</subsection>
+<subsection name="Passwords used by the application server">
+<p>
+Some of the passwords is not used by EJBCA but by the application server. If this passwords
+should be encrypted it must be in a way so that they could be decrypted by the application
+server. You have to consult the documentation of the application server to find out how to
+encrypt them (example: <a href="#Datasource passwords">datasource password in jboss</a>).
+</p><p>
+This are these passwords:
+<br/>mail.password in mail.properties
+<br/>database.password in database.properties
+</p>
+</subsection>
+<subsection name="Passwords prompted for by 'ant install'">
+<p>
+If you don't define superadmin.password in web.properties then 'ant install' will prompt for it.
+Since this password does not has to be known by EJBCA after the super admin token has been created
+it will not exist in any file after the installation.
+</p>
+<p>
+The passwords java.trustpassword and httpsserver.password also in web.properties are used to generate
+keystore files at 'ant install'. These passwords must later on be specified in the application server
+configuration. If these passwords are not specified and the property 'web.promptForPassword' is set to
+'true' then these passwords are also prompted for.
+</p><p>
+But if you let 'ant install' prompt for these passwords you must set them (maybe encrypted if possible)
+in the application server configuration. The file for the application server is copied to the application
+server at 'ant deploy' (in jboss 4.2.3 the file is called $JBOSS_HOME/server/default/deploy/jboss-web.deployer/server.xml)
+You must then manually substitute the strings 'changeThisToThePassword' in the configuration file with clear
+text or possible encrypted (application server specific) passwords.
+</p>
+</subsection>
+</section>
 <section name="Datasource passwords">
 <p>
 If you do not like to have your DataSource password available in clear text in EjbcaDS.xml, 
