@@ -100,6 +100,13 @@ public class TestSimpleTime extends TestCase {
 	}
 	
 	/**
+	 * Tests the constructor that takes an argument of type long
+	 */
+	public void test04ConstructorLong() throws Exception {
+		assertEquals(4711, SimpleTime.getInstance(4711).getLong());
+	}
+	
+	/**
 	 * Helper for tests that we expect to fail.
 	 */
 	private void testFailHelper(String time, String defaultTime) {

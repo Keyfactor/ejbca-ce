@@ -57,6 +57,7 @@ public class SimpleTime {
 	 * @param time milliseconds
 	 */
 	private SimpleTime(long time) {
+		longTime = time;
 		days = time / MILLISECONDS_PER_DAY;
 		time %= MILLISECONDS_PER_DAY;
 		hours = time / MILLISECONDS_PER_HOUR;
