@@ -87,7 +87,7 @@
     <% if(capublished){ %> 
       <tr> 
         <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CAPUBLISHED") %></H4></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CACERTPUBLISHINGQUEUED") %></H4></td>
         <td width="35%"></td>
       </tr>
     <% } %>
