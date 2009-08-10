@@ -355,6 +355,19 @@ function checkallfields(){
 		alert("<%= ejbcawebbean.getText("SUBJECTDNINVALID")%>")
 		illegalfields++;
     }
+    
+    if((document.ca.<%= SELECT_SIGNATUREALGORITHM %>.value.indexOf("ECDSA")!=-1)) {
+        if(document.ca.<%= TEXTFIELD_KEYSPEC %>.value == "") {
+        	alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("KEYSPEC", true)%>");
+        	illegalfields++;
+        }
+    } else {
+    	if(document.ca.<%= TEXTFIELD_KEYSPEC %>.value != "") {
+    		alert("<%= ejbcawebbean.getText("YOUAREREQUIREDTONOT", true) + " " + ejbcawebbean.getText("KEYSPEC", true)%>");
+    		illegalfields++;
+        }
+    }
+    	    
    <% } %> 
 
     <% if(!editca || (editca && cainfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA)){ %>

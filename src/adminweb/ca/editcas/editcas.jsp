@@ -11,7 +11,10 @@
 
 
 <%@page import="org.ejbca.core.model.util.AlgorithmTools"%>
-<%@page import="java.security.cert.CertificateException"%><html>
+<%@page import="java.security.cert.CertificateException"%>
+<%@page import="javax.ejb.EJBException"%>
+<%@page import="java.security.InvalidParameterException"%>
+<%@page import="java.security.InvalidAlgorithmParameterException"%><html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
@@ -654,6 +657,13 @@
 						}
                     	t = t.getCause();
                     }
+                 } catch(EJBException ejbe) {
+                	Exception ex = ejbe.getCausedByException();
+                	if(ex instanceof InvalidAlgorithmParameterException) {
+                		errormessage = ejbcawebbean.getText("INVALIDSIGORKEYALGPARAM") + ": " + ex.getLocalizedMessage();
+                	} else {
+	               		throw ejbe;
+               		}
                  }
                  includefile="choosecapage.jspf"; 
                }
