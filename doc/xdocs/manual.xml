@@ -1569,8 +1569,6 @@ You can configure this in the certificate profile used to issue certificates.
 New to EJBCA 3.4 is a JAX-WS 2.0 Web Service Interface used to access the basic
 functions remotely over client authentication HTTPS. 
 </p><p>
-The JAX-WS interface depends on java 1.5 or later and will otherwise not be included in the EJBCA installation.
-</p><p>
 The functionality currently available through the Web Service Interface are:
 </p>
 <ul>
@@ -1610,6 +1608,24 @@ If all prerequisites are fulfilled, the next pkcs12Req call (for example) will r
 There is also a cli tool that can be used for remote scripting. See following section for more information.
 Note: All these calls are not available through the CLI.
 </p>
+
+<subsection name="Web Services authentication">
+<p>
+the Web Services interface requries client certificate authentication from administrators, in the same way as the admin GUI does.
+If you have a client certificate the works on the admin GUI you should also be able to use it for the web service interface. 
+</p>
+<p>
+Configuration for the Web Services CLI requires a JKS keystore. You can easily generate a JKS for an administrator using the admin GUI (you can even create a JKS for superadmin).
+Below is a short description how to create a JKS for a user on the command line, and adding the new user to the superadministrator admin group.
+</p>
+<source>
+ejbca ra adduser &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" null AdminCA null 1 JKS
+ejbca ra setclearpwd &lt;1> &lt;2>
+ejbca batch
+ejbca admins addadmin "Temporary Super Administrator Group" AdminCA WITHCOMMONNAME EQUALCASEINS &lt;1>
+</source>
+</subsection>
+
 <subsection name="Configuring Web Services CLI">
 <p>
 There exists one propertyfile in conf/jaxws.properties.sample that is used to
