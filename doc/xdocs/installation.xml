@@ -713,6 +713,14 @@ If you have an Apache front-end:<br/>
 After this you should be able to access the admin-GUI in EJBCA.
 </p>
 </subsubsection>
+
+<subsubsection name="Runtime ports">
+<p>OC4J have a habit of changing the runtime ports used for remote EJB calls every time it starts. This causes problems with the EJBCA command line interface. 
+The port used by the EJBCA cli is configured in conf/jndi.properties.oracle, and you don't want to change this and to a complete 'ant' cycle every time you restart the server.
+To make OC4J use a fixed runtime port you can go to Cluster Topology->Runtime Ports page of the Application Server Control. Set 'Port Range' to the single value, that you can pick from 'Port in Use'.
+</p>
+</subsubsection>
+
 </subsection>
 
 <subsection name="Websphere (EJBCA 3.6)">
