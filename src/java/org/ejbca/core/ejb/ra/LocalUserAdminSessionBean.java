@@ -1457,7 +1457,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         while (j.hasNext()) {
         	Certificate cert = (Certificate)j.next();
         	// Revoke one certificate at a time
-        	revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, reason);
+        	try {
+            	revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, reason);        		
+        	} catch (AlreadyRevokedException e) {
+        		if (log.isDebugEnabled()) {
+        			log.debug("Certificate from issuer '"+CertTools.getIssuerDN(cert)+"' with serial "+CertTools.getSerialNumber(cert)+" was already revoked.");
+        		}
+        	}
         }
         // Finally set revoke status on the user as well
         try {
