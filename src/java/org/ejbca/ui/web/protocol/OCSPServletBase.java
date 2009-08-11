@@ -62,6 +62,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.MalformedRequestException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
@@ -330,8 +331,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 		// Cache-friendly parameters
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("untilNextUpdate: " + OcspConfiguration.getUntilNextUpdate());
-			m_log.debug("maxAge: " + OcspConfiguration.getMaxAge());
+			m_log.debug("untilNextUpdate: " + OcspConfiguration.getUntilNextUpdate(SecConst.CERTPROFILE_NO_PROFILE));
+			m_log.debug("maxAge: " + OcspConfiguration.getMaxAge(SecConst.CERTPROFILE_NO_PROFILE));
 			m_log.debug("ocspSigningCertsValidTime is: " + m_valid_time);
 		}
 		// Finally we load the CA certificates and private keys of this OCSP responder
@@ -589,9 +590,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 
 		try {
 			// Read configuration values affecting the response, these can be dynamically updated from properties files in file system
-			// Read only once here for each request since may take a millisecond to read the value
-			final long maxAge = OcspConfiguration.getMaxAge(); 
-			final long nextUpdate = OcspConfiguration.getUntilNextUpdate();
+			// Read default values here for each request since may take a millisecond to read the value
+			// These values can be changed depending on if there are different configurations for different certificate profiles
+			// In that case it is updated once we have read the certificate status of the certificate searched for.
+			long maxAge = OcspConfiguration.getMaxAge(SecConst.CERTPROFILE_NO_PROFILE); 
+			long nextUpdate = OcspConfiguration.getUntilNextUpdate(SecConst.CERTPROFILE_NO_PROFILE);
 
 			OCSPResp ocspresp = null;
 			OCSPRespGenerator res = new OCSPRespGenerator();
@@ -771,6 +774,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					if ( !cacertStatus.equals(CertificateStatus.REVOKED) ) {
 						// Check if cert is revoked
 						final CertificateStatus status = getStatus(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
+						// If we have different maxAge and untilNextUpdate for different certificate profiles, we have to fetch these
+						// values now that we have fetched the certificate status, that includes certificate profile.
+                        nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
+                        maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
+
                         final String sStatus;
 						if (status.equals(CertificateStatus.NOT_AVAILABLE)) {
 							// No revocation info available for this cert, handle it

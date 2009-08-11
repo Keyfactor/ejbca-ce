@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /**
@@ -268,12 +270,17 @@ public class OcspConfiguration {
 	}
 
 	/** 
-	 * The default number of seconds a response is valid, or 0 to disable. See RFC5019.
+	 * The default number of milliseconds a response is valid, or 0 to disable. See RFC5019.
 	 */
-	public static long getUntilNextUpdate() {
+	public static long getUntilNextUpdate(int certProfileId) {
 		long value = 0;
+		Configuration config = ConfigurationHolder.instance();
+		String key = "ocsp."+certProfileId+".untilNextUpdate";
+		if ( (certProfileId == SecConst.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key)) ) {
+			key = "ocsp.untilNextUpdate";
+		}
 		try {
-			value = (ConfigurationHolder.instance().getLong("ocsp.untilNextUpdate", value) * 1000);
+			value = (config.getLong(key, value) * 1000);
 		} catch( ConversionException e ) {
 			log.warn("\"ocsp.untilNextUpdate\" is not a decimal number. Using default value: " + value);
 		}
@@ -281,13 +288,20 @@ public class OcspConfiguration {
 	}
 
 	/**
-	 * The default number of seconds a HTTP-response should be cached. See RFC5019.
+	 * The default number of milliseconds a HTTP-response should be cached. See RFC5019.
 	 */
-	public static long getMaxAge() {
+	public static long getMaxAge(int certProfileId) {
 		long value = 30;
+		Configuration config = ConfigurationHolder.instance();
+		String key = "ocsp."+certProfileId+".maxAge";
+		if ( (certProfileId == SecConst.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key)) ) {
+			key = "ocsp.maxAge";
+		}
 		try {
-			value = (ConfigurationHolder.instance().getLong("ocsp.maxAge", value) * 1000);
+			value = (config.getLong(key, value) * 1000);
 		} catch( ConversionException e ) {
+			// Convert default value to milliseconds
+			value = value * 1000;
 			log.warn("\"ocsp.maxAge\" is not a decimal number. Using default value: " + value);
 		}
 		return value;

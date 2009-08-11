@@ -57,7 +57,8 @@ public class ConfigurationHolder {
 
 	public static Configuration instance() {
 		if (config == null) {
-			// Default values build into jar file, this is last prio used if no of the other sources override this
+
+			// read ejbca.properties, from config file built into jar, and see if we allow configuration by external files
 			boolean allowexternal = false;
 			try {
 				URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
@@ -123,6 +124,25 @@ public class ConfigurationHolder {
 			}
 		}
 		return config;
+	}
+	
+	/** Method used primarily for JUnit testing, where we can add a new properties file (in tmp directory)
+	 * to the configuration.
+	 * @param filename the full path to the properties file used for configuration.
+	 */
+	public static void addConfigurationFile(String filename) {
+		// Make sure the basic initialization has been done
+		instance();
+		File f = null;
+		try {
+			f = new File(filename);
+			PropertiesConfiguration pc = new PropertiesConfiguration(f);
+			pc.setReloadingStrategy(new FileChangedReloadingStrategy());
+			config.addConfiguration(pc);
+			log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
+		} catch (ConfigurationException e) {
+			log.error("Failed to load configuration from file " + f.getAbsolutePath());
+		}
 	}
 	
 	/**

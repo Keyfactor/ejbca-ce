@@ -92,6 +92,8 @@ public class SecConst extends Object {
 
     public static final int NO_HARDTOKENISSUER            = 0;
 
+    /** Used when no certificate profile id value is available */
+    public static final int CERTPROFILE_NO_PROFILE            = 0; 
     public static final int CERTPROFILE_FIXED_ENDUSER         = 1;
     public static final int CERTPROFILE_FIXED_SUBCA           = 2;
     public static final int CERTPROFILE_FIXED_ROOTCA          = 3;

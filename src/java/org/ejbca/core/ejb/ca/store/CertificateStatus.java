@@ -15,32 +15,44 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.util.Date;
 
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
-// this should be an enum declaration. but the stupid ejbdoclet don't understand enums
+/** Simple class encapsulating the certificate status information needed when making revocation checks.
+ * 
+ * @version $Id$
+ */
 public class CertificateStatus {
-    public final static CertificateStatus REVOKED=new CertificateStatus("REVOKED");
-    public final static CertificateStatus NOT_AVAILABLE=new CertificateStatus("NOT_AVAILABLE");
-    public final static CertificateStatus OK = new CertificateStatus("OK");
+    public final static String REVOKED = "REVOKED";
+    public final static String OK = "OK";
+    public final static CertificateStatus NOT_AVAILABLE = new CertificateStatus("NOT_AVAILABLE", SecConst.CERTPROFILE_NO_PROFILE);
+
     public final static CertificateStatus getIt( CertificateDataLocal data) {
-        if ( data==null )
+        if ( data == null ) {
             return NOT_AVAILABLE;
-        if ( data.getStatus() != CertificateDataBean.CERT_REVOKED )
-            return OK;
-        return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason());
+        }
+        if ( data.getStatus() != CertificateDataBean.CERT_REVOKED ) {
+            return new CertificateStatus(CertificateStatus.OK, data.getCertificateProfileId());
+        }
+        return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), data.getCertificateProfileId().intValue());
     }
+    
     private final String name;
     public final Date revocationDate;
     public final int revocationReason;
-    private CertificateStatus(String s) {
+    public final int certificateProfileId;
+    
+    private CertificateStatus(String s, int certProfileId) {
         this.name = s;
         this.revocationDate = null;
         this.revocationReason = RevokedCertInfo.NOT_REVOKED;
+        this.certificateProfileId = SecConst.CERTPROFILE_NO_PROFILE;
     }
-    private CertificateStatus( long date, int reason ) {
-        this.name = CertificateStatus.REVOKED.toString();
+    private CertificateStatus( long date, int reason, int certProfileId ) {
+        this.name = CertificateStatus.REVOKED;
         this.revocationDate = new Date(date);
         this.revocationReason = reason;
+        this.certificateProfileId = certProfileId;
     }
     public String toString() {
         return this.name;

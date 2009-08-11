@@ -91,6 +91,16 @@ By default these properties are set not to allow caching, which is the default b
 <li>ocsp.maxAge - how long a response will be cached, in seconds. Should be less than untilNextUpdate. This adds RFC5019 cache headers.</li>
 </ul> 
 </p>
+<p>
+You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
+This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
+You can find the certificateProfileId in the admin GUI.
+<ul>
+<li>ocsp.&lt;certificateProfileId>.untilNextUpdate - number of seconds a response will be valid for certificates issued with the specified certificate profile.</li>
+<li>ocsp.&lt;certificateProfileId>.maxAge - how long a response will be cached for certificates issued with the specified certificate profile. Should be less than untilNextUpdate.</li>
+</ul> 
+If no specific certificateProfileId is specified the default values from ocsp.maxAge and ocsp.untilNextUpdate are used.
+</p>
 </section>
 
   <section name="OCSP stress testing">
