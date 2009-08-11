@@ -466,6 +466,8 @@ certificates from the specified CertificateProfile.
 <p>
 The validity determines the validity in days of certificates, from the time the certificate is issued.
 The field 'notAfter' in the issued certificate will have the value 'now + validity days'.
+It can also be entered in terms of years, months and days. For instance '10y 9mo 8d' is translated to 
+10 years, 9 months and 8 days from now.
 </p><p>
 <strong>Allow validity override</strong><br/>
 The check box 'Allow Validity Override' will make it possible to request a specific notAfter date. This is currently possible when using CMP (the CRMF request format), or when using the API to issue certificates.

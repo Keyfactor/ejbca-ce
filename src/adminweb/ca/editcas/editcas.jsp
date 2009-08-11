@@ -14,7 +14,9 @@
 <%@page import="java.security.cert.CertificateException"%>
 <%@page import="javax.ejb.EJBException"%>
 <%@page import="java.security.InvalidParameterException"%>
-<%@page import="java.security.InvalidAlgorithmParameterException"%><html>
+<%@page import="java.security.InvalidAlgorithmParameterException"%>
+<%@page import="org.ejbca.util.YearMonthDayTime"%>
+<%@page import="java.util.concurrent.TimeUnit"%><html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
@@ -154,6 +156,28 @@
   
   static final int    CERTREQGENMODE      = 0;
   static final int    CERTGENMODE         = 1;
+  
+  int parseValidity(String value) {
+	  int ret = 0;
+	  if(value != null) {
+       	try {
+       		// First try with decimal format (days)
+       		ret = Integer.parseInt(value);
+       	} catch(NumberFormatException ex) {
+       		// Use '*y *mo *d'-format
+       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(value, "0"+YearMonthDayTime.TYPE_DAYS);
+         	Calendar cal = Calendar.getInstance();
+        	cal.add(Calendar.YEAR, (int) ymod.getYears());
+        	cal.add(Calendar.MONTH, (int) ymod.getMonths());
+        	cal.add(Calendar.DATE, (int) ymod.getDays());
+        	Calendar now = Calendar.getInstance();
+        	// Calculate number of days from now until '*y *mo *d'
+           	ret = (int) TimeUnit.DAYS.convert(cal.getTimeInMillis() - now.getTimeInMillis(), TimeUnit.MILLISECONDS);
+       	}
+         	System.out.println("Validatity is " + ret);
+       }
+	  return ret;
+  }
 %>
 <% 
          
@@ -442,9 +466,7 @@
          if(description == null)
            description = "";
          
-         int validity = 0;
-         if(request.getParameter(TEXTFIELD_VALIDITY) != null)
-           validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));  
+         int validity = parseValidity(request.getParameter(TEXTFIELD_VALIDITY));
 
          if(catoken != null && catype != 0 && subjectdn != null && caname != null && signedby != 0  ){
 
@@ -846,9 +868,7 @@
         	 description = "";
          }
          
-         int validity = 0;
-         if(request.getParameter(TEXTFIELD_VALIDITY) != null)
-           validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
+         int validity = parseValidity(request.getParameter(TEXTFIELD_VALIDITY));
             
 
          if(caid != 0  && catype !=0 ){
@@ -1266,9 +1286,7 @@
          if(description == null)
            description = "";
          
-         int validity = 0;
-         if(request.getParameter(TEXTFIELD_VALIDITY) != null)
-           validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));         
+         int validity = parseValidity(request.getParameter(TEXTFIELD_VALIDITY));         
 
          if(catype != 0 && subjectdn != null && caname != null && 
             certprofileid != 0 && signedby != 0 && validity !=0 ){

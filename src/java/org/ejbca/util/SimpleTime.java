@@ -13,8 +13,8 @@
  
 package org.ejbca.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -24,11 +24,9 @@ import org.apache.log4j.Logger;
  * The format is in the form '*d *h *m *s *ms' where * is a decimal number and
  * d=days, h=hours, m=minutes, s=seconds, ms=milliseconds. Spaces are optional.
  *  
- * @version $Id: $
+ * @version $Id$
  */
 public class SimpleTime {
-	
-    public static final String patternString = "^(\\d+[dD])?(\\d+[hH])?(\\d+[mM])?(\\d+[sS])?(\\d+[mM][sS])?$";
 
     public static final long MILLISECONDS_PER_DAY = 86400000L;
 	public static final long MILLISECONDS_PER_HOUR = 3600000L;
@@ -40,11 +38,9 @@ public class SimpleTime {
 	public static final String TYPE_MINUTES = "m";
 	public static final String TYPE_SECONDS = "s";
 	public static final String TYPE_MILLISECONDS = "ms";
-    
+	    
     private static final Logger log = Logger.getLogger(SimpleTime.class);
-	private static final Pattern pattern = Pattern.compile(patternString);
-	private static final Pattern valuePattern = Pattern.compile("(\\d+)");
-	private static final Pattern typePattern = Pattern.compile("(\\D+)");
+    private static final UnitParser unitParser = new UnitParser(Arrays.asList(new String[] {TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS, TYPE_MILLISECONDS}));
 	
     private long longTime = 0;
     private long days = 0;
@@ -134,40 +130,13 @@ public class SimpleTime {
 	 * @throws Exception if an parsing error occurs
 	 */
 	private void parse(String time) throws Exception {
-		if (time == null) {
-			throw new Exception("Time is null.");
-		}
-		time = time.replaceAll("\\s", "");	// Remove all white-spaces
-		if (time.length()==0) {
-			throw new Exception("Time is empty.");
-		}
-		Matcher matcher = pattern.matcher(time);
-		if (!matcher.find()) {
-			throw new Exception("Not a match.");
-		}
-		for (int i=0; i<matcher.groupCount(); i++) {
-			String match = matcher.group(i+1);
-			if (match != null) {
-				Matcher valueMatcher = valuePattern.matcher(match);
-				Matcher typeMatcher = typePattern.matcher(match);
-				if (!valueMatcher.find() || !typeMatcher.find()) {
-					throw new Exception("Not a match.");
-				}
-				long value = Long.parseLong(valueMatcher.group(1));
-				String type = typeMatcher.group(1).toLowerCase();
-				if (TYPE_DAYS.equals(type)) {
-					days = value;
-				} else if (TYPE_HOURS.equals(type)) {
-					hours = value;
-				} else if (TYPE_MINUTES.equals(type)) {
-					minutes = value;
-				} else if (TYPE_SECONDS.equals(type)) {
-					seconds = value;
-				} else if (TYPE_MILLISECONDS.equals(type)) {
-					milliSeconds = value;
-				}
-			}
-		}
+		Map/*String, Long*/ values = unitParser.parse(time);
+		days = (Long) values.get(TYPE_DAYS);
+		hours = (Long) values.get(TYPE_HOURS);
+		minutes = (Long) values.get(TYPE_MINUTES);
+		seconds = (Long) values.get(TYPE_SECONDS);
+		milliSeconds = (Long) values.get(TYPE_MILLISECONDS);
+
 		longTime = days * MILLISECONDS_PER_DAY + hours * MILLISECONDS_PER_HOUR + minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliSeconds;
 	}
 

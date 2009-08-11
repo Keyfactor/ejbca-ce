@@ -221,6 +221,18 @@ function checkFieldForSimpleTimeMinutes(thetextfield , alerttext) {
   return false;
 }
 
+/** Verify that the field is of format '*y *mo *d' or decimal */
+function checkFieldForYearsMonthsDays(thetextfield , alerttext) {
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /^\s*((\d+\s*[yY])?\s*(\d+\s*[mM][oO])?\s*(\d+\s*[dD])?)\s*$|^\s*[0-9]+\s*$/;
+  if (re.exec(text)) {
+	  return true;
+  }
+  alert(alerttext);
+  return false;
+}
+
 function checkfieldforhexadecimalnumbers(thetextfield , alerttext){
   // remove all spaces
   field = eval(thetextfield);
