@@ -40,7 +40,7 @@
    }else{
        // Other exception occured, print exception and stack trace.   
      out.write("<H2>" + ejbcawebbean.getText("EXCEPTIONOCCURED") + "</H2>");
-     out.write("<H4>" + exception.toString() + " : " + exception.getMessage() + "</H4>");
+     out.write("<H4>" + exception.toString() + "</H4>");
      out.write("<br/><pre style=\"font-style: italic;\">");
      java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
      exception.printStackTrace(new java.io.PrintStream(baos));

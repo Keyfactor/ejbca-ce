@@ -773,32 +773,29 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @ejb.interface-method
      */
     public GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
-    	trace(">loadGlobalConfiguration()");
-    	GlobalConfiguration ret = null;
-    	// Only do the actual SQL query if we might update the configuration due to cache time anyhow
-    	if (globalconfiguration != null) {
-    		if (lastupdatetime > (System.currentTimeMillis() - MIN_TIME_BETWEEN_GLOBCONF_UPDATES)) {
-    			ret = globalconfiguration;
-    		}
-    	}
-    	if (ret == null) {
-    		try{
-    			if (log.isDebugEnabled()) {
-    				log.debug("Reading GlobalConfiguration");
-    			}
-    			GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey("0");
-    			if(gcdata!=null){
-    				ret = gcdata.getGlobalConfiguration();
-    			}
-    		}catch (javax.ejb.FinderException fe) {
-    			// Create new configuration
-    			ret = new GlobalConfiguration();
-    		}
-    		globalconfiguration = ret;
-    		lastupdatetime = System.currentTimeMillis();
-    	}
-    	trace("<loadGlobalConfiguration()");
-    	return ret;
+        try {
+            trace(">loadGlobalConfiguration()");
+            // Only do the actual SQL query if we might update the configuration due to cache time anyhow
+            if ( globalconfiguration!=null && lastupdatetime+MIN_TIME_BETWEEN_GLOBCONF_UPDATES > new Date().getTime() ){
+                return globalconfiguration;
+            }
+            try{
+                log.debug("Reading GlobalConfiguration");
+                final GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey("0");
+                if(gcdata!=null){
+                    globalconfiguration = gcdata.getGlobalConfiguration();
+                    lastupdatetime = new Date().getTime();
+                }
+            }catch (Throwable t) {
+                log.debug("Failed to load gloabal configuarion", t);
+            }
+            if ( globalconfiguration!=null ) {
+                return globalconfiguration;
+            }
+            return new GlobalConfiguration();
+        } finally {
+            trace("<loadGlobalConfiguration()");
+        }
     } //loadGlobalConfiguration
 
     /**

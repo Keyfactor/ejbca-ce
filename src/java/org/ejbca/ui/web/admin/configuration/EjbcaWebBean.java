@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -187,7 +190,20 @@ public class EjbcaWebBean implements java.io.Serializable {
     		isAuthorized(URLDecoder.decode(resource,"UTF-8"));
     	} catch(AuthorizationDeniedException e) {
     		throw new AuthorizationDeniedException("You are not authorized to view this page.");
-    	} catch(java.io.UnsupportedEncodingException e) {}
+    	} catch( EJBException e) {
+    	    final Throwable cause = e.getCause();
+    	    final String dbProblemMessage = getText("DATABASEDOWN");
+    	    if ( cause instanceof SQLException ) {
+    	        final Exception e1 = new Exception(dbProblemMessage);
+    	        e1.initCause(e);
+    	        throw e1;
+    	    } else if ( cause.getMessage().indexOf("SQLException", 0)>=0 ) {
+                final Exception e1 = new Exception(dbProblemMessage);
+                e1.initCause(e);
+                throw e1;
+    	    }
+    	    throw e;
+    	}
     	
     	
     	if(!initialized){
