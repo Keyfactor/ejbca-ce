@@ -37,7 +37,7 @@ public class TestOcspConfiguration extends TestCase {
 		File f = File.createTempFile("testocspconf", "properties");
 		f.deleteOnExit();
 		FileWriter fos = new FileWriter(f);
-		fos.write("ocsp.maxAge=60\nocsp.untilNextUpdate=50\nocsp.999.maxAge=70\nocsp.999.untilNextUpdate=60\nocsp.888.maxAge=75\nocsp.888.untilNextUpdate=65\n");
+		fos.write("ocsp.maxAge=60\nocsp.untilNextUpdate=70\nocsp.999.maxAge=70\nocsp.999.untilNextUpdate=80\nocsp.888.maxAge=75\nocsp.888.untilNextUpdate=85\n");
 		fos.close();
 		ConfigurationHolder.addConfigurationFile(f.getAbsolutePath());
 		
@@ -45,21 +45,21 @@ public class TestOcspConfiguration extends TestCase {
 		maxAge = OcspConfiguration.getMaxAge(0);
 		nextUpdate = OcspConfiguration.getUntilNextUpdate(0);
 		assertEquals(60000, maxAge);
-		assertEquals(50000, nextUpdate);
+		assertEquals(70000, nextUpdate);
 		// Our specified values
 		maxAge = OcspConfiguration.getMaxAge(999);
 		nextUpdate = OcspConfiguration.getUntilNextUpdate(999);
 		assertEquals(70000, maxAge);
-		assertEquals(60000, nextUpdate);
+		assertEquals(80000, nextUpdate);
 		maxAge = OcspConfiguration.getMaxAge(888);
 		nextUpdate = OcspConfiguration.getUntilNextUpdate(888);
 		assertEquals(75000, maxAge);
-		assertEquals(65000, nextUpdate);
+		assertEquals(85000, nextUpdate);
 		// A profile that does not exist should use defaults
 		maxAge = OcspConfiguration.getMaxAge(111);
 		nextUpdate = OcspConfiguration.getUntilNextUpdate(111);
 		assertEquals(60000, maxAge);
-		assertEquals(50000, nextUpdate);
+		assertEquals(70000, nextUpdate);
 	}
 	
 }
