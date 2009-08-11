@@ -161,6 +161,7 @@ public class CertificateData implements Serializable {
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(new Date().getTime());
+            setCertificateProfileId(0);
 		} catch (CertificateEncodingException cee) {
 			log.error("Can't extract DER encoded certificate information.", cee);
 			// TODO should throw an exception
