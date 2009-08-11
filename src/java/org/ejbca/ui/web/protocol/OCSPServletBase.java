@@ -778,6 +778,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						// values now that we have fetched the certificate status, that includes certificate profile.
                         nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
                         maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
+                        if (m_log.isDebugEnabled()) {
+                        	m_log.debug("Set nextUpdate="+nextUpdate+", and maxAge="+maxAge+" for certificateProfileId="+status.certificateProfileId);
+                        }
 
                         final String sStatus;
 						if (status.equals(CertificateStatus.NOT_AVAILABLE)) {

@@ -32,7 +32,7 @@ public class CertificateStatus {
             return NOT_AVAILABLE;
         }
         if ( data.getStatus() != CertificateDataBean.CERT_REVOKED ) {
-            return new CertificateStatus(CertificateStatus.OK, data.getCertificateProfileId());
+            return new CertificateStatus(CertificateStatus.OK, data.getCertificateProfileId().intValue());
         }
         return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), data.getCertificateProfileId().intValue());
     }
@@ -46,7 +46,7 @@ public class CertificateStatus {
         this.name = s;
         this.revocationDate = null;
         this.revocationReason = RevokedCertInfo.NOT_REVOKED;
-        this.certificateProfileId = SecConst.CERTPROFILE_NO_PROFILE;
+        this.certificateProfileId = certProfileId;
     }
     private CertificateStatus( long date, int reason, int certProfileId ) {
         this.name = CertificateStatus.REVOKED;
