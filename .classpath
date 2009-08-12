@@ -67,43 +67,43 @@
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/commons-httpclient.jar">
 		<!--  JBoss 4.2.3 -->
 		<attributes>
-			<attributes name="optional" value="true"/>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-j2ee.jar">
 		<!--  JBoss 4.2.3 -->
 		<attributes>
-			<attributes name="optional" value="true"/>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-logging-log4j.jar">
 		<!--  JBoss 5.0.0 -->
 		<attributes>
-			<attributes name="optional" value="true"/>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system-jmx.jar">
 		<!--  JBoss 5.0.0 -->
 		<attributes>
-			<attributes name="optional" value="true"/>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-j2se.jar">
 		<!--  JBoss 5.0.0 -->
 		<attributes>
-			<attributes name="optional" value="true"/>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-kernel.jar">
 		<!--  JBoss 5.0.0 -->
 		<attributes>
-			<attributes name="optional" value="true"/>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-javaee.jar">
 		<!--  JBoss 5.0.0 -->
 		<attributes>
-			<attributes name="optional" value="true"/>
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
