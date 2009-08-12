@@ -31,10 +31,14 @@ public class CertificateStatus {
         if ( data == null ) {
             return NOT_AVAILABLE;
         }
-        if ( data.getStatus() != CertificateDataBean.CERT_REVOKED ) {
-            return new CertificateStatus(CertificateStatus.OK.name, data.getCertificateProfileId().intValue());
+        Integer pId = data.getCertificateProfileId();
+        if (pId == null) {
+        	pId = Integer.valueOf(SecConst.CERTPROFILE_NO_PROFILE);
         }
-        return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), data.getCertificateProfileId().intValue());
+        if ( data.getStatus() != CertificateDataBean.CERT_REVOKED ) {
+            return new CertificateStatus(CertificateStatus.OK.name, pId.intValue());
+        }
+        return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), pId.intValue());
     }
     
     private final String name;
