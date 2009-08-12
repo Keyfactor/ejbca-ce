@@ -23,8 +23,8 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
  * @version $Id$
  */
 public class CertificateStatus {
-    public final static String REVOKED = "REVOKED";
-    public final static String OK = "OK";
+    public final static CertificateStatus REVOKED = new CertificateStatus("REVOKED", SecConst.CERTPROFILE_NO_PROFILE);
+    public final static CertificateStatus OK = new CertificateStatus("OK", SecConst.CERTPROFILE_NO_PROFILE);
     public final static CertificateStatus NOT_AVAILABLE = new CertificateStatus("NOT_AVAILABLE", SecConst.CERTPROFILE_NO_PROFILE);
 
     public final static CertificateStatus getIt( CertificateDataLocal data) {
@@ -32,7 +32,7 @@ public class CertificateStatus {
             return NOT_AVAILABLE;
         }
         if ( data.getStatus() != CertificateDataBean.CERT_REVOKED ) {
-            return new CertificateStatus(CertificateStatus.OK, data.getCertificateProfileId().intValue());
+            return new CertificateStatus(CertificateStatus.OK.name, data.getCertificateProfileId().intValue());
         }
         return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), data.getCertificateProfileId().intValue());
     }
@@ -49,7 +49,7 @@ public class CertificateStatus {
         this.certificateProfileId = certProfileId;
     }
     private CertificateStatus( long date, int reason, int certProfileId ) {
-        this.name = CertificateStatus.REVOKED;
+        this.name = CertificateStatus.REVOKED.name;
         this.revocationDate = new Date(date);
         this.revocationReason = reason;
         this.certificateProfileId = certProfileId;
