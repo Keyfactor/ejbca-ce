@@ -74,8 +74,10 @@ import org.ejbca.util.CertTools;
  *   signature="org.ejbca.core.ejb.ca.store.CRLDataLocal findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
  *   query="SELECT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.crlNumber=?2"
  *
- * @jonas.jdbc-mapping
- *   jndi-name="${datasource.jndi-name}"
+ * @ejb.finder description="findLatestCRLNumber"
+ *   signature="Collection findLatestCRLNumber(java.lang.String issuerdn, int deltaCRLIndicator)"
+ *   query="SELECT MAX(a.crlNumber) from CRLDataBean a WHERE a.issuerDN=?1 AND a.deltaCRLIndicator=?2"
+ *
  */
 public abstract class CRLDataBean extends BaseEntityBean {
     private static final Logger log = Logger.getLogger(CRLDataBean.class);
