@@ -1004,7 +1004,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
     	if (log.isTraceEnabled()) {
-        	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
+        	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
     	}
         Certificate certificate = null;
         try {
@@ -1016,7 +1016,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
     	if (log.isTraceEnabled()) {
-            log.trace("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16));
+            log.trace("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
     	}
     } // setRevokeStatus
 
@@ -1034,7 +1034,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		return;
     	}
     	if (log.isTraceEnabled()) {
-        	log.trace(">setRevokeStatus(Certificate),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
+        	log.trace(">private setRevokeStatus(Certificate),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
     	}
     	CertificateDataPK revpk = new CertificateDataPK();
     	revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
@@ -1112,7 +1112,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		}
     	}
     	if (log.isTraceEnabled()) {
-        	log.trace("<setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
+        	log.trace("<private setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
     	}
     } // setRevokeStatus
 
