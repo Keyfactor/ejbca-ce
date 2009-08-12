@@ -1214,6 +1214,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             X509CRL crl = null;
             boolean deltaCRL = (basecrlnumber > -1);
             if (deltaCRL) {
+            	// Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
+            	if (number == basecrlnumber) {
+            		number++;
+            	}
             	crl = (X509CRL) ca.generateDeltaCRL(certs, number, basecrlnumber);	
             } else {
             	crl = (X509CRL) ca.generateCRL(certs, number);
