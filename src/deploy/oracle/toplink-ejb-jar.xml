@@ -1556,24 +1556,6 @@
                   <toplink:reference-class>org.ejbca.core.ejb.ca.store.CRLDataBean</toplink:reference-class>
                   <toplink:cache-usage>conform</toplink:cache-usage>
                </opm:query>
-               <opm:query name="findLatestCRLNumber" xsi:type="toplink:read-object-query">
-                  <opm:arguments>
-                     <opm:argument name="1">
-                        <opm:type>java.lang.String</opm:type>
-                     </opm:argument>
-                     <opm:argument name="2">
-                        <opm:type>int</opm:type>
-                     </opm:argument>
-                  </opm:arguments>
-                  <toplink:call xsi:type="toplink:ejbql-call">
-                     <toplink:ejbql>SELECT MAX(a.crlNumber) from CRLDataBean a WHERE a.issuerDN=?1 AND a.deltaCRLIndicator=?2</toplink:ejbql>
-                  </toplink:call>
-                  <toplink:reference-class>org.ejbca.core.ejb.ca.store.CRLDataBean</toplink:reference-class>
-                  <toplink:cache-usage>conform</toplink:cache-usage>
-                  <toplink:container xsi:type="toplink:list-container-policy">
-                     <toplink:collection-type>java.util.Vector</toplink:collection-type>
-                  </toplink:container>
-               </opm:query>
                <opm:query name="findByPrimaryKey" xsi:type="toplink:read-object-query">
                   <opm:arguments>
                      <opm:argument name="primaryKey">

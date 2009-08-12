@@ -1426,36 +1426,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	if (log.isTraceEnabled()) {
         	log.trace(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
     	}
-
-    	// deltaCRLIndocator is an int in the database
-        int deltaCRLIndicator = -1;
-        if (deltaCRL) {
-        	deltaCRLIndicator = 1;
-        }
-        int maxnumber = 0;
-        try {
-			Collection col = crlHome.findLatestCRLNumber(issuerdn, deltaCRLIndicator);
-			if ( (col != null) && (col.size() > 0) ) {
-				Object o = col.iterator().next();
-				if (o != null) {
-					maxnumber = ((Double)o).intValue();
-					log.debug("found a maxnumber="+maxnumber);					
-				} else {
-					log.debug("No maxnumber found, object is null");
-				}
-			} else {
-				log.debug("No max CRL number found");
-			}
-		} catch (FinderException e) {
-			// if we did not find anything, it's ok
-			log.info("No crlNumbers found matching criteria, returning default value 0: "+e);
-		}
-    	if (log.isTraceEnabled()) {
-            log.trace("<getLastCRLNumber(" + maxnumber + ")");
-    	}
-		return maxnumber;
-    	
-    	/*
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
@@ -1486,7 +1456,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         } finally {
             JDBCUtil.close(con, ps, result);
         }
-        */
     } //getLastCRLNumber
 
     /**
