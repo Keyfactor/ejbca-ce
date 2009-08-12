@@ -129,7 +129,7 @@ public class TestDeltaCRL extends TestCase {
 
     public void test01CreateNewDeltaCRL() throws Exception {
         log.trace(">test01CreateNewCRL()");
-        remote.runDeltaCRL(admin, cadn);
+        remote.runDeltaCRL(admin, cadn, -1, -1);
         log.trace("<test01CreateNewCRL()");
     }
 
@@ -144,7 +144,7 @@ public class TestDeltaCRL extends TestCase {
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         assertEquals(number, num.intValue());
         // Create a new CRL again to see that the number increases
-        remote.runDeltaCRL(admin, cadn);
+        remote.runDeltaCRL(admin, cadn, -1, -1);
         int number1 = storeremote.getLastCRLNumber(admin, cadn, true);
         assertEquals(number+1, number1);
         byte[] crl1 = storeremote.getLastCRL(admin, cadn, true);
@@ -153,7 +153,7 @@ public class TestDeltaCRL extends TestCase {
         assertEquals(number+1, num1.intValue());
         // Now create a normal CRL and a deltaCRL again. CRLNUmber should now be increased by two
         remote.run(admin, cadn);
-        remote.runDeltaCRL(admin, cadn);
+        remote.runDeltaCRL(admin, cadn, -1, -1);
         int number2 = storeremote.getLastCRLNumber(admin, cadn, true);
         assertEquals(number1+2, number2);
         byte[] crl2 = storeremote.getLastCRL(admin, cadn, true);
@@ -190,7 +190,7 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new CRL again...
-        crl = remote.runDeltaCRL(admin, cadn);
+        crl = remote.runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate is present in a new CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -227,7 +227,7 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = remote.runDeltaCRL(admin, cadn);
+        crl = remote.runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -248,7 +248,7 @@ public class TestDeltaCRL extends TestCase {
         // Unrevoke the certificate that we just revoked
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
         // Create a new Delta CRL again...
-        remote.runDeltaCRL(admin, cadn);
+        remote.runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new CRL.
         crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -272,7 +272,7 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = remote.runDeltaCRL(admin, cadn);
+        crl = remote.runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -319,7 +319,7 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new Delta CRL again...
-        remote.runDeltaCRL(admin, cadn);
+        remote.runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new Delta CRL.
         crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);

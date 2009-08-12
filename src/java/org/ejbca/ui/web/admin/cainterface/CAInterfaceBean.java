@@ -248,7 +248,7 @@ public class CAInterfaceBean implements java.io.Serializable {
     public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
     	InitialContext jndicontext = new InitialContext();
     	ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
-    	home.create().runDeltaCRL(administrator, issuerdn);
+    	home.create().runDeltaCRL(administrator, issuerdn, -1, -1);
     }
 
     public int getLastCRLNumber(String  issuerdn) {

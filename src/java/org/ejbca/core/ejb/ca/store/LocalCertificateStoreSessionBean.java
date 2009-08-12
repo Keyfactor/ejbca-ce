@@ -1415,6 +1415,38 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } //getLastCRLInfo
 
     /**
+     * Retrieves the information about the specified CRL. Retreives less information than getLastCRL, i.e. not the actual CRL data.
+     *
+     * @param admin Administrator performing the operation
+     * @param fingerprint fingerprint of the CRL
+     * @return CRLInfo of CRL or null if no CRL exists.
+     * @ejb.interface-method
+     */
+    public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getCRLInfo(" + fingerprint+")");
+    	}
+        try {
+            CRLInfo crlinfo = null;
+            try {
+                CRLDataLocal data = crlHome.findByPrimaryKey(new CRLDataPK(fingerprint));
+                crlinfo = new CRLInfo(data.getIssuerDN(), data.getCrlNumber(), data.getThisUpdate(), data.getNextUpdate());
+            } catch (FinderException e) {
+            	log.debug("No CRL exists with fingerprint '"+fingerprint+"'");
+            	String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, 0);            	
+            	log.error(msg, e);            		
+                crlinfo = null;
+            }
+            trace("<getCRLInfo()");
+            return crlinfo;
+        } catch (Exception e) {
+        	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", fingerprint);            	
+            getLogSession().log(admin, fingerprint.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+            throw new EJBException(e);
+        }
+    } //getCRLInfo
+
+    /**
      * Retrieves the highest CRLNumber issued by the CA.
      *
      * @param admin    Administrator performing the operation

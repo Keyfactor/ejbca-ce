@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -179,7 +178,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.transaction type="RequiresNew"
      */
     public byte[] runDeltaCRLnewTransaction(Admin admin, String issuerdn)  {
-    	return runDeltaCRL(admin, issuerdn);
+    	return runDeltaCRL(admin, issuerdn, -1, -1);
     }
 
 	/**
@@ -188,13 +187,15 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 	 *
 	 * @param admin administrator performing the task
 	 * @param issuerdn of the ca (normalized for EJBCA)
-	 *
+	 * @return fingerprint (primarey key) of the generated CRL or null if generation failed
+	 * 
 	 * @throws EJBException if a communications- or system error occurs
      * @ejb.interface-method
 	 */
-    public void run(Admin admin, String issuerdn) throws CATokenOfflineException {
+    public String run(Admin admin, String issuerdn) throws CATokenOfflineException {
         trace(">run()");
         int caid = issuerdn.hashCode();
+        String ret = null;
         try {
             ICAAdminSessionLocal caadmin = caadminHome.create();
             ICertificateStoreSessionLocal store = storeHome.create();
@@ -235,6 +236,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             	ISignSessionLocal sign = signHome.create();
             	// a full CRL
             	byte[] crlBytes = sign.createCRL(admin, caid, revcerts, -1);
+            	ret = CertTools.getFingerprintAsString(crlBytes);
             	// This is logged in the database by SignSession 
             	String msg = intres.getLocalizedMessage("createcrl.createdcrl", cainfo.getName(), cainfo.getSubjectDN());            	
             	log.info(msg);
@@ -259,6 +261,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
         trace("<run()");
+        return ret;
     } // run
 
 	/**
@@ -278,16 +281,18 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     
     /**
      * Generates a new Delta CRL by looking in the database for revoked certificates since the last complete CRL issued and generating a
-     * CRL with the difference.
+     * CRL with the difference. If either of baseCrlNumber or baseCrlCreateTime is -1 this method will try to query the database for the last complete CRL.
      *
      * @param admin administrator performing the task
      * @param issuerdn of the ca
+     * @param baseCrlNumber base crl number to be put in the delta CRL, this is the CRL number of the previous complete CRL. If value is -1 the value is fetched by querying the database looking for the last complete CRL.
+     * @param baseCrlCreateTime the time the base CRL was issued. If value is -1 the value is fetched by querying the database looking for the last complete CRL. 
      * @return the bytes of the Delta CRL generated or null of no delta CRL was generated.
      * 
      * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
      * @ejb.interface-method
      */
-    public byte[] runDeltaCRL(Admin admin, String issuerdn)  {
+    public byte[] runDeltaCRL(Admin admin, String issuerdn, int baseCrlNumber, long baseCrlCreateTime)  {
     	if (log.isTraceEnabled()) {
         	log.trace(">runDeltaCRL: "+issuerdn);
     	}
@@ -301,9 +306,13 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			throw new CADoesntExistsException("CA not found: "+issuerdn);
     		}
     		if (cainfo instanceof X509CAInfo) { // Only create CRLs for X509 CAs
-    			CRLInfo basecrlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(), false);
+    			if ( (baseCrlNumber == -1) && (baseCrlCreateTime == -1) ) {
+        			CRLInfo basecrlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(), false);
+        			baseCrlCreateTime = basecrlinfo.getCreateDate().getTime();
+        			baseCrlNumber = basecrlinfo.getLastCRLNumber();    				
+    			}
     			// Find all revoked certificates
-    			Collection revcertinfos = store.listRevokedCertInfo(admin, issuerdn, basecrlinfo.getCreateDate().getTime());
+    			Collection revcertinfos = store.listRevokedCertInfo(admin, issuerdn, baseCrlCreateTime);
     			debug("Found "+revcertinfos.size()+" revoked certificates.");
     			// Go through them and create a CRL, at the same time archive expired certificates
     			ArrayList certs = new ArrayList();
@@ -317,7 +326,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			}
     			ISignSessionLocal sign = signHome.create();
     			// create a delta CRL
-    			crlBytes = sign.createCRL(admin, caid, certs, basecrlinfo.getLastCRLNumber());
+    			crlBytes = sign.createCRL(admin, caid, certs, baseCrlNumber);
     			X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
     			debug("Created delta CRL with expire date: "+crl.getNextUpdate());
     		}

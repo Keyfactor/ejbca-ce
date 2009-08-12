@@ -123,7 +123,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
                     int number = getCertificateStoreSession().getLastCRLNumber(administrator, issuerdn, false);
                     getOutputStream().println("CRL with number " + number + " generated.");            		
             	} else {
-            		getCreateCRLSession().runDeltaCRL(administrator, issuerdn);
+            		getCreateCRLSession().runDeltaCRL(administrator, issuerdn, -1, -1);
                     int number = getCertificateStoreSession().getLastCRLNumber(administrator, issuerdn, true);
                     getOutputStream().println("Delta CRL with number " + number + " generated.");
             	}

@@ -105,6 +105,7 @@ import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -562,9 +563,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), castatus, ca);
         	if(castatus == SecConst.CA_ACTIVE){
         		//  create initial CRL
-        		this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
+        		String fp = this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
+        		CRLInfo crlInfo = this.certificatestoresession.getCRLInfo(admin, fp);
         		if(cainfo.getDeltaCRLPeriod() > 0) {
-        			this.getCRLCreateSession().runDeltaCRL(admin, cainfo.getSubjectDN());
+        			this.getCRLCreateSession().runDeltaCRL(admin, cainfo.getSubjectDN(), crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
         		}
         	}
     		String msg = intres.getLocalizedMessage("caadmin.createdca", cainfo.getName(), new Integer(castatus));            	
