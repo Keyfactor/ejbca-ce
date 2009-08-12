@@ -564,9 +564,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	if(castatus == SecConst.CA_ACTIVE){
         		//  create initial CRL
         		String fp = this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
-        		CRLInfo crlInfo = this.certificatestoresession.getCRLInfo(admin, fp);
-        		if(cainfo.getDeltaCRLPeriod() > 0) {
-        			this.getCRLCreateSession().runDeltaCRL(admin, cainfo.getSubjectDN(), crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
+        		// If we count not create a full CRL (for example CVC CAs does not even support CRLs), don't try to create a delta CRL.
+        		if (fp != null) {
+            		CRLInfo crlInfo = this.certificatestoresession.getCRLInfo(admin, fp);
+            		if(cainfo.getDeltaCRLPeriod() > 0) {
+            			this.getCRLCreateSession().runDeltaCRL(admin, cainfo.getSubjectDN(), crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
+            		}        			
         		}
         	}
     		String msg = intres.getLocalizedMessage("caadmin.createdca", cainfo.getName(), new Integer(castatus));            	

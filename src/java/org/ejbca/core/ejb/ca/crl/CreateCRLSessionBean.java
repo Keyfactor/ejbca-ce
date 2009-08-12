@@ -236,7 +236,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             	ISignSessionLocal sign = signHome.create();
             	// a full CRL
             	byte[] crlBytes = sign.createCRL(admin, caid, revcerts, -1);
-            	ret = CertTools.getFingerprintAsString(crlBytes);
+            	if (crlBytes != null) {
+                	ret = CertTools.getFingerprintAsString(crlBytes);            		
+            	}
             	// This is logged in the database by SignSession 
             	String msg = intres.getLocalizedMessage("createcrl.createdcrl", cainfo.getName(), cainfo.getSubjectDN());            	
             	log.info(msg);
