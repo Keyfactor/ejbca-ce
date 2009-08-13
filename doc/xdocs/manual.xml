@@ -418,6 +418,8 @@ truststore is in use</li>
  - Import CA Certificate.." or use the CLI</li>
 <li>Add the Administrator to the desired Administrator group under "Admin GUI
  - Edit Administrator Privileges"</li>
+<li>To allow administrators to log in when their certificates are not present in the EJBCA database you have to set 
+web.reqcertindb=false in conf/web.properties.</li>
 </ol>
 </p>
 </subsection>
