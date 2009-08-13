@@ -16,7 +16,7 @@
 <%@page import="java.security.InvalidParameterException"%>
 <%@page import="java.security.InvalidAlgorithmParameterException"%>
 <%@page import="org.ejbca.util.YearMonthDayTime"%>
-<%@page import="java.util.concurrent.TimeUnit"%><html>
+<html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
@@ -172,7 +172,7 @@
         	cal.add(Calendar.DATE, (int) ymod.getDays());
         	Calendar now = Calendar.getInstance();
         	// Calculate number of days from now until '*y *mo *d'
-           	ret = (int) TimeUnit.DAYS.convert(cal.getTimeInMillis() - now.getTimeInMillis(), TimeUnit.MILLISECONDS);
+           	ret = (int) ((cal.getTimeInMillis() - now.getTimeInMillis()) / (1000*60*60*24));
        	}
          	System.out.println("Validatity is " + ret);
        }
