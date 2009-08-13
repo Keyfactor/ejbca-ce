@@ -3615,6 +3615,11 @@ Signings per second: 68 No crypto available for this key.
 
 <subsection name="SafeNet ProtectServer">
 <subsubsection name="install SW">
+<p>Install the software according to the installation instructions for the ProtectServer. 
+Below are sample commands for installing the SDK rpm on an Ubuntu system, wich means first converting it to a deb.</p>
+<p>Using the SDK you can use the SDK as a good emulator for testing and development.
+If you are installing with a real ProtectServer you should install the Runtime instead of the SDK and use ETcprt instead of ETcpsdk below.
+</p>  
 <source>
 fakeroot alien -c $CDROM/Linux64/ptkc_sdk/ETcpsdk-3.32.00-1.x86_64.rpm
 sudo dpkg -i ./etcpsdk_3.32.00-2_amd64.deb
@@ -3632,6 +3637,7 @@ LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctco
 </source>
 </subsubsection>
 <subsubsection name="Set no public crypto">
+<p>See "Programming in FIPS mode" in the Protect Toolkit-C Programmers Manual for information about this flag.</p>
 <source>
 LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctconf -fc
 </source>
@@ -3641,10 +3647,13 @@ LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctco
 LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctkmu t -s5 -lroot
 </source>
 </subsubsection>
-<subsubsection name="Generate a key on slot 5">
+<subsubsection name="Generate keys on slot 5">
 <source>
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./slot5.cfg 2048 defaultSign
 $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./slot5.cfg 2048 default
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./slot5.cfg 512 test
 </source>
+<p>If JBoss was started you have to restart JBoss before the keys becomes available in EJBCA.</p>
 </subsubsection>
 <subsubsection name="Contents of ./slot5.cfg">
 <source>
@@ -3662,6 +3671,17 @@ attributes(*,CKO_PRIVATE_KEY,*) = {
   CKA_EXTRACTABLE = true
   CKA_SENSITIVE = true
 }
+</source>
+</subsubsection>
+<subsubsection name="Hard CA Token Properties">
+<p>When you create the CA in EJBCA you can now use the simple CA token properties below.</p>
+<source>
+certSignKey defaultSign
+crlSignKey defaultSign
+defaultKey default
+testKey test
+sharedLibrary /opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so
+slot 5
 </source>
 </subsubsection>
 <subsubsection name="Test and list keys on slot 5">
