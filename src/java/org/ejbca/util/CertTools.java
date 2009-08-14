@@ -2538,6 +2538,10 @@ public class CertTools {
 		if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.113549.1.1.10")) {
 			certSignatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1;					
 		}
+		// SHA256WithECDSA does not work to be translated in JDK5.
+		if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.10045.4.3.2")) {
+			certSignatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;					
+		}
 		return certSignatureAlgorithm;
     }
     
