@@ -24,6 +24,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 
 public class CertificateValidity {
 
@@ -34,12 +35,24 @@ public class CertificateValidity {
     private Date lastDate;
     private Date firstDate;
     
+    private static final Date tooLateExpireDate;
+    static {
+        final String sDate = "@ca.toolateexpiredate@";
+        if ( sDate==null || sDate.length()<1 ) {
+            tooLateExpireDate = new Date(Long.MAX_VALUE);
+        } else {
+            tooLateExpireDate = StringTools.getDateFromString(sDate);
+        }
+    }
 	public CertificateValidity(UserDataVO subject, CertificateProfile certProfile, 
 			Date notBefore, Date notAfter, 
-			Certificate cacert, boolean isRootCA) {
+			Certificate cacert, boolean isRootCA) throws Exception {
 		if (log.isDebugEnabled()) {
 			log.debug("Requested notBefore: "+notBefore);
 			log.debug("Requested notAfter: "+notAfter);
+		}
+		if ( tooLateExpireDate==null ) {
+		    throw new Exception("ca.toolateexpiredate in ejbca.properties is not a valid date.");
 		}
         // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
         Date now = new Date((new Date()).getTime() - 10 * 60 * 1000);
@@ -134,7 +147,9 @@ public class CertificateValidity {
         	log.info(intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString(), CertTools.getNotAfter(cacert)));
             lastDate = CertTools.getNotAfter(cacert);
         }            
-		
+        if ( !lastDate.before(CertificateValidity.tooLateExpireDate) ) {
+            throw new Exception("Expire date of the certificate is not before the configured 'ca.toolateexpiredate'. Certificate expire date: '"+lastDate+"'. ca.toolateexpiredate: '"+CertificateValidity.tooLateExpireDate+"'.");
+        }
 	}
 
 	public Date getNotAfter() {

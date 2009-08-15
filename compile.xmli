@@ -585,6 +585,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
         <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>
+        <replace file="${src.java}/org/ejbca/core/model/ca/caadmin/CertificateValidity.java" token="@ca.toolateexpiredate@" value="${ca.toolateexpiredate}"/>
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.amountfreemem@" value="${healthcheck.amountfreemem}"/>	

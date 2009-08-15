@@ -279,6 +279,7 @@
     <property name="ca.xkmskeystorepass" value="foo123"/>
     <property name="ca.cmskeystorepass" value="foo123"/>
     <property name="ca.serialnumberoctetsize" value="8"/>
+    <property name="ca.toolateexpiredate" value=""/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
