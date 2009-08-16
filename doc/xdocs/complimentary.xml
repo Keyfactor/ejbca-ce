@@ -74,6 +74,15 @@ can be used together with PKI to even further improve your PKI experience.
     </p>
 </subsection>
 
+<subsection name="JMRTD">"
+	<p>
+    <a href="http://www.jmrtd.org/">JMRTD website</a>
+	</p>
+	<p>
+	JMRTD is a free implementation of the Machine Readable Travel Document (MRTD) standards as specified by the International Civil Aviation Organization (ICAO). The electronic passport (or "ePassport"), which by now has been introduced in many countries, is an implementation of these standards.
+	</p>
+</subsection>
+
 </section>
 
 <section name="Complimentary proprietary software">
