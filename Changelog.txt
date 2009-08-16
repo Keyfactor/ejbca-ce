@@ -1,3 +1,59 @@
+3.9.1, 2009-08-16
+---
+New Feature
+    * [ECA-1275] - Corporate User Requests User Cert
+    * [ECA-1276] - Non-corporate User Requests Cert
+    * [ECA-1277] - User (corporate or non corporate user) Requests Certificate Renewal
+    * [ECA-1287] - Configurable List of extKeyUsage OIDs in certificate profiles
+    * [ECA-1299] - Transacion log for web service certificate issuance
+    * [ECA-1309] - Ability to specify approvals on certificate profiles
+    * [ECA-1334] - Run single JUnit test from CLI
+    * [ECA-1337] - Removal of SoftCA key and possibility to import it back again
+    * [ECA-1344] - Fixed absolute date for latest certificate expire
+    * [ECA-1347] - Ability to set max-age and next update values on a per certificate profile basis.
+
+Task
+    * [ECA-1354] - ExtRA: update BC jars to match version in EJCBA 3.9.1
+
+Improvement
+    * [ECA-967] - Add CVC WS CLI to client toolbox
+    * [ECA-1073] - Possible to schedule CRLs more often than hourly
+    * [ECA-1180] - Be able to specify Any CA in end entity profiles
+    * [ECA-1270] - create support for clover coverage testing
+    * [ECA-1298] - Dynamic update of max-age and nextUpdate for OCSP responders
+    * [ECA-1302] - Optimize republishing performance to use less queries during publish
+    * [ECA-1307] - do not create new P11 provider when reloading
+    * [ECA-1308] - Display the key instead of "not text available" for missing language strings
+    * [ECA-1310] - View end entity profile id in edit window
+    * [ECA-1315] - Allow null debug object to disable debugging in RequestHelper
+    * [ECA-1320] - Options which CA to generate CRLs for in CRL update service
+    * [ECA-1324] - Bad error message in adduser cli when type is not a number
+    * [ECA-1331] - Improve error message in GUI when HSM activation fails
+    * [ECA-1335] - Support for CRL distribution points with URI:s containing semicolon
+    * [ECA-1338] - Remove passwords from properties files
+    * [ECA-1341] - Change publishing message to say that it is "queued" instead of "published"
+    * [ECA-1342] - Improved error message when trying to create CA with incompatible key/signing algorithm
+    * [ECA-1343] - CA certificate validity in years
+    * [ECA-1345] - More userfriendly error messages instead of only stacktrace for instance when DB connection is down
+
+Bug
+    * [ECA-1295] - Error making advanced log search for CA on DB2
+    * [ECA-1300] - Nullpointer exception editing end entity profiles when printer has no name
+    * [ECA-1303] - Runtime exception when uplaoding a certificate response and no certificate chain exists
+    * [ECA-1304] - ca listexpired cli command prints certificaste serialnumber in decimal instead of hex
+    * [ECA-1305] - Serching for end entities by certificate serial no does not find all if DN changed
+    * [ECA-1306] - external OCSP responder healt check not checking keys.
+    * [ECA-1313] - Error creating CRL publisher on DB2
+    * [ECA-1314] - Key could be used at same time as the rekeying is generating new cert.
+    * [ECA-1322] - Mixing EJBs and PreparedStatement gives NullpointerException in Glassfish
+    * [ECA-1323] - Import of entity profiles removes certificate profile links from the profile
+    * [ECA-1325] - Log Configuration : message keys missing
+    * [ECA-1340] - ejbca.cmd requires additional libraries in classpath
+    * [ECA-1355] - Revoke user does not work if a certificate is already revoked
+    * [ECA-1356] - JPA entity CertificateData does not set certificateProfileId when adding new certificate
+    * [ECA-1357] - create CA with initial deltaCRL does not work on glassfish
+    * [ECA-1358] - getCertSignatureAlgorithmAsString does not work for SHA256WithECDSA on java 5
+
 3.9.0, 2009-06-05
 ---
 New Feature

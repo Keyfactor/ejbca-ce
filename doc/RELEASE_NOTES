@@ -1,3 +1,27 @@
+EJBCA 3.9.1
+-----------
+This is a minor release but packed with new minor features and fixes, 46 issues have been resolved.
+
+Noteworthy changes:
+- Improvements to public enrollment process including automatic renewal.
+- Ability to specify approvals on certificate profiles.
+- Configurable list of extended key usages.
+- Dynamic update of max-age and nextUpdate for OCSP responders, also per certificate profile.
+- In CRL update service you can select which CAs to generate CRLs for.
+- Possible to schedule CRLs more often than hourly.
+- Possible to remove soft CA key and possibility to import it back again.
+- Possibility to remove passwords from properties files.
+- Support for CRL distribution points with URI:s containing semicolon.
+- Transaction log for web service certificate issuance.
+- Possibility to specify Any CA in end entity profiles.
+- More flexible configuration of CA validity, years, months days.
+- Improved error message in GUI when HSM activation fails.
+- Many small optimizations, fixes and improvements.
+    
+Read the full changelog for details.
+
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.9.0
 -----------
 This is a major release adding many new features and improvements, and fixing numerous bugs. 
