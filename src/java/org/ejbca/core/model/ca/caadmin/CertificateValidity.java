@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.Locale;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -35,24 +36,36 @@ public class CertificateValidity {
     private Date lastDate;
     private Date firstDate;
     
-    private static final Date tooLateExpireDate;
+    private static Date tooLateExpireDate;
     static {
         final String sDate = "@ca.toolateexpiredate@";
         if ( sDate==null || sDate.length()<1 ) {
+        	log.debug("Using default value for ca.toolateexpiredate.");
             tooLateExpireDate = new Date(Long.MAX_VALUE);
+        } else if (StringUtils.startsWith(sDate, "@ca.toolateexpiredate")) {
+        	// If we are running in eclipse or something so the value has not been replaced, go for the default value.
+        	log.warn("Using default value for ca.toolateexpiredate because it has not been replaced in CertificateValidity.java.");
+            tooLateExpireDate = new Date(Long.MAX_VALUE);        	
         } else {
             tooLateExpireDate = StringTools.getDateFromString(sDate);
+        	log.debug("tooLateExpireData is set to: "+tooLateExpireDate);
         }
     }
+    /** Protected method so we can JUnit test this
+     */
+    protected static void setTooLateExpireDate(Date date) {
+    	tooLateExpireDate = date;
+    }
+    
 	public CertificateValidity(UserDataVO subject, CertificateProfile certProfile, 
 			Date notBefore, Date notAfter, 
-			Certificate cacert, boolean isRootCA) throws Exception {
+			Certificate cacert, boolean isRootCA) throws IllegalValidityException {
 		if (log.isDebugEnabled()) {
 			log.debug("Requested notBefore: "+notBefore);
 			log.debug("Requested notAfter: "+notAfter);
 		}
 		if ( tooLateExpireDate==null ) {
-		    throw new Exception("ca.toolateexpiredate in ejbca.properties is not a valid date.");
+		    throw new IllegalValidityException("ca.toolateexpiredate in ejbca.properties is not a valid date.");
 		}
         // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
         Date now = new Date((new Date()).getTime() - 10 * 60 * 1000);
@@ -148,7 +161,9 @@ public class CertificateValidity {
             lastDate = CertTools.getNotAfter(cacert);
         }            
         if ( !lastDate.before(CertificateValidity.tooLateExpireDate) ) {
-            throw new Exception("Expire date of the certificate is not before the configured 'ca.toolateexpiredate'. Certificate expire date: '"+lastDate+"'. ca.toolateexpiredate: '"+CertificateValidity.tooLateExpireDate+"'.");
+        	String msg = intres.getLocalizedMessage("signsession.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.tooLateExpireDate.toString()); 
+        	log.info(msg);
+            throw new IllegalValidityException(msg);
         }
 	}
 

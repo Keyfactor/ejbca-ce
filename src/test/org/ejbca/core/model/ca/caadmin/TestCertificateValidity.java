@@ -190,5 +190,22 @@ public class TestCertificateValidity extends TestCase {
     	assertTrue(notAfter.after(cal1.getTime()));
     	assertTrue(notAfter.before(cal2.getTime()));
     	
+    	// Check that ca.toolateexpiredate setting in ejbca.properties is in effect
+    	Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 5);
+        CertificateValidity.setTooLateExpireDate(cal.getTime());
+        boolean thrown = false;
+        try {
+            cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false);        	
+        } catch (IllegalValidityException e) {
+        	thrown = true;
+        	//System.out.println(e.getMessage());
+        	String msg = e.getMessage();
+        	// When running from within eclipse it will not have the correct internalresources.
+        	if (!msg.contains("Requested expire date is not before the configured 'ca.toolateexpiredate'") && (!msg.equals("signsession.errorbeyondtoolateexpiredate"))) {
+            	assertTrue(msg, false);        		
+        	}
+        }
+        assertTrue(thrown);
 	}
 }

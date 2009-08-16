@@ -468,7 +468,7 @@ certificates from the specified CertificateProfile.
 <p>
 The validity determines the validity in days of certificates, from the time the certificate is issued.
 The field 'notAfter' in the issued certificate will have the value 'now + validity days'.
-It can also be entered in terms of years, months and days. For instance '10y 9mo 8d' is translated to 
+It can also, if noted in the field, be entered in terms of years, months and days. For instance '10y 9mo 8d' is translated to 
 10 years, 9 months and 8 days from now.
 </p><p>
 <strong>Allow validity override</strong><br/>
@@ -496,6 +496,10 @@ The validity of a certificate is determined as follows:
 </p>
 <p>If the validity is for a CA the certificate profile specifies the maximum validity, but it can be shorter if specified when adding the CA.
 The validity of the CA can never be longer than the value specified in the profile.
+</p>
+<p>
+The last option you have is to set a global maximum validity date for certificates issued from the EJBCA instance. You can do this by setting the option 'ca.toolateexpiredate'
+in ejbca.properties. See the documentation in conf/ejbca.properties.sample for more details. If a validity period would exceed this value, if it is configured, an error occurs and no certificate is issued. 
 </p>
 </subsection>
 <subsection name="Allow extension override">

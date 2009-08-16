@@ -63,6 +63,7 @@ ca.ocspkeystorepass      = ${ca.ocspkeystorepass}
 ca.xkmskeystorepass      = ${ca.xkmskeystorepass}
 ca.cmskeystorepass       = ${ca.cmskeystorepass}
 ca.serialnumberoctetsize = ${ca.serialnumberoctetsize}
+ca.toolateexpiredate     = ${ca.toolateexpiredate}
 ocsp.defaultresponder    = ${ocsp.defaultresponder}
 ocsp.usecasigningcert    = ${ocsp.usecasigningcert}
 ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
