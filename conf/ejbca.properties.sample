@@ -22,10 +22,6 @@
 # See also the section 'cluster configuration' for other JBoss options, for example
 # for deploying on JBoss EAP.
 
-# Which compiler to use, don't change this
-# default: javac
-#build.compiler=jikes
-
 # which java version to use 15 for jdk 1.5 and jdk 6 (note use 15 for jdk6 as well)
 # In EJBCA >= 3.5 only jdk >= 5 is supported, so leave this value as it is.
 # default: 15
