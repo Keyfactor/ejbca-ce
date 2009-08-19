@@ -14,6 +14,8 @@
 package org.ejbca.util;
 
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -100,6 +102,22 @@ public class YearMonthDayTime {
 	
 	/** @return The days field */
 	public long getDays() { return values.get(TYPE_DAYS); }
+	
+	/**
+	 * Calculates the number of days from <i>date</i> until the years, months and days this object represents has elapsed.
+	 * @param date Date to count days to
+	 * @return Number of days from date until the years, months and days this object represents has elapsed
+	 * */
+	public long daysFrom(Date date) {
+     	Calendar cal = Calendar.getInstance();
+     	cal.setTime(date);
+    	cal.add(Calendar.YEAR, (int) getYears());
+    	cal.add(Calendar.MONTH, (int) getMonths());
+    	cal.add(Calendar.DATE, (int) getDays());
+    	Calendar now = Calendar.getInstance();
+    	now.setTime(date);
+       	return (long) ((cal.getTimeInMillis() - now.getTimeInMillis()) / (1000*60*60*24));
+	}
 	
 	/**
 	 * Get nicely formatted form of this object using days as default type.

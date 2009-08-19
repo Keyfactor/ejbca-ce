@@ -13,6 +13,9 @@
 
 package org.ejbca.util;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import junit.framework.TestCase;
 
 /** 
@@ -92,6 +95,22 @@ public class TestYearMonthDayTime extends TestCase {
 		assertEquals("0d", YearMonthDayTime.getInstance("0y").toString());
 		assertEquals("1y3d", YearMonthDayTime.getInstance("1y3d").toString().replaceAll("\\s", ""));
 		assertEquals("1y2mo3d", YearMonthDayTime.getInstance("1y2mo3d").toString().replaceAll("\\s", ""));
+	}
+	
+	/**
+	 * Test calculation of days from a given date
+	 */
+	public void test04DaysFrom() throws Exception {
+		YearMonthDayTime oneYear = YearMonthDayTime.getInstance("1y");
+		YearMonthDayTime oneMonth = YearMonthDayTime.getInstance("1mo");
+		YearMonthDayTime oneDay = YearMonthDayTime.getInstance("1d");
+		
+		Calendar today = Calendar.getInstance();
+		today.set(2009, 7, 19, 0, 0, 0);
+		
+		assertEquals("one year", 365, oneYear.daysFrom(today.getTime()));
+		assertEquals("one month", 31, oneMonth.daysFrom(today.getTime()));
+		assertEquals("one day", 1, oneDay.daysFrom(today.getTime()));
 	}
 	
 	/**

@@ -351,7 +351,7 @@ function checkuseextendedkeyusagefield(){
 function checkallfields(){
     var illegalfields = 0;
 
-    if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_VALIDITY%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINVALIDITY") %>"))
+    if(!checkFieldForYearsMonthsDays("document.editcertificateprofile.<%=TEXTFIELD_VALIDITY%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     
     var availablebitlengths = document.editcertificateprofile.<%= SELECT_AVAILABLEBITLENGTHS%>.options;
@@ -451,12 +451,12 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("VALIDITY") %> (<%= ejbcawebbean.getText("DAYS") %>)
+        <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
         <%= ejbcawebbean.getHelpReference("/manual.html#Validity") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
-           value="<%= certificateprofiledata.getValidity()  %>"><br>
+           value="<%= certificateprofiledata.getValidity()+YearMonthDayTime.TYPE_DAYS  %>"><br>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

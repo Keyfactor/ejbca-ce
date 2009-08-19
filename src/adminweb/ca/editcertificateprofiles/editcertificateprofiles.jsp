@@ -5,7 +5,7 @@
                org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents, 
                org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory, org.ejbca.core.model.ca.certextensions.AvailableCertificateExtension, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy,
                org.ejbca.core.model.ca.caadmin.CAInfo"%>
-
+<%@page import="org.ejbca.util.YearMonthDayTime"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
@@ -117,7 +117,6 @@
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "selectnumofrequiredapprovals";
 
   // Declare Language file.
-
 %>
 <% 
 
@@ -259,10 +258,17 @@
              CertificateProfile certificateprofiledata = (CertificateProfile) certprofiledata.clone();
        
              String value = request.getParameter(TEXTFIELD_VALIDITY);
-             if(value != null){
-               value=value.trim();
-               if(!value.equals(""))
-                 certificateprofiledata.setValidity(Long.parseLong(value));
+             if(value != null && !value.equals("")){
+            	 int validity;
+                 try {
+                	 // First try with decimal format (days)
+                	 validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
+                 } catch(NumberFormatException ex) {
+                	// Use '*y *mo *d'-format
+               		YearMonthDayTime ymod = YearMonthDayTime.getInstance(request.getParameter(TEXTFIELD_VALIDITY), "0"+YearMonthDayTime.TYPE_DAYS);
+                   	validity = (int) ymod.daysFrom(new Date());
+                 }
+                 certificateprofiledata.setValidity(validity);
              }
   
              boolean use = false;

@@ -156,28 +156,6 @@
   
   static final int    CERTREQGENMODE      = 0;
   static final int    CERTGENMODE         = 1;
-  
-  int parseValidity(String value) {
-	  int ret = 0;
-	  if(value != null) {
-       	try {
-       		// First try with decimal format (days)
-       		ret = Integer.parseInt(value);
-       	} catch(NumberFormatException ex) {
-       		// Use '*y *mo *d'-format
-       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(value, "0"+YearMonthDayTime.TYPE_DAYS);
-         	Calendar cal = Calendar.getInstance();
-        	cal.add(Calendar.YEAR, (int) ymod.getYears());
-        	cal.add(Calendar.MONTH, (int) ymod.getMonths());
-        	cal.add(Calendar.DATE, (int) ymod.getDays());
-        	Calendar now = Calendar.getInstance();
-        	// Calculate number of days from now until '*y *mo *d'
-           	ret = (int) ((cal.getTimeInMillis() - now.getTimeInMillis()) / (1000*60*60*24));
-       	}
-         	System.out.println("Validatity is " + ret);
-       }
-	  return ret;
-  }
 %>
 <% 
          
@@ -466,7 +444,15 @@
          if(description == null)
            description = "";
          
-         int validity = parseValidity(request.getParameter(TEXTFIELD_VALIDITY));
+         int validity;
+         try {
+        	 // First try with decimal format (days)
+        	 validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
+         } catch(NumberFormatException ex) {
+        	// Use '*y *mo *d'-format
+       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(request.getParameter(TEXTFIELD_VALIDITY), "0"+YearMonthDayTime.TYPE_DAYS);
+           	validity = (int) ymod.daysFrom(new Date());
+         }
 
          if(catoken != null && catype != 0 && subjectdn != null && caname != null && signedby != 0  ){
 
@@ -868,7 +854,15 @@
         	 description = "";
          }
          
-         int validity = parseValidity(request.getParameter(TEXTFIELD_VALIDITY));
+         int validity;
+         try {
+        	 // First try with decimal format (days)
+        	 validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
+         } catch(NumberFormatException ex) {
+        	// Use '*y *mo *d'-format
+       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(request.getParameter(TEXTFIELD_VALIDITY), "0"+YearMonthDayTime.TYPE_DAYS);
+           	validity = (int) ymod.daysFrom(new Date());
+         }
             
 
          if(caid != 0  && catype !=0 ){
@@ -1286,7 +1280,15 @@
          if(description == null)
            description = "";
          
-         int validity = parseValidity(request.getParameter(TEXTFIELD_VALIDITY));         
+         int validity;
+         try {
+        	 // First try with decimal format (days)
+        	 validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
+         } catch(NumberFormatException ex) {
+        	// Use '*y *mo *d'-format
+       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(request.getParameter(TEXTFIELD_VALIDITY), "0"+YearMonthDayTime.TYPE_DAYS);
+           	validity = (int) ymod.daysFrom(new Date());
+         }    
 
          if(catype != 0 && subjectdn != null && caname != null && 
             certprofileid != 0 && signedby != 0 && validity !=0 ){
