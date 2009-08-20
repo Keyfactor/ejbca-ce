@@ -655,6 +655,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			rs = ps.executeQuery();
 			if (rs.next()) {
 				protectedLogEventIdentifier = new ProtectedLogEventIdentifier(rs.getInt(1), rs.getInt(2));
+				log.debug("Found a ProtectedLogEventIdentifier with GUID "+protectedLogEventIdentifier.getNodeGUID()+", and counter "+protectedLogEventIdentifier.getCounter());
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -1317,12 +1318,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * the time. The newest signature for each node is verifed and the link-in hashes for each event. The
 	 * verification continues node by node, until the oldest event is reached or the time where an verified exporting
 	 * delete was last made.
-	 *  
+	 * 
 	 * @param freezeThreshold longest allowed time to newest ProtectedLogEvent of any node (milliseconds)
+	 * @return null if log verification was ok, a ProtectedLogEventIdentifier for the row where verification failed if verification failed.
+     *
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier verifyEntireLog(ProtectedLogActions protectedLogActions, long freezeThreshold) {
-		log.trace(">verifyProtectedLogEventRow");
+		log.trace(">verifyEntireLog");
 		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
 		ArrayList newestProtectedLogEventRows =new ArrayList();	//<ProtectedLogEventRow>
 		ArrayList knownNodeGUIDs =new ArrayList();	//<Integer>
@@ -1390,7 +1393,8 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					return null;
 				}
 				ProtectedLogEventRow i = (ProtectedLogEventRow) iterator.next();
-				if ( !processedNodeGUIDs.contains(i.getEventIdentifier().getNodeGUID())
+				int rowguid = i.getEventIdentifier().getNodeGUID();
+				if ( !processedNodeGUIDs.contains(rowguid)
 						&&  (nextProtectedLogEventRow == null || nextProtectedLogEventRow.getEventTime() < i.getEventTime()) ) {
 					nextProtectedLogEventRow = i;
 				}
@@ -1536,7 +1540,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						}
 						//log.debug("Current linked in GUID " + i.getNodeGUID() + " and counter " + i.getCounter());
 						if (!knownNodeGUID) {
-							//log.debug("Found previously unknown node " + k.getNodeGUID());
+							log.debug("Found previously unknown node linked in: " + k.getNodeGUID());
 							ProtectedLogToken currentToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
 							if (!currentToken.verify(currentProtectedLogEventRow.getAsByteArray(false), currentProtectedLogEventRow.getProtection())) {
 								protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
@@ -1567,18 +1571,25 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		}
 		//Verify that no nodes exists that hasn't been processed
 		Integer[] everyExistingNodeGUID = getAllNodeGUIDs();
+		if (log.isDebugEnabled()) {
+			log.debug("There exists: "+everyExistingNodeGUID.length+" nodeGUIDs");
+			log.debug("We have processed: "+processedNodeGUIDs.size()+" nodeGUIDs");
+		}
 		for (int i=0; i<everyExistingNodeGUID.length; i++) {
+			if (log.isDebugEnabled()) {
+				log.debug("verifying that we did not miss to process nodeGUID: "+everyExistingNodeGUID[i]);
+			}
 			if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
 	        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 				return null;
 			}
 			if (!processedNodeGUIDs.contains(everyExistingNodeGUID[i])) {
+	        	log.info(intres.getLocalizedMessage("protectedlog.error.notprocessednodeguid", everyExistingNodeGUID[i]));
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN);
 				return new ProtectedLogEventIdentifier(everyExistingNodeGUID[i], 0);
 			}
 		}
-		// If something is wrong the failed verified ProtectedLogEventRowIdentifier is returned.
-		log.trace("<verifyProtectedLogEventRow");
+		log.trace("<verifyEntireLog");
 		return null;
 	}
 
@@ -1706,7 +1717,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			try {
 				messageDigest = MessageDigest.getInstance(newestProtectedLogEventRow.getCurrentHashAlgorithm(), "BC");
 			} catch (Exception e) {
-				log.error("Digest failed.", e);
+				log.error("MessageDigest.getInstance failed.", e);
 				return false;
 			}
 			messageDigest.update(currentProtectedLogEventRow.calculateHash());

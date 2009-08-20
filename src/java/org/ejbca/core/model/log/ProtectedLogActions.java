@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 /**
  * Invokes configured actions.
  * @version $Id$
@@ -24,7 +26,9 @@ import java.util.Properties;
 public class ProtectedLogActions implements Serializable {
 
 	private static final long serialVersionUID = -7056505975194222535L;
-	
+
+    private static final Logger log = Logger.getLogger(ProtectedLogActions.class);
+
 	public final static String CONF_USE_TESTACTION = "useTestAction";
 	
 	private ArrayList actions = new ArrayList();	// <IProtectedLogAction>
@@ -33,18 +37,23 @@ public class ProtectedLogActions implements Serializable {
 		if (properties != null) {
 			// Setup Action classes.
 			if (properties.getProperty("useDummyAction", "false").equalsIgnoreCase("true")) {
+				log.debug("adding DummyAction");
 				actions.add(new ProtectedLogDummyAction(properties));
 			}
 			if (properties.getProperty("useScriptAction", "false").equalsIgnoreCase("true")) {
+				log.debug("adding ScriptAction");
 				actions.add(new ProtectedLogScriptAction(properties));
 			}
 			if (properties.getProperty("useMailAction", "false").equalsIgnoreCase("true")) {
+				log.debug("adding MailAction");
 				actions.add(new ProtectedLogMailAction(properties));
 			}
 			if (properties.getProperty("useShutDownAction", "false").equalsIgnoreCase("true")) {
+				log.debug("adding ShutDownAction");
 				actions.add(new ProtectedLogShutDownAction(properties));
 			}
 			if (properties.getProperty(CONF_USE_TESTACTION, "false").equalsIgnoreCase("true")) {
+				log.debug("adding TestAction");
 				actions.add(new ProtectedLogTestAction(properties));
 			}
 		}
@@ -54,6 +63,9 @@ public class ProtectedLogActions implements Serializable {
 	 * @param actionIdentifier is one of the IProtectedLogAction.CAUSE_* constants.
 	 */
 	public void takeActions(String actionIdentifier) {
+		if (log.isDebugEnabled()) {
+			log.debug("takeActions: "+actionIdentifier); 
+		}
 		Iterator i = actions.iterator();
         while (i.hasNext()) {
             ((IProtectedLogAction) i.next()).action(actionIdentifier);
