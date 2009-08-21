@@ -493,7 +493,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="Required"
 	 */
 	public void addProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow) {
-		log.trace(">addProtectedLogEventRow");			
+		if (log.isTraceEnabled()) {
+			log.trace(">addProtectedLogEventRow: "+protectedLogEventRow.getEventIdentifier().getNodeGUID()+", "+protectedLogEventRow.getEventIdentifier().getCounter());
+		}
 		try {
 			getProtectedLogData().create(
 					protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
@@ -508,7 +510,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.error("", e);
 			throw new EJBException(e);
 		}
-		log.trace("<addProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace("<addProtectedLogEventRow");
+		}
 	}
 
 	/**
@@ -542,7 +546,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier[] findNewestProtectedLogEventsForAllOtherNodes(int nodeToExclude, long newerThan) {
-		log.trace(">findNewestProtectedLogEventsForAllOtherNodes");
+		if (log.isTraceEnabled()) {
+			log.trace(">findNewestProtectedLogEventsForAllOtherNodes");
+		}
 		if (newerThan < 0) {
 			newerThan = 0;
 		}
@@ -554,7 +560,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				protectedLogEventIdentifiers[i] = protectedLogEventRows[i].getEventIdentifier(); 
 			}
 		}
-		log.trace("<findNewestProtectedLogEventsForAllOtherNodes");
+		if (log.isTraceEnabled()) {
+			log.trace("<findNewestProtectedLogEventsForAllOtherNodes");
+		}
 		return protectedLogEventIdentifiers;
 	}
 
@@ -562,7 +570,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * Find the newest ProtectedLogEvent for all nodes except one, that have an eventTime newer than the requested.
 	 */
 	private ProtectedLogEventRow[] findNewestProtectedLogEventsForAllOtherNodesInternal(int nodeToExclude, long newerThan) {
-		log.trace(">findNewestProtectedLogEventsForAllOtherNodesInternal");
+		if (log.isTraceEnabled()) {
+			log.trace(">findNewestProtectedLogEventsForAllOtherNodesInternal");
+		}
 		// TODO: Double check the algo on this one to make it more efficient
 		ProtectedLogEventRow[] protectedLogEventRows = null;
 		try {
@@ -600,7 +610,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Get newest for every one
 		} catch (FinderException e) {
 		}
-		log.trace("<findNewestProtectedLogEventsForAllOtherNodesInternal");
+		if (log.isTraceEnabled()) {
+			log.trace("<findNewestProtectedLogEventsForAllOtherNodesInternal");
+		}
 		return protectedLogEventRows;
 	}
 
@@ -609,7 +621,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findNewestProtectedLogEventRow(int nodeGUID) {
-		log.trace(">findNewestProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace(">findNewestProtectedLogEventRow");
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -631,7 +645,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.trace("<findNewestProtectedLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace("<findNewestProtectedLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 
@@ -640,7 +656,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public ProtectedLogEventIdentifier findNewestLogEventRow(int nodeGUID) {
-		log.trace(">findNewestLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace(">findNewestLogEventRow");
+		}
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = null;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -655,7 +673,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			rs = ps.executeQuery();
 			if (rs.next()) {
 				protectedLogEventIdentifier = new ProtectedLogEventIdentifier(rs.getInt(1), rs.getInt(2));
-				log.debug("Found a ProtectedLogEventIdentifier with GUID "+protectedLogEventIdentifier.getNodeGUID()+", and counter "+protectedLogEventIdentifier.getCounter());
+				if (log.isDebugEnabled()) {
+					log.debug("Found a ProtectedLogEventIdentifier with GUID "+protectedLogEventIdentifier.getNodeGUID()+", and counter "+protectedLogEventIdentifier.getCounter());
+				}
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -663,7 +683,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} finally {
 			JDBCUtil.close(con, ps, rs);
 		}
-		log.trace("<findNewestLogEventRow");
+		if (log.isTraceEnabled()) {
+			log.trace("<findNewestLogEventRow");
+		}
 		return protectedLogEventIdentifier;
 	}
 
@@ -1584,7 +1606,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				return null;
 			}
 			if (!processedNodeGUIDs.contains(everyExistingNodeGUID[i])) {
-	        	log.info(intres.getLocalizedMessage("protectedlog.error.notprocessednodeguid", everyExistingNodeGUID[i]));
+				ProtectedLogEventIdentifier id = findNewestLogEventRow(everyExistingNodeGUID[i]);
+				ProtectedLogEventRow row = getProtectedLogEventRow(id);
+				Date d = new Date(row.getEventTime());
+	        	log.info(intres.getLocalizedMessage("protectedlog.error.notprocessednodeguid", everyExistingNodeGUID[i], id.getCounter(), d));
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN);
 				return new ProtectedLogEventIdentifier(everyExistingNodeGUID[i], 0);
 			}
@@ -1686,6 +1711,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				ProtectedLogEventRow protectedLogEventRow = getProtectedLogEventRow(findNewestLogEventRow(allNodeGUIDs[i]));
 				if (protectedLogEventRow != null && protectedLogEventRow.getEventTime() < new Date().getTime() - freezeTreshold &&
 						protectedLogEventRow.getEventId() != LogConstants.EVENT_SYSTEM_STOPPED_LOGGING) {
+					if (log.isDebugEnabled()) {
+						log.debug("Found a frozen node GUID: "+allNodeGUIDs[i]);
+					}
 					nodeGUIDsArray.add(allNodeGUIDs[i]);
 				}
 			}
@@ -1701,10 +1729,21 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			return false;
 		}
 		List unsignedNodeGUIDs = Arrays.asList(nodeGUIDs);
+		if (log.isDebugEnabled()) {
+			if (unsignedNodeGUIDs.isEmpty()) {
+				log.debug("No unsigned node GUIDs found.");
+			}
+		}
 		Iterator i = unsignedNodeGUIDs.iterator();
 		while (i.hasNext()) {
 			Integer nodeGUID = (Integer) i.next();
+			if (log.isDebugEnabled()) {
+				log.debug("Unsigned node GUID: "+nodeGUID);
+			}
 			if (nodeGUID.intValue() == newestProtectedLogEventRow.getEventIdentifier().getNodeGUID()) {
+				if (log.isDebugEnabled()) {
+					log.debug("This unsigned node GUID is the same as this nodes GUID, skipping and continuing.");
+				}
 				continue;
 			}
 			// Find last event, signed or unsigned
@@ -1713,6 +1752,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Create a new event that links in this one
 			ProtectedLogEventIdentifier[] linkedInEventIdentifiers = new ProtectedLogEventIdentifier[1];
 			linkedInEventIdentifiers[0] = currentProtectedLogEventIdentifier;
+			if (log.isDebugEnabled()) {
+				log.debug("Linking in: "+currentProtectedLogEventIdentifier.getNodeGUID()+", "+currentProtectedLogEventIdentifier.getCounter());
+			}
 			MessageDigest messageDigest;
 			try {
 				messageDigest = MessageDigest.getInstance(newestProtectedLogEventRow.getCurrentHashAlgorithm(), "BC");

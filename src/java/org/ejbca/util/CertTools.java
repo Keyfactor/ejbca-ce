@@ -2126,9 +2126,10 @@ public class CertTools {
 			params.setRevocationEnabled(false);
 			java.security.cert.CertPathValidator cpv = java.security.cert.
 			CertPathValidator.getInstance("PKIX", "BC");
-			java.security.cert.PKIXCertPathValidatorResult result =
-				(java.security.cert.PKIXCertPathValidatorResult) cpv.validate(cp, params);
-			log.debug("Certificate verify result: " + result.toString());
+			java.security.cert.PKIXCertPathValidatorResult result = (java.security.cert.PKIXCertPathValidatorResult) cpv.validate(cp, params);
+			if (log.isDebugEnabled()) {
+				log.debug("Certificate verify result: " + result.toString());
+			}
 		} catch (java.security.cert.CertPathValidatorException cpve) {
 			throw new Exception("Invalid certificate or certificate not issued by specified CA: " + cpve.getMessage());
 		} catch (Exception e) {

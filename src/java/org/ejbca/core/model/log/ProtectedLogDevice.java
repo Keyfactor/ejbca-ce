@@ -136,6 +136,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		this.properties = properties;
 		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
 		nodeGUID = seeder.nextInt();
+		if (log.isDebugEnabled()) {
+			log.debug("This node uses node GUID: "+nodeGUID);
+		}
 		counter = 0;
 		protectedCounter = 0;
 		protectionIntensity = Long.parseLong(properties.getProperty(CONFIG_PROTECTION_INTENSITY, "0")) * 1000; 
@@ -268,7 +271,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	}
 
 	/**
-	 * Implemenation of the log-protection algorithm.
+	 * Implementation of the log-protection algorithm.
 	 * 
 	 * Chains each new log-event together with last processed and any new event found in database.
 	 */
