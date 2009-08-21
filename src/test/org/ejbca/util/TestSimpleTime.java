@@ -18,7 +18,7 @@ import junit.framework.TestCase;
 /** 
  * Test of the SimpleTime helper class.
  *  
- * @version $Id: $
+ * @version $Id$
  */
 public class TestSimpleTime extends TestCase {
     
