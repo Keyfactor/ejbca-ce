@@ -1609,7 +1609,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				ProtectedLogEventIdentifier id = findNewestLogEventRow(everyExistingNodeGUID[i]);
 				ProtectedLogEventRow row = getProtectedLogEventRow(id);
 				Date d = new Date(row.getEventTime());
-	        	log.info(intres.getLocalizedMessage("protectedlog.error.notprocessednodeguid", everyExistingNodeGUID[i], id.getCounter(), d));
+	        	log.info(intres.getLocalizedMessage("protectedlog.error.notprocessednodeguid", everyExistingNodeGUID[i], row.getNodeIP(), id.getCounter(), d));
 				protectedLogActions.takeActions(IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN);
 				return new ProtectedLogEventIdentifier(everyExistingNodeGUID[i], 0);
 			}
@@ -1699,7 +1699,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public boolean signAllUnsignedChains(boolean signAll) {
-		log.trace(">signAllUnsignedChains");
+		log.trace(">signAllUnsignedChains: "+signAll);
 		// Find last unsigned event for all nodes, sorted by time, oldest first
 		Integer[] nodeGUIDs = null;
 		if (signAll) {
@@ -1737,46 +1737,68 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		Iterator i = unsignedNodeGUIDs.iterator();
 		while (i.hasNext()) {
 			Integer nodeGUID = (Integer) i.next();
-			if (log.isDebugEnabled()) {
-				log.debug("Unsigned node GUID: "+nodeGUID);
-			}
-			if (nodeGUID.intValue() == newestProtectedLogEventRow.getEventIdentifier().getNodeGUID()) {
-				if (log.isDebugEnabled()) {
-					log.debug("This unsigned node GUID is the same as this nodes GUID, skipping and continuing.");
-				}
-				continue;
-			}
-			// Find last event, signed or unsigned
-			ProtectedLogEventIdentifier currentProtectedLogEventIdentifier = findNewestLogEventRow(nodeGUID);
-			ProtectedLogEventRow currentProtectedLogEventRow = getProtectedLogEventRow(currentProtectedLogEventIdentifier);
-			// Create a new event that links in this one
-			ProtectedLogEventIdentifier[] linkedInEventIdentifiers = new ProtectedLogEventIdentifier[1];
-			linkedInEventIdentifiers[0] = currentProtectedLogEventIdentifier;
-			if (log.isDebugEnabled()) {
-				log.debug("Linking in: "+currentProtectedLogEventIdentifier.getNodeGUID()+", "+currentProtectedLogEventIdentifier.getCounter());
-			}
-			MessageDigest messageDigest;
-			try {
-				messageDigest = MessageDigest.getInstance(newestProtectedLogEventRow.getCurrentHashAlgorithm(), "BC");
-			} catch (Exception e) {
-				log.error("MessageDigest.getInstance failed.", e);
+			if (signUnsignedChain( newestProtectedLogEventRow, nodeGUID)) {
 				return false;
 			}
-			messageDigest.update(currentProtectedLogEventRow.calculateHash());
-			byte[] linkedInEventsHash = messageDigest.digest();
-			String nodeIP = ProtectedLogDevice.getNodeIP();
-			ProtectedLogEventRow newProtectedLogEventRow = new ProtectedLogEventRow(Admin.TYPE_INTERNALUSER, null, 0, LogConstants.MODULE_LOG,
-					(new Date().getTime()+10000), null, null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING, "Node-chain was accepted by CLI.",
-					new ProtectedLogEventIdentifier(currentProtectedLogEventIdentifier.getNodeGUID(), currentProtectedLogEventIdentifier.getCounter()+1),
-					nodeIP, linkedInEventIdentifiers, linkedInEventsHash, newestProtectedLogEventRow.getCurrentHashAlgorithm(),
-					newestProtectedLogEventRow.getProtectionKeyIdentifier(), newestProtectedLogEventRow.getProtectionKeyAlgorithm(), null);
-			// Sign new event
-			newProtectedLogEventRow.setProtection(getProtectedLogToken().protect(newProtectedLogEventRow.getAsByteArray(false)));
-			// Persist event
-			addProtectedLogEventRow(newProtectedLogEventRow);
-        	log.info(intres.getLocalizedMessage("protectedlog.acceptedchain", currentProtectedLogEventIdentifier.getNodeGUID()));
 		}
 		log.trace("<signAllUnsignedChains");
+		return true;
+	}
+
+	/**
+	 * @param newestProtectedLogEventRow the latest real signed event or null if the method should try to find it itself
+	 * @param nodeGUID the nodeGUID to accept and link in
+	 * @return true if ok, false if MessageDigest can not be created of any signed log evens could not be found (if newestProtectedLogEventRow is null)
+	 * 
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 */
+	public boolean signUnsignedChain(ProtectedLogEventRow newestProtectedLogEventRow, Integer nodeGUID) {
+		if (log.isDebugEnabled()) {
+			log.debug("Unsigned node GUID: "+nodeGUID);
+		}
+		if (newestProtectedLogEventRow == null) {
+			newestProtectedLogEventRow = getProtectedLogEventRow(findNewestProtectedLogEventRow());
+			if (newestProtectedLogEventRow == null) {
+				log.info("Could not find any signed log-events. Is there any? Is a token in use?");
+				return false;
+			}
+		}
+		if (nodeGUID.intValue() == newestProtectedLogEventRow.getEventIdentifier().getNodeGUID()) {
+			if (log.isDebugEnabled()) {
+				log.debug("This unsigned node GUID is the same as this nodes GUID, skipping and continuing.");
+			}
+			return true;
+		}
+		// Find last event, signed or unsigned
+		ProtectedLogEventIdentifier currentProtectedLogEventIdentifier = findNewestLogEventRow(nodeGUID);
+		ProtectedLogEventRow currentProtectedLogEventRow = getProtectedLogEventRow(currentProtectedLogEventIdentifier);
+		// Create a new event that links in this one
+		ProtectedLogEventIdentifier[] linkedInEventIdentifiers = new ProtectedLogEventIdentifier[1];
+		linkedInEventIdentifiers[0] = currentProtectedLogEventIdentifier;
+		if (log.isDebugEnabled()) {
+			log.debug("Linking in: "+currentProtectedLogEventIdentifier.getNodeGUID()+", "+currentProtectedLogEventIdentifier.getCounter());
+		}
+		MessageDigest messageDigest;
+		try {
+			messageDigest = MessageDigest.getInstance(newestProtectedLogEventRow.getCurrentHashAlgorithm(), "BC");
+		} catch (Exception e) {
+			log.error("MessageDigest.getInstance failed.", e);
+			return false;
+		}
+		messageDigest.update(currentProtectedLogEventRow.calculateHash());
+		byte[] linkedInEventsHash = messageDigest.digest();
+		String nodeIP = ProtectedLogDevice.getNodeIP();
+		ProtectedLogEventRow newProtectedLogEventRow = new ProtectedLogEventRow(Admin.TYPE_INTERNALUSER, null, 0, LogConstants.MODULE_LOG,
+				(new Date().getTime()+10000), null, null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING, "Node-chain was accepted by CLI.",
+				new ProtectedLogEventIdentifier(currentProtectedLogEventIdentifier.getNodeGUID(), currentProtectedLogEventIdentifier.getCounter()+1),
+				nodeIP, linkedInEventIdentifiers, linkedInEventsHash, newestProtectedLogEventRow.getCurrentHashAlgorithm(),
+				newestProtectedLogEventRow.getProtectionKeyIdentifier(), newestProtectedLogEventRow.getProtectionKeyAlgorithm(), null);
+		// Sign new event
+		newProtectedLogEventRow.setProtection(getProtectedLogToken().protect(newProtectedLogEventRow.getAsByteArray(false)));
+		// Persist event
+		addProtectedLogEventRow(newProtectedLogEventRow);
+		log.info(intres.getLocalizedMessage("protectedlog.acceptedchain", currentProtectedLogEventIdentifier.getNodeGUID()));
 		return true;
 	}
 

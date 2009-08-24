@@ -36,12 +36,19 @@ public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
 
 	public void execute() throws IllegalAdminCommandException,	ErrorAdminCommandException {
 		if (args.length < 2) {
-			String msg = "Usage: LOG accept [all | frozen]\n" +
-			"This command signes all unsigned log-chains. This should only be used when log protection is first enabled.\n"+
-			"\"frozen\" mean that frozen nodes will be signed instead.\n";
+			String msg = "Usage: LOG accept [nodeGUID | all | frozen]\n" +
+			"all: This command signes unsigned log-chains. This should only be used when log protection is first enabled.\n"+
+			"\"frozen\" mean that frozen nodes will be signed instead.\n"+
+			"specifying a nodeGUID can be used if you have a specific failing nodeGUID that you want to link in.\n";
 			throw new IllegalAdminCommandException(msg);
 		}
 		boolean all = "frozen".equalsIgnoreCase(args[1]);
+		Integer nodeGUID = 0;
+		try {
+			nodeGUID = Integer.valueOf(args[1]);			
+		} catch (NumberFormatException e) {
+			// ignore this will simply leave nodeGUID as 0, meaning that we did not give anodeGUID as parameter. 
+		}
 		// 4 chars should be enough to make the user think at least once..
         String randomString = ""+(seeder.nextInt(9000)+1000);
         getOutputStream().print("\nYOU ARE ABOUT TO SIGN UNVERIFIABLE LOG EVENTS IN THE PROTECTED LOG!\n\n"+
@@ -57,17 +64,26 @@ public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
         	getOutputStream().println("IO error: "+e.getMessage());
            return;
         }
-        getOutputStream().print("\nSigning...\n");
         try {
-			if (getProtectedLogSession().signAllUnsignedChains(all)) {
-				getOutputStream().print("SUCCESS!\n");
-			} else {
-				getOutputStream().print("FAILED!\n");
-			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        	if (nodeGUID.intValue() == 0) {
+        		getOutputStream().print("\nSigning "+(all? "all":"frozen")+"...\n");
+        		if (getProtectedLogSession().signAllUnsignedChains(all)) {
+        			getOutputStream().print("SUCCESS!\n");
+        		} else {
+        			getOutputStream().print("FAILED!\n");
+        		}
+        	} else {
+        		getOutputStream().print("\nSigning "+nodeGUID+"...\n");
+        		if (getProtectedLogSession().signUnsignedChain(null, nodeGUID)) {
+        			getOutputStream().print("SUCCESS!\n");
+        		} else {
+        			getOutputStream().print("FAILED!\n");
+        		}        		
+        	}
+        } catch (RemoteException e) {
+        	e.printStackTrace();
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
 	}
 }
