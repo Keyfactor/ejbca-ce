@@ -121,6 +121,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
 	public void resetDevice(Properties properties) {
+		if (log.isDebugEnabled()) {
+			log.debug("ProtectedLog properties: "+properties);
+		}
 		// Init of local variables
 		isDestructorInvoked = false;
 		systemShutdownNotice = false;
@@ -135,16 +138,16 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		// Init depending on properties
 		this.properties = properties;
 		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
+		nodeIP = getNodeIP();
 		nodeGUID = seeder.nextInt();
 		if (log.isDebugEnabled()) {
-			log.debug("This node uses node GUID: "+nodeGUID);
+			log.debug("This node with ip "+nodeIP+" uses node GUID: "+nodeGUID);
 		}
 		counter = 0;
 		protectedCounter = 0;
 		protectionIntensity = Long.parseLong(properties.getProperty(CONFIG_PROTECTION_INTENSITY, "0")) * 1000; 
 		allowConfigurableEvents = properties.getProperty(CONFIG_ALLOW_EVENTSCONFIG, "false").equalsIgnoreCase("true"); 
 		protectionHashAlgorithm = properties.getProperty(CONFIG_HASHALGO, "SHA-256");
-		nodeIP = getNodeIP();
 		protectedLogActions = new ProtectedLogActions(properties);
 		if (protectionIntensity != 0 && properties.getProperty(ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, "false").equalsIgnoreCase("true")) {
 	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, CONFIG_PROTECTION_INTENSITY));
