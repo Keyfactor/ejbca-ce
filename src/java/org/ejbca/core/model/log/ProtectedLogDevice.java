@@ -138,7 +138,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		// Init depending on properties
 		this.properties = properties;
 		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
-		nodeIP = getNodeIP();
+		nodeIP = getNodeIP(properties); // the instance is not set yet so getInxtenceProperties will not work.
 		nodeGUID = seeder.nextInt();
 		if (log.isDebugEnabled()) {
 			log.debug("This node with ip "+nodeIP+" uses node GUID: "+nodeGUID);
@@ -569,6 +569,12 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 
 	public static long getFreezeTreshold() {
 		return Long.parseLong(getPropertiesFromInstance().getProperty(ProtectedLogVerifier.CONF_FREEZE_THRESHOLD, ProtectedLogVerifier.DEFAULT_FREEZE_THRESHOLD)) * 60 * 1000;
+	}
+
+	private String getNodeIP(Properties prop) {
+		String nodeIP = getNodeIP();
+		nodeIP = prop.getProperty(CONFIG_NODEIP, nodeIP);
+		return nodeIP;
 	}
 
 	public static String getNodeIP() {
