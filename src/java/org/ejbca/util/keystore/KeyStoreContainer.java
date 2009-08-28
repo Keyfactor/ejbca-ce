@@ -80,20 +80,37 @@ public interface KeyStoreContainer {
     void installTrustedRoot(String string) throws Exception;
 
     /**
-     * @param stream
-     * @param stream2
-     * @param string
+     * @param in
+     * @param out
+     * @param alias
      * @throws Exception
      */
-    void decrypt(InputStream stream, OutputStream stream2, String string) throws Exception;
+    void decrypt(InputStream in, OutputStream out, String alias) throws Exception;
 
     /**
-     * @param stream
-     * @param stream2
-     * @param string
+     * @param in
+     * @param out
+     * @param alias
      * @throws Exception
      */
-    void encrypt(InputStream stream, OutputStream stream2, String string) throws Exception;
+    void encrypt(InputStream in, OutputStream out, String alias) throws Exception;
+
+    /**
+     * @param in
+     * @param out
+     * @param alias
+     * @throws Exception
+     */
+    void sign(InputStream in, OutputStream out, String alias) throws Exception;
+
+    /**
+     * @param in
+     * @param out
+     * @param alias
+     * @return
+     * @throws Exception
+     */
+    boolean verify(InputStream in, OutputStream out, String alias) throws Exception;
 
     /**
      * @param authCode

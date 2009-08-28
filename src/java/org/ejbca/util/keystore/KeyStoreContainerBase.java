@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.util.keystore;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -35,24 +33,18 @@ import java.security.spec.ECGenParameterSpec;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Iterator;
 
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.cms.CMSEnvelopedDataParser;
-import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
-import org.bouncycastle.cms.CMSEnvelopedGenerator;
-import org.bouncycastle.cms.CMSTypedStream;
-import org.bouncycastle.cms.RecipientInformation;
-import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CMS;
 import org.ejbca.util.CertTools;
 
 /**
@@ -268,82 +260,51 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         toKS.storeKeyStore();
     }
 
-    abstract private class CodeStream {
-        void code(InputStream is, OutputStream os, String alias) throws Exception {
-            doCoding(is, os, alias);
-            os.flush();
-        }
-        abstract void doCoding(final InputStream is, OutputStream os, String alias) throws Exception;
-    }
-
-    private class EncryptStream extends CodeStream {
-        void doCoding(final InputStream is, OutputStream os, String alias) throws Exception {
-            final int bufferSize = 32*1024;
-            final InputStream bis = new BufferedInputStream(is, bufferSize);
-            final OutputStream bos = new BufferedOutputStream(os, bufferSize);
-            final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator();
-            final Certificate cert = KeyStoreContainerBase.this.keyStore.getCertificate(alias);
-            if ( cert==null ) {
-                String msg = intres.getLocalizedMessage("catoken.errornocertalias", alias);
-                throw new ErrorAdminCommandException(msg);
-            }
-            edGen.addKeyTransRecipient(cert.getPublicKey(), "hej".getBytes() );
-            OutputStream out = edGen.open(bos, CMSEnvelopedGenerator.AES128_CBC, "BC");
-            byte[] buf = new byte[bufferSize];
-            while (true) {
-                int len = bis.read(buf);
-                if ( len<0 ) {
-                    break;
-                }
-                out.write(buf,0, len);
-            }
-            out.close();
-            bos.close();
-            os.close();
-        }
-    }
-    private class DecryptStream extends CodeStream {
-        void doCoding(final InputStream is, OutputStream os, String alias) throws Exception  {
-            final int bufferSize = 32*1024;
-            final InputStream bis = new BufferedInputStream(is, bufferSize);
-            final OutputStream bos = new BufferedOutputStream(os, bufferSize);
-            CMSEnvelopedDataParser     ep = new CMSEnvelopedDataParser(bis);
-            RecipientInformationStore  recipients = ep.getRecipientInfos();        
-            Collection<?>  c = recipients.getRecipients();
-            Iterator<?>  it = c.iterator();
-            if (it.hasNext()) {
-                RecipientInformation   recipient = (RecipientInformation)it.next();
-                final Key key = getKey(alias);
-                if ( key==null ) {
-                    String msg = intres.getLocalizedMessage("catoken.errornokeyalias", alias);
-                    throw new ErrorAdminCommandException(msg);
-                }
-                CMSTypedStream recData = recipient.getContentStream(key, KeyStoreContainerBase.this.ecryptProviderName);
-                InputStream ris = recData.getContentStream();
-                byte[] buf = new byte[bufferSize];
-                while (true) {
-                    int len = ris.read(buf);
-                    if ( len<0 ) {
-                        break;
-                    }
-                    bos.write(buf,0, len);
-                }            
-            }
-            bos.close();
-            os.close();
-        }
-    }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#decrypt(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
     public void decrypt(InputStream is, OutputStream os, String alias) throws Exception {
-        new DecryptStream().code(is, os, alias);
+        final Key key = getKey(alias);
+        if ( key==null ) {
+            String msg = intres.getLocalizedMessage("catoken.errornokeyalias", alias);
+            throw new ErrorAdminCommandException(msg);
+        }
+        CMS.decrypt(is, os, key, KeyStoreContainerBase.this.ecryptProviderName);
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#encrypt(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
     public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
-        new EncryptStream().code(is, os, alias);
+        final X509Certificate cert = (X509Certificate)KeyStoreContainerBase.this.keyStore.getCertificate(alias);
+        if ( cert==null ) {
+            String msg = intres.getLocalizedMessage("catoken.errornocertalias", alias);
+            throw new ErrorAdminCommandException(msg);
+        }
+        CMS.encrypt(is, os, cert);
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#sign(java.io.InputStream, java.io.OutputStream, java.lang.String)
+     */
+    @Override
+    public void sign(InputStream in, OutputStream out, String alias) throws Exception {
+        final PrivateKey key = (PrivateKey)getKey(alias);
+        if ( key==null ) {
+            String msg = intres.getLocalizedMessage("catoken.errornokeyalias", alias);
+            throw new ErrorAdminCommandException(msg);
+        }
+        CMS.sign(in, out, key, KeyStoreContainerBase.this.providerName);
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#verify(java.io.InputStream, java.io.OutputStream, java.lang.String)
+     */
+    @Override
+    public boolean verify(InputStream in, OutputStream out, String alias) throws Exception {
+        final X509Certificate cert = (X509Certificate) KeyStoreContainerBase.this.keyStore.getCertificate(alias);
+        if ( cert==null ) {
+            String msg = intres.getLocalizedMessage("catoken.errornocertalias", alias);
+            throw new ErrorAdminCommandException(msg);
+        }
+        return CMS.verify(in, out, cert);
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generateCertReq(java.lang.String)
