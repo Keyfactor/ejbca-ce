@@ -312,9 +312,6 @@ public class TestRevocationApproval extends TestCase {
 			}
 			approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
 					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession);
-			// Make sure userstatus changed to revoked
-			UserDataVO userdata = userAdminSession.findUser(internalAdmin, username);
-			assertTrue(ERRORNOREVOCATION, userdata.getStatus() == UserDataConstants.STATUS_REVOKED); 
 			// Unrevoke
 			try {
 		    	userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), username, RevokedCertInfo.NOT_REVOKED);
@@ -332,9 +329,6 @@ public class TestRevocationApproval extends TestCase {
 			}
 			approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED,
 					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession);
-			// Make sure userstatus changed to revoked
-			userdata = userAdminSession.findUser(internalAdmin, username);
-			assertTrue(ERRORNOREACTIVATION, userdata.getStatus() == UserDataConstants.STATUS_GENERATED); 
 		} finally {
 			userAdminSession.deleteUser(internalAdmin, username);
 		}
