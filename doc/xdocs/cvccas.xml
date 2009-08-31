@@ -343,26 +343,32 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   
   <subsection name="Generating keys">
   <p>
-  Generating keys on an HSM can be done with the tool <i>pkcs11HSM.sh</i>.
+  Generating keys on an HSM can be done with the tool <i>ejbcaClientToolBox.sh PKCS11HSMKeyTool</i>.
   </p>
   <source>
-bin/pkcs11HSM.sh generate /etc/utimaco/libcs2_pkcs11.so secp160r1 signKey 1  
+cd clientToolBox-dist
+ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /etc/utimaco/libcs2_pkcs11.so secp160r1 signKey 1  
   </source>
   <p>See User Guide for more general information about generating keys.
   For supported curves, see your HSM documentation. For example for Utimaco it can be found in chapter 8 of CS_AdminGuide.pdf.</p>
   <p>Note that the Java PKCS#11 provider may not support all curves that your HSM supports.</p>
-  <p>To generate keys using the pkcs11HSM.sh tool, a patch for JDK is needed due to a bug. This patch will later be included in the official JDK.</p>
+  <p>To generate keys using the ejbcaClientToolBox.sh tool, a patch for JDK is needed due to a bug. This patch will later be included in the official JDK.</p>
   </subsection>
   
-  <subsection name="Sun Java PKCS#11 ECC key issue solved">
-  <p>If you are using the pkcs11HSM.sh tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
-  to stumble on a bug in the JDK which prevents reading of the public key from the HSM. the pkcs11HSM.sh tool needs to read the public key,
+  <subsubsection name="Sun Java PKCS#11 ECC key issue solved">
+  <p>If you are using the ejbcaClientToolBox.sh tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
+  to stumble on a bug in the JDK which prevents reading of the public key from the HSM. the ejbcaClientToolBox.sh tool needs to read the public key,
   generate a "dummy" certificate and assign that to the key label, so we have a public key certificate in the keystore retrieved from 
   the Sun PKCS#11 provider.
   This bug is present at least up to and including JDK 1.6u10.</p>
   <p>You can look at this issue in the EJBCA Jira for a solution to the problem: <a href="https://jira.primekey.se/browse/ECA-940">ECA-940</a>
   </p>
-  </subsection> 
+  </subsubsection>
+  
+  <subsubsection name="Generating keys using HSM tools">
+  <p>Depending on your HSM you may be able to generate keys, and the needed self signed certificate associated with it using HSM tools. For example for the
+  SafeNet ProtectServer you can see the HSM documentation in the EJBCA User Guide for an example how to generate ECC keys for EJBCA using the HSM tools.</p>
+  </subsubsection> 
   </section>
 
   <section name="PEM requests">
