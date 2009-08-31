@@ -2522,7 +2522,7 @@ public class CertTools {
 			X509Certificate x509cert = (X509Certificate) cert;
     		certSignatureAlgorithm = x509cert.getSigAlgName();
     		if (log.isDebugEnabled()) {
-        		log.info("certSignatureAlgorithm is: "+certSignatureAlgorithm);    			
+        		log.debug("certSignatureAlgorithm is: "+certSignatureAlgorithm);    			
     		}
 		} else if (StringUtils.equals(cert.getType(), "CVC")) {
 			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
