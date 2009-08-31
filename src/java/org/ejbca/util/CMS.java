@@ -21,9 +21,13 @@ import java.io.OutputStream;
 import java.security.Key;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.CMSAttributes;
+import org.bouncycastle.asn1.cms.Time;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
 import org.bouncycastle.cms.CMSEnvelopedGenerator;
@@ -32,6 +36,7 @@ import org.bouncycastle.cms.CMSSignedDataStreamGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 
 /**
@@ -95,15 +100,30 @@ public class CMS {
      * @param providerName the provider that should do the signing
      * @throws Exception
      */
-    public static void sign(final InputStream is, OutputStream os, PrivateKey key, String providerName) throws Exception {
+    public static void sign(final InputStream is, OutputStream os, PrivateKey key, String providerName, X509Certificate cert) throws Exception {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
         final CMSSignedDataStreamGenerator gen = new CMSSignedDataStreamGenerator();
-        gen.addSigner(key, "hej".getBytes(), CMSSignedGenerator.DIGEST_SHA256, providerName);
+        final String digest = CMSSignedGenerator.DIGEST_SHA256;
+        if ( cert!=null ) {
+            gen.addSigner(key, cert, digest, providerName);
+        } else {
+            gen.addSigner(key, "hej".getBytes(), digest, providerName);
+        }
         final OutputStream out = gen.open(bos, true);
         fromInToOut(bis, out);
         bos.close();
         os.close();
+    }
+    public static class VerifyResult {
+        public final Date signDate;
+        public final boolean isVerifying;
+        public final SignerId signerId;
+        public VerifyResult(Date _signDate, boolean _isVerifying, SignerId _signerId) {
+            this.signDate = _signDate;
+            this.isVerifying = _isVerifying;
+            this.signerId = _signerId;
+        }
     }
     /**
      * @param is signed data to be verified
@@ -112,7 +132,7 @@ public class CMS {
      * @return true if the signing was to with the private key corresponding to the public key in the certificate.
      * @throws Exception
      */
-    public static boolean verify(final InputStream is, OutputStream os, X509Certificate cert) throws Exception  {
+    public static VerifyResult verify(final InputStream is, OutputStream os, X509Certificate cert) throws Exception  {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
         final CMSSignedDataParser sp = new CMSSignedDataParser(bis);
@@ -123,13 +143,18 @@ public class CMS {
         sc.drain();
         final Iterator<?>  it = sp.getSignerInfos().getSigners().iterator();
         if ( !it.hasNext() ) {
-            return false;
+            return null;
         }
+        final SignerInformation signerInfo = (SignerInformation)it.next();
+        final Attribute attribute = (Attribute)signerInfo.getSignedAttributes().getAll(CMSAttributes.signingTime).get(0);
+        final Date date = Time.getInstance(attribute.getAttrValues().getObjectAt(0).getDERObject()).getDate();
+        final SignerId id = signerInfo.getSID();
+        boolean result = false;
         try {
-            return ((SignerInformation)it.next()).verify(cert, "BC");
+            result = signerInfo.verify(cert, "BC");
         } catch ( Throwable t ) {
             log.debug("Exception when verifying", t);
-            return false;
         }
+        return new VerifyResult(date, result, id);            
     }
 }

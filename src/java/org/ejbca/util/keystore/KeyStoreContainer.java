@@ -18,6 +18,8 @@ import java.io.OutputStream;
 import java.security.Key;
 import java.security.KeyStore;
 
+import org.ejbca.util.CMS;
+
 /**
  * @version $Id$
  * @author primelars
@@ -110,7 +112,7 @@ public interface KeyStoreContainer {
      * @return
      * @throws Exception
      */
-    boolean verify(InputStream in, OutputStream out, String alias) throws Exception;
+    CMS.VerifyResult verify(InputStream in, OutputStream out, String alias) throws Exception;
 
     /**
      * @param authCode

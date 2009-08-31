@@ -211,7 +211,7 @@ public class HSMKeyTool extends ClientToolBox {
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(VERIFY_SWITCH)) {
-            final boolean isVerifying;
+            final CMS.VerifyResult verifyResult;
             if ( args.length < 7 ) {
                 System.err.println("There are two ways of doing the encryption:");
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
@@ -221,12 +221,16 @@ public class HSMKeyTool extends ClientToolBox {
             } else if ( args.length < 9 ) {
                 Security.addProvider( new BouncyCastleProvider() );
                 final X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
-                isVerifying = CMS.verify(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert);
+                verifyResult = CMS.verify(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert);
             } else {
-                isVerifying = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                verifyResult = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
-            System.out.println("The signature of the input " +(isVerifying?"has been verified.":"could not be verified."));
-            if ( !isVerifying ) {
+            if ( verifyResult==null ) {
+                System.out.println("Not possible to parse signed file.");
+                System.exit(4); // Not verifying
+            }
+            System.out.println("The signature of the input " +(verifyResult.isVerifying?"has been":"could not be")+" verified. The file was signed on '"+verifyResult.signDate+"'. The public part of the signing key is in a certificate with serial number "+verifyResult.signerId.getSerialNumber()+" issued by '"+verifyResult.signerId.getIssuer()+"'.");
+            if ( !verifyResult.isVerifying ) {
                 System.exit(4); // Not verifying
             }
             return true;

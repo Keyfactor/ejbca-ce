@@ -259,59 +259,38 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         fromKS.storeKeyStore();
         toKS.storeKeyStore();
     }
-
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#decrypt(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
     public void decrypt(InputStream is, OutputStream os, String alias) throws Exception {
-        final Key key = getKey(alias);
-        if ( key==null ) {
-            String msg = intres.getLocalizedMessage("catoken.errornokeyalias", alias);
-            throw new ErrorAdminCommandException(msg);
-        }
-        CMS.decrypt(is, os, key, KeyStoreContainerBase.this.ecryptProviderName);
+        CMS.decrypt(is, os, getPrivateKey(alias), KeyStoreContainerBase.this.ecryptProviderName);
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#encrypt(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
     public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
-        final X509Certificate cert = (X509Certificate)KeyStoreContainerBase.this.keyStore.getCertificate(alias);
-        if ( cert==null ) {
-            String msg = intres.getLocalizedMessage("catoken.errornocertalias", alias);
-            throw new ErrorAdminCommandException(msg);
-        }
-        CMS.encrypt(is, os, cert);
+        CMS.encrypt(is, os, getCertificate(alias));
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#sign(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
     @Override
     public void sign(InputStream in, OutputStream out, String alias) throws Exception {
-        final PrivateKey key = (PrivateKey)getKey(alias);
-        if ( key==null ) {
-            String msg = intres.getLocalizedMessage("catoken.errornokeyalias", alias);
-            throw new ErrorAdminCommandException(msg);
-        }
-        CMS.sign(in, out, key, KeyStoreContainerBase.this.providerName);
+        CMS.sign(in, out, getPrivateKey(alias), KeyStoreContainerBase.this.providerName, getCertificate(alias));
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#verify(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
     @Override
-    public boolean verify(InputStream in, OutputStream out, String alias) throws Exception {
-        final X509Certificate cert = (X509Certificate) KeyStoreContainerBase.this.keyStore.getCertificate(alias);
-        if ( cert==null ) {
-            String msg = intres.getLocalizedMessage("catoken.errornocertalias", alias);
-            throw new ErrorAdminCommandException(msg);
-        }
-        return CMS.verify(in, out, cert);
+    public CMS.VerifyResult verify(InputStream in, OutputStream out, String alias) throws Exception {
+        return CMS.verify(in, out, getCertificate(alias));
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generateCertReq(java.lang.String)
      */
     public void generateCertReq(String alias, String sDN) throws Exception {
-        final RSAPublicKey publicKey = (RSAPublicKey)this.keyStore.getCertificate(alias).getPublicKey();
-        final PrivateKey privateKey = (PrivateKey)this.keyStore.getKey(alias, null);
+        final RSAPublicKey publicKey = (RSAPublicKey)getCertificate(alias).getPublicKey();
+        final PrivateKey privateKey = getPrivateKey(alias);
         if (log.isDebugEnabled()) {
             log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
         }
@@ -338,7 +317,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         boolean notFound = true;
         while ( eAlias.hasMoreElements() && notFound ) {
             final String alias = eAlias.nextElement();
-            final PublicKey hsmPublicKey = this.keyStore.getCertificate(alias).getPublicKey();
+            final PublicKey hsmPublicKey = getCertificate(alias).getPublicKey();
             final PublicKey importPublicKey = chain[0].getPublicKey();
             if (log.isDebugEnabled()) {
                 log.debug("alias: " + alias + " SHA1 of public hsm key: " + CertTools.getFingerprintAsString(hsmPublicKey.getEncoded())
@@ -347,7 +326,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             }
             if ( hsmPublicKey.equals(importPublicKey) ) {
                 log.info("Found a matching public key for alias \"" + alias + "\".");
-                this.keyStore.setKeyEntry(alias, this.keyStore.getKey(alias, null), null, chain);
+                this.keyStore.setKeyEntry(alias, getPrivateKey(alias), null, chain);
                 notFound = false;
             }
         }
@@ -366,5 +345,21 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         }
         // assume last cert in chain is root if more than 1
         this.keyStore.setCertificateEntry("trusted", chain[chain.length-1]);
+    }
+    private PrivateKey getPrivateKey(String alias) throws Exception {
+        final PrivateKey key = (PrivateKey)getKey(alias);
+        if ( key==null ) {
+            String msg = intres.getLocalizedMessage("catoken.errornokeyalias", alias);
+            throw new ErrorAdminCommandException(msg);
+        }
+        return key;
+    }
+    private X509Certificate getCertificate( String alias ) throws KeyStoreException, ErrorAdminCommandException {
+        final X509Certificate cert = (X509Certificate)this.keyStore.getCertificate(alias);
+        if ( cert==null ) {
+            String msg = intres.getLocalizedMessage("catoken.errornocertalias", alias);
+            throw new ErrorAdminCommandException(msg);
+        }
+        return cert;
     }
 }
