@@ -66,7 +66,7 @@ public abstract class ClientToolBox {
             }
         }
         System.err.println("You must specify which tool to use as first argument.");
-        System.err.println("These tools are awailable:");
+        System.err.println("These tools are available:");
         for ( int i=0; i<toolBox.length; i++) {
             System.err.println(" - "+toolBox[i].getName());
         }

@@ -21,6 +21,7 @@ import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.util.CMS;
 import org.ejbca.util.keystore.KeyStoreContainer;
@@ -53,6 +54,8 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String RENAME = "rename";
     private static final String INSTALL_TRUSTED_ROOT = "installtrusted";
     private static final Object SIGN_SWITCH = "sign";
+
+    final static private Logger log = Logger.getLogger(HSMKeyTool.class);
 
     /**
      * To be overided if the HSM implementation knows the value of some parameters.
@@ -93,6 +96,20 @@ public class HSMKeyTool extends ClientToolBox {
     void setModuleProtection() {
         return;
     }
+    private String commandString(String[] sa) {
+        String s = "";
+        for ( int i=0; i<sa.length; i++) {
+            s += sa[i];
+            if (i+1<sa.length) {
+                s += " ";
+            }
+        }
+        return s;
+    }
+    private void tooFewArguments(String[] args) {
+        log.error("Too few arguments in command: '"+commandString(args)+'\'');
+        System.exit(3);
+    }
     private boolean doIt(String[] args) throws Exception {
         final String commandStringNoSharedLib = args[0]+" "+args[1]+" ";
         final String commandString = commandStringNoSharedLib+getProviderParameterDescription()+" ";
@@ -110,6 +127,7 @@ public class HSMKeyTool extends ClientToolBox {
             if ( args.length < 6 ) {
                 System.err.println(commandString + "<all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn> <key entry name> " + '['+'<'+getKeyStoreDescription()+'>'+']');
                 generateComment();
+                tooFewArguments(args);
             } else {
                 if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
                     setModuleProtection();
@@ -124,6 +142,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
             if ( args.length < 6 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<key entry name>]");
+                tooFewArguments(args);
             } else {
                 String alias = args.length>6 ? args[6] : null;
                 System.err.println("Deleting certificate with alias "+alias+'.');
@@ -134,6 +153,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(CERT_REQ)) {
             if ( args.length < 7 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>]");
+                tooFewArguments(args);
             } else {
                 KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6], args.length>7 ? args[7] : null);
             }
@@ -142,6 +162,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
             if ( args.length < 7 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain in PEM format>");
+                tooFewArguments(args);
             } else {
                 KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).installCertificate(args[6]);
             }
@@ -150,6 +171,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(INSTALL_TRUSTED_ROOT)) {
             if ( args.length < 7 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <trusted root certificate in PEM format>");
+                tooFewArguments(args);
             } else {
                 KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).installTrustedRoot(args[6]);
             }
@@ -160,6 +182,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println("There are two ways of doing the encryption:");
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use>");
+                tooFewArguments(args);
             } else if ( args.length < 9 ) {
                 Security.addProvider( new BouncyCastleProvider() );
                 final X509Certificate cert = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
@@ -172,6 +195,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
             if ( args.length < 9 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
+                tooFewArguments(args);
             } else {
                 KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
@@ -180,6 +204,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(SIGN_SWITCH)) {
             if ( args.length < 9 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
+                tooFewArguments(args);
             } else {
                 KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
@@ -191,6 +216,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println("There are two ways of doing the encryption:");
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use>");
+                tooFewArguments(args);
                 return true;
             } else if ( args.length < 9 ) {
                 Security.addProvider( new BouncyCastleProvider() );
@@ -200,11 +226,15 @@ public class HSMKeyTool extends ClientToolBox {
                 isVerifying = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             System.out.println("The signature of the input " +(isVerifying?"has been verified.":"could not be verified."));
+            if ( !isVerifying ) {
+                System.exit(4); // Not verifying
+            }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
             if ( args.length < 6 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<# of tests or threads>] [<alias for stress test>] [<type of stress test>]");
+                tooFewArguments(args);
             } else {
                 KeyStoreContainerTest.test(args[2], args[3], args[4], args[5],
                                            args.length>6 ? Integer.parseInt(args[6].trim()) : 1, args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null);
@@ -214,6 +244,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(RENAME)) {
             if ( args.length < 8 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old key alias> <new key alias>");
+                tooFewArguments(args);
             } else {
                 KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).renameAlias(args[6], args[7]);
             }
@@ -222,6 +253,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
             if ( args.length < 7 ) {
                 System.err.println(commandString + "<from "+getKeyStoreDescription()+"> <to "+getKeyStoreDescription()+'>');
+                tooFewArguments(args);
             } else {
                 String fromId = args[5];                    
                 String toId = args[6];
@@ -246,7 +278,7 @@ public class HSMKeyTool extends ClientToolBox {
     public void execute(String[] args) {
         try {
             if ( args.length>1 && doIt(args)) {
-                return;
+                return; // command was found.
             }
             PrintWriter pw = new PrintWriter(System.err);
             pw.println("Use one of following commands: ");
@@ -272,8 +304,12 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("  "+args[0]+" "+VERIFY_SWITCH);
             pw.println("  "+args[0]+" "+MOVE_SWITCH);
             pw.flush();
+            log.error("Command '"+commandString(args)+"' not found.");
+            System.exit(1); // Command not found.
         } catch (Throwable e) {
-            e.printStackTrace(System.err);
+            System.err.println("Command could not be executed. See log for stack trace.");
+            log.error("Command '"+commandString(args)+"' could not be executed.", e);
+            System.exit(2); // Command did not execute OK!
         }
     }
     /* (non-Javadoc)

@@ -23,6 +23,7 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
 import org.bouncycastle.cms.CMSEnvelopedGenerator;
@@ -39,6 +40,7 @@ import org.bouncycastle.cms.SignerInformation;
  *
  */
 public class CMS {
+    final static private Logger log = Logger.getLogger(CMS.class);
     final static private int bufferSize = 0x20000;
     private static void fromInToOut( InputStream in, OutputStream out) throws IOException {
         byte[] buf = new byte[bufferSize];
@@ -123,6 +125,11 @@ public class CMS {
         if ( !it.hasNext() ) {
             return false;
         }
-        return ((SignerInformation)it.next()).verify(cert, "BC");
+        try {
+            return ((SignerInformation)it.next()).verify(cert, "BC");
+        } catch ( Throwable t ) {
+            log.debug("Exception when verifying", t);
+            return false;
+        }
     }
 }
