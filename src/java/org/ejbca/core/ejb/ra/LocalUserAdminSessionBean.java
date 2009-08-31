@@ -1483,7 +1483,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 	};
 
 	/**
-     * Method that revokes a certificate.
+     * Method that revokes a certificate for a user.
      *
      * @param admin the administrator performing the action
      * @param certserno the serno of certificate to revoke.
@@ -1575,28 +1575,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         ExtendedInformation inf = data.getExtendedInformation();
         if (inf != null) {
             inf.setRevocationCodeIdentifier(null);        	
-        }
-        if (certificatesession.checkIfAllRevoked(admin, username)) {
-            try {
-    			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
-    		} catch (ApprovalException e) {
-    			throw new EJBException("This should never happen",e);
-    		} catch (WaitingForApprovalException e) {
-    			throw new EJBException("This should never happen",e);
-    		}
-            String msg = intres.getLocalizedMessage("ra.revokedentitycert", issuerdn, certserno.toString(16));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
-        } else if (reason == RevokedCertInfo.NOT_REVOKED) {
-            // Don't change status if it is already the same
-            if (data.getStatus() != UserDataConstants.STATUS_GENERATED) {
-                try {
-                    setUserStatus(admin, username, UserDataConstants.STATUS_GENERATED);                   
-                } catch (ApprovalException e) {
-                    throw new EJBException("This should never happen",e);
-                } catch (WaitingForApprovalException e) {
-                    throw new EJBException("This should never happen",e);
-                }
-            }
         }
         log.trace("<revokeCert()");
     } // revokeCert
