@@ -364,20 +364,19 @@ class KeyStoreContainerTest {
             }
             this.nrOfTests++;
             final long nanoNumber = this.nrOfTests*(long)1000000000;
-            System.out.println("Key statistics. ");
             if ( this.totalSignTime < 0) {
-                System.out.print("Signing not possible with this key. See exception");
+                System.out.println("Signing not possible with this key. See exception.");
             } else {
-                System.out.print("Signings per second: "+(nanoNumber+this.totalSignTime/2)/this.totalSignTime);
+                System.out.println("Signings per second: "+(nanoNumber+this.totalSignTime/2)/this.totalSignTime);
             }
             if ( isCryptoAvailable ) {
                 if ( this.totalDecryptTime < 0) {
-                    System.out.println("; Crypto not possible with this key. See exception");
+                    System.out.println("Crypto not possible with this key. See exception");
                 } else {
-                    System.out.println("; Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
+                    System.out.println("Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
                 }
             } else {
-                System.out.println(" No crypto available for this key.");
+                System.out.println("No crypto available for this key.");
             }
         }
 
