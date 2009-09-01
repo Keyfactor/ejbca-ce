@@ -26,6 +26,10 @@
 # Default: false
 #mail.smtp.auth=false
 
+# Switch connection to a TLS-protected connection (if supported by server) before login.
+# Default: false
+#mail.smtp.starttls.enable=false
+
 # Email address used to send emails.
 # Default: ejbca-donotreply@domain.com
 #mail.from=ejbca-donotreply@domain.com

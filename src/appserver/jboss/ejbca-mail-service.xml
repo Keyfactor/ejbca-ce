@@ -47,6 +47,9 @@ $Id$
 
           <!-- Enable debugging output from the javamail classes -->
           <property name="mail.debug" value="${mail.debug}"/>
+
+          <!-- Set to true to upgrade the connection to TLS -->
+          <property name="mail.smtp.starttls.enable" value="${mail.smtp.starttls.enable}"/>
        </configuration>
     </attribute>
   </mbean>

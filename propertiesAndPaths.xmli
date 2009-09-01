@@ -310,6 +310,7 @@
     <property name="mail.pop3.host" value="localhost" />
     <property name="mail.smtp.host" value="localhost" />
     <property name="mail.smtp.auth" value="false" />
+    <property name="mail.smtp.starttls.enable" value="false" />
     <property name="mail.subject" value="Retrieve your certificate" />
     <property name="mail.message" value="Hello ${CN}${NL}${NL} This is a notification. ${NL}${NL} Your username: ${USERNAME}${NL} password: ${PASSWORD}${NL}${NL} Your are NOT supposed to go and fetch your certificate, this is only a test." />
     <property name="mail.debug" value="false" />
