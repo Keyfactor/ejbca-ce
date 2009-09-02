@@ -39,6 +39,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -149,6 +150,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      */
     private String cardPassword = OcspConfiguration.getCardPassword();
 
+    private final Set<String> keyAlias;
     /**
      * Called when a servlet is initialized. This should only occur once.
      * 
@@ -261,6 +263,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
             // Load OCSP responders private keys into cache in init to speed things up for the first request
             // signEntityMap is also set
+            {
+                final String aKeyAlias[] = OcspConfiguration.getKeyAlias();
+                this.keyAlias = aKeyAlias!=null && aKeyAlias.length>0 ? new HashSet<String>(Arrays.asList(aKeyAlias)) : null;
+            }
             loadPrivateKeys(this.servlet.m_adm, null);
         } catch( ServletException e ) {
             throw e;
@@ -1270,6 +1276,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             final Enumeration<String> eAlias = keyStore.aliases();
             while( eAlias.hasMoreElements() ) {
                 final String alias = eAlias.nextElement();
+                if ( OCSPServletStandAloneSession.this.keyAlias!=null && !OCSPServletStandAloneSession.this.keyAlias.contains(alias) ) {
+                    m_log.debug("Alias '"+alias+"' not in alias list. The key with this alias will not be used.");
+                    continue;
+                }
                 try {
                     final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
                     if ( cert==null ) {

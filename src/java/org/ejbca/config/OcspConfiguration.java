@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConversionException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
@@ -438,5 +439,12 @@ public class OcspConfiguration {
      */
     public static String getWsSwKeystorePassword() {
         return ConfigurationHolder.getString(WSSWKEYSTOREPASSWORD, null);
+    }
+    public static String[] getKeyAlias() {
+        final String sConf = ConfigurationHolder.getString("ocsp.rekeying.listOfAliases", null);
+        if ( sConf==null ) {
+            return null;
+        }
+        return StringUtils.split(sConf.trim(), ';');
     }
 }

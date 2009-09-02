@@ -211,6 +211,14 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Default: null
 #ocsp.rekeying.swKeystorePassword = foo123
 
+# Limits the available keys on the slot to those defined in this list.
+# The aliases are separated by ';'.
+# Use this if you have several responders charing the same HSM and want each responder to have its own keys.
+# Using this makes it possible to have rekeying running on all responders.
+# Do not define this property if you want to use all available keys.
+# Default: null
+#ocsp.rekeying.listOfAliases=reponder2key1;responder2key2;responder2key3
+
 
 #------------------- External OCSP responder activation------------------------------
 # 'ocsp.keys.storePassword' and 'ocsp.p11.p11password' and 'ocsp.keys.cardPassword' should not be defined if you are using the activation feature.
@@ -323,7 +331,7 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Default: false
 #ocsp.audit-log = true
 
-A pattern for use with ocsp.audit-order to replace constants with values during logging
+# A pattern for use with ocsp.audit-order to replace constants with values during logging
 # Default: \\$\\{(.+?)\\}
 #ocsp.audit-log-pattern = \\$\\{(.+?)\\}
 
