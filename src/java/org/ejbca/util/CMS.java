@@ -84,7 +84,7 @@ public class CMS {
     public static void decrypt(final InputStream is, OutputStream os, Key key, String providerName) throws Exception  {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
-        final Iterator<?>  it = new CMSEnvelopedDataParser(bis).getRecipientInfos().getRecipients().iterator();
+        final Iterator  it = new CMSEnvelopedDataParser(bis).getRecipientInfos().getRecipients().iterator();
         if (it.hasNext()) {
             final RecipientInformation recipient = (RecipientInformation)it.next();
             final CMSTypedStream recData = recipient.getContentStream(key, providerName);
@@ -141,7 +141,7 @@ public class CMS {
         fromInToOut(ris, bos);
         os.close();
         sc.drain();
-        final Iterator<?>  it = sp.getSignerInfos().getSigners().iterator();
+        final Iterator  it = sp.getSignerInfos().getSigners().iterator();
         if ( !it.hasNext() ) {
             return null;
         }
