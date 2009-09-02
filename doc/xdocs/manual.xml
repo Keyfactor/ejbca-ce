@@ -3704,13 +3704,17 @@ You can also generate keys, and the needed self signed certificate, using the Sa
 to generate ECC keys, since there is a bug in the JDK which prevents this without patching the JDK.
 </p>
 <p>
-For example, the below commands generates an ECC key with curve P-256 on slot 1, storing it on the HSM with alias 'foo', and finally listing the object of slot 1.
+For example, the below commands generates an ECC key with curve P-256 on slot 1, storing it on the HSM with alias 'foo', assigning a selfsigned certificate to it and finally listing the object of slot 1.
 </p>
 <source>
 cd /opt/ETCprt/bin/linux-x86-64
-./ctkmu c -tec -nfoo -aPSVXTRD -s1 -CP-256
+./ctkmu c -tec -nfoo -aPSVXxTRD -s1 -CP-256
 ./ctcert c -s1 -lfoo
 ./ctkmu l -s1
+</source>
+<p>Or you can wrap it all up in a single command...</p>
+<source>
+./ctcert c -k -lfoo -tec -s1 -CP-256 -d30y
 </source>
 <p>If JBoss was started you have to restart JBoss before the keys becomes available in EJBCA.</p>
 </subsubsection>
