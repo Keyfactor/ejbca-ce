@@ -240,6 +240,12 @@ With this feature enabled no password are kept in memory. If it is enabled you m
 Defining this feature makes it impossible to do "key updating".
 </p>
 </subsection>
+<subsection name="Several responders using same HSM">
+<p>
+If several responders should share the same HSM and rekeying should be enabled on all of them then each responder must use different keys.
+To be able to define this set of keys that should be used there is a property called 'ocsp.rekeying.listOfAliases' in the ocsp.properties file.
+</p>
+</subsection>
 </section>
 <section name="Error handling">
 <p>
