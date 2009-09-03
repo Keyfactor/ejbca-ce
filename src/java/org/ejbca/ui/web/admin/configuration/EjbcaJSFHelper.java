@@ -29,7 +29,6 @@ import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.ui.web.RequestHelper;
 
 
 
