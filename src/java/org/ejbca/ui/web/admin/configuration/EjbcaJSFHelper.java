@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
@@ -100,7 +101,7 @@ public class EjbcaJSFHelper  {
      * Returns the EJBCA content string
      */
     public String getContent(){
-    	return "text/html; charset=" + RequestHelper.getDefaultContentEncoding();
+    	return "text/html; charset=" + WebConfiguration.getWebContentEncoding();
     } 
     
    /**

@@ -92,16 +92,10 @@ httpserver.pubhttps	     = ${httpserver.pubhttps}
 httpserver.privhttps     = ${httpserver.privhttps}
 httpsserver.hostname     = ${httpsserver.hostname}
 httpsserver.password     = ${httpsserver.password}
-web.availablelanguages   = ${web.availablelanguages}
 web.contentencoding      = ${web.contentencoding}
 web.jsfimpl              = ${web.jsfimpl}
-web.docbaseuri           = ${web.docbaseuri}
 web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
-intresources.preferredlanguage   = ${intresources.preferredlanguage}     	
-intresources.secondarylanguage   = ${intresources.secondarylanguage}
-hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
-log.maxqueryrowcount             = ${log.maxqueryrowcount}
 approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
 approval.excludedClasses         = ${approval.excludedClasses}
@@ -502,7 +496,6 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		        <replacestring from="@ejbca@" to="${app.name}"/>
 		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
 		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
-				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>				
 				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
 				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
 				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>
@@ -514,8 +507,6 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 				<replacestring from="@ecdsa.implicitlyca.b@" to="${ecdsa.implicitlyca.b}"/>
 				<replacestring from="@ecdsa.implicitlyca.g@" to="${ecdsa.implicitlyca.g}"/>
 				<replacestring from="@ecdsa.implicitlyca.n@" to="${ecdsa.implicitlyca.n}"/>
-				<replacestring from="@log.maxqueryrowcount@" to="${log.maxqueryrowcount}"/>
-				<replacestring from="@web.docbaseuri@" to="${web.docbaseuri}"/>
 				<replacestring from="@renew.war.enabled@" to="${renew.war.enabled}"/>
 			</tokenfilter>
 			</filterchain>
@@ -579,10 +570,6 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 	      Replace more values in java and xml files 
 	    -->
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
-		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
-		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>				
-		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>				
-		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@web.docbaseuri@" value="${web.docbaseuri}"/>				
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
         <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>
@@ -603,9 +590,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.maintenancefile@" value="${ocsphealthcheck.maintenancefile}"/>	
         <replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.maintenancepropertyname@" value="${ocsphealthcheck.maintenancepropertyname}"/>   
         <replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.signtest@" value="${ocsphealthcheck.signtest}"/>
-		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/RequestAbstractTypeResponseGenerator.java" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
-		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/RequestAbstractTypeResponseGenerator.java" token="@httpserver.pubhttp@" value="${httpserver.pubhttp}"/>
-	    <replace file="${src}/xkms/wsdl/xkms.wsdl" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
+		<replace file="${src}/xkms/wsdl/xkms.wsdl" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
 		<replace file="${src}/xkms/wsdl/xkms.wsdl" token="@xkms.serviceport@" value="${xkms.serviceport}"/>
 		<replace file="${src.java}/org/ejbca/core/protocol/ws/common/WSConfig.java" token="@jaxws.approval.gethardtoken@" value="${jaxws.approval.gethardtoken}"/>
 		<replace file="${src.java}/org/ejbca/core/protocol/ws/common/WSConfig.java" token="@jaxws.approval.gentokencerts@" value="${jaxws.approval.gentokencerts}"/>

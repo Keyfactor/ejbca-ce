@@ -17,6 +17,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -46,8 +47,8 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
         InitialContext ictx = new InitialContext();
         Context myenv = (Context) ictx.lookup("java:comp/env");      
         ret.initialize( (String) myenv.lookup("ADMINDIRECTORY"),
-                (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"), 
-                (String) myenv.lookup("PUBLICPORT"),(String) myenv.lookup("PRIVATEPORT"),
+        		WebConfiguration.getAvailableLanguages(), (String) myenv.lookup("AVAILABLETHEMES"), 
+                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(),
                 (String) myenv.lookup("PUBLICPROTOCOL"),(String) myenv.lookup("PRIVATEPROTOCOL"));
         return ret;
     }

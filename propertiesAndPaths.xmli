@@ -326,14 +326,9 @@
     <property name="httpsserver.bindaddress.pubhttp" value="0.0.0.0" />
     <property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
     <property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
-    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE,PT,PT_BR" />
     <property name="web.contentencoding" value="UTF-8" />
-    <property name="web.docbaseuri" value="internal" />
+    <property name="web.docbaseuri" value="internal" /> <!-- Default used to determine if to build or not.. -->
     <property name="web.renewalenabled" value="false" />
-    <property name="intresources.preferredlanguage" value="EN" />
-    <property name="intresources.secondarylanguage" value="SE" />
-    <property name="hardtoken.diplaysensitiveinfo" value="true" />
-    <property name="log.maxqueryrowcount" value="1000" />
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
     <property name="approval.excludedClasses" value="" />

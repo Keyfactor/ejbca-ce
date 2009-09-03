@@ -1045,10 +1045,6 @@
             <fileset dir="${mainsrc}/java" />
         </copy>
         <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
-        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
-        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>               
-        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>               
-        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@web.docbaseuri@" value="${web.docbaseuri}"/>               
         <javac destdir="${clientToolBox.build}" debug="on">
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />

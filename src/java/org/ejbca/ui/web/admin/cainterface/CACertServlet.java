@@ -63,25 +63,10 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="adminweb"
  * 
- * @web.env-entry description="Defines the available languages by languagecodes separated with a comma"
- *   name="AVAILABLELANGUAGES"
- *   type="java.lang.String"
- *   value="${web.availablelanguages}"
- * 
  * @web.env-entry description="Defines the available themes by css-filenames separated with a comma"
  *   name="AVAILABLETHEMES"
  *   type="java.lang.String"
  *   value="default_theme.css"
- * 
- * @web.env-entry description="Port used by EJBCA public webcomponents. i.e that doesn't require client authentication"
- *   name="PUBLICPORT"
- *   type="java.lang.String"
- *   value="${httpserver.pubhttp}"
- * 
- * @web.env-entry description="Port used by EJBCA private webcomponents. i.e that requires client authentication"
- *   name="PRIVATEPORT"
- *   type="java.lang.String"
- *   value="${httpserver.privhttps}"
  * 
  * @web.env-entry description="Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication"
  *   name="PUBLICPROTOCOL"
@@ -92,11 +77,6 @@ import org.ejbca.util.CertTools;
  *   name="PRIVATEPROTOCOL"
  *   type="java.lang.String"
  *   value="https"
- * 
- * @web.env-entry description="Default content encoding used to display JSP pages"
- *   name="contentEncoding"
- *   type="java.lang.String"
- *   value="${web.contentencoding}"
  * 
  * We put all ejb-local-refs in this servlet, this is a collection of all refs for all servlets and jsps
  * 

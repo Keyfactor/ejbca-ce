@@ -15,6 +15,7 @@ package org.ejbca.core.model.ra.raadmin;
 
 
 
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
 
@@ -34,10 +35,10 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
      * Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
      * be displayed for the administrators. If false only non-sensitive information is displayed.
      */
-    public static final boolean HARDTOKEN_DIPLAYSENSITIVEINFO = "@hardtoken.diplaysensitiveinfo@".equalsIgnoreCase("true");
+    public static final boolean HARDTOKEN_DIPLAYSENSITIVEINFO = WebConfiguration.getHardTokenDiplaySensitiveInfo();
     
-    public static final String PREFEREDINTERNALRESOURCES = "@intresources.preferredlanguage@".trim();
-    public static final String SECONDARYINTERNALRESOURCES = "@intresources.secondarylanguage@".trim();
+    public static final String PREFEREDINTERNALRESOURCES = WebConfiguration.getInternalResourcesPreferredLanguage();
+    public static final String SECONDARYINTERNALRESOURCES = WebConfiguration.getInternalResourcesSecondaryLanguage();
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
@@ -66,7 +67,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final  String   DEFAULTEJBCATITLE             = "@EJBCA@ Administration";
 
     // The base of help links
-    public static final String HELPBASEURI = "@web.docbaseuri@";
+    public static final String HELPBASEURI = WebConfiguration.getDocBaseUri();
 
     // Default values for AutoEnroll
     private static final  String  AUTOENROLL_DEFAULT_ADSERVER = "dc1.company.local";

@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -492,25 +493,6 @@ public class RequestHelper {
         log.debug("Sent " + bytes.length + " bytes to client");
     } // sendBinaryBytes
     
-    /** Returns the default content encoding used in JSPs. Reads the env-entry contentEncoding from web.xml.
-     * 
-     * @return The content encoding set in the webs env-entry java:comp/env/contentEncoding, or ISO-8859-1 (default), never returns null.
-     */
-    public static String getDefaultContentEncoding() {
-        String ret = null;
-        try {
-            ret = ServiceLocator.getInstance().getString("java:comp/env/contentEncoding");            
-        } catch (ServiceLocatorException e) {
-            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
-            ret = "ISO-8859-1";            
-        }
-        if (ret == null) {
-            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
-            ret = "ISO-8859-1";
-        } 
-        return ret;
-    }
-    
     /** Sets the default character encoding for decoding post and get parameters. 
      * First tries to get the character encoding from the request, if the browser is so kind to tell us which it is using, which it never does...
      * Otherwise, when the browser is silent, it sets the character encoding to the same encoding that we use to display the pages.
@@ -522,7 +504,7 @@ public class RequestHelper {
     public static void setDefaultCharacterEncoding(HttpServletRequest request) throws UnsupportedEncodingException {
         String encoding = request.getCharacterEncoding();
         if(StringUtils.isEmpty(encoding)) {
-            encoding = RequestHelper.getDefaultContentEncoding();
+            encoding = org.ejbca.config.WebConfiguration.getWebContentEncoding();
             log.debug("Setting encoding to default value: "+encoding);
             request.setCharacterEncoding(encoding);
         } else {

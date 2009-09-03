@@ -1,5 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@ page contentType="text/html; charset=@page.encoding@" %>
+<% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import=" org.ejbca.core.model.authorization.AuthorizationDeniedException,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.log.LogConfiguration,org.ejbca.util.HTMLTools,
                 java.util.HashMap, java.util.Iterator, java.util.Collection"%>

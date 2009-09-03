@@ -29,6 +29,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -130,12 +131,9 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 		return "_" + id;
 	}
 
-
 	private String genServiceValue() {
-		return "http://@httpsserver.hostname@:@httpserver.pubhttp@/ejbca/xkms/xkms";
+		return WebConfiguration.getHostName() + ":" + WebConfiguration.getPublicHttpPort() + "/ejbca/xkms/xkms";
 	}
-	
-
 	
     /**
      * Method used to set the result of the operation

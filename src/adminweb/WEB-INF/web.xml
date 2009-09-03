@@ -612,27 +612,9 @@
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
    <env-entry>
-      <description><![CDATA[Defines the available languages by languagecodes separated with a comma]]></description>
-      <env-entry-name>AVAILABLELANGUAGES</env-entry-name>
-      <env-entry-value>EN,FR,IT,ES,SE,ZH,DE,PT</env-entry-value>
-      <env-entry-type>java.lang.String</env-entry-type>
-   </env-entry>
-   <env-entry>
       <description><![CDATA[Defines the available themes by css-filenames separated with a comma]]></description>
       <env-entry-name>AVAILABLETHEMES</env-entry-name>
       <env-entry-value>default_theme.css</env-entry-value>
-      <env-entry-type>java.lang.String</env-entry-type>
-   </env-entry>
-   <env-entry>
-      <description><![CDATA[Port used by EJBCA public webcomponents. i.e that doesn't require client authentication]]></description>
-      <env-entry-name>PUBLICPORT</env-entry-name>
-      <env-entry-value>8080</env-entry-value>
-      <env-entry-type>java.lang.String</env-entry-type>
-   </env-entry>
-   <env-entry>
-      <description><![CDATA[Port used by EJBCA private webcomponents. i.e that requires client authentication]]></description>
-      <env-entry-name>PRIVATEPORT</env-entry-name>
-      <env-entry-value>8443</env-entry-value>
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
    <env-entry>
@@ -645,12 +627,6 @@
       <description><![CDATA[Protocol used by EJBCA private webcomponents. i.e that requires client authentication]]></description>
       <env-entry-name>PRIVATEPROTOCOL</env-entry-name>
       <env-entry-value>https</env-entry-value>
-      <env-entry-type>java.lang.String</env-entry-type>
-   </env-entry>
-   <env-entry>
-      <description><![CDATA[Default content encoding used to display JSP pages]]></description>
-      <env-entry-name>contentEncoding</env-entry-name>
-      <env-entry-value>UTF-8</env-entry-value>
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
    <env-entry>

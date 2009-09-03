@@ -22,13 +22,6 @@
       <res-auth>Container</res-auth>
    </resource-ref>
 
-   <env-entry>
-      <description><![CDATA[Default content encoding used to decode form posts]]></description>
-      <env-entry-name>contentEncoding</env-entry-name>
-      <env-entry-value>@page.encoding@</env-entry-value>
-      <env-entry-type>java.lang.String</env-entry-type>
-   </env-entry>
-
   <ejb-local-ref id="EJBLocalRef_1">
     <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
