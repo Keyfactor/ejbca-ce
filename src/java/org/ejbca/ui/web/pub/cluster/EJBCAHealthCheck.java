@@ -20,6 +20,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
@@ -39,7 +40,7 @@ import org.ejbca.core.model.log.Admin;
  * Does the following system checks.
  * 
  * * If a maintenance file is specific and the property is set to true, this message will be returned
- * * Not about to run out if memory i below value (configurable through web.xml with param "MinimumFreeMemory")
+ * * Not about to run out if memory i below configurable value
  * * Database connection can be established.
  * * All CATokens are active, if not set as offline and not set to specifically not be monitored
  * * All Publishers can establish connection
@@ -57,7 +58,7 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	
 	private boolean checkPublishers = false;
-	private boolean caTokenSignTest = false;
+	private boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
 	
 	public void init(ServletConfig config) {
 		super.init(config);
@@ -65,9 +66,6 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 			checkPublishers = config.getInitParameter("CheckPublishers").equalsIgnoreCase("TRUE");
 		}
 		log.debug("CheckPublishers: "+checkPublishers);
-		if(config.getInitParameter("CaTokenSignTest") != null){
-			caTokenSignTest = config.getInitParameter("CaTokenSignTest").equalsIgnoreCase("TRUE");
-		}
 		log.debug("CaTokenSignTest: "+caTokenSignTest);
 	}
 

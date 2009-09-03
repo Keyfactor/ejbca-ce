@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthResponse;
@@ -67,11 +68,7 @@ public class HealthCheckServlet extends HttpServlet {
             // Install BouncyCastle provider
             CertTools.installBCProvider();
 
-            String authIPString = config.getInitParameter("AuthorizedIPs");
-            if(authIPString != null){
-            	authIPs = authIPString.split(";");
-            }
-            
+        	authIPs = EjbcaConfiguration.getHealthCheckAuthorizedIps().split(";");
             
             healthcheck = (IHealthCheck) HealthCheckServlet.class.getClassLoader().loadClass(config.getInitParameter("HealthCheckClassPath")).newInstance();
             healthcheck.init(config);

@@ -26,7 +26,7 @@ import org.ejbca.ui.web.protocol.IHealtChecker;
  * 
  * Does the following system checks.
  * 
- * * Not about to run out if memory (configurable through web.xml with param "MinimumFreeMemory")
+ * * Not about to run out if memory
  * * Database connection can be established.
  * * All OCSPSignTokens are active if not set as offline.
  * 

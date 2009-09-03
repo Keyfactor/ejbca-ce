@@ -23,8 +23,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -68,20 +68,6 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 */
 	public static final int REQUESTTYPE_COMPARING = 2;
 	
-	/**
-	 * The default request validity used if not method getRequestValidity is overridden
-	 *
-	 */
-	protected static final long DEFAULT_REQUESTVALIDITY = 28800 * 1000;
-	protected static final String DEFAULT_REQUESTVALIDITYSTRING = "@approval.defaultrequestvalidity@";
-
-	/**
-	 * The default approval validity used if not method getApprovalValidity is overridden
-	 *
-	 */
-	protected static final long DEFAULT_APPROVALVALIDITY = 28800 * 1000;
-	protected static final String DEFAULT_APPROVALVALIDITYSTRING = "@approval.defaultapprovalvalidity@";
-
     private Admin requestAdmin = null; // Base64 encoding of x509certificate   
     
     private String requestSignature = null;        
@@ -213,11 +199,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * Default if will return the value defined in the ejbca.properties
 	 */
 	public long getRequestValidity(){
-		long ret = DEFAULT_REQUESTVALIDITY; 
-		if (StringUtils.isNotEmpty(DEFAULT_REQUESTVALIDITYSTRING)) {
-			ret = Long.parseLong(DEFAULT_REQUESTVALIDITYSTRING) * 1000;
-		}
-		return ret;
+		return EjbcaConfiguration.getApprovalDefaultRequestValidity();
 	}
 	
 	/**
@@ -227,11 +209,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * Default if will return the value defined in the ejbca.properties
 	 */
 	public long getApprovalValidity(){
-		long ret = DEFAULT_APPROVALVALIDITY; 
-		if (StringUtils.isNotEmpty(DEFAULT_APPROVALVALIDITYSTRING)) {
-			ret = Long.parseLong(DEFAULT_APPROVALVALIDITYSTRING) * 1000;
-		}
-		return ret;
+		return EjbcaConfiguration.getApprovalDefaultApprovalValidity();
 	}
 	
 	

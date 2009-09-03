@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -92,14 +93,8 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
       CertTools.installBCProvider();
       loadData(data);  
       if(data.get(XKMSKEYSTORE) != null){    
-         // lookup keystore passwords
-          final String keystorepass; {
-              final String tmp = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");
-              if (tmp == null) {
-                  throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
-              }
-              keystorepass = StringTools.passwordDecryption(tmp, "ca.xkmskeystorepass");
-          }
+    	  // lookup keystore passwords
+    	  final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaXkmsKeyStorePass(), "ca.xkmskeystorepass");
                
         try {
         	m_log.debug("Loading XKMS keystore");
@@ -135,14 +130,8 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
    public void init(CA ca) throws Exception {
    	 m_log.trace(">init");
 	 // lookup keystore passwords      
-     final String keystorepass; {
-         final String tmp = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");
-         if (tmp == null) {
-             throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
-         }
-         keystorepass = StringTools.passwordDecryption(tmp, "ca.xkmskeystorepass");
-     }
-	  // Currently only RSA keys are supported
+   	 final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaXkmsKeyStorePass(), "ca.xkmskeystorepass");
+   	 // Currently only RSA keys are supported
 	 XKMSCAServiceInfo info = (XKMSCAServiceInfo) getExtendedCAServiceInfo();       
                   
 	 // Create XKMS KeyStore	    

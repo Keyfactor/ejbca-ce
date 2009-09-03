@@ -112,6 +112,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -214,11 +215,11 @@ public class CertTools {
     /** Parameters used when generating or verifying ECDSA keys/certs using the "implicitlyCA" key encoding.
      * The curve parameters is then defined outside of the key and configured in the BC provider.
      */
-    private static String IMPLICITLYCA_Q = "@ecdsa.implicitlyca.q@";
-    private static String IMPLICITLYCA_A = "@ecdsa.implicitlyca.a@"; 
-    private static String IMPLICITLYCA_B = "@ecdsa.implicitlyca.b@"; 
-    private static String IMPLICITLYCA_G = "@ecdsa.implicitlyca.g@"; 
-    private static String IMPLICITLYCA_N = "@ecdsa.implicitlyca.n@";
+    private static String IMPLICITLYCA_Q = EjbcaConfiguration.getEcdsaImplicitlyCaQ();
+    private static String IMPLICITLYCA_A = EjbcaConfiguration.getEcdsaImplicitlyCaA(); 
+    private static String IMPLICITLYCA_B = EjbcaConfiguration.getEcdsaImplicitlyCaB(); 
+    private static String IMPLICITLYCA_G = EjbcaConfiguration.getEcdsaImplicitlyCaG(); 
+    private static String IMPLICITLYCA_N = EjbcaConfiguration.getEcdsaImplicitlyCaN();
 
     /** System provider used to circumvent a bug in Glassfish. Should only be used by 
      * X509CAInfo, OCSPCAService, XKMSCAService, CMSCAService. 
@@ -973,7 +974,6 @@ public class CertTools {
         if (installImplicitlyCA) {
             // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.
             // The parameters are only used if implicitlyCA is used for generating keys, or verifying certs
-            checkImplicitParams();
             ECCurve curve = new ECCurve.Fp(
                     new BigInteger(IMPLICITLYCA_Q), // q
                     new BigInteger(IMPLICITLYCA_A, 16), // a
@@ -1006,32 +1006,6 @@ public class CertTools {
         
     }
 
-    /** Check if parameters have been set correctly during pre-process, otherwise log an error and
-     * set default values. Mostly used to be able to do JUnit testing
-     */
-    private static void checkImplicitParams() {
-        if (StringUtils.contains(IMPLICITLYCA_Q, "ecdsa.implicitlyca.q")) {
-        	log.info("IMPLICITLYCA_Q not set, using default.");
-        	IMPLICITLYCA_Q = "883423532389192164791648750360308885314476597252960362792450860609699839";
-        }
-        if (StringUtils.contains(IMPLICITLYCA_A, "ecdsa.implicitlyca.a")) {
-        	log.info("IMPLICITLYCA_A not set, using default.");
-        	IMPLICITLYCA_A = "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc";
-        }
-        if (StringUtils.contains(IMPLICITLYCA_B, "ecdsa.implicitlyca.b")) {
-        	log.info("IMPLICITLYCA_B not set, using default.");
-        	IMPLICITLYCA_B = "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a";
-        }
-        if (StringUtils.contains(IMPLICITLYCA_G, "ecdsa.implicitlyca.g")) {
-        	log.info("IMPLICITLYCA_G not set, using default.");
-        	IMPLICITLYCA_G = "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf";
-        }
-        if (StringUtils.contains(IMPLICITLYCA_N, "ecdsa.implicitlyca.n")) {
-        	log.info("IMPLICITLYCA_N not set, using default.");
-        	IMPLICITLYCA_N = "883423532389192164791648750360308884807550341691627752275345424702807307";
-        }
-    }
-    
     /**
      * Reads a certificate in PEM-format from a file. The file may contain other things,
      * the first certificate in the file is read.

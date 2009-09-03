@@ -20,6 +20,7 @@ import java.util.Locale;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -38,14 +39,10 @@ public class CertificateValidity {
     
     private static Date tooLateExpireDate;
     static {
-        final String sDate = "@ca.toolateexpiredate@";
-        if ( sDate==null || sDate.length()<1 ) {
+        final String sDate = EjbcaConfiguration.getCaTooLateExpireDate();
+        if ( sDate.length()<1 ) {
         	log.debug("Using default value for ca.toolateexpiredate.");
             tooLateExpireDate = new Date(Long.MAX_VALUE);
-        } else if (StringUtils.startsWith(sDate, "@ca.toolateexpiredate")) {
-        	// If we are running in eclipse or something so the value has not been replaced, go for the default value.
-        	log.warn("Using default value for ca.toolateexpiredate because it has not been replaced in CertificateValidity.java.");
-            tooLateExpireDate = new Date(Long.MAX_VALUE);        	
         } else {
             tooLateExpireDate = StringTools.getDateFromString(sDate);
         	log.debug("tooLateExpireData is set to: "+tooLateExpireDate);

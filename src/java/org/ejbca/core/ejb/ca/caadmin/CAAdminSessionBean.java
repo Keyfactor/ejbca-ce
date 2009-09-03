@@ -51,6 +51,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -148,27 +149,6 @@ import org.ejbca.util.keystore.KeyTools;
  *  type="java.lang.String"
  *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- * @ejb.env-entry description="Used internally to keystores in database"
- *   name="keyStorePass"
- *   type="java.lang.String"
- *   value="${ca.keystorepass}"
- *
- * @ejb.env-entry description="Password for OCSP keystores"
- *   name="OCSPKeyStorePass"
- *   type="java.lang.String"
- *   value="${ca.ocspkeystorepass}"
- *   
- * @ejb.env-entry description="Password for XKMS keystores"
- *   name="XKMSKeyStorePass"
- *   type="java.lang.String"
- *   value="${ca.xkmskeystorepass}"
- *
- *   
- * @ejb.env-entry description="Password for CMS keystores"
- *   name="CMSKeyStorePass"
- *   type="java.lang.String"
- *   value="${ca.cmskeystorepass}"
- *   
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   remote-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome"
@@ -1723,11 +1703,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private String getDefaultKeyStorePassIfSWAndEmpty(final String keystorepass, CATokenInfo tokenInfo) {
         if (tokenInfo instanceof SoftCATokenInfo && StringUtils.isEmpty(keystorepass)) {
             log.debug("Using system default keystore password");
-            final String newKeystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");                
-            if (newKeystorepass == null) {
-                log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");
-                throw new IllegalArgumentException("Missing keyStorePass property.");
-            }
+            final String newKeystorepass = EjbcaConfiguration.getCaKeyStorePass();                
             return StringTools.passwordDecryption(newKeystorepass, "ca.keystorepass");
         }
         return keystorepass;

@@ -629,12 +629,6 @@
       <env-entry-value>https</env-entry-value>
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
-   <env-entry>
-      <description><![CDATA[Determines if log4j should be initialized explicitly, needed for glassfish, oracle]]></description>
-      <env-entry-name>LOG4JCONFIG</env-entry-name>
-      <env-entry-value>basic</env-entry-value>
-      <env-entry-type>java.lang.String</env-entry-type>
-   </env-entry>
 
    <ejb-local-ref id="EJBLocalRef_1">
       <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>

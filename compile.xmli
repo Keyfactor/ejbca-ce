@@ -58,12 +58,6 @@
 appserver.type           = ${appserver.type}
 appserver.home           = ${appserver.home}
 java.ver                 = ${java.ver}
-ca.keystorepass          = ${ca.keystorepass}
-ca.ocspkeystorepass      = ${ca.ocspkeystorepass}
-ca.xkmskeystorepass      = ${ca.xkmskeystorepass}
-ca.cmskeystorepass       = ${ca.cmskeystorepass}
-ca.serialnumberoctetsize = ${ca.serialnumberoctetsize}
-ca.toolateexpiredate     = ${ca.toolateexpiredate}
 ocsp.defaultresponder    = ${ocsp.defaultresponder}
 ocsp.usecasigningcert    = ${ocsp.usecasigningcert}
 ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
@@ -96,10 +90,6 @@ web.contentencoding      = ${web.contentencoding}
 web.jsfimpl              = ${web.jsfimpl}
 web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
-approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
-approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
-approval.excludedClasses         = ${approval.excludedClasses}
-logging.log4j.config             = ${logging.log4j.config}
 cmp.allowraverifypopo           = ${cmp.allowraverifypopo}
 cmp.defaultca                   = ${cmp.defaultca}
 cmp.extractusernamecomponent    = ${cmp.extractusernamecomponent}
@@ -143,13 +133,6 @@ protection.keyref=${protection.keyref}
 protection.keytype=${protection.keytype}
 protection.key=${protection.key}
 protection.certprotect=${protection.certprotect}
--->   
-<!--
-ecdsa.implicitlyca.q=${ecdsa.implicitlyca.q}
-ecdsa.implicitlyca.a=${ecdsa.implicitlyca.a}
-ecdsa.implicitlyca.b=${ecdsa.implicitlyca.b}
-ecdsa.implicitlyca.g=${ecdsa.implicitlyca.g}
-ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 -->   
 
         <!-- Create the time stamp -->
@@ -499,14 +482,8 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
 				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
 				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>
-				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
 				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
 				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>
-				<replacestring from="@ecdsa.implicitlyca.q@" to="${ecdsa.implicitlyca.q}"/>
-				<replacestring from="@ecdsa.implicitlyca.a@" to="${ecdsa.implicitlyca.a}"/>
-				<replacestring from="@ecdsa.implicitlyca.b@" to="${ecdsa.implicitlyca.b}"/>
-				<replacestring from="@ecdsa.implicitlyca.g@" to="${ecdsa.implicitlyca.g}"/>
-				<replacestring from="@ecdsa.implicitlyca.n@" to="${ecdsa.implicitlyca.n}"/>
 				<replacestring from="@renew.war.enabled@" to="${renew.war.enabled}"/>
 			</tokenfilter>
 			</filterchain>
@@ -532,10 +509,6 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		    </fileset> 
 			<filterchain>
 			<tokenfilter>			    
-				<replacestring from="@ca.keystorepass@" to="${ca.keystorepass}"/>
-				<replacestring from="@ca.ocspkeystorepass@" to="${ca.ocspkeystorepass}"/>
-				<replacestring from="@ca.xkmskeystorepass@" to="${ca.xkmskeystorepass}"/>
-				<replacestring from="@ca.cmskeystorepass@" to="${ca.cmskeystorepass}"/>
 				<replacestring from="@database.driver@" to="${database.driver}"/>
 				<replacestring from="@database.url@" to="${database.url}"/>
 				<replacestring from="@database.username@" to="${database.username}"/>
@@ -570,25 +543,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 	      Replace more values in java and xml files 
 	    -->
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
-		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
-		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
-        <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>
-        <replace file="${src.java}/org/ejbca/core/model/ca/caadmin/CertificateValidity.java" token="@ca.toolateexpiredate@" value="${ca.toolateexpiredate}"/>
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.amountfreemem@" value="${healthcheck.amountfreemem}"/>	
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.dbquery@" value="${healthcheck.dbquery}"/>	
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.authorizedips@" value="${healthcheck.authorizedips}"/>	
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.catokensigntest@" value="${healthcheck.catokensigntest}"/>	
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.maintenancefile@" value="${healthcheck.maintenancefile}"/>	
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.maintenancepropertyname@" value="${healthcheck.maintenancepropertyname}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
-		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.amountfreemem@" value="${ocsphealthcheck.amountfreemem}"/>	
-		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.dbquery@" value="${ocsphealthcheck.dbquery}"/>	
-		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.authorizedips@" value="${ocsphealthcheck.authorizedips}"/>	
-		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.maintenancefile@" value="${ocsphealthcheck.maintenancefile}"/>	
-        <replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.maintenancepropertyname@" value="${ocsphealthcheck.maintenancepropertyname}"/>   
         <replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.signtest@" value="${ocsphealthcheck.signtest}"/>
 		<replace file="${src}/xkms/wsdl/xkms.wsdl" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
 		<replace file="${src}/xkms/wsdl/xkms.wsdl" token="@xkms.serviceport@" value="${xkms.serviceport}"/>

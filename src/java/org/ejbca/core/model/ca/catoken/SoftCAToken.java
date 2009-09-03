@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.Base64;
@@ -81,14 +82,7 @@ public class SoftCAToken extends BaseCAToken {
     	// If we don't have an auto activation password set, we try to use the default one if it works to load the keystore with it
     	String autoPwd = BaseCAToken.getAutoActivatePin(properties);
     	if (autoPwd == null) {
-    	    final String keystorepass; {
-    	        final String tmp = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");          		
-    	        if (tmp == null) {
-    	            log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");
-    	            throw new IllegalArgumentException("Missing keyStorePass property.");		    		
-    	        }
-    	        keystorepass = StringTools.passwordDecryption(tmp, "ca.keystorepass");
-            }
+    	    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaKeyStorePass(), "ca.keystorepass");
     		// Test it first, don't set an incorrect password as autoactivate password
     		boolean okPwd = true;
     		try {

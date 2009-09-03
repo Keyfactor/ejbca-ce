@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.ejbca.config.EjbcaConfiguration;
 
 /** Class holding information and utilitites for handling different DN components, CN, O etc
  * 
@@ -182,7 +183,7 @@ public class DnComponents {
      * is nowadays a configuration setting for the CA instead.
      * @deprecated use soft configuration on CA instead
      */
-    private static final boolean reverseOrder = BooleanUtils.toBoolean("@certtools.dnorderreverse@");
+    private static final boolean reverseOrder = EjbcaConfiguration.getCertToolsDnOrderReverse();
     
     public static boolean isReverseOrder() {
     	return reverseOrder == true;

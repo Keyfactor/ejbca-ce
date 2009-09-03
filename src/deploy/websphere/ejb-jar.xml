@@ -24,31 +24,6 @@
          <session-type>Stateless</session-type>
          <transaction-type>Container</transaction-type>
 
-         <env-entry>
-            <description><![CDATA[Used internally to keystores in database]]></description>
-            <env-entry-name>keyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.keystorepass@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Password for OCSP keystores]]></description>
-            <env-entry-name>OCSPKeyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.ocspkeystorepass@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Password for XKMS keystores]]></description>
-            <env-entry-name>XKMSKeyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.xkmskeystorepass@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Password for CMS keystores]]></description>
-            <env-entry-name>CMSKeyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.cmskeystorepass@]]></env-entry-value>
-         </env-entry>
-
          <ejb-local-ref id="EJBLocalRef_1">
             <ejb-ref-name>ejb/CADataLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
@@ -1924,31 +1899,6 @@
             <field-name>data</field-name>
          </cmp-field>
          <primkey-field>caId</primkey-field>
-
-         <env-entry>
-            <description><![CDATA[Used internally to keystores in database]]></description>
-            <env-entry-name>keyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.keystorepass@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Password for OCSP keystores]]></description>
-            <env-entry-name>OCSPKeyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.ocspkeystorepass@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Password for XKMS keystores]]></description>
-            <env-entry-name>XKMSKeyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.xkmskeystorepass@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Password for CMS keystores]]></description>
-            <env-entry-name>CMSKeyStorePass</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[@ca.cmskeystorepass@]]></env-entry-value>
-         </env-entry>
 
          <query>
             <description><![CDATA[findByName]]></description>

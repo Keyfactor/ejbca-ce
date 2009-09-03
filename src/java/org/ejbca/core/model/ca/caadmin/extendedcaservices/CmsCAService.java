@@ -43,6 +43,7 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -117,13 +118,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		loadData(data);  
 		if(data.get(KEYSTORE) != null){    
 			// lookup keystore passwords      
-		    final String keystorepass; {
-		        final String tmp = ServiceLocator.getInstance().getString("java:comp/env/CMSKeyStorePass");      
-		        if (tmp == null) {
-		            throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
-		        }
-		        keystorepass = StringTools.passwordDecryption(tmp, "ca.cmskeystorepass");
-		    }
+		    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
 
 			try {
 				m_log.debug("Loading CMS keystore");
@@ -159,13 +154,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	public void init(CA ca) throws Exception {
 		m_log.debug("CmsCAService : init");
 		// lookup keystore passwords      
-        final String keystorepass; {
-            final String tmp = ServiceLocator.getInstance().getString("java:comp/env/CMSKeyStorePass");      
-            if (tmp == null) {
-                throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
-            }
-            keystorepass = StringTools.passwordDecryption(tmp, "ca.cmskeystorepass");
-        }
+	    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
 		// Currently only RSA keys are supported
 		CmsCAServiceInfo info = (CmsCAServiceInfo) getExtendedCAServiceInfo();       
 

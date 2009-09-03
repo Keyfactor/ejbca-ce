@@ -35,6 +35,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
@@ -76,11 +77,6 @@ import org.ejbca.util.CertTools;
  *              load-on-startup = "1"
  *
  * @web.servlet-mapping url-pattern = "/configuration/startservices"
- * 
- * @web.env-entry description="Determines if log4j should be initialized explicitly, needed for glassfish, oracle"
- *   name="LOG4JCONFIG"
- *   type="java.lang.String"
- *   value="${logging.log4j.config}"
  * 
  * @version $Id$
  */
@@ -215,7 +211,7 @@ public class StartServicesServlet extends HttpServlet {
         
         // Start with logging, so we are sure to know what is happening later on
         log.trace(">init initializing log4j");
-        String configfile = ServiceLocator.getInstance().getString("java:comp/env/LOG4JCONFIG");
+        String configfile = EjbcaConfiguration.getLoggingLog4jConfig();
         if (!StringUtils.equals(configfile, "false")) {
             // Configure log4j
             if (StringUtils.equals(configfile, "basic")) {

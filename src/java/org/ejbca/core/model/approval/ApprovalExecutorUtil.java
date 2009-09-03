@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 
@@ -70,7 +71,7 @@ public class ApprovalExecutorUtil {
 	private static final Logger log = Logger.getLogger(ApprovalExecutorUtil.class);
 	
 	/** These variables are protected to enable JUnit testing */
-	protected static String globallyAllowedString = "@approval.excludedClasses@";
+	protected static String globallyAllowedString = EjbcaConfiguration.getApprovalExcludedClasses();
 	protected static ApprovalOveradableClassName[] globallyAllowed = null;
 	
 	 /** Method that checks if the request requires approval or not.

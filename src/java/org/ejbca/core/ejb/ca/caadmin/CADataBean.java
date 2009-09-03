@@ -70,26 +70,6 @@ import org.ejbca.util.CertTools;
  *
  * @ejb.persistence table-name = "CAData"
  * 
- * @ejb.env-entry description="Used internally to keystores in database"
- *   name="keyStorePass"
- *   type="java.lang.String"
- *   value="${ca.keystorepass}"
- *   
- * @ejb.env-entry description="Password for OCSP keystores"
- *   name="OCSPKeyStorePass"
- *   type="java.lang.String"
- *   value="${ca.ocspkeystorepass}"
- *
- * @ejb.env-entry description="Password for XKMS keystores"
- *   name="XKMSKeyStorePass"
- *   type="java.lang.String"
- *   value="${ca.xkmskeystorepass}"
- *   
- * @ejb.env-entry description="Password for CMS keystores"
- *   name="CMSKeyStorePass"
- *   type="java.lang.String"
- *   value="${ca.cmskeystorepass}"
- *   
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

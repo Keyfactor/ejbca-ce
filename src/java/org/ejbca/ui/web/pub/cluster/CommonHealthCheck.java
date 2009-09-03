@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.util.JDBCUtil;
 
@@ -38,10 +39,10 @@ import org.ejbca.util.JDBCUtil;
 public abstract class CommonHealthCheck implements IHealthCheck {
 	private static final Logger log = Logger.getLogger(CommonHealthCheck.class);
 
-	private int minfreememory = 0;
-	private String checkDBString = null;
-	private String maintenanceFile = null;
-	private String maintenancePropertyName = null;
+	private long minfreememory = EjbcaConfiguration.getHealthCheckAmountFreeMem();
+	private String checkDBString = EjbcaConfiguration.getHealthCheckDbQuery();
+	private String maintenanceFile = EjbcaConfiguration.getHealthCheckMaintenanceFile();
+	private String maintenancePropertyName = EjbcaConfiguration.getHealthCheckMaintenancePropertyName();
 
 	public CommonHealthCheck() {
 		super();
@@ -50,10 +51,6 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	public abstract String checkHealth(HttpServletRequest request);
 
 	public void init(ServletConfig config) {
-		minfreememory = Integer.parseInt(config.getInitParameter("MinimumFreeMemory")) * 1024 * 1024;
-		checkDBString = config.getInitParameter("checkDBString");
-		maintenanceFile = config.getInitParameter("MaintenanceFile");
-		maintenancePropertyName = config.getInitParameter("MaintenancePropertyName");
 		initMaintenanceFile();
 	}
 

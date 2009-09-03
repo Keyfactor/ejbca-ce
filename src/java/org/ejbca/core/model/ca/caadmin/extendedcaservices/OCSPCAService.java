@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -90,14 +91,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       CertTools.installBCProvider();
       loadData(data);  
       if(data.get(OCSPKEYSTORE) != null){    
-         // lookup keystore passwords      
-          final String keystorepass; {
-              final String tmp = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
-              if (tmp == null) {
-                  throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
-              }
-              keystorepass = StringTools.passwordDecryption(tmp, "ca.ocspkeystorepass");
-          }
+    	  // lookup keystore passwords      
+    	  final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaOcspKeyStorePass(), "ca.ocspkeystorepass");
                
         try {
         	m_log.debug("Loading OCSP keystore");
@@ -133,14 +128,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
    public void init(CA ca) throws Exception {
    	 m_log.debug("OCSPCAService : init ");
    	 // lookup keystore passwords      
-   	 final String keystorepass; {
-   	     final String tmp = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
-   	     if (tmp == null) {
-   	         throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
-   	     }
-   	     keystorepass = StringTools.passwordDecryption(tmp, "ca.ocspkeystorepass");
-   	 }
-	  // Currently only RSA keys are supported
+   	 final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaOcspKeyStorePass(), "ca.ocspkeystorepass");
+   	 // Currently only RSA keys are supported
 	 OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
                   
 	 // Create OSCP KeyStore	    

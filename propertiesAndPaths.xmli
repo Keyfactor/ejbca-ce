@@ -274,12 +274,6 @@
     <property name="ca.tokentype" value="soft"/>
     <property name="ca.tokenpassword" value="null"/>
     <property name="ca.tokenproperties" value=""/>
-    <property name="ca.keystorepass" value="foo123"/>
-    <property name="ca.ocspkeystorepass" value="foo123"/>
-    <property name="ca.xkmskeystorepass" value="foo123"/>
-    <property name="ca.cmskeystorepass" value="foo123"/>
-    <property name="ca.serialnumberoctetsize" value="8"/>
-    <property name="ca.toolateexpiredate" value=""/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
@@ -291,17 +285,6 @@
     <property name="database.username" value="sa" />
     <property name="database.password" value="" />
     <property name="weblogic-oracle-columntype" value="" />
-    <property name="healthcheck.amountfreemem" value="1" />
-    <property name="healthcheck.dbquery" value="Select 1 From CertificateData where fingerprint='XX'" />
-    <property name="healthcheck.authorizedips" value="127.0.0.1" />
-    <property name="healthcheck.catokensigntest" value="false" />
-    <property name="healthcheck.maintenancefile" value="" />
-    <property name="healthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
-    <property name="ocsphealthcheck.amountfreemem" value="1" />
-    <property name="ocsphealthcheck.dbquery" value="Select 1 From CertificateData where fingerprint='XX'" />
-    <property name="ocsphealthcheck.authorizedips" value="127.0.0.1"/>
-    <property name="ocsphealthcheck.maintenancefile" value="" />
-    <property name="ocsphealthcheck.maintenancepropertyname" value="DOWN_FOR_MAINTENANCE" />    
     <property name="ocsphealthcheck.signtest" value="true" />  
     <property name="mail.jndi-name" value="java:/EjbcaMail" />
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
@@ -329,9 +312,6 @@
     <property name="web.contentencoding" value="UTF-8" />
     <property name="web.docbaseuri" value="internal" /> <!-- Default used to determine if to build or not.. -->
     <property name="web.renewalenabled" value="false" />
-	<property name="approval.defaultrequestvalidity" value="28800" />
-	<property name="approval.defaultapprovalvalidity" value="28800" />
-    <property name="approval.excludedClasses" value="" />
     <condition property="database.comment.column" value="comment_" else="comment" >
         <equals arg1="${database.name}" arg2="oracle"/>
     </condition>
@@ -341,9 +321,6 @@
     <condition property="renew.war.enabled">
     	<equals arg1="true" arg2="${web.renewalenabled}" casesensitive="false" trim="true" />
     </condition>
-
-	<!-- Log4j configuration for glassfish -->
-    <property name="logging.log4j.config" value="false" />    
 
     <!-- Extra Protection settings for internal log signing etc -->
     <property name="protection.enabled" value="false" />
@@ -396,14 +373,4 @@
 	<property name="xkms.krss.allowrevokation" value="true" />
 	<property name="xkms.krss.allowautomaticreissue" value="false" />
 
-	<!-- ECDSA implicitlyCA settings -->
-	<property name="ecdsa.implicitlyca.q" value="883423532389192164791648750360308885314476597252960362792450860609699839" />
-	<property name="ecdsa.implicitlyca.a" value="7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc" />
-	<property name="ecdsa.implicitlyca.b" value="6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a" />
-	<property name="ecdsa.implicitlyca.g" value="020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf" />
-	<property name="ecdsa.implicitlyca.n" value="883423532389192164791648750360308884807550341691627752275345424702807307" />
-
 	<!-- Development and debug setting -->
-	<property name="certtools.dnorderreverse" value="false" />
-	
-	

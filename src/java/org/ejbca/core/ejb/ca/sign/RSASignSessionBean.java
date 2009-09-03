@@ -47,6 +47,7 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
@@ -114,11 +115,6 @@ import org.ejbca.util.keystore.KeyTools;
  *   type="java.lang.String"
  *   value="SHA1PRNG"
  *
- * @ejb.env-entry description="The size in octets of the certificate serial numbers. We recommend to use 64 bit serial numbers."
- *   name="serialNumberOctetSize"
- *   type="java.lang.String"
- *   value="${ca.serialnumberoctetsize}"
- *   
  * @ejb.ejb-external-ref description="The CA entity bean"
  *   view-type="local"
  *   ref-name="ejb/CADataLocal"
@@ -236,10 +232,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (randomAlgorithm != null) {
                 SernoGenerator.instance().setAlgorithm(randomAlgorithm);
             }
-            String sernoSize = getLocator().getString("java:comp/env/serialNumberOctetSize");
-            if (sernoSize != null) {
-                SernoGenerator.instance().setSernoOctetSize(Integer.valueOf(sernoSize).intValue());            	
-            }
+            SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());            	
         } catch (Exception e) {
             debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
