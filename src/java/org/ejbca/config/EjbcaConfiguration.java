@@ -112,7 +112,7 @@ public class EjbcaConfiguration {
 	public static long getHealthCheckAmountFreeMem() {
 		long value = 1;
 		try {
-			value = Long.parseLong(ConfigurationHolder.getString("healthcheck.amountfreemem", ConfigurationHolder.getString("healthcheck.amountfreemem", ""+value)));
+			value = Long.parseLong(ConfigurationHolder.getString("healthcheck.amountfreemem", ConfigurationHolder.getString("ocsphealthcheck.amountfreemem", ""+value)));
 		} catch( NumberFormatException e ) {
 			log.warn("\"healthcheck.amountfreemem\" or \"ocsphealthcheck.amountfreemem\" is not a decimal number. Using default value: " + value);
 		}
