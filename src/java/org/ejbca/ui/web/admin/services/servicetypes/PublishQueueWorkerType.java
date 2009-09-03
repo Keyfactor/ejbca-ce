@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 
 /**

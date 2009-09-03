@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 

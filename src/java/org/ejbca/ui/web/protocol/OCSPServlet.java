@@ -33,7 +33,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;

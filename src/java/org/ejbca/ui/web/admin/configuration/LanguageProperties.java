@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.CertTools;
 
 /** Properties bag that handles "double type encoding".
  * 

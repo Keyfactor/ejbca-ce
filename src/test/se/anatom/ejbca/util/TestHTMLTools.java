@@ -16,9 +16,7 @@ package se.anatom.ejbca.util;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
-import org.ejbca.util.StringTools;
 
 
 /**

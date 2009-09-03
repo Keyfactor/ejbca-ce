@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -25,7 +24,6 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;

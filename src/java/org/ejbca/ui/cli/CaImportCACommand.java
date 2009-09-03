@@ -13,9 +13,7 @@
  
 package org.ejbca.ui.cli;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.Collection;

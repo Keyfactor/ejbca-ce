@@ -59,7 +59,6 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
-import org.ejbca.util.SimpleTime;
 
 
 

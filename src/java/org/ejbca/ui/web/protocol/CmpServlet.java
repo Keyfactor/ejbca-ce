@@ -15,7 +15,6 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -24,9 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;

@@ -17,7 +17,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.HashMap;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -29,7 +28,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.Base64PutHashMap;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 

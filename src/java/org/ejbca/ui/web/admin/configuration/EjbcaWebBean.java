@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
