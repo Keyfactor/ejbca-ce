@@ -74,12 +74,6 @@ import org.ejbca.util.query.Query;
  * type="java.lang.String"
  * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- * @ejb.env-entry
- *   description="Defines the JNDI name of the mail service used"
- *   name="MailJNDIName"
- *   type="java.lang.String"
- *   value="${mail.jndi-name}"
- *   
  * @ejb.ejb-external-ref
  *   description="The Log Entry Data entity bean"
  *   view-type="local"

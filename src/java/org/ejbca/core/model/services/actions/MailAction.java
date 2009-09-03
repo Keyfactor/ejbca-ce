@@ -22,6 +22,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.MailConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -72,7 +73,7 @@ public class MailAction extends BaseAction {
 		}
 		        
         try {
-              String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
+              String mailJndi = MailConfiguration.getMailJndiName();
               Session mailSession = getLocator().getMailSession(mailJndi);              
 
               Message msg = new MimeMessage(mailSession);

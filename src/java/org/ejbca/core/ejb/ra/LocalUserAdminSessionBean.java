@@ -39,6 +39,7 @@ import javax.mail.internet.InternetAddress;
 import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.config.MailConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -123,30 +124,6 @@ import org.ejbca.util.query.UserMatch;
  *  name="DataSource"
  *  type="java.lang.String"
  *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.env-entry
- *   description="Defines the JNDI name of the mail service used"
- *   name="MailJNDIName"
- *   type="java.lang.String"
- *   value="${mail.jndi-name}"
- *
- * @ejb.env-entry
- *   description="Defines the sender of the notification message"
- *   name="sender"
- *   type="java.lang.String"
- *   value="${mail.from}"
- *
- * @ejb.env-entry
- *   description="Defines the subject used in the notification message"
- *   name="subject"
- *   type="java.lang.String"
- *   value="${mail.subject}"
- *
- * @ejb.env-entry
- *   description="Defines the actual message of the notification. Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts that should be replaced (Case insensitive), $NL stands for newline."
- *   name="message"
- *   type="java.lang.String"
- *   value="${mail.message}"
  *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
@@ -2303,7 +2280,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                             throw new Exception(msg);
                         }
 
-                        String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
+                        String mailJndi = MailConfiguration.getMailJndiName();
                         Session mailSession = getLocator().getMailSession(mailJndi);
                         // Get the administrators DN from the admin certificate, if one exists
                         // When approvals is used, this will be the DN of the admin that approves the request

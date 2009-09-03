@@ -182,12 +182,6 @@
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
-         <env-entry>
-            <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
-            <env-entry-name>MailJNDIName</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
-         </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_17">
             <ejb-ref-name>ejb/ServiceDataLocal</ejb-ref-name>
@@ -415,12 +409,6 @@
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
-            <env-entry-name>MailJNDIName</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
          </env-entry>
          <env-entry>
             <description><![CDATA[Defines the sender of the notification message]]></description>
@@ -743,12 +731,6 @@
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
-            <env-entry-name>MailJNDIName</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_63">
@@ -1096,12 +1078,6 @@
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
-         <env-entry>
-            <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
-            <env-entry-name>MailJNDIName</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
-         </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_89">
             <ejb-ref-name>ejb/ApprovalDataLocal</ejb-ref-name>
@@ -1188,12 +1164,6 @@
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
          </env-entry>
-         <env-entry>
-            <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
-            <env-entry-name>MailJNDIName</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
-         </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_98">
             <ejb-ref-name>ejb/ServiceSessionLocal</ejb-ref-name>
@@ -1272,12 +1242,6 @@
             <env-entry-name>DataSource</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value><![CDATA[@datasource.jndi-name-prefix@@datasource.jndi-name@]]></env-entry-value>
-         </env-entry>
-         <env-entry>
-            <description><![CDATA[Defines the JNDI name of the mail service used]]></description>
-            <env-entry-name>MailJNDIName</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[EjbcaMail]]></env-entry-value>
          </env-entry>
 
          <ejb-local-ref id="EJBLocalRef_106">

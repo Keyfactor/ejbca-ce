@@ -62,13 +62,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   type="java.lang.String"
  *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *   
- *
- * @ejb.env-entry
- *   description="Defines the JNDI name of the mail service used"
- *   name="MailJNDIName"
- *   type="java.lang.String"
- *   value="${mail.jndi-name}"
- *
  * @ejb.home extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
  *   local-class="org.ejbca.core.ejb.services.IServiceSessionLocalHome"

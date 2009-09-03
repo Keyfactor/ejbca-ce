@@ -38,6 +38,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.MailConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
@@ -99,12 +100,6 @@ import org.ejbca.util.query.Query;
  * @ejb.env-entry name="DataSource"
  *   type="java.lang.String"
  *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.env-entry
- *   description="Defines the JNDI name of the mail service used"
- *   name="MailJNDIName"
- *   type="java.lang.String"
- *   value="${mail.jndi-name}"
  *
  * @ejb.ejb-external-ref description="The Approval entity bean"
  *   view-type="local"
@@ -1010,7 +1005,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             	  approvalAdminDN = CertTools.getSubjectDN(approvalCert);
             	  approveComment = approval.getComment();
               }
-              String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
+              String mailJndi = MailConfiguration.getMailJndiName();
               Session mailSession = getLocator().getMailSession(mailJndi);
               Integer numAppr =  new Integer(numberOfApprovalsLeft);
               NotificationParamGen paramGen = new NotificationParamGen(requestDate,id,approvalTypeText,numAppr,
