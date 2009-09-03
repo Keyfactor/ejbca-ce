@@ -130,7 +130,7 @@ public class EjbcaConfiguration {
 	 * Parameter to specify location of file containing information about maintenance
 	 */
 	public static String getHealthCheckAuthorizedIps() {
-		return ConfigurationHolder.getExpandedString("healthcheck.authorizedips", ConfigurationHolder.getExpandedString("ocsphealthcheck.authorizedips", ""));
+		return ConfigurationHolder.getExpandedString("healthcheck.authorizedips", ConfigurationHolder.getExpandedString("ocsphealthcheck.authorizedips", "127.0.0.1"));
 	}
 	
 	/**
