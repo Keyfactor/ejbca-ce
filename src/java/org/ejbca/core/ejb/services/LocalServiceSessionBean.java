@@ -545,6 +545,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public ServiceConfiguration getService(Admin admin, String name) {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getService: "+name);
+    	}
     	ServiceConfiguration returnval = null;
 
         try {
@@ -552,6 +555,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         } catch (FinderException e) {
             // return null if we cant find it
         }
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getService: "+name);
+    	}
         return returnval;
     } //  getService
 
@@ -563,6 +569,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public ServiceConfiguration getServiceConfiguration(Admin admin, int id) {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getServiceConfiguration: "+id);
+    	}
     	ServiceConfiguration returnval = null;
 
         try {            
@@ -570,6 +579,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         } catch (FinderException e) {
             // return null if we cant find it
         }
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getServiceConfiguration: "+id);
+    	}
         return returnval;
     } // getServiceConfiguration
 
