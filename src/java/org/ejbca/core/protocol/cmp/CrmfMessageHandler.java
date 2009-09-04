@@ -349,8 +349,8 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 											usersession.addUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
 										} catch (DuplicateKeyException e) {
 											// This was veery strange, we didn't find it before, but now it exists?
-											String errMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
-											log.error(errMsg);
+											String updateMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
+											log.warn(updateMsg);
 											// If the user already exists, we will change him instead and go for that
 											usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 										}
