@@ -277,7 +277,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							if (ret) {
 								// If authentication was correct, we will now create a username and password and register the new user in EJBCA
 								UsernameGenerator gen = UsernameGenerator.getInstance(usernameGeneratorParams);
-								// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString becasue we don't want double escaping of some characters
+								// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
 								X509Name dnname = crmfreq.getRequestX509Name();
 								log.debug("Creating username from base dn: "+dnname.toString());
 								String username = gen.generateUsername(dnname.toString());
