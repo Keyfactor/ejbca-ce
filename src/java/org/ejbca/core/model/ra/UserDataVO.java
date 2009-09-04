@@ -257,7 +257,7 @@ public class UserDataVO implements Serializable {
      */
     public static ExtendedInformation getExtendedInformation(String extendedinfostring) {
         ExtendedInformation returnval = null;
-        if (extendedinfostring != null) {
+        if ( (extendedinfostring != null) && (extendedinfostring.length() > 0) ) {
             java.beans.XMLDecoder decoder;
             try {
             	decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));
