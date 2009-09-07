@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.model.ca.catoken;
 
+import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.Provider;
+import java.security.Security;
 import java.security.KeyStore.PasswordProtection;
 import java.util.HashMap;
 import java.util.Properties;
@@ -65,13 +67,29 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
         }
         try {
             final Provider provider = this.p11slot.getProvider();
-            final PasswordProtection pwp =new PasswordProtection( (authCode!=null && authCode.length()>0)? authCode.toCharArray():null );
+            char[] authCodeCharArray = (authCode!=null && authCode.length()>0) ? authCode.toCharArray():null;
+            final PasswordProtection pwp =new PasswordProtection( authCodeCharArray );
             final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
                                                                           provider,
                                                                           pwp);
             final KeyStore keyStore = builder.getKeyStore();
             log.debug("Loading key from slot '"+this.sSlotLabel+"' using pin.");
-            keyStore.load(null, null);
+            // See ECA-1395 for an explanation of this special handling for the IAIK provider.
+            // “If the application uses several instances of the IAIKPkcs11 provider, it has two options to get an initialized key store. First, it can get the initialized key store directly from the provider instance. This looks like this
+            // KeyStore tokenKeyStore = pkcs11Provider_.getTokenManager().getKeyStore();
+            // where pkcs11Provider_ is the instance of the IAIKPkcs11 provider. Second, the application can instantiate the key store as usual and then initialize it. For initialization, the application must provide the name of the instance that this key store shall operate with. Just instantiating the key store is not enough, and if the application calls tokenKeyStore.load(null, null), it always(!) binds the key store to the first instance of the IAIKPkcs11 provider. This is the case, because there is no means for the KeyStoreSPI class to get the instance of the provider that was used to instantiate it. This means, it does not help to provide the provider name and calling KeyStore.getInstance("PKCS11KeyStore", providerName), the call to the load(InputStream, char[]) method with appropriate arguments is required nevertheless. The correct usage will look like this
+            // KeyStore cardKeyStore = KeyStore.getInstance("PKCS11KeyStore");
+            // String providerName = pkcs11Provider_.getName();
+            // ByteArrayInputStream providerNameInpustStream = 
+            // new ByteArrayInputStream(providerName.getBytes("UTF-8"));
+            // cardKeyStore.load(providerNameInpustStream, null);
+            // The password parameter of the load method (this is the second parameter, which is null here) will be used if provided (i.e. if it is not null). If it is null, the default login manager will use the configured method for prompting the PIN on demand. If the application just provides the instance number as a string instead of the complete provider name, the key store will also accept it.”            
+            if (provider.getClass().getName().equals("iaik.pkcs.pkcs11.provider.IAIKPkcs11") ) {
+            	keyStore.load(new ByteArrayInputStream(getProvider().getBytes("UTF-8")), authCodeCharArray);
+            } else {
+            	// For the Sun provider this works fine to initialize the provider using previously provided protection parameters. 
+            	keyStore.load(null, null);
+            } 
             setJCAProvider(provider);
             setKeys(keyStore, null);
             pwp.destroy();
