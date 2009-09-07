@@ -112,9 +112,10 @@ class CMPTest extends ClientToolBox {
         final private String hostName;
         final private int port;
         final private boolean isHttp;
+        final private static int howOftenToGenerateSameUsername = 3;	// 0 = never, 1 = 100% chance, 2=50% chance etc.. 
         boolean isSign;
         boolean firstTime = true;
-
+    	private static int lastNextInt = 0;
 
         StressTest( final String _hostName,
                     final int _port,
@@ -786,6 +787,19 @@ class CMPTest extends ClientToolBox {
                 return "Revoke user";
             }
         }*/
+    	
+        private static synchronized int getRandomAndRepeated(PerformanceTest performanceTest) {
+        	// Initialize with some new value every time the test is started
+        	if (lastNextInt == 0) {
+        		lastNextInt = performanceTest.getRandom().nextInt();
+        	}
+        	// Return the same value once in a while so we have multiple requests for the same username
+    		if (howOftenToGenerateSameUsername == 0 || performanceTest.getRandom().nextInt() % howOftenToGenerateSameUsername != 0) {
+    			lastNextInt = performanceTest.getRandom().nextInt();
+    		}
+    		return lastNextInt;
+        }
+        
         class SessionData {
             final private byte[] nonce = new byte[16];
             final private byte[] transid = new byte[16];
@@ -817,7 +831,7 @@ class CMPTest extends ClientToolBox {
                 return ret;
             }
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+StressTest.this.performanceTest.getRandom().nextInt()+",O=CMP Test,C=SE";
+                this.userDN = "CN=CMP Test User Nr "+StressTest.getRandomAndRepeated(performanceTest)+",O=CMP Test,C=SE";
                 StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
                 StressTest.this.performanceTest.getRandom().nextBytes(this.transid);
             }

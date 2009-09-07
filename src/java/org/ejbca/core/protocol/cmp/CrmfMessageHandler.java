@@ -21,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
@@ -347,10 +346,12 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 												log.debug("Creating new user with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
 											}
 											usersession.addUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
-										} catch (DuplicateKeyException e) {
+										} catch (CreateException e) {
+											// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
 											// This was veery strange, we didn't find it before, but now it exists?
+											// This will happen if we get virtually parallel requests for the same user
 											String updateMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
-											log.warn(updateMsg);
+											log.info(updateMsg);
 											// If the user already exists, we will change him instead and go for that
 											usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 										}
