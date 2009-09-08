@@ -4,7 +4,7 @@
     <c:set var="isException" value="${param.Exception}" />
     <c:set var="errMsg" value="${ErrorMessage}" />
     
-    <h1 class="title">@EJBCA@ Certificate Enrollment Error</h1>
+    <h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate Enrollment Error</h1>
 
     <c:if test="${isException != null && isException == 'true'}">
         <h2>An Exception occurred!</h2>

@@ -1,4 +1,4 @@
-<h1 class="title">@EJBCA@ Certificate Enrollment</h1>
+<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate Enrollment</h1>
 
 <p>Welcome to certificate enrollment.</p>
 <p>Please enter your username and password. Then click OK to generate your token.</p>

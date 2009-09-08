@@ -426,15 +426,12 @@ protection.certprotect=${protection.certprotect}
         <copy todir="${preprocessed}" encoding="ISO-8859-1">
             <fileset dir="src">
               <include name="**"/>
-              <exclude name="**/*.java"/>
+              <exclude name="java/org/ejbca/core/ejb/log/LogEntryDataBean.java"/>
+              <exclude name="java/org/ejbca/core/ejb/**/*.java"/>
               <exclude name="**/*.java.15"/>
-              <exclude name="**/*.html"/>
-              <exclude name="**/*.htm"/>            	
               <exclude name="**/*.xml"/>
               <exclude name="**/*.xmi"/>
-              <exclude name="**/*.jsp"/>
-              <exclude name="**/*.jspf"/>
-              <exclude name="**/*.properties"/>
+              <exclude name="adminweb/languages/**/*.properties"/>
             </fileset>	      
 	    </copy>
 	    
@@ -446,26 +443,45 @@ protection.certprotect=${protection.certprotect}
         <property name="jboss5dependencyquote" value=""/>
         <copy todir="${preprocessed}" encoding="ISO-8859-1">
             <fileset dir="src">
-                <include name="**/*.java"/>
-                <include name="**/*.html"/>
-                <include name="**/*.htm"/>
-                <include name="**/*.xml"/>
-                <include name="**/*.xmi"/>
-                <include name="**/*.jsp"/>
-                <include name="**/*.jspf"/>
-                <include name="**/*.properties"/>
+                <include name="java/org/ejbca/core/ejb/log/LogEntryDataBean.java"/>
             </fileset>	   
-
 			<filterchain>
 			<tokenfilter>			    
-		        <replacestring from="@ejbca@" to="${app.name}"/>
-		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
-		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
-				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
-				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
-				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>
-				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>
-				<replacestring from="@renew.war.enabled@" to="${renew.war.enabled}"/>
+				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>	<!-- src/java/org/ejbca/core/ejb/log/LogEntryDataBean.java -->
+			</tokenfilter>
+			</filterchain>
+	    </copy>
+        <copy todir="${preprocessed}" encoding="ISO-8859-1">
+            <fileset dir="src">
+                <include name="java/org/ejbca/core/ejb/**/*.java"/>
+            </fileset>	   
+			<filterchain>
+			<tokenfilter>			    
+		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>		<!-- src/java/org/ejbca/core/ejb/**/*.java -->
+			</tokenfilter>
+			</filterchain>
+	    </copy>
+        <copy todir="${preprocessed}" encoding="ISO-8859-1">
+            <fileset dir="src">
+                <include name="adminweb/languages/**/*.properties"/>
+            </fileset>	   
+			<filterchain>
+			<tokenfilter>			    
+		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>	<!-- src/adminweb/languages/**/*.properties -->
+			</tokenfilter>
+			</filterchain>
+	    </copy>
+        <copy todir="${preprocessed}" encoding="ISO-8859-1">
+            <fileset dir="src">
+                <include name="**/*.xml"/>
+                <include name="**/*.xmi"/>
+            </fileset>	   
+			<filterchain>
+			<tokenfilter>			    
+		        <replacestring from="@ejbca@" to="${app.name}"/>	<!-- src/deploy/**/*.xml files -->
+				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>	<!-- xml and xmi files -->
+				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>		<!-- xml and xmi files -->
+				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>	<!-- xml files -->
 			</tokenfilter>
 			</filterchain>
 	    </copy>
@@ -523,7 +539,6 @@ protection.certprotect=${protection.certprotect}
         <!-- 
 	      Replace more values in java and xml files 
 	    -->
-		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	

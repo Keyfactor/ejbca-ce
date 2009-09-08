@@ -15,6 +15,7 @@ package org.ejbca.core.model.ra.raadmin;
 
 
 
+import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
@@ -29,7 +30,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     // Default Values
     public static final float LATEST_VERSION = 2;
     
-    public static final String EJBCA_VERSION = "@ejbca.version@";
+    public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
     /**
      * Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
@@ -64,7 +65,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
 
     // Title of ra admin web interface.
-    private static final  String   DEFAULTEJBCATITLE             = "@EJBCA@ Administration";
+    private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
 
     // The base of help links
     public static final String HELPBASEURI = WebConfiguration.getDocBaseUri();

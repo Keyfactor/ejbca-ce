@@ -9,7 +9,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
-    <title>@EJBCA@ Certificate/CRL Retrieval</title>
+    <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate/CRL Retrieval</title>
     <link rel="stylesheet" href="../styles.css" type="text/css" />
     <script type="text/javascript" src="scripts/functions.js"></script>
     <script type="text/vbscript" src="scripts/functions.vbs"></script>
@@ -35,7 +35,7 @@
               <li>
                 <a href="../enrol/cvcert.jsp">Create CV certificate</a>
               </li>
-              <% if("true".equalsIgnoreCase("@renew.war.enabled@")) { %>
+              <% if(org.ejbca.config.WebConfiguration.getRenewalEnabled()) { %>
               <li>
                 <a href="../renew/index.jsp">Request Browser Certificate Renewal</a>
               </li>

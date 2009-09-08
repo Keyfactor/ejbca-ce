@@ -1,5 +1,5 @@
 <%@ include file="header.jsp" %>
-<h1 class="title">@EJBCA@ fetch latest certificate</h1>
+<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> fetch latest certificate</h1>
 
 <p>
 	Give subject DN to fetch users latest certificate.

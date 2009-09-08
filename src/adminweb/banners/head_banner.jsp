@@ -13,6 +13,6 @@
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
  </head>
 <body>
-<img src="<%= ejbcawebbean.getImagefileInfix("@ejbca@header.jpg") %>" border="0">
+<img src="<%= ejbcawebbean.getImagefileInfix(org.ejbca.config.InternalConfiguration.getAppNameLower()+"header.jpg") %>" border="0">
 </body>
 </html>

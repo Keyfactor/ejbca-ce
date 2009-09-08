@@ -1,4 +1,4 @@
-<h1 class="title">@EJBCA@ Certificate Enrollment</h1>
+<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate Enrollment</h1>
 
 <p>
   To enroll for a certificate you must use Netscape Navigator (version 4 or higher) or

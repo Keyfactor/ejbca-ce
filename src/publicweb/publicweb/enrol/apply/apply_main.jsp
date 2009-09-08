@@ -63,7 +63,7 @@
 			        	<c:set var="includefile" value="apply_exp.jspf" />
 			        </c:when> 
 			        <c:otherwise> 
-			        	<c:set var="includefile" value="apply_unknown.html" />
+			        	<c:set var="includefile" value="apply_unknown.jspf" />
 					</c:otherwise>
 				</c:choose>
 	        </c:when> 
@@ -91,8 +91,8 @@
     <c:when test="${includefile == 'apply_exp.jspf'}">
 		<%@ include file="apply_exp.jspf" %>
     </c:when> 
-    <c:when test="${includefile == 'apply_unknown.html'}">
-		<%@ include file="apply_unknown.html" %>
+    <c:when test="${includefile == 'apply_unknown.jspf'}">
+		<%@ include file="apply_unknown.jspf" %>
     </c:when> 
     <c:otherwise> 
 	    <h1><c:out value="NO MATCH! Error in apply_main.jsp. includefile == &quot;${includefile}&quot;" /></h1>

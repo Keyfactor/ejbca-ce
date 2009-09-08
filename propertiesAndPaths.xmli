@@ -1,11 +1,8 @@
 
 	<!-- This XML file is for inclusion in build.xml, and not for usage in itself -->
 
-	<property name="app.name" value="ejbca" />
-    <property name="app.name.cap" value="EJBCA" />
-    <property name="app.version.number" value="3.10alpha" />
-    <property name="svn.revision" value="working copy" />
-	<property name="app.version" value="${app.name.cap} ${app.version.number} (${svn.revision})" />
+	<!-- Import build specific info, like version number -->
+    <property file="src/internal.properties" />
 	
     <property name="ejbca.home" location="." />
     <property environment="env" />

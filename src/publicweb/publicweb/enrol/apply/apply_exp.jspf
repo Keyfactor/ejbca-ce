@@ -289,7 +289,7 @@
 -->
 </script>
 
-<h1 class="title">@EJBCA@ IE Certificate Enrolment</h1>
+<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> IE Certificate Enrollment</h1>
 
 <p>Welcome to certificate enrollment!</p>
 

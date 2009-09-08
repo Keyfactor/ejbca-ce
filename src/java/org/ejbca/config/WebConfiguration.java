@@ -124,4 +124,11 @@ public class WebConfiguration {
 	   	return "text/plain;charset=" + getWebContentEncoding();
 	}
 
+	/**
+	 * The request browser certificate renewal web application is deployed
+	 */
+	public static boolean getRenewalEnabled() {
+		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString("web.renewalenabled", "false"));
+	}
+
 }
