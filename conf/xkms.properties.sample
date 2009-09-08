@@ -55,7 +55,7 @@
 # if a WS tap listener is used to review the messages.
 #xkms.serviceport=8080
 
-# Setting indicating if a Proof Of Possesion element 
+# Setting indicating if a Proof Of Possession element 
 # is required for KRSS calls. 
 #
 # Default : true
@@ -68,14 +68,14 @@
 #xkms.krss.servergenkeylength=1024
 
 # Defines if the end entity should be able to revoke his certificate
-# using the revoke call and a revokaton code identifier
+# using the revoke call and a revocation code identifier
 #
 # Default : true
 #xkms.krss.allowrevokation=true
 
 # Defines if it should be possible to automatically issue a new certificate
 # if the current one is valid and have a POP that verifies. In this case
-# it isn't neccessary to set status to new and password authentication is
+# it isn't necessary to set status to new and password authentication is
 # ignored.
 #
 # Default : false

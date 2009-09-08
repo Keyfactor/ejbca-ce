@@ -352,16 +352,6 @@
 	
 	<!-- XKMS settings -->
 	<property name="xkms.enabled" value="true" />				
-	<property name="xkms.request.requiresignature" value="false" />		
-	<property name="xkms.request.acceptedcas" value="AdminCA1" />
-	<property name="xkms.response.acceptsignrequest" value="true" />		
-	<property name="xkms.response.alwayssign" value="false" />
-	<property name="xkms.response.causedforsigning" value="AdminCA1" />		
-	<property name="xkms.keyusage.signatureisnonrep" value="true" />		
 	<property name="xkms.serviceport" value="8080" />
-	<property name="xkms.krss.poprequired" value="true" />
-	<property name="xkms.krss.servergenkeylength" value="1024" />
-	<property name="xkms.krss.allowrevokation" value="true" />
-	<property name="xkms.krss.allowautomaticreissue" value="false" />
 
 	<!-- Development and debug setting -->
