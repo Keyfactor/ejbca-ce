@@ -244,7 +244,14 @@ public class OcspConfiguration {
 		return value;
 	}
 
-	/**
+	/** 
+	 * All available signing keys should be tested.
+	 */
+	public static boolean getHealthCheckSignTest() {
+		return "true".equalsIgnoreCase(ConfigurationHolder.getString("ocsphealthcheck.signtest", "true"));
+	}
+
+	/** 
 	 * When true, a transaction log will be created.
 	 */
 	public static boolean getTransactionLog() {

@@ -529,7 +529,6 @@ protection.certprotect=${protection.certprotect}
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
-        <replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.signtest@" value="${ocsphealthcheck.signtest}"/>
 		<replace file="${src}/xkms/wsdl/xkms.wsdl" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
 		<replace file="${src}/xkms/wsdl/xkms.wsdl" token="@xkms.serviceport@" value="${xkms.serviceport}"/>
 

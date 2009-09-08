@@ -285,7 +285,6 @@
     <property name="database.username" value="sa" />
     <property name="database.password" value="" />
     <property name="weblogic-oracle-columntype" value="" />
-    <property name="ocsphealthcheck.signtest" value="true" />  
     <property name="mail.jndi-name" value="java:/EjbcaMail" />
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
     <property name="mail.user" value="ejbca_user" />
