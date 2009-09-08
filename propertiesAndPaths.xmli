@@ -350,13 +350,6 @@
 	<property name="cmp.tcp.logdir" value="./log" />
 	<property name="cmp.tcp.conffile" value="" />
 	
-	<!-- JAXWS settings -->
-	<property name="jaxws.approval.gethardtoken" value="true" />				
-	<property name="jaxws.approval.gentokencerts" value="true" />
-	<property name="jaxws.numberofrequiredapprovals" value="1" />
-	<property name="jaxws.noauthonfetchuserdata" value="false" />
-    <property name="jaxws.gentokens.setmslogononhold" value="false" />
-	
 	<!-- XKMS settings -->
 	<property name="xkms.enabled" value="true" />				
 	<property name="xkms.request.requiresignature" value="false" />		

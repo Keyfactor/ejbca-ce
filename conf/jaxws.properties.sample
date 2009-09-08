@@ -30,18 +30,17 @@
 # Setting indicating the number of approvals required to allow an action for
 # a non-authorized administrator.
 # Default : 1
-# jaxws.numberofrequiredapprovals=1
+#jaxws.numberofrequiredapprovals=1
 
 # Disable authorization control on the fetchUserData call, making it possible
 # for all with a valid certificate to retrieve userData
 # Default : false
 #jaxws.noauthonfetchuserdata=false
 
-# Used if all certificate on a ordinary token should be
-# but on hold, or if the MS logon certificate (all certs that have
-# extended key usage (SmartCard logon) should stay active.
-# Used when a temporary card is issued with ToLiMa and
-# MS doesn't work well with temporary revoked smartcards. 
+# If this is true, all certificates on the old token will be put on hold.
+# If this is false, MS SmartCard Logon certificates will not be put on hold.
+# This is used when a temporary card is issued with ToLiMa, since MS doesn't
+# work well with temporarily revoked smartcards. 
 #
 # Default : false
 #jaxws.gentokens.setmslogononhold=false
