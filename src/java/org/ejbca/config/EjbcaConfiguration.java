@@ -196,4 +196,14 @@ public class EjbcaConfiguration {
 	public static boolean getCertToolsDnOrderReverse() {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getString("certtools.dnorderreverse", "false"));
 	}
+	
+    /**
+     * Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
+     * this is needed so you don't have to restart JBoss all the time. 
+     * In production it may cause failures because the BC provider may get removed just when another thread wants to use it.
+     * Therefore the default value is false. 
+     */
+	public static boolean getDevelopmentProviderInstallation() {
+		return "true".equalsIgnoreCase(ConfigurationHolder.getString("development.provider.installation", "false"));
+	}
 }

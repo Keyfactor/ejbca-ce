@@ -464,7 +464,6 @@ protection.certprotect=${protection.certprotect}
 				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
 				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
 				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>
-				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
 				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>
 				<replacestring from="@renew.war.enabled@" to="${renew.war.enabled}"/>
 			</tokenfilter>

@@ -227,13 +227,6 @@ public class CertTools {
      */
     public static String SYSTEM_SECURITY_PROVIDER = "SUN";
     
-    /** Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
-     * this is needed so you don't have to restart JBoss all the time. 
-     * In production it may cause failures because the BC provider may get removed just when another thread wants to use it.
-     * Therefore the default value is false. 
-     */
-    private static final boolean developmentProviderInstallation = BooleanUtils.toBoolean("@development.provider.installation@");
-    
 	public static final String BEGIN_CERTIFICATE_REQUEST  = "-----BEGIN CERTIFICATE REQUEST-----";
 	public static final String END_CERTIFICATE_REQUEST     = "-----END CERTIFICATE REQUEST-----";
 	public static final String BEGIN_KEYTOOL_CERTIFICATE_REQUEST  = "-----BEGIN NEW CERTIFICATE REQUEST-----";
@@ -960,7 +953,7 @@ public class CertTools {
             // Nope, we ignore re-deploy on this level, because it can happen
             // that the BC-provider is uninstalled, in just the second another
             // thread tries to use the provider, and then that request will fail.
-            if (developmentProviderInstallation) {
+            if (EjbcaConfiguration.getDevelopmentProviderInstallation()) {
                 removeBCProvider();
                 if (Security.addProvider(new BouncyCastleProvider()) < 0) {
                     log.error("Cannot even install BC provider again!");
