@@ -24,7 +24,7 @@ import org.ejbca.util.PatternLogger;
 
 public class TransactionLogger {
     
-    private static final TransactionLogger instance = new TransactionLogger();
+    private static TransactionLogger instance = null;
 
     /** regexp pattern to match ${identifier} patterns */// ${DN};${IP}
     final private Pattern PATTERN = Pattern.compile(WebServiceConfiguration.getTransactionLogPattern());
@@ -37,6 +37,18 @@ public class TransactionLogger {
     final private Logger log = Logger.getLogger(TransactionLogger.class.getName());
     private int transactionID = 0;
 
+    private TransactionLogger() {}
+    
+    /**
+     * @return a new IPatterLogger
+     */
+    public static IPatternLogger getPatternLogger() {
+    	if (instance == null) {
+    		instance = new TransactionLogger();
+    	}
+        return instance.getNewPatternLogger();
+    }
+
     private IPatternLogger getNewPatternLogger() {
         if ( !this.doLog ) {
             return new DummyPatternLogger();
@@ -47,14 +59,5 @@ public class TransactionLogger {
         pl.paramPut(IPatternLogger.LOG_ID, Integer.toString(this.transactionID++));
         pl.paramPut(IPatternLogger.SESSION_ID, this.sessionID);
         return pl;
-    }
-
-    private TransactionLogger() {}
-    
-    /**
-     * @return allways same
-     */
-    static public IPatternLogger getPatternLogger() {
-        return instance.getNewPatternLogger();
     }
 }

@@ -14,7 +14,6 @@
 package org.ejbca.config;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.protocol.ws.logger.TransactionTags;
 
 /**
  * Configuration from jaxws.properties
@@ -103,9 +102,8 @@ public class WebServiceConfiguration {
 	 * Returns the the base string that will be substituted during transaction logging. 
 	 */
 	public static String getTransactionLogOrder() {
-		return ConfigurationHolder.getString("ejbcaws.trx-log-order", "${LOG_TIME};${SESSION_ID};${LOG_ID};${REPLY_TIME};"+
-                TransactionTags.METHOD.getTag()+";"+TransactionTags.ERROR_MESSAGE.getTag()+";"+
-                TransactionTags.ADMIN_DN.getTag()+";"+TransactionTags.ADMIN_ISSUER_DN.getTag());
+		return ConfigurationHolder.getString("ejbcaws.trx-log-order",
+			"${LOG_TIME};${SESSION_ID};${LOG_ID};${REPLY_TIME};${METHOD};${ERROR_MESSAGE};${ADMIN_DN};${ADMIN_ISSUER_DN}");
 	}
 	
 }
