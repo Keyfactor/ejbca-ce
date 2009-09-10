@@ -23,6 +23,17 @@ public class EjbcaConfiguration {
 	private static final Logger log = Logger.getLogger(EjbcaConfiguration.class);
 	
 	/**
+	 * Check if EJBCA is running in production
+	 */
+	public static boolean getIsInProductionMode() {
+		String value = ConfigurationHolder.getString("ejbca.productionmode", "true");
+		if ("true".equalsIgnoreCase(value) || "ca".equalsIgnoreCase(value) || "ocsp".equalsIgnoreCase(value)) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Password used to protect CA keystores in the database.
 	 */
 	public static String getCaKeyStorePass() {

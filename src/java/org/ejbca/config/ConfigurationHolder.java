@@ -45,6 +45,7 @@ public class ConfigurationHolder {
 	private static final Logger log = Logger.getLogger(ConfigurationHolder.class);
 
 	private static CompositeConfiguration config = null;
+	private static CompositeConfiguration configBackup = null;
 	
 	/** This is a singleton so it's not allowed to create an instance explicitly */ 
 	private ConfigurationHolder() {}
@@ -221,5 +222,60 @@ public class ConfigurationHolder {
 		return sb.toString();
 	}
 
+	/**
+	 * Backups the original configuration in a non thread safe way.
+	 * 
+ 	 * NOTE: This method should only be used by tests through ConfigurationSessionBean!
+	 */
+	public static boolean backupConfiguration() {
+		if (configBackup != null) {
+			return false;
+		}
+		configBackup = (CompositeConfiguration) config.clone();
+		return true;
+	}
+	
+	/**
+	 * Restores the original configuration in a non thread safe way.
+	 * 
+	 * NOTE: This method should only be used by tests through ConfigurationSessionBean!
+	 */
+	public static boolean restoreConfiguration() {
+		if (configBackup == null) {
+			return false;
+		}
+		config = configBackup;
+		configBackup = null;
+		return true;
+	}
+
+	/**
+	 * Takes a backup of the active configuration if necessary and updates the active configuration. 
+	 * 
+	 * NOTE: This method should only be used by tests through ConfigurationSessionBean!
+	 */
+	public static boolean updateConfiguration(Properties properties) {
+		backupConfiguration();	// Only takes a backup if necessary.
+		Iterator i = properties.keySet().iterator();
+		while (i.hasNext()) {
+			String key = (String) i.next();
+			String value = (String) properties.get(key);
+			config.setProperty(key, value);
+		}
+		return true;
+	}
+
+	/**
+	 * Takes a backup of the active configuration if necessary and updates the active configuration. 
+	 * 
+	 * NOTE: This method should only be used by tests through ConfigurationSessionBean!
+	 */
+	public static boolean updateConfiguration(String key, String value) {
+		backupConfiguration();	// Only takes a backup if necessary.
+		config.setProperty(key, value);
+		return true;
+	}
+
 }
+
 

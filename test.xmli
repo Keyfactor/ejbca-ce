@@ -16,7 +16,15 @@
     </target>
     
     <target name="failinproduction">
-		<fail if="ejbca.productionmode" message="You cannot run tests in a production environment."/>
+		<fail message="You cannot run tests in a production environment.">
+			<condition>
+				<or>
+					<equals arg1="${ejbca.productionmode}" arg2="ocsp" casesensitive="false"/>
+					<equals arg1="${ejbca.productionmode}" arg2="ca" casesensitive="false"/>
+					<equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
+				</or>
+			</condition>
+		</fail>
     </target>
 
     <!-- compile JUnit testcases -->

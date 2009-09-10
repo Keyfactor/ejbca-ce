@@ -37,6 +37,7 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.config.IConfigurationSessionHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
@@ -51,6 +52,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.ejb.services.IServiceSessionHome;
 import org.ejbca.core.ejb.services.IServiceSessionRemote;
+import org.ejbca.core.ejb.upgrade.IConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -76,6 +78,7 @@ public class TestTools {
     private static IAuthorizationSessionRemote authorizationSession;
     private static ICAAdminSessionRemote caAdminSession;
     private static ICertificateStoreSessionRemote certificateStoreSession;
+    private static IConfigurationSessionRemote configurationSession;
 	private static ICreateCRLSessionRemote createCRLSession;
     private static IHardTokenSessionRemote hardTokenSession;
     private static IKeyRecoverySessionRemote keyRecoverySession;
@@ -137,6 +140,18 @@ public class TestTools {
 		return caAdminSession;
 	}
 	
+	public static IConfigurationSessionRemote getConfigurationSession() {
+		try {
+			if (configurationSession == null) {
+				configurationSession = ((IConfigurationSessionHome) ServiceLocator.getInstance().getRemoteHome(IConfigurationSessionHome.JNDI_NAME, IConfigurationSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+		return configurationSession;
+	}
+
 	public static ICertificateStoreSessionRemote getCertificateStoreSession() {
 		try {
 			if (certificateStoreSession == null) {
@@ -256,7 +271,6 @@ public class TestTools {
 		}
 		return userAdminSession;
 	}
-
 
 	public static IPublisherQueueSessionRemote getPublisherQueueSession() {
 		try {

@@ -22,6 +22,13 @@ After this you must do:
 All database upgrades require CREATE and ALTER TABLE privileges besides the regular
 SELECT, UPDATE, INSERT and DELETE.
 
+From EJBCA 3.9.x to EJBCA 3.10.x
+--------------------------------
+To improve testing there is a new configuration option to allow changing used
+properties through Remote EJB access using conf/ejbca.properties#ejbca.productionmode.
+Default is to not allow configuration changes, but system tests will fail until
+this is allowed. 
+
 From EJBCA 3.9.x to EJBCA 3.9.x
 -------------------------------
 See release notes for details between certain versions. 
