@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.util.AlgorithmTools;
@@ -79,20 +80,32 @@ public abstract class BaseCAToken implements ICAToken {
     }
 
     private void testKey( KeyPair pair ) throws Exception {
-        final byte input[] = "Lillan gick p� v�gen ut, m�tte d�r en katt ...".getBytes();
+        final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
-        if (log.isDebugEnabled()) {
-            log.debug("Testing keys with algorithm: "+pair.getPublic().getAlgorithm());        	
-        }
         String testSigAlg = (String)AlgorithmTools.getSignatureAlgorithms(pair.getPublic()).iterator().next();
         if ( testSigAlg == null ) {
         	testSigAlg = "SHA1WithRSA";
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Testing keys with algorithm: "+pair.getPublic().getAlgorithm());        	
+            log.debug("testSigAlg: "+testSigAlg);        	
+            log.debug("provider: "+getProvider());        	
+            log.debug("privateKey: "+pair.getPrivate());        	
+            log.debug("publicKey: "+pair.getPublic());        	
         }
         {
             Signature signature = Signature.getInstance(testSigAlg, getProvider());
             signature.initSign( pair.getPrivate() );
             signature.update( input );
             signBV = signature.sign();
+            if (log.isDebugEnabled()) {
+            	if (signBV != null) {
+                    log.debug("Created signature of size: "+signBV.length);        	
+                    log.debug("Created signature: "+new String(Hex.encode(signBV)));        	            		
+            	} else {
+            		log.warn("Test signature is null?");
+            	}
+            }
         }{
             Signature signature = Signature.getInstance(testSigAlg, "BC");
             signature.initVerify(pair.getPublic());
