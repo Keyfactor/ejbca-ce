@@ -239,6 +239,9 @@
                 <include name="log4j.jar"/>
                 <include name="bcprov-jdk${java.ver}.jar"/>
                 <include name="commons-lang-*.jar"/>
+                <include name="commons-configuration-1.5.jar"/>
+                <include name="commons-collections-3.2.jar"/><!-- Commons Config dependency -->
+                <include name="commons-logging.jar"/>
                 <include name="cert-cvc.jar"/>
             </fileset>
             <fileset dir="${ejbca.home}/dist">
@@ -255,7 +258,7 @@
     	              
         <jar destfile="dist/ejbcawscli/ejbcawscli.jar" basedir="tmp/ejbcawscli.jar">
           <manifest>
-          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/cert-cvc.jar lib/ejbca-util.jar lib/log4j.jar lib/commons-lang-2.4.jar lib/endorsed/activation.jar lib/endorsed/FastInfoset.jar lib/endorsed/http.jar lib/endorsed/jaxb-api.jar lib/endorsed/jaxb-impl.jar lib/endorsed/jaxb-xjc.jar lib/endorsed/jaxws-api.jar lib/endorsed/jaxws-rt.jar lib/endorsed/jsr173_api.jar lib/endorsed/jsr181-api.jar lib/endorsed/jsr250-api.jar lib/endorsed/resolver.jar lib/endorsed/saaj-api.jar lib/endorsed/saaj-impl.jar lib/endorsed/sjsxp.jar"/>
+          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/cert-cvc.jar lib/ejbca-util.jar lib/log4j.jar lib/commons-lang-2.4.jar lib/endorsed/activation.jar lib/endorsed/FastInfoset.jar lib/endorsed/http.jar lib/endorsed/jaxb-api.jar lib/endorsed/jaxb-impl.jar lib/endorsed/jaxb-xjc.jar lib/endorsed/jaxws-api.jar lib/endorsed/jaxws-rt.jar lib/endorsed/jsr173_api.jar lib/endorsed/jsr181-api.jar lib/endorsed/jsr250-api.jar lib/endorsed/resolver.jar lib/endorsed/saaj-api.jar lib/endorsed/saaj-impl.jar lib/endorsed/sjsxp.jar lib/commons-configuration-1.5.jar lib/commons-collections-3.2.jar lib/commons-logging.jar"/>
             <attribute name="Main-Class" value="org.ejbca.core.protocol.ws.client.ejbcawsracli"/>
           </manifest>
         </jar>    	    	

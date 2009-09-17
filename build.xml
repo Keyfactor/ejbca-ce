@@ -384,6 +384,7 @@
                 </manifest>
                 <fileset dir="${build}">
                 	<include name="org/ejbca/util/**"/>
+                	<include name="org/ejbca/config/*" /> 
                 	<include name="org/ejbca/core/*" /> 
                 	<include name="org/ejbca/core/model/**"/>
                 	<include name="org/ejbca/core/protocol/*"/>
@@ -1021,7 +1022,8 @@
                 <include name="cert-cvc.jar"/>
                 <include name="ldap.jar"/>
                 <include name="jline-0.9.94.jar"/>
-                <include name="commons-collections-3.2.jar"/><!-- Hibernate dependency -->
+                <include name="commons-collections-3.2.jar"/><!-- Hibernate + Commons Config dependency -->
+                <include name="commons-configuration-1.5.jar"/>
             </fileset>
             <fileset dir="${lib}/xdoclet/lib">
                 <include name="dom4j-1.6.1.jar"/><!-- Hibernate dependency -->
