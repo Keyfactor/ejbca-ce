@@ -86,6 +86,11 @@ issues when upgrading all the way from a much older version.
 Note! If you are using the external RA you need to upgrade to ExtRA 3.9 and follow upgrade instructions 
 in the ExtRA package.
 
+Note! If you have changed the 'tomcat' username for the JBoss SSL server certificate you should check the certificate profile used.
+This is because the old ENDUSER certificate profile can no longer be used for SSL server certificates.
+The corresponding upgrade sql in the normal upgrade script is:
+update UserData set certificateProfileId=9 where username='tomcat' and certificateProfileId=1;
+
 Note! If you are using an external OCSP responder using EJBCA's publishing from EJBCA to the responder, you need to update
 the responders database table CertificateData using the SQL commands above.
 
