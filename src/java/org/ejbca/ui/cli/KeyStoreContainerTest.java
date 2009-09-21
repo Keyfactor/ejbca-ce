@@ -19,9 +19,10 @@ import java.io.PrintStream;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.security.cert.Certificate;
+import java.security.interfaces.DSAKey;
 import java.security.interfaces.ECKey;
 import java.security.interfaces.RSAKey;
-import java.security.interfaces.DSAKey;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -79,9 +80,14 @@ class KeyStoreContainerTest {
             String alias = e.nextElement();
             if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
                 PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
-                testSet.add(new NormalTest(alias,
-                                           new KeyPair(keyStore.getKeyStore().getCertificate(alias).getPublicKey(), privateKey),
-                                           keyStore.getProviderName()));
+                Certificate cert = keyStore.getKeyStore().getCertificate(alias);
+                if (cert != null) {
+                    testSet.add(new NormalTest(alias,
+                            new KeyPair(cert.getPublicKey(), privateKey),
+                            keyStore.getProviderName()));                	
+                } else {
+                	System.out.println("Not testing keys with alias "+alias+". No certificate exists.");
+                }
             }
         }
         return testSet.toArray(new NormalTest[0]);
