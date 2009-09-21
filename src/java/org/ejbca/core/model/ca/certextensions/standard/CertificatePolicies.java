@@ -47,7 +47,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * @version $Id$
  */
 public class CertificatePolicies extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(CertificatePolicies.class);
+    private static final Logger log = Logger.getLogger(CertificatePolicies.class);
 	
 	/**
 	 * Constructor for creating the certificate extension 

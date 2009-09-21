@@ -49,7 +49,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class QcStatement extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(QcStatement.class);
+    private static final Logger log = Logger.getLogger(QcStatement.class);
 	
 	/**
 	 * Constructor for creating the certificate extension 

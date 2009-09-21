@@ -36,7 +36,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * @version $Id$
  */
 public class ExtendedKeyUsage extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(ExtendedKeyUsage.class);
+    private static final Logger log = Logger.getLogger(ExtendedKeyUsage.class);
 	/**
 	 * Constructor for creating the certificate extension 
 	 */

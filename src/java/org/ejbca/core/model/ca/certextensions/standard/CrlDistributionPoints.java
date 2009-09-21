@@ -49,7 +49,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * @version $Id$
  */
 public class CrlDistributionPoints extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(CrlDistributionPoints.class);
+    private static final Logger log = Logger.getLogger(CrlDistributionPoints.class);
 	
 	/**
 	 * Constructor for creating the certificate extension 

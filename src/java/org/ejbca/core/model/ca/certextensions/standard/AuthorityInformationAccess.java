@@ -42,7 +42,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * @version $Id$
  */
 public class AuthorityInformationAccess extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(AuthorityInformationAccess.class);
+    private static final Logger log = Logger.getLogger(AuthorityInformationAccess.class);
 
 	/**
 	 * Constructor for creating the certificate extension 

@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class KeyUsage extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(KeyUsage.class);
+    private static final Logger log = Logger.getLogger(KeyUsage.class);
 
 	/**
 	 * Constructor for creating the certificate extension 

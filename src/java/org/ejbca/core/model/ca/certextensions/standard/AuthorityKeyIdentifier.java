@@ -48,7 +48,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class AuthorityKeyIdentifier extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(AuthorityInformationAccess.class);
+    private static final Logger log = Logger.getLogger(AuthorityInformationAccess.class);
 
 	/**
 	 * Constructor for creating the certificate extension 

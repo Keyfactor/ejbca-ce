@@ -39,7 +39,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * @version $Id$
  */
 public class SubjectDirectoryAttributes extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);
+    private static final Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);
 
 	/**
 	 * Constructor for creating the certificate extension 

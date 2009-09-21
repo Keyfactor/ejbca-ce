@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class SubjectAltNames extends StandardCertificateExtension {
-    private static Logger log = Logger.getLogger(SubjectAltNames.class);
+    private static final Logger log = Logger.getLogger(SubjectAltNames.class);
 
 	/**
 	 * Constructor for creating the certificate extension 
