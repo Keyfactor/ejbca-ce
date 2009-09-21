@@ -8,7 +8,7 @@ The following databases have in some stage been tested with EJBCA:
 * MySQL 4.x and 5.x (http://www.mysql.com/)
 * Oracle 8i, 9i and 10g (http://www.oracle.com/)
 * Sybase
-* MS-SQL2000 and 2003
+* MS-SQL2000, 2003, 2008
 * DB2
 * Informix 9.2
 * Derby
