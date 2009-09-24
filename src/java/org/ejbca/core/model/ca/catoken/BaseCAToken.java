@@ -186,7 +186,22 @@ public abstract class BaseCAToken implements ICAToken {
 
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoActivate) {
     	if (log.isDebugEnabled()) {
-    		log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
+    		// This is only a sections for debug logging. If we have enabled debug logging we don't want to display any password in the log.
+    		// These properties may contain autiactivation PIN codes and we will, only when debug logging, replace this with "hidden".
+    		if ( properties.containsKey(ICAToken.AUTOACTIVATE_PIN_PROPERTY) || properties.containsKey("PIN") ) {
+    			Properties prop = new Properties();
+    			prop.putAll(properties);
+    			if (properties.containsKey(ICAToken.AUTOACTIVATE_PIN_PROPERTY)) {
+        			prop.setProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY, "hidden");    				
+    			}
+    			if (properties.containsKey("PIN")) {
+        			prop.setProperty("PIN", "hidden");    				
+    			}
+        		log.debug("Prop: "+(prop!=null ? prop.toString() : "null")+". Signaturealg: "+signaturealgorithm);
+    		} else {
+    			// If no autoactivation PIN codes exists we can debug log everything as original.
+        		log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);    			
+    		}
     	}
         this.keyStrings = new KeyStrings(properties);
         if (sSlotLabelKey != null && properties!=null) {
