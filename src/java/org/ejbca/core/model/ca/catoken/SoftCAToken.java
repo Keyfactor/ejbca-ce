@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
