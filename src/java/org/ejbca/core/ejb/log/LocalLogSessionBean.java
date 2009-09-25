@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
