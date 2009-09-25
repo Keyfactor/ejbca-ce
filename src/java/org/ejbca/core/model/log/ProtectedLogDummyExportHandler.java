@@ -13,7 +13,6 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -28,7 +27,7 @@ public class ProtectedLogDummyExportHandler implements IProtectedLogExportHandle
 	/**
 	 * @see org.ejbca.core.model.log.IProtectedLogExportHandler
 	 */
-	public void init(Properties properties, long exportEndTime, long exportStartTime, boolean forced) {
+	public void init(long exportEndTime, long exportStartTime, boolean forced) {
 		log.info("Export initialized for interval " + exportStartTime + " - " + exportEndTime + ".");
 	}
 

@@ -52,7 +52,7 @@ public class ConfigurationHolder {
 	
 	/** ejbca.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
 	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties", "externalra-caservice.properties",
-		"ocsp.properties",	"extendedkeyusage.properties", "jaxws.properties", "xkms.properties"};
+		"ocsp.properties", "extendedkeyusage.properties", "jaxws.properties", "xkms.properties", "log.properties"};
 
 	/** Configuration property that enables dynamic reading of properties from the file system. This is not allowed by default for security reasons. */
 	public static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
@@ -110,16 +110,7 @@ public class ConfigurationHolder {
 			
 			// Default values build into jar file, this is last prio used if no of the other sources override this
 			for (int i=0; i<CONFIG_FILES.length; i++) {
-				try {
-					URL url = ConfigurationHolder.class.getResource("/conf/" + CONFIG_FILES[i]);
-					if (url != null) {
-						PropertiesConfiguration pc = new PropertiesConfiguration(url);
-						config.addConfiguration(pc);
-						log.info("Added url to configuration source: " + url);
-					}
-				} catch (ConfigurationException e) {
-					log.error("Failed to load configuration from resource " + "/conf/" + CONFIG_FILES[i], e);
-				}
+				addConfigurationResource(CONFIG_FILES[i]);
 			}
 			// Load internal.properties only from built in configuration file
 			try {
@@ -152,6 +143,24 @@ public class ConfigurationHolder {
 			log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
 		} catch (ConfigurationException e) {
 			log.error("Failed to load configuration from file " + f.getAbsolutePath());
+		}
+	}
+	
+	/**
+	 * Add built in config file
+	 */
+	public static void addConfigurationResource(String resourcename) {
+		// Make sure the basic initialization has been done
+		instance();
+		try {
+			URL url = ConfigurationHolder.class.getResource("/conf/" + resourcename);
+			if (url != null) {
+				PropertiesConfiguration pc = new PropertiesConfiguration(url);
+				config.addConfiguration(pc);
+				log.info("Added url to configuration source: " + url);
+			}
+		} catch (ConfigurationException e) {
+			log.error("Failed to load configuration from resource " + "/conf/" + resourcename, e);
 		}
 	}
 	

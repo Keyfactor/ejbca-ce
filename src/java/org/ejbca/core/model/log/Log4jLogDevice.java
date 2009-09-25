@@ -61,27 +61,26 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
      * @param prop Arguments needed for the eventual creation of the object
      */
 
-    protected Log4jLogDevice(Properties properties) throws Exception {
-    	resetDevice(properties);
+    protected Log4jLogDevice(String name) throws Exception {
+    	resetDevice(name);
     }
     
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public void resetDevice(Properties properties) {
-		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
+	public void resetDevice(String name) {
+		deviceName = name;
 	}
 
 
     /**
      * Creates (if needed) the log device and returns the object.
      *
-     * @param prop Arguments needed for the eventual creation of the object
      * @return An instance of the log device.
      */
-    public static synchronized ILogDevice instance(Properties prop) throws Exception {
+    public static synchronized ILogDevice instance(String name) throws Exception {
         if (instance == null) {
-            instance = new Log4jLogDevice(prop);
+            instance = new Log4jLogDevice(name);
         }
         return instance;
     }
@@ -91,13 +90,6 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
 	 */
 	public String getDeviceName() {
 		return deviceName;
-	}
-    
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public Properties getProperties() {
-		return null;
 	}
 
 	/**

@@ -13,6 +13,7 @@
 package org.ejbca.util;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -70,5 +71,17 @@ public class TCPTool {
 		if (log.isTraceEnabled()) {
 			log.trace("<probeConnectionRaw");			
 		}
+	}
+
+	/**
+	 * Try to acquire this nodes IP address
+	 */
+	public static String getNodeIP() {
+		String nodeIP = "127.0.0.1";
+        try {
+        	nodeIP = InetAddress.getLocalHost().getHostAddress();
+        } catch (java.net.UnknownHostException uhe) {
+        }
+		return nodeIP;
 	}
 }

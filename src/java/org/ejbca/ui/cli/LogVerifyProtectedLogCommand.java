@@ -38,9 +38,8 @@ public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 		}
 		long freezeThreshold = Long.parseLong(args[1]) * 1000;
 		getOutputStream().print("Starting verification..\n");
-        ProtectedLogActions protectedLogActions = new ProtectedLogActions(null);
         try {
-			ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);
+			ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_NONE, freezeThreshold);
 			if (protectedLogEventIdentifier == null) {
 				getOutputStream().print("Log verification OK!\n");
 		        return;

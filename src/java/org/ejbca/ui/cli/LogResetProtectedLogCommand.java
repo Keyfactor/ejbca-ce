@@ -37,22 +37,12 @@ public class LogResetProtectedLogCommand extends BaseLogAdminCommand  {
 	}
 
 	public void execute() throws IllegalAdminCommandException,	ErrorAdminCommandException {
-		if (args.length < 3) {
-			String msg = "Usage: LOG resetprotected <export | noexport> <export handler properties-file>\n" +
+		if (args.length < 2) {
+			String msg = "Usage: LOG resetprotected <export | noexport>\n" +
 			"Tries to set the log to a consistent state, by removing almost all log posts. Use with care.\n";
 			throw new IllegalAdminCommandException(msg);
 		}
 		boolean export = "export".equalsIgnoreCase(args[1]);
-		Properties properties = new Properties();
-		try {
-			properties.load(new FileInputStream(args[2]));
-		} catch (FileNotFoundException e1) {
-			getOutputStream().print("Connot find "+args[2]+"\n");
-	        return;
-		} catch (IOException e1) {
-			getOutputStream().print("Connot load "+args[2]+"\n");
-	        return;
-		}
 		// 4 chars should be enough to make the user think at least once..
         String randomString = ""+(seeder.nextInt(9000)+1000);
         getOutputStream().print("\nYOU ARE ABOUT TO DELETE THE PROTECTED LOG!\n\n"+
@@ -70,7 +60,7 @@ public class LogResetProtectedLogCommand extends BaseLogAdminCommand  {
         }
         getOutputStream().print("\nForcing the protected log to a consistent state...\n");
         try {
-			if (getProtectedLogSession().resetEntireLog(export, properties)) {
+			if (getProtectedLogSession().resetEntireLog(export)) {
 				getOutputStream().print("SUCCESS!\n");
 			} else {
 				getOutputStream().print("FAILED!\n");

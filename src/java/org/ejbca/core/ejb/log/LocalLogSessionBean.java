@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.log;
 
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ejb.CreateException;
@@ -41,12 +41,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.ILogExporter;
-import org.ejbca.core.model.log.Log4jLogDevice;
-import org.ejbca.core.model.log.Log4jLogDeviceFactory;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.OldLogDevice;
-import org.ejbca.core.model.log.OldLogDeviceFactory;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.ObjectCache;
 import org.ejbca.util.query.IllegalQueryException;
@@ -183,55 +179,18 @@ public class LocalLogSessionBean extends BaseSessionBean {
             // Setup Connection to signing devices.
             logdevices = new ArrayList();
             // Load logging properties dynamically as interal resource
-            Properties logProperties = new Properties();
-            String logDevicesString = null;
-            InputStream logPropertiesInputStream = this.getClass().getResourceAsStream("/conf/log.properties");
-            if (logPropertiesInputStream != null) {
-                logProperties.load(logPropertiesInputStream);
-                logDevicesString = logProperties.getProperty("usedLogDevices");
-            }
-            // Set some defaults if no properties were found
-            if (logDevicesString == null) {
-            	logDevicesString = Log4jLogDevice.DEFAULT_DEVICE_NAME+";"+OldLogDevice.DEFAULT_DEVICE_NAME;
-            	logProperties.setProperty(Log4jLogDevice.DEFAULT_DEVICE_NAME, Log4jLogDeviceFactory.class.getName() + ";");
-            	logProperties.setProperty(OldLogDevice.DEFAULT_DEVICE_NAME, OldLogDeviceFactory.class.getName() + ";");
-            }
-            if (logDevicesString != null) {
-                String[] logDevices = logDevicesString.split(";");
-	            for (int i = 0; i < logDevices.length; i++) {
-	            	String logDeviceString = logProperties.getProperty(logDevices[i]);
-	            	if (logDeviceString == null) {
-	            		continue;
-	            	}
-	            	String[] logDeviceComponents = logDeviceString.split(";");
-	            	// Load properties
-	            	Properties properties = new Properties();
-	                if (logDeviceComponents.length > 1 && !(logDeviceComponents[1] == null || logDeviceComponents[1].trim().equals(""))) {
-	                	InputStream is = null;
-	                	try {
-	                		is = this.getClass().getResourceAsStream("/conf/" + logDeviceComponents[1].trim());
-	                		// Ignore missing config files
-	                		if (is != null) {
-		                		properties.load(is);
-	                		}
-	                	} finally {
-	                		if (is != null) { 
-	                			is.close();
-	                		}
-	                	}
-	                }
-	            	properties.setProperty(ILogDevice.PROPERTY_DEVICENAME, logDevices[i]);
-	            	// Create log class
-	                if (logDeviceComponents.length > 0) {
-		            	Class implClass = Class.forName(logDeviceComponents[0].trim());
-		                Object fact = implClass.newInstance();
-		                Class[] paramTypes = new Class[] {Properties.class};
-		                Method method = implClass.getMethod("makeInstance", paramTypes);
-		                Object[] params = new Object[1];
-	                    params[0] = properties;
-		                logdevices.add(method.invoke(fact, params));
-	                }
-	            }
+            Map logDeviceMap = org.ejbca.config.LogConfiguration.getUsedLogDevices();
+            Iterator i = logDeviceMap.keySet().iterator();
+            while (i.hasNext()) {
+            	String deviceName = (String) i.next();
+            	// Create log class
+            	Class implClass = Class.forName((String)logDeviceMap.get(deviceName));
+                Object fact = implClass.newInstance();
+                Class[] paramTypes = new Class[] {String.class};
+                Method method = implClass.getMethod("makeInstance", paramTypes);
+                Object[] params = new Object[1];
+                params[0] = deviceName;
+                logdevices.add(method.invoke(fact, params));
             }
         } catch (Exception e) {
             throw new EJBException(e);
@@ -261,21 +220,6 @@ public class LocalLogSessionBean extends BaseSessionBean {
 	}
 
     /**
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
-     */
-    public Properties getProperties(Class logDeviceClass) {
-        Iterator i = logdevices.iterator();
-        while (i.hasNext()) {
-            ILogDevice dev = (ILogDevice) i.next();
-            if (dev.getClass().equals(logDeviceClass)) {
-            	return dev.getProperties();
-            }
-        }
-        return null;
-    }
-    
-    /**
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -299,13 +243,13 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public void setTestDevice(Class implClass, Properties properties) {
+    public void setTestDevice(Class implClass, String name) {
     	try {
     		Object fact = implClass.newInstance();
-    		Class[] paramTypes = new Class[] {Properties.class};
+    		Class[] paramTypes = new Class[] {String.class};
     		Method method = implClass.getMethod("makeInstance", paramTypes);
     		Object[] params = new Object[1];
-    		params[0] = properties;
+    		params[0] = name;
             ILogDevice dev = (ILogDevice) method.invoke(fact, params);
         	Iterator i = logdevices.iterator();
         	ILogDevice dev2 = null;
@@ -317,9 +261,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
         	}
         	if (testDeviceBackup.size() == 0) {
             	testDeviceBackup.addAll(logdevices);
-    			testDeviceProperties = dev2.getProperties();
         	}
-            dev.resetDevice(properties);
+            dev.resetDevice(name);
         	logdevices.clear();
     		logdevices.add(dev);
     	} catch (Exception e) {
@@ -340,7 +283,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     	while (i.hasNext()) {
     		ILogDevice dev2 = (ILogDevice) i.next();
     		if (dev2.getDeviceName().equals(dev.getDeviceName())) {
-    			dev.resetDevice(testDeviceProperties);
+    			dev.resetDevice(dev.getDeviceName());
     		}
     	}
     	if (testDeviceBackup.size() != 0) {
@@ -359,8 +302,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="remote"
      * @ejb.transaction type="Supports"
      */
-    public void setTestDeviceOnLogSession(Class implClass, Properties properties) {
-    	getLogSession().setTestDevice(implClass, properties);
+    public void setTestDeviceOnLogSession(Class implClass, String name) {
+    	getLogSession().setTestDevice(implClass, name);
     }
 
     /**

@@ -13,9 +13,9 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.model.InternalResources;
 
 /**
@@ -31,16 +31,11 @@ public class ProtectedLogScriptAction implements IProtectedLogAction, Serializab
     
     private static final Logger log = Logger.getLogger(ProtectedLogScriptAction.class);
 
-	private static final String SCRIPTACTION_ERROR_FAILED				= "protectedlog.safailed";
-	private static final String SCRIPTACTION_ERROR_NOTARGET		= "protectedlog.sanotarget";
-	private static final String SCRIPTACTION_ERROR_ERRORCODE	= "protectedlog.saerrorcode";
+	private static final String SCRIPTACTION_ERROR_FAILED       = "protectedlog.safailed";
+	private static final String SCRIPTACTION_ERROR_NOTARGET     = "protectedlog.sanotarget";
+	private static final String SCRIPTACTION_ERROR_ERRORCODE    = "protectedlog.saerrorcode";
 	
-	public static final String CONF_TARGET_SCRIPT = "scriptAction.target";
-	private String targetScript = null;
-
-	public ProtectedLogScriptAction(Properties properties) {
-		targetScript = properties.getProperty(CONF_TARGET_SCRIPT); 
-	}
+	private String targetScript = ProtectedLogConfiguration.getScriptActionScript();
 
 	/**
 	 * @see org.ejbca.core.model.log.IProtectedLogAction
@@ -49,7 +44,7 @@ public class ProtectedLogScriptAction implements IProtectedLogAction, Serializab
 		if (log.isTraceEnabled()) {
 			log.trace(">action " + causeIdentifier);
 		}
-		if (targetScript == null || targetScript.equals("")) {
+		if (targetScript == null) {
 			log.error(intres.getLocalizedMessage(SCRIPTACTION_ERROR_NOTARGET));
 			return;
 		}

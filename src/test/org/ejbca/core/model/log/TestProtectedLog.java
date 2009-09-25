@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Properties;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
+import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
@@ -23,15 +23,15 @@ import org.ejbca.util.TestTools;
 
 public class TestProtectedLog extends TestCase {
 
-	private final static String DEFAULT_CA_NAME		= "TEST";
-	private final static String LOGMESSAGE					= "Logmessage ";
-	private final static String ERROR_LASTACTION		= "Last actions should not have generated an error.";
-	private final static String ERROR_NONEMPTY		= "The protected log was not empty.";
-	private final static String ERROR_MISSINGROW		= "Did not detect missing rows.";
-	private final static String ERROR_FROZENLOG		= "Did not detect frozen log.";
-	private final static String ERROR_UNPROTECTED	= "The protected log was not unprotected.";
-	private final static String ERROR_NOEXPORT			= "No export file was written.";
-	private final static String ERROR_BADEXPORT		= "Exported log does not contain any log-data";
+	private final static String DEFAULT_CA_NAME   = "TEST";
+	private final static String LOGMESSAGE        = "Logmessage ";
+	private final static String ERROR_LASTACTION  = "Last actions should not have generated an error.";
+	private final static String ERROR_NONEMPTY    = "The protected log was not empty.";
+	private final static String ERROR_MISSINGROW  = "Did not detect missing rows.";
+	private final static String ERROR_FROZENLOG   = "Did not detect frozen log.";
+	private final static String ERROR_UNPROTECTED = "The protected log was not unprotected.";
+	private final static String ERROR_NOEXPORT    = "No export file was written.";
+	private final static String ERROR_BADEXPORT   = "Exported log does not contain any log-data";
 
 	private static final Logger log = Logger.getLogger(TestProtectedLog.class);
 	private final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -55,10 +55,15 @@ public class TestProtectedLog extends TestCase {
 		TestTools.getProtectedLogSession().removeAllExports(true);
 		// Make sure tempfile is removed
 		ProtectedLogTestAction.removeFileInTempDir();
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_USESCRIPTACTION, "false");
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_USEMAILACTION, "false");
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_USESHUTDOWNACTION, "false");
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_USETESTACTION, "true");
 		log.trace("<setUp()");
 	}
 
 	protected void tearDown() throws Exception {
+		TestTools.getConfigurationSession().restoreConfiguration();
 		// Clear protected log
 		TestTools.getProtectedLogSession().removeAllUntil(System.currentTimeMillis()+60*1000);
 		TestTools.getProtectedLogSession().removeAllExports(true);
@@ -77,12 +82,10 @@ public class TestProtectedLog extends TestCase {
 	 */
 	public void test01() throws Exception {
 		// Setup a protected log device
-		Properties properties = new Properties();
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME);
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREF, DEFAULT_CA_NAME);
-		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
-		properties.setProperty("searchWindow", "1");
-		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREFTYPE, ProtectedLogConfiguration.CONFIG_TOKENREFTYPE_CANAME);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREF, DEFAULT_CA_NAME);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_SEARCHWINDOW, "1");
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, ProtectedLogDevice.DEFAULT_DEVICE_NAME);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Write an logevent and make sure it complains about an empty log
 		int messageCounter = 0;
@@ -94,10 +97,9 @@ public class TestProtectedLog extends TestCase {
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Test if log-freeze is detected
-		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties);
-		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, -1);
-		assertTrue(ERROR_FROZENLOG, IProtectedLogAction.CAUSE_FROZEN.equals(ProtectedLogTestAction.getLastActionCause()));
-		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, -1);
+		assertEquals(ERROR_FROZENLOG, IProtectedLogAction.CAUSE_FROZEN, ProtectedLogTestAction.getLastActionCause());
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Test if removed logevents are detected
 		long testTime1 = System.currentTimeMillis();
@@ -106,28 +108,25 @@ public class TestProtectedLog extends TestCase {
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertEquals(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
-		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
 		assertEquals(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
 		// Recover
-		TestTools.getProtectedLogSession().resetEntireLog(false, null);
+		TestTools.getProtectedLogSession().resetEntireLog(false);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 	}
 
 	/**
-	 * Test startup behaviour
+	 * Test startup behavior
 	 *  Start and stop node with none-token
 	 *  Start node with CAToken and sign unprotected chain.
 	 */
 	public void test02() throws Exception {
 		// Setup a protected log device
-		Properties properties = new Properties();
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
-		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
-		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREFTYPE, ProtectedLogConfiguration.CONFIG_TOKENREFTYPE_NONE);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, ProtectedLogDevice.DEFAULT_DEVICE_NAME);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties);
 		// Write an logevent and make sure it complains about an empty log
 		int messageCounter = 0;
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
@@ -137,29 +136,29 @@ public class TestProtectedLog extends TestCase {
 				LogConstants.EVENT_SYSTEM_STOPPED_LOGGING , "Terminating log session for this node.",null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Start new chain with CAName-token
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME);
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREF, DEFAULT_CA_NAME);
-		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREFTYPE, ProtectedLogConfiguration.CONFIG_TOKENREFTYPE_CANAME);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREF, DEFAULT_CA_NAME);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, ProtectedLogDevice.DEFAULT_DEVICE_NAME);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
-		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
 		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN, ProtectedLogTestAction.getLastActionCause());
 		// Sign unsigned chain so it can be linked in
-		TestTools.getProtectedLogSession().signAllUnsignedChains(false);
+		TestTools.getProtectedLogSession().signAllUnsignedChains(true);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		Thread.sleep(1100);	// By default it takes 1 second between searches new events from other nodes..
 		// And that event will be set 10 seconds in the future so we have to wait 10 more seconds or "cheat"
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(new Date().getTime()+10*1000), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Now try to remove the first chain and see if it will be detected
 		TestTools.getProtectedLogSession().removeNodeChain(TestTools.getProtectedLogSession().findOldestProtectedLogEventRow().getNodeGUID());
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		TestTools.getProtectedLogSession().verifyEntireLog(protectedLogActions, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
 		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
 	}
 
@@ -180,15 +179,12 @@ public class TestProtectedLog extends TestCase {
 			}
 		}
 		// Setup a protected log device
-		Properties properties = new Properties();
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME);
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREF, DEFAULT_CA_NAME);
-		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
-		properties.setProperty(ProtectedLogCMSExportHandler.CONF_EXPORTPATH, ProtectedLogTestAction.getTempDir() + logPrefix);
-		properties.setProperty(ProtectedLogCMSExportHandler.CONF_CANAME, DEFAULT_CA_NAME);
-		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREFTYPE, ProtectedLogConfiguration.CONFIG_TOKENREFTYPE_CANAME);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREF, DEFAULT_CA_NAME);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_CMS_EXPORTPATH, ProtectedLogTestAction.getTempDir() + logPrefix);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_CMS_CANAME, DEFAULT_CA_NAME);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, ProtectedLogDevice.DEFAULT_DEVICE_NAME);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties);
 		int messageCounter = 0;
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
@@ -229,7 +225,7 @@ public class TestProtectedLog extends TestCase {
 			}
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// Do export
-			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), properties, protectedLogActions, "SHA-256", false, 0);
+			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), ProtectedLogActions.ACTION_TEST, "SHA-256", false, 0);
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// See if any file was exported
 			File file = null;
@@ -255,7 +251,7 @@ public class TestProtectedLog extends TestCase {
 			}
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// Do export
-			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), properties, protectedLogActions, "SHA-256", false, 0);
+			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), ProtectedLogActions.ACTION_TEST, "SHA-256", false, 0);
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// See if any file was exported
 			file = null;
@@ -298,11 +294,9 @@ public class TestProtectedLog extends TestCase {
 	public void test04() throws Exception {
 		long now = System.currentTimeMillis();
 		// Setup a protected log device
-		Properties properties = new Properties();
-		properties.setProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
-		properties.setProperty(ProtectedLogActions.CONF_USE_TESTACTION, "true");
-		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, properties);
-		TestTools.getLogSession().setTestDeviceOnLogSession(ProtectedLogDeviceFactory.class, properties);
+		TestTools.getConfigurationSession().updateProperty(ProtectedLogConfiguration.CONFIG_TOKENREFTYPE, ProtectedLogConfiguration.CONFIG_TOKENREFTYPE_NONE);
+		TestTools.getLogSession().setTestDevice(ProtectedLogDeviceFactory.class, ProtectedLogDevice.DEFAULT_DEVICE_NAME);
+		TestTools.getLogSession().setTestDeviceOnLogSession(ProtectedLogDeviceFactory.class, ProtectedLogDevice.DEFAULT_DEVICE_NAME);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		try {
 			TestTools.getLogSession().testRollbackInternal(now);

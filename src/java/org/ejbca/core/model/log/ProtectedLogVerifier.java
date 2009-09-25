@@ -14,24 +14,21 @@
 package org.ejbca.core.model.log;
 
 import java.util.Date;
-import java.util.Properties;
 
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 
 /**
- * Thread-safe singleton that invokes fowards a request from the verification service.
+ * Thread-safe singleton that invokes forwards a request from the verification service.
  * @version $Id$  
  */
 public class ProtectedLogVerifier {
-
-	public static final String CONF_FREEZE_THRESHOLD = "verificationservice.freezetreshold";
-	public static final String DEFAULT_FREEZE_THRESHOLD = "60";
 
 	private IProtectedLogSessionLocal protectedLogSession = null;
 
@@ -42,41 +39,29 @@ public class ProtectedLogVerifier {
 	
 	private long timeOfLastExecution = 0;
 	private long lastKnownEventTime = 0;
-	private Properties properties = null;
 	private boolean isRunning = false;
 	private boolean isCanceled = false;
 	private boolean isCanceledPermanently = false;
-	long freezeThreshold = 0;
+	long freezeThreshold = ProtectedLogConfiguration.getVerifyFreezeThreshold();
 	long lastSuccessfulVerification = 0;
 
 	private ProtectedLogActions protectedLogActions = null;
 	
-	private ProtectedLogVerifier(Properties properties) {
-		this.properties = properties;
-		freezeThreshold = Long.parseLong(properties.getProperty(CONF_FREEZE_THRESHOLD, DEFAULT_FREEZE_THRESHOLD)) * 60 * 1000;
-		protectedLogActions = new ProtectedLogActions(properties);
+	private ProtectedLogVerifier() {
+		protectedLogActions = new ProtectedLogActions(ProtectedLogActions.ACTION_ALL);
 	}
 	
 	/**
 	 * Does not support update properties yet.
-	 * @param properties
 	 * @return
 	 */
-	public static ProtectedLogVerifier instance(Properties properties) {
+	public static ProtectedLogVerifier instance() {
 		if (instance == null) {
-			instance = new ProtectedLogVerifier(properties);
+			instance = new ProtectedLogVerifier();
 		}
 		return instance;
 	}
 	
-	/**
-	 * @param properties
-	 * @return null if not allocated.
-	 */
-	public static ProtectedLogVerifier instance() {
-		return instance;
-	}
-
 	private IProtectedLogSessionLocal getProtectedLogSession() {
 		try {
 			if (protectedLogSession == null) {
@@ -149,7 +134,7 @@ public class ProtectedLogVerifier {
 				// Verify that log hasn't been frozen for any node
 				// Verify that each protect operation had a valid certificate and is not about to expire without a valid replacement
 				try {
-					protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(protectedLogActions, freezeThreshold);	//verifyEntireLog();
+					protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_ALL, freezeThreshold);	//verifyEntireLog();
 					if (protectedLogEventIdentifier != null) {
 				    	log.error(intres.getLocalizedMessage("protectedlog.verifier.failed", protectedLogEventIdentifier.getNodeGUID(),
 				    			protectedLogEventIdentifier.getCounter()));
@@ -180,7 +165,7 @@ public class ProtectedLogVerifier {
 	 */
 	private ProtectedLogEventIdentifier verifyLastEvent() {
 		log.trace(">verifyLastEvent");
-		ProtectedLogActions protectedLogActions = new ProtectedLogActions(properties); 
+		ProtectedLogActions protectedLogActions = new ProtectedLogActions(ProtectedLogActions.ACTION_ALL); 
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow();
 		// Is log empy?
 		if (protectedLogEventIdentifier == null) {

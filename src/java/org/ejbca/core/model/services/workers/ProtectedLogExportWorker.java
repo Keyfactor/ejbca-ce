@@ -28,12 +28,10 @@ public class ProtectedLogExportWorker extends BaseWorker {
 	private static final Logger log = Logger.getLogger(ProtectedLogExportWorker.class);
 	
 	public static final String DEFAULT_SERVICE_NAME = "__ProtectedLogExportService__";
-	public static final String CONF_EXPORT_INTERVAL = "exportservice.invokationinterval";
-	public static final String DEFAULT_EXPORT_INTERVAL = "1440";
 
 	public void work() throws ServiceExecutionFailedException {
 		log.trace(">ProtectedLogExportWorker.work");
-		ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance(properties);
+		ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
 		protectedLogExporter.runIfNotBusy();
 		log.trace("<ProtectedLogExportWorker done");
 	}

@@ -13,7 +13,6 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
@@ -28,10 +27,6 @@ public class ProtectedLogShutDownAction implements IProtectedLogAction, Serializ
 
     private static final Logger log = Logger.getLogger(ProtectedLogScriptAction.class);
     private static final InternalResources intres = InternalResources.getInstance();
-
-	public ProtectedLogShutDownAction(Properties properties) {
-		// Constructor is used but does nothing.
-	}
 
 	/**
 	 * @see org.ejbca.core.model.log.IProtectedLogAction

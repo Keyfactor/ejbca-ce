@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
@@ -20,7 +21,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Properties;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -28,6 +28,7 @@ import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.OldLogConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -51,7 +52,7 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
 /**
- * Implements a log device using the old logging system, implementes the Singleton pattern.
+ * Implements a log device using the old logging system, implements the Singleton pattern.
  * @version $Id$
  */
 public class OldLogDevice implements ILogDevice, Serializable {
@@ -79,7 +80,6 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 * A handle to the unique Singleton instance.
 	 */
 	private static ILogDevice instance;
-	private Properties properties;
 
     /** Columns in the database used in select */
     private final String LOGENTRYDATA_TABLE = "LogEntryData";
@@ -90,35 +90,27 @@ public class OldLogDevice implements ILogDevice, Serializable {
     private final String LOGENTRYDATA_COL_COMMENT_OLD = "comment";
     private final String LOGENTRYDATA_COL_COMMENT_ORA = "comment_";
 
-    //private static final String LOGSIGNING_PROPERTIES = "java:comp/env/logSigning";
-    private static final String LOGSIGNING_PROPERTIES = "logSigning";
-    
     private String deviceName = null;
 
     /** If signing of logs is enabled of not, default not */
-    private boolean logsigning = false;
+    private boolean logsigning = OldLogConfiguration.getLogSigning();
 
     /**
-	 * Initializes all internal data
-	 *
-	 * @param prop Arguments needed for the eventual creation of the object
+	 * Initializes
 	 */
-	protected OldLogDevice(Properties properties) throws Exception {
-		resetDevice(properties);
+	protected OldLogDevice(String name) throws Exception {
+		resetDevice(name);
 	}
 
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public void resetDevice(Properties properties) {
-		this.properties = properties;
-		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
+	public void resetDevice(String name) {
+		deviceName = name;
         logconfigurationhome = (LogConfigurationDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogConfigurationDataLocalHome.COMP_NAME);
         logentryhome = (LogEntryDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogEntryDataLocalHome.COMP_NAME);
         signsessionhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-        String sign = properties.getProperty(LOGSIGNING_PROPERTIES);
-        if (StringUtils.equalsIgnoreCase(sign, "true")) {
-        	logsigning = true;
+        if (logsigning) {
         	protecthome = (TableProtectSessionLocalHome) ServiceLocator.getInstance().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
         }
 	}
@@ -129,9 +121,9 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 * @param prop Arguments needed for the eventual creation of the object
 	 * @return An instance of the log device.
 	 */
-	public static synchronized ILogDevice instance(Properties prop) throws Exception {
+	public static synchronized ILogDevice instance(String name) throws Exception {
 		if (instance == null) {
-			instance = new OldLogDevice(prop);
+			instance = new OldLogDevice(name);
 		}
 		return instance;
 	}
@@ -173,13 +165,6 @@ public class OldLogDevice implements ILogDevice, Serializable {
     		}
     	}while(!successfulLog && tries < 3);
     }
-
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public Properties getProperties() {
-		return properties;
-	}
 
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice

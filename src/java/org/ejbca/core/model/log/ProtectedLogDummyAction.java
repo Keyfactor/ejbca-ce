@@ -13,7 +13,6 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 /**
  * Dummy implementation. This is the simplest possible (and most useless) implementation.
@@ -22,10 +21,6 @@ import java.util.Properties;
 public class ProtectedLogDummyAction implements IProtectedLogAction, Serializable {
 
 	private static final long serialVersionUID = -7056505975194222537L;
-
-	public ProtectedLogDummyAction(Properties properties) {
-		// This constructor is used by ProtectedLogActions
-	}
 
 	/**
 	 * @see org.ejbca.core.model.log.IProtectedLogAction

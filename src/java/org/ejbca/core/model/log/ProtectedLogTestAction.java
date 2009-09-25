@@ -19,7 +19,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -33,10 +32,6 @@ public class ProtectedLogTestAction implements IProtectedLogAction, Serializable
 
     private static final Logger log = Logger.getLogger(ProtectedLogTestAction.class);
 
-	public ProtectedLogTestAction(Properties properties) {
-		// Constructor is used, but does nothing.
-	}
-	
 	/**
 	 * @see org.ejbca.core.model.log.IProtectedLogAction
 	 */

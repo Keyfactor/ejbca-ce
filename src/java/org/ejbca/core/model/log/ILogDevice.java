@@ -89,11 +89,6 @@ public interface ILogDevice extends Serializable {
 	public boolean getAllowConfigurableEvents();
 
 	/**
-	 * @return the properties used by this LogDevice.
-	 */
-	public Properties getProperties();
-	
-	/**
 	 * @return the name the device
 	 */
 	public String getDeviceName();
@@ -101,6 +96,6 @@ public interface ILogDevice extends Serializable {
 	/**
 	 * Resets the status of the device. Used externally for testing.
 	 */
-	public void resetDevice(Properties properties);
+	public void resetDevice(String name);
 
 }

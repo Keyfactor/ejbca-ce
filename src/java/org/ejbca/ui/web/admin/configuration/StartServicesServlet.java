@@ -36,6 +36,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.LogConfiguration;
+import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
@@ -292,32 +294,29 @@ public class StartServicesServlet extends HttpServlet {
 
         log.trace(">init ProtectedLogVerificationService is configured");
         try {
-        	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
-        	if (logProperties != null) {
-        		if (logProperties.getProperty("verificationservice.active", "false").equalsIgnoreCase("true")) {
-        			// Add or update service from configuration
-        			ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        			serviceConfiguration.setWorkerClassPath(ProtectedLogVerificationWorker.class.getName());
-        			serviceConfiguration.setActionClassPath(NoAction.class.getName());
-        			Properties intervalProperties = new Properties();
-        			intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
-        			intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, logProperties.getProperty(ProtectedLogVerificationWorker.CONF_VERIFICATION_INTERVAL,
-        					ProtectedLogVerificationWorker.DEFAULT_VERIFICATION_INTERVAL));
-        			serviceConfiguration.setIntervalProperties(intervalProperties);
-        			serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
-        			serviceConfiguration.setActive(true);
-        			serviceConfiguration.setHidden(true);
-        			serviceConfiguration.setWorkerProperties(logProperties);
-        			if (getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
-        				getServiceSession().changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
-        			} else {
-        				getServiceSession().addService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
-        			}
+        	LogConfiguration.getUsedLogDevices();	// Ensures that all properties has been loaded
+        	if (ProtectedLogConfiguration.getVerificationServiceActive()) {
+        		log.debug("Activating ProtectedLog's verification service.");
+        		// Add or update service from configuration
+        		ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+        		serviceConfiguration.setWorkerClassPath(ProtectedLogVerificationWorker.class.getName());
+        		serviceConfiguration.setActionClassPath(NoAction.class.getName());
+        		Properties intervalProperties = new Properties();
+        		intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
+        		intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, ProtectedLogConfiguration.getVerificationServiceInterval());
+        		serviceConfiguration.setIntervalProperties(intervalProperties);
+        		serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
+        		serviceConfiguration.setActive(true);
+        		serviceConfiguration.setHidden(true);
+        		if (getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
+        			getServiceSession().changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
         		} else {
-        			// Remove if existing
-        			if (getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
-        				getServiceSession().removeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
-        			}
+        			getServiceSession().addService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        		}
+        	} else {
+        		// Remove if existing
+        		if (getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
+        			getServiceSession().removeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
         		}
         	}
 		} catch (ServiceExistsException e) {
@@ -328,32 +327,28 @@ public class StartServicesServlet extends HttpServlet {
 
         log.trace(">init ProtectedLogExportService is configured");
         try {
-        	Properties logProperties = getLogSession().getProperties(ProtectedLogDevice.class);
-        	if (logProperties != null) {
-        		if (logProperties.getProperty("exportservice.active", "false").equalsIgnoreCase("true")) {
-        			// Add or update service from configuration
-        			ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        			serviceConfiguration.setWorkerClassPath(ProtectedLogExportWorker.class.getName());
-        			serviceConfiguration.setActionClassPath(NoAction.class.getName());
-        			Properties intervalProperties = new Properties();
-        			intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
-        			intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, logProperties.getProperty(ProtectedLogExportWorker.CONF_EXPORT_INTERVAL,
-        					ProtectedLogExportWorker.DEFAULT_EXPORT_INTERVAL));
-        			serviceConfiguration.setIntervalProperties(intervalProperties);
-        			serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
-        			serviceConfiguration.setActive(true);
-        			serviceConfiguration.setHidden(true);
-        			serviceConfiguration.setWorkerProperties(logProperties);
-        			if (getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
-        				getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
-        			} else {
-        				getServiceSession().addService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
-        			}
+        	if (ProtectedLogConfiguration.getExportServiceActive()) {
+        		log.debug("Activating ProtectedLog's export service.");
+        		// Add or update service from configuration
+        		ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+        		serviceConfiguration.setWorkerClassPath(ProtectedLogExportWorker.class.getName());
+        		serviceConfiguration.setActionClassPath(NoAction.class.getName());
+        		Properties intervalProperties = new Properties();
+        		intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
+        		intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, ProtectedLogConfiguration.getExportServiceInterval());
+        		serviceConfiguration.setIntervalProperties(intervalProperties);
+        		serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
+        		serviceConfiguration.setActive(true);
+        		serviceConfiguration.setHidden(true);
+        		if (getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
+        			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
         		} else {
-        			// Remove if existing
-        			if (getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
-        				getServiceSession().removeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
-        			}
+        			getServiceSession().addService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        		}
+        	} else {
+        		// Remove if existing
+        		if (getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
+        			getServiceSession().removeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
         		}
         	}
 		} catch (ServiceExistsException e) {

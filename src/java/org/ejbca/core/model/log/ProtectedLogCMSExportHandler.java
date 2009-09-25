@@ -18,11 +18,11 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Properties;
 
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
@@ -38,9 +38,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
  */
 public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler, Serializable {
 
-	public static final String CONF_EXPORTPATH	= "cmsexport.fullpath";
-	public static final String CONF_CANAME			= "cmsexport.caname";
-	
 	private static final Logger log = Logger.getLogger(ProtectedLogCMSExportHandler.class);
 
 	private static Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -77,14 +74,11 @@ public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler,
 	/**
 	 * @see org.ejbca.core.model.log.IProtectedLogExportHandler
 	 */
-	public void init(Properties properties, long exportEndTime, long exportStartTime, boolean forced) {
-		if (properties == null) {
-			properties = new Properties();
-		}
-		String exportPath = properties.getProperty(CONF_EXPORTPATH, "");
+	public void init(long exportEndTime, long exportStartTime, boolean forced) {
+		String exportPath = ProtectedLogConfiguration.getCMSExportPath();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS");
 		filename = exportPath + sdf.format(new Date(exportEndTime)) + (forced ? ".FORCED" : "")+".p7m";
-		String exportingCA = properties.getProperty(CONF_CANAME, "AdminCA1");
+		String exportingCA = ProtectedLogConfiguration.getCMSCaName();
 		CAInfo caInfo = getCAAdminSession().getCAInfo(internalAdmin, exportingCA);
 		if (caInfo != null) {
 			exportingCAId = caInfo.getCAId();

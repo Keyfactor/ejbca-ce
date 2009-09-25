@@ -11,29 +11,14 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.model.log;
+package org.ejbca.config;
 
+public class OldLogConfiguration {
 
-
-/**
- * Factory for Log4j log device.
- *
- * @version $Id$
- */
-public class Log4jLogDeviceFactory {
-    /**
-     * Creates a new Log4jLogDeviceFactory object.
-     */
-    public Log4jLogDeviceFactory() {
-    }
-
-    /**
-     * Creates (if needed) the log device and returns the object.
-     *
-     * @return An instance of the log device.
-     */
-    public synchronized ILogDevice makeInstance(String name)
-            throws Exception {
-        return Log4jLogDevice.instance(name);
-    }
+	/**
+	 * Use simple log singing
+	 */
+	public static boolean getLogSigning() {
+		return "true".equalsIgnoreCase(ConfigurationHolder.getString("logSigning", "false"));
+	}
 }

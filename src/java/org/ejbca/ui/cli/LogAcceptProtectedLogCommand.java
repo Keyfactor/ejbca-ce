@@ -42,7 +42,7 @@ public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
 			"specifying a nodeGUID can be used if you have a specific failing nodeGUID that you want to link in.\n";
 			throw new IllegalAdminCommandException(msg);
 		}
-		boolean all = "frozen".equalsIgnoreCase(args[1]);
+		boolean all = !"frozen".equalsIgnoreCase(args[1]);
 		Integer nodeGUID = 0;
 		try {
 			nodeGUID = Integer.valueOf(args[1]);			

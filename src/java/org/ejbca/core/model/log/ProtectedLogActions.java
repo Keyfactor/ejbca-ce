@@ -15,9 +15,9 @@ package org.ejbca.core.model.log;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectedLogConfiguration;
 
 /**
  * Invokes configured actions.
@@ -29,32 +29,49 @@ public class ProtectedLogActions implements Serializable {
 
     private static final Logger log = Logger.getLogger(ProtectedLogActions.class);
 
-	public final static String CONF_USE_TESTACTION = "useTestAction";
-	
-	private ArrayList actions = new ArrayList();	// <IProtectedLogAction>
+	public static final int ACTION_NONE = 0;
+	public static final int ACTION_TEST = 1;
+	public static final int ACTION_ALL  = 2;
 
-	public ProtectedLogActions(Properties properties) {
-		if (properties != null) {
-			// Setup Action classes.
-			if (properties.getProperty("useDummyAction", "false").equalsIgnoreCase("true")) {
-				log.debug("adding DummyAction");
-				actions.add(new ProtectedLogDummyAction(properties));
-			}
-			if (properties.getProperty("useScriptAction", "false").equalsIgnoreCase("true")) {
-				log.debug("adding ScriptAction");
-				actions.add(new ProtectedLogScriptAction(properties));
-			}
-			if (properties.getProperty("useMailAction", "false").equalsIgnoreCase("true")) {
-				log.debug("adding MailAction");
-				actions.add(new ProtectedLogMailAction(properties));
-			}
-			if (properties.getProperty("useShutDownAction", "false").equalsIgnoreCase("true")) {
-				log.debug("adding ShutDownAction");
-				actions.add(new ProtectedLogShutDownAction(properties));
-			}
-			if (properties.getProperty(CONF_USE_TESTACTION, "false").equalsIgnoreCase("true")) {
-				log.debug("adding TestAction");
-				actions.add(new ProtectedLogTestAction(properties));
+	private ArrayList actions = null;	// <IProtectedLogAction>
+	
+	private ProtectedLogActions() {}
+
+	/**
+	 * @param enableActions will load actions based on current configuration if true
+	 */
+	public ProtectedLogActions(int actionType) {
+		if (actions == null) {
+			actions = new ArrayList();	
+			switch (actionType) {
+			case ACTION_TEST:
+				actions.add(new ProtectedLogTestAction());
+				break;
+			case ACTION_ALL:
+				if (ProtectedLogConfiguration.getUseDummyAction()) {
+					log.debug("adding DummyAction");
+					actions.add(new ProtectedLogDummyAction());
+				}
+				if (ProtectedLogConfiguration.getUseScriptAction()) {
+					log.debug("adding ScriptAction");
+					actions.add(new ProtectedLogScriptAction());
+				}
+				if (ProtectedLogConfiguration.getUseMailAction()) {
+					log.debug("adding MailAction");
+					actions.add(new ProtectedLogMailAction());
+				}
+				if (ProtectedLogConfiguration.getUseShutDownAction()) {
+					log.debug("adding ShutDownAction");
+					actions.add(new ProtectedLogShutDownAction());
+				}
+				if (ProtectedLogConfiguration.getUseTestAction()) {
+					log.debug("adding TestAction");
+					actions.add(new ProtectedLogTestAction());
+				}
+				break;
+			case ACTION_NONE:
+			default:
+				break;
 			}
 		}
 	}

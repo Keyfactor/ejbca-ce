@@ -36,7 +36,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import javax.crypto.SecretKey;
 import javax.ejb.CreateException;
@@ -46,6 +45,7 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -68,7 +68,6 @@ import org.ejbca.core.model.log.IProtectedLogExportHandler;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.log.ProtectedLogActions;
-import org.ejbca.core.model.log.ProtectedLogCMSExportHandler;
 import org.ejbca.core.model.log.ProtectedLogDevice;
 import org.ejbca.core.model.log.ProtectedLogDummyExportHandler;
 import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
@@ -86,6 +85,7 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.ManualUpdateCache;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.TCPTool;
 
 /**
  * The center of the Protected Log functionality. Most services used in this workflow are found here.
@@ -1340,8 +1340,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
      *
 	 * @ejb.interface-method view-type="both"
 	 */
-	public ProtectedLogEventIdentifier verifyEntireLog(ProtectedLogActions protectedLogActions, long freezeThreshold) {
+	public ProtectedLogEventIdentifier verifyEntireLog(int actionType, long freezeThreshold) {
 		log.trace(">verifyEntireLog");
+		ProtectedLogActions protectedLogActions = new ProtectedLogActions(actionType);
 		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
 		ArrayList newestProtectedLogEventRows =new ArrayList();	//<ProtectedLogEventRow>
 		ArrayList knownNodeGUIDs =new ArrayList();	//<Integer>
@@ -1621,14 +1622,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		log.trace(">getProtectedLogToken");
 		ProtectedLogToken protectedLogToken = null;
 		try {
-			final Properties properties = ProtectedLogDevice.getPropertiesFromInstance();
 			// Get ProtectedLogToken from configuration data
-			final String protectionTokenReferenceType = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREFTYPE, ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE);
-			final String protectionTokenReference = properties.getProperty(ProtectedLogDevice.CONFIG_TOKENREF, "AdminCA1");
-			final String protectionTokenKeyStoreAlias = properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREALIAS, "defaultKey");
-			final String protectionTokenKeyStorePassword = StringTools.passwordDecryption(properties.getProperty(ProtectedLogDevice.CONFIG_KEYSTOREPASSWORD, "foo123"),ProtectedLogDevice.CONFIG_KEYSTOREPASSWORD);
+			final int protectionTokenReferenceType = ProtectedLogConfiguration.getProtectionTokenReferenceType();
+			final String protectionTokenReference = ProtectedLogConfiguration.getTokenReference();
+			final String protectionTokenKeyStoreAlias = ProtectedLogConfiguration.getKeyStoreAlias();
+			final String protectionTokenKeyStorePassword = StringTools.passwordDecryption(ProtectedLogConfiguration.getKeyStorePassword(),ProtectedLogConfiguration.CONFIG_KEYSTOREPASSWORD);
 			Certificate protectedLogTokenCertificate = null;
-			if ( ProtectedLogDevice.CONFIG_TOKENREFTYPE_CANAME.equalsIgnoreCase(protectionTokenReferenceType) ) {
+			if (protectionTokenReferenceType == ProtectedLogConfiguration.TOKENREFTYPE_CANAME) {
 				// Use a CA as token
 				CAInfo caInfo = getCAAdminSession().getCAInfo(internalAdmin, protectionTokenReference);
 				if (caInfo == null) {
@@ -1639,18 +1639,18 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					protectedLogTokenCertificate = (Certificate) caInfo.getCertificateChain().iterator().next();
 					protectedLogToken = new ProtectedLogToken(caInfo.getCAId(), protectedLogTokenCertificate);
 				}
-			} else if (ProtectedLogDevice.CONFIG_TOKENREFTYPE_NONE.equalsIgnoreCase(protectionTokenReferenceType)) {
+			} else if (protectionTokenReferenceType == ProtectedLogConfiguration.TOKENREFTYPE_NONE) {
 				// This is the default key used during startup. It can't sign or verify anything.
 				protectedLogToken = new ProtectedLogToken();
-			} else if (ProtectedLogDevice.CONFIG_TOKENREFTYPE_DATABASE.equalsIgnoreCase(protectionTokenReferenceType)) {
+			} else if (protectionTokenReferenceType == ProtectedLogConfiguration.TOKENREFTYPE_DATABASE) {
 				// protectionTokenReference contains token id i database
 				protectedLogToken = getToken(Integer.parseInt(protectionTokenReference, 10));
 			} else {
 				InputStream is = null;
-				if (ProtectedLogDevice.CONFIG_TOKENREFTYPE_URI.equalsIgnoreCase(protectionTokenReferenceType)) {
+				if (protectionTokenReferenceType == ProtectedLogConfiguration.TOKENREFTYPE_URI) {
 					// Use a URI as token
 					is = (new URI(protectionTokenReference)).toURL().openStream();
-				} else if (ProtectedLogDevice.CONFIG_TOKENREFTYPE_CONFIG.equalsIgnoreCase(protectionTokenReferenceType)) {
+				} else if (protectionTokenReferenceType == ProtectedLogConfiguration.TOKENREFTYPE_CONFIG) {
 					// protectionTokenReference contains b64encoded JKS
 					is = new ByteArrayInputStream(Base64.decode(protectionTokenReference.getBytes()));
 				}
@@ -1687,7 +1687,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 
 	/**
 	 * Insert a new signed stop event for each unsigned node-chain in a "near future" and let the real node chain in these events..
-	 * @param signAll is true if chains that are previously signed should be signed too.
+	 * @param signAll is true if all unprotected chains should be signed, not just frozen ones
 	 * 
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
@@ -1696,7 +1696,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		log.trace(">signAllUnsignedChains: "+signAll);
 		// Find last unsigned event for all nodes, sorted by time, oldest first
 		Integer[] nodeGUIDs = null;
-		if (signAll) {
+		if (!signAll) {
 			// Add protection to chains that have frozen
 			Integer[] allNodeGUIDs = getNodeGUIDs(0, new Date().getTime());
 			ArrayList nodeGUIDsArray = new ArrayList();
@@ -1731,7 +1731,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		Iterator i = unsignedNodeGUIDs.iterator();
 		while (i.hasNext()) {
 			Integer nodeGUID = (Integer) i.next();
-			if (signUnsignedChain( newestProtectedLogEventRow, nodeGUID)) {
+			if (!signUnsignedChain( newestProtectedLogEventRow, nodeGUID)) {
 				return false;
 			}
 		}
@@ -1782,7 +1782,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		}
 		messageDigest.update(currentProtectedLogEventRow.calculateHash());
 		byte[] linkedInEventsHash = messageDigest.digest();
-		String nodeIP = ProtectedLogDevice.getNodeIP();
+		String nodeIP = ProtectedLogConfiguration.getNodeIp(TCPTool.getNodeIP());
 		ProtectedLogEventRow newProtectedLogEventRow = new ProtectedLogEventRow(Admin.TYPE_INTERNALUSER, null, 0, LogConstants.MODULE_LOG,
 				(new Date().getTime()+10000), null, null, null, LogConstants.EVENT_SYSTEM_STOPPED_LOGGING, "Node-chain was accepted by CLI.",
 				new ProtectedLogEventIdentifier(currentProtectedLogEventIdentifier.getNodeGUID(), currentProtectedLogEventIdentifier.getCounter()+1),
@@ -1802,28 +1802,26 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
-	public boolean resetEntireLog(boolean export, Properties exportHandlerProperties) {
+	public boolean resetEntireLog(boolean export) {
 		log.trace(">resetEntireLog");
 		// Start by disabling services
 		if (!stopServices()) {
 			return false;
 		}
-		if (exportHandlerProperties == null) {
-			exportHandlerProperties = new Properties();
-		}
 		try {
 			IProtectedLogExportHandler protectedLogExportHandler = null;
 			try {
-				if (!export) {
-					exportHandlerProperties.setProperty(ProtectedLogExporter.CONF_EXPORT_HANDLER, ProtectedLogDummyExportHandler.class.getName());
+				if (export) {
+					Class implClass = Class.forName(ProtectedLogConfiguration.getExportHandlerClassName());
+					protectedLogExportHandler = (IProtectedLogExportHandler) implClass.newInstance();
+				} else {
+					protectedLogExportHandler = new ProtectedLogDummyExportHandler();
 				}
-				Class implClass = Class.forName(exportHandlerProperties.getProperty(ProtectedLogExporter.CONF_EXPORT_HANDLER, ProtectedLogCMSExportHandler.class.getName()).trim());
-				protectedLogExportHandler =(IProtectedLogExportHandler) implClass.newInstance();
 			} catch (Exception e1) {
 				log.error("", e1);
 				return false;
 			}
-			String currentHashAlgorithm = exportHandlerProperties.getProperty("exportservice.hashAlgorithm", "SHA-256");
+			String currentHashAlgorithm = ProtectedLogConfiguration.getExportHashAlgorithm();
 			// Nuke export table
 			if (!removeAllExports(true)) {
 				return false;
@@ -1837,7 +1835,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			long exportEndTime = lastProtectedLogEventRow.getEventTime();
 			long exportStartTime = 0;
 			try {
-				protectedLogExportHandler.init(exportHandlerProperties, exportEndTime, exportStartTime, true); 
+				protectedLogExportHandler.init(exportEndTime, exportStartTime, true); 
 				ProtectedLogExportRow protectedLogExportRow = getLastSignedExport();
 				// Process all LogEventRows in the timespan chronologically, oldest first
 				// By sorting for newest first caching would be easier, but that would result in exported files with newest event first
@@ -1996,9 +1994,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="NotSupported"
 	 */
-	public boolean exportLog(IProtectedLogExportHandler protectedLogExportHandler, Properties exportHandlerProperties,
-			ProtectedLogActions protectedLogActions, String currentHashAlgorithm, boolean deleteAfterExport, long atLeastThisOld) {
+	public boolean exportLog(IProtectedLogExportHandler protectedLogExportHandler,
+			int actionType, String currentHashAlgorithm, boolean deleteAfterExport, long atLeastThisOld) {
 		log.trace(">exportLog");
+		ProtectedLogActions protectedLogActions = new ProtectedLogActions(actionType);
 		ProtectedLogExportRow reservedProtectedLogExportRow = reserveExport(atLeastThisOld);
 		if (reservedProtectedLogExportRow == null) {
 			return false;
@@ -2009,7 +2008,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
 		boolean success = false;
 		try {
-			protectedLogExportHandler.init(exportHandlerProperties, exportEndTime, exportStartTime, false); 
+			protectedLogExportHandler.init(exportEndTime, exportStartTime, false); 
 			ProtectedLogExportRow protectedLogExportRow = getLastSignedExport();
 			// Process all LogEventRows in the timespan chronologically, oldest first
 			// By sorting for newest first caching would be easier, but that would result in exported files with newest event first

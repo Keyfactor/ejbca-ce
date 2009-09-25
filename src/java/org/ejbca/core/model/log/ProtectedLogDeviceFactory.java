@@ -30,12 +30,10 @@ public class ProtectedLogDeviceFactory {
     /**
      * Creates (if needed) the log device and returns the object.
      *
-     * @param prop Arguments needed for the eventual creation of the object
-     *
      * @return An instance of the log device.
      */
-    public synchronized ILogDevice makeInstance(Properties prop) throws Exception {
-        return ProtectedLogDevice.instance(prop);
+    public synchronized ILogDevice makeInstance(String name) throws Exception {
+        return ProtectedLogDevice.instance(name);
     }
 }
 

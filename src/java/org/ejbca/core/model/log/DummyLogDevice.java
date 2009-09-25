@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Properties;
 
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -26,7 +25,7 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
 /**
- * The dummy logging device. This does absolutely nothing and is just here for other developers to steal.. =)
+ * The dummy logging device. This does absolutely nothing and is just here for other developers to borrow.. =)
  * @version $Id$
  */
 public class DummyLogDevice implements ILogDevice, Serializable {
@@ -34,20 +33,18 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 	public final static String DEFAULT_DEVICE_NAME = "DummyLogDevice";
 
 	private static DummyLogDevice instance;
-	private Properties properties;
 	
 	private String deviceName = null;
 
-	protected DummyLogDevice(Properties properties) throws Exception {
-		resetDevice(properties);
+	protected DummyLogDevice(String name) throws Exception {
+		resetDevice(name);
 	}
 	
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public void resetDevice(Properties properties) {
-		this.properties = properties;
-		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
+	public void resetDevice(String name) {
+		deviceName = name;
 	}
 
 	/**
@@ -56,9 +53,9 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 	 * @param prop Arguments needed for the eventual creation of the object
 	 * @return An instance of the log device.
 	 */
-	public static synchronized ILogDevice instance(Properties prop) throws Exception {
+	public static synchronized ILogDevice instance(String name) throws Exception {
 		if (instance == null) {
-			instance = new DummyLogDevice(prop);
+			instance = new DummyLogDevice(name);
 		}
 		return instance;
 	}
@@ -68,13 +65,6 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 	 */
 	public String getDeviceName() {
 		return deviceName;
-	}
-	
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public Properties getProperties() {
-		return properties;
 	}
 	
 	/**

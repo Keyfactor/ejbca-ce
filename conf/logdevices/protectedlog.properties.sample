@@ -14,6 +14,7 @@
 #  5. Start EJBCA
 #  6. Run the ejbca CLI, "bin/ejbca.sh log accept all" or
 #     "bin\ejbca.cmd log accept all"
+#  7. Wait for a couple of minutes before you try to verify the log.
 #
 
 # protectionToken is the key used to protect log-rows in the database, the
@@ -35,7 +36,7 @@
 #protectionTokenReference=file:///home/ejbca/ejbca/keystorefile.jks
 
 # The keystore alias (only used for the URI keystore type)
-#protectionTokenKeyStoreAlias=logsigner
+#protectionTokenKeyStoreAlias=defaultKey
 
 # The keystore password (only used for the URI keystore type)
 #protectionTokenKeyStorePassword=foo123
@@ -98,11 +99,11 @@
 #verificationservice.active=false
 
 # How often the service should be started, minutes
-#verificationservice.invokationinterval=1
+#verificationservice.invokationinterval=120
 
 # If nothing is written to the log for this long, the log is considered to be
 # frozen, minutes
-#verificationservice.freezetreshold=60
+#verificationservice.freezetreshold=180
 
 #
 # Export Service
@@ -132,7 +133,7 @@
 #exportservice.deleteafterexport=true
 
 # Only export events that are older than this, minutes
-#  This feature only makes sence if you are deleting the events at the same
+#  This feature only makes sense if you are deleting the events at the same
 #  time.
 #  Default is "0".
 #exportservice.exportolderthan=60         # 1 hour
@@ -163,7 +164,7 @@
 #  be used. None is activated by default.
 #
  
-# MailAction sends emails to the listed addresses for tampering events. The account-properties from mail.properties are used.
+# MailAction sends an email to the listed addresses for each tampering event. The account-properties from mail.properties are used.
 #useMailAction=false
 #mailAction.senderAddress=no-reply-ca@company.com
 #mailAction.emailAddresses=address1@company.com;address2@company.com

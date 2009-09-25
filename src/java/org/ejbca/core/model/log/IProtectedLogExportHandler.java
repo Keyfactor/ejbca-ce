@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.log;
 
-import java.util.Properties;
 
 /**
  * An export handler is invoked when the export service s run.
@@ -30,7 +29,7 @@ public interface IProtectedLogExportHandler {
 	 * @param exportStartTime the time of the oldest event that will be included in the export
 	 * @param forced is true if this is a recovery export and that the events are not verified
 	 */
-	void init(Properties properties, long exportEndTime, long exportStartTime, boolean forced);
+	void init(long exportEndTime, long exportStartTime, boolean forced);
 	
 	/**
 	 * Called once for each verified log-event. 

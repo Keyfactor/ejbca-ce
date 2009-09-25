@@ -14,7 +14,6 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -26,7 +25,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,6 +32,7 @@ import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
@@ -47,33 +46,12 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
 /**
- * Implements a log device using a protected log. Implementes the Singleton pattern.
+ * Implements a log device using a protected log. Implements the Singleton pattern.
  * @version $Id$
  */
 public class ProtectedLogDevice implements ILogDevice, Serializable {
 
-	public final static String CONFIG_TOKENREFTYPE						= "protectionTokenReferenceType";
-	public final static String CONFIG_TOKENREFTYPE_CANAME		= "CAName"; 
-	public final static String CONFIG_TOKENREFTYPE_URI				= "URI"; 
-	public final static String CONFIG_TOKENREFTYPE_NONE			= "none"; 
-	public final static String CONFIG_TOKENREFTYPE_DATABASE	= "StoredInDatabase"; 
-	public final static String CONFIG_TOKENREFTYPE_CONFIG		= "Base64EncodedConfig"; 
-
-	public final static String CONFIG_TOKENREF								= "protectionTokenReference";
-	public final static String CONFIG_KEYSTOREALIAS					= "protectionTokenKeyStoreAlias";
-	public final static String CONFIG_KEYSTOREPASSWORD			= "protectionTokenKeyStorePassword";
-	public final static String CONFIG_HASHALGO							= "protectionHashAlgorithm";
-	public final static String CONFIG_NODEIP									= "nodeIP";
-	public final static String CONFIG_PROTECTION_INTENSITY		= "protectionIntensity";
-	public final static String CONFIG_MAX_VERIFICATION_STEPS	= "maxVerificationsSteps";
-	public final static String CONFIG_ALLOW_EVENTSCONFIG		= "allowConfigurableEvents";
-	public final static String CONFIG_LINKIN_INTENSITY					= "linkinIntensity";
-	public final static String CONFIG_VERIFYOWN_INTENSITY			= "verifyownIntensity";
-	public final static String CONFIG_SEARCHWINDOW                    = "searchWindow";
-	
-	public final static String DEFAULT_NODEIP								= "127.0.0.1";
-	public final static String DEFAULT_DEVICE_NAME						= "ProtectedLogDevice";
-	public final static String DEFAULT_MAX_VERIFICATION_STEPS	= "0";
+	public final static String DEFAULT_DEVICE_NAME = "ProtectedLogDevice";
 	
 	private static final Logger log = Logger.getLogger(ProtectedLogDevice.class);
     private static final InternalResources intres = InternalResources.getInstance();
@@ -91,7 +69,6 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private ReentrantLock fairLock;
 	private boolean isDestructorInvoked;
 	private boolean systemShutdownNotice;
-	private Properties properties;
 	private int nodeGUID;
 	private long counter;
 	private long protectedCounter;
@@ -112,18 +89,15 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private long intensityOfSearchForOwnLogEvent;
 	private long searchWindow;
 	
-	protected ProtectedLogDevice(Properties properties) throws Exception {
+	protected ProtectedLogDevice(String name) throws Exception {
 		fairLock = new ReentrantLock(true);		// Create a fair lock.
-		resetDevice(properties);
+		resetDevice(name);
 	}
 	
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public void resetDevice(Properties properties) {
-		if (log.isDebugEnabled()) {
-			log.debug("ProtectedLog properties: "+properties);
-		}
+	public void resetDevice(String name) {
 		// Init of local variables
 		isDestructorInvoked = false;
 		systemShutdownNotice = false;
@@ -136,31 +110,30 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		lastTimeOfSearchForLogEvents = 0;
 		lastTimeOfSearchForOwnLogEvent = 0;
 		// Init depending on properties
-		this.properties = properties;
-		deviceName = properties.getProperty(ILogDevice.PROPERTY_DEVICENAME, DEFAULT_DEVICE_NAME);
-		nodeIP = getNodeIP(properties); // the instance is not set yet so getInxtenceProperties will not work.
+		deviceName = name;
+		nodeIP = ProtectedLogConfiguration.getNodeIp("127.0.0.1"); // the instance is not set yet so getInxtenceProperties will not work.
 		nodeGUID = seeder.nextInt();
 		if (log.isDebugEnabled()) {
 			log.debug("This node with ip "+nodeIP+" uses node GUID: "+nodeGUID);
 		}
 		counter = 0;
 		protectedCounter = 0;
-		protectionIntensity = Long.parseLong(properties.getProperty(CONFIG_PROTECTION_INTENSITY, "0")) * 1000; 
-		allowConfigurableEvents = properties.getProperty(CONFIG_ALLOW_EVENTSCONFIG, "false").equalsIgnoreCase("true"); 
-		protectionHashAlgorithm = properties.getProperty(CONFIG_HASHALGO, "SHA-256");
-		protectedLogActions = new ProtectedLogActions(properties);
-		if (protectionIntensity != 0 && properties.getProperty(ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, "false").equalsIgnoreCase("true")) {
-	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogExporter.CONF_DELETE_AFTER_EXPORT, CONFIG_PROTECTION_INTENSITY));
+		protectionIntensity = ProtectedLogConfiguration.getProtectionIntensity(); 
+		allowConfigurableEvents = ProtectedLogConfiguration.getAllowEventConfig(); 
+		protectionHashAlgorithm = ProtectedLogConfiguration.getHashAlgorithm();
+		protectedLogActions = new ProtectedLogActions(ProtectedLogActions.ACTION_ALL);
+		if (protectionIntensity != 0 && ProtectedLogConfiguration.getExportDeleteAfterExport()) {
+	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogConfiguration.CONFIG_EXP_DELETEAFTEREXPORT, ProtectedLogConfiguration.CONFIG_PROTECTION_INTENSITY));
 		}
-		if (properties.getProperty(CONFIG_TOKENREFTYPE, CONFIG_TOKENREFTYPE_NONE).equalsIgnoreCase(CONFIG_TOKENREFTYPE_NONE)) {
+		if (ProtectedLogConfiguration.getProtectionTokenReferenceType() == ProtectedLogConfiguration.TOKENREFTYPE_NONE) {
 			// Disable link-in searches since no real token is used anyway..
 			intensityOfSearchForLogEvents = -1000;
 			intensityOfSearchForOwnLogEvent = -1000;
 		} else  {
-			intensityOfSearchForLogEvents = Long.parseLong(properties.getProperty(CONFIG_LINKIN_INTENSITY, "1")) * 1000; 
-			intensityOfSearchForOwnLogEvent = Long.parseLong(properties.getProperty(CONFIG_VERIFYOWN_INTENSITY, "1")) * 1000; 
+			intensityOfSearchForLogEvents = ProtectedLogConfiguration.getLinkInIntensity(); 
+			intensityOfSearchForOwnLogEvent = ProtectedLogConfiguration.getVerifyOwnIntensity(); 
 		}
-		searchWindow = Long.parseLong(properties.getProperty(CONFIG_SEARCHWINDOW, "300")) * 1000;
+		searchWindow = ProtectedLogConfiguration.getSearchWindow();
 	}
 
 	/**
@@ -169,9 +142,9 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * @param prop Arguments needed for the eventual creation of the object
 	 * @return An instance of the log device.
 	 */
-	public static synchronized ILogDevice instance(Properties prop) throws Exception {
+	public static synchronized ILogDevice instance(String name) throws Exception {
 		if (instance == null) {
-			instance = new ProtectedLogDevice(prop);
+			instance = new ProtectedLogDevice(name);
 		}
 		return instance;
 	}
@@ -215,13 +188,6 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		return deviceName;
 	}
 	
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public Properties getProperties() {
-		return properties;
-	}
-
 	private IProtectedLogSessionLocal getProtectedLogSession() {
 		try {
 			if (protectedLogSession == null) {
@@ -556,38 +522,14 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		return ret;
 	} // query
 	
-	public static Properties getPropertiesFromInstance() {
-		if (instance == null) {
-			return new Properties();
-		}
-		return instance.getProperties();
-	}
-	
 	public static int getMaxVerificationsSteps() {
-		return Integer.parseInt(getPropertiesFromInstance().getProperty(CONFIG_MAX_VERIFICATION_STEPS, DEFAULT_MAX_VERIFICATION_STEPS));
+		return ProtectedLogConfiguration.getMaxVerificationSteps();
 	}
 
 	public static long getFreezeTreshold() {
-		return Long.parseLong(getPropertiesFromInstance().getProperty(ProtectedLogVerifier.CONF_FREEZE_THRESHOLD, ProtectedLogVerifier.DEFAULT_FREEZE_THRESHOLD)) * 60 * 1000;
+		return ProtectedLogConfiguration.getVerifyFreezeThreshold();
 	}
 
-	private String getNodeIP(Properties prop) {
-		String nodeIP = getNodeIP();
-		nodeIP = prop.getProperty(CONFIG_NODEIP, nodeIP);
-		return nodeIP;
-	}
-
-	public static String getNodeIP() {
-		String nodeIP = DEFAULT_NODEIP;
-        try {
-        	nodeIP = InetAddress.getLocalHost().getHostAddress();
-        }
-        catch (java.net.UnknownHostException uhe) {
-        }
-		nodeIP = getPropertiesFromInstance().getProperty(CONFIG_NODEIP, nodeIP);
-		return nodeIP;
-	}
-	
 	private class HashTime {
 		private byte[] hash = null;
 		private long time = 0;
