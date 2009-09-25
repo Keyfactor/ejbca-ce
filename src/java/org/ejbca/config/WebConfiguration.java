@@ -56,7 +56,7 @@ public class WebConfiguration {
 	 * Defines the available languages by language codes separated with a comma
 	 */
 	public static String getAvailableLanguages() {
-		return ConfigurationHolder.getExpandedString("web.availablelanguages", "DE,EN,ES,FR,IT,PT,PT_BR,SE,ZH");
+		return ConfigurationHolder.getExpandedString("web.availablelanguages", "EN,DE,ES,FR,IT,PT,PT_BR,SE,ZH");
 	}
 	
 	/**
