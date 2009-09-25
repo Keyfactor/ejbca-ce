@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Contribute to EJBCA</title>
+  </properties>
+
+<body>
+  <section name="Contributions">
+    <p>
+    EJBCA is an open source project and appreciates community contributions:
+    <ul>
+    <li>Contribute code, joint the EJBCA Team!<br></br>We are generous with CVS access once you have proven yourself with a few patches and have longer-term intentions.</li>
+    <li>Contribute documentation. Documentation can always be improved.</li>
+    <li>Report bugs, suggest new features and improvements. You can do it all through the <a href="http://jira.primekey.se/">Bug Database</a>.</li>
+    </ul>
+    See <a href="contact.html">contact &amp; support</a> for ways to contact EJBCA.
+    </p>  
+    <p>
+    If you contribute code, read the file doc/developer/DEVELOP in the distribution for developer information.
+    </p>
+  </section>
+  <section name="Donations">
+    <p>
+    You can donate to EJBCA in a number of ways:
+    <ul>
+    <li>By purchasing an Enterprise Support contract. We have ready-made support programs for you. Contact the project admins at <a href="contact.html">contact &amp; support</a>, or see <a href="http://www.primekey.se/">www.primekey.se</a>.</li>
+    <li>By hiring us for integration, or sponsoring development of new features. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
+    <li>Through <a href="donations.html">Donations</a>.</li>
+    </ul>
+    </p>
+  </section>
+
+</body>
+</document>
+

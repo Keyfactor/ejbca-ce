@@ -49,10 +49,14 @@
             </menu>
 
             <menu name="Contributing">
-                <item name="Contribute to EJBCA"     href="/donations.html"/>
+                <item name="Contribute to EJBCA"     href="/contributions.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
                 <item name="Bug Database"          href="http://jira.primekey.se/"/>
                 <item name="SVN Repository"      href="http://ejbca.svn.sourceforge.net/viewvc/ejbca/"/>
+            </menu>
+
+            <menu name="Donate">
+                <item name="Donate to EJBCA"     href="/donations.html"/>
             </menu>
 
             <menu name="Continous integration">
