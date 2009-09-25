@@ -3144,8 +3144,8 @@ Login as the user that is running the application server. This user must be a me
 <br/>
 The following environment variables should be set for this user:
 <ul>
-<li>JAVA_HOME (/usr/local/jdk1.5.0_11 or similar)</li>
-<li>APPSRV_HOME (/home/jboss/jboss-4.2.0.GA or similar)</li>
+<li>JAVA_HOME (/usr/local/jdk1.6.0_16 or similar)</li>
+<li>APPSRV_HOME (/home/jboss/jboss-4.2.3.GA or similar)</li>
 <li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
 <li>NFAST_HOME (/opt/nfast)</li>
 </ul>
@@ -3920,8 +3920,8 @@ To configure OpenLDAP (version 2.2.5) to include the 'inetOrgPerson' you
 must add the following lines to slapd.conf. This is already the default in recent releases:
 </p>
 <source>
-include         /usr/local/etc/openldap/schema/cosine.schema
-include         /usr/local/etc/openldap/schema/inetorgperson.schema
+include         /etc/ldap/schema/cosine.schema
+include         /etc/ldap/schema/inetorgperson.schema
 </source>
 <p>
 Don't forget to add the top object by creating an LDIF file (org.ldif):
@@ -3947,7 +3947,7 @@ ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
 Check what you have in the LDAP by:
 </p>
 <source>
-/usr/local/bin/ldapsearch -x -b 'o=AnaTom,c=SE' '(objectclass=*)'
+ldapsearch -x -b 'o=AnaTom,c=SE' '(objectclass=*)'
 </source>
 </subsubsection>
 
@@ -3973,7 +3973,7 @@ bin/ejbca.sh batch
 <p>
 Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and
 p12/pem/ldap-Key.pem to your LDAP server. In this example the slapd.conf is located in
-/usr/local/etc/openldap so we copy the files to that directory. 
+/etc/ldap so we copy the files to that directory. 
 Protect theses files so they are only readable by the LDAP server.
 
 Add the following to your slapd.conf:
@@ -3981,9 +3981,9 @@ Add the following to your slapd.conf:
 <source>
 # Use SSL
 TLSCipherSuite HIGH:MEDIUM:+SSLv3
-TLSCertificateFile /usr/local/etc/openldap/ldap.pem
-TLSCertificateKeyFile /usr/local/etc/openldap/ldap-Key.pem
-TLSCACertificateFile /usr/local/etc/openldap/ldap-CA.pem
+TLSCertificateFile /etc/ldap/ldap.pem
+TLSCertificateKeyFile /etc/ldap/ldap-Key.pem
+TLSCACertificateFile /etc/ldap/ldap-CA.pem
 </source>
 <p>
 Restart slapd:
@@ -4370,13 +4370,13 @@ and restart the LDAP server.
 For OpenLDAP, copy the ejbca.schema file into, e.g.:
 </p>
 <source>
-/usr/local/etc/openldap/schema/
+/etc/ldap/schema/
 </source>
 <p>
 and edit slapd.conf to add the following line:
 </p>
 <source>
-include /usr/local/etc/openldap/schema/ejbca.schema
+include /etc/ldap/schema/ejbca.schema
 </source>
 <p>
 then restart the server.
