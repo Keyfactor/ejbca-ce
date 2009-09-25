@@ -426,7 +426,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             			       } else {
             			           try {
             			        	   if (log.isDebugEnabled()) {
-            			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' needs CRL generation.");
+            			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
             			        	   }
             			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(),false);
             			               if (log.isDebugEnabled()) {
