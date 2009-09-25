@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Properties;
 
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;

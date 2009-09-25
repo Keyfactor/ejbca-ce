@@ -18,7 +18,6 @@ import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;

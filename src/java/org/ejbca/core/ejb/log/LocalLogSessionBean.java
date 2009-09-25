@@ -234,7 +234,6 @@ public class LocalLogSessionBean extends BaseSessionBean {
     }
     
     private Collection testDeviceBackup = new ArrayList();
-    private Properties testDeviceProperties = null;
 
     /**
      * Replace existing devices with a new one.

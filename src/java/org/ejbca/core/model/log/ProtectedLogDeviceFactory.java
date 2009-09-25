@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.log;
 
-import java.util.Properties;
 
 /**
  * 
