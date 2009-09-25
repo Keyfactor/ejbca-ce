@@ -23,20 +23,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.collections.map.ListOrderedMap;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.ejbca.config.ConfigurationHolder;
+import org.ejbca.config.ExtendedKeyUsageConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.certextensions.standard.SeisCardNumber;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
-
 
 /**
  * CertificateProfile is a basic class used to customize a certificate
@@ -74,56 +71,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int ENCIPHERONLY     = 7;
     public static final int DECIPHERONLY     = 8;
 
-    /** Array of all OIDs for Extended Key Usage, is filled by below and must therefore appear before the below line in this file. */
-    private static List extendedKeyUsageOids = null;
-    /** Map for texts that maps oids in extendedKeyUsageOids to text strings that can be displayed.
-     * If an extended key usage should not be displayed in the GUI, put null as value in the properties file. 
-     * This is done for deprecated ipsec key usages below. "IPSECENDSYSTEM", "IPSECTUNNEL", "IPSECUSER".
-     * 
-     * The standard oids for extended key usages mostly comes from KeyPurposeId.id_kp_clientAuth etc, or CertTools.EFS_OBJECTID, EFSR_OBJECTID, MS_DOCUMENT_SIGNING_OBJECTID, Intel_amt
-     */
-    private static Map extendedKeyUsageOidsAndNames = fillExtendedKeyUsageOidsAndTexts();
-    
-    /** Reads the conf/extendedkeyusage.properties file and fills the map and list above */
-    private static Map fillExtendedKeyUsageOidsAndTexts() {
-    	ListOrderedMap map = new ListOrderedMap();
-    	Configuration conf = ConfigurationHolder.instance();
-    	final String ekuname = "extendedkeyusage.name.";
-    	final String ekuoid = "extendedkeyusage.oid.";
-    	for (int i = 0; i < 255; i++) {
-    		String oid = conf.getString(ekuoid+i);
-    		if (oid != null) {
-    			String name = conf.getString(ekuname+i);
-    			if (name != null) {
-    				// A null value in the properties file means that we should not use this value, so set it to null for real
-    				if (name.equalsIgnoreCase("null")) {
-    					name = null;
-    				}
-    				map.put(oid, name);
-    			} else {
-    				log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
-    			}
-    		} else {
-    			// No eku with that number = no more ekus so break,
-    			log.debug("Read "+i+" extended key usages.");
-    			break;
-    		}
-    	}
-    	extendedKeyUsageOids = map.asList();
-    	if (extendedKeyUsageOids == null) {
-    		log.error("Extended key usage OIDs is null, there is a serious error with extendedkeyusage.properties");
-    		extendedKeyUsageOids = new ArrayList();
-    	}
-    	return Collections.synchronizedMap(map);
-    }
-
     /** Returns a List<String> of all extended key usage oids, as strings */
     public static List getAllExtendedKeyUsageOIDStrings() {
-    	return extendedKeyUsageOids;
+    	return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOids();
     }
     /** Returns a Map<String, String> that maps oid string to displayable/translatable text strings */
     public static Map getAllExtendedKeyUsageTexts() {
-    	return extendedKeyUsageOidsAndNames;
+    	return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames();
     }
 
 	/** Microsoft Template Constants */

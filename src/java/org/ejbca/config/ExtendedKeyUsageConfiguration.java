@@ -1,0 +1,98 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+package org.ejbca.config;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.map.ListOrderedMap;
+import org.apache.commons.configuration.Configuration;
+import org.apache.log4j.Logger;
+
+/**
+ * This file handles configuration from conf/extendedkeyusage.properties
+ */
+public class ExtendedKeyUsageConfiguration {
+
+	private static final Logger log = Logger.getLogger(ExtendedKeyUsageConfiguration.class);
+	
+    /**
+     * Map for texts that maps OIDs in extendedKeyUsageOids to text strings that can be displayed.
+     * If an extended key usage should not be displayed in the GUI, put null as value in the
+     * properties file. This is done for deprecated IPSec key usages below. "IPSECENDSYSTEM",
+     * "IPSECTUNNEL", "IPSECUSER".
+     * 
+     * The standard OIDs for extended key usages mostly comes from KeyPurposeId.id_kp_clientAuth
+     * etc, or CertTools.EFS_OBJECTID, EFSR_OBJECTID, MS_DOCUMENT_SIGNING_OBJECTID, Intel_amt
+     */
+    private static Map extendedKeyUsageOidsAndNames = null;
+    
+    /**
+     * Array of all OIDs for Extended Key Usage, is filled by below and must therefore appear
+     * before the below line in this file.
+     */
+    private static List extendedKeyUsageOids = null;
+
+    public static synchronized Map getExtendedKeyUsageOidsAndNames() {
+    	if (extendedKeyUsageOidsAndNames == null) {
+    		fillExtendedKeyUsageOidsAndTexts();
+    	}
+		return extendedKeyUsageOidsAndNames;
+	}
+			
+    public static synchronized List getExtendedKeyUsageOids() {
+    	if (extendedKeyUsageOids == null) {
+    		fillExtendedKeyUsageOidsAndTexts();
+    	}
+		return extendedKeyUsageOids;
+	}
+
+    /**
+     * Fill the map and list with OIDs from the configuration file
+     */
+	private static synchronized void fillExtendedKeyUsageOidsAndTexts() {
+    	ListOrderedMap map = new ListOrderedMap();
+    	Configuration conf = ConfigurationHolder.instance();
+    	final String ekuname = "extendedkeyusage.name.";
+    	final String ekuoid = "extendedkeyusage.oid.";
+    	for (int i = 0; i < 255; i++) {
+    		String oid = conf.getString(ekuoid+i);
+    		if (oid != null) {
+    			String name = conf.getString(ekuname+i);
+    			if (name != null) {
+    				// A null value in the properties file means that we should not use this value, so set it to null for real
+    				if (name.equalsIgnoreCase("null")) {
+    					name = null;
+    				}
+    				map.put(oid, name);
+    			} else {
+    				log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
+    			}
+    		} else {
+    			// No eku with that number = no more ekus so break,
+    			log.debug("Read "+i+" extended key usages.");
+    			break;
+    		}
+    	}
+    	extendedKeyUsageOids = map.asList();
+    	if (extendedKeyUsageOids == null) {
+    		log.error("Extended key usage OIDs is null, there is a serious error with extendedkeyusage.properties");
+    		extendedKeyUsageOids = new ArrayList();
+    	}
+    	extendedKeyUsageOidsAndNames = Collections.synchronizedMap(map);
+    }
+
+}
