@@ -43,10 +43,12 @@ import org.ejbca.util.dn.DNFieldExtractor;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPConnection;
+import com.novell.ldap.LDAPConstraints;
 import com.novell.ldap.LDAPEntry;
 import com.novell.ldap.LDAPException;
 import com.novell.ldap.LDAPJSSESecureSocketFactory;
 import com.novell.ldap.LDAPModification;
+import com.novell.ldap.LDAPSearchConstraints;
 
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalogs.  
@@ -61,9 +63,21 @@ public class LdapPublisher extends BasePublisher {
 
 	private static byte[] fakecrl = null;
 
-	public static final float LATEST_VERSION = 10;
+	public static final float LATEST_VERSION = 11;
 
 	public static final int TYPE_LDAPPUBLISHER = 2;
+	
+	// Create some constraints used when connecting, disconnecting, reading and storing in LDAP servers
+	/** Use a time limit for generic (non overridden) LDAP operations */
+	protected LDAPConstraints ldapConnectionConstraints = new LDAPConstraints();
+	/** Use a time limit for LDAP bind operations */
+	protected LDAPConstraints ldapBindConstraints = new LDAPConstraints();
+	/** Use a time limit for LDAP store operations */
+	protected LDAPConstraints ldapStoreConstraints = new LDAPConstraints();
+	/** Use a time limit for LDAP disconnect operations */
+	protected LDAPConstraints ldapDisconnectConstraints = new LDAPConstraints();
+	/** Use a time limit when reading from LDAP */
+	protected LDAPSearchConstraints ldapSearchConstraints = new LDAPSearchConstraints();
 
 	/** The normal ldap publisher will modify attributes in LDAP.
 	 * If you don't want attributes modified, use the LdapSearchPublisher to 
@@ -81,7 +95,9 @@ public class LdapPublisher extends BasePublisher {
 	public static final String DEFAULT_ARLATTRIBUTE        = "authorityRevocationList;binary";
 	public static final String DEFAULT_PORT                = "389";
 	public static final String DEFAULT_SSLPORT             = "636";
-	public static final String DEFAULT_TIMEOUT             = "5000";
+	public static final String DEFAULT_TIMEOUT             = "5000"; // 5 seconds
+	public static final String DEFAULT_READTIMEOUT         = "30000"; // 30 seconds
+	public static final String DEFAULT_STORETIMEOUT        = "60000"; // 1 minute
 
 
 	// Default Values
@@ -93,6 +109,8 @@ public class LdapPublisher extends BasePublisher {
 	protected static final String LOGINDN                  = "logindn";
 	protected static final String LOGINPASSWORD            = "loginpassword";
 	protected static final String TIMEOUT                  = "timeout";
+	protected static final String READTIMEOUT              = "readtimeout";
+	protected static final String STORETIMEOUT             = "storetimeout";
 	protected static final String CREATENONEXISTING        = "createnonexisting";
 	protected static final String MODIFYEXISTING           = "modifyexisting"; 
 	protected static final String ADDNONEXISTINGATTR       = "addnonexistingattr"; 
@@ -126,7 +144,8 @@ public class LdapPublisher extends BasePublisher {
 		setBaseDN("");
 		setLoginDN("");
 		setLoginPassword("");
-		setTimeOut(getTimeOut());
+		int connectiontimeout = getConnectionTimeOut();
+		setConnectionTimeOut(connectiontimeout);
 		setCreateNonExistingUsers(true);
 		setModifyExistingUsers(true);     
 		setModifyExistingAttributes(false);
@@ -145,6 +164,7 @@ public class LdapPublisher extends BasePublisher {
 		setRemoveUsersWhenCertRevoked(false);
 
 		getFakeCRL();
+		
 	}
 
 	// Public Methods
@@ -162,7 +182,8 @@ public class LdapPublisher extends BasePublisher {
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCertificate(username="+username+")");
 		}
-        if ( (status == CertificateDataBean.CERT_REVOKED) || (status == CertificateDataBean.CERT_TEMP_REVOKED) ) {
+
+		if ( (status == CertificateDataBean.CERT_REVOKED) || (status == CertificateDataBean.CERT_TEMP_REVOKED) ) {
         	// Call separate script for revocation
         	revokeCertificate(admin, incert, username, revocationReason);
         } else if (status == CertificateDataBean.CERT_ACTIVE) {
@@ -274,17 +295,17 @@ public class LdapPublisher extends BasePublisher {
     			connectionFailed = false;
     			String currentServer = (String) servers.next();
     			try {
-    				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+    				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
     				lc.connect(currentServer, Integer.parseInt(getPort()));
     				// authenticate to the server
-    				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
+    				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);            
     				// Add or modify the entry
     				if (oldEntry != null && getModifyExistingUsers()) {
     					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
     					mods = (LDAPModification[])modSet.toArray(mods);
     					String oldDn = oldEntry.getDN();
     					log.debug("Writing modification to DN: "+oldDn);
-    					lc.modify(oldDn, mods);
+    					lc.modify(oldDn, mods, ldapStoreConstraints);
     					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
     					log.info(msg);  
     				} else {
@@ -295,7 +316,7 @@ public class LdapPublisher extends BasePublisher {
     							if(getCreateIntermediateNodes()) {
     								final String parentDN = dn.substring(dn.indexOf(',') + 1);
     								try {
-    									lc.read(parentDN);
+    									lc.read(parentDN, ldapSearchConstraints);
     								} catch(LDAPException e) {
     									if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
     										this.createIntermediateNodes(lc, dn);
@@ -306,7 +327,7 @@ public class LdapPublisher extends BasePublisher {
     							}
     							newEntry = new LDAPEntry(dn, attributeSet);
     							log.debug("Adding DN: "+dn);
-    							lc.add(newEntry);
+    							lc.add(newEntry, ldapStoreConstraints);
     							String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
     							log.info(msg);
     						}
@@ -328,7 +349,7 @@ public class LdapPublisher extends BasePublisher {
     			} finally {
     				// disconnect with the server
     				try {
-    					lc.disconnect();
+    					lc.disconnect(ldapDisconnectConstraints);
     				} catch (LDAPException e) {
     					String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
     					log.error(msg, e);
@@ -362,7 +383,7 @@ public class LdapPublisher extends BasePublisher {
 			field = rdn.substring(0, rdn.indexOf('='));
 			value = rdn.substring(rdn.indexOf('=') + 1);
 			try {
-				lc.read(dnFragment);
+				lc.read(dnFragment, ldapSearchConstraints);
 			} catch(LDAPException e) {
 				if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
 					attrSet = new LDAPAttributeSet();
@@ -371,7 +392,7 @@ public class LdapPublisher extends BasePublisher {
 					entry = new LDAPEntry(dnFragment, attrSet);
 
 					try {
-						lc.add(entry);
+						lc.add(entry, ldapStoreConstraints);
 						log.debug("Created node " + dnFragment);
 					} catch(LDAPException e1) {
 						String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", dnFragment);
@@ -412,7 +433,6 @@ public class LdapPublisher extends BasePublisher {
 	 */    
 	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException{
 		int ldapVersion = LDAPConnection.LDAP_V3;
-		LDAPConnection lc = createLdapConnection();
 
 		X509CRL crl = null;
 		String dn = null;
@@ -428,7 +448,9 @@ public class LdapPublisher extends BasePublisher {
 			throw new PublisherException(msg);            
 		}
 
-		// Check if the entry is already present, we will update it with the new certificate.
+		LDAPConnection lc = createLdapConnection();
+
+		// Check if the entry is already present, we will update it with the new CRL.
 		LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, dn, null);
 
 		LDAPEntry newEntry = null;
@@ -477,20 +499,20 @@ public class LdapPublisher extends BasePublisher {
 			connectionFailed = false;
 			String currentServer = (String) servers.next();
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
 				// Add or modify the entry
 				if (oldEntry != null) {
 					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
 					mods = (LDAPModification[])modSet.toArray(mods);
-					lc.modify(dn, mods);
+					lc.modify(dn, mods, ldapStoreConstraints);
 					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CRL", dn);
 					log.info(msg);  
 				} else {
-					lc.add(newEntry);
+					lc.add(newEntry, ldapStoreConstraints);
 					String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", dn);
 					log.info(msg);  
 				}
@@ -510,7 +532,7 @@ public class LdapPublisher extends BasePublisher {
 			} finally {
 				// disconnect with the server
 				try {
-					lc.disconnect();
+					lc.disconnect(ldapDisconnectConstraints);
 				} catch (LDAPException e) {
 					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
 					log.error(msg, e);
@@ -525,6 +547,7 @@ public class LdapPublisher extends BasePublisher {
 	 */    
 	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException{
 		log.trace(">revokeCertificate()");
+
 		// Check first if we should do anything then revoking
 		boolean removecert = getRemoveRevokedCertificates();
 		boolean removeuser = getRemoveUsersWhenCertRevoked();
@@ -584,16 +607,8 @@ public class LdapPublisher extends BasePublisher {
 				throw new PublisherException(msg);            
 			}
 		} else  {
+			// Removal of CA certificate isn't support because of object class restrictions
 			log.debug("Not removing CA certificate from first available server of " + getHostnames() + ", because of object class restrictions.");
-			// Currently removal of CA certificate isn't support because of object class restrictions
-			/*
-            if (oldEntry != null) {
-                modSet = getModificationSet(oldEntry, dn, false, false);
-                modSet.add(new LDAPModification(LDAPModification.DELETE, new LDAPAttribute(getCACertAttribute())));
-            } else {
-                log.error("Certificate doesn't exist in database");            
-                throw new PublisherException("Certificate doesn't exist in database");            
-            }*/
 		}
 
 		// Try all the listed servers
@@ -604,19 +619,19 @@ public class LdapPublisher extends BasePublisher {
 			String currentServer =(String) servers.next(); 
 			log.debug("currentServer: "+currentServer);
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);            
 				// Add or modify the entry
 				if (oldEntry != null && modSet != null && getModifyExistingUsers()) {
 					if (removecert) {
 						LDAPModification[] mods = new LDAPModification[modSet.size()]; 
 						mods = (LDAPModification[])modSet.toArray(mods);
-						lc.modify(oldEntry.getDN(), mods);            		
+						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);            		
 					}
 					if (removeuser) {
-						lc.delete(oldEntry.getDN());            		
+						lc.delete(oldEntry.getDN(), ldapStoreConstraints);            		
 					}
 					String msg = intres.getLocalizedMessage("publisher.ldapremove", dn);
 					log.info(msg);  
@@ -649,7 +664,7 @@ public class LdapPublisher extends BasePublisher {
 			} finally {
 				// disconnect with the server
 				try {
-					lc.disconnect();
+					lc.disconnect(ldapDisconnectConstraints);
 				} catch (LDAPException e) {
 					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
 					log.error(msg, e);
@@ -674,14 +689,14 @@ public class LdapPublisher extends BasePublisher {
 			String currentServer = (String) servers.next();
 			String ldapdn = constructLDAPDN(dn);
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
 				// try to read the old object
-				log.debug("Searching for old entry with DN '" + ldapdn+"'");				
-				oldEntry = lc.read(ldapdn);
+				log.debug("Searching for old entry with DN '" + ldapdn+"'");
+				oldEntry = lc.read(ldapdn, ldapSearchConstraints);
 				if (log.isDebugEnabled()) {
 					if (oldEntry != null) {
 						log.debug("Found an old entry with DN '" + ldapdn+"'");
@@ -708,7 +723,7 @@ public class LdapPublisher extends BasePublisher {
 			} finally {
 				// disconnect with the server
 				try {
-					lc.disconnect();
+					lc.disconnect(ldapDisconnectConstraints);
 				} catch (LDAPException e) {
 					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
 					log.error(msg, e);
@@ -724,12 +739,6 @@ public class LdapPublisher extends BasePublisher {
 	public void testConnection(Admin admin) throws PublisherConnectionException {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
-		/*
-		if(getUseSSL()){
-			lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
-		}else{
-			lc = new LDAPConnection();        
-		}*/
 		// Try all the listed servers
 		Iterator servers = getHostnameList().iterator();
 		boolean connectionFailed;
@@ -738,15 +747,15 @@ public class LdapPublisher extends BasePublisher {
 			String currentServer = (String) servers.next();
 			LDAPEntry entry = null;
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
 				// try to read the base object
 				String baseDN = getBaseDN();
 				log.debug("Trying to read top node '"+baseDN+"'");
-				entry = lc.read(baseDN);			
+				entry = lc.read(baseDN, ldapSearchConstraints);			
 				if(entry == null) {
 					String msg = intres.getLocalizedMessage("publisher.errornobinddn");
 					throw new PublisherConnectionException(msg);
@@ -768,7 +777,7 @@ public class LdapPublisher extends BasePublisher {
 			} finally {
 				// disconnect with the server
 				try {
-					lc.disconnect();
+					lc.disconnect(ldapDisconnectConstraints);
 				} catch (LDAPException e) {
 					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
 					log.error(msg, e);
@@ -778,12 +787,27 @@ public class LdapPublisher extends BasePublisher {
 	} 
 
 	protected LDAPConnection createLdapConnection() {
+		// Set timeouts
+		int connectiontimeout = getConnectionTimeOut();
+		ldapBindConstraints.setTimeLimit(connectiontimeout); 
+		ldapDisconnectConstraints.setTimeLimit(connectiontimeout);
+		ldapConnectionConstraints.setTimeLimit(connectiontimeout);
+		ldapSearchConstraints.setTimeLimit(getReadTimeOut());
+		ldapStoreConstraints.setTimeLimit(getStoreTimeOut());
+		if (log.isDebugEnabled()) {
+			log.debug("connecttimeout: "+ldapConnectionConstraints.getTimeLimit());
+			log.debug("bindtimeout: "+ldapBindConstraints.getTimeLimit());
+			log.debug("disconnecttimeout: "+ldapDisconnectConstraints.getTimeLimit());
+			log.debug("readtimeout: "+ldapSearchConstraints.getTimeLimit());
+			log.debug("storetimeout: "+ldapStoreConstraints.getTimeLimit());
+		}
 		LDAPConnection lc;
 		if (getUseSSL()) {
 			lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
 		} else {
 			lc = new LDAPConnection();
 		}
+		lc.setConstraints(ldapConnectionConstraints);
 		return lc;
 	}
 
@@ -1133,17 +1157,46 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	/** Return timout in milliseconds */
-	public int getTimeOut() {
+	public int getConnectionTimeOut() {
 		int timeout = Integer.parseInt(DEFAULT_TIMEOUT);
 		if ( data.get(TIMEOUT) != null ) {
 			timeout = Integer.parseInt((String) data.get(TIMEOUT));
 		}
 		return timeout;
 	}
+	/** Return timout in milliseconds */
+	public int getReadTimeOut() {
+		int timeout = Integer.parseInt(DEFAULT_READTIMEOUT);
+		if ( data.get(READTIMEOUT) != null ) {
+			timeout = Integer.parseInt((String) data.get(READTIMEOUT));
+		}
+		return timeout;
+	}
+	/** Return timout in milliseconds */
+	public int getStoreTimeOut() {
+		int timeout = Integer.parseInt(DEFAULT_STORETIMEOUT);
+		if ( data.get(STORETIMEOUT) != null ) {
+			timeout = Integer.parseInt((String) data.get(STORETIMEOUT));
+		}
+		return timeout;
+	}
 	
 	/** Set timout in milliseconds */
-	public void setTimeOut(int timeout) {
+	public void setConnectionTimeOut(int timeout) {
 		data.put(TIMEOUT, Integer.toString(timeout));  
+		ldapBindConstraints.setTimeLimit(timeout);
+		ldapConnectionConstraints.setTimeLimit(timeout);
+		ldapDisconnectConstraints.setTimeLimit(timeout);
+	}
+	/** Set timout in milliseconds */
+	public void setReadTimeOut(int timeout) {
+		data.put(READTIMEOUT, Integer.toString(timeout));  
+		ldapSearchConstraints.setTimeLimit(timeout);
+	}
+	/** Set timout in milliseconds */
+	public void setStoreTimeOut(int timeout) {
+		data.put(STORETIMEOUT, Integer.toString(timeout)); 
+		ldapStoreConstraints.setTimeLimit(timeout);
 	}
 
 	// Private methods   
@@ -1533,11 +1586,16 @@ public class LdapPublisher extends BasePublisher {
 				setAddNonExistingAttributes(true);
 			}
 			if (getVersion() < 9) {
-				setTimeOut(getTimeOut());	// v9
+				setConnectionTimeOut(getConnectionTimeOut());	// v9
 			}
 			if(data.get(SETUSERPASSWORD) == null) {
 				setUserPassword(false);	// v10
 			}
+			if (data.get(READTIMEOUT) == null) {
+				setStoreTimeOut(getStoreTimeOut());	// v11
+				setReadTimeOut(getReadTimeOut());
+			}
+
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}
 		log.trace("<upgrade");

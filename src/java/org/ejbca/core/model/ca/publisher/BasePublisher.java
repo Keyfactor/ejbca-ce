@@ -49,7 +49,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     // Public Methods
 
     /**
-     * Creates a new instance of CertificateProfile
+     * Creates a new instance of BasePublisher
      */
     public BasePublisher() {
       setDescription("");	       

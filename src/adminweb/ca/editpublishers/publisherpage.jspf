@@ -92,9 +92,17 @@ function checkallfields(){
       illegalfields++;
     }
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPTIMEOUT%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("TIMEOUT", true)%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CONNECTIONTIMEOUT", true)%>");
       illegalfields++;
     }
+    if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPREADTIMEOUT%>.value == ""){
+        alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("READTIMEOUT", true)%>");
+        illegalfields++;
+      }
+    if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPSTORETIMEOUT%>.value == ""){
+        alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("STORETIMEOUT", true)%>");
+        illegalfields++;
+      }
     
  <% } %>
  <% if( publisherdata instanceof ExternalOCSPPublisher){ %>

@@ -103,7 +103,9 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String TEXTFIELD_LDAPARLATTRIBUTE      = "textfieldldaparlattribute";
     public static final String TEXTFIELD_LDAPSEARCHBASEDN      = "textfieldldapsearchbasedn";
     public static final String TEXTFIELD_LDAPSEARCHFILTER      = "textfieldldapsearchfilter";
-    public static final String TEXTFIELD_LDAPTIMEOUT      = "textfieldldaptimeout";
+    public static final String TEXTFIELD_LDAPTIMEOUT           = "textfieldldaptimeout";
+    public static final String TEXTFIELD_LDAPREADTIMEOUT       = "textfieldldapreadtimeout";
+    public static final String TEXTFIELD_LDAPSTORETIMEOUT      = "textfieldldapstoretimeout";
     public static final String TEXTFIELD_EXTOCSP_DATASOURCE    = "textfieldextocspdatasource";
     public static final String PASSWORD_LDAPLOGINPASSWORD      = "textfieldldaploginpassword";
     public static final String PASSWORD_LDAPCONFIRMLOGINPWD    = "textfieldldaploginconfirmpwd";
@@ -310,7 +312,17 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 value = request.getParameter(TEXTFIELD_LDAPTIMEOUT);
                                 if(value != null){
                                     value = value.trim();
-                                    ldappublisher.setTimeOut(Integer.parseInt(value));
+                                    ldappublisher.setConnectionTimeOut(Integer.parseInt(value));
+                                }
+                                value = request.getParameter(TEXTFIELD_LDAPREADTIMEOUT);
+                                if(value != null){
+                                    value = value.trim();
+                                    ldappublisher.setReadTimeOut(Integer.parseInt(value));
+                                }
+                                value = request.getParameter(TEXTFIELD_LDAPSTORETIMEOUT);
+                                if(value != null){
+                                    value = value.trim();
+                                    ldappublisher.setStoreTimeOut(Integer.parseInt(value));
                                 }
                                 value = request.getParameter(TEXTFIELD_LDAPUSEROBJECTCLASS);
                                 if(value != null){

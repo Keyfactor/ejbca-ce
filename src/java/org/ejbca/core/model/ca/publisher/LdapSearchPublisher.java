@@ -60,14 +60,13 @@ public class LdapSearchPublisher extends LdapPublisher {
 			//  If it exists, s�lo se a�adir� al DN la parte del certificado (PARTE 2)
 			//  if not exist, se a�adir� toda una entrada LDAP nueva (PARTE 2)
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getTimeOut());	// Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
 				log.debug("Connecting to " + currentServer);
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
 				log.debug("Logging in with BIND DN " + getLoginDN());
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-				// Filtro est�tico:
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
 				//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 				String searchFilter = getSearchFilter();
 				if (log.isDebugEnabled()) {
@@ -111,7 +110,8 @@ public class LdapSearchPublisher extends LdapPublisher {
 						searchScope, // search scope
 						searchFilter, // search filter
 						attrs, // "1.1" returns entry name only
-						attributeTypesOnly); // no attribute values are returned
+						attributeTypesOnly,
+						ldapSearchConstraints); // no attribute values are returned
 				// try to read the old object
 				if (log.isDebugEnabled()) {
 					log.debug("serachResults contains entries: "+searchResults.hasMore());
@@ -130,7 +130,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 				}
 				// try to read the old object
 				try {
-					oldEntry = lc.read(dn);
+					oldEntry = lc.read(dn, ldapSearchConstraints);
 				} catch (LDAPException e) {
 					if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
 						String msg = intres.getLocalizedMessage("publisher.noentry", dn);
@@ -160,7 +160,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 			} finally {
 				// disconnect with the server
 				try {
-					lc.disconnect();
+					lc.disconnect(ldapDisconnectConstraints);
 				} catch (LDAPException e) {
 					String msg = intres.getLocalizedMessage("publisher.errordisconnect");
 					log.error(msg, e);
