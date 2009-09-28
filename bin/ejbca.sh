@@ -52,8 +52,10 @@ elif [ "$1" = "admins" ] ; then
 	class_name=org.ejbca.ui.cli.admins
 elif [ "$1" = "createcert" ] ; then
 	class_name=org.ejbca.ui.cli.CreateCert
+elif [ "$1" = "config" ] ; then
+	class_name=org.ejbca.ui.cli.config
 else
-	echo "Usage: $0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump|encryptpwd|log|admins|createcert] options"
+	echo "Usage: $0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump|encryptpwd|log|admins|createcert|config] options"
 	echo "For options information, specify a command directive"
 	exit 1
 fi

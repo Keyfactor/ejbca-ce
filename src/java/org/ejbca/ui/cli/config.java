@@ -13,32 +13,30 @@
  
 package org.ejbca.ui.cli;
 
-
 /**
  * Implements the setup command line interface
  *
- * @version $Id$
+ * @version $Id: $
  */
-public class setup {
-    /**
+public class config {
+
+	/**
      * Main
      *
      * @param args command line arguments
      */
     public static void main(String[] args) {
         try {
-            IAdminCommand cmd = SetupCommandFactory.getCommand(args);
+            IAdminCommand cmd = ConfigCommandFactory.getCommand(args);
             if (cmd != null) {
                 cmd.execute();
             } else {
-                System.out.println("Usage: SETUP initializehardtokenissuing <caname>");
+                System.out.println("Usage: CONFIG dump");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());            
             System.exit(-1);
         }
     }
+
 }
-
-
-//ca

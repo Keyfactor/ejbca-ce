@@ -126,7 +126,6 @@ appserver.home         : ${appserver.home}
     </target>
 
 	<target name="ejbca:adminweb">
-		<ejbca:cli name="setup" arg="setdefaultbaseurl ${httpsserver.hostname} ${app.name}"/>
 		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost -->
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>

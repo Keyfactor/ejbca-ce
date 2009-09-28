@@ -36,10 +36,6 @@ public class SetupCommandFactory {
         if (args.length < 1) {
             return null;
         }
-
-        if (args[0].equals("setdefaultbaseurl")) {
-            return new SetupSetBaseURLCommand(args);
-        }
         if (args[0].equals("initializehardtokenissuing")) {
         	return new InitializeHardTokenIssuing(args);
         }

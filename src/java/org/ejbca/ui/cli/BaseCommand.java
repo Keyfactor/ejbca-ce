@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.config.IConfigurationSessionHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
@@ -54,6 +55,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionHome;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
+import org.ejbca.core.ejb.upgrade.IConfigurationSessionRemote;
 import org.ejbca.core.ejb.upgrade.IUpgradeSessionHome;
 import org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote;
 import org.ejbca.core.model.log.Admin;
@@ -86,6 +88,7 @@ public abstract class BaseCommand {
     private IKeyRecoverySessionRemote keyRecoverySession = null;
     private IUserDataSourceSessionRemote userDataSourceSession = null;
     private ISignSessionRemote signSession = null;
+    private IConfigurationSessionRemote configurationSession = null;
     
 	protected Admin administrator = null;
     
@@ -352,6 +355,24 @@ public abstract class BaseCommand {
 		}
 		baseLog.trace("<getSignSession()");
         return signSession;
+    }
+
+    /**
+     * @return a reference to a ISIgnSessionBean
+     */
+    public IConfigurationSessionRemote getConfigurationSession(){
+    	baseLog.trace(">getConfigurationSession()");
+		try {
+			if (configurationSession == null) {
+				configurationSession = ((IConfigurationSessionHome) ServiceLocator.getInstance().getRemoteHome(
+						IConfigurationSessionHome.JNDI_NAME, IConfigurationSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			error("", e);
+			throw new RuntimeException(e);
+		}
+		baseLog.trace("<getConfigurationSession()");
+        return configurationSession;
     }
 
     /**

@@ -122,4 +122,14 @@ public class ConfigurationSessionBean extends BaseSessionBean {
 		}
 		return value.equals(configValue);
 	}
+
+	/**
+	 * @return all currently used properties
+	 * 
+	 * @ejb.interface-method
+	 */
+	public Properties getAllProperties() {
+		assertIsNotInProductionMode();
+		return ConfigurationHolder.getAsProperties();
+	}
 }

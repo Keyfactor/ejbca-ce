@@ -799,21 +799,6 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } //loadGlobalConfiguration
 
     /**
-     * Sets the base url in the global configuration.
-     *
-     * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method
-     */
-    public void initGlobalConfigurationBaseURL(Admin admin, String computername, String applicationpath)  {
-        trace(">initGlobalConfigurationBaseURL()");
-        GlobalConfiguration gc = this.loadGlobalConfiguration(admin);
-        gc.setComputerName(computername);
-        gc.setApplicationPath(applicationpath);
-        this.saveGlobalConfiguration(admin, gc);
-        trace("<initGlobalConfigurationBaseURL()");
-     } // initGlobalConfigurationBaseURL
-
-    /**
      * Saves the globalconfiguration
      *
      * @throws EJBException if a communication or other error occurs.

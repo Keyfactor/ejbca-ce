@@ -160,34 +160,16 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public   String getBaseUrl(String requestServerName) {    
     	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" + 
     	            requestServerName  + "/" +
-    	           (String) data.get(GlobalConfiguration.APPLICATIONPATH);
+    	            InternalConfiguration.getAppNameLower() + "/";
    }
     
-    public   String getBaseUrl() {    
+    public String getBaseUrl() {    
     	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" + 
-    	           (String) data.get(GlobalConfiguration.COMPUTERNAME) + ":" +
+    	           WebConfiguration.getHostName() + ":" +
     	           (String) data.get(GlobalConfiguration.PRIVATEPORT) + "/" +
-    	           (String) data.get(GlobalConfiguration.APPLICATIONPATH);
+    	           InternalConfiguration.getAppNameLower() + "/";
    }
         
-    
-    
-    public void setComputerName(String computername){
-    	data.put(COMPUTERNAME, computername);
-    }
-    
-    public   void setApplicationPath(String applicationpath){
-     // Add trailing '/' if it doesn't exists.
-       if(!applicationpath.endsWith("/")){
-         data.put(APPLICATIONPATH,applicationpath + "/");
-       }
-       else{
-         data.put(APPLICATIONPATH,applicationpath);
-       }
-     }
-    
-    
-
     public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
 
     public String getStandardCRLDistributionPointURI(){
@@ -461,9 +443,6 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     // Private fields.
 
     // Private constants
-    //private static final   String BASEURL             = "baseurl";
-    private static final   String COMPUTERNAME          = "computername";
-    private static final   String APPLICATIONPATH       = "applicationpath";
     private static final   String ADMINPATH             = "raadminpath";
     private static final   String AVAILABLELANGUAGES    = "availablelanguages";
     private static final   String AVAILABLETHEMES       = "availablethemes";
