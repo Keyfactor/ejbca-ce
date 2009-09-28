@@ -25,10 +25,10 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.protect.TableProtectSessionHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -39,6 +39,7 @@ import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 /**
  * Tests the log modules entity and session beans.
@@ -48,10 +49,8 @@ import org.ejbca.util.CertTools;
 public class TestProtect extends TestCase {
     private static Logger log = Logger.getLogger(TestProtect.class);
 
-    private TableProtectSessionRemote cacheAdmin = null;
+    private TableProtectSessionRemote tableProtectSession = TestTools.getTableProtectSession();
 
-    private static TableProtectSessionHome cacheHome = null;
-    
     private static ArrayList entrys = null;
 
     private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -68,15 +67,7 @@ public class TestProtect extends TestCase {
     protected void setUp() throws Exception {
         log.trace(">setUp()");
         CertTools.installBCProvider();
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("TableProtectSession");
-                cacheHome = (TableProtectSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, TableProtectSessionHome.class);
-
-            }
-            cacheAdmin = cacheHome.create();
-        }
+        TestTools.getConfigurationSession().updateProperty(ProtectConfiguration.CONFIG_PROTECTIONENABLED, "true");
         if (entrys == null) {
         	createLogEntrys();
         }
@@ -84,6 +75,7 @@ public class TestProtect extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+    	TestTools.getConfigurationSession().restoreConfiguration();
     }
 
     private Context getInitialContext() throws NamingException {
@@ -118,7 +110,7 @@ public class TestProtect extends TestCase {
         Iterator iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le = (LogEntry)iter.next();
-            cacheAdmin.protect(admin, le);        	
+            tableProtectSession.protect(admin, le);        	
         }
         log.trace("<test01ProtectLogEntry()");
     }
@@ -133,7 +125,7 @@ public class TestProtect extends TestCase {
         Iterator iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le = (LogEntry)iter.next();
-            TableVerifyResult res = cacheAdmin.verify(le);
+            TableVerifyResult res = tableProtectSession.verify(le);
             assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         }
         LogEntry le = (LogEntry)entrys.get(2);
@@ -142,7 +134,7 @@ public class TestProtect extends TestCase {
         iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le2 = (LogEntry)iter.next();
-            TableVerifyResult res = cacheAdmin.verify(le2);
+            TableVerifyResult res = tableProtectSession.verify(le2);
             if (le2.getId() == le.getId()) {
                 assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);            	
             } else {
@@ -157,7 +149,7 @@ public class TestProtect extends TestCase {
         iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le2 = (LogEntry)iter.next();
-            TableVerifyResult res = cacheAdmin.verify(le2);
+            TableVerifyResult res = tableProtectSession.verify(le2);
             if (le2.getId() == le.getId()) {
                 assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);            	
             } else {
@@ -172,7 +164,7 @@ public class TestProtect extends TestCase {
         iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le2 = (LogEntry)iter.next();
-            TableVerifyResult res = cacheAdmin.verify(le2);
+            TableVerifyResult res = tableProtectSession.verify(le2);
             if (le2.getId() == le.getId()) {
                 assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);            	
             } else {
@@ -207,17 +199,17 @@ public class TestProtect extends TestCase {
         }
         CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("1");
-        cacheAdmin.protect(admin, entry);        	        
-        TableVerifyResult res = cacheAdmin.verify(entry);
+        tableProtectSession.protect(admin, entry);        	        
+        TableVerifyResult res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setStatus(RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE);
-        res = cacheAdmin.verify(entry);
+        res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
-        cacheAdmin.protect(admin, entry);        	        
-        res = cacheAdmin.verify(entry);
+        tableProtectSession.protect(admin, entry);        	        
+        res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setRevocationDate(new Date());
-        res = cacheAdmin.verify(entry);
+        res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
         
         log.trace("<test03VerifyCertEntry()");
@@ -248,17 +240,17 @@ public class TestProtect extends TestCase {
         }
         CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("2");
-        cacheAdmin.protectExternal(admin, entry, dataSource);        	        
-        TableVerifyResult res = cacheAdmin.verify(entry);
+        tableProtectSession.protectExternal(admin, entry, dataSource);        	        
+        TableVerifyResult res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setStatus(RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE);
-        res = cacheAdmin.verify(entry);
+        res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
-        cacheAdmin.protectExternal(admin, entry, dataSource);        	        
-        res = cacheAdmin.verify(entry);
+        tableProtectSession.protectExternal(admin, entry, dataSource);        	        
+        res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setRevocationDate(new Date());
-        res = cacheAdmin.verify(entry);
+        res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
         
         log.trace("<test04VerifyCertEntryExternal()");

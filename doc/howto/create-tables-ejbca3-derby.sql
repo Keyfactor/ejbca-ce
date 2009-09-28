@@ -312,7 +312,6 @@ CREATE TABLE TableProtectData (
     time bigint NOT NULL,
     dbKey varchar(256),
     dbType varchar(256),
-    keyRef varchar(256),
     keyType varchar(256),
     PRIMARY KEY (id)
 );

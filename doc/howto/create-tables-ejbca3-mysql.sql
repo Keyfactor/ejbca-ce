@@ -312,7 +312,6 @@ CREATE TABLE TableProtectData (
     time bigint(20) NOT NULL DEFAULT '0',
     dbKey varchar(250) binary NULL DEFAULT NULL,
     dbType varchar(250) binary NULL DEFAULT NULL,
-    keyRef varchar(250) binary NULL DEFAULT NULL,
     keyType varchar(250) binary NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );

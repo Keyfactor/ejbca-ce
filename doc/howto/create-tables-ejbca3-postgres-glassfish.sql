@@ -341,7 +341,6 @@ CREATE TABLE tableprotectdata (
   time INT8 NOT NULL, 
   dbKey TEXT, 
   dbType TEXT, 
-  keyRef TEXT, 
   keyType TEXT, 
 CONSTRAINT pk_tableprotectdata PRIMARY KEY (id)
 );

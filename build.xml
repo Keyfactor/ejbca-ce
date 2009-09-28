@@ -686,7 +686,7 @@
     <target name="upgrade">
         <!-- Get input -->
         <input message="Which version of EJBCA are you upgrading from:" addproperty="ejbca.upgradefromversion"
-        	validargs="3.2.x,3.3.x,3.4.x,3.5.x,3.6.x,3.7.x,3.8.x"/> 
+        	validargs="3.2.x,3.3.x,3.4.x,3.5.x,3.6.x,3.7.x,3.8.x,3.9.x"/> 
         <java classname="org.ejbca.ui.cli.Upgrade" fork="true">
             <sysproperty key="ejbcaDB" value="${database.name}" />
             <sysproperty key="ejbcaUpgradeFromVersion" value="${ejbca.upgradefromversion}" />

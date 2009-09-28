@@ -28,8 +28,5 @@
   <field-name>dbType</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>keyRef</field-name>
-</cmp-field>
-<cmp-field>
   <field-name>keyType</field-name>
 </cmp-field>

@@ -900,12 +900,6 @@
             <env-entry-value><![CDATA[true]]></env-entry-value>
          </env-entry>
          <env-entry>
-            <description><![CDATA[Key (reference or actual key, depending on type) for protection]]></description>
-            <env-entry-name>keyRef</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value><![CDATA[key1]]></env-entry-value>
-         </env-entry>
-         <env-entry>
             <description><![CDATA[Key for reference above]]></description>
             <env-entry-name>key1</env-entry-name>
             <env-entry-type>java.lang.String</env-entry-type>
@@ -1552,10 +1546,6 @@
          <cmp-field id="CMPAttribute_22">
             <description><![CDATA[]]></description>
             <field-name>dbType</field-name>
-         </cmp-field>
-         <cmp-field id="CMPAttribute_23">
-            <description><![CDATA[]]></description>
-            <field-name>keyRef</field-name>
          </cmp-field>
          <cmp-field id="CMPAttribute_24">
             <description><![CDATA[]]></description>

@@ -864,10 +864,6 @@
          <dbms-column>dbType</dbms-column>
       </field-map>
       <field-map>
-         <cmp-field>keyRef</cmp-field>
-         <dbms-column>keyRef</dbms-column>
-      </field-map>
-      <field-map>
          <cmp-field>keyType</cmp-field>
          <dbms-column>keyType</dbms-column>
       </field-map>

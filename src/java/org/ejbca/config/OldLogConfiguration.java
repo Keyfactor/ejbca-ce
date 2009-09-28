@@ -17,6 +17,7 @@ public class OldLogConfiguration {
 
 	/**
 	 * Use simple log singing
+	 * @deprecated "protection.logprotect" in "protect.properties" instead. (Handled by org.ejbca.config.ProtectConfiguration.)
 	 */
 	public static boolean getLogSigning() {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getString("logSigning", "false"));

@@ -46,6 +46,8 @@ import org.ejbca.core.ejb.log.ILogSessionHome;
 import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.ejb.log.IProtectedLogSessionHome;
 import org.ejbca.core.ejb.log.IProtectedLogSessionRemote;
+import org.ejbca.core.ejb.protect.TableProtectSessionHome;
+import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
@@ -90,6 +92,7 @@ public class TestTools {
     private static IUserAdminSessionRemote userAdminSession;
     private static IPublisherQueueSessionRemote publisherQueueSession;
     private static IPublisherSessionRemote publisherSession;
+    private static TableProtectSessionRemote tableProtectSession;
     
 
 	public static IApprovalSessionRemote getApprovalSession() {
@@ -294,6 +297,18 @@ public class TestTools {
 			return null;
 		}
 		return publisherSession;
+	}
+
+	public static TableProtectSessionRemote getTableProtectSession() {
+		try {
+			if (tableProtectSession == null) {
+				tableProtectSession = ((TableProtectSessionHome) ServiceLocator.getInstance().getRemoteHome(TableProtectSessionHome.JNDI_NAME, TableProtectSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+		return tableProtectSession;
 	}
 
 	/**

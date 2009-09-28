@@ -108,14 +108,6 @@ cmp.tcp.conffile                = ${cmp.tcp.conffile}
 xkms.enabled                    = ${xkms.enabled}
 xkms.serviceport                = ${xkms.serviceport}
       </echo>
-<!--
-protection.enabled=${protection.enabled}
-protection.logprotect=${protection.logprotect}
-protection.keyref=${protection.keyref}
-protection.keytype=${protection.keytype}
-protection.key=${protection.key}
-protection.certprotect=${protection.certprotect}
--->   
 
         <!-- Create the time stamp -->
         <tstamp/>

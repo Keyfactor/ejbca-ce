@@ -562,10 +562,6 @@
                <opm:field name="DBTYPE" xsi:type="opm:column"/>
             </opm:attribute-mapping>
             <opm:attribute-mapping xsi:type="toplink:direct-mapping">
-               <opm:attribute-name>keyRef</opm:attribute-name>
-               <opm:field name="KEYREF" xsi:type="opm:column"/>
-            </opm:attribute-mapping>
-            <opm:attribute-mapping xsi:type="toplink:direct-mapping">
                <opm:attribute-name>keyType</opm:attribute-name>
                <opm:field name="KEYTYPE" xsi:type="opm:column"/>
             </opm:attribute-mapping>

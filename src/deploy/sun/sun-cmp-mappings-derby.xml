@@ -197,12 +197,6 @@
             </cmp-field-mapping>
 
             <cmp-field-mapping>
-                <field-name>keyRef</field-name>
-                <column-name>KEYREF</column-name>
-
-            </cmp-field-mapping>
-
-            <cmp-field-mapping>
                 <field-name>keyType</field-name>
                 <column-name>KEYTYPE</column-name>
 

@@ -317,16 +317,6 @@
     	<equals arg1="true" arg2="${web.renewalenabled}" casesensitive="false" trim="true" />
     </condition>
 
-    <!-- Extra Protection settings for internal log signing etc -->
-    <property name="protection.enabled" value="false" />
-    <property name="protection.logprotect" value="false" />
-    <property name="protection.certprotect" value="false" />
-    <property name="protection.keyref" value="key1" />
-    <property name="protection.key" value="foo123" />
-    <property name="protection.keytype" value="SOFT_HMAC" />
-    <property name="protection.warnonmissingrow" value="true" />
-    
-	
 	<!-- CMP settings -->
 	<property name="cmp.allowraverifypopo" value="false" />
 	<property name="cmp.defaultca" value="" />

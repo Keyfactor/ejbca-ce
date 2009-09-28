@@ -15,6 +15,9 @@ package org.ejbca.config;
 
 import org.apache.log4j.Logger;
 
+/**
+ * This file handles configuration from web.properties
+ */
 public class WebConfiguration {
 
 	private static final Logger log = Logger.getLogger(WebConfiguration.class);

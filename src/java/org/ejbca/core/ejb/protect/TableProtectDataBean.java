@@ -33,8 +33,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *  signature actual signature.
  *  dbKey database key of the underlying row that is protected, used to find the row for verification.
  *  dbType type of object protected, determined by the OBJECT, for example LOGENTRY
- *  keyRef reference to key used for protection.
- *  keyType type of key which the reference refers to
+ *  keyType type of key
  * </pre>
  *
  * @ejb.bean
@@ -180,17 +179,6 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
     public abstract void setDbType(String dbType);
 
     /**
-     * @ejb.persistence column-name="keyRef"
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract String getKeyRef();
-
-    /**
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract void setKeyRef(String keyRef);
-
-    /**
      * @ejb.persistence column-name="keyType"
      * @ejb.interface-method view-type="local"
      */
@@ -212,7 +200,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
      *
      * @ejb.create-method view-type="local"
      */
-    public String ejbCreate(String id, int hashVersion, String alg, String hash, String signature, Date time, String dbKey, String dbType, String keyRef, String keyType) throws CreateException {
+    public String ejbCreate(String id, int hashVersion, String alg, String hash, String signature, Date time, String dbKey, String dbType, String keyType) throws CreateException {
         setId(id);
         setVersion(CURRENT_VERSION);
         setHashVersion(hashVersion);
@@ -222,14 +210,13 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
         setTime(time.getTime());
         setDbKey(dbKey);
         setDbType(dbType);
-        setKeyRef(keyRef);
         setKeyType(keyType);
         return null;
     }
 
     /**
      */
-    public void ejbPostCreate(String id, int hashVersion, String alg, String hash, String signature, Date time, String dbKey, String dbType, String keyRef, String keyType) {
+    public void ejbPostCreate(String id, int hashVersion, String alg, String hash, String signature, Date time, String dbKey, String dbType, String keyType) {
     	// Do nothing. Required.
     }
 }

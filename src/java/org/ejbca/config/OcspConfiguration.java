@@ -114,7 +114,6 @@ public class OcspConfiguration {
 		return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
 	}
 
-
 	/**
 	 * If set to true the OCSP responses will be signed directly by the CAs certificate instead of the CAs OCSP responder.
 	 */

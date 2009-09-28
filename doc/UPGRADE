@@ -24,10 +24,43 @@ SELECT, UPDATE, INSERT and DELETE.
 
 From EJBCA 3.9.x to EJBCA 3.10.x
 --------------------------------
-To improve testing there is a new configuration option to allow changing used
-properties through Remote EJB access using conf/ejbca.properties#ejbca.productionmode.
-Default is to not allow configuration changes, but system tests will fail until
-this is allowed. 
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+
+If you are upgrading a cluster, you should run the upgrade process with only one node running,
+and then simply update the software on the other nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Copy the directory 'p12' from the earlier installation. 
+
+3. Shut down JBoss and do 'ant bootstrap' with the new version.
+
+4. Start up JBoss. You might see some errors during startup due to that the database is not upgraded yet.
+
+5. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the necessary database updates. 
+   Note: On some application server you may have to upgrade the database manually, see below.
+
+6. Restart JBoss again to flush all caches.
+
+7. Go into the Admin GUI and verify you settings.
+
+In EJBCA 3.10 some unused code related to the "protection.keyref" property in conf/protection.properties
+has been dropped. This also means a small database change where the unused column TableProtectData.keyRef
+is dropped. To see which database structural changes are made you can find the SQL commands for your
+database in src/upgrade/39_310/39_310-upgrade-<<database name>>.sql.
+
+The database upgrade is normally done automatically for you when you run 'ant upgrade'. 
+Some application servers will not let you deploy unless the database is in sync though, so you may have
+to run the SQL commands manually.
+
+You should be able to upgrade from EJBCA 3.2.x directly to 3.10.x, by following the same instructions
+as above (this upgrade is not thoroughly tested though). Also see instructions below for additional
+issues when upgrading all the way from a much older version.
+
+To improve testing there is a new configuration option to allow changing used properties through Remote
+EJB access using conf/ejbca.properties#ejbca.productionmode. Default is to not allow configuration
+changes, but some of the development system tests will fail until this is allowed. 
 
 From EJBCA 3.9.x to EJBCA 3.9.x
 -------------------------------

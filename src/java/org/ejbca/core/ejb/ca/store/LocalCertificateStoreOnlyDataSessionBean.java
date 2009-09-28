@@ -21,8 +21,8 @@ import java.util.Date;
 
 import javax.ejb.CreateException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
@@ -48,11 +48,6 @@ import org.ejbca.util.CertTools;
  * type="java.lang.String"
  * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- * @ejb.env-entry description="Enable or disable protection of database entrys"
- *   name="certSigning"
- *   type="java.lang.String"
- *   value="${protection.certprotect}"
- *   
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
  * ref-name="ejb/CertificateDataLocal"
@@ -237,8 +232,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      */
     public void ejbCreate() throws CreateException {
         certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
-        String sign = getLocator().getString("java:comp/env/certSigning");
-        if (StringUtils.equalsIgnoreCase(sign, "true")) {
+        if (ProtectConfiguration.getCertProtectionEnabled()) {
         	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
         }
     }

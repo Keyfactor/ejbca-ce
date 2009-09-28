@@ -29,6 +29,7 @@ import javax.ejb.ObjectNotFoundException;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -54,31 +55,6 @@ import org.ejbca.util.StringTools;
  *
  * @weblogic.enable-call-by-reference True
  *
- * @ejb.env-entry description="Enable or disable protection alltogether"
- *   name="enabled"
- *   type="java.lang.String"
- *   value="${protection.enabled}"
- *   
- * @ejb.env-entry description="If we should warn if a protection row is missing"
- *   name="warnOnMissingRow"
- *   type="java.lang.String"
- *   value="${protection.warnonmissingrow}"
- *   
- * @ejb.env-entry description="Key (reference or actual key, depending on type) for protection"
- *   name="keyRef"
- *   type="java.lang.String"
- *   value="${protection.keyref}"
- *   
- * @ejb.env-entry description="Key for reference above"
- *   name="${protection.keyref}"
- *   type="java.lang.String"
- *   value="${protection.key}"
- *   
- * @ejb.env-entry description="Key type, ENC_SOFT_HMAC or SOFT_HMAC"
- *   name="keyType"
- *   type="java.lang.String"
- *   value="${protection.keytype}"
- *   
  * @ejb.ejb-external-ref
  *   description="The Protect Entry Data entity bean"
  *   view-type="local"
@@ -112,11 +88,9 @@ public class TableProtectSessionBean extends BaseSessionBean {
     /** The home interface of  LogEntryData entity bean */
     private TableProtectDataLocalHome protectentryhome;
 
-    private String keyType = null;
-    private String keyRef = null;
+    private String keyType = ProtectConfiguration.getProtectionKeyType();
     private String key = null;
-    boolean enabled = false;
-    boolean warnOnMissingRow = true;
+    boolean warnOnMissingRow = ProtectConfiguration.getWarnOnMissingRow();
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -125,27 +99,15 @@ public class TableProtectSessionBean extends BaseSessionBean {
         try {
         	CertTools.installBCProvider();
             protectentryhome = (TableProtectDataLocalHome) getLocator().getLocalHome(TableProtectDataLocalHome.COMP_NAME);
-            keyType = getLocator().getString("java:comp/env/keyType");
-            keyRef = getLocator().getString("java:comp/env/keyRef");
-            String tmpkey = getLocator().getString("java:comp/env/"+keyRef);
-            if (StringUtils.equalsIgnoreCase(keyType, "ENC_SOFT_HMAC")) {
-            	key = StringTools.pbeDecryptStringWithSha256Aes192(tmpkey);
+            if (keyType == ProtectConfiguration.PROTECTIONTYPE_ENC_SOFT_HMAC) {
+            	key = StringTools.pbeDecryptStringWithSha256Aes192(ProtectConfiguration.getProtectionKey());
             } else {
-            	key = tmpkey;
-            }
-            String en = getLocator().getString("java:comp/env/enabled");
-            if (StringUtils.equalsIgnoreCase(en, "true") && key != null) {
-            	enabled = true;
-            }
-            String warn = getLocator().getString("java:comp/env/warnOnMissingRow");
-            if (StringUtils.equalsIgnoreCase(warn, "false")) {
-            	warnOnMissingRow = false;
+            	key = ProtectConfiguration.getProtectionKey();
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
     }
-
 
     /**
      * Store a protection entry in an external, remote database.
@@ -157,7 +119,7 @@ public class TableProtectSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      */
     public void protectExternal(Admin admin, Protectable entry, String dataSource) {
-    	if (!enabled) {
+    	if (!ProtectConfiguration.getProtectionEnabled()) {
     		return;
     	}
     	int hashVersion = entry.getHashVersion();
@@ -179,9 +141,9 @@ public class TableProtectSessionBean extends BaseSessionBean {
     		if (id != null) {
                 String msg = intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey);            	
 				info(msg);
-				ProtectPreparer uprep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyRef,keyType);
+				ProtectPreparer uprep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
     			try {
-    				JDBCUtil.execute( "UPDATE TableProtectData SET version=?,hashVersion=?,protectionAlg=?,hash=?,signature=?,time=?,dbKey=?,dbType=?,keyRef=?,keyType=? WHERE id=?",
+    				JDBCUtil.execute( "UPDATE TableProtectData SET version=?,hashVersion=?,protectionAlg=?,hash=?,signature=?,time=?,dbKey=?,dbType=?,keyType=? WHERE id=?",
     						uprep, dataSource );
     			} catch (Exception ue) {
     				error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, ue);
@@ -189,8 +151,8 @@ public class TableProtectSessionBean extends BaseSessionBean {
 			} else {
 	    		id = GUIDGenerator.generateGUID(this);
 	        	try {
-	        		ProtectPreparer prep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyRef,keyType);
-	        		JDBCUtil.execute( "INSERT INTO TableProtectData (version,hashVersion,protectionAlg,hash,signature,time,dbKey,dbType,keyRef,keyType,id) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+	        		ProtectPreparer prep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
+	        		JDBCUtil.execute( "INSERT INTO TableProtectData (version,hashVersion,protectionAlg,hash,signature,time,dbKey,dbType,keyType,id) VALUES (?,?,?,?,?,?,?,?,?,?)",
 	        				prep, dataSource );
 	        	} catch (Exception e) {
 	                String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
@@ -213,7 +175,7 @@ public class TableProtectSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      */
     public void protect(Admin admin, Protectable entry) {
-    	if (!enabled) {
+    	if (!ProtectConfiguration.getProtectionEnabled()) {
         	if (log.isDebugEnabled()) {
             	debug("protect: not enabled");    		
         	}
@@ -240,12 +202,11 @@ public class TableProtectSessionBean extends BaseSessionBean {
     				data.setTime((new Date()).getTime());
     				data.setDbKey(dbKey);
     				data.setDbType(dbType);
-    				data.setKeyRef(keyRef);
     				data.setKeyType(keyType);
     			}
     		} catch (FinderException e1) {
     			try {
-    				protectentryhome.create(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyRef, keyType);
+    				protectentryhome.create(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyType);
     			} catch (Exception e) {
     	            String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
     				error(msg, e);
@@ -269,7 +230,7 @@ public class TableProtectSessionBean extends BaseSessionBean {
      */
     public TableVerifyResult verify(Protectable entry) {
     	TableVerifyResult ret = new TableVerifyResult();
-    	if (!enabled) {
+    	if (!ProtectConfiguration.getProtectionEnabled()) {
     		return ret;
     	}
     	String alg = HMAC_ALG;
@@ -280,11 +241,7 @@ public class TableProtectSessionBean extends BaseSessionBean {
     		TableProtectDataLocal data = protectentryhome.findByDbTypeAndKey(dbType, dbKey);
     		int hashVersion = data.getHashVersion();
     		String hash = entry.getHash(hashVersion);
-    		if (!StringUtils.equals(keyRef, data.getKeyRef())) {
-    			ret.setResultCode(TableVerifyResult.VERIFY_NO_KEY);    			
-                String msg = intres.getLocalizedMessage("protect.errorverifynokey", dbType, dbKey);            	
-    			error(msg);
-    		} else if (!StringUtils.equals(alg, data.getProtectionAlg())) {
+    		if (!StringUtils.equals(alg, data.getProtectionAlg())) {
         			ret.setResultCode(TableVerifyResult.VERIFY_INCOMPATIBLE_ALG);    			
                     String msg = intres.getLocalizedMessage("protect.errorverifyalg", dbType, dbKey);            	
         			error(msg);
@@ -361,10 +318,9 @@ public class TableProtectSessionBean extends BaseSessionBean {
         private final long time;
         private final String dbKey; 
         private final String dbType; 
-        private final String keyRef; 
         private final String keyType; 
         
-        public ProtectPreparer(final String id, final int version, final int hashVersion, final String alg, final String hash, final String signature, final long time, final String dbKey, final String dbType, final String keyRef, final String keyType) {
+        public ProtectPreparer(final String id, final int version, final int hashVersion, final String alg, final String hash, final String signature, final long time, final String dbKey, final String dbType, final String keyType) {
 			super();
 			this.id = id;
 			this.version = version;
@@ -375,7 +331,6 @@ public class TableProtectSessionBean extends BaseSessionBean {
 			this.time = time;
 			this.dbKey = dbKey;
 			this.dbType = dbType;
-			this.keyRef = keyRef;
 			this.keyType = keyType;
 		}
 		public void prepare(PreparedStatement ps) throws Exception {
@@ -387,14 +342,11 @@ public class TableProtectSessionBean extends BaseSessionBean {
             ps.setLong(6, time);
             ps.setString(7, dbKey);
             ps.setString(8, dbType);
-            ps.setString(9, keyRef);
-            ps.setString(10, keyType);
-            ps.setString(11,id);
+            ps.setString(9, keyType);
+            ps.setString(10,id);
         }
         public String getInfoString() {
         	return "Store:, id: "+id+", dbKey:"+dbKey+", dbType: "+dbType;
         }
     }
-
-
-} // TableProtectSessionBean
+}

@@ -29,6 +29,7 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.OldLogConfiguration;
+import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -93,7 +94,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
     private String deviceName = null;
 
     /** If signing of logs is enabled of not, default not */
-    private boolean logsigning = OldLogConfiguration.getLogSigning();
+    private boolean logsigning = OldLogConfiguration.getLogSigning() || ProtectConfiguration.getLogProtectionEnabled();
 
     /**
 	 * Initializes

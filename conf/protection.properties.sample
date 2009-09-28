@@ -14,7 +14,7 @@
 # Default: false
 #protection.enabled=false
 
-# Enable protection of internal database logs
+# Enable protection of internal database logs. See section about Log signing in EJBCA Administrator section at wiki.ejbca.org.
 # Default: false
 #protection.logprotect=false
 
@@ -26,12 +26,7 @@
 # Default: true
 #protection.warnonmissingrow=true
 
-# Reference to a key to be read, mostly enabled for future use when several different keys can be used
-# for different types of protection entries.
-# Default: key1
-#protection.keyref=key1
-
-# The key referenced above, can be a clear text key, an encrypted key or some other type,
+# The key. Can be either a clear text key or an encrypted key,
 # depending on the value of protection.keytype.
 # Default: foo123
 #protection.key=foo123

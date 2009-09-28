@@ -191,6 +191,12 @@ public class UpgradeSessionBean extends BaseSessionBean {
         		return false;
         	}
         }
+    	// Upgrade database change between ejbca 3.9.x and 3.10.x if needed
+        if (oldVersion <= 309) {
+        	if (!migrateDatabase310(dbtype)) {
+        		return false;
+        	}
+        }
         log.trace("<upgrade()");
         return true;
     }
@@ -334,6 +340,17 @@ public class UpgradeSessionBean extends BaseSessionBean {
 	public boolean migrateDatabase39(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.8.x to ejbca 3.9.x");
 		boolean ret = migradeDatabase("/38_39/38_39-upgrade-"+dbtype+".sql");
+        error("(this is not an error) Finished migrating database.");
+        return ret;
+	}
+
+    /** 
+     * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     */
+	public boolean migrateDatabase310(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.9.x to ejbca 3.10.x");
+		boolean ret = migradeDatabase("/39_310/39_310-upgrade-"+dbtype+".sql");
         error("(this is not an error) Finished migrating database.");
         return ret;
 	}

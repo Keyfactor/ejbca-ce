@@ -34,8 +34,8 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -92,11 +92,6 @@ import org.ejbca.util.StringTools;
  * type="java.lang.String"
  * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- * @ejb.env-entry description="Enable or disable protection of database entrys"
- *   name="certSigning"
- *   type="java.lang.String"
- *   value="${protection.certprotect}"
- *   
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
  * ref-name="ejb/CertificateDataLocal"
@@ -216,7 +211,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     private TableProtectSessionLocalHome protecthome = null;
     
     /** If protection of database entries are enabled of not, default not */
-    private boolean protect = false;
+    private boolean protect = ProtectConfiguration.getCertProtectionEnabled();
     
     /**
      * The local interface of the publisher session bean
@@ -240,9 +235,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         certReqHistoryHome = (CertReqHistoryDataLocalHome) getLocator().getLocalHome(CertReqHistoryDataLocalHome.COMP_NAME);
         certprofilehome = (CertificateProfileDataLocalHome) getLocator().getLocalHome(CertificateProfileDataLocalHome.COMP_NAME);
-        String sign = getLocator().getString("java:comp/env/certSigning");
-        if (StringUtils.equalsIgnoreCase(sign, "true")) {
-        	protect = true;
+        if (protect) {
         	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
         }
 
