@@ -327,24 +327,30 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     if ( !signingEntity.isOK() ) {
                         pw.println();
                         pw.print(errMsg);
-                        m_log.error(errMsg);
-                    } else {
-                        try {
-                            final PrivateKey privKey = signingEntity.keyContainer.getKey();
-                            final X509Certificate entityCert = signingEntity.keyContainer.getCertificate();
-                            final String providerName = signingEntity.providerHandler.getProviderName();
-                            final boolean isOK = signTest(privKey, entityCert.getPublicKey(),
-                                                          entityCert.getSubjectDN().toString(), providerName);
-                            if ( !isOK ) {
-                                pw.println();
-                                pw.print(errMsg);
-                                m_log.error(errMsg);
-                            } else {
-                                m_log.debug("Test of \""+errMsg+" \"OK!");
-                            }
-                        } finally {
-                            signingEntity.keyContainer.releaseKey();
+                        m_log.error("No key available. "+errMsg);
+                        continue;
+                    }
+                    final X509Certificate entityCert = signingEntity.keyContainer.getCertificate();
+                    final String providerName = signingEntity.providerHandler.getProviderName();
+                    final PrivateKey privKey = signingEntity.keyContainer.getKey();
+                    if ( privKey==null ) {
+                        pw.println();
+                        pw.print(errMsg);
+                        m_log.error("No key available. "+errMsg);
+                        continue;
+                    }
+                    try {
+                        final boolean isOK = signTest(privKey, entityCert.getPublicKey(),
+                                                      entityCert.getSubjectDN().toString(), providerName);
+                        if ( !isOK ) {
+                            pw.println();
+                            pw.print(errMsg);
+                            m_log.error("Key not working. "+errMsg);
+                            continue;
                         }
+                        m_log.debug("Test of \""+errMsg+" \"OK!");
+                    } finally {
+                        signingEntity.keyContainer.releaseKey();
                     }
                 }
             }
@@ -468,7 +474,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         private int nrOfusers = 0;
         /**
-         * Contructs the key reference.
+         * Constructs the key reference.
          * @param a sets {@link #alias}
          * @param pw sets {@link #password}
          * @param _keyStore sets {@link #keyStore}
@@ -532,6 +538,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     this.wait();
                 }
             }
+            if ( this.privateKey==null ) {
+                return null;
+            }
             synchronized(this.privateKey) {
                 this.nrOfusers++;
                 return this.privateKey;
@@ -541,6 +550,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#releaseKey()
          */
         public void releaseKey() {
+            if ( this.privateKey==null ) {
+                m_log.warn("This should never ever happen. But if it does things may work afterwards anyway.");
+                this.nrOfusers--;
+                if ( this.nrOfusers<1 ) {
+                    this.privateKey.notifyAll();
+                }
+                return;
+            }
             synchronized(this.privateKey) {
                 this.nrOfusers--;
                 if ( this.nrOfusers<1 ) {
@@ -883,7 +900,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
         }
         /**
-         * Notify that keygenearion has ended.
+         * Notify that key-generation has ended.
          */
         private synchronized void keyGenerationFinished() {
             this.isUpdatingKey = false;
@@ -896,12 +913,19 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             synchronized(this) {
                 this.isUpdatingKey = true;
             }
+            if ( this.privateKey==null ) {
+                m_log.warn("This should never ever happen. But if it does things may work afterwards anyway.");
+                if ( this.nrOfusers>0 ) {
+                    throw new Error("No private key in '"+this.toString()+"'. Still used by "+this.nrOfusers+" users.");
+                }
+                return;
+            }
             synchronized(this.privateKey) {
                 while( this.nrOfusers>0 ) {
                     try {
                         this.privateKey.wait();
                     } catch (InterruptedException e) {
-                        new Error(e); // should never happend.
+                        new Error(e); // should never happen.
                     }
                 }
             }
@@ -1292,14 +1316,18 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     }
                     final PrivateKeyContainer pkf = new PrivateKeyContainerKeyStore( alias, keyPassword!=null ? keyPassword.toCharArray() : null,
                                                                                      keyStore, cert, providerHandler.getProviderName(), fileName );
+                    final PrivateKey key = pkf.getKey();
+                    if ( key==null ) {
+                        m_log.debug("Key not available. Not adding signer entity for: "+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                        continue;
+                    }
                     try {
-                        final PrivateKey key = pkf.getKey();
-                        if ( key!=null && signTest(key, cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
-                            m_log.debug("Adding sign entity for '"+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
-                            putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);
-                        } else {
-                            m_log.debug("Not adding signer entity for: "+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                        if ( !signTest(key, cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
+                            m_log.debug("Key not working. Not adding signer entity for: "+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                            continue;
                         }
+                        m_log.debug("Adding sign entity for '"+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                        putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);
                     } finally {
                         pkf.releaseKey();
                     }
@@ -1735,32 +1763,30 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             final PrivateKey privKey;
             final X509Certificate entityCert;
             try {
-                try {
-                    privKey = this.keyContainer.getKey();
-                    entityCert = this.keyContainer.getCertificate();
-                } catch (ExtendedCAServiceRequestException e) {
-                    this.providerHandler.reload();
-                    throw e;
-                } catch (Exception e) {
-                    this.providerHandler.reload();
-                    throw new ExtendedCAServiceRequestException(e);
-                }
-                if ( privKey==null ) {
-                    throw new ExtendedCAServiceRequestException(hsmErrorString);
-                }
-                try {
-                    return OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, getCertificateChain(entityCert));
-                } catch( ExtendedCAServiceRequestException e) {
-                    this.providerHandler.reload();
-                    throw e;
-                } catch( IllegalExtendedCAServiceRequestException e ) {
-                    throw e;
-                } catch( Throwable e ) {
-                    this.providerHandler.reload();
-                    final ExtendedCAServiceRequestException e1 = new ExtendedCAServiceRequestException(hsmErrorString);
-                    e1.initCause(e);
-                    throw e1;
-                }
+                entityCert = this.keyContainer.getCertificate();
+                privKey = this.keyContainer.getKey(); // must be last.
+            } catch (ExtendedCAServiceRequestException e) {
+                this.providerHandler.reload();
+                throw e;
+            } catch (Exception e) {
+                this.providerHandler.reload();
+                throw new ExtendedCAServiceRequestException(e);
+            }
+            if ( privKey==null ) {
+                throw new ExtendedCAServiceRequestException(hsmErrorString);
+            }
+            try {
+                return OCSPUtil.createOCSPCAServiceResponse(request, privKey, providerName, getCertificateChain(entityCert));
+            } catch( ExtendedCAServiceRequestException e) {
+                this.providerHandler.reload();
+                throw e;
+            } catch( IllegalExtendedCAServiceRequestException e ) {
+                throw e;
+            } catch( Throwable e ) {
+                this.providerHandler.reload();
+                final ExtendedCAServiceRequestException e1 = new ExtendedCAServiceRequestException(hsmErrorString);
+                e1.initCause(e);
+                throw e1;
             } finally {
                 this.keyContainer.releaseKey();
             }
