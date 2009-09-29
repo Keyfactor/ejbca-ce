@@ -30,7 +30,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -39,13 +38,16 @@ import java.util.Hashtable;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
@@ -88,6 +90,7 @@ public class OCSPUnidClient {
     final private X509Certificate[] certChain;
     final private X509Extensions extensions;
     final private byte nonce[];
+    private static final Logger m_log = Logger.getLogger(OCSPUnidClient.class);
 	
 	/**
 	 * @param keystore KeyStore client keystore used to authenticate TLS client authentication, or null if TLS is not used
@@ -112,7 +115,7 @@ public class OCSPUnidClient {
 	        final X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));
 	        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, nonceext);
 	        // Don't bother adding Unid extension if we are not using client authentication
-	        if (getfnr && ks!=null) {
+	        if ( getfnr ) {
 	            X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
 	            exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
 	        }
@@ -217,7 +220,7 @@ public class OCSPUnidClient {
     //
     
     private OCSPUnidResponse sendOCSPRequest(byte[] ocspPackage, Certificate cacert, boolean useGet) throws IOException, OCSPException, GeneralSecurityException {
-    	HttpURLConnection con;
+    	final HttpURLConnection con;
     	if (useGet) {
         	String b64 = new String(Base64.encode(ocspPackage, false));
         	//String urls = URLEncoder.encode(b64, "UTF-8");
@@ -307,9 +310,15 @@ public class OCSPUnidClient {
         }
         // Verify the certificate chain.
         for (int i=0; i<chain.length; i++) {
+//            final X509Certificate cert1 = (X509Certificate)java.security.cert.CertificateFactory.getInstance("X509").generateCertificate(new ByteArrayInputStream(chain[i].getEncoded()));
+            final X509Certificate cert1 = chain[i];
+            final X509Certificate cert2 = chain[Math.min(i+1, chain.length-1)];
             try {
-                chain[i].verify(chain[Math.min(i+1, chain.length-1)].getPublicKey());          
-            } catch (SignatureException e) {
+                cert1.verify(cert2.getPublicKey());          
+            } catch (GeneralSecurityException e) {
+                m_log.debug("verifying problem with", e);
+                m_log.debug("cert to be verified: "+cert1);
+                m_log.debug("verifying cert: "+cert2);
                 ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
                 return ret;         
             }
@@ -340,24 +349,35 @@ public class OCSPUnidClient {
 
     private SSLSocketFactory getSSLFactory() throws GeneralSecurityException, IOException {
 
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        KeyManagerFactory kmf = null;
+        final KeyManager km[];
+        final TrustManager tm[];
 
         // Put the key and certs in the user keystore (if available)
-        if (ks != null) {
-        	kmf = KeyManagerFactory.getInstance("SunX509");
-            kmf.init(ks, passphrase.toCharArray());
+        if (this.ks != null) {
+            final KeyManagerFactory kmf;
+            kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(this.ks, this.passphrase.toCharArray());
+            km = kmf.getKeyManagers();
+        } else {
+            km= null;
         }
-
         // Now make a truststore to verify the server
-        KeyStore trustks = KeyStore.getInstance("jks");
-        trustks.load(null, "foo123".toCharArray());
-        // add trusted CA cert
-        trustks.setCertificateEntry("trusted", certChain[certChain.length-1]);
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(trustks);
-
-        ctx.init(kmf == null ? null : kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        if ( this.certChain!=null && this.certChain.length>0) {
+            final KeyStore trustks = KeyStore.getInstance("jks");
+            trustks.load(null, "foo123".toCharArray());
+            // add trusted CA cert
+            trustks.setCertificateEntry("trusted", this.certChain[this.certChain.length-1]);
+            final TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(trustks);
+            tm = tmf.getTrustManagers();
+        } else {
+            tm = null;
+        }
+        if ( km==null && tm==null ) {
+            return (SSLSocketFactory)SSLSocketFactory.getDefault();
+        }
+        final SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(km, tm, null);
 
         return ctx.getSocketFactory();
     }
@@ -370,7 +390,7 @@ public class OCSPUnidClient {
      * @throws GeneralSecurityException
      */
     private URLConnection getUrlConnection(URL url) throws IOException, GeneralSecurityException {
-        URLConnection orgcon = url.openConnection();
+        final URLConnection orgcon = url.openConnection();
         if (orgcon instanceof HttpsURLConnection) {
             HttpsURLConnection con = (HttpsURLConnection) orgcon;
             con.setHostnameVerifier(new SimpleVerifier());

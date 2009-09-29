@@ -55,7 +55,8 @@ public class Ocsp extends ClientToolBox {
         final SerialNrs serialNrs;
         final String keyStoreFileName;
         final String keyStorePassword;
-        boolean useGet = false;
+        final boolean useGet;
+		final private boolean getFnr;
         private class MyCommandFactory implements CommandFactory {
             MyCommandFactory() {
                 super();
@@ -65,25 +66,32 @@ public class Ocsp extends ClientToolBox {
             }
         }
         private class SerialNrs {
-            private List<BigInteger> vSerialNrs = new ArrayList<BigInteger>();
+            final private List<BigInteger> vSerialNrs;
             
             SerialNrs(String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
+                List<BigInteger> vSerialNrsTmp;
             	// Try to parse it as pure text-file with one dec-encoded certificate serialnumber on each line, like the one you would get with
                 // echo "select serialNumber from CertificateData where issuerDN like 'CN=AdminCA1%';" | mysql -u ejbca -p ejbca | grep -v serialNumber > ../sns.txt
             	try {
+                    vSerialNrsTmp = new ArrayList<BigInteger>();
             		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(fileName))));
             		String nextLine;
             		while ((nextLine = bufferedReader.readLine()) != null) {
             			nextLine = nextLine.trim();
-            			if (!nextLine.startsWith("#") && !nextLine.startsWith(";")) {
-                            vSerialNrs.add(new BigInteger(nextLine, 10));
+            			if ( nextLine.length()<1 || nextLine.startsWith("#") || nextLine.startsWith(";")  ) {
+            			    continue;
+            			}
+            			if ( nextLine.startsWith("0x") ) {
+            			    vSerialNrsTmp.add(new BigInteger(nextLine.substring(2), 16));
+            			} else {
+            			    vSerialNrsTmp.add(new BigInteger(nextLine));
             			}
             		}
             		bufferedReader.close();
             	} catch (Exception e1) {
             		// Fall back to the format used by EJBCA WS RA CLI stress test
             		System.out.println("Parsing as textfile failed ("+e1.getMessage()+"). Trying to use it as a file with Java Objects.");
-            		vSerialNrs = new ArrayList<BigInteger>();
+            		vSerialNrsTmp = new ArrayList<BigInteger>();
                     InputStream is = new BufferedInputStream(new FileInputStream(fileName));
                     is.mark(1);
                     try {
@@ -104,37 +112,40 @@ public class Ocsp extends ClientToolBox {
                             }
                             try {
                                 is.mark(100);
-                                vSerialNrs.add((BigInteger)oi.readObject());
+                                vSerialNrsTmp.add((BigInteger)oi.readObject());
                             } catch( StreamCorruptedException e ) {
                                 oi=null;
                             }
                         }
                     } catch( EOFException e) {/* do nothing*/}
             	}
+            	this.vSerialNrs = vSerialNrsTmp;
                 System.out.println("Number of certificates in list: "+this.vSerialNrs.size());
             }
             
             BigInteger getRandom() {
-                return vSerialNrs.get(performanceTest.getRandom().nextInt(vSerialNrs.size()));
+                return this.vSerialNrs.get(StressTest.this.performanceTest.getRandom().nextInt(this.vSerialNrs.size()));
             }
         }
         private class Lookup implements Command {
             private final OCSPUnidClient client;
             Lookup() throws Exception {
-                this.client = OCSPUnidClient.getOCSPUnidClient(keyStoreFileName, keyStorePassword, ocspurl, keyStoreFileName!=null, false);
+                this.client = OCSPUnidClient.getOCSPUnidClient(StressTest.this.keyStoreFileName, StressTest.this.keyStorePassword,
+                                                               StressTest.this.ocspurl, StressTest.this.keyStoreFileName!=null,
+                                                               StressTest.this.getFnr);
             }
             public boolean doIt() throws Exception {
-            	BigInteger currentSerialNumber = serialNrs.getRandom();
-                OCSPUnidResponse response = client.lookup(currentSerialNumber, cacert, useGet);
+                final BigInteger currentSerialNumber = StressTest.this.serialNrs.getRandom();
+                final OCSPUnidResponse response = this.client.lookup(currentSerialNumber, StressTest.this.cacert, StressTest.this.useGet);
                 if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
-                    performanceTest.getLog().error("Error querying OCSP server for " + currentSerialNumber+" . Error code is: "+response.getErrorCode());
+                    StressTest.this.performanceTest.getLog().error("Error querying OCSP server for " + currentSerialNumber+" . Error code is: "+response.getErrorCode());
                     return false;
                 }
                 if (response.getHttpReturnCode() != 200) {
-                    performanceTest.getLog().error("Http return code is: "+response.getHttpReturnCode());
+                    StressTest.this.performanceTest.getLog().error("Http return code is: "+response.getHttpReturnCode());
                     return false;
                 }
-                performanceTest.getLog().info("OCSP return value is: "+response.getStatus());
+                StressTest.this.performanceTest.getLog().info("OCSP return value is: "+response.getStatus());
                 return true;
             }
             public String getJobTimeDescription() {
@@ -154,7 +165,12 @@ public class Ocsp extends ClientToolBox {
             final int numberOfThreads = Integer.parseInt(args[5]);
             final int waitTime = Integer.parseInt(args[6]);
             if( args.length>7 ) {
-                this.useGet = "GET".equalsIgnoreCase(args[7]);
+            	final String type=args[7].toUpperCase();
+                this.useGet = type.indexOf("GET")>-1;
+                this.getFnr = type.indexOf("FNR")>-1;
+            } else {
+            	this.useGet = false;
+            	this.getFnr=false;
             }
             if( args.length>8 ) {
                 this.keyStoreFileName = args[8];
@@ -231,7 +247,7 @@ public class Ocsp extends ClientToolBox {
             		System.out.println("OCSP URL is reqired if a serial number is used.");
                     System.exit(-1);
             	}
-                final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, signRequest, true);
+                final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, signRequest, ksfilename!=null);
                 response = client.lookup(new BigInteger(certfilename, 16), getCertFromPemFile(cacertfilename), useGet);
             } else {
             	// It's not a certificate serial number, so treat it as a filename
