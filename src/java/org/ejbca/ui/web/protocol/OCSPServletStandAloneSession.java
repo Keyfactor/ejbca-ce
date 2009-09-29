@@ -1649,6 +1649,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             m_log.info("Reloaded: "+errorMessage);
                         }
                     }
+                    setNextKeyUpdate(new Date().getTime());
                     OCSPServletStandAloneSession.this.isNotReloadingP11Keys = true;
                     return;
                 } catch ( Throwable t ) {
