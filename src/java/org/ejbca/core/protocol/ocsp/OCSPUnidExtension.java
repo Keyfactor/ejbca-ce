@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ocsp;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -22,7 +23,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
@@ -64,7 +67,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
     public static final int ERROR_CERT_REVOKED = 6;
     
     private String dataSourceJndi;
-    private Hashtable trustedCerts = new Hashtable();
+    private Set<BigInteger> trustedCerts = new HashSet<BigInteger>();
     private Certificate cacert = null;
     private int errCode = OCSPUnidExtension.ERROR_NO_ERROR;
     
@@ -103,11 +106,15 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 final String fileName = files[i].getCanonicalPath();
                 // Read the file, don't stop completely if one file has errors in it
                 try {
-                    byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
-                            CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-                    Certificate cert = CertTools.getCertfromByteArray(bytes);
-                    String key = CertTools.getIssuerDN(cert)+";"+CertTools.getSerialNumberAsString(cert);
-                    trustedCerts.put(key,cert);
+                    final byte bFromFile[] = FileTools.readFiletoBuffer(fileName);
+                    byte[] bytes;
+                    try {
+                        bytes = FileTools.getBytesFromPEM(bFromFile, CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
+                    } catch( Throwable t ) {
+                        bytes = bFromFile; // assume binary data (.der)
+                    }
+                    final X509Certificate  cert = (X509Certificate) CertTools.getCertfromByteArray(bytes);
+                    this.trustedCerts.add(cert.getSerialNumber());
                 } catch (CertificateException e) {
             		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
                     m_log.error(errMsg, e);
@@ -236,27 +243,25 @@ public class OCSPUnidExtension implements IOCSPExtension {
             m_log.error(errMsg);
             return false;
         }
-        // The entitys certificate is nr 0
+        // The certificate of the entity is nr 0
         X509Certificate cert = certs[0];
         if (cert == null) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
             m_log.error(errMsg);
             return false;
         }
-        // Check if the certificate is authorized to access the Fnr
-        String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
-        Object found = trustedCerts.get(key);
-        if (found != null) {
+        // Check if the certificate is authorised to access the Fnr
+        if ( this.trustedCerts.contains(cert.getSerialNumber()) ) {
             // If we found in the hashmap the same key with issuer and serialnumber, we know we got it. 
             // Just verify it as well to be damn sure
             try {
-                cert.verify(cacert.getPublicKey());
+                cert.verify(this.cacert.getPublicKey());
             } catch (Exception e) {
         		String errMsg = intres.getLocalizedMessage("ocsp.errorverifycert");
                 m_log.error(errMsg, e);
                 return false;
             }
-            // If verify was succesful we know if was good!
+            // If verify was successful we know if was good!
             return true;
         }
 		String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", request.getRemoteAddr(), request.getRemoteHost());
