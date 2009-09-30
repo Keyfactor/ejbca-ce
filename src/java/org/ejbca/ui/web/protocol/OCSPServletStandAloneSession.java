@@ -553,9 +553,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             if ( this.privateKey==null ) {
                 m_log.warn("This should never ever happen. But if it does things may work afterwards anyway.");
                 this.nrOfusers--;
-                if ( this.nrOfusers<1 ) {
-                    this.privateKey.notifyAll();
-                }
                 return;
             }
             synchronized(this.privateKey) {
@@ -639,7 +636,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 if ( !this.doUpdateKey ) {
                     return;
                 }
-                setNextKeyUpdate(new Date().getTime());
+                setNextKeyUpdate(new Date().getTime()); //  since a key is now reloaded we should wait an whole interval for next key update
                 m_log.debug("rekeying started for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\'");
                 // Check that we at least potentially have a RA key available for P11 sessions
                 if ("pkcs11".equalsIgnoreCase(System.getProperty("javax.net.ssl.keyStoreType")) && OCSPServletStandAloneSession.this.mP11Password == null &&
@@ -1080,7 +1077,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 ) ) {
                     return;
                 }
-                setNextKeyUpdate(currentTime);
+                setNextKeyUpdate(currentTime);// set next time for key loading
             } finally {
                 this.mutex.releaseMutex();
             }
@@ -1649,7 +1646,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             m_log.info("Reloaded: "+errorMessage);
                         }
                     }
-                    setNextKeyUpdate(new Date().getTime());
+                    setNextKeyUpdate(new Date().getTime()); // since all keys are now reloaded we should wait an whole interval for next key update
                     OCSPServletStandAloneSession.this.isNotReloadingP11Keys = true;
                     return;
                 } catch ( Throwable t ) {
