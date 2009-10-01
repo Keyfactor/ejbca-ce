@@ -355,20 +355,23 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 * which is not available on other application servers.
 	 * 
 	 * @param startTime
-	 * @return true if an error has occured
+	 * @return true if an error has occurred since startTime 
 	 */
     private boolean hasErrorHandlerFailedSince(Date startTime) {
-        if ( m_errorHandlerMethod==null )
-            return false;
-        try {
-            final boolean result = ((Boolean)m_errorHandlerMethod.invoke(null, startTime)).booleanValue(); // first object parameter can be null because this is a static method
-            if (!result) {
-                m_log.error("Audit and/or account logging is not working properly.");
+    	boolean result = true; // Default true. If something goes wrong we will fail
+        if ( m_errorHandlerMethod == null ) {
+        	result = false;
+        } else {
+            try {
+                result = ((Boolean)m_errorHandlerMethod.invoke(null, startTime)).booleanValue(); // first object parameter can be null because this is a static method
+                if (result) {
+                    m_log.error("Audit and/or account logging failed since "+startTime);
+                }
+            } catch (Exception e) {
+                m_log.error(e);
             }
-        } catch (Exception e) {
-            m_log.error(e);
         }
-        return false;
+        return result;
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

@@ -39,7 +39,12 @@ public class ProbeableErrorHandler extends org.jboss.logging.util.OnlyOnceErrorH
 		super.error(arg0, arg1, arg2, arg3);
 		lastFailure = new Date();
 	}
-	
+
+	/** Returns true if an error writing to the log files have happened since 'date'.
+	 *  
+	 * @param date see if an error happened later than this date 
+	 * @return true if an error has happened, false if logging works fine.
+	 */
 	public static boolean hasFailedSince(Date date) {
 		if (lastFailure != null) {
 			if(lastFailure.after(date) ) {
