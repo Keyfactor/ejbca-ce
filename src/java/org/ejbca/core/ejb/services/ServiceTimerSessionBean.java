@@ -274,10 +274,16 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 					worker = getWorker(serviceData,serviceName);
 					run = getServiceTimerSession().checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
 					log.debug("Service will run: "+run);
+				} else {
+					log.debug("Service was null and will not run, neither will it be rescheduled, so it will never run. Id: "+timerInfo.intValue());
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 			    // We need to catch wide here in order to continue even if there is some error
-				log.error(e);
+				log.info("Error getting and running service, we must see if we need to re-schedule: "+ e.getMessage());
+				if (log.isDebugEnabled()) {
+					// Don't spam log with stacktraces in normal production cases
+					log.debug("Exception: ", e);
+				}
 				
 				// Check if we have scheduled this time to run again, or if this exception would stop the service from running for ever.
 				// If we can't find any current timer we will try to create a new one.

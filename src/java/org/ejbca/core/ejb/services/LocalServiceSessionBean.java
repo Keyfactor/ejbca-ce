@@ -577,8 +577,24 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         try {            
         	returnval = (getServiceDataHome().findByPrimaryKey(new Integer(id))).serviceConfiguration();                      
         } catch (FinderException e) {
-            // return null if we cant find it
+            // return null if we cant find it, if it is not due to underlying database error
+        	log.debug("Got a FinderException for service with id "+ id + ": "+e.getMessage());
+        	// This is a way to try to figure out if it is an underlying database error or if it is simply that
+        	// the id does not exist.
+        	// If we don't re-throw here it will be treated as the service id does not exist
+        	// and the service will not be rescheduled to run.
+        	if (e.getCause().getClass().getName().contains("SQLException")) {
+        		log.debug("Rethrowing EJBException 1.");
+        		throw new EJBException("Find failed: ", (Exception)e.getCause());
+        	}
+        	if (e.getMessage().contains("Find failed")) {
+        		log.debug("Rethrowing EJBException 2.");
+        		throw new EJBException("Find failed: ", (Exception)e.getCause());
+        	}
         }
+    	if ( (returnval == null) && (log.isDebugEnabled()) ) {
+    		log.debug("Returnval is null for id: "+id);
+    	}
     	if (log.isTraceEnabled()) {
     		log.trace("<getServiceConfiguration: "+id);
     	}
