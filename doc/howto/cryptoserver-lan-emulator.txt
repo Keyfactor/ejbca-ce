@@ -21,9 +21,12 @@ Setup software and initialize pkcs11 slot:
 - ./p11tool lib=./libcs2_pkcs11.so slot=1 loginSO=officer1 initpin=user1
 
 Generate keys (password is user1 as initialized above):
-- $EJBCA_HOME/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 2048 defaultKey 1
-- $EJBCA_HOME/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 2048 signKey 1
-- $EJBCA_HOME/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 512 testKey 1
+- cd $EJBCA_HOME
+- ant clientToolBox
+- cd clientToolBox-dist
+- ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 2048 defaultKey 1
+- ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 2048 signKey 1
+- ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 512 testKey 1
 
 Create a CA in EJBCA:
 
