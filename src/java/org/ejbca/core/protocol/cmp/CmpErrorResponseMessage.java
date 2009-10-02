@@ -47,7 +47,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
  */
 public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
-	private static Logger log = Logger.getLogger(CrmfMessageHandler.class);
+	private static Logger log = Logger.getLogger(CmpErrorResponseMessage.class);
 	/**
 	 * Determines if a de-serialized file is compatible with this class.
 	 *

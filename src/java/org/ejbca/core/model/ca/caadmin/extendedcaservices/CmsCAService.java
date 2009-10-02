@@ -44,7 +44,6 @@ import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;

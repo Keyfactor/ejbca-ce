@@ -26,20 +26,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.DuplicateKeyException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -47,6 +37,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.CrlExtensions;
 
 /**
@@ -56,15 +47,8 @@ import org.ejbca.util.cert.CrlExtensions;
  */
 public class TestDeltaCRL extends TestCase {
 
-    private static Logger log = Logger.getLogger(TestDeltaCRL.class);
-    private static Context ctx;
-    private static ICreateCRLSessionHome home;
-    private static ICreateCRLSessionRemote remote;
-    private static ICertificateStoreSessionHome storehome;
-    private static ICertificateStoreSessionRemote storeremote;
-    private static IUserAdminSessionRemote usersession;
-    private static ISignSessionRemote signsession;
-    private static Admin admin;
+    private static final Logger log = Logger.getLogger(TestDeltaCRL.class);
+    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     private static int caid;
     private static String cadn;
     private static KeyPair keys;
@@ -80,83 +64,51 @@ public class TestDeltaCRL extends TestCase {
         super(name);
         CertTools.installBCProvider();
         keys = genKeys();
+        TestTools.createTestCA();
     }
 
     protected void setUp() throws Exception {
         log.trace(">setUp()");
-
-        ctx = getInitialContext();
-
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
-
-        Object obj = ctx.lookup("CreateCRLSession");
-        home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICreateCRLSessionHome.class);
-        remote = home.create();
-
-        Object obj1 = ctx.lookup("CertificateStoreSession");
-        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-        storeremote = storehome.create();
-        
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-
-        obj = ctx.lookup("RSASignSession");
-        ISignSessionHome signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        signsession = signhome.create();
-
-        obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
         // Use Test CA created before
-        CAInfo cainfo = casession.getCAInfo(admin, "TEST");
+        CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         assertNotNull("CA TEST not active. You must run TestCAs before this test", cainfo);
         cadn = cainfo.getSubjectDN();
         caid = cainfo.getCAId();
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-
-        return ctx;
-    }
+    protected void tearDown() throws Exception { }
 
     public void test01CreateNewDeltaCRL() throws Exception {
         log.trace(">test01CreateNewCRL()");
-        remote.runDeltaCRL(admin, cadn, -1, -1);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
         log.trace("<test01CreateNewCRL()");
     }
 
     public void test02LastDeltaCRL() throws Exception {
         log.trace(">test02LastCRL()");
         // Get number of last Delta CRL
-        int number = storeremote.getLastCRLNumber(admin, cadn, true);
+        int number = TestTools.getCertificateStoreSession().getLastCRLNumber(admin, cadn, true);
         log.debug("Last CRLNumber = " + number);
-        byte[] crl = storeremote.getLastCRL(admin, cadn, true);
+        byte[] crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         assertEquals(number, num.intValue());
         // Create a new CRL again to see that the number increases
-        remote.runDeltaCRL(admin, cadn, -1, -1);
-        int number1 = storeremote.getLastCRLNumber(admin, cadn, true);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        int number1 = TestTools.getCertificateStoreSession().getLastCRLNumber(admin, cadn, true);
         assertEquals(number+1, number1);
-        byte[] crl1 = storeremote.getLastCRL(admin, cadn, true);
+        byte[] crl1 = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, true);
         X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
         BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
         assertEquals(number+1, num1.intValue());
         // Now create a normal CRL and a deltaCRL again. CRLNUmber should now be increased by two
-        remote.run(admin, cadn);
-        remote.runDeltaCRL(admin, cadn, -1, -1);
-        int number2 = storeremote.getLastCRLNumber(admin, cadn, true);
+        TestTools.getCreateCRLSession().run(admin, cadn);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        int number2 = TestTools.getCertificateStoreSession().getLastCRLNumber(admin, cadn, true);
         assertEquals(number1+2, number2);
-        byte[] crl2 = storeremote.getLastCRL(admin, cadn, true);
+        byte[] crl2 = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, true);
         X509CRL x509crl2 = CertTools.getCRLfromByteArray(crl2);
         BigInteger num2 = CrlExtensions.getCrlNumber(x509crl2);
         assertEquals(number1+2, num2.intValue());
@@ -167,12 +119,12 @@ public class TestDeltaCRL extends TestCase {
         // check revoked certificates
         log.trace(">test03CheckNumberofRevokedCerts()");
 
-        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
+        byte[] crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         // Get number of last CRL
-        Collection revfp = storeremote.listRevokedCertInfo(admin, cadn, x509crl.getThisUpdate().getTime());
+        Collection revfp = TestTools.getCertificateStoreSession().listRevokedCertInfo(admin, cadn, x509crl.getThisUpdate().getTime());
         log.debug("Number of revoked certificates=" + revfp.size());
-        crl = storeremote.getLastCRL(admin, cadn, true);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
 
         x509crl = CertTools.getCRLfromByteArray(crl);
@@ -186,11 +138,11 @@ public class TestDeltaCRL extends TestCase {
         
         // Do some revoke
         X509Certificate cert = createUserAndCert();
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);        
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);        
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new CRL again...
-        crl = remote.runDeltaCRL(admin, cadn, -1, -1);
+        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate is present in a new CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -209,9 +161,9 @@ public class TestDeltaCRL extends TestCase {
         X509Certificate cert = createUserAndCert();
         
         // Create a new CRL again...
-        remote.run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate is not present in a new CRL
-        byte[] crl = storeremote.getLastCRL(admin, cadn, false);
+        byte[] crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set revset = x509crl.getRevokedCertificates();
@@ -223,11 +175,11 @@ public class TestDeltaCRL extends TestCase {
             }            
         } // If no revoked certificates exist at all, this test passed...
 
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = remote.runDeltaCRL(admin, cadn, -1, -1);
+        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -246,11 +198,11 @@ public class TestDeltaCRL extends TestCase {
         assertTrue(found);
         
         // Unrevoke the certificate that we just revoked
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
         // Create a new Delta CRL again...
-        remote.runDeltaCRL(admin, cadn, -1, -1);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new CRL.
-        crl = storeremote.getLastCRL(admin, cadn, true);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -268,11 +220,11 @@ public class TestDeltaCRL extends TestCase {
 
         // Check that when we revoke a certificate it will be present on the delta CRL
         // When we create a new full CRL it will be present there, and not on the next delta CRL
-        storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = remote.runDeltaCRL(admin, cadn, -1, -1);
+        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -295,9 +247,9 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new Full CRL 
-        remote.run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate IS present in a new Full CRL
-        crl = storeremote.getLastCRL(admin, cadn, false);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -319,9 +271,9 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new Delta CRL again...
-        remote.runDeltaCRL(admin, cadn, -1, -1);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new Delta CRL.
-        crl = storeremote.getLastCRL(admin, cadn, true);
+        crl = TestTools.getCertificateStoreSession().getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -343,6 +295,10 @@ public class TestDeltaCRL extends TestCase {
         log.trace("<test04RevokeAndUnrevoke()");
     }
 
+    public void test99RemoveTestCA() throws Exception {
+    	TestTools.removeTestCA();    	
+    }
+    
     // 
     // Helper methods
     //
@@ -353,7 +309,7 @@ public class TestDeltaCRL extends TestCase {
     	UserDataVO user = new UserDataVO(USERNAME, "C=SE,O=AnaTom,CN=foo", caid, null, "foo@anatom.se",SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
     	user.setPassword("foo123");
         try {
-        	usersession.addUser(admin, user, false);
+        	TestTools.getUserAdminSession().addUser(admin, user, false);
             //usersession.addUser(admin,USERNAME,"foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: "+USERNAME+", foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
@@ -363,12 +319,12 @@ public class TestDeltaCRL extends TestCase {
         }
         if (userExists) {
             log.info("User "+USERNAME+" already exists, resetting status.");
-            usersession.changeUser(admin, user, false);
-            usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+            TestTools.getUserAdminSession().changeUser(admin, user, false);
+            TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         // user that we know exists...
-        X509Certificate cert = (X509Certificate)signsession.createCertificate(admin, USERNAME, "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate)TestTools.getSignSession().createCertificate(admin, USERNAME, "foo123", keys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         return cert;
     }

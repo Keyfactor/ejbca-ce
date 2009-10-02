@@ -501,6 +501,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	while(iter.hasNext()){
         		ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
         		if(info instanceof OCSPCAServiceInfo){
+        			log.debug("Processing OCSPCAServiceInfo");
         			try{
         				ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
         				ArrayList ocspcertificate = new ArrayList();
@@ -513,6 +514,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         			}
         		}
         		if(info instanceof XKMSCAServiceInfo){
+        			log.debug("Processing XKMSCAServiceInfo");
         			try{
         				ca.initExternalService(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE, ca);
         				ArrayList xkmscertificate = new ArrayList();
@@ -525,6 +527,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         			}
         		}
         		if(info instanceof CmsCAServiceInfo){
+        			log.debug("Processing CmsCAServiceInfo");
         			try{
         				ca.initExternalService(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE, ca);
         				ArrayList cmscertificate = new ArrayList();

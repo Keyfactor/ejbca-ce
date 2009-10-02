@@ -21,19 +21,12 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.naming.Context;
-
 import junit.framework.TestCase;
 
-import org.ejbca.core.ejb.approval.IApprovalSessionHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
@@ -63,11 +56,11 @@ public class TestRevocationApproval extends TestCase {
 
     //private static Logger log = Logger.getLogger(TestRevocationApproval.class);
 
-    private static IApprovalSessionRemote approvalSession;
-    private static IAuthorizationSessionRemote authorizationSession;
-    private static IUserAdminSessionRemote userAdminSession;    
-    private static ICertificateStoreSessionRemote certificateStoreSession;
-    private static ICAAdminSessionRemote caAdminSession;
+    private static IApprovalSessionRemote approvalSession = TestTools.getApprovalSession();
+    private static IAuthorizationSessionRemote authorizationSession = TestTools.getAuthorizationSession();
+    private static IUserAdminSessionRemote userAdminSession = TestTools.getUserAdminSession();
+    private static ICertificateStoreSessionRemote certificateStoreSession = TestTools.getCertificateStoreSession();
+    private static ICAAdminSessionRemote caAdminSession = TestTools.getCAAdminSession();
     
     private static String requestingAdminUsername = null;
     private static String adminUsername = null;
@@ -80,25 +73,14 @@ public class TestRevocationApproval extends TestCase {
     private static int caid = TestTools.getTestCAId();
     private int approvalCAID;
 
+    public TestRevocationApproval(String name) {
+        super(name);
+        CertTools.installBCProvider();
+        TestTools.createTestCA();
+    }
+    
 	protected void setUp() throws Exception {
 		super.setUp();
-	    Context ctx = new javax.naming.InitialContext();
-		IApprovalSessionHome approvalSessionHome = (IApprovalSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(IApprovalSessionHome.JNDI_NAME), IApprovalSessionHome.class);
-		approvalSession = approvalSessionHome.create();
-		IAuthorizationSessionHome authorizationSessionHome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(IAuthorizationSessionHome.JNDI_NAME), IAuthorizationSessionHome.class);
-		authorizationSession = authorizationSessionHome.create();
-		IUserAdminSessionHome userAdminSessionHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(IUserAdminSessionHome.JNDI_NAME), IUserAdminSessionHome.class);
-		userAdminSession = userAdminSessionHome.create();
-	    ICertificateStoreSessionHome certificateStoreSessionHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(
-	    		ctx.lookup(ICertificateStoreSessionHome.JNDI_NAME), ICertificateStoreSessionHome.class);        
-	    certificateStoreSession = certificateStoreSessionHome.create();
-		ICAAdminSessionHome caAdminSessionHome = (org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
-				ctx.lookup(ICAAdminSessionHome.JNDI_NAME), org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome.class );            
-		caAdminSession = caAdminSessionHome.create();          
-		CertTools.installBCProvider();
 		adminUsername = genRandomUserName("revocationTestAdmin");
 		requestingAdminUsername = genRandomUserName("revocationTestRequestingAdmin");
 		UserDataVO userdata = new UserDataVO(adminUsername,"CN="+adminUsername,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
@@ -291,8 +273,6 @@ public class TestRevocationApproval extends TestCase {
 		final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
 		final String ERRORNONEXISTINGAPPROVALREPORTED = "Reporting that approval request exists, when it does not.";
 		final String ERRORALLOWMORETHANONE = "Allowing more than one identical approval requests.";
-		final String ERRORNOREACTIVATION = "User was never reactivated when last cert was.";
-		final String ERRORNOREVOCATION = "User was never revoked when last cert was.";
 		try {
 			createUser(internalAdmin, username, approvalCAID);
 			X509Certificate usercert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, username).iterator().next();
@@ -333,4 +313,8 @@ public class TestRevocationApproval extends TestCase {
 			userAdminSession.deleteUser(internalAdmin, username);
 		}
 	} // test04RevokeAndUnrevokeCertificateOnHold
+
+	public void testZZZCleanUp() throws Exception {
+		TestTools.removeTestCA();
+	}
 }

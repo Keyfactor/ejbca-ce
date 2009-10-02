@@ -84,18 +84,6 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 	public RevocationMessageHandler(Admin admin) throws CreateException, RemoteException {
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
-		/*
-		String str = prop.getProperty("raAuthenticationSecret");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("raAuthenticationSecret is not null");
-			raAuthenticationSecret = str;
-		}			
-		str = prop.getProperty("responseProtection");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("responseProtection="+str);
-			responseProtection = str;
-		}	
-		*/		
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
 		IUserAdminSessionHome userHome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);

@@ -46,56 +46,62 @@ public class TestApprovalSession extends TestCase {
     
     private static final Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
     
+    public TestApprovalSession(String name) {
+        super(name);
+        CertTools.installBCProvider();
+        TestTools.createTestCA();
+    }
+
 	protected void setUp() throws Exception {
 		super.setUp();
-		CertTools.installBCProvider();
 		
-		adminusername1 = genRandomUserName();
-		adminusername2 = adminusername1 + "2";
-		reqadminusername = "req" + adminusername1;
-		
-		UserDataVO userdata = new UserDataVO(adminusername1,"CN="+adminusername1,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
-				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
-		userdata.setPassword("foo123");
-		TestTools.getUserAdminSession().addUser(intadmin, userdata , true);
-		
-		
-		UserDataVO userdata2 = new UserDataVO(adminusername2,"CN="+adminusername2,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
-				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
-		userdata2.setPassword("foo123");
-		TestTools.getUserAdminSession().addUser(intadmin, userdata2 , true);
-		
-		UserDataVO userdata3 = new UserDataVO(reqadminusername,"CN="+reqadminusername,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
-				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
-		userdata3.setPassword("foo123");
-		TestTools.getUserAdminSession().addUser(intadmin, userdata3 , true);
-		
-        BatchMakeP12 makep12 = new BatchMakeP12();
-        File tmpfile = File.createTempFile("ejbca", "p12");
+		if (adminusername1 == null) {
+			adminusername1 = genRandomUserName();
+			adminusername2 = adminusername1 + "2";
+			reqadminusername = "req" + adminusername1;
+			
+			UserDataVO userdata = new UserDataVO(adminusername1,"CN="+adminusername1,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
+					SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
+			userdata.setPassword("foo123");
+			TestTools.getUserAdminSession().addUser(intadmin, userdata , true);
 
-        //System.out.println("tempdir="+tmpfile.getParent());
-        makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew();
-        
-
-        
-		adminentities = new ArrayList();
-		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminusername1,caid));	
-		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminusername2,caid));
-		adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,reqadminusername,caid));
-		TestTools.getAuthorizationSession().addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
-		
-		TestTools.getAuthorizationSession().forceRuleUpdate(intadmin);
-		
-		admincert1 = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, adminusername1).iterator().next();
-		admincert2 = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, adminusername2).iterator().next();
-		reqadmincert = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, reqadminusername).iterator().next();
-		
-		admin1 = new Admin(admincert1);
-		admin2 = new Admin(admincert2);
-		reqadmin = new Admin(reqadmincert);
+			UserDataVO userdata2 = new UserDataVO(adminusername2,"CN="+adminusername2,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
+					SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
+			userdata2.setPassword("foo123");
+			TestTools.getUserAdminSession().addUser(intadmin, userdata2 , true);
+			
+			UserDataVO userdata3 = new UserDataVO(reqadminusername,"CN="+reqadminusername,caid,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
+					SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
+			userdata3.setPassword("foo123");
+			TestTools.getUserAdminSession().addUser(intadmin, userdata3 , true);
+			
+	        File tmpfile = File.createTempFile("ejbca", "p12");
+	        BatchMakeP12 makep12 = new BatchMakeP12();
+	        makep12.setMainStoreDir(tmpfile.getParent());
+	        makep12.createAllNew();
+	        tmpfile.delete();
+	        
+			adminentities = new ArrayList();
+			adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminusername1,caid));	
+			adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,adminusername2,caid));
+			adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME,AdminEntity.TYPE_EQUALCASEINS,reqadminusername,caid));
+			TestTools.getAuthorizationSession().addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
+			TestTools.getAuthorizationSession().forceRuleUpdate(intadmin);
+			
+			admincert1 = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, adminusername1).iterator().next();
+			admincert2 = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, adminusername2).iterator().next();
+			reqadmincert = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, reqadminusername).iterator().next();
+			
+			admin1 = new Admin(admincert1);
+			admin2 = new Admin(admincert2);
+			reqadmin = new Admin(reqadmincert);
+		}
 	}
-	
+
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+
     private String genRandomUserName() throws Exception {
         // Gen random user
         Random rand = new Random(new Date().getTime() + 4711);
@@ -476,11 +482,11 @@ public class TestApprovalSession extends TestCase {
 		TestTools.getApprovalSession().removeApprovalRequest(admin1, id3);
 	}
 
-	protected void tearDown() throws Exception {
-		super.tearDown();
+	public void testZZZCleanUp() throws Exception {
 		TestTools.getUserAdminSession().deleteUser(intadmin, adminusername1);
 		TestTools.getUserAdminSession().deleteUser(intadmin, adminusername2);
 		TestTools.getUserAdminSession().deleteUser(intadmin, reqadminusername);
 		TestTools.getAuthorizationSession().removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);					
+		TestTools.removeTestCA();
 	}
 }

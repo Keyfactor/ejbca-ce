@@ -50,19 +50,6 @@ public class ConfirmationMessageHandler implements ICmpMessageHandler {
 	public ConfirmationMessageHandler() throws CreateException {
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
-		/*
-		String str = prop.getProperty("raAuthenticationSecret");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("raAuthenticationSecret is not null");
-			raAuthenticationSecret = str;
-		}	
-		str = prop.getProperty("responseProtection");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("responseProtection="+str);
-			responseProtection = str;
-		}			
-		*/		
-
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.trace(">handleMessage");

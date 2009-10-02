@@ -2,12 +2,12 @@ package org.ejbca.core.protocol.ws;
 
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 
-/** To run you must have the file tmp/bin/junit/jndi.properties
+/**
+ * To run you must have the file tmp/bin/junit/jndi.properties
  * 
  * @version $Id$
  */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
-	
 	
 	public void test00SetupAccessRights() throws Exception{
 		super.test00SetupAccessRights();

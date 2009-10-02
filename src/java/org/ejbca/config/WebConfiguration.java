@@ -21,12 +21,14 @@ import org.apache.log4j.Logger;
 public class WebConfiguration {
 
 	private static final Logger log = Logger.getLogger(WebConfiguration.class);
+	
+	public static final String CONFIG_HTTPSSERVERHOSTNAME = "httpsserver.hostname";
 
 	/**
 	 * The configured server host name
 	 */
 	public static String getHostName() {
-		return ConfigurationHolder.getExpandedString("httpsserver.hostname", "localhost");
+		return ConfigurationHolder.getExpandedString(CONFIG_HTTPSSERVERHOSTNAME, "localhost");
 	}
 	
 	/**

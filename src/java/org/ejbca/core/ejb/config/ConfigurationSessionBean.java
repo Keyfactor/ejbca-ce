@@ -124,6 +124,16 @@ public class ConfigurationSessionBean extends BaseSessionBean {
 	}
 
 	/**
+	 * Returns a property from the current server configuration
+	 * 
+	 * @ejb.interface-method
+	 */
+	public String getProperty(String key, String defaultValue) {
+		assertIsNotInProductionMode();
+		return ConfigurationHolder.getString(key, defaultValue);
+	}
+
+	/**
 	 * @return all currently used properties
 	 * 
 	 * @ejb.interface-method

@@ -102,12 +102,6 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private ICAAdminSessionRemote casession = null;
 	private IRaAdminSessionRemote rasession = null;
 	private ICertificateStoreSessionRemote storesession = null;
-//	private ISignSessionLocal signsession = null;
-//	private IUserAdminSessionLocal usersession = null;
-//	private ICAAdminSessionLocal casession = null;
-//	private IRaAdminSessionLocal rasession = null;
-//	private ICertificateStoreSessionLocal storesession = null;
-	
 	
 	public CrmfMessageHandler(Admin admin) throws CreateException, RemoteException {
 		this.admin = admin;
@@ -117,20 +111,12 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		ICAAdminSessionHome caHome = (ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class);
 		IRaAdminSessionHome raHome = (IRaAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IRaAdminSessionHome.JNDI_NAME, IRaAdminSessionHome.class);
 		ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
-//		ISignSessionLocalHome signHome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-//		IUserAdminSessionLocalHome userHome = (IUserAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-//		ICAAdminSessionLocalHome caHome = (ICAAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-//		IRaAdminSessionLocalHome raHome = (IRaAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-//		ICertificateStoreSessionLocalHome storeHome = (ICertificateStoreSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
 		this.signsession = signHome.create();
 		this.usersession = userHome.create();
 		this.casession = caHome.create();
 		this.rasession = raHome.create();
 		this.storesession = storeHome.create();
 
-/*		String str = prop.getProperty("operationMode");
-		log.debug("operationMode="+str);
-		if (StringUtils.equalsIgnoreCase(str, "ra")) {*/
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
 			usernameGeneratorParams = new UsernameGeneratorParams();
@@ -168,77 +154,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				caId = info.getCAId();					
 			}
 			responseProtection = CmpConfiguration.getResponseProtection();
-			
-			/*
-			str = prop.getProperty("raModeNameGenerationScheme");
-			log.debug("raModeNameGenerationScheme="+str);
-			if (StringUtils.isNotEmpty(str)) {
-				usernameGeneratorParams.setMode(str);
-			}
-			str = prop.getProperty("raModeNameGenerationParameters");
-			log.debug("raModeNameGenerationParameters="+str);
-			if (StringUtils.isNotEmpty(str)) {
-				usernameGeneratorParams.setDNGeneratorComponent(str);
-			}
-			str = prop.getProperty("raModeNameGenerationPrefix");
-			log.debug("raModeNameGenerationPrefix="+str);
-			if (StringUtils.isNotEmpty(str)) {
-				usernameGeneratorParams.setPrefix(str);
-			}
-			str = prop.getProperty("raModeNameGenerationPostfix");
-			log.debug("raModeNameGenerationPostfix="+str);
-			if (StringUtils.isNotEmpty(str)) {
-				usernameGeneratorParams.setPostfix(str);
-			}
-			str = prop.getProperty("raAuthenticationSecret");
-			if (StringUtils.isNotEmpty(str)) {
-				log.debug("raAuthenticationSecret is not null");
-				raAuthenticationSecret = str;
-			}			
-			str = prop.getProperty("endEntityProfile");
-			if (StringUtils.isNotEmpty(str)) {
-				if (StringUtils.equals(str, "KeyId")) {
-					log.info("Using End Entity Profile with same name as KeyId in request.");
-					eeProfileId = -1;
-				} else {
-					eeProfileId = rasession.getEndEntityProfileId(admin, str);
-				}
-				log.debug("endEntityProfile="+str);
-			}			
-			str = prop.getProperty("certificateProfile");
-			if (StringUtils.isNotEmpty(str)) {
-				if (StringUtils.equals(str, "KeyId")) {
-					log.info("Using Certificate Profile with same name as KeyId in request.");
-					certProfileId = -1;
-				} else {
-					certProfileId = storesession.getCertificateProfileId(admin, str);					
-				}
-				log.debug("certificateProfile="+str);
-			}			
-			str = prop.getProperty("caName");
-			if (StringUtils.isNotEmpty(str)) {
-				log.debug("caName="+str);
-				if (StringUtils.equals(str, "ProfileDefault")) {
-					log.info("Using default CA from End Entity Profile CA when adding users in RA mode.");
-					caId = -1;
-				} else if (StringUtils.equals(str, "KeyId")) {
-					log.info("Using keyId as CA name when adding users in RA mode.");
-					caId = -2;										
-				} else {
-					CAInfo info = casession.getCAInfo(admin, str);
-					caId = info.getCAId();					
-				}
-			}			
-			*/
 		}
-		/*
-		str = prop.getProperty("responseProtection");
-		if (StringUtils.isNotEmpty(str)) {
-			log.debug("responseProtection="+str);
-			responseProtection = str;
-		}	
-		*/		
 	}
+
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.trace(">handleMessage");
 		IResponseMessage resp = null;

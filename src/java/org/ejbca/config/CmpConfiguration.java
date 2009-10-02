@@ -14,9 +14,16 @@
 package org.ejbca.config;
 
 public class CmpConfiguration {
+	
+	public static final String CONFIG_ALLOWRAVERIFYPOPO       = "cmp.allowraverifypopo";
+	public static final String CONFIG_OPERATIONMODE           = "cmp.operationmode";
+	public static final String CONFIG_RA_AUTHENTICATIONSECRET = "cmp.ra.authenticationsecret";
+	public static final String CONFIG_RA_ENDENTITYPROFILE     = "cmp.ra.endentityprofile";
+	public static final String CONFIG_RA_CERTIFICATEPROFILE   = "cmp.ra.certificateprofile";
+	public static final String CONFIG_RESPONSEPROTECTION      = "cmp.responseprotection";
 
 	public static boolean getAllowRAVerifyPOPO() {
-		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString("cmp.allowraverifypopo", "false"));
+		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO, "false"));
 	}
 	
 	public static String getDefaultCA() {
@@ -28,7 +35,7 @@ public class CmpConfiguration {
 	}
 	
 	public static boolean getRAOperationMode() {
-		return "ra".equalsIgnoreCase(ConfigurationHolder.getString("cmp.operationmode", "normal"));
+		return "ra".equalsIgnoreCase(ConfigurationHolder.getString(CONFIG_OPERATIONMODE, "normal"));
 	}
 	
 	public static String getRANameGenerationScheme() {
@@ -52,15 +59,15 @@ public class CmpConfiguration {
 	}
 	
 	public static String getRAAuthenticationSecret() {
-		return ConfigurationHolder.getString("cmp.ra.authenticationsecret", null);
+		return ConfigurationHolder.getString(CONFIG_RA_AUTHENTICATIONSECRET, null);
 	}
 	
 	public static String getRAEndEntityProfile() {
-		return ConfigurationHolder.getString("cmp.ra.endentityprofile", "EMPTY");
+		return ConfigurationHolder.getString(CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
 	}
 	
 	public static String getRACertificateProfile() {
-		return ConfigurationHolder.getString("cmp.ra.certificateprofile", "ENDUSER");
+		return ConfigurationHolder.getString(CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
 	}
 	
 	public static String getRACAName() {
@@ -68,7 +75,7 @@ public class CmpConfiguration {
 	}
 	
 	public static String getResponseProtection() {
-		return ConfigurationHolder.getString("cmp.responseprotection", "signature");
+		return ConfigurationHolder.getString(CONFIG_RESPONSEPROTECTION, "signature");
 	}
 	
 	public static int getTCPPortNumber() {

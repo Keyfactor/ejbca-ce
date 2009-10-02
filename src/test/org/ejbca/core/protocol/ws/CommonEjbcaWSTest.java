@@ -31,29 +31,23 @@ import java.util.List;
 import java.util.Random;
 
 import javax.ejb.CreateException;
-import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.ejb.approval.IApprovalSessionHome;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -113,34 +107,22 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
 public class CommonEjbcaWSTest extends TestCase {
 	
+	private static final Logger log = Logger.getLogger(CommonEjbcaWSTest.class);
+	
 	protected static EjbcaWS ejbcaraws;
-
-	protected IHardTokenSessionRemote hardTokenSession;
-    protected static IHardTokenSessionHome hardTokenSessionHome;
-	protected ICertificateStoreSessionRemote certStoreSession;
-    protected static ICertificateStoreSessionHome certStoreSessionHome;
-	protected IRaAdminSessionRemote raAdminSession;
-    protected static IRaAdminSessionHome raAdminSessionHome;
-    protected IUserAdminSessionRemote userAdminSession;
-    protected static IUserAdminSessionHome userAdminSessionHome;
-    protected ICAAdminSessionRemote caAdminSession;
-    protected static ICAAdminSessionHome caAdminSessionHome;
-    protected IAuthorizationSessionRemote authSession;
-    protected static IAuthorizationSessionHome authSessionHome;
-    protected IApprovalSessionRemote approvalSession;
-    protected static IApprovalSessionHome approvalSessionHome;
     
     protected final static String wsTestAdminUsername = "wstest";
 	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
     protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-	protected final static String HOSTNAME = "localhost";
+	protected static String hostname = "localhost";
 	private static final String BADCANAME = "BadCaName";
-    
+	
     protected String getAdminCAName() {
     	return "AdminCA1";
     }
@@ -151,21 +133,19 @@ public class CommonEjbcaWSTest extends TestCase {
 	protected void setUpAdmin() throws Exception {
 		super.setUp();
 		CertTools.installBCProvider();
-		
+		try {
+			hostname = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+		} catch (RemoteException e) {
+			log.error("", e);
+		}
         if(new File("p12/wstest.jks").exists()){
-        	
-
-        	String urlstr = "https://" + HOSTNAME + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
-
-        	System.out.println("Contacting webservice at " + urlstr);                       
+        	String urlstr = "https://" + hostname + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
+        	log.info("Contacting webservice at " + urlstr);                       
 
         	System.setProperty("javax.net.ssl.trustStore","p12/wstest.jks");
         	System.setProperty("javax.net.ssl.trustStorePassword","foo123");  
-
         	System.setProperty("javax.net.ssl.keyStore","p12/wstest.jks");
         	System.setProperty("javax.net.ssl.keyStorePassword","foo123");      
-
-
 
         	QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
         	EjbcaWSService service = new EjbcaWSService(new URL(urlstr),qname);
@@ -176,20 +156,19 @@ public class CommonEjbcaWSTest extends TestCase {
 	protected void setUpNonAdmin() throws Exception {
 		super.setUp();
 		CertTools.installBCProvider();
-		
+		try {
+			hostname = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+		} catch (RemoteException e) {
+			log.error("", e);
+		}
         if(new File("p12/wsnonadmintest.jks").exists()){
-
-        	String urlstr = "https://" + HOSTNAME + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
-
-        	System.out.println("Contacting webservice at " + urlstr);                       
+        	String urlstr = "https://" + hostname + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
+        	log.info("Contacting webservice at " + urlstr);                       
 
         	System.setProperty("javax.net.ssl.trustStore","p12/wsnonadmintest.jks");
         	System.setProperty("javax.net.ssl.trustStorePassword","foo123");  
-
         	System.setProperty("javax.net.ssl.keyStore","p12/wsnonadmintest.jks");
         	System.setProperty("javax.net.ssl.keyStorePassword","foo123");      
-
-
 
         	QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
         	EjbcaWSService service = new EjbcaWSService(new URL(urlstr),qname);
@@ -197,111 +176,36 @@ public class CommonEjbcaWSTest extends TestCase {
         }
 	}
 
-
-
-
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		
-		
 	}
-
-
-	protected Context getInitialContext() throws NamingException {
-        Context ctx = new javax.naming.InitialContext();
-        return ctx;
-    }
 
 	protected IHardTokenSessionRemote getHardTokenSession() throws RemoteException, CreateException, NamingException {
-	    if (hardTokenSession == null) {
-	        if (hardTokenSessionHome == null) {
-	            Context jndiContext = getInitialContext();
-	            Object obj1 = jndiContext.lookup(IHardTokenSessionHome.JNDI_NAME);
-	            hardTokenSessionHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
-	        }
-	        hardTokenSession = hardTokenSessionHome.create();
-	    }
-	    return hardTokenSession;
+		return TestTools.getHardTokenSession();
 	}
-
 	
 	protected ICertificateStoreSessionRemote getCertStore() throws RemoteException, CreateException, NamingException{
-        if (certStoreSession == null) {
-            if (certStoreSessionHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
-                certStoreSessionHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
-
-            }
-
-            certStoreSession = certStoreSessionHome.create();            
-        }
-        return certStoreSession;
+		return TestTools.getCertificateStoreSession();
 	}
 	
 	protected IRaAdminSessionRemote getRAAdmin() throws RemoteException, CreateException, NamingException{
-        if (raAdminSession == null) {
-            if (raAdminSessionHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IRaAdminSessionHome.JNDI_NAME);
-                raAdminSessionHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
-
-            }
-
-            raAdminSession = raAdminSessionHome.create();            
-        }
-        return raAdminSession;
+		return TestTools.getRaAdminSession();
 	}
 	
 	protected IUserAdminSessionRemote getUserAdminSession() throws RemoteException, CreateException, NamingException{
-        if (userAdminSession == null) {
-            if (userAdminSessionHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IUserAdminSessionHome.JNDI_NAME);
-                userAdminSessionHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-            }
-
-            userAdminSession = userAdminSessionHome.create();            
-        }
-        return userAdminSession;
+		return TestTools.getUserAdminSession();
 	}
 	
 	protected ICAAdminSessionRemote getCAAdminSession() throws RemoteException, CreateException, NamingException{
-        if (caAdminSession == null) {
-            if (caAdminSessionHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(ICAAdminSessionHome.JNDI_NAME);
-                caAdminSessionHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
-            }
-
-            caAdminSession = caAdminSessionHome.create();            
-        }
-        return caAdminSession;
+		return TestTools.getCAAdminSession();
 	}
 	
 	protected IAuthorizationSessionRemote getAuthSession() throws RemoteException, CreateException, NamingException{
-        if (authSession == null) {
-            if (authSessionHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IAuthorizationSessionHome.JNDI_NAME);
-                authSessionHome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IAuthorizationSessionHome.class);
-            }
-
-            authSession = authSessionHome.create();            
-        }
-        return authSession;
+		return TestTools.getAuthorizationSession();
 	}
 	
 	protected IApprovalSessionRemote getApprovalSession() throws RemoteException, CreateException, NamingException {
-		if (approvalSession == null) {
-			if (approvalSessionHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IApprovalSessionHome.JNDI_NAME);
-                approvalSessionHome = (IApprovalSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IApprovalSessionHome.class);
-			}
-			approvalSession = approvalSessionHome.create();
-		}
-		return approvalSession;
+		return TestTools.getApprovalSession();
 	}
 	
 	protected void test00SetupAccessRights() throws Exception{
@@ -557,7 +461,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 
 		
 		assertNotNull(cert);
-		System.out.println(cert.getSubjectDN().toString());
+		log.info(cert.getSubjectDN().toString());
 		assertEquals("CN=WSTESTUSER1,O=Test", cert.getSubjectDN().toString());
 	}
 
@@ -659,7 +563,7 @@ public class CommonEjbcaWSTest extends TestCase {
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
         assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSER1,O=Test");
         PrivateKey privK1 = (PrivateKey)ks.getKey(alias, "foo456".toCharArray());
-        System.out.println("test04GeneratePkcs12() Certificate " +cert.getSubjectDN().toString() + " equals CN=WSTESTUSER1,O=Test");
+        log.info("test04GeneratePkcs12() Certificate " +cert.getSubjectDN().toString() + " equals CN=WSTESTUSER1,O=Test");
         
         // Generate a new one and make sure it is a new one and that key recovery does not kick in by misstake
 		// Set status to new
@@ -1504,7 +1408,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertEquals(profs.size(), ids.size());
 		boolean foundkeyrec = false;
 		for (NameAndId n : profs) {
-			System.out.println("name: "+n.getName());
+			log.info("name: "+n.getName());
 			if (n.getName().equals("KEYRECOVERY")) {
 				foundkeyrec= true;
 			}
@@ -1528,7 +1432,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		List<NameAndId> profs = ejbcaraws.getAvailableCertificateProfiles(id);
 		assertNotNull(profs);
 		for (NameAndId n : profs) {
-			System.out.println("name: "+n.getName());			
+			log.info("name: "+n.getName());			
 		}
 		assertTrue(profs.size() > 1);
 		NameAndId n = profs.get(0);
@@ -1542,7 +1446,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			setUpAdmin();
 		}
 		int id = getRAAdmin().getEndEntityProfileId(intAdmin, "KEYRECOVERY");
-		System.out.println("id: "+id);
+		log.info("id: "+id);
 		List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(id);
 		assertNotNull(cas);
 		// This profile only has ALLCAS available, so this list will be empty

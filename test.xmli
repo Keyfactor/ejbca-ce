@@ -13,6 +13,8 @@
         </javac>
         <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
         <copy file="${src.java}/jndi.properties" todir="${test.dir}" failonerror="false"/>
+        <!-- log4j.properties needs to be in the classpath to see error messages from the Junit tests -->
+        <copy file="${test.src.dir}/log4j.xml" todir="${test.dir}" failonerror="false"/>
     </target>
     
     <target name="failinproduction">
@@ -61,7 +63,7 @@
                     <include name="org/ejbca/config/**/Test*" />
                     <include name="org/ejbca/core/model/ca/**/Test*" />
                     <include name="org/ejbca/core/model/util/**/Test*" />
-                    <include name="se/anatom/ejbca/util/**/Test*" />
+                    <include name="org/ejbca/util/**/Test*" />
                     <include name="**/protocol/**/Test*" />
                     <include name="**/ra/Test*" />
                     <include name="**/userdatasource/Test*" />
@@ -80,12 +82,15 @@
                     <include name="org/ejbca/core/ejb/ca/caadmin/Test*" />
                     <include name="**/authorization/TestAuthorization*" />
                     <include name="**/services/Test*" />
+                    <exclude name="org/ejbca/core/protocol/cmp/Test*" />
                     <exclude name="org/ejbca/core/protocol/xkms/Test*" />
                     <exclude name="org/ejbca/core/protocol/ws/Test*" />
                     <exclude name="**/ra/TestAddLotsofUsers*" />
                     <exclude name="**/ra/TestAddLotsofCertsPerUser*" />
                     <exclude name="**/sign/TestSignLotsOfCerts*" />
                     <exclude name="**/TestTools*" />
+                    <exclude name="**/caadmin/TestRemoveCA*" />
+                    <exclude name="**/caadmin/TestCAs*" />
                 </fileset>
             </batchtest>
             <batchtest fork="yes" todir="${test.dir}/reports">
@@ -116,17 +121,24 @@
             <batchtest fork="yes" todir="${test.reportsdir}">
                 <fileset dir="${test.dir}">
                 	<include name="org/ejbca/ui/web/pub/TestAutoEnroll*" />
-                    <include name="org/ejbca/core/protocol/xkms/Test*" />
-                	<include name="org/ejbca/core/protocol/ws/Test*" />
                 </fileset>
             </batchtest>
         </junit>
+        <antcall target="test:runws" inheritRefs="true"/>   <!-- Requires some additional compilation and includes -->
+        <antcall target="test:xkms" inheritRefs="true"/>    <!-- Requires some additional compilation and includes -->
         <junitreport todir="${test.reportsdir}">
             <fileset dir="${test.reportsdir}">
                 <include name="TEST-*.xml" />
             </fileset>
+            <fileset dir="${test.dir}/ws/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <fileset dir="${test.dir}/xkms/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
             <report format="frames" todir="${test.reportsdir}/html" />
         </junitreport>
+        <echo message="The full report can be found in '${test.reportsdir}/html/index.html'"/>
     </target>
 
     <target name="test:runone" depends="test:compile,j2ee:assert-run" description="run a single JUnit-test specified -Dtest.runone=classname">
@@ -256,20 +268,20 @@
         	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
             <batchtest fork="yes" todir="${test.dir}/web/reports">
                 <fileset dir="${test.dir}">
-                    <include name="**/protocol/ProtocolScepHttpTest*" />
-                    <include name="**/protocol/ProtocolOcspHttpTest*" />
+                    <include name="**/protocol/scep/ProtocolScepHttpTest*" />
+                    <include name="**/protocol/ocsp/ProtocolOcspHttpTest*" />
                     <include name="**/protocol/cmp/CrmfRequestTest*" />
-                	<include name="**/webdist/WebdistHttpTest*" />
-                	<include name="**/protocol/CertRequestHttpTest*" />
-                	<include name="**/cluster/WebEjbcaHealthCheckTest*" />
+                    <include name="**/protocol/cmp/CrmfRARequestTest*" />
+                	<include name="**/web/pub/WebdistHttpTest*" />
+                	<include name="**/web/pub/CertRequestHttpTest*" />
+                	<include name="**/web/pub/cluster/WebEjbcaHealthCheckTest*" />
                     <!-- Test for standalone OCSP responder -->
-                    <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
-                	<!-- Below tests require RA mode and special settings in cmp.properties, see java files -->
-                    <exclude name="**/protocol/cmp/CrmfRARequestTest*" />
+                    <exclude name="**/protocol/ocsp/ProtocolOcspHttpStandaloneTest*" />
+                	<!-- Below tests require CMP TCP service to be enabled in cmp.properties -->
                     <exclude name="**/protocol/cmp/CrmfRATcpRequestTest*" />
                     <exclude name="**/protocol/cmp/CrmfRAPbeRequestTest*" />
                     <!-- Special test for OCSP UNID look up service, see java file -->
-                    <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
+                    <exclude name="**/protocol/ocsp/ProtocolLookupServerHttpTest*" />
                 </fileset>
             </batchtest>
         </junit>
@@ -294,15 +306,15 @@
         	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
             <batchtest fork="yes" todir="${test.dir}/cmpra/reports">
                 <fileset dir="${test.dir}">
-                    <exclude name="**/protocol/ProtocolScepHttpTest*" />
-                    <exclude name="**/protocol/ProtocolOcspHttpTest*" />
+                    <exclude name="**/protocol/scep/ProtocolScepHttpTest*" />
+                    <exclude name="**/protocol/ocsp/ProtocolOcspHttpTest*" />
                     <exclude name="**/protocol/cmp/CrmfRequestTest*" />
                     <include name="**/protocol/cmp/CrmfRARequestTest*" />
                     <include name="**/protocol/cmp/CrmfRATcpRequestTest*" />
                     <include name="**/protocol/cmp/CrmfRAPbeRequestTest*" />
-                    <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
-                    <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
-                	<exclude name="**/webdist/WebdistHttpTest*" />
+                    <exclude name="**/protocol/ocsp/ProtocolLookupServerHttpTest*" />
+                    <exclude name="**/protocol/ocsp/ProtocolOcspHttpStandaloneTest*" />
+                	<exclude name="**/web/pub/WebdistHttpTest*" />
                 </fileset>
             </batchtest>
         </junit>
@@ -332,7 +344,7 @@
         	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
             <batchtest fork="yes" todir="${test.dir}/web/reports">
                 <fileset dir="${test.dir}">
-                    <include name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
+                    <include name="**/protocol/ocsp/ProtocolOcspHttpStandaloneTest*" />
                 </fileset>
             </batchtest>
         </junit>
