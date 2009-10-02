@@ -21,6 +21,7 @@ import java.util.Date;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
@@ -194,6 +195,12 @@ public class CaInitCommand extends BaseCaAdminCommand {
             extendedcaservices.add(
                     new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                                           "CN=XKMSCertificate, " + dn,
+                                          "",
+                                          keySpec,
+                                          keytype));
+            extendedcaservices.add(
+                    new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                                          "CN=CmsCertificate, " + dn,
                                           "",
                                           keySpec,
                                           keytype));
