@@ -25,7 +25,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;

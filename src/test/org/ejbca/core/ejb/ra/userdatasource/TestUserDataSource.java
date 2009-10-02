@@ -23,8 +23,6 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionHome;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;

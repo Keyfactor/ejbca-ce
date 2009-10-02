@@ -6,8 +6,6 @@ import java.util.HashMap;
 import junit.framework.TestCase;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.util.Base64GetHashMap;
-import org.ejbca.util.Base64PutHashMap;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 

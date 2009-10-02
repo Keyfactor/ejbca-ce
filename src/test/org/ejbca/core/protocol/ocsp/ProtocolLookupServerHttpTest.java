@@ -76,7 +76,6 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.protocol.ocsp.FnrFromUnidExtension;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
 

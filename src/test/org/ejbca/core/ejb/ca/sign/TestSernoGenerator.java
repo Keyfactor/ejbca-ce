@@ -19,8 +19,6 @@ import java.util.HashMap;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.sign.ISernoGenerator;
-import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 
 
 /**

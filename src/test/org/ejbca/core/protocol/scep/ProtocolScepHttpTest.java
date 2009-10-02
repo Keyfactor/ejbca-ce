@@ -83,8 +83,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.core.protocol.scep.ScepRequestGenerator;
-import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;

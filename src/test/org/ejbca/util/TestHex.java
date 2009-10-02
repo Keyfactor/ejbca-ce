@@ -12,8 +12,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /** Tests base64 encoding and decoding
  * 

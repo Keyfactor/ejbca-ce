@@ -46,8 +46,6 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.core.protocol.cmp.CmpMessageHelper;
-import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;

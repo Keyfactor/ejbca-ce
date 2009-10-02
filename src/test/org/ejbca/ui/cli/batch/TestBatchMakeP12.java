@@ -22,7 +22,6 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.TestTools;
 
 /** Tests the batch making of soft cards.

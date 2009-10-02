@@ -4,8 +4,6 @@ import java.util.HashMap;
 
 import junit.framework.TestCase;
 
-import org.ejbca.util.TemplateMimeMessage;
-
 /**
  * TestCase for TemplateMimeMessage
  */

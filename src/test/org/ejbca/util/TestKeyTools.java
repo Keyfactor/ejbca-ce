@@ -28,8 +28,6 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**

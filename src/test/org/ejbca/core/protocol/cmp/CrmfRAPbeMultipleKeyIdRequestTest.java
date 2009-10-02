@@ -54,7 +54,6 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
 

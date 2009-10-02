@@ -20,7 +20,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.caadmin.TestCAs;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.TestTools;
 
