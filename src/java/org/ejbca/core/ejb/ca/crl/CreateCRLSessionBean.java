@@ -219,7 +219,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             		RevokedCertInfo data = (RevokedCertInfo)iter.next();
             		Date revDate = data.getRevocationDate();
             		// We want to include certificates that was revoked after the last CRL was issued, but before this one
-            		// so the revoked certs are included in ONE CRL at least.
+            		// so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
             		if ( data.getExpireDate().before(now) ) {
             			// Certificate has expired, set status to archived in the database 
             			setArchivedStatus(data.getCertificateFingerprint());
