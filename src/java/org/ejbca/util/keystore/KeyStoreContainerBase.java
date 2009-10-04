@@ -274,14 +274,12 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#sign(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
-    @Override
     public void sign(InputStream in, OutputStream out, String alias) throws Exception {
         CMS.sign(in, out, getPrivateKey(alias), KeyStoreContainerBase.this.providerName, getCertificate(alias));
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#verify(java.io.InputStream, java.io.OutputStream, java.lang.String)
      */
-    @Override
     public CMS.VerifyResult verify(InputStream in, OutputStream out, String alias) throws Exception {
         return CMS.verify(in, out, getCertificate(alias));
     }
