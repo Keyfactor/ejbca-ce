@@ -178,22 +178,10 @@
             <formatter type="xml" />
             <batchtest fork="yes" todir="${test.reportsdir}">
                 <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestCAs*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.reportsdir}">
-                <fileset dir="${test.dir}">
                     <!-- LotsofUsers creates LOOOOTS of users, only run once in a while -->
                     <include name="**/ra/TestAddLotsofUsers*" />
                     <include name="**/sign/TestSignLotsOfCerts*" />
                     <exclude name="**/Test*$$*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.reportsdir}">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestRemoveCA*" />
-                    <exclude name="**/TestRunner*" />
                 </fileset>
             </batchtest>
         </junit>

@@ -509,7 +509,7 @@ public class ProtocolScepHttpTest extends TestCase {
                 X509CRL retCrl = null;
                 // CRL is first (and only)
                 retCrl = (X509CRL)it.next();
-                System.out.println("Got CRL with DN: "+ retCrl.getIssuerDN().getName());
+                log.info("Got CRL with DN: "+ retCrl.getIssuerDN().getName());
 //                try {
 //                    FileOutputStream fos = new FileOutputStream("sceptest.der");
 //                    fos.write(retCrl.getEncoded());
@@ -533,7 +533,7 @@ public class ProtocolScepHttpTest extends TestCase {
                 boolean gotcacert = false;
                 while (it.hasNext()) {
                     X509Certificate retcert = (X509Certificate)it.next();
-                    System.out.println("Got cert with DN: "+ retcert.getSubjectDN().getName());
+                    log.info("Got cert with DN: "+ retcert.getSubjectDN().getName());
 //                    try {
 //                        FileOutputStream fos = new FileOutputStream("sceptest.der");
 //                        fos.write(retcert.getEncoded());

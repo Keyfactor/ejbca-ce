@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERBoolean;
 import org.bouncycastle.asn1.DEREncodable;
@@ -18,7 +19,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 
 public class TestBasicCertificateExtension extends TestCase {
-
+	private static Logger log = Logger.getLogger(TestBasicCertificateExtension.class);
 	
 	public void test01NullBasicExtension() throws Exception{
 		Properties props = new Properties();
@@ -90,9 +91,9 @@ public class TestBasicCertificateExtension extends TestCase {
 		value = baseExt.getValue(null, null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
 		new BigInteger(((DERBitString)value).getBytes()); // Will throw if value is wrong
-		//System.out.println(bi.toString(2));
-		//System.out.println(bi.toString());
-		//System.out.println(((DERBitString)value).getBytes()[0]);
+		//log.debug(bi.toString(2));
+		//log.debug(bi.toString());
+		//log.debug(((DERBitString)value).getBytes()[0]);
 		assertEquals(((DERBitString)value).getBytes()[0],-96);
 		assertEquals(((DERBitString)value).getPadBits(), 5);
 		assertTrue(baseExt.getOID().equals("1.2.3"));
@@ -256,7 +257,7 @@ public class TestBasicCertificateExtension extends TestCase {
 			DEREncodable v = (DEREncodable)e.nextElement();
 			assertTrue(v.getClass().toString(),v instanceof DERUTF8String);
 			String str = ((DERUTF8String)v).getString();
-			System.out.println(str);
+			log.info(str);
 			assertEquals(str,"foo"+i++);        
 		}
 	}

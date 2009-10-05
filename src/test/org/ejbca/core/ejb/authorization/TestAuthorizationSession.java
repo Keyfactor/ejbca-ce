@@ -32,7 +32,7 @@ import org.ejbca.util.TestTools;
  * @version $Id$
  */
 public class TestAuthorizationSession extends TestCase {
-    private static Logger log = Logger.getLogger(TestAuthorizationSession.class);
+    private static final Logger log = Logger.getLogger(TestAuthorizationSession.class);
 
     private static int caid="CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
     private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);

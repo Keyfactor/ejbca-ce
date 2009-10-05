@@ -24,7 +24,6 @@ import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
-
 /**
  *
  * @version $Id$
@@ -49,8 +48,6 @@ public class WebEjbcaHealthCheckTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    
-
     /**
      * Creates a number of threads that bombards the health check servlet 1000 times each
      */
@@ -72,15 +69,15 @@ public class WebEjbcaHealthCheckTest extends TestCase {
         Thread no4 = new Thread(new WebEjbcaHealthRunner(httpReqPath),"no4");
         Thread no5 = new Thread(new WebEjbcaHealthRunner(httpReqPath),"no5");
         no1.start();
-        System.out.println("Started no1");
+        log.info("Started no1");
         no2.start();
-        System.out.println("Started no2");
+        log.info("Started no2");
         no3.start();
-        System.out.println("Started no3");
+        log.info("Started no3");
         no4.start();
-        System.out.println("Started no4");
+        log.info("Started no4");
         no5.start();
-        System.out.println("Started no5");
+        log.info("Started no5");
         no1.join();
         no2.join();
         no3.join();
@@ -88,7 +85,7 @@ public class WebEjbcaHealthCheckTest extends TestCase {
         no5.join();
 		long after = System.currentTimeMillis();
 		long diff = after - before;
-        System.out.println("All threads finished. Total time: "+diff+" ms");
+		log.info("All threads finished. Total time: "+diff+" ms");
         log.trace("<test01EjbcaHealthHttp()");
     }
     

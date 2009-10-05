@@ -375,7 +375,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
         catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("1024");
         List approvalSettings = Arrays.asList(approvalRequirementTypes);
-        System.out.println("approvalSettings: " + approvalSettings);
+        log.info("approvalSettings: " + approvalSettings);
         
 		X509CAInfo cainfo = new X509CAInfo("CN="+nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId,
         		365, new Date(System.currentTimeMillis()+364*24*3600*1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null,
@@ -390,7 +390,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 		cainfo = (X509CAInfo) caAdminSession.getCAInfo(internalAdmin, caID);
         assertNotNull(cainfo);
         
-        System.out.println("cainfo has " + cainfo.getApprovalSettings() + "  and with  " + cainfo.getNumOfReqApprovals());
+        log.info("cainfo has " + cainfo.getApprovalSettings() + "  and with  " + cainfo.getNumOfReqApprovals());
         
         return caID;
 	}

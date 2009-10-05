@@ -648,7 +648,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     	// See if the OCSP Servlet can read non-encoded requests
     	final String plainReq = httpReqPath + '/' + resourceOcsp + '/' + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB+Aevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCCzdx5N0v9XwoiEwHzAdBgkrBgEFBQcwAQIEECrZswo/a7YW+hyi5Sn85fs=";
         URL url = new URL(plainReq);
-        System.out.println(url.toString());	// Dump the exact string we use for access
+        log.info(url.toString());	// Dump the exact string we use for access
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         assertEquals("Response code did not match. ", 200, con.getResponseCode());
         assertNotNull(con.getContentType());
@@ -658,7 +658,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
     	final String dubbleSlashNonEncReq = "http://127.0.0.1:8080/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
         url = new URL(dubbleSlashNonEncReq);
-        System.out.println(url.toString());	// Dump the exact string we use for access
+        log.info(url.toString());	// Dump the exact string we use for access
         con = (HttpURLConnection)url.openConnection();
         assertEquals("Response code did not match. ", 200, con.getResponseCode());
         assertNotNull(con.getContentType());
@@ -694,14 +694,14 @@ public class ProtocolOcspHttpTest extends TestCase {
         	// so we cannot test the real Malformed response we want here
             helper.sendOCSPGet(new byte[6020], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
         } catch (IOException e) {
-        	System.out.println(e.getMessage());
+        	log.info(e.getMessage());
         }
         try {
         	// When we use an URL of length ~ > 500000 chars on JBoss we get a "Error writing to server",
         	// so we cannot test the real Malformed response we want here caused by to large requests
             helper.sendOCSPGet(new byte[1000001], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
         } catch (IOException e) {
-        	System.out.println(e.getMessage());
+        	log.info(e.getMessage());
         }*/
     }
 

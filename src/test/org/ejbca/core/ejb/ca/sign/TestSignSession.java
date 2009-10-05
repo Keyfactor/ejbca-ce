@@ -1344,7 +1344,7 @@ public class TestSignSession extends TestCase {
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        //System.out.println(cert.toString());
+        //log.debug(cert.toString());
         // Check role
         CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
         String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();

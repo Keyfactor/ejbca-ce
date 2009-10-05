@@ -144,7 +144,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     	certChain = new X509Certificate[chain.length];
     	for (int i=0; i<chain.length;i++) {
     		certChain[i] = (X509Certificate)chain[i];
-    		System.out.println("Cert["+i+"] subject: "+certChain[i].getSubjectDN().getName());
+    		log.info("Cert["+i+"] subject: "+certChain[i].getSubjectDN().getName());
     	}
     	
     }
@@ -202,25 +202,25 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
 //        Thread no9 = new Thread(new OcspTester(),"no9");
 //        Thread no10 = new Thread(new OcspTester(),"no10");
         no1.start();
-        System.out.println("Started no1");
+        log.info("Started no1");
 //        no2.start();
-//        System.out.println("Started no2");
+//        log.info("Started no2");
 //        no3.start();
-//        System.out.println("Started no3");
+//        log.info("Started no3");
 //        no4.start();
-//        System.out.println("Started no4");
+//        log.info("Started no4");
 //        no5.start();
-//        System.out.println("Started no5");
+//        log.info("Started no5");
 //        no6.start();
-//        System.out.println("Started no6");
+//        log.info("Started no6");
 //        no7.start();
-//        System.out.println("Started no7");
+//        log.info("Started no7");
 //        no8.start();
-//        System.out.println("Started no8");
+//        log.info("Started no8");
 //        no9.start();
-//        System.out.println("Started no9");
+//        log.info("Started no9");
 //        no10.start();
-//        System.out.println("Started no10");
+//        log.info("Started no10");
         no1.join();
 //        no2.join();
 //        no3.join();
@@ -233,7 +233,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
 //        no10.join();
 		long after = System.currentTimeMillis();
 		long diff = after - before;
-        System.out.println("All threads finished. Total time: "+diff);
+		log.info("All threads finished. Total time: "+diff);
     }
     
 
@@ -268,12 +268,12 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
 			        
 				    if ((i % 100) == 0) {
 				    	long mellantid = System.currentTimeMillis() - before;
-				    	System.out.println(Thread.currentThread().getName()+" har gjort "+i+" requests, tid="+mellantid);
+				    	log.info(Thread.currentThread().getName()+" har gjort "+i+" requests, tid="+mellantid);
 				    }
 				}
 				long after = System.currentTimeMillis();
 				long diff = after - before;
-				System.out.println("Tidsåtgång ("+Thread.currentThread().getName()+"): "+diff);
+				log.info("Tidsåtgång ("+Thread.currentThread().getName()+"): "+diff);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

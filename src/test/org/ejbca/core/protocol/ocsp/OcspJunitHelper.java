@@ -13,6 +13,7 @@ import java.security.cert.X509Certificate;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -23,6 +24,8 @@ import org.bouncycastle.ocsp.SingleResp;
 import org.ejbca.util.Base64;
 
 public class OcspJunitHelper extends TestCase {
+	
+	private static Logger log = Logger.getLogger(OcspJunitHelper.class);
 
 	private String httpReqPath = "";
 	private String resourceOcsp = "";
@@ -104,7 +107,7 @@ public class OcspJunitHelper extends TestCase {
     	URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + b64);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         if (con.getResponseCode() != httpCode) {
-        	System.out.println("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
+        	log.info("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
         }
         assertEquals("Response code did not match. ", httpCode, con.getResponseCode());
         if (con.getResponseCode() != 200) {

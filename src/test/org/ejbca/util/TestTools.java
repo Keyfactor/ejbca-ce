@@ -317,7 +317,16 @@ public class TestTools {
 	 * @return true if successful
 	 */
 	public static boolean createTestCA() {
-		return createTestCA("TEST");
+		return createTestCA("TEST", 1024);
+	}
+
+	/**
+	 * Makes sure the Test CA with subject DN "CN=TEST" exists.
+	 * 
+	 * @return true if successful
+	 */
+	public static boolean createTestCA(int keyStrength) {
+		return createTestCA("TEST", keyStrength);
 	}
 
 	/**
@@ -326,6 +335,15 @@ public class TestTools {
 	 * @return true if successful
 	 */
 	public static boolean createTestCA(String caName) {
+		return createTestCA(caName, 1024);
+	}
+
+	/**
+	 * Makes sure the Test CA exists.
+	 * 
+	 * @return true if successful
+	 */
+	public static boolean createTestCA(String caName, int keyStrength) {
         log.trace(">createTestCA");
 		// Search for requested CA
         try {
@@ -339,8 +357,8 @@ public class TestTools {
 		}
 		// Create request CA, if neccesary
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec("1024");
-        catokeninfo.setEncKeySpec("1024");
+        catokeninfo.setSignKeySpec(""+keyStrength);
+        catokeninfo.setEncKeySpec(""+keyStrength);
         catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
         catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
         catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
@@ -350,18 +368,18 @@ public class TestTools {
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                 "CN=OCSPSignerCertificate, " + "CN="+caName,
                 "",
-                "1024",
+                ""+keyStrength,
                 CATokenConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                 "CN=XKMSCertificate, " + "CN="+caName,
                 "",
-                "1024",
+                ""+keyStrength,
                 CATokenConstants.KEYALGORITHM_RSA));
         /*
         extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
         		"CN=CMSCertificate, " + "CN="+caName,
         		"",
-        		"1024",
+        		""+keyStrength,
                 CATokenConstants.KEYALGORITHM_RSA));
         */
         X509CAInfo cainfo = new X509CAInfo("CN="+caName,

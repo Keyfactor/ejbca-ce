@@ -1034,7 +1034,7 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
         	assertTrue("Improper check of available ca's.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
-        	//System.out.println(e.getMessage());
+        	//log.debug(e.getMessage());
         	assertEquals("Couldn't find CA (3) among End Entity Profiles Available CAs.", e.getMessage());
         }
 

@@ -214,7 +214,7 @@ public class CertRequestHttpTest extends TestCase {
         os.write("user=reqtestunknown&password=foo123&keylength=2048".getBytes("UTF-8"));
         os.close();
         assertEquals("Response code", 200, con.getResponseCode());
-        System.out.println("Content-Type: "+con.getContentType());
+        log.info("Content-Type: "+con.getContentType());
         boolean ok = false;
         // Some containers return the content type with a space and some without...
         if ("text/html;charset=UTF-8".equals(con.getContentType())) ok = true;
@@ -235,7 +235,7 @@ public class CertRequestHttpTest extends TestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
-        System.out.println(errormsg);
+        log.info(errormsg);
         assertEquals("Username: reqtestunknown\nNon existent username. To generate a certificate a valid username and password must be supplied.\n", errormsg);
         log.trace("<test02RequestUnknownUser()");
     }
@@ -284,7 +284,7 @@ public class CertRequestHttpTest extends TestCase {
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
         assertEquals("Username: reqtest\nWrong username or password! To generate a certificate a valid username and password must be supplied.\n", errormsg);
-        System.out.println(errormsg);
+        log.info(errormsg);
         log.trace("<test03RequestWrongPwd()");
     }
 
@@ -333,7 +333,7 @@ public class CertRequestHttpTest extends TestCase {
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
         assertEquals("Username: reqtest\nWrong user status! To generate a certificate for a user the user must have status New, Failed or In process.\n", errormsg);
-        System.out.println(errormsg);
+        log.info(errormsg);
         log.trace("<test04RequestWrongStatus()");
     }
 

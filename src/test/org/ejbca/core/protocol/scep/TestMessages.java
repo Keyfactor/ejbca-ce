@@ -69,9 +69,7 @@ public class TestMessages extends TestCase {
 
         Certificate[] certchain = KeyTools.getCertChain(keyStore, privateKeyAlias);
         caCert = (X509Certificate) certchain[0];
-
-        
-        //System.out.println(caCert.toString());
+        //log.debug(caCert.toString());
     }
 
     protected void setUp() throws Exception {

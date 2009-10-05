@@ -42,7 +42,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
-
 /**
  * Add a lot of users and a lot of certificates for each user 
  *
@@ -57,19 +56,11 @@ public class TestAddLotsofCertsPerUser extends TestCase {
     private ICertificateStoreSessionRemote certificateStoreSession = TestTools.getCertificateStoreSession();
     private ICreateCRLSessionRemote createCrlSession = TestTools.getCreateCRLSession();
 
-    //private static UserDataHome home;
-    private static String baseUsername;
-    private static int userNo = 0;
-    private static final int caid = "CN=TEST".hashCode();
-    private static KeyPair keys;
+    private int userNo = 0;
+    private KeyPair keys;
 
     /**
      * Creates a new TestAddLotsofUsers object.
-     *
-     * @param name name
-     * @throws InvalidAlgorithmParameterException 
-     * @throws NoSuchProviderException 
-     * @throws NoSuchAlgorithmException 
      */
     public TestAddLotsofCertsPerUser(String name) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         super(name);
@@ -78,7 +69,6 @@ public class TestAddLotsofCertsPerUser extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        baseUsername = "lotsacertsperuser-" + System.currentTimeMillis() + "-";
         TestTools.createTestCA();
     }
 
@@ -86,7 +76,7 @@ public class TestAddLotsofCertsPerUser extends TestCase {
         TestTools.removeTestCA();
     }
 
-    private String genUserName() throws Exception {
+    private String genUserName(String baseUsername) {
         userNo++;
         return baseUsername + userNo;
     }
@@ -108,11 +98,12 @@ public class TestAddLotsofCertsPerUser extends TestCase {
      */
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
-        Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        final Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        final String baseUsername = "lotsacertsperuser-" + System.currentTimeMillis() + "-";
         final int NUMBER_OF_USERS = 10;
         final int CERTS_OF_EACH_KIND = 50;
         for (int i = 0; i < NUMBER_OF_USERS; i++) {
-            String username = genUserName();
+            String username = genUserName(baseUsername);
             String password = genRandomPwd();
             final String certificateProfileName = "testLotsOfCertsPerUser";
             final String endEntityProfileName = "testLotsOfCertsPerUser";
@@ -131,14 +122,15 @@ public class TestAddLotsofCertsPerUser extends TestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-            if (userAdminSession.findUser(administrator, username) != null) {
-                System.out.println("Error : User already exists in the database.");
-            }
-        	UserDataVO userdata = new UserDataVO(username, CertTools.stringToBCDNString(dn), caid, subjectaltname, 
-                    email, UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid,
-                    null,null, token, hardtokenissuerid, null);
+        	UserDataVO userdata = new UserDataVO(username, CertTools.stringToBCDNString(dn), TestTools.getTestCAId(), subjectaltname, 
+        			email, UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid,
+        			null,null, token, hardtokenissuerid, null);
         	userdata.setPassword(password);
-        	userAdminSession.addUser(administrator, userdata, true);
+            if (userAdminSession.findUser(administrator, username) != null) {
+                log.warn("User already exists in the database.");
+            } else {
+            	userAdminSession.addUser(administrator, userdata, true);
+            }
             // Create some valid certs
             for (int j=0; j<CERTS_OF_EACH_KIND; j++) {
                 userAdminSession.setClearTextPassword(administrator, username, password);

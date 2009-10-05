@@ -39,6 +39,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.CrlExtensions;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests Delta CRLs.
@@ -233,10 +234,10 @@ public class TestDeltaCRL extends TestCase {
         assertNotNull(revset);
         iter = revset.iterator();
         found = false;
-		//System.out.println(x509crl.getThisUpdate());
+		//log.debug(x509crl.getThisUpdate());
         while (iter.hasNext()) {
             X509CRLEntry ce = (X509CRLEntry)iter.next(); 
-    		//System.out.println(ce);
+    		//log.debug(ce);
         	if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
         		found = true;
         		// TODO: verify the reason code
@@ -256,11 +257,11 @@ public class TestDeltaCRL extends TestCase {
         assertNotNull(revset);
         iter = revset.iterator();
         found = false;
-		//System.out.println(x509crl.getThisUpdate());
-		//System.out.println(x509crl.getThisUpdate().getTime());
+		//log.debug(x509crl.getThisUpdate());
+		//log.debug(x509crl.getThisUpdate().getTime());
         while (iter.hasNext()) {
             X509CRLEntry ce = (X509CRLEntry)iter.next(); 
-    		//System.out.println(ce);
+    		//log.debug(ce);
         	if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
         		found = true;
         		// TODO: verify the reason code
@@ -277,14 +278,14 @@ public class TestDeltaCRL extends TestCase {
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
-		//System.out.println(x509crl.getThisUpdate());
+		//log.debug(x509crl.getThisUpdate());
         if (revset != null) {
         	iter = revset.iterator();
         	found = false;
         	while (iter.hasNext()) {
         		X509CRLEntry ce = (X509CRLEntry)iter.next(); 
-        		//System.out.println(ce);
-        		//System.out.println(ce.getRevocationDate().getTime());
+        		//log.debug(ce);
+        		//log.debug(ce.getRevocationDate().getTime());
         		if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
         			found = true;
         		}
@@ -337,16 +338,10 @@ public class TestDeltaCRL extends TestCase {
      */
     private static KeyPair genKeys() {
     	try {
-            KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
-            keygen.initialize(512);
-            log.debug("Generating keys, please wait...");
-            KeyPair rsaKeys = keygen.generateKeyPair();
-            log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
-                    ((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());    		
-            return rsaKeys;
+    		return KeyTools.genKeys("512", "RSA");
     	} catch (Exception e) {
     		assertFalse(e.getMessage(), true);
     	}
     	return null;
-    } // genKeys
+    }
 }

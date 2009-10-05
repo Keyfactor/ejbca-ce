@@ -13,12 +13,8 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 
@@ -26,7 +22,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
-
+import org.ejbca.util.TestTools;
 
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
@@ -34,104 +30,60 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class TestAddLotsofUsers extends TestCase {
-    private static Logger log = Logger.getLogger(TestAddLotsofUsers.class);
-    /**
-     * UserAdminSession handle, not static since different object should go to different session
-     * beans concurrently
-     */
-    private IUserAdminSessionRemote cacheAdmin;
 
-    /** Handle to AdminSessionHome */
-    private static IUserAdminSessionHome cacheHome;
+	private static final Logger log = Logger.getLogger(TestAddLotsofUsers.class);
 
-    //private static UserDataHome home;
-    private static String baseUsername;
-    private static String pwd;
-    private static int userNo = 0;
-    private static int caid;
+    private int userNo = 0;
 
     /**
      * Creates a new TestAddLotsofUsers object.
-     *
-     * @param name name
      */
     public TestAddLotsofUsers(String name) {
         super(name);
     }
 
     protected void setUp() throws Exception {
-
-        log.trace(">setUp()");
-        //Object obj = ctx.lookup("UserData");
-        //home = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("UserAdminSession");
-                cacheHome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
-                caid = "CN=TEST".hashCode();
-
-            }
-
-            cacheAdmin = cacheHome.create();
-        }
-
-        Calendar cal = Calendar.getInstance();
-        baseUsername = "lotsausers" + cal.get(Calendar.SECOND) + "-";
-        log.trace("<setUp()");
+        TestTools.createTestCA();
     }
 
     protected void tearDown() throws Exception {
+        TestTools.removeTestCA();
     }
 
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
-
-    private String genUserName() throws Exception {
-        // Gen new user
+    /**
+     * Generate a new user name
+     */
+    private String genUserName(String baseUsername) throws Exception {
         userNo++;
-
         return baseUsername + userNo;
-    } // genRandomUserName
+    }
 
+    /**
+     * Generate a new random password
+     */
     private String genRandomPwd() throws Exception {
-        // Gen random pwd
         Random rand = new Random(new Date().getTime() + 4812);
         String password = "";
-
         for (int i = 0; i < 8; i++) {
             int randint = rand.nextInt(9);
             password += (new Integer(randint)).toString();
         }
-
         //log.debug("Generated random pwd: password=" + password);
         return password;
-    } // genRandomPwd
-
+    }
 
     /**
-     * tests creating 2000 users
+     * Tests creation of 2000 users
      *
      * @throws Exception error
      */
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
-
-        //UserDataRemote data1=null;
-        Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
-
+        final Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        final String baseUsername = "lotsausers" + System.currentTimeMillis() + "-";
         for (int i = 0; i < 2000; i++) {
-            String username = genUserName();
-            pwd = genRandomPwd();
-
-            /*
-            data1 = home.create(username, pwd, "C=SE, O=AnaTom, CN="+username);
-            assertNotNull("Error creating", data1);
-            */
+            String username = genUserName(baseUsername);
+            String pwd = genRandomPwd();
             int type = SecConst.USER_ENDUSER;
             int token = SecConst.TOKEN_SOFT_P12;
             int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
@@ -140,12 +92,13 @@ public class TestAddLotsofUsers extends TestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-            if (cacheAdmin.findUser(administrator, username) != null) {
-                System.out.println("Error : User already exists in the database.");
+            if (TestTools.getUserAdminSession().findUser(administrator, username) != null) {
+                log.warn("User already exists in the database.");
+            } else {
+            	TestTools.getUserAdminSession().addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
+                        type, token, hardtokenissuerid, TestTools.getTestCAId());
             }
-            cacheAdmin.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
-                    type, token, hardtokenissuerid, caid);
-            cacheAdmin.setClearTextPassword(administrator, username, pwd);
+            TestTools.getUserAdminSession().setClearTextPassword(administrator, username, pwd);
             if (i % 100 == 0) {
                 log.debug("Created " + i + " users...");
             }

@@ -131,12 +131,12 @@ public class TestXKMSKISS extends TestCase {
     	try {
     		TestTools.getCertificateStoreSession().addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
     	} catch (CertificateProfileExistsException e) {
-    		System.out.println("Certificateprofile XKMSTESTSIGN already exists.");
+    		log.info("Certificateprofile XKMSTESTSIGN already exists.");
     	}
     	try {
     		TestTools.getCertificateStoreSession().addCertificateProfile(administrator, "XKMSTESTEXCHANDENC", profile2);
     	} catch (CertificateProfileExistsException e) {
-    		System.out.println("Certificateprofile XKMSTESTSIGN already exists.");
+    		log.info("Certificateprofile XKMSTESTSIGN already exists.");
     	}
     	
     	int profile1Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, "XKMSTESTSIGN");
@@ -149,7 +149,7 @@ public class TestXKMSKISS extends TestCase {
     	try {
     		TestTools.getRaAdminSession().addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
     	} catch (EndEntityProfileExistsException e) {
-    		System.out.println("Endentityprofile XKMSTESTPROFILE already exists.");
+    		log.info("Endentityprofile XKMSTESTPROFILE already exists.");
     	}
         int endEntityProfileId = TestTools.getRaAdminSession().getEndEntityProfileId(administrator, "XKMSTESTPROFILE");
         
@@ -164,7 +164,7 @@ public class TestXKMSKISS extends TestCase {
     	String subjectaltname1 = "RFC822NAME=" + username1 + "@foo.se";
     	String email1 = username1 + "@foo.se";
     	if (TestTools.getUserAdminSession().findUser(administrator, username1) != null) {
-    		System.out.println("Error : User already exists in the database.");
+    		log.info("Error : User already exists in the database.");
     	}
     	TestTools.getUserAdminSession().addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
     			type, token, hardtokenissuerid, caid);
@@ -177,7 +177,7 @@ public class TestXKMSKISS extends TestCase {
     	String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/"+username2+",IPADDRESS=10.0.0.1,DNSNAME="+username2+".test.com";
     	String email2 = username2 + "@foo.se";    	
     	if (TestTools.getUserAdminSession().findUser(administrator, username2) != null) {
-    		System.out.println("Error : User already exists in the database.");
+    		log.info("Error : User already exists in the database.");
     	}
     	TestTools.getUserAdminSession().addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
     			type, token, hardtokenissuerid, caid);
@@ -190,7 +190,7 @@ public class TestXKMSKISS extends TestCase {
     	String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
     	String email3 = username3 + "@foo.se";
     	if (TestTools.getUserAdminSession().findUser(administrator, username3) != null) {
-    		System.out.println("Error : User already exists in the database.");
+    		log.info("Error : User already exists in the database.");
     	}
     	TestTools.getUserAdminSession().addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
     			type, token, hardtokenissuerid, caid);
@@ -461,7 +461,7 @@ public class TestXKMSKISS extends TestCase {
     	while(iter.hasNext()){
     		UnverifiedKeyBindingType nextKeyBinding = iter.next();
     		keyInfoType = nextKeyBinding.getKeyInfo();
-    		System.out.println("keyInfoType: "+keyInfoType.getContent().size());
+    		log.info("keyInfoType: "+keyInfoType.getContent().size());
     		/*<?xml version="1.0" ?>
 			<S:Envelope xmlns:S = "http://schemas.xmlsoap.org/soap/envelope/">
 				<S:Body>
@@ -534,7 +534,7 @@ public class TestXKMSKISS extends TestCase {
 			Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 			while(iter2.hasNext()){
 				JAXBElement next = (JAXBElement) iter2.next();
-				//System.out.println("next.getName().getLocalPart(): "+next.getName().getLocalPart());
+				//log.debug("next.getName().getLocalPart(): "+next.getName().getLocalPart());
 				assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
 				byte[] encoded = (byte[]) next.getValue();
 				Certificate nextCert = CertTools.getCertfromByteArray(encoded);

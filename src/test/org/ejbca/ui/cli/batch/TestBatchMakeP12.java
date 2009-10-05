@@ -112,7 +112,7 @@ public class TestBatchMakeP12 extends TestCase {
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
 
-        //System.out.println("tempdir="+tmpfile.getParent());
+        //log.debug("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
         log.trace("<test02MakeP12()");

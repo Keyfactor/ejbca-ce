@@ -785,7 +785,7 @@ public class TestCertTools extends TestCase {
 		assertEquals("Wrong certificate policy", "1.1.1.1.1.1", CertTools
 				.getCertificatePolicyId(cert, 0));
 		assertNull("Not null policy", CertTools.getCertificatePolicyId(cert, 1));
-		// System.out.println(cert);
+		// log.debug(cert);
 		// FileOutputStream fos = new FileOutputStream("foo.cert");
 		// fos.write(cert.getEncoded());
 		// fos.close();
@@ -1024,7 +1024,7 @@ public class TestCertTools extends TestCase {
 
 	public void test14QCStatement() throws Exception {
 		Certificate cert = CertTools.getCertfromByteArray(qcRefCert);
-		// System.out.println(cert);
+		// log.debug(cert);
 		assertEquals("rfc822name=municipality@darmstadt.de",
 				QCStatementExtension.getQcStatementAuthorities(cert));
 		Collection ids = QCStatementExtension.getQcStatementIds(cert);
@@ -1051,7 +1051,7 @@ public class TestCertTools extends TestCase {
 
 	public void test15AiaOcspUri() throws Exception {
 		Certificate cert = CertTools.getCertfromByteArray(aiaCert);
-		// System.out.println(cert);
+		//log.debug(cert);
 		assertEquals("http://localhost:8080/ejbca/publicweb/status/ocsp",
 				CertTools.getAuthorityInformationAccessOcspUrl(cert));
 	}

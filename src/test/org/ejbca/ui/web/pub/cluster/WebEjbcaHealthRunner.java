@@ -14,12 +14,16 @@ package org.ejbca.ui.web.pub.cluster;
 
 import java.net.URL;
 
+import org.apache.log4j.Logger;
+
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
 public class WebEjbcaHealthRunner implements Runnable {
+	
+	private static Logger log = Logger.getLogger(WebEjbcaHealthRunner.class);
 
 	public static final int NO_TESTS=100;
 	
@@ -44,7 +48,7 @@ public class WebEjbcaHealthRunner implements Runnable {
 			}
 			long after = System.currentTimeMillis();
 			long diff = after - before;
-			System.out.println("Time used ("+Thread.currentThread().getName()+"): "+diff);			
+			log.info("Time used ("+Thread.currentThread().getName()+"): "+diff);			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

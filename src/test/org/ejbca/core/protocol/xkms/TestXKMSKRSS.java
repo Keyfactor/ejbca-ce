@@ -216,10 +216,11 @@ public class TestXKMSKRSS extends TestCase {
     	String subjectaltname1 = "RFC822NAME=" + username1 + "@foo.se";
     	String email1 = username1 + "@foo.se";
     	if (TestTools.getUserAdminSession().findUser(administrator, username1) != null) {
-    		System.out.println("Error : User already exists in the database.");
+    		log.info("User already exists in the database.");
+    	} else {
+        	TestTools.getUserAdminSession().addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
+        			type, token, hardtokenissuerid, caid);
     	}
-    	TestTools.getUserAdminSession().addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
-    			type, token, hardtokenissuerid, caid);
     	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, pwd);
  
     	username2 = genUserName();
@@ -229,10 +230,11 @@ public class TestXKMSKRSS extends TestCase {
     	String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/"+username2+",IPADDRESS=10.0.0.1,DNSNAME="+username2+".test.com";
     	String email2 = username2 + "@foo.se";    	
     	if (TestTools.getUserAdminSession().findUser(administrator, username2) != null) {
-    		System.out.println("Error : User already exists in the database.");
+    		log.info("User already exists in the database.");
+    	} else {
+        	TestTools.getUserAdminSession().addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
+        			type, token, hardtokenissuerid, caid);
     	}
-    	TestTools.getUserAdminSession().addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
-    			type, token, hardtokenissuerid, caid);
     	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, pwd);
 
     	username3 = genUserName();
@@ -240,12 +242,12 @@ public class TestXKMSKRSS extends TestCase {
     	String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
     	String email3 = username3 + "@foo.se";
     	if (TestTools.getUserAdminSession().findUser(administrator, username3) != null) {
-    		System.out.println("Error : User already exists in the database.");
+    		log.info("User already exists in the database.");
+    	} else {
+        	TestTools.getUserAdminSession().addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
+        			type, token, hardtokenissuerid, caid);
     	}
-    	TestTools.getUserAdminSession().addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
-    			type, token, hardtokenissuerid, caid);
     	TestTools.getUserAdminSession().setClearTextPassword(administrator, username3, pwd);
-
     }
     
     public void test01SimpleRegistration() throws Exception{

@@ -175,12 +175,12 @@ public class TestKeyTools extends TestCase {
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
-        //System.out.println(b64private);
+        //log.debug(b64private);
         X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, true);
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
-        //System.out.println(b64cert);
+        //log.debug(b64cert);
         log.trace("<test02GenKeysRSA()");
     }
 
@@ -205,13 +205,13 @@ public class TestKeyTools extends TestCase {
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
-        //System.out.println(b64private);
+        //log.debug(b64private);
         X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA256_WITH_ECDSA, true);
-        //System.out.println(cert);
+        //log.debug(cert);
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
-        //System.out.println(b64cert);
+        //log.debug(b64cert);
         log.trace("<test03GenKeysECDSA()");
     }
 
@@ -221,13 +221,13 @@ public class TestKeyTools extends TestCase {
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
-        //System.out.println(b64private);
+        //log.debug(b64private);
         X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA256_WITH_ECDSA, true);
-        //System.out.println(cert);
+        //log.debug(cert);
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
-        System.out.println(b64cert);
+        log.info(b64cert);
         log.trace("<test04GenKeysECDSANist()");
     }
     
@@ -237,13 +237,13 @@ public class TestKeyTools extends TestCase {
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
-        //System.out.println(b64private);
+        //log.debug(b64private);
         X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA256_WITH_ECDSA, true);
-        //System.out.println(cert);
+        //log.debug(cert);
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
-        System.out.println(b64cert);
+        log.info(b64cert);
         log.trace("<test05GenKeysECDSAImplicitlyCA()");
     }
     
@@ -253,12 +253,12 @@ public class TestKeyTools extends TestCase {
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
-        //System.out.println(b64private);
+        //log.debug(b64private);
         X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_DSA, true);
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
-        //System.out.println(b64cert);
+        //log.debug(b64cert);
         log.trace("<test06GenKeysDSA()");
     }
 }

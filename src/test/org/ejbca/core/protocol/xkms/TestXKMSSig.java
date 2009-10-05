@@ -72,7 +72,7 @@ import org.w3c.dom.Element;
 
 public class TestXKMSSig extends TestCase {
 	
-	private static Logger log = Logger.getLogger(TestXKMSSig.class);
+	private static final Logger log = Logger.getLogger(TestXKMSSig.class);
 		
 	private ObjectFactory xKMSObjectFactory = new ObjectFactory();	
 	private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
@@ -143,7 +143,7 @@ public class TestXKMSSig extends TestCase {
         BatchMakeP12 makep12 = new BatchMakeP12();
         tmpfile = new File("p12");
 
-        //System.out.println("tempdir="+tmpfile.getParent());
+        //log.debug("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getAbsolutePath());
         makep12.createAllNew();
     	
@@ -188,18 +188,15 @@ public class TestXKMSSig extends TestCase {
 		
 		//DOMSource dOMSource = new DOMSource(doc);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        
-	    XMLUtils.outputDOMc14nWithComments(doc, System.out);
-	    
 	    XMLUtils.outputDOMc14nWithComments(doc, baos);
-	    
+	    log.debug("XMLUtils.outputDOMc14nWithComments: " + baos.toString());
 	    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 	    
         javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
-        
         Document doc2 = db.parse(bais);
-        
-        XMLUtils.outputDOMc14nWithComments(doc2, System.out);
+        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+        XMLUtils.outputDOMc14nWithComments(doc2, baos2);
+	    log.debug("XMLUtils.outputDOMc14nWithComments: " + baos2.toString());
         
         org.w3c.dom.NodeList xmlSigs = doc2.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");					
 		org.w3c.dom.Element xmlSigElement = (org.w3c.dom.Element)xmlSigs.item(0);        
@@ -246,18 +243,17 @@ public class TestXKMSSig extends TestCase {
         validateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         JAXBElement<ValidateRequestType> validateRequest = xKMSObjectFactory.createValidateRequest(validateRequestType);
-        
 
-        
 		Document doc = dbf.newDocumentBuilder().newDocument();
 		marshaller.marshal( validateRequest, doc );
-	    
-        ValidateResultType validateResultType = xKMSInvoker.validate(validateRequestType, pkCert, key);
-        
-        
-        assertTrue(validateResultType.getRequestId().equals("200"));
-        assertTrue(validateResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
- 
+	    try {
+	    	ValidateResultType validateResultType = xKMSInvoker.validate(validateRequestType, pkCert, key);
+	        assertTrue(validateResultType.getRequestId().equals("200"));
+	        assertTrue(validateResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
+	    } catch (javax.xml.ws.soap.SOAPFaultException e) {
+	    	log.debug("", e);
+			assertTrue("There was a server error. ("+e.getMessage()+") Did you enable the XKMS CA service?", false);
+	    }
     }	    
 	    
     public void test03SendUntrustedRequest() throws Exception {    	    	
@@ -295,18 +291,19 @@ public class TestXKMSSig extends TestCase {
         validateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         JAXBElement<ValidateRequestType> validateRequest = xKMSObjectFactory.createValidateRequest(validateRequestType);
-        
 
-        
 		Document doc = dbf.newDocumentBuilder().newDocument();
 		marshaller.marshal( validateRequest, doc );
-	    
-        ValidateResultType validateResultType = xKMSInvoker.validate(validateRequestType, pkCert, key);
-        
-        
-        assertTrue(validateResultType.getRequestId().equals("201"));
-        assertTrue(validateResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SENDER));
-        assertTrue(validateResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION));
+
+		try {
+			ValidateResultType validateResultType = xKMSInvoker.validate(validateRequestType, pkCert, key);
+	        assertTrue(validateResultType.getRequestId().equals("201"));
+	        assertTrue(validateResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SENDER));
+	        assertTrue(validateResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION));
+		} catch (javax.xml.ws.soap.SOAPFaultException e) {
+			log.debug("", e);
+			assertTrue("There was a server error. ("+e.getMessage()+") Did you enable the XKMS CA service?", false);
+		}
     }		
     
     public void test04SendRevokedRequest() throws Exception {    	    	
@@ -346,20 +343,21 @@ public class TestXKMSSig extends TestCase {
         validateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         JAXBElement<ValidateRequestType> validateRequest = xKMSObjectFactory.createValidateRequest(validateRequestType);
-        
 
-        
 		Document doc = dbf.newDocumentBuilder().newDocument();
 		marshaller.marshal( validateRequest, doc );
-	    
-        ValidateResultType validateResultType = xKMSInvoker.validate(validateRequestType, pkCert, key);
-        
-        
-        assertTrue(validateResultType.getRequestId().equals("200"));
-        assertTrue(validateResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SENDER));
-        assertTrue(validateResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION));
 
+		try {
+			ValidateResultType validateResultType = xKMSInvoker.validate(validateRequestType, pkCert, key);
+	        assertTrue(validateResultType.getRequestId().equals("200"));
+	        assertTrue(validateResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SENDER));
+	        assertTrue(validateResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION));
+		} catch (javax.xml.ws.soap.SOAPFaultException e) {
+			log.debug("", e);
+			assertTrue("There was a server error. ("+e.getMessage()+") Did you enable the XKMS CA service?", false);
+		}
     }
+
     public void test05POPSignature() throws Exception {    	    	
 
     	KeyStore clientKeyStore = Constants.getUserKeyStore();
@@ -408,27 +406,24 @@ public class TestXKMSSig extends TestCase {
         pOPElement.appendChild(xmlSig.getElement().cloneNode(true));
         registerRequestDoc.getDocumentElement().appendChild(pOPElement);
         
-        XMLUtils.outputDOMc14nWithComments(registerRequestDoc, System.out);
-		
-        
+		ByteArrayOutputStream logBaos = new ByteArrayOutputStream();
+        XMLUtils.outputDOMc14nWithComments(registerRequestDoc, logBaos);
+		log.info("XMLUtils.outputDOMc14nWithComments: " + logBaos.toString());
                         
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
 	    XMLUtils.outputDOMc14nWithComments(registerRequestDoc, baos);
-	    
 	    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-	    
         javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
         
         Document doc2 = db.parse(bais);
-        
-        XMLUtils.outputDOMc14nWithComments(doc2, System.out);
+		logBaos = new ByteArrayOutputStream();
+        XMLUtils.outputDOMc14nWithComments(doc2, logBaos);
+		log.info("XMLUtils.outputDOMc14nWithComments: " + logBaos.toString());
         
         org.w3c.dom.NodeList xmlSigs = doc2.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");					
 		org.w3c.dom.Element xmlSigElement = (org.w3c.dom.Element)xmlSigs.item(0);        
 		org.apache.xml.security.signature.XMLSignature xmlVerifySig = new org.apache.xml.security.signature.XMLSignature(xmlSigElement, null);
-        
-		
+
 		assertTrue(xmlVerifySig.checkSignatureValue(pkCert.getPublicKey()));		
 
 		KeyPair keyPair= KeyTools.genKeys("1024", "RSA");
@@ -497,19 +492,19 @@ public class TestXKMSSig extends TestCase {
         pOPElement.appendChild(xmlSig.getElement().cloneNode(true));
         registerRequestDoc.getDocumentElement().appendChild(pOPElement);
         
-        XMLUtils.outputDOMc14nWithComments(registerRequestDoc, System.out);		        
+		ByteArrayOutputStream logBaos = new ByteArrayOutputStream();
+        XMLUtils.outputDOMc14nWithComments(registerRequestDoc, logBaos);		        
+		log.info("XMLUtils.outputDOMc14nWithComments: " + logBaos.toString());
                         
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
 	    XMLUtils.outputDOMc14nWithComments(registerRequestDoc, baos);
-	    
 	    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-	    
-        javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
-        
+
+	    javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc2 = db.parse(bais);
-        
-        XMLUtils.outputDOMc14nWithComments(doc2, System.out);                
+		logBaos = new ByteArrayOutputStream();
+        XMLUtils.outputDOMc14nWithComments(doc2, logBaos);                
+		log.info("XMLUtils.outputDOMc14nWithComments: " + logBaos.toString());
         
 		// Verify the authentication
         org.w3c.dom.NodeList authenticationElements = doc2.getElementsByTagNameNS("http://www.w3.org/2002/03/xkms#", "Authentication");

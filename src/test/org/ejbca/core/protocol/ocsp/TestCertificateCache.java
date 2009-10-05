@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.CertificateID;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -32,6 +33,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class TestCertificateCache extends TestCase {
+	private static final Logger log = Logger.getLogger(TestCertificateCache.class);
 
 	protected void setUp() throws Exception {
 		CertTools.installBCProvider();
@@ -112,7 +114,7 @@ public class TestCertificateCache extends TestCase {
 		cert = cache.findByHash(new CertificateID(CertificateID.HASH_SHA1, testsnindncert, BigInteger.valueOf(0)));
 		assertNotNull(cert);
 		cert.verify(testsnindncert.getPublicKey());
-		//System.out.println(testsnindncert.getIssuerDN().getName());
+		//log.debug(testsnindncert.getIssuerDN().getName());
 		cert = cache.findLatestBySubjectDN(testsnindncert.getIssuerDN().getName());
 		assertNotNull(cert);
 		cert.verify(testsnindncert.getPublicKey());
@@ -162,25 +164,25 @@ public class TestCertificateCache extends TestCase {
 		no55.setUncaughtExceptionHandler(handler);
 		long start = new Date().getTime();
         no1.start();
-        System.out.println("Started no1");
+        log.info("Started no1");
         no2.start();
-        System.out.println("Started no2");
+        log.info("Started no2");
         no3.start();
-        System.out.println("Started no3");
+        log.info("Started no3");
         no4.start();
-        System.out.println("Started no4");
+        log.info("Started no4");
         no5.start();
-        System.out.println("Started no5");
+        log.info("Started no5");
         no11.start();
-        System.out.println("Started no11");
+        log.info("Started no11");
         no22.start();
-        System.out.println("Started no22");
+        log.info("Started no22");
         no33.start();
-        System.out.println("Started no33");
+        log.info("Started no33");
         no44.start();
-        System.out.println("Started no44");
+        log.info("Started no44");
         no55.start();
-        System.out.println("Started no55");
+        log.info("Started no55");
         no1.join();
         no2.join();
         no3.join();
@@ -192,7 +194,7 @@ public class TestCertificateCache extends TestCase {
         no44.join();
         no55.join();
 		long end = new Date().getTime();
-		System.out.println("Time consumed: "+(end-start));
+		log.info("Time consumed: "+(end-start));
         assertNull(threadException != null?threadException.getMessage():"null", threadException);
 	}
 	

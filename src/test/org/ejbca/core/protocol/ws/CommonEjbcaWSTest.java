@@ -1453,7 +1453,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertTrue(cas.size() == 0);
 //		boolean found = false;
 //		for (NameAndId n : cas) {
-//			System.out.println("Available CA: "+n.getName());
+//			log.info("Available CA: "+n.getName());
 //			if (getAdminCAName().equals(n.getName())) found = true;
 //		}
 //		assertTrue(found);

@@ -226,7 +226,7 @@ public class CmpTestCase extends TestCase {
 		CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 		//myCertReqMessages.addCertReqMsg(myCertReqMsg);
 				
-		//System.out.println("CAcert subject name: "+cacert.getSubjectDN().getName());
+		//log.debug("CAcert subject name: "+cacert.getSubjectDN().getName());
 		PKIHeader myPKIHeader =
 			new PKIHeader(
 					new DERInteger(2),

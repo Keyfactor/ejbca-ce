@@ -66,7 +66,7 @@ import org.w3c.dom.Document;
 
 public class TestXKMSEnc extends TestCase {
 	
-	private static Logger log = Logger.getLogger(TestXKMSEnc.class);
+	private static final Logger log = Logger.getLogger(TestXKMSEnc.class);
 		
 	private ObjectFactory xKMSObjectFactory = new ObjectFactory();	
 	private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
@@ -116,28 +116,20 @@ public class TestXKMSEnc extends TestCase {
         PrivateKeyType privateKeyType1 = XKMSUtil.getEncryptedXMLFromPrivateKey( (RSAPrivateCrtKey) keys.getPrivate(), "This is total crap");
         registerResultType.setPrivateKey(privateKeyType1);
         
-        System.out.print("\n\n");
-                
         Document registerResultDoc = db.newDocument();
         marshaller.marshal( registerResult, registerResultDoc );
-        
-        XMLUtils.outputDOM(registerResultDoc, System.out);
-		
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtils.outputDOM(registerResultDoc, baos);
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());        
-        
-        System.out.print("\n\n");
+        log.debug("XMLUtils.outputDOM: " + baos.toString());
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         JAXBElement<RegisterResultType> registerResult2 = (JAXBElement<RegisterResultType>) unmarshaller.unmarshal(bais);
         registerResultType = registerResult2.getValue();
         
         PrivateKeyType privateKeyType2 = registerResultType.getPrivateKey();
-    
         RSAPrivateKey privkey2 = XKMSUtil.getPrivateKeyFromEncryptedXML(privateKeyType2, "This is total crap");
-        
         X509Certificate cert = CertTools.genSelfCert("CN=test", 10, null,privkey2, keys.getPublic(), "SHA1WithRSA", true);
-        
         cert.verify(keys.getPublic());    
     }    
 	
@@ -169,20 +161,19 @@ public class TestXKMSEnc extends TestCase {
 		Hex.encode(retval.getEncoded(), baos);
 				
 		String resultString = new String(baos.toByteArray());
-		System.out.println(resultString);
+		log.debug(resultString);
 		assertTrue(resultString.equalsIgnoreCase("78e8bbf532d01dece38aa9d2a4a409dbff1a265cdbae1b95"));
 
 	}
 	
 	public void test04TestRevocationCodeIdentifyerGeneration() throws Exception{
-		System.out.println("\n");
 		String authenticationData= "Help I Have Revealed My Key";
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		Hex.encode(authenticationData.getBytes(), baos);
 				
 		String resultString = new String(baos.toByteArray());
-		System.out.println(resultString);
+		log.debug(resultString);
 		assertTrue(resultString.equalsIgnoreCase("48656c70204920486176652052657665616c6564204d79204b6579"));
 		
         SecretKey key1 = XKMSUtil.getSecretKeyFromPassphrase(authenticationData, true, 20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1);
@@ -193,7 +184,7 @@ public class TestXKMSEnc extends TestCase {
 		Hex.encode(key1.getEncoded(), baos);
 				
 		resultString = new String(baos.toByteArray());
-		System.out.println(resultString);
+		log.debug(resultString);
 		assertTrue(resultString.equalsIgnoreCase("1c0857c95458c26f44327efd0ef055b08cad5c78"));
 		
 	    SecretKey key2 = XKMSUtil.getSecretKeyFromPassphrase(new String(key1.getEncoded(),"ISO8859-1"), false,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2);
@@ -204,11 +195,11 @@ public class TestXKMSEnc extends TestCase {
 	    Hex.encode(key2.getEncoded(), baos);
 
 	    resultString = new String(baos.toByteArray());
-	    System.out.println(resultString);
+	    log.debug(resultString);
 	    assertTrue(resultString.equalsIgnoreCase("e6b44dd9c39988c95c889c41a9a7a5ad90c2cd21"));
         
 	    String byte64String = new String(Base64.encode(key2.getEncoded(), false));
-	    System.out.println(byte64String);
+	    log.debug(byte64String);
 	    assertTrue(byte64String.equals("5rRN2cOZiMlciJxBqaelrZDCzSE="));
 	}
 	
@@ -237,19 +228,14 @@ public class TestXKMSEnc extends TestCase {
         prototypeKeyBindingType.setId("100231");
         registerRequestType.setPrototypeKeyBinding(prototypeKeyBindingType);                
         JAXBElement<RegisterRequestType> registerRequest = xKMSObjectFactory.createRegisterRequest(registerRequestType);
-        
-        System.out.print("\n\n");
-                
+
         Document registerRequestDoc = db.newDocument();
         marshaller.marshal( registerRequest, registerRequestDoc );
-        
-        XMLUtils.outputDOM(registerRequestDoc, System.out);
-		
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtils.outputDOM(registerRequestDoc, baos);
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());        
-        
-        System.out.print("\n\n");
+        log.debug("XMLUtils.outputDOM: " + baos.toString());
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         JAXBElement<RegisterRequestType> registerRequest2 = (JAXBElement<RegisterRequestType>) unmarshaller.unmarshal(bais);
         registerRequestType = registerRequest2.getValue();
@@ -261,9 +247,5 @@ public class TestXKMSEnc extends TestCase {
         X509Certificate cert = CertTools.genSelfCert("CN=test", 10, null,keys.getPrivate(), rSAPublicKey, "SHA1WithRSA", true);
         
         cert.verify(rSAPublicKey);  
-        
 	}
-	
- 
-
 }

@@ -199,7 +199,7 @@ public class TestCertificateValidity extends TestCase {
             cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false);        	
         } catch (IllegalValidityException e) {
         	thrown = true;
-        	//System.out.println(e.getMessage());
+        	//log.debug(e.getMessage());
         	String msg = e.getMessage();
         	// When running from within eclipse it will not have the correct internalresources.
         	if (!msg.contains("Requested expire date is not before the configured 'ca.toolateexpiredate'") && (!msg.equals("signsession.errorbeyondtoolateexpiredate"))) {

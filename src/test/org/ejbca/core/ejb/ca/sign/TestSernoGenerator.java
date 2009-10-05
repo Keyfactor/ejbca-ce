@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class TestSernoGenerator extends TestCase {
-    private static Logger log = Logger.getLogger(TestSernoGenerator.class);
+    private static final Logger log = Logger.getLogger(TestSernoGenerator.class);
 
     /**
      * Creates a new TestSernoGenerator object.
@@ -61,23 +61,21 @@ public class TestSernoGenerator extends TestCase {
 
                 if (map.put(hex, hex) != null) {
                 	duplicates++;
-                    System.out.println("Warning!");
-                    System.out.println("Duplicate serno produced: " + hex);
-                    System.out.println("Warning!");
-                    System.out.println("Number of sernos produced before duplicate: "+(j*1000+i));
+                    log.warn("Duplicate serno produced: " + hex);
+                    log.warn("Number of sernos produced before duplicate: "+(j*1000+i));
                     assertTrue(false);
                 }
             }
 
-            //System.out.println(((j + 1) * 1000) + " sernos produced: " + hex);
+            //log.debug(((j + 1) * 1000) + " sernos produced: " + hex);
 
             //long seed = Math.abs((new Date().getTime()) + this.hashCode());
             //gen.setSeed(seed);
-            //System.out.println("Reseeding: " + seed);
+            //log.debug("Reseeding: " + seed);
         }
 
-        System.out.println("Map now contains " + map.size() + " serial numbers. Last one: "+hex);
-        System.out.println("Number of duplicates: "+duplicates);
+        log.info("Map now contains " + map.size() + " serial numbers. Last one: "+hex);
+        log.info("Number of duplicates: "+duplicates);
         log.trace("<test01GenerateSernos8Octets()");
     }
     
@@ -103,18 +101,16 @@ public class TestSernoGenerator extends TestCase {
 
                 if (map.put(hex, hex) != null) {
                 	duplicates++;
-                    System.out.println("Warning!");
-                    System.out.println("Duplicate serno produced: " + hex);
-                    System.out.println("Warning!");
-                    System.out.println("Number of sernos produced before duplicate: "+(j*1000+i));
+                    log.warn("Duplicate serno produced: " + hex);
+                    log.warn("Number of sernos produced before duplicate: "+(j*1000+i));
                     //assertTrue(false);
                 }
             }
 
         }
 
-        System.out.println("Map now contains " + map.size() + " serial numbers. Last one: "+hex);
-        System.out.println("Number of duplicates: "+duplicates);
+        log.info("Map now contains " + map.size() + " serial numbers. Last one: "+hex);
+        log.info("Number of duplicates: "+duplicates);
         log.trace("<test02GenerateSernos4Octets()");
     }
 
