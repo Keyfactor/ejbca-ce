@@ -4840,6 +4840,24 @@ See the following table for the available encodings and how their value is inter
 </li>
 <li>DERNULL : Value isn't used, an empty value.
 </li>
+<li>DEROBJECT : The hex encoded DER value of the extensions. You can use this to create any extension with sequences etc.
+</li>
+</ul>
+<p>Examples of certificate extensions that you can configure with the BasicCertificateExtension are given in 'src/java/certextensions.properties'.
+</p>
+<ul>
+<li>MS application policies
+</li> 
+<li>NetscapeCertType
+</li>
+<li>NetscapeComment
+</li>
+<li>NetscapeCARevocationURL
+</li>
+<li>NetscapeRevocationURL
+</li>
+<li>...
+</li>
 </ul>
 </subsection>
 <subsection name="Implementing an Advanced Certificate Extension">
