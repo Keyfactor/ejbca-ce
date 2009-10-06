@@ -23,6 +23,8 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
@@ -291,14 +293,17 @@ public class PerformanceTest {
         private final PrintWriter infoPrinter;
         private final PrintWriter allPrinter;
         private final ObjectOutput resultObject;
-        private boolean inUse;
+        private final LogThread thread;
         Log() {
             try {
                 this.errorPrinter = new PrintWriter(new FileWriter("error.log"));
                 this.infoPrinter = new PrintWriter(new FileWriter("info.log"));
                 this.allPrinter = new PrintWriter(new FileWriter("all.log"));
                 this.resultObject = new ObjectOutputStream(new FileOutputStream("result.log", true));
-                this.inUse=false;
+                this.thread = new LogThread();
+                final Thread t = new Thread(this.thread);
+                t.setPriority(Thread.MIN_PRIORITY);
+                t.start();
             } catch (IOException e) {
                 System.out.println("Error opening log file. "+e.getMessage());
                 System.exit(-1);
@@ -311,67 +316,73 @@ public class PerformanceTest {
             this.allPrinter.close();
         }
         private class LogThread implements Runnable {
-            final Object msg;
-            final Throwable t;
-            final PrintWriter printer;
-            final ObjectOutput objectOutput;
-            final boolean doPrintDate;
-            private LogThread(Object _msg,Throwable _t, PrintWriter _printer, ObjectOutput _objectOutput, boolean _doPrintDate) {
-                this.msg=_msg;
-                this.t=_t;
-                this.printer=_printer;
-                this.doPrintDate = _doPrintDate;
-                this.objectOutput = _objectOutput;
+            final List<Data> lData = new LinkedList<Data>();
+            private class Data {
+                final Object msg;
+                final Throwable t;
+                final PrintWriter printer;
+                final ObjectOutput objectOutput;
+                final boolean doPrintDate;
+                Data(Object _msg,Throwable _t, PrintWriter _printer, ObjectOutput _objectOutput, boolean _doPrintDate) {
+                    this.msg=_msg;
+                    this.t=_t;
+                    this.printer=_printer;
+                    this.doPrintDate = _doPrintDate;
+                    this.objectOutput = _objectOutput;                    
+                }
             }
-            LogThread(String msg, Throwable t, PrintWriter printer, boolean doPrintDate) {
-                this(msg, t, printer, null, doPrintDate);
+            synchronized private void log(Object msg,Throwable t, PrintWriter printer, ObjectOutput objectOutput, boolean doPrintDate) {
+                this.lData.add(new Data(msg, t, printer, objectOutput, doPrintDate));
+                this.notifyAll();
             }
-            LogThread(Object msg, ObjectOutput objectOutput) {
-                this(msg, null, null, objectOutput, false);
+            void log(String msg, Throwable t, PrintWriter printer, boolean doPrintDate) {
+                log(msg, t, printer, null, doPrintDate);
             }
-            @SuppressWarnings("synthetic-access")
+            void log(Object msg, ObjectOutput objectOutput) {
+                log(msg, null, null, objectOutput, false);
+            }
             public void run() {
-                final Date currentDate = new Date();
-                synchronized(Log.this) {
-                    while ( Log.this.inUse ) {
-                        try {
-                            Log.this.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            System.exit(-2);
-                            throw new Error(e);
+                while( true ) {
+                    final Data data;
+                    synchronized(this) {
+                        while ( this.lData.size()<1 ) {
+                            try {
+                                this.wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                                System.exit(-2);
+                                throw new Error(e);
+                            }
                         }
+                        data = this.lData.remove(0);
                     }
+                    final Date currentDate = new Date();
                     try {
-                        Log.this.inUse = true;
-                        if ( this.printer!=null ) {
-                            if ( this.doPrintDate ) {
-                                this.printer.print(currentDate + " : ");
+                        if ( data.printer!=null ) {
+                            if ( data.doPrintDate ) {
+                                data.printer.print(currentDate + " : ");
                             }
-                            this.printer.println(this.msg);
-                            if(this.t != null){
-                                this.t.printStackTrace(this.printer);
-                                this.printer.println();
+                            data.printer.println(data.msg);
+                            if(data.t != null){
+                                data.t.printStackTrace(data.printer);
+                                data.printer.println();
                             }
-                            this.printer.flush();
+                            data.printer.flush();
                         }
-                        if ( this.objectOutput!=null ) {
-                            this.objectOutput.writeObject(this.msg);
+                        if ( data.objectOutput!=null ) {
+                            data.objectOutput.writeObject(data.msg);
                         }
                     } catch( IOException e ) {
                         error("Logging fault", e);
-                    } finally {
-                        Log.this.inUse = false;
-                        Log.this.notifyAll();
                     }
                 }
             }
         }
         private void log(String msg,Throwable t, PrintWriter printer)  {
-            new Thread(new LogThread(msg, t, printer, true)).start();
+             this.thread.log(msg, t, printer, true);
         }
         public void result(Object object ) {
-            new Thread(new LogThread(object, this.resultObject)).start();
+            this.thread.log(object, this.resultObject);
         }
         public void error(String msg,Throwable t)  {
             log(msg, t, this.errorPrinter);
