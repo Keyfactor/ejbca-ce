@@ -24,27 +24,19 @@ import java.security.KeyStore;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Collection;
-import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 /** Tests http servlet for certificate request
  * 
@@ -56,22 +48,18 @@ public class CertRequestHttpTest extends TestCase {
     protected final String httpReqPath;
     protected final String resourceReq;
 
-    private static Context ctx;
-    protected ICertificateStoreSessionHome storehome;
     private static IUserAdminSessionRemote usersession;
-    protected static int caid = 0;
-    protected static Admin admin;
+    protected static final int caid = TestTools.getTestCAId();
+    protected static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     protected static X509Certificate cacert = null;
 
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }
 
-
     public static TestSuite suite() {
         return new TestSuite(CertRequestHttpTest.class);
     }
-
 
     public CertRequestHttpTest(String name) throws Exception {
         this(name,"http://127.0.0.1:8080/ejbca", "certreq");
@@ -81,62 +69,18 @@ public class CertRequestHttpTest extends TestCase {
         super(name);
         httpReqPath = reqP;
         resourceReq = res;
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-
-        ctx = getInitialContext();
-        Object obj = ctx.lookup(ICAAdminSessionHome.JNDI_NAME);
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
-        setCAID(casession);
-        CAInfo cainfo = casession.getCAInfo(admin, caid);
-        Collection certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            cacert = (X509Certificate) certiter.next();
-        } else {
-            log.error("NO CACERT for caid " + caid);
-        }
-        obj = ctx.lookup(IUserAdminSessionHome.JNDI_NAME);
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-
+        TestTools.createTestCA();
+        cacert = (X509Certificate) TestTools.getTestCACert();
+        usersession = TestTools.getUserAdminSession();
     }
 
-    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();        
-        if (!iter.hasNext()) {
-        	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-        while (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-            CAInfo cainfo = casession.getCAInfo(admin, caid);
-            if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
-                if (cainfo.getStatus() == SecConst.CA_ACTIVE) {
-                	break;
-                }            	
-            }
-        } 
-    }
     protected void setUp() throws Exception {
-        log.trace(">setUp()");
-        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
-
-
 
     /** Tests request for a pkcs12
      * @throws Exception error
@@ -344,6 +288,7 @@ public class CertRequestHttpTest extends TestCase {
      */
     public void test99Cleanup() throws Exception {
         log.trace(">test99Cleanup()");
+        TestTools.removeTestCA();
         usersession.deleteUser(admin, "reqtest");
         log.trace("<test99Cleanup()");
     }

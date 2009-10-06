@@ -22,13 +22,9 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.util.Collection;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -42,19 +38,14 @@ import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.SingleResp;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /** Test requiring signed OCSP requests.
@@ -76,14 +67,11 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
             "nTiIOfQIP9eD/nhIIo7n4JOaTUeqgyafPsEgKdTiZfSdXjvy6rj5GiZ3DaGZ9SNK" +
             "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
-    private static Context ctx;
-    private static ISignSessionHome home;
-    private static ISignSessionRemote remote;
-    protected ICertificateStoreSessionHome storehome;
-    private static IUserAdminSessionRemote usersession;
-    protected static int caid = 0;
-    protected static Admin admin;
-    protected static X509Certificate cacert = null;
+    private static ISignSessionRemote signSession;
+    private static IUserAdminSessionRemote userAdminSession;
+    private static int caid = TestTools.getTestCAId();
+    private static Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+    private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
 
     private OcspJunitHelper helper = null;
@@ -92,11 +80,9 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         junit.textui.TestRunner.run(suite());
     }
 
-
     public static TestSuite suite() {
         return new TestSuite(ProtocolOcspSignedHttpTest.class);
     }
-
 
     public ProtocolOcspSignedHttpTest(String name) throws Exception {
         this(name,"http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp");
@@ -109,54 +95,16 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         // Install BouncyCastle provider
         CertTools.installBCProvider();
 
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-
-        ctx = getInitialContext();
-        Object obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
-        setCAID(casession);
-        CAInfo cainfo = casession.getCAInfo(admin, caid);
-        Collection certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            cacert = (X509Certificate) certiter.next();
-        } else {
-            log.error("NO CACERT for caid " + caid);
-        }
-        obj = ctx.lookup("RSASignSession");
-        home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        remote = home.create();
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-
+        TestTools.createTestCA();
+        cacert = (X509Certificate) TestTools.getTestCACert();
+        signSession = TestTools.getSignSession();
+        userAdminSession = TestTools.getUserAdminSession();
     }
 
-    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-    }
     protected void setUp() throws Exception {
-        log.trace(">setUp()");
-        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
     }
 
     /**
@@ -191,7 +139,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            userAdminSession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } catch (RemoteException re) {
         	userExists = true;
@@ -201,7 +149,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
 
         if (userExists) {
             log.debug("User ocsptest already exists.");
-            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+            userAdminSession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
             //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
@@ -209,7 +157,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         KeyPair keys = genKeys();
 
         // user that we know exists...
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request

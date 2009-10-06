@@ -22,13 +22,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -79,27 +79,15 @@ public class CertificateCache {
 	private Object rebuildlock = new Object ();
 
     /**  
-     * @param prop Properties giving initialization parameters. Required parameters are ocspSigningCertsValidTime (milliseconds).
-     * prop can be set to null to use default values 0.
-     * Other possible values are ocspTestCACerts for testing.
+     * @param testcerts can be set to null or be a collection of test certificates
      */
-	public CertificateCache(Properties prop) {
+	protected CertificateCache(Collection testcerts) {
 		// Default values
-		m_valid_time = 0;
-		if (prop != null) {
-			Object o = prop.get("ocspSigningCertsValidTime");
-			if (o != null) {
-				Integer i = (Integer)o;
-				m_valid_time = i.intValue();    		
-			}
-
-			// Pass a collection of CAcerts for testing, if they exist in the properties
-			o = prop.get("ocspTestCACerts");
-			if (o == null) {
-				testcerts = new ArrayList(); // an empty collection
-			} else {
-				testcerts = (Collection)o;
-			}
+		m_valid_time = OcspConfiguration.getSigningCertsValidTime();
+		if (testcerts == null) {
+			this.testcerts = new ArrayList();
+		} else {
+			this.testcerts = testcerts;
 		}
 		loadCertificates();
 	}    
@@ -264,7 +252,7 @@ public class CertificateCache {
     	synchronized (rebuildlock) {
         	Collection certs = findCertificatesByType(admin, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
         	if (log.isDebugEnabled()) {
-        		log.debug("Loaded "+certs == null ? "0":certs.size()+" ca certificates");        	
+        		log.debug("Loaded "+(certs == null ? "0":certs.size())+" ca certificates");        	
         	}
         	// Set up certsFromSubjectDN, certsFromSHA1CertId and certCache
         	certCache = new HashMap();
@@ -320,6 +308,18 @@ public class CertificateCache {
     	// If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
     	m_certValidTo = m_valid_time>0 ? new Date().getTime()+m_valid_time : Long.MAX_VALUE;
     } // loadCertificates
+    
+    /**
+     * Add or update a certificate manually. 
+     */
+    public void update(Certificate cert) {
+		if (cert != null && cert instanceof X509Certificate) {
+	    	synchronized (rebuildlock) {
+	    		String fp = CertTools.getFingerprintAsString(cert);
+	    		certCache.put(fp, cert);
+	    	}
+		}
+    }
     
     /**
      * 

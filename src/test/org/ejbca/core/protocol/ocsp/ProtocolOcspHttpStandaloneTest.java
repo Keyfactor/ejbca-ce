@@ -44,12 +44,11 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataPK;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 /** Tests HTTP pages of a stand-alone OCSP
  * To run this test you must create a user named ocspTest that has at least two certificates and
@@ -68,20 +67,15 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         junit.textui.TestRunner.run(suite());
     }
 
-
     public static TestSuite suite() {
         return new TestSuite(ProtocolOcspHttpStandaloneTest.class);
     }
 
-
     public ProtocolOcspHttpStandaloneTest(String name) throws Exception {
         super(name, "http://"+myOcspIp+":8080/ejbca", "publicweb/status/ocsp");
-    }
-
-    protected void setCAID(ICAAdminSessionRemote casession) {
         caid = myCaId;
     }
-    
+
     protected void loadUserCert(int caid) throws Exception {
     	ocspTestCert = getTestCert(false);
     }
@@ -110,16 +104,15 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
-        assertEquals("Status is not null (good)", status, null);
+        assertEquals("Status is not null (good)", null, status);
         log.trace("<test02OcspGood()");
     }
     private X509Certificate getTestCert( boolean isRevoked ) throws RemoteException, CreateException {
-        ICertificateStoreSessionRemote store = storehome.create();
-        Collection certs = store.findCertificatesByUsername(admin, "ocspTest");
+        Collection certs = TestTools.getCertificateStoreSession().findCertificatesByUsername(admin, "ocspTest");
         Iterator i = certs.iterator();
         while ( i.hasNext() ) {
             X509Certificate cert = (X509Certificate)i.next();
-            if ( isRevoked==(store.isRevoked(admin, cert.getIssuerDN().toString(), cert.getSerialNumber()).getReason()!=RevokedCertInfo.NOT_REVOKED) ) {
+            if ( isRevoked==(TestTools.getCertificateStoreSession().isRevoked(admin, cert.getIssuerDN().toString(), cert.getSerialNumber()).getReason()!=RevokedCertInfo.NOT_REVOKED) ) {
                 return cert;
             }
         }
@@ -137,7 +130,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         CertificateDataPK pk = new CertificateDataPK();
         final X509Certificate ocspTestCert = getTestCert(true);
         pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
-        ICertificateStoreSessionRemote store = storehome.create();
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -258,7 +250,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         CertificateDataPK pk = new CertificateDataPK();
         final X509Certificate ocspTestCert = getTestCert(false);
         pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
-        ICertificateStoreSessionRemote store = storehome.create();
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));

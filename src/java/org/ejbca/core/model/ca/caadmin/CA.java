@@ -388,6 +388,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         	   return null;
            }
        }
+       if (certificatechain.size() == 0) {
+    	   return null;
+       }
        Certificate ret = (Certificate) certificatechain.get(0);
        if (log.isDebugEnabled()) {
     	   log.debug("CA certificate chain is "+certificatechain.size()+" levels deep.");

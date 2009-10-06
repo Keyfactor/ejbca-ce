@@ -17,9 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -29,7 +26,7 @@ import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.util.CertTools;
-
+import org.ejbca.util.TestTools;
 
 /**
  * Tests User Data Sources.
@@ -38,9 +35,8 @@ import org.ejbca.util.CertTools;
  */
 public class TestUserDataSource extends TestCase {
         
-    private static Logger log = Logger.getLogger(TestUserDataSource.class);
-    private static Context ctx;
-    private static IUserDataSourceSessionRemote pub;
+    private static final Logger log = Logger.getLogger(TestUserDataSource.class);
+    private static IUserDataSourceSessionRemote userDataSourceSession = TestTools.getUserDataSourceSession();
     
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
@@ -51,33 +47,14 @@ public class TestUserDataSource extends TestCase {
      */
     public TestUserDataSource(String name) {
         super(name);
+        CertTools.installBCProvider();
     }
     
     protected void setUp() throws Exception {
-        log.trace(">setUp()");
-        ctx = getInitialContext();
-        
-        Object obj = ctx.lookup("UserDataSourceSession");
-        IUserDataSourceSessionHome home = (IUserDataSourceSessionHome) javax.rmi.PortableRemoteObject.narrow(obj,
-                IUserDataSourceSessionHome.class);
-        pub = home.create();
-        
-        CertTools.installBCProvider();
-        
-        log.trace("<setUp()");
-        
     }
     
     protected void tearDown() throws Exception {
     }
-    
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
-    
     
     /**
      * adds custom userdatasource
@@ -91,7 +68,7 @@ public class TestUserDataSource extends TestCase {
             CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
             userdatasource.setClassPath("org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource");
             userdatasource.setDescription("Used in Junit Test, Remove this one");
-            pub.addUserDataSource(admin, "TESTDUMMYCUSTOM", userdatasource);
+            userDataSourceSession.addUserDataSource(admin, "TESTDUMMYCUSTOM", userdatasource);
             ret = true;
         } catch (UserDataSourceExistsException pee) {
         }
@@ -109,7 +86,7 @@ public class TestUserDataSource extends TestCase {
         log.trace(">test02RenameUserDataSource()");
         boolean ret = false;
         try {
-            pub.renameUserDataSource(admin, "TESTDUMMYCUSTOM", "TESTNEWDUMMYCUSTOM");
+            userDataSourceSession.renameUserDataSource(admin, "TESTDUMMYCUSTOM", "TESTNEWDUMMYCUSTOM");
             ret = true;
         } catch (UserDataSourceExistsException pee) {
         }
@@ -125,7 +102,7 @@ public class TestUserDataSource extends TestCase {
     public void test03CloneUserDataSource() throws Exception {
         log.trace(">test03CloneUserDataSource()");
         boolean ret = false;
-        pub.cloneUserDataSource(admin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
+        userDataSourceSession.cloneUserDataSource(admin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
         ret = true;
         assertTrue("Cloning Custom UserDataSource failed", ret);
         log.trace("<test03CloneUserDataSource()");
@@ -141,9 +118,9 @@ public class TestUserDataSource extends TestCase {
         log.trace(">test04EditUserDataSource()");
         boolean ret = false;
         
-        BaseUserDataSource userdatasource = pub.getUserDataSource(admin, "TESTCLONEDUMMYCUSTOM");
+        BaseUserDataSource userdatasource = userDataSourceSession.getUserDataSource(admin, "TESTCLONEDUMMYCUSTOM");
         userdatasource.setDescription(userdatasource.getDescription().toUpperCase());
-        pub.changeUserDataSource(admin, "TESTCLONEDUMMYCUSTOM", userdatasource);
+        userDataSourceSession.changeUserDataSource(admin, "TESTCLONEDUMMYCUSTOM", userdatasource);
         ret = true;
         
         assertTrue("Editing Custom UserDataSource failed", ret);
@@ -158,9 +135,9 @@ public class TestUserDataSource extends TestCase {
     public void test05FetchFromDummy() throws Exception {
         log.trace(">test05FetchFromDummy()");
         ArrayList userdatasources = new ArrayList();
-        userdatasources.add(new Integer(pub.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")));
+        userdatasources.add(new Integer(userDataSourceSession.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")));
         
-        Collection ret = pub.fetch(admin,userdatasources,"per");
+        Collection ret = userDataSourceSession.fetch(admin,userdatasources,"per");
         assertTrue("Fetching data from dummy userdatasource failed", ret.size() ==1);
         
         Iterator iter = ret.iterator();
@@ -179,8 +156,8 @@ public class TestUserDataSource extends TestCase {
         log.trace(">test06removeUserDataSources()");
         boolean ret = false;
         try {
-            pub.removeUserDataSource(admin, "TESTNEWDUMMYCUSTOM");
-            pub.removeUserDataSource(admin, "TESTCLONEDUMMYCUSTOM");
+            userDataSourceSession.removeUserDataSource(admin, "TESTNEWDUMMYCUSTOM");
+            userDataSourceSession.removeUserDataSource(admin, "TESTCLONEDUMMYCUSTOM");
             ret = true;
         } catch (Exception pee) {
         }

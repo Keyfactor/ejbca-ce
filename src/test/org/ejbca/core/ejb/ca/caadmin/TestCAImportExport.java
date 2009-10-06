@@ -16,8 +16,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.naming.Context;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -28,14 +26,14 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.TestTools;
 
 /**
  * Tests CA import and export.
  */
 public class TestCAImportExport extends TestCase  {
     private static Logger log = Logger.getLogger(TestCAImportExport.class);
-    private static Context ctx;
-    private static ICAAdminSessionRemote caadminsession;
+    private static ICAAdminSessionRemote caadminsession = TestTools.getCAAdminSession();
     private static X509CAInfo cainfo = null;
 
     /**
@@ -48,20 +46,15 @@ public class TestCAImportExport extends TestCase  {
     }
     
     /**
-     * Setup test enviroment.
+     * Setup test environment.
      *
      * @throws Exception
      */
     protected void setUp() throws Exception {
-        log.trace(">setUp()");
-		ctx = org.ejbca.core.ejb.InitialContextBuilder.getInstance().getInitialContext();
-		ICAAdminSessionHome home = (org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome.class );            
-		caadminsession = home.create();          
-		log.trace("<setUp()");
     }
     
     /**
-     * Tear down test enviroment. Does nothing.
+     * Tear down test environment. Does nothing.
      *
      * @throws Exception
      */

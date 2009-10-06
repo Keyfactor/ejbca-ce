@@ -19,15 +19,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -49,10 +45,11 @@ public class TestProtect extends TestCase {
     private static Logger log = Logger.getLogger(TestProtect.class);
 
     private TableProtectSessionRemote tableProtectSession = TestTools.getTableProtectSession();
+    private ICertificateStoreSessionRemote certificateStoreSession = TestTools.getCertificateStoreSession();
 
     private static ArrayList entrys = null;
 
-    private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     /**
      * Creates a new TestLog object.
@@ -61,11 +58,11 @@ public class TestProtect extends TestCase {
      */
     public TestProtect(String name) {
         super(name);
+        CertTools.installBCProvider();
     }
 
     protected void setUp() throws Exception {
         log.trace(">setUp()");
-        CertTools.installBCProvider();
         TestTools.getConfigurationSession().updateProperty(ProtectConfiguration.CONFIG_PROTECTIONENABLED, "true");
         if (entrys == null) {
         	createLogEntrys();
@@ -75,13 +72,6 @@ public class TestProtect extends TestCase {
 
     protected void tearDown() throws Exception {
     	TestTools.getConfigurationSession().restoreConfiguration();
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
     }
 
     private void createLogEntrys() {
@@ -181,22 +171,17 @@ public class TestProtect extends TestCase {
      */
     public void test03VerifyCertEntry() throws Exception {
         log.trace(">test03VerifyCertEntry()");
-        Context ctx = getInitialContext();
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
-                ICertificateStoreSessionHome.class);
-        ICertificateStoreSessionRemote store = storehome.create();
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         String endEntityFp = CertTools.getFingerprintAsString(cert);
-        if (store.findCertificateByFingerprint(admin, endEntityFp) == null) {
-            store.storeCertificate(admin
+        if (certificateStoreSession.findCertificateByFingerprint(admin, endEntityFp) == null) {
+            certificateStoreSession.storeCertificate(admin
                     , cert
                     , "o=AnaTom,c=SE"
                     , endEntityFp
                     , CertificateDataBean.CERT_ACTIVE
                     , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         }
-        CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
+        CertificateInfo entry = certificateStoreSession.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("1");
         tableProtectSession.protect(admin, entry);        	        
         TableVerifyResult res = tableProtectSession.verify(entry);
@@ -222,22 +207,17 @@ public class TestProtect extends TestCase {
     public void test04VerifyCertEntryExternal() throws Exception {
         log.trace(">test04VerifyCertEntryExternal()");
         String dataSource = "java:/EjbcaDS";
-        Context ctx = getInitialContext();
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
-                ICertificateStoreSessionHome.class);
-        ICertificateStoreSessionRemote store = storehome.create();
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         String endEntityFp = CertTools.getFingerprintAsString(cert);
-        if (store.findCertificateByFingerprint(admin, endEntityFp) == null) {
-            store.storeCertificate(admin
+        if (certificateStoreSession.findCertificateByFingerprint(admin, endEntityFp) == null) {
+            certificateStoreSession.storeCertificate(admin
                     , cert
                     , "o=AnaTom,c=SE"
                     , endEntityFp
                     , CertificateDataBean.CERT_ACTIVE
                     , CertificateDataBean.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         }
-        CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
+        CertificateInfo entry = certificateStoreSession.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("2");
         tableProtectSession.protectExternal(admin, entry, dataSource);        	        
         TableVerifyResult res = tableProtectSession.verify(entry);

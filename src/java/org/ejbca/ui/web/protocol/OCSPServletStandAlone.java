@@ -131,9 +131,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         return getStoreSessionOnlyData().getStatus(adm, name, serialNumber);
     }
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#createCertificateCache(java.util.Properties)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#createCertificateCache()
      */
-    CertificateCache createCertificateCache(Properties prop) {
-		return new CertificateCacheStandalone(prop);
+    CertificateCache createCertificateCache() {
+		return CertificateCacheStandalone.getInstance();
 	}
 }

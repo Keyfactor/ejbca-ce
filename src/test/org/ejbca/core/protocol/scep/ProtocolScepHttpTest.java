@@ -43,14 +43,11 @@ import java.util.Iterator;
 import java.util.Random;
 
 import javax.ejb.FinderException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Set;
@@ -69,15 +66,11 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -85,6 +78,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
@@ -139,13 +133,12 @@ public class ProtocolScepHttpTest extends TestCase {
             "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI" +
             "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
-    private static Context ctx;
     private static IUserAdminSessionRemote usersession;
-    private static int caid = 0;
-    private static Admin admin;
+    private static int caid = TestTools.getTestCAId();
+    private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     private static KeyPair keys = null;
-    private static String caname = null;
+    private static String caname = TestTools.getTestCAName();
     private String senderNonce = null;
     private String transId = null;
     
@@ -165,36 +158,11 @@ public class ProtocolScepHttpTest extends TestCase {
         super(name);
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-
-        ctx = getInitialContext();
-        Object obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
-        setCAID(casession);
-        CAInfo cainfo = casession.getCAInfo(admin, caid);
-        caname = cainfo.getName();
-        Collection certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            X509Certificate cert = (X509Certificate) certiter.next();
-            String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
-                // Make sure we have a BC certificate
-                cacert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());            	
-            }
-        } else {
-            log.error("NO CACERT for caid " + caid);
-        }
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-
-        if (keys == null) {
-            // Pre-generate key for all requests to speed things up a bit
-            keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);        	
-        }
+        TestTools.createTestCA();
+        cacert = (X509Certificate) TestTools.getTestCACert();
+        usersession = TestTools.getUserAdminSession();
+        // Pre-generate key for all requests to speed things up a bit
+        keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);        	
     }
 
     protected void setUp() throws Exception {
@@ -203,11 +171,6 @@ public class ProtocolScepHttpTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private Context getInitialContext() throws NamingException {
-        Context ctx = new javax.naming.InitialContext();
-        return ctx;
-    }
- 
     public void test01Access() throws Exception {
         // Hit scep, gives a 400: Bad Request
         final WebClient webClient = new WebClient();
@@ -626,22 +589,4 @@ public class ProtocolScepHttpTest extends TestCase {
         assertTrue(respBytes.length > 0);
         return respBytes;
     }
-    
-    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        caid = 0;
-        while (iter.hasNext() && (caid == 0)) {
-            int id = ((Integer) iter.next()).intValue();
-            CAInfo cainfo = casession.getCAInfo(admin, id);
-            // OCSP can only be used with X509 certificates
-            if ( (cainfo.getCAType() == CAInfo.CATYPE_X509) && (cainfo.getStatus() == SecConst.CA_ACTIVE) ) {
-            	caid = id;
-            }
-        } 
-        if (caid == 0) {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-    }
-
 }

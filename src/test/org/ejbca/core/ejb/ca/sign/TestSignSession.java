@@ -150,7 +150,7 @@ public class TestSignSession extends TestCase {
             "bSR02CVFC0F6QO5s2Tx3JYWrm5aAjWkXWJfeYOR6qBSwX0R1US3rDI0Kepsrdco2q7wGSo+235KL" +
             "Yfl7tQ9RLOKUGX/1c5+XuvN1ZbGy0yUw3Le16UViahWmmx6FM1sW6M48U7C/CZOyoxagADALBgcq" +
             "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
-    private static Logger log = Logger.getLogger(TestSignSession.class);
+    private static final Logger log = Logger.getLogger(TestSignSession.class);
     private static KeyPair rsakeys=null;
     private static KeyPair ecdsakeys=null;
     private static KeyPair ecdsaimplicitlyca=null;

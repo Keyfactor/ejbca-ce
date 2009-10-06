@@ -133,8 +133,6 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 */
 	private final int m_respIdType = OcspConfiguration.getResponderIdType();
 
-	/** The interval on which new OCSP signing certs and keys are loaded in seconds. */
-	protected final int m_valid_time = OcspConfiguration.getSigningCertsValidTime();
 	/** Cache time counter, set and used by loadPrivateKeys (external responder) */
 	protected long mKeysValidTo = 0;
 
@@ -198,7 +196,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
     abstract CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber);
 
 	/** returns a CertificateCache of appropriate type */
-	abstract CertificateCache createCertificateCache(Properties prop);
+	abstract CertificateCache createCertificateCache();
 
 	/** Generates an EJBCA caid from a CA certificate, or looks up the default responder certificate.
 	 * 
@@ -333,14 +331,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("untilNextUpdate: " + OcspConfiguration.getUntilNextUpdate(SecConst.CERTPROFILE_NO_PROFILE));
 			m_log.debug("maxAge: " + OcspConfiguration.getMaxAge(SecConst.CERTPROFILE_NO_PROFILE));
-			m_log.debug("ocspSigningCertsValidTime is: " + m_valid_time);
 		}
-		// Finally we load the CA certificates and private keys of this OCSP responder
-		// Create properties used to set up the CertificateCache
-		Properties cacheProperties = new Properties();
-		cacheProperties.put("ocspSigningCertsValidTime", Integer.valueOf(m_valid_time));
 		// Create and load the certificate cache if this is an internal or external OCSP responder
-		m_caCertCache = createCertificateCache(cacheProperties);
+		m_caCertCache = createCertificateCache();
 	} // init
 	
 	/* (non-Javadoc)

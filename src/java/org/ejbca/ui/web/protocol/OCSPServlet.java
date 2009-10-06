@@ -124,8 +124,8 @@ public class OCSPServlet extends OCSPServletBase {
         return getStoreSession().getStatus(adm, name, serialNumber);
     }
 
-    protected CertificateCache createCertificateCache(Properties prop) {
-		return new CertificateCacheInternal(prop);
+    protected CertificateCache createCertificateCache() {
+		return CertificateCacheInternal.getInstance();
 	}
 
     /* (non-Javadoc)

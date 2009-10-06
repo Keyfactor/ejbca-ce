@@ -16,8 +16,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.util.Collections;
 import java.util.Date;
 
-import javax.naming.Context;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -30,6 +28,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.TestTools;
 
 /**
  * Tests for the Soft catoken removal functionality.
@@ -43,10 +42,8 @@ import org.ejbca.core.model.log.Admin;
  */
 public class TestCAKeystoreExportRemoveRestore extends TestCase  {
     
-	private static Logger log = Logger.getLogger(TestCAKeystoreExportRemoveRestore.class);
-    private static Context ctx;
-    private static ICAAdminSessionRemote caadminsession;
-
+	private static final Logger log = Logger.getLogger(TestCAKeystoreExportRemoveRestore.class);
+    private ICAAdminSessionRemote caadminsession = TestTools.getCAAdminSession();
     
     public TestCAKeystoreExportRemoveRestore(String name) {
         super(name);
@@ -58,11 +55,6 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
      * @throws Exception
      */
     protected void setUp() throws Exception {
-        log.trace(">setUp()");
-		ctx = org.ejbca.core.ejb.InitialContextBuilder.getInstance().getInitialContext();
-		ICAAdminSessionHome home = (org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome.class );            
-		caadminsession = home.create();          
-		log.trace("<setUp()");
     }
     
     /**

@@ -13,9 +13,13 @@
 package org.ejbca.util;
 
 import java.rmi.RemoteException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -52,10 +56,13 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionHome;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.IServiceSessionHome;
 import org.ejbca.core.ejb.services.IServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.IConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
@@ -93,7 +100,7 @@ public class TestTools {
     private static IPublisherQueueSessionRemote publisherQueueSession;
     private static IPublisherSessionRemote publisherSession;
     private static TableProtectSessionRemote tableProtectSession;
-    
+    private static IUserDataSourceSessionRemote userDataSourceSession;
 
 	public static IApprovalSessionRemote getApprovalSession() {
 		try {
@@ -311,22 +318,34 @@ public class TestTools {
 		return tableProtectSession;
 	}
 
+	public static IUserDataSourceSessionRemote getUserDataSourceSession() {
+		try {
+			if (userDataSourceSession == null) {
+				userDataSourceSession = ((IUserDataSourceSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserDataSourceSessionHome.JNDI_NAME, IUserDataSourceSessionHome.class)).create();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+		return userDataSourceSession;
+	}
+
 	/**
-	 * Makes sure the Test CA with subject DN "CN=TEST" exists.
+	 * Makes sure the Test CA exists.
 	 * 
 	 * @return true if successful
 	 */
 	public static boolean createTestCA() {
-		return createTestCA("TEST", 1024);
+		return createTestCA(getTestCAName(), 1024);
 	}
 
 	/**
-	 * Makes sure the Test CA with subject DN "CN=TEST" exists.
+	 * Makes sure the Test CA exists.
 	 * 
 	 * @return true if successful
 	 */
 	public static boolean createTestCA(int keyStrength) {
-		return createTestCA("TEST", keyStrength);
+		return createTestCA(getTestCAName(), keyStrength);
 	}
 
 	/**
@@ -345,6 +364,13 @@ public class TestTools {
 	 */
 	public static boolean createTestCA(String caName, int keyStrength) {
         log.trace(">createTestCA");
+    	try {
+			getAuthorizationSession().initialize(admin, ("CN="+getTestCAName()).hashCode());
+		} catch (RemoteException e) {
+			log.error("",e);
+		} catch (AdminGroupExistsException e) {
+			log.error("",e);
+		}
 		// Search for requested CA
         try {
 			CAInfo caInfo = getCAAdminSession().getCAInfo(admin, caName);
@@ -424,18 +450,46 @@ public class TestTools {
 			log.error("", e);
 			return false;
 		}
+        CAInfo info;
+		try {
+			info = getCAAdminSession().getCAInfo(admin, getTestCAName());
+		} catch (RemoteException e) {
+			log.error("", e);
+			return false;
+		}
+        X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+        if (!cert.getSubjectDN().toString().equals("CN="+getTestCAName())) {
+        	log.error("Error in created CA certificate!");
+			return false;
+        }
+        if (!info.getSubjectDN().equals("CN="+getTestCAName())) {
+        	log.error("Creating CA failed!");
+			return false;
+        }
+        try {
+			if (getCertificateStoreSession().findCertificateByFingerprint(admin, CertTools.getCertFingerprintAsString(cert.getEncoded())) == null) {
+	        	log.error("CA certificate not available in database!!");
+	        	return false;
+			}
+		} catch (CertificateEncodingException e) {
+        	log.error("", e);
+			return false;
+		} catch (RemoteException e) {
+        	log.error("", e);
+			return false;
+		}
         log.trace("<createTestCA");
 		return true;
 	}
 
 
 	/**
-	 * Removes the Test-CA with subject DN "CN=TEST" if it exists.
+	 * Removes the Test-CA if it exists.
 	 * 
 	 * @return true if successful
 	 */
 	public static boolean removeTestCA() {
-		return removeTestCA("TEST");
+		return removeTestCA(getTestCAName());
 	}
 
 	/**
@@ -459,10 +513,10 @@ public class TestTools {
 	}
 
 	/**
-	 * @return the caid of a CA with subject DN "CN=TEST"
+	 * @return the caid of the test CA
 	 */
 	public static int getTestCAId() {
-		return getTestCAId("TEST");
+		return getTestCAId(getTestCAName());
 	}
 
 	/**
@@ -470,5 +524,39 @@ public class TestTools {
 	 */
 	public static int getTestCAId(String caName) {
 		return ("CN=" + caName).hashCode();
+	}
+
+	/**
+	 * @return the name of the test CA
+	 */
+	public static String getTestCAName() {
+		return "TEST";
+	}
+
+	/**
+	 * @return the CA certificate
+	 */
+	public static Certificate getTestCACert() {
+		return getTestCACert(getTestCAName());
+	}
+	
+	/**
+	 * @return the CA certificate
+	 */
+	public static Certificate getTestCACert(String caName) {
+		Certificate cacert = null;
+		try {
+	        CAInfo cainfo = getCAAdminSession().getCAInfo(admin, getTestCAId(caName));
+	        Collection certs = cainfo.getCertificateChain();
+	        if (certs.size() > 0) {
+	            Iterator certiter = certs.iterator();
+	            cacert = (X509Certificate) certiter.next();
+	        } else {
+	            log.error("NO CACERT for caid " + getTestCAId(caName));
+	        }
+		} catch (RemoteException e) {
+			log.error("", e);
+		}
+		return cacert;
 	}
 }

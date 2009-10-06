@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.ejb.CreateException;
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
@@ -43,18 +42,15 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -108,8 +104,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private static String issuerDN2 = null;
     private KeyPair keys = null;  
 
-    private static IUserAdminSessionRemote usersession;
-	private ICertificateStoreSessionRemote storesession = null;
+    private static IUserAdminSessionRemote userAdminSession;
+	private ICertificateStoreSessionRemote certificateStoreSession = null;
     private static int caid1 = 0;
     private static int caid2 = 0;
     private static Admin admin;
@@ -120,19 +116,16 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 		CertTools.installBCProvider();
-		Context ctx = getInitialContext();
-        Object obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
+        ICAAdminSessionRemote caAdminSession = TestTools.getCAAdminSession();
         // Try to get caIds
-        CAInfo adminca1 = casession.getCAInfo(admin, "CmpCA1");
+        CAInfo adminca1 = caAdminSession.getCAInfo(admin, "CmpCA1");
         caid1 = adminca1.getCAId();
-        CAInfo adminca2 = casession.getCAInfo(admin, "CmpCA2");
+        CAInfo adminca2 = caAdminSession.getCAInfo(admin, "CmpCA2");
         caid2 = adminca2.getCAId();
         if ( (caid1 == 0) || (caid2 == 0) ) {
         	assertTrue("No active CA! Must have CmpCA1 and CmpCA2 to run tests!", false);
         }        	
-        CAInfo cainfo = casession.getCAInfo(admin, caid1);
+        CAInfo cainfo = caAdminSession.getCAInfo(admin, caid1);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator certiter = certs.iterator();
@@ -145,7 +138,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         } else {
             log.error("NO CACERT for CmpCA1: " + caid1);
         }
-        cainfo = casession.getCAInfo(admin, caid2);
+        cainfo = caAdminSession.getCAInfo(admin, caid2);
         certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator certiter = certs.iterator();
@@ -158,21 +151,13 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         } else {
             log.error("NO CACERT for CmpCA2: " + caid2);
         }
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-		ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
-		this.storesession = storeHome.create();
+        userAdminSession = TestTools.getUserAdminSession();
+		certificateStoreSession = TestTools.getCertificateStoreSession();
         
         issuerDN1 = cacert1.getSubjectDN().getName();
         issuerDN2 = cacert2.getSubjectDN().getName();
 	}
 	
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
@@ -653,8 +638,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		String user1 = CertTools.getPartFromDN(userDN1, "CN");
 		String user2 = CertTools.getPartFromDN(userDN2, "CN");
 		try {
-			usersession.deleteUser(admin, user1);
-			usersession.deleteUser(admin, user2);			
+			userAdminSession.deleteUser(admin, user1);
+			userAdminSession.deleteUser(admin, user2);			
 		} catch (Exception e) {
 			// Ignore errors
 		}
@@ -667,7 +652,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
     private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
     	int ret = RevokedCertInfo.NOT_REVOKED;
-    	RevokedCertInfo info = storesession.isRevoked(admin, issuerDN, serno);
+    	RevokedCertInfo info = certificateStoreSession.isRevoked(admin, issuerDN, serno);
     	ret = info.getReason();
     	return ret;
     }

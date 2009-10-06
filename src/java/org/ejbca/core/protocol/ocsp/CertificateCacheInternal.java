@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.util.Collection;
-import java.util.Properties;
 
 import javax.ejb.EJBException;
 
@@ -33,12 +32,20 @@ import org.ejbca.core.model.log.Admin;
  */
 public class CertificateCacheInternal extends CertificateCache {
 	
-    /**  
-     * @param prop Properties giving initialization parameters. Required parameters are ocspSigningCertsValidTime and ocspResponderType.
-     * prop can be set to null to use default values 0 and OCSPUtil.RESPONDER_TYPE_INTERNAL. 
+	private static CertificateCacheInternal instance = null;
+	
+    private CertificateCacheInternal() {
+    	super(null);
+    }
+    
+    /**
+     * Returns a new CertificateCache for EJBCA's internal OCSP responder  
      */
-    public CertificateCacheInternal(Properties prop) {
-    	super(prop);
+    public static synchronized CertificateCacheInternal getInstance() {
+    	if (instance == null) {
+    		instance = new CertificateCacheInternal();
+    	}
+    	return instance;
     }
     
     /**

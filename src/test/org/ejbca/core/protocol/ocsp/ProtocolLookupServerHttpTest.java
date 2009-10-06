@@ -25,19 +25,13 @@ import java.net.URLConnection;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -62,21 +56,15 @@ import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataPK;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /** Tests http pages of ocsp lookup server.
@@ -107,14 +95,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
     private String httpReqPath;
     private final String resourceOcsp;
 
-
-    private static Context ctx;
-    private static ISignSessionHome home;
-    private static ISignSessionRemote remote;
-    protected ICertificateStoreSessionHome storehome;
-    private static IUserAdminSessionRemote usersession;
-    protected static int caid = 0;
-    protected static Admin admin;
+    private static ISignSessionRemote signSession;
+    private static IUserAdminSessionRemote userAdminSession;
+    private static int caid = TestTools.getTestCAId();
+    private static Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
@@ -127,89 +111,29 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         super(name);
         httpReqPath = reqP;
         resourceOcsp = res;
-
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-        
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-
-        ctx = getInitialContext();
-        Object obj = ctx.lookup("CAAdminSession");
-        ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
-        ICAAdminSessionRemote casession = cahome.create();
-        setCAID(casession);
-        CAInfo cainfo = casession.getCAInfo(admin, caid);
-        Collection certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            cacert = (X509Certificate) certiter.next();
-        } else {
-            log.error("NO CACERT for caid " + caid);
-        }
-        obj = ctx.lookup("RSASignSession");
-        home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
-        remote = home.create();
-        Object obj2 = ctx.lookup("CertificateStoreSession");
-        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-
-        keys = genKeys();
-
+        TestTools.createTestCA();
+        cacert = (X509Certificate) TestTools.getTestCACert();
+        signSession = TestTools.getSignSession();
+        userAdminSession = TestTools.getUserAdminSession();
+        keys = KeyTools.genKeys("512", "RSA");
     }
 
-    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-    }
     protected void setUp() throws Exception {
-        log.trace(">setUp()");
-
-        log.trace("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
-    
-    /**
-     * Generates a RSA key pair.
-     *
-     * @return KeyPair the generated key pair
-     *
-     * @throws Exception if en error occurs...
-     */
-    private static KeyPair genKeys() throws Exception {
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
-        keygen.initialize(512);
-        log.debug("Generating keys, please wait...");
-        KeyPair rsaKeys = keygen.generateKeyPair();
-        log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
-                ((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());
-        return rsaKeys;
-    } // genKeys
-
     /** Tests ocsp message with good status and a valid unid
      * @throws Exception error
      */
     public void test01OcspGoodWithFnr() throws Exception {
-
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"unidtest","foo123","C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            userAdminSession.addUser(admin,"unidtest","foo123","C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: unidtest, foo123, C=SE, O=AnaTom,surname=Jansson,serialNumber=123456789, CN=UNIDTest");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
@@ -221,13 +145,13 @@ public class ProtocolLookupServerHttpTest extends TestCase {
 
         if (userExists) {
             log.debug("User unidtest already exists.");
-            usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+            userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
             log.debug("Reset status to NEW");
         }
         // Generate certificate for the new user
 
         // user that we know exists...
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
@@ -258,8 +182,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
     public void test02OcspBadWithFnr() throws Exception {
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
-        ICertificateStoreSessionRemote store = storehome.create();
-        store.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -293,10 +216,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
      */
     public void test03OcspGoodWithNoFnr() throws Exception {
         // Change uses to a Unid that we don't have mapping for
-        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=12345678,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=12345678,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
@@ -326,10 +249,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
      */
     public void test04OcspGoodNoSerialNo() throws Exception {
         // Change uses to not have any serialNumber
-        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
@@ -360,10 +283,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
      */
     public void test05HttpsNotAuthorized() throws Exception {
         // Change uses to a Unid that is OK
-        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
@@ -397,10 +320,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         // will not be returned bacuse it requires https with client authentication
         httpReqPath = "http://127.0.0.1:8080/ejbca";
         // Change uses to a Unid that is OK
-        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
-        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
@@ -423,6 +346,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
+    }
+
+    public void testZZZCleanUp() throws Exception {
+    	TestTools.removeTestCA();
     }
 
     //

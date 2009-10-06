@@ -116,6 +116,7 @@ import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
+import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -562,8 +563,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,msg);
         	throw new EJBException(e);
         }
-        
-        
+        // Update local OCSP's CA certificate cache
+        CertificateCacheInternal.getInstance().update(ca.getCACertificate());
     } // createCA
 
     /**
