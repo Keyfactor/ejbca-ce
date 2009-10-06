@@ -15,7 +15,6 @@ package org.ejbca.ui.web.protocol;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.util.Properties;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
