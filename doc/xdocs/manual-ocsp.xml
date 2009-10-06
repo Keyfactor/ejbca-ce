@@ -29,19 +29,15 @@ Activate like this:
 $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSPActivate
 </source>
 </section>
-<section name="OCSP client">
-<p>
-This section describes how to build and use the stand alone OCSP and Lookup server client.
-</p>
-<subsection name="Using the API">
+<section name="Using the API">
 <p>
 The best way to learn the API is by looking at the source code, since it is included. The client API is in the class 
 org.ejbca.core.protocol.ocsp.OCSPUnidClient.
 The <a href="manual.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> can serve as a good sample for using the API and it is in the class
 org.ejbca.ui.cli.Ocsp.
 </p>
-</subsection>
-<subsection name="Fnr-Unid mapping">
+</section>
+<section name="Fnr-Unid mapping">
 <p>
 For the Unid Lookup part, you must use https with a client certificate with the ocsp client. If you use http with a client certificate
 and the OCSP responder is set up to answer Lookup requests, the OCSP client will returns the Fnr. The Fnr will be returned if the certificate 
@@ -54,9 +50,7 @@ If the Fnr returned is null, there are several possible errors:
 <li>There was no Unid in the certificate (serialNumber DN component).</li>
 </ol>
     </p>
-</subsection>
-  </section>
-
+</section>
 <section name="OCSP extensions">
 <p>
 The standard allows the usage of extensions in OCSP requests and responses. 

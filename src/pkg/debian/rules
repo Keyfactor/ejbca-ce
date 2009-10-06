@@ -106,7 +106,6 @@ install: build
 
 # tmp/bin
 	mkdir -p                         debian/tmp/usr/share/ejbca/tmp/bin/
-	cp -r tmp/bin/ocspclient         debian/tmp/usr/share/ejbca/tmp/bin/
 	cp -r tmp/bin/ocsp-classes       debian/tmp/usr/share/ejbca/tmp/bin/
 	cp -r tmp/bin/classes            debian/tmp/usr/share/ejbca/tmp/bin/
 	cp -r tmp/bin/dd                 debian/tmp/usr/share/ejbca/tmp/bin/

@@ -1544,12 +1544,8 @@ See the <a href="installation-ocsp.html">OCSP Installation document</a> for info
 
 <subsection name="Simple OCSP client">
 <p>
-You can build a simple OCSP client with 'ant ocspclient.jar'. This will place ocspclient.zip in the directory EJBCA_HOME/ocsp-dist. 
-You can unzip this file and use the 'ocsp.sh' shell script on Linux/Unix. You can also use the API directly from your 
+To try out and test your OCSP installation you can use the EJBCA client toolbox, (see below). The toolbox has replaced the old ocsp client which has been removed. You can also use the API directly from your 
 java program.
-</p>
-<p>
-See the <a href="manual-ocsp.html">OCSP User Guide</a> for information how to use the simple OCSP client.
 </p>
 </subsection>
 

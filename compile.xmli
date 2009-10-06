@@ -116,7 +116,6 @@ xkms.serviceport                = ${xkms.serviceport}
         <mkdir dir="${ocsp-build}"/>
         <mkdir dir="${dist.dir}/${lib}"/>
         <mkdir dir="${ocsp-dist.dir}"/>
-        <mkdir dir="${ocsp-client.build}"/>
         <mkdir dir="tmp/xkms/gen-classes/server"/>
     </target>
 
@@ -134,7 +133,6 @@ xkms.serviceport                = ${xkms.serviceport}
         <delete dir="${src.dd}" />
         <delete dir="${ocsp-src.gen}" />
         <delete dir="${ocsp-src.dd}" />
-        <delete dir="${ocsp-client.build}" />
         <delete dir="${clientToolBox.build}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>

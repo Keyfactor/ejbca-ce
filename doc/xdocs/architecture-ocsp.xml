@@ -50,7 +50,7 @@
     <li>Linear scalability for performance and high availability by adding multiple nodes.</li>
     <li>High performance, >500 request per second on a single server.</li>
     <li>On-line renewal of OCSP responder keys and certificates.</li>
-    <li>OCSP client in java.</li>
+    <li>OCSP client in java (Client ToolBox).</li>
     </ul>
     </p>
   </section>

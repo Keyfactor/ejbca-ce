@@ -620,56 +620,6 @@
             </fileset>
 	</ear>
     </target>
-
-    <!-- =================================================================== -->
-    <!-- Build ocsp client part                                              -->
-    <!-- =================================================================== -->
-    <target name="ocspclient.jar" depends="init" description="Creates jar for ocspclient">
-        <javac destdir="${ocsp-client.build}" srcdir="${mainsrc}/java" debug="on" includeantruntime="no" encoding="iso8859-1">
-            <classpath refid="compile.classpath" />
-        	<include name="org/ejbca/ui/cli/Ocsp.java"/>
-        </javac>
-        <jar jarfile="${ocsp-dist.dir}/ocspclient.jar">
-        	<manifest>
-        	    <attribute name="Built-By" value="${user.name}"/>
-        	    <section name="OCSPUnidClient">
-        	      <attribute name="Implementation-Title" value="OCSPUnidClient"/>
-        	      <attribute name="Implementation-Version" value="${app.version} ${TODAY}"/> 
-        	      <attribute name="Implementation-Vendor" value="PrimeKey Solutions AB."/>
-        	    </section>
-                <attribute name="Class-Path" value="${jar.ocspclientclasspath}" />
-                <attribute name="Main-Class" value="org.ejbca.ui.cli.Ocsp" />
-        	  </manifest>
-            <fileset dir="${ocsp-client.build}"/>
-        	<fileset dir="${mainsrc}/java">
-        	    <include name="dncomponents.properties"/>
-        		<include name="profilemappings.properties"/>
-        	</fileset>	
-        </jar>
-        <copy todir="${ocsp-dist.dir}">
-            <fileset dir="${mainbin}">
-            	<include name="log4j.properties"/>
-            </fileset>
-        </copy>
-        <copy todir="${ocsp-dist.dir}/lib">
-            <fileset dir="${lib}">
-            	<include name="bcprov*.jar"/>
-            	<include name="cert-cvc*.jar"/>
-            	<include name="log4j*.jar" />
-            	<include name="commons-lang-*.jar" />
-            </fileset>
-        </copy>
-    	<zip destfile="${ocsp-dist.dir}/ocspclient.zip">
-    		<zipfileset dir="${ocsp-dist.dir}" prefix="ocspclient" filemode="600" dirmode="700"> 
-            	<include name="lib/*.jar"/>
-            	<include name="log4j.properties" />
-            	<include name="ocspclient.jar" />
-            </zipfileset>
-            <zipfileset dir="${mainbin}" prefix="ocspclient" filemode="700" dirmode="700">
-            	<include name="ocsp.sh"/>
-            </zipfileset>
-    	</zip>
-    </target>
 	
     <!-- =================================================================== -->
     <!-- Build Javadoc part                                                  -->
