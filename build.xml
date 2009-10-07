@@ -37,6 +37,7 @@
 	        <clover-setup>
 	            <files>
 	                <exclude name="**/org/apache/**/*.java"/>
+	            	<exclude name="**/com/novosec/**/*.java"/>
 	            </files>
 	        </clover-setup>
 	     </target>
