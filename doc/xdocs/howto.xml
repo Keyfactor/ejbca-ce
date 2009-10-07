@@ -645,6 +645,22 @@ JkWorkersFile /etc/libapache2-mod-jk/workers.properties
    Now enable ssl.load and ssl.conf in /etc/apache2/mods-enabled.
   </p>
   <p>Finally restart apache and go to http://demo.primekey.se/ (or https). Same security considerations as for using proxy applies.</p>
+  <p>
+  If you are using the <a href="manual-ocsp.html">external OCSP responder</a> then you also got to ensure you got this line in the file apache2.conf:
+  </p><source>KeepAlive Off</source><p>
+  If not apache will hang.
+  </p>
+  <p>
+  Also an <a href="manual-ocsp.html">external OCSP responder</a> it could be good to add these lines to the 'Virtual Host' configuration:
+  </p><source>
+  RewriteEngine on
+  RewriteRule .* /ejbca/publicweb/status/ocsp [PT]
+
+  JkMount /ejbca/publicweb/status/ocsp/* ocsp_worker
+  JkMount /ejbca/publicweb/status/ocsp ocsp_worker
+  </source><p>
+  By doing this you don't have to bother about typing the last part of the URL. Just right server name will do.
+  </p>
   </section>
 
   <section name="Setting up Autoenrollment for Windows clients with EJBCA">

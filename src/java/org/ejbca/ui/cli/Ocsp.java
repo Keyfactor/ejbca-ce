@@ -154,9 +154,15 @@ public class Ocsp extends ClientToolBox {
         }
         StressTest(String args[]) throws Exception {
             if ( args.length<7 ) {
-                System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<POST | GET>] [<request signing keystore file>] [<request signing password>]");
-                System.out.println("Certificate seial number file is creates using the WS stress command: ./ejbcawsracli.sh stress...");
+                System.out.println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<POST | GET | FNR | FNRGET | FNRPOST>] [<request signing keystore file>] [<request signing password>]");
+                System.out.println("Certificate serial number file is creates using the WS stress command: ./ejbcawsracli.sh stress... or could also be a text file with one serial number on each row. Start with '0x' if hex.");
                 System.out.println("If the directory \"./"+OCSPUnidClient.requestDirectory+"\" exists then a file for each request will be stored in this directory.");
+                System.out.println();
+                System.out.println("If you want to access with https and client authentication you must set the environment variable 'JAVA_OPT'.");
+                System.out.println("You should set each java system properties needed with a '-D' java parameter in the JAVA_OPT string.");
+                System.out.println("The name of all these system properties starts with javax.net.ssl and are described in http://java.sun.com/javase/6/docs/technotes/guides/security/jsse/JSSERefGuide.html .");
+                System.out.println("https is mandatory for the FNR option. An example:");
+                System.out.println("JAVA_OPT=\"-Djavax.net.ssl.keyStore=My-Lookup.p12 -Djavax.net.ssl.keyStorePassword=foo123 -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.trustStore=root.jks\" ${EJBCA_HOME}/clientToolBox-dist/ejbcaClientToolBox.sh ocsp stress https://ocsp.mysite.nu certs.txt cacert.pem 40 100 fnr");
                 System.exit(1);
             }
             this.ocspurl = args[2];
