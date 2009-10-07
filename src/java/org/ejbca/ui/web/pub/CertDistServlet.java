@@ -306,11 +306,11 @@ public class CertDistServlet extends HttpServlet {
             String lev = req.getParameter(LEVEL_PROPERTY);
             int level = 0;
             boolean pkcs7 = false;
-            if (lev != null)
+            if (lev != null) {
                 level = Integer.parseInt(lev);
-            else
+            }else {
                 pkcs7 = true;
-            // CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
+            }// CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
                 ISignSessionLocal ss = getSignSession();
                 Certificate[] chain = null;
@@ -329,13 +329,15 @@ public class CertDistServlet extends HttpServlet {
                 }
                 Certificate cacert = (Certificate)chain[level];
                 String filename=CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
-                if (filename == null)
+                if (filename == null) {
                     filename = "ca";
+                }
                 byte[] enccert = null;
-                if (pkcs7)
+                if (pkcs7) {
                     enccert = ss.createPKCS7(administrator, cacert, true);
-                else
+                } else {
                     enccert = cacert.getEncoded();
+                }
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
                     res.setContentType("application/x-x509-ca-cert");
                     res.setContentLength(enccert.length);
@@ -344,10 +346,12 @@ public class CertDistServlet extends HttpServlet {
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
-                    if (pkcs7)
+                    if (pkcs7){
                         res.setHeader("Content-disposition", "attachment; filename=\""+filename+".p7c\"");
-                    else
+                    }
+                    else {
                         res.setHeader("Content-disposition", "attachment; filename=\""+filename+".crt\"");
+                    }
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);

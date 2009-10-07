@@ -244,16 +244,21 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
 
                             if(publisherdata == null){
                                 int tokentype = new Integer(request.getParameter(HIDDEN_PUBLISHERTYPE)).intValue();
-                                if(tokentype == CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER)
+                                if(tokentype == CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER) {
                                     publisherdata = new CustomPublisherContainer();
-                                if(tokentype == LdapPublisher.TYPE_LDAPPUBLISHER)
+                                }
+                                if(tokentype == LdapPublisher.TYPE_LDAPPUBLISHER) {
                                     publisherdata = new LdapPublisher();
-                                if (tokentype == LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER)
+                                }
+                                if (tokentype == LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER) {
                                     publisherdata = new LdapSearchPublisher();
-                                if(tokentype == ActiveDirectoryPublisher.TYPE_ADPUBLISHER)
+                                }
+                                if(tokentype == ActiveDirectoryPublisher.TYPE_ADPUBLISHER) {
                                     publisherdata = new ActiveDirectoryPublisher();
-                                if(tokentype == ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER)
+                                }
+                                if(tokentype == ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER) {
                                     publisherdata = new ExternalOCSPPublisher();
+                                }
                             }
                             // Save changes.
 
@@ -360,59 +365,68 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                     ldappublisher.setARLAttribute(value);
                                 }
                                 value = request.getParameter(CHECKBOX_LDAPUSESSL);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setUseSSL(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setUseSSL(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAPCREATENONEXISTING);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setCreateNonExistingUsers(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setCreateNonExistingUsers(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAPMODIFYEXISTING);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setModifyExistingUsers(value.equals(CHECKBOX_VALUE));
-                                else
+                                } 
+                                else {
                                     ldappublisher.setModifyExistingUsers(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAPMODIFYEXISTINGATTRIBUTES);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setModifyExistingAttributes(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setModifyExistingAttributes(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAPADDNONEXISTING);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setAddNonExistingAttributes(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setAddNonExistingAttributes(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAP_CREATEINTERMEDIATENODES);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setCreateIntermediateNodes(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setCreateIntermediateNodes(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAPADDMULTIPLECERTIFICATES);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setAddMultipleCertificates(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setAddMultipleCertificates(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setRemoveRevokedCertificates(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setRemoveRevokedCertificates(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE);
-                                if(value != null)
+                                if(value != null) {
                                     ldappublisher.setRemoveUsersWhenCertRevoked(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     ldappublisher.setRemoveUsersWhenCertRevoked(false);
-
+                                }
                                 value = request.getParameter(CHECKBOX_LDAP_SET_USERPASSWORD);
                                 if(value != null) {
                                     ldappublisher.setUserPassword(value.equals(CHECKBOX_VALUE));
@@ -464,13 +478,14 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 }
 
                                 value = request.getParameter(CHECKBOX_ADUSEPASSWORD);
-                                if(value != null)
+                                if(value != null) {
                                     adpublisher.setUseUserPassword(value.equals(CHECKBOX_VALUE));
-                                else
+                                }
+                                else {
                                     adpublisher.setUseUserPassword(false);
-
+                                }
                                 value = request.getParameter(SELECT_ADUSERACCOUNTCONTROL);
-                                if(value != null){
+                                if(value != null) {
                                     value = value.trim();
                                     adpublisher.setUserAccountControl(Integer.parseInt(value));
                                 }
@@ -550,21 +565,21 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public int getPublisherType(){
         int retval = CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER;
 
-        if(publisherdata instanceof CustomPublisherContainer)
+        if(publisherdata instanceof CustomPublisherContainer) {
             retval = CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER;
-
-        if(publisherdata instanceof LdapPublisher)
+        }
+        if(publisherdata instanceof LdapPublisher) {
             retval = LdapPublisher.TYPE_LDAPPUBLISHER;
-
-        if (publisherdata instanceof LdapSearchPublisher)
+        }
+        if (publisherdata instanceof LdapSearchPublisher) {
             retval = LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER;
-
-        if(publisherdata instanceof ActiveDirectoryPublisher)
+        }
+        if(publisherdata instanceof ActiveDirectoryPublisher) {
             retval = ActiveDirectoryPublisher.TYPE_ADPUBLISHER;
-        
-        if(publisherdata instanceof ExternalOCSPPublisher)
+        }
+        if(publisherdata instanceof ExternalOCSPPublisher) {
             retval = ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER;
-
+        }
         return retval;
     }
 
