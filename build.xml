@@ -35,10 +35,10 @@
 	
 	<target name="with.clover">
 	        <clover-setup>
-	            <files>
+	            <fileset dir="${src}">
 	                <exclude name="**/org/apache/**/*.java"/>
 	            	<exclude name="**/com/novosec/**/*.java"/>
-	            </files>
+	            </fileset>
 	        </clover-setup>
 	     </target>
 
