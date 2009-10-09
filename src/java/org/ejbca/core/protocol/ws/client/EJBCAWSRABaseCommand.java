@@ -172,7 +172,7 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
         }
         final File f = new File(fileName);
         if (!f.exists()) {
-            throw new Exception("Shared library '"+fileName+"' does not exist");
+            throw new Exception("File '"+fileName+"' does not exist");
         }
     }
     /**
