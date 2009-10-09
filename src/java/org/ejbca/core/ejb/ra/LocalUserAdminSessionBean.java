@@ -1030,7 +1030,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             throw e;
         }
         if (log.isTraceEnabled()) {
-            log.trace("<decRequestCounter(" + username + "): "+counter);
+            log.trace("<decRemainingLoginAttempts(" + username + "): "+counter);
         }
 	} //decRemainingLoginAttempts
 	

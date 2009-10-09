@@ -20,7 +20,6 @@ import java.util.HashMap;
 
 import javax.ejb.EJBException;
 
-import org.ejbca.core.ejb.ra.UserDataBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
@@ -237,7 +236,7 @@ public class UserDataVO implements Serializable {
 	 * @return Returns the extendedinformation.
 	 */
 	public ExtendedInformation getExtendedinformation() {
-		// If there is no extended information for this user, we return a new emtpy one
+		// If there is no extended information for this user, we return a new empty one
 		if (extendedinformation == null) {
 			return new ExtendedInformation();
 		}
@@ -270,7 +269,7 @@ public class UserDataVO implements Serializable {
             	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch(type){
             	  case ExtendedInformation.TYPE_BASIC :
-              		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(ExtendedInformation.class.getName()).newInstance();            	
+              		returnval = new ExtendedInformation();            	
               		returnval.loadData(data);
               		break;
 

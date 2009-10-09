@@ -65,7 +65,6 @@ import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -294,7 +293,7 @@ public class EjbcaWS implements IEjbcaWS {
 			ejbhelper.getUserAdminSession().findUser(admin,username);
 			Collection<java.security.cert.Certificate> certs;
 			if (onlyValid) {
-				certs = ejbhelper.getCertStoreSession().findCertificatesByUsernameAndStatus(admin, username, CertificateDataBean.CERT_ACTIVE);
+				certs = ejbhelper.getCertStoreSession().findCertificatesByUsernameAndStatus(admin, username, SecConst.CERT_ACTIVE);
 			} else {
 				certs = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin, username);
 			}

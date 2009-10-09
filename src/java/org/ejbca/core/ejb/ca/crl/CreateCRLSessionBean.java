@@ -29,7 +29,6 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocal;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataPK;
@@ -278,7 +277,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     public void setArchivedStatus(String certificateFingerprint) throws FinderException {
 		CertificateDataPK pk = new CertificateDataPK(certificateFingerprint);
 		CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);
-		certdata.setStatus(CertificateDataBean.CERT_ARCHIVED);
+		certdata.setStatus(SecConst.CERT_ARCHIVED);
     }
     
     /**

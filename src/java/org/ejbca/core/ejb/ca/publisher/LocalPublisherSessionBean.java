@@ -30,10 +30,10 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -249,7 +249,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
-    	storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, cafp, CertificateDataBean.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
+    	storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, cafp, SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
     }
 
 

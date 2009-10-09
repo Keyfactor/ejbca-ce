@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.CertTools;
@@ -101,10 +101,10 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
         	log.trace(">storeCertificate, Storing Certificate for user: " + username);	
         }
         
-        if ( (status == CertificateDataBean.CERT_REVOKED) || (status == CertificateDataBean.CERT_TEMP_REVOKED) ) {
+        if ( (status == SecConst.CERT_REVOKED) || (status == SecConst.CERT_TEMP_REVOKED) ) {
         	// Call separate script for revocation
         	revokeCertificate(admin, incert, revocationReason);
-        } else if (status == CertificateDataBean.CERT_ACTIVE) {
+        } else if (status == SecConst.CERT_ACTIVE) {
             // Don't publish non-active certificates
             // Make sure that an external command was specified
     		if ( certExternalCommandFileName == null ) {

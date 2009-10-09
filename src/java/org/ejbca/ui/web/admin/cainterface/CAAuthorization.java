@@ -22,7 +22,6 @@ import java.util.TreeMap;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -70,9 +69,9 @@ public class CAAuthorization implements Serializable {
         profilenamesendentity = new TreeMap();  
         Iterator iter = null;
         if(usehardtokenprofiles) {         
-          iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_HARDTOKEN).iterator();
+          iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN).iterator();
         } else {         
-		  iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ENDENTITY).iterator();
+		  iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY).iterator();
         }
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
@@ -86,7 +85,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap getAuthorizedSubCACertificateProfileNames(){
       if(profilenamessubca==null){
         profilenamessubca = new TreeMap();  
-        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_SUBCA).iterator();      
+        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA).iterator();      
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -100,7 +99,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap getAuthorizedRootCACertificateProfileNames(){
       if(profilenamesrootca==null){
         profilenamesrootca = new TreeMap();  
-        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ROOTCA).iterator();      
+        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA).iterator();      
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -124,9 +123,9 @@ public class CAAuthorization implements Serializable {
           iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, 0).iterator();
         }else{
           ArrayList certprofiles = new ArrayList();
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ENDENTITY));
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_ROOTCA));
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_SUBCA));
+		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY));
+		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA));
+		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA));
 		  iter = certprofiles.iterator();
         }
         HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);

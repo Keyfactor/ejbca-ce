@@ -192,6 +192,18 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
         return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, certHome, adapter);
     } // findCertificatesByType
 
+    /**
+     * Finds certificate(s) for a given username.
+     *
+     * @param admin Administrator performing the operation
+     * @param username the username of the certificate(s) that will be retrieved
+     * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
+     * @ejb.interface-method
+     */
+    public Collection findCertificatesByUsername(Admin admin, String username) {
+    	return CertificateDataUtil.findCertificatesByUsername(admin, username, certHome, adapter);
+    }
+
     private class MyAdapter implements CertificateDataUtil.Adapter {
         /* (non-Javadoc)
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#getLogger()

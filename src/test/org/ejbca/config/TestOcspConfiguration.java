@@ -26,6 +26,11 @@ import org.ejbca.core.model.SecConst;
  * @version $Id$
  */
 public class TestOcspConfiguration extends TestCase {
+	
+	public TestOcspConfiguration(String name) {
+		super(name);
+		ConfigurationHolder.instance().clear();
+	}
 
 	public void test01MaxAgeNextUpdate() throws Exception {
 		long maxAge = OcspConfiguration.getMaxAge(SecConst.CERTPROFILE_NO_PROFILE);

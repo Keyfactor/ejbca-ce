@@ -96,6 +96,7 @@
             <include name="org/ejbca/core/ejb/protect/TableProtect*.java" />
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
             <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertificateDataBean.java" />
             <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
             <include name="org/ejbca/ui/web/pub/HealthCheckServlet.java" />
             <include name="org/ejbca/ui/web/pub/cluster/TextResponse.java" />
@@ -412,6 +413,11 @@
                     <include name="org/ejbca/ui/web/pub/ServletUtils.*"/>   
                     <include name="org/ejbca/ui/web/admin/configuration/LanguageProperties.*"/>
                     <include name="org/ejbca/config/ConfigurationHolder.*"/>
+                    <include name="org/ejbca/core/ejb/ca/store/CertificateStatus.class"/>
+                    <include name="org/ejbca/core/ejb/InitialContextBuilder.class"/>
+                    <include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.class"/>
+                    <include name="org/ejbca/core/protocol/ocsp/CertificateCache.class"/>
+                    <include name="org/ejbca/core/protocol/ocsp/OCSPUtil.class"/>
                 </fileset>
             	<fileset dir="${src}/java">
             	    <include name="dncomponents.properties"/>

@@ -24,10 +24,10 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.protect.TableProtectSessionHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -203,7 +203,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     	}
     	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type, tag, certificateProfileId, lastUpdate); 
     	try {
-    		if (status == CertificateDataBean.CERT_REVOKED) {
+    		if (status == SecConst.CERT_REVOKED) {
         		// If this is a revocation we assume that the certificate already exists in the database. In that case we will try an update first and if that fails an insers.
         		JDBCUtil.execute(updateSQL, prep, getDataSource());
     		} else {
@@ -218,7 +218,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     				log.debug(msg);
     			}
     			try {
-    	    		if (status == CertificateDataBean.CERT_REVOKED) {
+    	    		if (status == SecConst.CERT_REVOKED) {
     	        		// If this is a revocation we tried an update below, if thart failed we have to do an insert here
     	        		JDBCUtil.execute(insertSQL, prep, getDataSource());    			
     	    		} else {

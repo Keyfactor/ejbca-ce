@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-props">
+    <description>
+            This file load property files and keeps track of different paths. It should not be run directly. 
+    </description>
+	<!-- Get the correct relative path when this file is imported. -->
+	<dirname property="build-props.basedir" file="${ant.file.build-props}"/>
+    <property file="${build-props.basedir}/../src/internal.properties" />
+    <property name="ejbca.home" location="${build-props.basedir}/.." />
+    <property environment="env" />
+	<!--
+		Merge custom modifications from customejbca.home to
+		ejbca.home before reading the other configuration files.
+	-->
+    <property file="${ejbca.home}/conf/custom.properties" />
+    <property name="customejbca.home" location="${ejbca.home}/../ejbca-custom" />
+    <available file="${customejbca.home}" type="dir" property="customejbca.present" />
+    <condition property="customejbca.message" else="No custom changes to merge."
+    	value="Merging available external modifications from ${customejbca.home}.">
+    	<isset property="customejbca.present" />
+    </condition>
+	<echo message="${customejbca.message}" />
+    <condition property="customejbca.extensions" value="*" else="none-at-all">
+    	<isset property="customejbca.present" />
+    </condition>
+    <condition property="customejbca.dir" value="${customejbca.home}" else="conf">
+    	<isset property="customejbca.present" />
+    </condition>
+	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
+		<fileset dir="${customejbca.dir}" >
+			<include name="**/*.${customejbca.extensions}"/>
+   		</fileset>
+	</copy>
+	<!-- Load property files -->
+    <property file="${ejbca.home}/conf/${app.name}.properties" />
+    <property file="${ejbca.home}/conf/protection.properties" />
+    <property file="${ejbca.home}/conf/database.properties" />
+    <property file="${ejbca.home}/conf/mail.properties" />
+    <property file="${ejbca.home}/conf/ocsp.properties" />
+    <property file="${ejbca.home}/conf/web.properties" />
+    <property file="${ejbca.home}/conf/cmp.properties" />
+    <property file="${ejbca.home}/conf/jaxws.properties" />
+    <property file="${ejbca.home}/conf/xkms.properties" />
+    <property file="${ejbca.home}/conf/externalra.properties" />
+    
+	<!-- Define the different modules -->
+    <property name="mod.path" location="${ejbca.home}/modules" />
+    <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
+    <property name="mod.dist.path" location="${mod.path}/dist" />
+    <property name="mod.ejbca-interface.path" location="${mod.path}/ejbca-interface" />
+    <property name="mod.ejbca-interface.lib" location="${mod.dist.path}/ejbca-interface.jar" />
+    <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
+    <property name="mod.cli-ws.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
+
+	<!-- Files of global interest -->
+    <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
+    
+    <!-- Variables of global interest -->
+    <property name="java.target.version" value="1.5"/>	<!-- This should probably be defined in internal.properties -->
+
+	<!-- Define class-paths of global interest -->
+	<path id="lib.junit.classpath">
+		<fileset dir="${ejbca.home}/lib/ext">
+			<include name="junit-*.jar"/>
+			<include name="commons-httpclient-*.jar"/>	<!-- ProtocolScepHttpTest -->
+			<include name="htmlunit-*.jar"/>	<!-- ProtocolScepHttpTest -->
+			<include name="commons-io-*.jar"/>	<!-- ProtocolScepHttpTest -->
+		</fileset>
+	</path>
+	<path id="lib.utils.classpath">
+		<fileset dir="${ejbca.home}/lib">
+			<include name="commons-*.jar"/>
+			<include name="log4j*.jar"/>
+		</fileset>
+	</path>
+	<property name="lib.jaxws.dir" location="${ejbca.home}/lib/jaxws"/>
+	<path id="lib.jee.classpath">
+		<fileset dir="${appserver.home}">
+			<!-- jboss -->
+			<include name="client/jbossall-client.jar" />
+			<include name="client/jboss-j2ee.jar" />
+			<!-- glassfish -->
+			<include name="lib/javaee.jar"/>
+			<include name="lib/appserv-rt.jar"/>
+			<!-- weblogic -->
+			<include name="server/lib/weblogic.jar"/>	<!-- For 9.2 -->
+			<include name="server/lib/wlclient.jar"/>	<!-- For 10.3 -->
+			<!-- oracle -->
+			<include name="j2ee/home/oc4jclient.jar"/>
+			<!-- websphere -->
+			<include name="runtimes/com.ibm.*.jar"/>
+		</fileset>
+	</path>
+	<path id="lib.ejbca-util.classpath">
+    	<pathelement location="${ejbca.home}/lib/cert-cvc.jar"/>
+    	<pathelement location="${mod.ejbca-util.lib}"/>
+	</path>
+
+	<path id="lib.bouncycastle.classpath">
+		<fileset dir="${ejbca.home}/lib">
+			<include name="bcmail-jdk15.jar"/>
+			<include name="bcprov-jdk15.jar"/>
+			<include name="bctsp-jdk15.jar"/>
+		</fileset>
+	</path>
+
+	<path id="lib.ldap.classpath">
+    	<pathelement location="${ejbca.home}/lib/ldap.jar"/>
+	</path>
+
+    <!-- Now when everything is set up, we can load the old property defaults -->
+	<import file="${build-props.basedir}/../propertyDefaults.xml"/>
+
+	<!-- The different build target for easy dependency inclusion -->	
+	<target name="ejbca-interface">
+		<ant antfile="${mod.ejbca-interface.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-util">
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-util.jar" inheritall="false"/>
+	</target>
+
+	<!-- Clean all modules-->
+	<target name="clean">
+		<ant antfile="${mod.ejbca-interface.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
+	</target>
+
+	<!-- Common helper tasks -->
+	<target name="showtime" >
+		<tstamp>
+			<format property="completiontime" pattern="yyyy-MM-dd HH:mm:ss Z"/>
+		</tstamp>
+		<echo message="Current time is ${completiontime}."/>
+	</target>
+	
+	<target name="ejbca-cli">
+		<fail message="ejbca-cli.name is not set." unless="ejbca-cli.name" />
+		<fail message="ejbca-cli.arg is not set." unless="ejbca-cli.arg" />
+		<path id="ejbca-cli.classpath">
+			<pathelement path="${ejbca.home}/bin"/>	<!-- jndi.properties -->	<!-- log4j.xml -->
+			<pathelement path="${ejbca.home}/tmp/bin/classes"/>
+			<fileset dir="${ejbca.home}/lib" includes="*.jar"/>
+			<fileset dir="${appserver.home}">
+				<!-- jboss -->
+				<include name="client/*.jar"/>
+				<!-- glassfish -->
+				<include name="lib/*.jar"/>
+				<!-- weblogic -->
+				<include name="server/lib/weblogic.jar"/>
+				<!-- oracle -->
+				<include name="j2ee/home/oc4jclient.jar"/>
+				<!-- websphere -->
+				<include name="runtimes/com.ibm.*.jar"/>
+			</fileset>
+		</path>
+		<java classname="org.ejbca.ui.cli.${ejbca-cli.name}" classpathref="ejbca-cli.classpath" fork="true">
+			<arg line="${ejbca-cli.arg}"/>
+		</java>
+	</target>
+
+</project>

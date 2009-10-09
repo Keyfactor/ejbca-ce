@@ -2,7 +2,7 @@
 <project name="ejbcatest" basedir=".">
 
     <!-- compile JUnit testcases -->
-    <target name="test:compile" depends="failinproduction,compile">
+    <target name="test:compile" depends="compile">
         <mkdir dir="${test.dir}" />
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="jpa.classpath" />
@@ -17,18 +17,6 @@
         <copy file="${test.src.dir}/log4j.xml" todir="${test.dir}" failonerror="false"/>
     </target>
     
-    <target name="failinproduction">
-		<fail message="You cannot run tests in a production environment.">
-			<condition>
-				<or>
-					<equals arg1="${ejbca.productionmode}" arg2="ocsp" casesensitive="false"/>
-					<equals arg1="${ejbca.productionmode}" arg2="ca" casesensitive="false"/>
-					<equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
-				</or>
-			</condition>
-		</fail>
-    </target>
-
     <!-- compile JUnit testcases -->
     <target name="test:compile-ctb" depends="test:compile,clientToolBox">
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
@@ -39,7 +27,12 @@
         </javac>
     </target>
 
-    <target name="test:run" depends="test:compile,j2ee:assert-run" description="run JUnit testcases">
+    <target name="test:run" description="run both stand-alone JUnit test cases and system test">
+    	<antcall target="test:runsa" />
+    	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
+    </target>
+
+    <target name="test:runsa" depends="test:compile" description="run stand-alone JUnit test cases">
         <delete dir="${test.dir}/reports" />
         <mkdir dir="${test.dir}/reports/html" />
         <junit printsummary="yes" haltonfailure="no">
@@ -51,52 +44,29 @@
             <formatter type="xml" />
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestCAs*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="org/ejbca/core/model/Test*" />
-                    <include name="org/ejbca/core/model/approval/approvalrequests/Test*" />
-                    <include name="org/ejbca/util/**/Test*" />
-                    <include name="org/ejbca/config/**/Test*" />
-                    <include name="org/ejbca/core/model/ca/**/Test*" />
-                    <include name="org/ejbca/core/model/util/**/Test*" />
-                    <include name="org/ejbca/util/**/Test*" />
-                    <include name="**/protocol/**/Test*" />
-                    <include name="**/ra/Test*" />
-                    <include name="**/userdatasource/Test*" />
-                    <include name="**/raadmin/Test*" />
-                    <include name="**/caadmin/TestRenewCA*" />
-                    <include name="**/auth/Test*" />
-                    <include name="**/store/Test*" />
-                    <include name="**/sign/Test*" />
-                    <include name="**/crl/Test*" />
-                    <include name="**/publisher/Test*" />
-                    <include name="**/batch/Test*" />
-                    <include name="**/log/Test*" />
-                    <include name="**/keyrecovery/Test*" />
-                    <include name="**/approval/Test*" />
-                    <include name="**/hardtoken/Test*" />
-                    <include name="org/ejbca/core/ejb/ca/caadmin/Test*" />
-                    <include name="**/authorization/TestAuthorization*" />
-                    <include name="**/services/Test*" />
-                    <exclude name="org/ejbca/core/protocol/cmp/Test*" />
-                    <exclude name="org/ejbca/core/protocol/xkms/Test*" />
-                    <exclude name="org/ejbca/core/protocol/ws/Test*" />
-                    <exclude name="**/ra/TestAddLotsofUsers*" />
-                    <exclude name="**/ra/TestAddLotsofCertsPerUser*" />
-                    <exclude name="**/sign/TestSignLotsOfCerts*" />
-                    <exclude name="**/TestTools*" />
-                    <exclude name="**/caadmin/TestRemoveCA*" />
-                    <exclude name="**/caadmin/TestCAs*" />
-                </fileset>
-            </batchtest>
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestRemoveCA*" />
-                    <exclude name="**/TestRunner*" />
+                    <include name="**/*.class" />
+                    <!-- Exclude all helper classes -->
+                	<exclude name="org/ejbca/core/model/InternalResourcesTestClass.class" />
+                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper$JunitApprovalExecutorUtil1.class" />
+                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper$JunitApprovalExecutorUtil2.class" />
+                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper$JunitApprovalExecutorUtil3.class" />
+                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper.class" />
+                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockDSAPublicKey.class" />
+                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockECDSAPublicKey.class" />
+                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockNotSupportedPublicKey.class" />
+                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockPublicKey.class" />
+                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockRSAPublicKey.class" />
+                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/CacheExceptionHandler.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/CacheTester.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockDSAPublicKey.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockECDSAPublicKey.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockNotSupportedPublicKey.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockPublicKey.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockRSAPublicKey.class" />
+                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups.class" />
+                    <exclude name="org/ejbca/util/DummyHashMap.class" />
+                    <exclude name="org/ejbca/util/DummyLocalHome.class" />
                 </fileset>
             </batchtest>
         </junit>
@@ -108,44 +78,20 @@
         </junitreport>
     </target>
 
-    <target name="test:runexcluded" depends="test:compile,j2ee:assert-run" description="run JUnit testcases that require manual configuration">
-        <property name="test.reportsdir" value="${test.dir}/reports-excluded" />
-        <delete dir="${test.reportsdir}" />
-        <mkdir dir="${test.reportsdir}/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.reportsdir}">
-                <fileset dir="${test.dir}">
-                	<include name="org/ejbca/ui/web/pub/TestAutoEnroll*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <antcall target="test:runws" inheritRefs="true"/>   <!-- Requires some additional compilation and includes -->
-        <antcall target="test:xkms" inheritRefs="true"/>    <!-- Requires some additional compilation and includes -->
-        <junitreport todir="${test.reportsdir}">
-            <fileset dir="${test.reportsdir}">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <fileset dir="${test.dir}/ws/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <fileset dir="${test.dir}/xkms/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.reportsdir}/html" />
-        </junitreport>
-        <echo message="The full report can be found in '${test.reportsdir}/html/index.html'"/>
-    </target>
-
-    <target name="test:runone" depends="test:compile,j2ee:assert-run" description="run a single JUnit-test specified -Dtest.runone=classname">
+    <target name="test:runone" depends="test:compile" description="run a single JUnit-test specified -Dtest.runone=classname">
     	<fail message="'test.runone' not set. Example -Dtest.runone=TestDnComponents " unless="test.runone" />
         <property name="test.reportsdir" value="${test.dir}/reports-runone" />
         <delete dir="${test.reportsdir}" />
         <mkdir dir="${test.reportsdir}/html" />
+        <!-- Determine if the test is a system test or a normal JUnit test -->
+		<fileset dir="${test.dir}" id="test.runone.fileset">
+			<include name="**/${test.runone}.class" />
+		</fileset>
+		<pathconvert refid="test.runone.fileset" property="test.runone.fileset.notempty" setonempty="false"/>
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runone" />
+    	<antcall target="test:runone-internal" />
+    </target>
+    <target name="test:runone-internal" if="test.runone.fileset.notempty">
         <junit printsummary="yes" haltonfailure="no">
             <classpath>
                 <path refid="test.compile.classpath" />
@@ -166,206 +112,37 @@
         </junitreport>
     </target>
 
-    <target name="test:runlots" depends="test:compile,j2ee:assert-run" description="run JUnit testcases that creates lots of users and certificates">
-        <property name="test.reportsdir" value="${test.dir}/reports-lots" />
-        <delete dir="${test.reportsdir}" />
-        <mkdir dir="${test.reportsdir}/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.reportsdir}">
-                <fileset dir="${test.dir}">
-                    <!-- LotsofUsers creates LOOOOTS of users, only run once in a while -->
-                    <include name="**/ra/TestAddLotsofUsers*" />
-                    <include name="**/sign/TestSignLotsOfCerts*" />
-                    <exclude name="**/Test*$$*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.reportsdir}">
-            <fileset dir="${test.reportsdir}">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.reportsdir}/html" />
-        </junitreport>
+    <target name="test:runlots" depends="test:compile" description="run JUnit testcases that creates lots of users and certificates">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsofusers" />
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" />
     </target>
 
-    <target name="test:runlotsperuser" depends="test:compile,j2ee:assert-run" description="run JUnit testcases that creates lots of users and certificates for each user">
-        <property name="test.reportsdir" value="${test.dir}/reports-lotsperuser" />
-        <delete dir="${test.reportsdir}" />
-        <mkdir dir="${test.reportsdir}/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.reportsdir}">
-                <fileset dir="${test.dir}">
-                    <!-- LotsofUsers creates LOOOOTS of users, only run once in a while -->
-                    <include name="**/ra/TestAddLotsofCertsPerUser*" />
-                    <exclude name="**/Test*$$*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.reportsdir}">
-            <fileset dir="${test.reportsdir}">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.reportsdir}/html" />
-        </junitreport>
+    <target name="test:runlotsperuser" depends="test:compile" description="run JUnit testcases that creates lots of users and certificates for each user">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsperuser" />
     </target>
 
-    <target name="test:runperf" depends="test:compile,j2ee:assert-run" description="run JUnit performance tests">
-        <delete dir="${test.dir}/perf/reports" />
-        <mkdir dir="${test.dir}/perf/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.dir}/perf/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/sign/TestSignLotsOfCerts.class" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/perf/reports">
-            <fileset dir="${test.dir}/perf/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/perf/reports/html" />
-        </junitreport>
+    <target name="test:runperf" depends="test:compile" description="run JUnit performance tests">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" />
     </target>
 
-    <target name="test:runweb" depends="test:compile,j2ee:assert-run" description="run JUnit web testcases">
-        <delete dir="${test.dir}/web/reports" />
-        <mkdir dir="${test.dir}/web/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-			<sysproperty key="testtype" value="WEB"/>
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-                <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
-            </classpath>
-            <formatter type="xml" />
-        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
-            <batchtest fork="yes" todir="${test.dir}/web/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/protocol/scep/ProtocolScepHttpTest*" />
-                    <include name="**/protocol/ocsp/ProtocolOcspHttpTest*" />
-                    <include name="**/protocol/cmp/CrmfRequestTest*" />
-                    <include name="**/protocol/cmp/CrmfRARequestTest*" />
-                	<include name="**/web/pub/WebdistHttpTest*" />
-                	<include name="**/web/pub/CertRequestHttpTest*" />
-                	<include name="**/web/pub/cluster/WebEjbcaHealthCheckTest*" />
-                    <!-- Test for standalone OCSP responder -->
-                    <exclude name="**/protocol/ocsp/ProtocolOcspHttpStandaloneTest*" />
-                	<!-- Below tests require CMP TCP service to be enabled in cmp.properties -->
-                    <exclude name="**/protocol/cmp/CrmfRATcpRequestTest*" />
-                    <exclude name="**/protocol/cmp/CrmfRAPbeRequestTest*" />
-                    <!-- Special test for OCSP UNID look up service, see java file -->
-                    <exclude name="**/protocol/ocsp/ProtocolLookupServerHttpTest*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/web/reports">
-            <fileset dir="${test.dir}/web/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/web/reports/html" />
-        </junitreport>
+    <target name="test:runweb" depends="test:compile" description="run JUnit web system tests">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runweb" />
     </target>
 
-    <target name="test:runcmpra" depends="test:compile,j2ee:assert-run" description="run JUnit CMP RA testcases">
-        <delete dir="${test.dir}/cmpra/reports" />
-        <mkdir dir="${test.dir}/cmpra/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-			<sysproperty key="testtype" value="WEB"/>
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
-            <batchtest fork="yes" todir="${test.dir}/cmpra/reports">
-                <fileset dir="${test.dir}">
-                    <exclude name="**/protocol/scep/ProtocolScepHttpTest*" />
-                    <exclude name="**/protocol/ocsp/ProtocolOcspHttpTest*" />
-                    <exclude name="**/protocol/cmp/CrmfRequestTest*" />
-                    <include name="**/protocol/cmp/CrmfRARequestTest*" />
-                    <include name="**/protocol/cmp/CrmfRATcpRequestTest*" />
-                    <include name="**/protocol/cmp/CrmfRAPbeRequestTest*" />
-                    <exclude name="**/protocol/ocsp/ProtocolLookupServerHttpTest*" />
-                    <exclude name="**/protocol/ocsp/ProtocolOcspHttpStandaloneTest*" />
-                	<exclude name="**/web/pub/WebdistHttpTest*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/cmpra/reports">
-            <fileset dir="${test.dir}/cmpra/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/cmpra/reports/html" />
-        </junitreport>
+    <target name="test:runcmpra" depends="test:compile" description="run JUnit CMP RA system tests">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runcmp" />
     </target>
 
-    <target name="test:runocsp" depends="test:compile,j2ee:assert-run" description="run JUnit standalone OCSP testcases">
-        <delete dir="${test.dir}/web/reports" />
-        <mkdir dir="${test.dir}/web/reports/html" />
-        <condition property="runocsp.warning" else=""
-        	value="WARNING: EJBCA/OCSP must be deployed with ocsp.untilNextUpdate configured for all OCSP tests to succeed.">
-        	<equals arg1="${ocsp.untilNextUpdate}" arg2="0"/>
-       	</condition>
-    	<echo message="${runocsp.warning}"/>
-        <junit printsummary="yes" haltonfailure="no">
-			<sysproperty key="testtype" value="WEB"/>
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
-            <batchtest fork="yes" todir="${test.dir}/web/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/protocol/ocsp/ProtocolOcspHttpStandaloneTest*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/web/reports">
-            <fileset dir="${test.dir}/web/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/web/reports/html" />
-        </junitreport>
+    <target name="test:runocsp" depends="test:compile" description="run JUnit standalone OCSP system tests">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp" />
     </target>
 
-    <target name="test:logstress" depends="test:compile,j2ee:assert-run" description="run JUnit log stress test">
-        <delete dir="${test.dir}/log/reports" />
-        <mkdir dir="${test.dir}/log/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
-            <batchtest fork="yes" todir="${test.dir}/log/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/log/LoggingStressTest*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/log/reports">
-            <fileset dir="${test.dir}/log/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/log/reports/html" />
-        </junitreport>
+    <target name="test:runocsp.setuptest" description="setup some a basic environment for the standalone OCSP tests">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp.setuptest" />
+    </target>
+
+    <target name="test:logstress" depends="test:compile" description="run JUnit log stress test">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runlogstress" />
     </target>
 
     <target name="test:ctb" depends="test:compile-ctb" description="run JUnit ClientToolBox tests">

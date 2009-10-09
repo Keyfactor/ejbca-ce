@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
@@ -63,8 +62,8 @@ public class CaChangeCertProfileCommand extends BaseAdminCommand {
 		}
 		try {
 			// Print available Root CA and Sub CA profiles
-			Collection<Integer> cpssub = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_SUBCA);
-			Collection<Integer> cpsroot = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ROOTCA);
+			Collection<Integer> cpssub = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_SUBCA);
+			Collection<Integer> cpsroot = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_ROOTCA);
 			HashMap<String,Collection<Integer>> cps = new HashMap<String,Collection<Integer>>();
 			cps.put("Root CA profiles: ", cpsroot);
 			cps.put("Sub CA profiles: ", cpssub);

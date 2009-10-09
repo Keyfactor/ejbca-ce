@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -97,7 +96,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getOutputStream().println();
 		getOutputStream().print("  Certificate profiles: ");
 		try {
-			Collection cps = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ENDENTITY);
+			Collection cps = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_ENDENTITY);
 			boolean first = true;
 			Iterator iter = cps.iterator();
 			while (iter.hasNext()) {
@@ -165,10 +164,10 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			int type = SecConst.USER_ENDUSER;
 			int status;
 			if ("ACTIVE".equalsIgnoreCase(active)) {
-				status = CertificateDataBean.CERT_ACTIVE;
+				status = SecConst.CERT_ACTIVE;
 			}
 			else if ("REVOKED".equalsIgnoreCase(active)) {
-				status = CertificateDataBean.CERT_REVOKED;
+				status = SecConst.CERT_REVOKED;
 			}
 			else {
 				throw new Exception("Invalid certificate status.");
@@ -180,7 +179,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				throw new Exception("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' is already present.");
 			}
 			if (CertTools.getNotAfter(certificate).compareTo(new java.util.Date()) < 0) {
-				status = CertificateDataBean.CERT_EXPIRED;
+				status = SecConst.CERT_EXPIRED;
 			}
 			
 			// Check if username already exists.
@@ -249,7 +248,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						SecConst.TOKEN_SOFT_BROWSERGEN,
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
-				if (status == CertificateDataBean.CERT_ACTIVE) {
+				if (status == SecConst.CERT_ACTIVE) {
 					getUserAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_GENERATED);
 				}
 				else {
@@ -268,7 +267,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						type,
 						SecConst.TOKEN_SOFT_BROWSERGEN,
 						SecConst.NO_HARDTOKENISSUER,
-						(status == CertificateDataBean.CERT_ACTIVE ?
+						(status == SecConst.CERT_ACTIVE ?
 								UserDataConstants.STATUS_GENERATED :
 									UserDataConstants.STATUS_REVOKED),
 									cainfo.getCAId());

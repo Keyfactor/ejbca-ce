@@ -29,8 +29,8 @@ import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 
@@ -250,7 +250,7 @@ public class CertificateCache {
     	}
     	
     	synchronized (rebuildlock) {
-        	Collection certs = findCertificatesByType(admin, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
+        	Collection certs = findCertificatesByType(admin, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
         	if (log.isDebugEnabled()) {
         		log.debug("Loaded "+(certs == null ? "0":certs.size())+" ca certificates");        	
         	}

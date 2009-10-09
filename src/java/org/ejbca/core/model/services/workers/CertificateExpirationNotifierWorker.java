@@ -24,10 +24,10 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -84,7 +84,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 			}
 
 			String checkDate = "expireDate <= " + ((new Date()).getTime() + getTimeBeforeExpire());			
-			String statuses = "status=" +CertificateDataBean.CERT_ACTIVE;
+			String statuses = "status=" + SecConst.CERT_ACTIVE;
 
 			// Execute Query
 			Connection con = null;

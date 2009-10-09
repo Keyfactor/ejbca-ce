@@ -450,11 +450,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		ps.setString(1, dn);
     		if (lastbasecrldate > 0) {
     			ps.setLong(2, lastbasecrldate);
-    			ps.setInt(3, CertificateDataBean.CERT_REVOKED);
-    			ps.setInt(4, CertificateDataBean.CERT_ACTIVE);
+    			ps.setInt(3, SecConst.CERT_REVOKED);
+    			ps.setInt(4, SecConst.CERT_ACTIVE);
     			ps.setInt(5, RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL);
     		} else {
-    			ps.setInt(2, CertificateDataBean.CERT_REVOKED);            	
+    			ps.setInt(2, SecConst.CERT_REVOKED);            	
     		}
     		result = ps.executeQuery();
     		ArrayList vect = new ArrayList();
@@ -609,7 +609,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             ps = con.prepareStatement("SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND status=?");
             ps.setLong(1, currentdate);
             ps.setLong(2, expiretime.getTime());
-            ps.setInt(3, CertificateDataBean.CERT_ACTIVE);
+            ps.setInt(3, SecConst.CERT_ACTIVE);
             result = ps.executeQuery();
             while (result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT + 1) {
                 if (result.getString(1) != null && !result.getString(1).equals("")) {
@@ -792,31 +792,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByUsername(Admin admin, String username) {
-    	if (log.isTraceEnabled()) {
-        	log.trace(">findCertificatesByUsername(),  username=" + username);
-    	}
-        try {
-            // Strip dangerous chars
-            username = StringTools.strip(username);
-
-            // This method on the entity bean does the ordering in the database
-            Collection coll = certHome.findByUsername(username);
-            ArrayList ret = new ArrayList();
-
-            if (coll != null) {
-                Iterator iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(((CertificateDataLocal) iter.next()).getCertificate());
-                }
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<findCertificatesByUsername(), username=" + username);
-        	}
-            return ret;
-        } catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }
-    } // findCertificatesByUsername
+    	return CertificateDataUtil.findCertificatesByUsername(admin, username, certHome, adapter);
+    }
 
     /**
      * Finds certificate(s) for a given username and status.
@@ -1037,9 +1014,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	int type = rev.getType();
     	Date now = new Date();
     	String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
-    	if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
+    	if ( (rev.getStatus() != SecConst.CERT_REVOKED) 
     			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
-    		rev.setStatus(CertificateDataBean.CERT_REVOKED);
+    		rev.setStatus(SecConst.CERT_REVOKED);
     		rev.setRevocationDate(now);
     		rev.setUpdateTime(now.getTime());
     		rev.setRevocationReason(reason);            	  
@@ -1052,7 +1029,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
     		// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
-    		int status = CertificateDataBean.CERT_ACTIVE;
+    		int status = SecConst.CERT_ACTIVE;
     		rev.setStatus(status);
     		long revocationDate = -1L; // A null Date to setRevocationDate will result in -1 stored in long column
     		rev.setRevocationDate(null);
@@ -1155,18 +1132,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             // First SQL statement, changing all temporaty revoked certificates to permanently revoked certificates
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement(firstsqlstatement);
-            ps.setInt(1, CertificateDataBean.CERT_REVOKED); // first statusfield
+            ps.setInt(1, SecConst.CERT_REVOKED); // first statusfield
             ps.setString(2, bcdn); // issuerdn field
-            ps.setInt(3, CertificateDataBean.CERT_TEMP_REVOKED); // second statusfield
+            ps.setInt(3, SecConst.CERT_TEMP_REVOKED); // second statusfield
             temprevoked = ps.executeUpdate();
 
             // Second SQL statement, revoking all non revoked certificates.
             ps2 = con.prepareStatement(secondsqlstatement);
-            ps2.setInt(1, CertificateDataBean.CERT_REVOKED); // first statusfield
+            ps2.setInt(1, SecConst.CERT_REVOKED); // first statusfield
             ps2.setLong(2, currentdate); // revokedate field
             ps2.setInt(3, reason); // revokation reason
             ps2.setString(4, bcdn); // issuer dn
-            ps2.setInt(5, CertificateDataBean.CERT_REVOKED); // second statusfield
+            ps2.setInt(5, SecConst.CERT_REVOKED); // second statusfield
 
             revoked = ps2.executeUpdate();
 
@@ -1218,7 +1195,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             				error(msg, e);
             			}
             		}
-            		if (info.getStatus() != CertificateDataBean.CERT_REVOKED) {
+            		if (info.getStatus() != SecConst.CERT_REVOKED) {
             			returnval = false;
             		}        			
         		}
@@ -1260,11 +1237,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     }
                     revinfo = new RevokedCertInfo(data.getFingerprint(), serno, new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
                     // Make sure we have it as NOT revoked if it isn't
-                    if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
+                    if (data.getStatus() != SecConst.CERT_REVOKED) {
                         revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
                     }
                     if (adapter.getLogger().isTraceEnabled()) {
-                        adapter.getLogger().trace("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                        adapter.getLogger().trace("<isRevoked() returned " + ((data.getStatus() == SecConst.CERT_REVOKED) ? "yes" : "no"));
                     }
                     return revinfo;
                 }
@@ -1308,7 +1285,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	        revinfo = new RevokedCertInfo(data.getFingerprint(), CertTools.getSerialNumber(cert), new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
 	        log.debug("isRevoked: "+revinfo.isRevoked());
 	    	// Make sure we have it as NOT revoked if it isn't
-	    	if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
+	    	if (data.getStatus() != SecConst.CERT_REVOKED) {
 	    		revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
 	    	}
 		} catch (FinderException e) {
@@ -1801,18 +1778,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
 
         // Add fixed certificate profiles.
-        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_ENDENTITY || certprofiletype == CertificateDataBean.CERTTYPE_HARDTOKEN){
+        if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ENDENTITY || certprofiletype == SecConst.CERTTYPE_HARDTOKEN){
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ENDUSER));
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_OCSPSIGNER));
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SERVER));
         }
-        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_SUBCA) {
+        if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_SUBCA) {
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SUBCA));
         }
-        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_ROOTCA) {
+        if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ROOTCA) {
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA));
         }
-        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_HARDTOKEN) {
+        if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_HARDTOKEN) {
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
@@ -1827,8 +1804,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 CertificateProfile profile = next.getCertificateProfile();
                 // Check if all profiles available CAs exists in authorizedcaids.
                 if (certprofiletype == 0 || certprofiletype == profile.getType()
-                        || (profile.getType() == CertificateDataBean.CERTTYPE_ENDENTITY &&
-                        certprofiletype == CertificateDataBean.CERTTYPE_HARDTOKEN)) {
+                        || (profile.getType() == SecConst.CERTTYPE_ENDENTITY &&
+                        certprofiletype == SecConst.CERTTYPE_HARDTOKEN)) {
                     Iterator availablecas = profile.getAvailableCAs().iterator();
                     boolean allexists = true;
                     while (availablecas.hasNext()) {

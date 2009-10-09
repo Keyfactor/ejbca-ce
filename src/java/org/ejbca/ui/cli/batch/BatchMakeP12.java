@@ -510,6 +510,7 @@ public class BatchMakeP12 {
                             // If things went wrong set status to FAILED
                     		String errMsg = intres.getLocalizedMessage("batch.errorsetstatus", "FAILED");
                             log.error(errMsg, e);
+                            log.debug("batch.errorsetstatus",e);
                             failedusers += (":" + data.getUsername());
                             failcount++;
                             if (status == UserDataConstants.STATUS_KEYRECOVERY) {

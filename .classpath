@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="tmp/bin/ocsp-gensrc"/>
+	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="src" path="src/ejbca-entities"/>
 	<classpathentry kind="src" path="src/xkms/gen-java"/>
 	<classpathentry kind="src" path="tmp/bin/gensrc"/>

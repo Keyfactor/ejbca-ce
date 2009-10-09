@@ -31,8 +31,8 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
@@ -183,10 +183,10 @@ public class LdapPublisher extends BasePublisher {
 			log.trace(">storeCertificate(username="+username+")");
 		}
 
-		if ( (status == CertificateDataBean.CERT_REVOKED) || (status == CertificateDataBean.CERT_TEMP_REVOKED) ) {
+		if ( (status == SecConst.CERT_REVOKED) || (status == SecConst.CERT_TEMP_REVOKED) ) {
         	// Call separate script for revocation
         	revokeCertificate(admin, incert, username, revocationReason);
-        } else if (status == CertificateDataBean.CERT_ACTIVE) {
+        } else if (status == SecConst.CERT_ACTIVE) {
             // Don't publish non-active certificates
     		int ldapVersion = LDAPConnection.LDAP_V3;
     		LDAPConnection lc = createLdapConnection();
@@ -221,7 +221,7 @@ public class LdapPublisher extends BasePublisher {
     		String attribute = null;
     		String objectclass = null;
 
-    		if (type == CertificateDataBean.CERTTYPE_ENDENTITY) {
+    		if (type == SecConst.CERTTYPE_ENDENTITY) {
     			log.debug("Publishing end user certificate to first available server of " + getHostnames());
 
     			if (oldEntry != null) {
@@ -252,7 +252,7 @@ public class LdapPublisher extends BasePublisher {
     				log.error(msg, e);
     				throw new PublisherException(msg);                
     			}
-    		} else if ((type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
+    		} else if ((type == SecConst.CERTTYPE_SUBCA) || (type == SecConst.CERTTYPE_ROOTCA)) {
     			log.debug("Publishing CA certificate to first available server of " + getHostnames());
 
     			if (oldEntry != null) {

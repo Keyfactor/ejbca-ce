@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.store;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.ejbca.core.model.SecConst;
@@ -22,37 +23,25 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
  * 
  * @version $Id$
  */
-public class CertificateStatus {
-    public final static CertificateStatus REVOKED = new CertificateStatus("REVOKED", SecConst.CERTPROFILE_NO_PROFILE);
+public class CertificateStatus implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
+	public final static CertificateStatus REVOKED = new CertificateStatus("REVOKED", SecConst.CERTPROFILE_NO_PROFILE);
     public final static CertificateStatus OK = new CertificateStatus("OK", SecConst.CERTPROFILE_NO_PROFILE);
     public final static CertificateStatus NOT_AVAILABLE = new CertificateStatus("NOT_AVAILABLE", SecConst.CERTPROFILE_NO_PROFILE);
 
-    public final static CertificateStatus getIt( CertificateDataLocal data) {
-        if ( data == null ) {
-            return NOT_AVAILABLE;
-        }
-        Integer pId = data.getCertificateProfileId();
-        if (pId == null) {
-        	pId = Integer.valueOf(SecConst.CERTPROFILE_NO_PROFILE);
-        }
-        if ( data.getStatus() != CertificateDataBean.CERT_REVOKED ) {
-            return new CertificateStatus(CertificateStatus.OK.name, pId.intValue());
-        }
-        return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), pId.intValue());
-    }
-    
     private final String name;
     public final Date revocationDate;
     public final int revocationReason;
     public final int certificateProfileId;
     
-    private CertificateStatus(String s, int certProfileId) {
+    protected CertificateStatus(String s, int certProfileId) {
         this.name = s;
         this.revocationDate = null;
         this.revocationReason = RevokedCertInfo.NOT_REVOKED;
         this.certificateProfileId = certProfileId;
     }
-    private CertificateStatus( long date, int reason, int certProfileId ) {
+    protected CertificateStatus( long date, int reason, int certProfileId ) {
         this.name = CertificateStatus.REVOKED.name;
         this.revocationDate = new Date(date);
         this.revocationReason = reason;
@@ -62,6 +51,9 @@ public class CertificateStatus {
         return this.name;
     }
     public boolean equals(Object obj) {
-        return obj instanceof CertificateStatus && this.name.equals(obj.toString());
+        return obj instanceof CertificateStatus && this.equals((CertificateStatus)obj);
+    }
+    public boolean equals(CertificateStatus obj) {
+        return this.name.equals(obj.toString());
     }
 }

@@ -20,7 +20,6 @@ import java.util.Iterator;
 
 import javax.ejb.FinderException;
 
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -81,7 +80,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             } 
 
             if ( (args.length < 9) || (args.length > 12) ) {
-                Collection certprofileids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ENDENTITY);
+                Collection certprofileids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_ENDENTITY);
                 HashMap certificateprofileidtonamemap = getCertificateStoreSession().getCertificateProfileIdToNameMap(administrator);
                 
                 Collection endentityprofileids =  getRaAdminSession().getAuthorizedEndEntityProfileIds(administrator);

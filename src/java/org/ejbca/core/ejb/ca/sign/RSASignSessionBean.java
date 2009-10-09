@@ -55,7 +55,6 @@ import org.ejbca.core.ejb.ca.caadmin.CADataLocal;
 import org.ejbca.core.ejb.ca.caadmin.CADataLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
@@ -508,13 +507,13 @@ public class RSASignSessionBean extends BaseSessionBean {
         boolean[] keyusage = new boolean[9];
         Arrays.fill(keyusage, false);
         switch (certType) {
-            case CertificateDataBean.CERT_TYPE_ENCRYPTION:
+            case SecConst.CERT_TYPE_ENCRYPTION:
                 // keyEncipherment
                 keyusage[2] = true;
                 // dataEncipherment
                 keyusage[3] = true;
                 break;
-            case CertificateDataBean.CERT_TYPE_SIGNATURE:
+            case SecConst.CERT_TYPE_SIGNATURE:
                 // digitalSignature
                 keyusage[0] = true;
                 // non-repudiation
@@ -1267,21 +1266,21 @@ public class RSASignSessionBean extends BaseSessionBean {
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 // Calculate the certtype
                 boolean isSelfSigned = CertTools.isSelfSigned(cert);
-                int type = CertificateDataBean.CERTTYPE_ENDENTITY;
+                int type = SecConst.CERTTYPE_ENDENTITY;
                 if (CertTools.isCA(cert))  {
                 	// this is a CA
                 	if (isSelfSigned) {
-                		type = CertificateDataBean.CERTTYPE_ROOTCA;
+                		type = SecConst.CERTTYPE_ROOTCA;
                 	} else {
-                		type = CertificateDataBean.CERTTYPE_SUBCA;
+                		type = SecConst.CERTTYPE_SUBCA;
                 	}                		
                 } else if (isSelfSigned) {
                 	// If we don't have basic constraints, but is self signed, we are still a CA, just a stupid CA
-                	type = CertificateDataBean.CERTTYPE_ROOTCA;
+                	type = SecConst.CERTTYPE_ROOTCA;
                 }
                 
                 String name = "SYSTEMCERT";
-                if (type != CertificateDataBean.CERTTYPE_ENDENTITY) {
+                if (type != SecConst.CERTTYPE_ENDENTITY) {
                 	name = "SYSTEMCA";
                 }
                 // Store CA certificate in the database if it does not exist
@@ -1291,7 +1290,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 CertificateInfo ci = certificateStore.getCertificateInfo(admin, fingerprint);
                 if (ci == null) {
                 	// If we don't have it in the database, store it setting certificateProfileId = 0 and tag = null
-                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type, profileId, tag, updateTime);
+                    certificateStore.storeCertificate(admin, cert, name, fingerprint, SecConst.CERT_ACTIVE, type, profileId, tag, updateTime);
                 } else {
                 	updateTime = ci.getUpdateTime().getTime();
                 	profileId = ci.getCertificateProfileId();
@@ -1300,7 +1299,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null) {
-                    pub.storeCertificate(admin, usedpublishers, cert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);                	
+                    pub.storeCertificate(admin, usedpublishers, cert, fingerprint, null, fingerprint, SecConst.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);                	
                 }
             }
         } catch (javax.ejb.CreateException ce) {
@@ -1533,7 +1532,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     Certificate cacert = ca.getCACertificate();
                     cafingerprint = CertTools.getFingerprintAsString(cacert);
                     try {
-                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
+                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
                         stored = true;
                     } catch (CreateException e) {
                     	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
@@ -1561,7 +1560,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 IPublisherSessionLocal pub = publishHome.create();
                 Collection publishers = certProfile.getPublisherList();
                 if (publishers != null) {
-                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
+                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
                 }
                 
                 // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 

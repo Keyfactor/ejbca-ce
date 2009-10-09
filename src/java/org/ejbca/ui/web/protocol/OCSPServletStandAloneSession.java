@@ -184,7 +184,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     }
                     pw.println("\".");
                 }
-                if ( this.servlet.m_valid_time>0 ) {
+                if ( OcspConfiguration.getSigningCertsValidTime()>0 ) {
                     pw.println("You must set "+OcspConfiguration.SIGNING_CERTD_VALID_TIME+" to 0 if "+OcspConfiguration.DO_NOT_STORE_PASSWORDS_IN_MEMORY+" is configured.");
                 }
                 pw.flush(); pw.close();
@@ -1504,8 +1504,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      */
     private void setNextKeyUpdate(final long currentTime) {
         // Update cache time
-        // If m_valid_time == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
-        OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OCSPServletStandAloneSession.this.servlet.m_valid_time>0 ? currentTime+OCSPServletStandAloneSession.this.servlet.m_valid_time : Long.MAX_VALUE;
+        // If getSigningCertsValidTime() == 0 we set reload time to Long.MAX_VALUE, which should be forever, so the cache is never refreshed
+        OCSPServletStandAloneSession.this.servlet.mKeysValidTo = OcspConfiguration.getSigningCertsValidTime()>0 ? currentTime+OcspConfiguration.getSigningCertsValidTime() : Long.MAX_VALUE;
         m_log.debug("time: "+currentTime+" next update: "+OCSPServletStandAloneSession.this.servlet.mKeysValidTo);
     }
     /**

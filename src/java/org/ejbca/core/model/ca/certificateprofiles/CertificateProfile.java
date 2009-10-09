@@ -28,8 +28,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.config.ExtendedKeyUsageConfiguration;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.certextensions.standard.SeisCardNumber;
 import org.ejbca.util.CertTools;
@@ -88,9 +88,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 
-    public static final int TYPE_ENDENTITY  = CertificateDataBean.CERTTYPE_ENDENTITY;
-    public static final int TYPE_SUBCA      = CertificateDataBean.CERTTYPE_SUBCA;
-    public static final int TYPE_ROOTCA     = CertificateDataBean.CERTTYPE_ROOTCA;
+    public static final int TYPE_ENDENTITY  = SecConst.CERTTYPE_ENDENTITY;
+    public static final int TYPE_SUBCA      = SecConst.CERTTYPE_SUBCA;
+    public static final int TYPE_ROOTCA     = SecConst.CERTTYPE_ROOTCA;
     public static final int NUMBER_OF_TYPES = 3;
 
     /** Determines the access rights in CV Certificates. CV Certificates is used by EU EAC ePassports and

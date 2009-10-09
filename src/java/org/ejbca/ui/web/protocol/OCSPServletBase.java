@@ -104,7 +104,6 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private  boolean canlog =true;
 	protected final Admin m_adm = new Admin(Admin.TYPE_INTERNALUSER);
 	private final String m_sigAlg = OcspConfiguration.getSignatureAlgorithm();
-	private final boolean m_reqMustBeSigned = OcspConfiguration.getEnforceRequestSigning();
 	/** True if requests must be signed by a certificate issued by a list of trusted CA's*/
 	private final boolean m_reqRestrictSignatures = OcspConfiguration.getRestrictSignatures();
 	private final int m_reqRestrictMethod = OcspConfiguration.getRestrictSignaturesByMethod();
@@ -634,7 +633,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(ITransactionLogger.SIGN_SERIAL_NO, signercert.getSerialNumber().toByteArray());
 					transactionLogger.paramPut(ITransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
 					transactionLogger.paramPut(IPatternLogger.REPLY_TIME, ITransactionLogger.REPLY_TIME);
-					if (m_reqMustBeSigned) {
+					if (OcspConfiguration.getEnforceRequestSigning()) {
 						// If it verifies OK, check if it is revoked
 						final CertificateStatus status = getStatus(m_adm, CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
 						// If rci == null it means the certificate does not exist in database, we then treat it as ok,
@@ -667,7 +666,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						}
 					}
 				} else {
-					if (m_reqMustBeSigned) {
+					if (OcspConfiguration.getEnforceRequestSigning()) {
 						// Signature required
 						throw new SignRequestException("Signature required");
 					}

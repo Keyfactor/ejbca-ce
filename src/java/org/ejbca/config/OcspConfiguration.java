@@ -33,6 +33,17 @@ public class OcspConfiguration {
 
 	private static final Logger log = Logger.getLogger(OcspConfiguration.class);
 
+	public static final String SIGNING_CERTD_VALID_TIME                  = "ocsp.signingCertsValidTime";
+	public static final String SIGNATUREREQUIRED                         = "ocsp.signaturerequired";
+    public static final String STORE_PASSWORD                            = "ocsp.keys.storePassword";
+	public static final String CARD_PASSWORD                             = "ocsp.keys.cardPassword";
+    public static final String RENEW_TIMR_BEFORE_CERT_EXPIRES_IN_SECONDS = "ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds";
+    public static final String REKEYING_WSURL                            = "ocsp.rekeying.wsurl";
+	public static final String P11_PASSWORD                              = "ocsp.p11.p11password";
+	public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY          = "ocsp.activation.doNotStorePasswordsInMemory";
+    public static final String WSSWKEYSTOREPATH                          = "ocsp.rekeying.swKeystorePath";
+    public static final String WSSWKEYSTOREPASSWORD                      = "ocsp.rekeying.swKeystorePassword";
+
 	public static final int RESTRICTONISSUER = 0;
 	public static final int RESTRICTONSIGNER = 1;
 
@@ -43,7 +54,6 @@ public class OcspConfiguration {
 		return ConfigurationHolder.getString("ocsp.signaturealgorithm", "SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA");
 	}
 
-	public static final String SIGNING_CERTD_VALID_TIME= "ocsp.signingCertsValidTime";
     /**
 	 * The interval on which new OCSP signing certificates are loaded in seconds
 	 */
@@ -63,7 +73,7 @@ public class OcspConfiguration {
 	 * If set to true the Servlet will enforce OCSP request signing
 	 */
 	public static boolean getEnforceRequestSigning() {
-		String value = ConfigurationHolder.getString("ocsp.signaturerequired", "false");
+		String value = ConfigurationHolder.getString(SIGNATUREREQUIRED, "false");
 		return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
 	}
 
@@ -336,7 +346,6 @@ public class OcspConfiguration {
 	    return getStorePassword();
 	}
     
-    public final static String STORE_PASSWORD="ocsp.keys.storePassword";
 	/**
 	 * The password to all soft keystores.
 	 * @return the value of getKeyPassword() if property isn't set.
@@ -345,7 +354,6 @@ public class OcspConfiguration {
 		return ConfigurationHolder.getString(STORE_PASSWORD, null);
 	}
 	
-	public final static String CARD_PASSWORD="ocsp.keys.cardPassword";
     /**
 	 * The password for all keys stored on card.
 	 */
@@ -367,7 +375,6 @@ public class OcspConfiguration {
         return ConfigurationHolder.getString("ocsp.p11.sunConfigurationFile", "");
     }
 
-    public static final String RENEW_TIMR_BEFORE_CERT_EXPIRES_IN_SECONDS = "ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds";
     /**
      * @return time before the experation of the OCSP signing cert that the signing key should be renewed.
      */
@@ -384,7 +391,6 @@ public class OcspConfiguration {
         return -1;
     }
 
-    public final static String REKEYING_WSURL="ocsp.rekeying.wsurl";
     /**
      * @return EJBCA web service URL
      */
@@ -400,7 +406,6 @@ public class OcspConfiguration {
 		return ConfigurationHolder.getString("ocsp.p11.sharedLibrary", null);
 	}
 	
-	public static final String P11_PASSWORD="ocsp.p11.p11password";
     /**
      * P11 password.
 	 * @return The value
@@ -417,7 +422,6 @@ public class OcspConfiguration {
 		return ConfigurationHolder.getString("ocsp.p11.slot", "i1");
 	}
 
-	public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY="ocsp.activation.doNotStorePasswordsInMemory";
     /**
      * Should passwords be stored in memory.
      * @return True if password should not be stored in memory.
@@ -430,7 +434,6 @@ public class OcspConfiguration {
         return true;
     }
 
-    public static String WSSWKEYSTOREPATH = "ocsp.rekeying.swKeystorePath";
     /**
      * Path of the file to be used as SW keystore for the client certificate in the WS session when rekeying.
      * @return null if SW keystore should not be used.
@@ -439,7 +442,6 @@ public class OcspConfiguration {
         return ConfigurationHolder.getString(WSSWKEYSTOREPATH, null);
     }
 
-    public static String WSSWKEYSTOREPASSWORD = "ocsp.rekeying.swKeystorePassword";
     /**
      * @return
      */

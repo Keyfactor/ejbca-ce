@@ -33,6 +33,7 @@ import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -126,24 +127,24 @@ public class CertificateDataUtil {
         adapter.getLogger().trace(">findCertificatesByType()");
         if (null == admin
                 || type <= 0
-                || type > CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ENDENTITY + CertificateDataBean.CERTTYPE_ROOTCA) {
+                || type > SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY + SecConst.CERTTYPE_ROOTCA) {
             throw new IllegalArgumentException();
         }
         StringBuffer ctypes = new StringBuffer();
-        if ((type & CertificateDataBean.CERTTYPE_SUBCA) > 0) {
-            ctypes.append(CertificateDataBean.CERTTYPE_SUBCA);
+        if ((type & SecConst.CERTTYPE_SUBCA) > 0) {
+            ctypes.append(SecConst.CERTTYPE_SUBCA);
         }
-        if ((type & CertificateDataBean.CERTTYPE_ENDENTITY) > 0) {
+        if ((type & SecConst.CERTTYPE_ENDENTITY) > 0) {
             if (ctypes.length() > 0) {
                 ctypes.append(", ");
             }
-            ctypes.append(CertificateDataBean.CERTTYPE_ENDENTITY);
+            ctypes.append(SecConst.CERTTYPE_ENDENTITY);
         }
-        if ((type & CertificateDataBean.CERTTYPE_ROOTCA) > 0) {
+        if ((type & SecConst.CERTTYPE_ROOTCA) > 0) {
             if (ctypes.length() > 0) {
                 ctypes.append(", ");
             }
-            ctypes.append(CertificateDataBean.CERTTYPE_ROOTCA);
+            ctypes.append(SecConst.CERTTYPE_ROOTCA);
         }
 
         Connection con = null;
@@ -152,7 +153,7 @@ public class CertificateDataUtil {
         try {
             ArrayList vect;
             // Status 20 = CertificateDataBean.CERT_ACTIVE, 21 = CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION 
-            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE (status="+CertificateDataBean.CERT_ACTIVE+" or status="+CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION+") AND ");
+            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE (status="+SecConst.CERT_ACTIVE+" or status="+SecConst.CERT_NOTIFIEDABOUTEXPIRATION+") AND ");
             stmt.append(" type IN (");
             stmt.append(ctypes.toString());
             stmt.append(')');
@@ -191,6 +192,34 @@ public class CertificateDataUtil {
             JDBCUtil.close(con, ps, result);
         }
     } // findCertificatesByType
+    
+    public static Collection findCertificatesByUsername(Admin admin, String username, CertificateDataLocalHome certHome, Adapter adapter) {
+    	if (adapter.getLogger().isTraceEnabled()) {
+    		adapter.getLogger().trace(">findCertificatesByUsername(),  username=" + username);
+    	}
+        try {
+            // Strip dangerous chars
+            username = StringTools.strip(username);
+
+            // This method on the entity bean does the ordering in the database
+            Collection coll = certHome.findByUsername(username);
+            ArrayList ret = new ArrayList();
+
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.add(((CertificateDataLocal) iter.next()).getCertificate());
+                }
+            }
+        	if (adapter.getLogger().isTraceEnabled()) {
+        		adapter.getLogger().trace("<findCertificatesByUsername(), username=" + username);
+        	}
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        }
+    } // findCertificatesByUsername
+
 
     static public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno,
                                               CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
@@ -214,7 +243,7 @@ public class CertificateDataUtil {
                 	if (protectHome != null) {
                 		verifyProtection(data, protectHome, adapter);
                 	}
-                    final CertificateStatus result = CertificateStatus.getIt(data);
+                    final CertificateStatus result = getIt(data);
                 	if (adapter.getLogger().isTraceEnabled()) {
                 		adapter.getLogger().trace("<getStatus() returned " + result + " for cert number "+serno);
                 	}
@@ -230,6 +259,19 @@ public class CertificateDataUtil {
         return CertificateStatus.NOT_AVAILABLE;
     } //isRevoked
     
+    public final static CertificateStatus getIt( CertificateDataLocal data) {
+        if ( data == null ) {
+            return CertificateStatus.NOT_AVAILABLE;
+        }
+        Integer pId = data.getCertificateProfileId();
+        if (pId == null) {
+        	pId = Integer.valueOf(SecConst.CERTPROFILE_NO_PROFILE);
+        }
+        if ( data.getStatus() != SecConst.CERT_REVOKED ) {
+            return new CertificateStatus(CertificateStatus.OK.toString(), pId.intValue());
+        }
+        return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), pId.intValue());
+    }
 
     static public void verifyProtection(Admin admin, String issuerDN, BigInteger serno,
     		CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {

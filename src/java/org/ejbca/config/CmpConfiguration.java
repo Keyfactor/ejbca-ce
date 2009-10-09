@@ -15,6 +15,7 @@ package org.ejbca.config;
 
 public class CmpConfiguration {
 	
+	public static final String CONFIG_DEFAULTCA               = "cmp.defaultca";
 	public static final String CONFIG_ALLOWRAVERIFYPOPO       = "cmp.allowraverifypopo";
 	public static final String CONFIG_OPERATIONMODE           = "cmp.operationmode";
 	public static final String CONFIG_RA_AUTHENTICATIONSECRET = "cmp.ra.authenticationsecret";
@@ -27,7 +28,7 @@ public class CmpConfiguration {
 	}
 	
 	public static String getDefaultCA() {
-		return ConfigurationHolder.getString("cmp.defaultca", null);
+		return ConfigurationHolder.getString(CONFIG_DEFAULTCA, null);
 	}
 	
 	public static String getExtractUsernameComponent() {
