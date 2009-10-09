@@ -50,7 +50,7 @@
     <property name="mod.ejbca-interface.path" location="${mod.path}/ejbca-interface" />
     <property name="mod.ejbca-interface.lib" location="${mod.dist.path}/ejbca-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
-    <property name="mod.cli-ws.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
+    <property name="mod.ejbca-ws-cli.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
 
 	<!-- Files of global interest -->
     <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
@@ -118,6 +118,13 @@
 
 	<target name="ejbca-util">
 		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-util.jar" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-ws-cli-lib">
+		<!-- There is a lot of dependencies to build this little library.. -->
+		<ant dir="${ejbca.home}" antfile="build.xml" target="compile" inheritall="false"/>
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build" inheritall="false"/>
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build.client" inheritall="false"/>
 	</target>
 
 	<!-- Clean all modules-->

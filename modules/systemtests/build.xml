@@ -19,10 +19,10 @@
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
     	<path refid="lib.ejbca-util.classpath"/>
     	<pathelement location="${mod.ejbca-interface.lib}"/>
-    	<pathelement location="${mod.cli-ws.lib}"/>
+    	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 	</path>
 	
-    <target name="build" description="Build this module" depends="compile">
+    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, compile">
 		<mkdir dir="${build.dir}"/>
     </target>
 

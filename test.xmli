@@ -29,6 +29,10 @@
 
     <target name="test:run" description="run both stand-alone JUnit test cases and system test">
     	<antcall target="test:runsa" />
+    	<antcall target="test:runsys" />
+    </target>
+
+    <target name="test:runsys" description="run system test">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
     </target>
 
