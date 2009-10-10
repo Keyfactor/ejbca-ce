@@ -342,7 +342,8 @@
 			<param name="ejbca-cli.arg" value="ocspTestSigner"/>
 		</antcall>
 		<mkdir dir="${build.dir}/keys"/>
-		<copy file="${this.dir}/p12/ocspTestSigner.p12" todir="${build.dir}/keys"/>
+		<copy file="${this.dir}/p12/ocspTestSigner.p12" todir="${build.dir}/keys" failonerror="false"/>
+		<copy file="${ejbca.home}/p12/ocspTestSigner.p12" todir="${build.dir}/keys" failonerror="false"/>
 		<delete verbose="true" includeEmptyDirs="true" dir="${this.dir}/p12" />
 		<echo>
 			Configure ocsp.properties:
@@ -358,7 +359,9 @@
 			 ocsp.untilNextUpdate=5
 			 ocsp.maxAge=4
 			and redeploy using 'ant ocsp-deploy'.
-		</echo>			
+		</echo>
+		<available file="${build.dir}/keys/ocspTestSigner.p12" property="noOcspTestSigner" />
+		<fail unless="noOcspTestSigner" message="Could not batch generate OCSP signing keystore."/>
 	</target>
 
 	<target name="runocsp" depends="ejbca-util" description="Run stand alone OCSP test">
