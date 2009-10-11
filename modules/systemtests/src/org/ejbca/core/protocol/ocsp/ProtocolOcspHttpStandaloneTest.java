@@ -221,7 +221,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         	}
         }
         String eTag = con.getHeaderField("ETag");
-        assertNotNull("RFC 5019 6.2: No 'ETag' HTTP header present as it SHOULD. (Make sure ocsp.nextUpdate is configured for this test)", eTag);
+        assertNotNull("RFC 5019 6.2: No 'ETag' HTTP header present as it SHOULD. (Make sure ocsp.untilNextUpdate is configured for this test)", eTag);
         assertTrue("ETag is messed up.", ("\"" + new String(Hex.encode(MessageDigest.getInstance("SHA-1", "BC").digest(response.getEncoded()))) + "\"").equals(eTag));
         long date = con.getHeaderFieldDate("Date", -1);
         assertTrue("RFC 5019 6.2: No 'Date' HTTP header present as it SHOULD.", date != -1);
@@ -292,8 +292,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         Date thisUpdate = singleResps[0].getThisUpdate();
         Date nextUpdate = singleResps[0].getNextUpdate();
         Date producedAt = brep.getProducedAt();
-        assertNotNull("thisUpdate was not set. (This test requires ocsp.nextUpdate to be configured.)", thisUpdate);
-        assertNotNull("nextUpdate was not set.", nextUpdate);
+        assertNotNull("thisUpdate was not set.", thisUpdate);
+        assertNotNull("nextUpdate was not set. (This test requires ocsp.untilNextUpdate to be configured.)", nextUpdate);
         assertNotNull("producedAt was not set.", producedAt);
         assertTrue("nextUpdate cannot be before thisUpdate.", !nextUpdate.before(thisUpdate));
         assertTrue("producedAt cannot be before thisUpdate.", !producedAt.before(thisUpdate));
