@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="modules" default="showhelp">
+    <description>
+		Holds targets for building all the different modules. These targets are
+    	invoked from other modules that depend on them.
+    </description>
+	
+	<!-- Get the correct relative path when this file is imported. -->
+	<dirname property="modules.basedir" file="${ant.file.modules}"/>
+	<echo message="${modules.basedir}"></echo>
+	
+	<import file="${modules.basedir}/build-properties.xml"/>
+	<import file="${modules.basedir}/build-helpers.xml"/>
+
+    <target name="showhelp">
+        <echo message="Run 'ant -p' to see the available targets." />
+    </target>
+
+	<target name="clean" description="Clean all modules">
+		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
+	</target>
+	
+	<target name="ejbca-ejb-interface" description="Build EJBCA EJB interfaces library">
+		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-util" description="Build EJBCA util library">
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-util.jar" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-ws-cli-lib" description="Build EJBCA WS CLI library">
+		<!--
+			There is a lot of dependencies to build this little library..
+			TODO: Correct ws.build.client dependencies so we don't have to do three ant calls.
+		-->
+		<ant dir="${ejbca.home}" antfile="build.xml" target="compile" inheritall="false"/>
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build" inheritall="false"/>
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build.client" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-xkms-cli-lib" description="Build EJBCA XKMS CLI library">
+		<ant dir="${ejbca.home}" antfile="build.xml" target="xkms.client" inheritall="false"/>
+	</target>
+
+</project>

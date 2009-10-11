@@ -4,17 +4,17 @@
             This module currently just extracts the EJB 2.1 interfaces into a JAR.
     </description>
 	
-	<import file="../build-props.xml"/>
+	<dirname property="this.dir" file="${ant.file.ejbca-interface}"/>
+	<import file="${this.dir}/../build.xml"/>
 	
-	<property name="this.dir" location="${mod.ejbca-interface.path}"/>
-	<property name="build.dir" location="${mod.ejbca-interface.path}/build"/>
-	<property name="src.dir" location="${mod.ejbca-interface.path}/src"/>
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
 	
     <!-- ================================= 
           sumthing sumthing
          ================================= -->
     <target name="build" description="Build this module" depends="compile">
-    	<jar destfile="${mod.ejbca-interface.lib}">
+    	<jar destfile="${mod.ejbca-ejb-interface.lib}">
 			<fileset dir="${ejbca.home}/tmp/bin/classes">
 				<include name="org/ejbca/core/ejb/**/I*.class"/>
 				<include name="org/ejbca/core/ejb/protect/TableProtectSession*.class"/>
@@ -28,7 +28,7 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete file="${mod.ejbca-interface.lib}"/>
+		<delete file="${mod.ejbca-ejb-interface.lib}"/>
     </target>
 
     <target name="compile">

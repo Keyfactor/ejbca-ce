@@ -4,9 +4,9 @@
             This module contains all system tests that require a running application server.
     </description>
 	
-	<import file="../build-props.xml"/>
+	<dirname property="this.dir" file="${ant.file.systemtests}"/>
+	<import file="${this.dir}/../build.xml"/>
 	
-	<property name="this.dir" location="${mod.systemtests.path}"/>
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
@@ -18,7 +18,7 @@
     	<path refid="lib.bouncycastle.classpath"/>
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
     	<path refid="lib.ejbca-util.classpath"/>
-    	<pathelement location="${mod.ejbca-interface.lib}"/>
+    	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
     	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
     	<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
 	</path>
@@ -32,7 +32,7 @@
 		<delete dir="${this.dir}/reports" />
     </target>
 
-    <target name="compile" depends="assert-notinproduction, ejbca-interface">
+    <target name="compile" depends="assert-notinproduction, ejbca-ejb-interface">
     	<!--
     	<property name="debug-systemtests.classpath" refid="systemtests.classpath"/>
     	<echo message="systemtests.classpath = ${debug-systemtests.classpath}"/>

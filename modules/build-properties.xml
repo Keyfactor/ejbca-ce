@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="build-props">
+<project name="build-properties">
     <description>
             This file load property files and keeps track of different paths. It should not be run directly. 
     </description>
+
 	<!-- Get the correct relative path when this file is imported. -->
-	<dirname property="build-props.basedir" file="${ant.file.build-props}"/>
-    <property file="${build-props.basedir}/../src/internal.properties" />
-    <property name="ejbca.home" location="${build-props.basedir}/.." />
+	<dirname property="build-properties.basedir" file="${ant.file.build-properties}"/>
+    <property file="${build-properties.basedir}/../src/internal.properties" />
+    <property name="ejbca.home" location="${build-properties.basedir}/.." />
     <property environment="env" />
 	<!--
 		Merge custom modifications from customejbca.home to
@@ -47,8 +48,8 @@
     <property name="mod.path" location="${ejbca.home}/modules" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
-    <property name="mod.ejbca-interface.path" location="${mod.path}/ejbca-interface" />
-    <property name="mod.ejbca-interface.lib" location="${mod.dist.path}/ejbca-interface.jar" />
+    <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
+    <property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-ejb-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
     <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.home}/dist/xkmscli/xkmscli.jar" />
@@ -110,65 +111,7 @@
 	</path>
 
     <!-- Now when everything is set up, we can load the old property defaults -->
-	<import file="${build-props.basedir}/../propertyDefaults.xml"/>
+	<import file="${build-properties.basedir}/../propertyDefaults.xml"/>
 
-	<!-- The different build target for easy dependency inclusion -->	
-	<target name="ejbca-interface">
-		<ant antfile="${mod.ejbca-interface.path}/build.xml" target="build" inheritall="false"/>
-	</target>
-
-	<target name="ejbca-util">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-util.jar" inheritall="false"/>
-	</target>
-
-	<target name="ejbca-ws-cli-lib">
-		<!-- There is a lot of dependencies to build this little library.. -->
-		<ant dir="${ejbca.home}" antfile="build.xml" target="compile" inheritall="false"/>
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build" inheritall="false"/>
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build.client" inheritall="false"/>
-	</target>
-
-	<target name="ejbca-xkms-cli-lib">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="xkms.client" inheritall="false"/>
-	</target>
-
-	<!-- Clean all modules-->
-	<target name="clean">
-		<ant antfile="${mod.ejbca-interface.path}/build.xml" target="clean" inheritall="false"/>
-		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
-	</target>
-
-	<!-- Common helper tasks -->
-	<target name="showtime" >
-		<tstamp>
-			<format property="currenttime" pattern="yyyy-MM-dd HH:mm:ss Z"/>
-		</tstamp>
-		<echo message="Current time is ${currenttime}."/>
-	</target>
-	
-	<target name="ejbca-cli">
-		<fail message="ejbca-cli.name is not set." unless="ejbca-cli.name" />
-		<fail message="ejbca-cli.arg is not set." unless="ejbca-cli.arg" />
-		<path id="ejbca-cli.classpath">
-			<pathelement path="${ejbca.home}/bin"/>	<!-- jndi.properties -->	<!-- log4j.xml -->
-			<pathelement path="${ejbca.home}/tmp/bin/classes"/>
-			<fileset dir="${ejbca.home}/lib" includes="*.jar"/>
-			<fileset dir="${appserver.home}">
-				<!-- jboss -->
-				<include name="client/*.jar"/>
-				<!-- glassfish -->
-				<include name="lib/*.jar"/>
-				<!-- weblogic -->
-				<include name="server/lib/weblogic.jar"/>
-				<!-- oracle -->
-				<include name="j2ee/home/oc4jclient.jar"/>
-				<!-- websphere -->
-				<include name="runtimes/com.ibm.*.jar"/>
-			</fileset>
-		</path>
-		<java classname="org.ejbca.ui.cli.${ejbca-cli.name}" classpathref="ejbca-cli.classpath" fork="true">
-			<arg line="${ejbca-cli.arg}"/>
-		</java>
-	</target>
 
 </project>

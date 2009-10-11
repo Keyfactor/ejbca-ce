@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-helpers" >
+    <description>
+            This file contains common helper targets
+    </description>
+
+	<target name="showtime" >
+		<tstamp>
+			<format property="currenttime" pattern="yyyy-MM-dd HH:mm:ss Z"/>
+		</tstamp>
+		<echo message="Current time is ${currenttime}."/>
+	</target>
+	
+	<target name="ejbca-cli">
+		<fail message="ejbca-cli.name is not set." unless="ejbca-cli.name" />
+		<fail message="ejbca-cli.arg is not set." unless="ejbca-cli.arg" />
+		<path id="ejbca-cli.classpath">
+			<pathelement path="${ejbca.home}/bin"/>	<!-- jndi.properties -->	<!-- log4j.xml -->
+			<pathelement path="${ejbca.home}/tmp/bin/classes"/>
+			<fileset dir="${ejbca.home}/lib" includes="*.jar"/>
+			<fileset dir="${appserver.home}">
+				<!-- jboss -->
+				<include name="client/*.jar"/>
+				<!-- glassfish -->
+				<include name="lib/*.jar"/>
+				<!-- weblogic -->
+				<include name="server/lib/weblogic.jar"/>
+				<!-- oracle -->
+				<include name="j2ee/home/oc4jclient.jar"/>
+				<!-- websphere -->
+				<include name="runtimes/com.ibm.*.jar"/>
+			</fileset>
+		</path>
+		<java classname="org.ejbca.ui.cli.${ejbca-cli.name}" classpathref="ejbca-cli.classpath" fork="true">
+			<arg line="${ejbca-cli.arg}"/>
+		</java>
+	</target>
+</project>

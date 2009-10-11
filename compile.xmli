@@ -140,7 +140,7 @@ xkms.serviceport                = ${xkms.serviceport}
         <delete file="${mainbin}/jndi.properties" />
         <delete file="${mainsrc}/java/jndi.properties" />
         <delete file="velocity.log" />
-        <ant antfile="modules/build-props.xml" target="clean" inheritall="false"/>
+        <ant antfile="modules/build.xml" target="clean" inheritall="false"/>
     </target>
 
     <!-- =================================================================== -->
