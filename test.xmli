@@ -7,9 +7,8 @@
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="jpa.classpath" />
             <classpath refid="test.compile.classpath" />
-        	<exclude name="org/ejbca/core/protocol/ws/*" />
-        	<exclude name="org/ejbca/core/protocol/xkms/*" />
         	<exclude name="org/ejbca/ui/cli/TestOcspMonitoringTool.java" />
+        	<exclude name="org/ejbca/core/protocol/xkms/*" />
         </javac>
         <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
         <copy file="${src.java}/jndi.properties" todir="${test.dir}" failonerror="false"/>

@@ -351,11 +351,6 @@
 			 ocsp.usecasigningcert=false
 			 ocsp.keys.dir=${build.dir}/keys
 			 ocsp.keys.storePassword=foo123
-			 ocsp-datasource.jndi-name=OcspDS
-			 ocsp-database.url=${database.url}
-			 ocsp-database.driver=${database.driver}
-			 ocsp-database.username=${database.username}
-			 ocsp-database.password=${database.password}
 			 ocsp.untilNextUpdate=5
 			 ocsp.maxAge=4
 			and redeploy using 'ant ocsp-deploy'.
