@@ -65,7 +65,7 @@
 		  </apt>
 	</target>
 
-    <target depends="ws.init" name="ws.build">
+    <target name="ws.build" depends="compile, ws.init">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="on"  destdir="${build}" >
             <src path="${src.java}"/>
@@ -184,7 +184,7 @@
         </wsimport>
     </target>
 	
-    <target name="ws.build.client" depends="ws.init, ejbca-util.jar">
+    <target name="ws.build.client" depends="ws.build, ws.init, ejbca-util.jar">
         <javac debug="true" destdir="tmp/jaxws/gen-classes/client" >
             <src path="src/jaxws/gen-java/client"/>
             <classpath refid="jaxws.client.classpath"/>        	
@@ -267,7 +267,7 @@
     <target name="ejbcaws.client" depends="ejbcawsconditioncheck,ws.build.client" if="ejbcawsconditioncheck" description="Build the EJBCA WS-API client"/>
 
     <!-- Compile JAXWS JUnit testcases -->
-    <target name="test:compilews" depends="ws.build, ws.build.client">
+    <target name="test:compilews" depends="ws.build.client">
         <mkdir dir="${test.dir}" />
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="jaxws.test.classpath" />
