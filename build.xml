@@ -418,6 +418,7 @@
                     <include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.class"/>
                     <include name="org/ejbca/core/protocol/ocsp/CertificateCache.class"/>
                     <include name="org/ejbca/core/protocol/ocsp/OCSPUtil.class"/>
+                    <include name="org/ejbca/core/protocol/ocsp/OCSPUnidResponse.class"/>
                 </fileset>
             	<fileset dir="${src}/java">
             	    <include name="dncomponents.properties"/>
@@ -957,83 +958,7 @@
     -->
 
     <target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
-        <mkdir dir="${clientToolBox.build}"/>
-        <copy todir="${clientToolBox-dist.dir}/endorsed">
-            <fileset dir="${lib}/jaxws">
-                <include name="jaxb*.jar"/>
-                <include name="saaj-*.jar"/>
-                <include name="jaxws-api.jar"/>
-                <include name="jaxws-rt.jar"/>
-                <include name="sjsxp.jar"/>
-                <include name="jsr181-api.jar"/>
-                <include name="jsr173_api.jar"/>
-                <include name="activation.jar"/>
-            </fileset>
-        </copy>
-        <copy todir="${clientToolBox-dist.dir}/lib">
-            <fileset dir="${lib}">
-                <include name="log4j.jar"/>
-                <include name="bcprov-jdk${java.ver}.jar"/>
-                <include name="commons-lang-2.4.jar"/>
-                <include name="bcmail-jdk${java.ver}.jar"/>
-                <include name="cert-cvc.jar"/>
-                <include name="ldap.jar"/>
-                <include name="jline-0.9.94.jar"/>
-                <include name="commons-collections-3.2.jar"/><!-- Hibernate + Commons Config dependency -->
-                <include name="commons-configuration-1.5.jar"/>
-                <include name="commons-logging.jar"/>
-            </fileset>
-            <fileset dir="${lib}/xdoclet/lib">
-                <include name="dom4j-1.6.1.jar"/><!-- Hibernate dependency -->
-            </fileset>
-        	<!-- These are also defined in propertiesAndPaths.xmli as jpa.classpath -->
-            <fileset dir="${lib}/hibernate">
-                <include name="antlr-2.7.6.jar"/>
-                <include name="hibernate3.jar"/>
-                <include name="hibernate-core.jar"/>
-                <include name="hibernate-annotations.jar"/>
-                <include name="hibernate-commons-annotations.jar"/>
-                <include name="hibernate-entitymanager.jar"/>
-                <include name="javassist-3.4.GA.jar"/>
-                <include name="ejb3-persistence.jar"/>
-                <include name="slf4j-api-1.5.2.jar"/>
-                <include name="slf4j-log4j12.jar"/>
-                <include name="jta-1.1.jar"/>
-                <include name="*.txt"/>
-            </fileset>
-        </copy>
-        <copy todir="${clientToolBox-dist.dir}">
-            <fileset file="${mainsrc}/jaxws/cli/ejbcawsracli.properties"/>
-            <fileset dir="${mainsrc}/clientToolBox"/>
-        </copy>
-        <chmod file="${clientToolBox-dist.dir}/*.sh" perm="a+rx"/>
-        <copy todir="${src.java}">
-            <fileset dir="${mainsrc}/java" />
-        </copy>
-        <javac destdir="${clientToolBox.build}" debug="on">
-            <include name="org/ejbca/ui/cli/ClientToolBox.java" />
-            <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
-            <include name="org/ejbca/core/protocol/ws/client/cvcwscli.java" />
-            <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
-            <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
-            <classpath>
-                <fileset dir="${clientToolBox-dist.dir}/lib" />
-                <fileset dir="${clientToolBox-dist.dir}/endorsed" />
-            </classpath>
-            <src path="${src.java}" />
-            <src path="${mainsrc}/jaxws/gen-java/client" />
-            <src path="${mainsrc}/ejbca-entities" />
-        </javac>
-        <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
-            <fileset dir="${clientToolBox.build}"/>
-            <fileset dir="${mainsrc}">
-                <include name="intresources/**"/>
-            </fileset>
-            <fileset dir="${mainsrc}/java">
-                <include name="dncomponents.properties"/>
-                <include name="profilemappings.properties"/>
-            </fileset>  
-        </jar>
+    	<ant antfile="build.xml" dir="modules/clientToolBox" target="build" />
     </target>
 	
 	<target name="showtime" >

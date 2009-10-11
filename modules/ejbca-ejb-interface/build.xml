@@ -19,8 +19,6 @@
 				<include name="org/ejbca/core/ejb/**/I*.class"/>
 				<include name="org/ejbca/core/ejb/protect/TableProtectSession*.class"/>
 				<include name="org/ejbca/core/ejb/config/ConfigurationSession*.class"/>
-				<!--
-				-->
 				<exclude name="org/ejbca/core/ejb/InitialContextBuilder.class"/>
 			</fileset>
     	</jar>

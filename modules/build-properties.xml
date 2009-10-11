@@ -48,11 +48,16 @@
     <property name="mod.path" location="${ejbca.home}/modules" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
+    <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
+    <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
     <property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-ejb-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
     <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.home}/dist/xkmscli/xkmscli.jar" />
+    <property name="mod.clientToolBox.dist" location="${ejbca.home}/clientToolBox-dist" />
+    <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
+    <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
 
 	<!-- Files of global interest -->
     <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
@@ -93,6 +98,7 @@
 			<include name="runtimes/com.ibm.*.jar"/>
 		</fileset>
 	</path>
+	
 	<path id="lib.ejbca-util.classpath">
     	<pathelement location="${ejbca.home}/lib/cert-cvc.jar"/>
     	<pathelement location="${mod.ejbca-util.lib}"/>
@@ -108,6 +114,32 @@
 
 	<path id="lib.ldap.classpath">
     	<pathelement location="${ejbca.home}/lib/ldap.jar"/>
+	</path>
+	
+	<path id="lib.jpa.classpath">
+        <fileset dir="${ejbca.home}/lib/xdoclet/lib" includes="dom4j-1.6.1.jar.jar"/>
+        <fileset dir="${ejbca.home}/lib/hibernate">
+            <include name="antlr-2.7.6.jar"/>
+            <include name="hibernate3.jar"/>
+            <include name="hibernate-core.jar"/>
+            <include name="hibernate-annotations.jar"/>
+            <include name="hibernate-commons-annotations.jar"/>
+            <include name="hibernate-entitymanager.jar"/>
+            <include name="hibernate-validator.jar"/>
+            <include name="javassist-3.4.GA.jar"/>
+            <include name="ejb3-persistence.jar"/>
+            <include name="slf4j-api-1.5.2.jar"/>
+            <include name="slf4j-log4j12.jar"/>
+            <include name="jta-1.1.jar"/>
+        </fileset>
+	</path>
+
+	<path id="lib.clientToolBox.classpath">
+        <path location="${mod.clientToolBox.dist}/properties" />
+        <path location="${mod.clientToolBox.lib}" />
+        <path>
+			<fileset dir="${mod.clientToolBox.dist}/lib" includes="*.jar" />
+		</path>
 	</path>
 
     <!-- Now when everything is set up, we can load the old property defaults -->

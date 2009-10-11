@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ejbca-entity" default="build">
+    <description>
+            Contains all JPA entity classes
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.ejbca-entity}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+
+    <target name="build" description="Build this module" depends="compile">
+    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class"/>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete file="${mod.ejbca-entity.lib}" />
+    </target>
+	
+    <target name="compile" depends="ejbca-util">
+    	<mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+    		<classpath>
+    			<path refid="lib.utils.classpath"/>
+    			<path refid="lib.jpa.classpath"/>
+       			<path refid="lib.ejbca-util.classpath"/>
+    		</classpath>
+		</javac>
+    </target>
+
+</project>

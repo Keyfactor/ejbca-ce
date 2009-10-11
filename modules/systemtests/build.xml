@@ -15,24 +15,25 @@
     	<path refid="lib.junit.classpath"/>
     	<path refid="lib.utils.classpath"/>
     	<path refid="lib.jee.classpath"/>
+    	<path refid="lib.jpa.classpath"/>
     	<path refid="lib.bouncycastle.classpath"/>
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
     	<path refid="lib.ejbca-util.classpath"/>
     	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
+    	<pathelement location="${mod.ejbca-entity.lib}"/>
     	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
     	<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
+    	<pathelement location="${mod.clientToolBox.lib}"/>
 	</path>
 	
-    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, ejbca-xkms-cli-lib, compile">
-		<mkdir dir="${build.dir}"/>
-    </target>
+    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, ejbca-xkms-cli-lib, compile"/>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${this.dir}/reports" />
     </target>
 
-    <target name="compile" depends="assert-notinproduction, ejbca-ejb-interface">
+    <target name="compile" depends="assert-notinproduction, ejbca-entity, ejbca-ejb-interface, clientToolBox">
     	<!--
     	<property name="debug-systemtests.classpath" refid="systemtests.classpath"/>
     	<echo message="systemtests.classpath = ${debug-systemtests.classpath}"/>
@@ -365,7 +366,7 @@
 	<target name="runocsp" depends="ejbca-util" description="Run stand alone OCSP test">
 		<echo>
 			Hint: For a simple test using the EJBCA database you can use 'ant runocsp.setuptest'
-			first when EJBCA is deployed in CA mode to setup the database for this test.
+			when EJBCA is deployed in CA mode to setup the database for this test.
 		</echo>
 		<condition property="runocsp.warning" else=""
 			value="WARNING: EJBCA/OCSP must be deployed with ocsp.untilNextUpdate configured for all OCSP tests to succeed.">
@@ -376,4 +377,29 @@
     	<property name="reports.dir" location="${reports.base.dir}/runocsp"/>
 		<antcall target="runone-internal"/>
 	</target>
+	
+    <target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
+		<echo message="Use ejbca-custom/clientToolBox-dist/lib for your JDBC driver and ejbca-custom/clientToolBox-dist/properties/META-INF/persistence.xml for your modified database config."/>
+    	<property name="reports.dir" location="${reports.base.dir}/ctb"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<junit printsummary="yes" haltonfailure="no">
+			<classpath>
+				<path location="${build.dir}" />
+                <path refid="lib.clientToolBox.classpath" />
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build.dir}">
+                    <include name="org/ejbca/ui/cli/TestOcspMonitoringTool.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+    	<antcall target="createreport"/>
+    	<!--
+    	<property name="debug-systemtests.classpath" refid="lib.clientToolBox.classpath"/>
+    	<echo message="lib.clientToolBox.classpath = ${debug-systemtests.classpath}"/>
+    	-->
+   	</target>
+
 </project>

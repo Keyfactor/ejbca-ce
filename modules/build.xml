@@ -18,22 +18,45 @@
 
 	<target name="clean" description="Clean all modules">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 	
+	<target name="ejbca-entity" description="Build EJBCA JPA entity library">
+		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
 	<target name="ejbca-ejb-interface" description="Build EJBCA EJB interfaces library">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
+	<target name="clientToolBox" depends="ejbca-entity" description="Build EJBCA client toolbox">
+		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control. -->
 	<target name="ejbca-util" description="Build EJBCA util library">
+		<available file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.exists"/>
+		<antcall target="ejbca-util-internal"/>
+	</target>
+	<target name="ejbca-util-internal" unless="mod.ejbca-util.lib.exists">
 		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-util.jar" inheritall="false"/>
 	</target>
 
 	<target name="ejbca-ws-cli-lib" description="Build EJBCA WS CLI library">
+		<available file="${mod.ejbca-ws-cli.lib}" property="mod.ejbca-ws-cli.lib.exists"/>
+		<antcall target="ejbca-ws-cli-internal"/>
+	</target>
+	<target name="ejbca-ws-cli-internal" unless="mod.ejbca-ws-cli.lib.exists">
 		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build.client" inheritall="false"/>
 	</target>
 
 	<target name="ejbca-xkms-cli-lib" description="Build EJBCA XKMS CLI library">
+		<available file="${mod.ejbca-xkms-cli.lib}" property="mod.ejbca-xkms-cli.lib.exists"/>
+		<antcall target="ejbca-xkms-cli-internal"/>
+	</target>
+	<target name="ejbca-xkms-cli-internal" unless="mod.ejbca-xkms-cli.lib.exists">
 		<ant dir="${ejbca.home}" antfile="build.xml" target="xkms.client" inheritall="false"/>
 	</target>
 

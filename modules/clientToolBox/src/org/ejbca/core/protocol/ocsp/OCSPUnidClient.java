@@ -62,6 +62,8 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RespID;
+import org.ejbca.core.protocol.ocsp.FnrFromUnidExtension;
+import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
