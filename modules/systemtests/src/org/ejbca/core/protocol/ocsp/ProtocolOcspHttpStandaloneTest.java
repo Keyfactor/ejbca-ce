@@ -163,6 +163,31 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         int reason = rev.getRevocationReason();
         log.trace("<test03OcspRevoked()");
     }
+    
+    public void test04OcspUnknown() throws Exception {
+    	loadUserCert(caid);
+    	super.test04OcspUnknown();
+    }
+
+    public void test05OcspUnknownCA() throws Exception {
+    	super.test05OcspUnknownCA();
+    }
+
+    public void test06OcspSendWrongContentType() throws Exception {
+    	super.test06OcspSendWrongContentType();
+    }
+
+    public void test10MultipleRequests() throws Exception {
+    	super.test10MultipleRequests();
+    }
+    
+    public void test11MalformedRequest() throws Exception {
+    	super.test11MalformedRequest();
+    }
+
+    public void test12CorruptRequests() throws Exception {
+    	super.test12CorruptRequests();
+    }
 
     /**
      * Just verify that a both escaped and non-encoded GET requests work.
@@ -191,12 +216,20 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         assertNotNull("Response should not be null.", response);
         assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
     }
+
+    public void test14CorruptGetRequests() throws Exception {
+    	super.test14CorruptGetRequests();
+    }
     
+    public void test15MultipleGetRequests() throws Exception {
+    	super.test15MultipleGetRequests();
+    }
+
     /**
      * Verify the headers of a successful GET request.
      * ocsp.untilNextUpdate has to be configured for this test.
      */
-    public void test16VerifyHttpGetHeaders() throws Exception {
+    public void test17VerifyHttpGetHeaders() throws Exception {
         final X509Certificate ocspTestCert = getTestCert(false);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -259,7 +292,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
      * Tests nextUpdate and thisUpdate
      * ocsp.untilNextUpdate has to be configured for this test.
      */
-    public void test17NextUpdateThisUpdate() throws Exception {
+    public void test18NextUpdateThisUpdate() throws Exception {
         final X509Certificate ocspTestCert = getTestCert(false);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
