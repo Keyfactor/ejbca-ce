@@ -49,11 +49,12 @@
         </wsimport>
 	</target>
 	
-    <target name="xkms.build" depends="xkms.init, preprocess">
+    <target name="xkms.build" depends="xkms.init, preprocess, compile">
         <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/xkms/gen-classes" >
             <src path="src/xkms/gen-java"/>
             <classpath refid="xkms.classpath"/>        	
         </javac>
+        <mkdir dir="${build}" />
         <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
             <classpath refid="xkms.classpath"/>
         	<include name="org/ejbca/core/protocol/xkms/client/*.java"/>

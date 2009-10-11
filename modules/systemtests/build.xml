@@ -20,9 +20,10 @@
     	<path refid="lib.ejbca-util.classpath"/>
     	<pathelement location="${mod.ejbca-interface.lib}"/>
     	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
+    	<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
 	</path>
 	
-    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, compile">
+    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, ejbca-xkms-cli-lib, compile">
 		<mkdir dir="${build.dir}"/>
     </target>
 
@@ -152,12 +153,13 @@
 					<exclude name="org/ejbca/core/ejb/ca/caadmin/TestCAs.class" />
 					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignSession.class" />
 					<exclude name="org/ejbca/core/ejb/ca/caadmin/TestRemoveCA.class" />
-					<!-- Non-test classes test -->
+					<!-- Non-test classes -->
 					<exclude name="org/ejbca/core/protocol/ws/CommonEjbcaWSTest.class" />
 					<exclude name="org/ejbca/util/TestTools.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CmpTestCase.class" />
 					<exclude name="org/ejbca/ui/web/pub/cluster/WebEjbcaHealthRunner.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/OcspJunitHelper.class" />
+					<exclude name="org/ejbca/core/protocol/xkms/Constants.class" />
 					<!-- Tests that take a very long time to complete -->
 					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignLotsOfCerts.class" />
 					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignLotsOfCerts$SignTester.class" />
@@ -175,6 +177,7 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$1.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
+					<exclude name="org/ejbca/core/protocol/xkms/TestXKMSSig.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />

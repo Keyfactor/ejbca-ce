@@ -27,7 +27,7 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
- * Class containing constans common for unit tests.
+ * Class containing constants common for unit tests.
  * 
  * @author Philip Vendil
  * $Id$
