@@ -4464,6 +4464,10 @@ Publisher Settings:
 <li>'Current length' - displays the number of new entries in the queue in the intervals &lt;1 min, 1-10 min, 10-60 min and &gt;60 min.</li>
 <li>'No direct publishing, only use queue' - when enabled, the publisher does not try to publish directly but instead pushes the 
 update to the queue for later processing by a Publish Queue Process Service.</li>
+<li>'Keep successfully published items in database' - when enabled items stored in the publisher queue will not be removed when real 
+publishing has been done, status will merely be changed from PENDING to SUCCESS.</li>
+<li>'Use queue for CRLs' - determines if the publisher queue should handle CRLs or not for this publisher.</li>
+<li>'Use queue for certificates' - determines if the publisher queue should handle certificates or not for this publisher.</li>
 </ul>
 </subsection>
 
