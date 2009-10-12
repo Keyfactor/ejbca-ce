@@ -295,7 +295,11 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             	if (publishStatus != PublisherQueueData.STATUS_SUCCESS) {
             		returnval = false;
             	}
-            	if (publishStatus != PublisherQueueData.STATUS_SUCCESS || pdl.getPublisher().getKeepPublishedInQueue()) {
+            	if (log.isDebugEnabled()) {
+                	log.debug("KeepPublishedInQueue: "+pdl.getPublisher().getKeepPublishedInQueue());
+                	log.debug("UseQueueForCertificates: "+pdl.getPublisher().getUseQueueForCertificates());            		
+            	}
+            	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || pdl.getPublisher().getKeepPublishedInQueue()) && pdl.getPublisher().getUseQueueForCertificates()) {
                 	// Write to the publisher queue either for audit reasons or to be able try agian
                 	PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
                 	pqvd.setUsername(username);
@@ -334,19 +338,31 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         Iterator iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
+            int publishStatus = PublisherQueueData.STATUS_PENDING;
             Integer id = (Integer) iter.next();
             try {
                 PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
-                try {
-                    returnval = pdl.getPublisher().storeCRL(admin, incrl, cafp, number);
-                	String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());            	
-                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
-                } catch (PublisherException pe) {
-                	String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), "CRL");            	
-                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg, pe);
-
+            	// If it should be published directly
+                if (!pdl.getPublisher().getOnlyUseQueue()) {
+                	try {
+	            		if (pdl.getPublisher().storeCRL(admin, incrl, cafp, number)) {
+	            			publishStatus = PublisherQueueData.STATUS_SUCCESS;
+	            		}
+                		String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());            	
+                		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
+                	} catch (PublisherException pe) {
+                		String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), "CRL");            	
+                		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg, pe);
+                	}
                 }
-            	if (!returnval) {
+            	if (publishStatus != PublisherQueueData.STATUS_SUCCESS) {
+            		returnval = false;
+            	}
+            	if (log.isDebugEnabled()) {
+                	log.debug("KeepPublishedInQueue: "+pdl.getPublisher().getKeepPublishedInQueue());
+                	log.debug("UseQueueForCRLs: "+pdl.getPublisher().getUseQueueForCRLs());            		
+            	}
+            	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || pdl.getPublisher().getKeepPublishedInQueue()) && pdl.getPublisher().getUseQueueForCRLs()) {
             		String fp = CertTools.getFingerprintAsString(incrl); 
             		try {
             			getPublisherQueueSession().addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CRL, fp, null, PublisherQueueData.STATUS_PENDING);
@@ -360,7 +376,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             } catch (FinderException fe) {
             	String msg = intres.getLocalizedMessage("publisher.nopublisher", id);            	
                 getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
-
+    			returnval = false;
             }
         }
     	log.trace("<storeCRL");

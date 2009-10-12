@@ -283,6 +283,32 @@ function checkallfields(){
            } %>>
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("USEQUEUEFORCRLS") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCRLS %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(publisherdata.getUseQueueForCRLs()) {
+                 out.write(" CHECKED ");
+           } %>>
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("USEQUEUEFORCERTIFICATES") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCERTIFICATES %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(publisherdata.getUseQueueForCertificates()) {
+                 out.write(" CHECKED ");
+           } %>>
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
          &nbsp;

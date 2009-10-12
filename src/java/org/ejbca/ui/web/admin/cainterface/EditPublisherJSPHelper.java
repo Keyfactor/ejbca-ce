@@ -119,8 +119,10 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE = "checkboxldaprevokeremovecertificate";
     public static final String CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE = "checkboxldaprevokeuseroncertrevoke";
     public static final String CHECKBOX_LDAP_SET_USERPASSWORD  = "checkboxldapsetuserpassword";
-    public static final String CHECKBOX_ONLYUSEQUEUE           = "textfieldextocsponlyusequeue";
-    public static final String CHECKBOX_KEEPPUBLISHEDINQUEUE   = "textfieldextocspkeeppublishedinqueue";
+    public static final String CHECKBOX_ONLYUSEQUEUE           = "textfieldonlyusequeue";
+    public static final String CHECKBOX_KEEPPUBLISHEDINQUEUE   = "textfieldkeeppublishedinqueue";
+    public static final String CHECKBOX_USEQUEUEFORCRLS        = "textfieldusequeueforcrls";
+    public static final String CHECKBOX_USEQUEUEFORCERTIFICATES = "textfieldusequeueforcertificates";
     public static final String CHECKBOX_EXTOCSP_STORECERT      = "textfieldextocspstorecert";
     
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
@@ -272,6 +274,10 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                         	publisherdata.setOnlyUseQueue(value != null && value.equals(CHECKBOX_VALUE));
                         	value = request.getParameter(CHECKBOX_KEEPPUBLISHEDINQUEUE);
                         	publisherdata.setKeepPublishedInQueue(value != null && value.equals(CHECKBOX_VALUE));
+                        	value = request.getParameter(CHECKBOX_USEQUEUEFORCRLS);
+                        	publisherdata.setUseQueueForCRLs(value != null && value.equals(CHECKBOX_VALUE));
+                        	value = request.getParameter(CHECKBOX_USEQUEUEFORCERTIFICATES);
+                        	publisherdata.setUseQueueForCertificates(value != null && value.equals(CHECKBOX_VALUE));
 
                             if(publisherdata instanceof CustomPublisherContainer){
                                 value = request.getParameter(TEXTFIELD_CUSTOMCLASSPATH);

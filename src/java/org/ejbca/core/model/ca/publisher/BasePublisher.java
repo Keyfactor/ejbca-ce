@@ -42,6 +42,8 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     protected static final String DESCRIPTION                    = "description";
     protected static final String ONLYUSEQUEUE                   = "onlyUseQueue";
     protected static final String KEEPPUBLISHEDINQUEUE           = "keepPublishedInQueue";
+    protected static final String USEQUEUEFORCRLS                = "useQueueForCrls";
+    protected static final String USEQUEUEFORCERTIFICATES        = "useQueueForCertificates";
 
     // Default values
     public static final boolean DEFAULT_ONLYUSEQUEUE 			 = false;
@@ -89,6 +91,42 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param keepPublishedInQueue
      */
     public void setKeepPublishedInQueue(boolean keepPublishedInQueue) { data.put(KEEPPUBLISHEDINQUEUE, Boolean.valueOf(keepPublishedInQueue));}
+
+    /**
+     * @return true if CRLs should be kept in in the queue if publishing fails 
+     */
+    public boolean getUseQueueForCRLs() {
+    	boolean ret = true;
+    	Object o = data.get(USEQUEUEFORCRLS);
+    	if (o != null) {
+        	ret = Boolean.TRUE.equals(o);    		
+    	}
+    	return ret;
+    }
+
+    /**
+     * Sets whether a CRLs should be put in the publish queue if publish failed
+     * @param useQueueForCRLs
+     */
+    public void setUseQueueForCRLs(boolean useQueueForCRLs) { data.put(USEQUEUEFORCRLS, Boolean.valueOf(useQueueForCRLs));}
+
+    /**
+     * @return true if Certificates should be kept in in the queue if publishing fails 
+     */
+    public boolean getUseQueueForCertificates() {
+    	boolean ret = true;
+    	Object o = data.get(USEQUEUEFORCERTIFICATES);
+    	if (o != null) {
+        	ret = Boolean.TRUE.equals(o);    		
+    	}
+    	return ret;
+    }
+
+    /**
+     * Sets whether a certificate should be put in the publish queue if publish failed
+     * @param useQueueForCertificates
+     */
+    public void setUseQueueForCertificates(boolean useQueueForCertificates) { data.put(USEQUEUEFORCERTIFICATES, Boolean.valueOf(useQueueForCertificates));}
 
     // Abstact methods.
     
