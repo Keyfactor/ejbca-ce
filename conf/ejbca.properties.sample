@@ -62,14 +62,17 @@
 #ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
 
 # The token type the CA will use.
-# Use soft for software generated keys or enter a class path for the HSM class.
+# Use soft for software generated keys (default) or enter a class path for the HSM class.
+# Normally the HSM class should be the PKCS11CAToken. 
+# Other specific classes like NFastCAToken of SafeNetLunaCAToken are for JCE providers, which was used before PKCS#11 and is not recommended now.
+#
 # Possible values are:
 # soft
-# se.primeKey.caToken.card.PrimeCAToken
+# org.ejbca.core.model.ca.catoken.PKCS11CAToken
 # org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken
 # org.ejbca.core.model.ca.catoken.NFastCAToken
 # org.ejbca.core.model.ca.catoken.EracomCAToken
-# org.ejbca.core.model.ca.catoken.PKCS11CAToken
+# se.primeKey.caToken.card.PrimeCAToken
 #
 # Default: soft
 #ca.tokentype=soft
